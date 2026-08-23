@@ -90,6 +90,14 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** Billing and provisioning workflows require database-enforced identity, monetary, state, idempotency, history, and relationship invariants. A dedicated workspace package gives the API and worker one database boundary without splitting the modular monolith.
 - **Consequence:** Generated Prisma Client code is recreated during build and remains outside Git. Only users, customers, products, product prices, and servers have soft-deletion timestamps; financial, payment-event, email, activity, automation, support, and outbox records have no deletion marker and must not be normally hard-deleted. Migration SQL must be reviewed before application because some PostgreSQL constraints are not represented by Prisma Schema Language.
 
+## ADR-012 — Runtime-Validated API Contracts and Stable Errors
+
+- **Status:** Accepted
+- **Date:** 2026-08-24
+- **Decision:** Keep shared boundary schemas and their inferred types in `@webhost-billing/shared`, using Zod for runtime validation. Serialize `bigint` minor-unit money as canonical decimal strings. Use consistent success and error envelopes and a global NestJS exception filter with stable error codes and generic server-failure messages.
+- **Reason:** Static types disappear at runtime, JSON cannot safely represent database-sized integers, and raw framework or provider errors can expose secrets and implementation details.
+- **Consequence:** Untrusted boundary data must be parsed with a runtime schema. Clients branch on stable error codes rather than messages. Expected client errors use `ApplicationException`; original exception bodies, database failures, credentials, stack traces, and provider responses are never returned to clients.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

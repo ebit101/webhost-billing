@@ -15,8 +15,11 @@ describe('AppController', () => {
   });
 
   describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+    it('should return the shared success response envelope', () => {
+      expect(appController.getHello()).toEqual({
+        success: true,
+        data: { message: 'Hello World!' },
+      });
     });
   });
 });

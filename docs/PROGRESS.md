@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 3 — Design the Database Schema
+- **Current command:** Command 4 — Add Shared Contracts and Errors
 - **Current status:** Completed and delivered to GitHub `main`
-- **Last updated:** 2026-08-23
-- **Next command:** Command 4 — Add Shared Contracts and Errors
+- **Last updated:** 2026-08-24
+- **Next command:** Command 5 — Implement Authentication
 - **Next command authorized:** No
 
 ## Command Reports
@@ -263,6 +263,69 @@ Run **Command 3 — Design the Database Schema** after explicit user authorizati
 #### Recommended next command
 
 Run **Command 4 — Add Shared Contracts and Errors** after explicit user authorization.
+
+### Command 4 — Add Shared Contracts and Errors
+
+- **Status:** Completed and delivered to GitHub `main`
+- **Date:** 2026-08-24
+
+#### Scope completed
+
+- Converted `@webhost-billing/shared` into a separately buildable and tested package of reusable runtime contracts and inferred TypeScript types.
+- Added strict Zod schemas for money, currency codes, pagination, API success responses, API errors, authenticated administrator/customer identity, roles, and separate order, invoice, payment, service, and ticket states.
+- Added lossless `bigint` money serialization as canonical decimal strings, parsing back to `bigint`, and PostgreSQL `BIGINT` range validation.
+- Added bounded pagination input coercion, pagination metadata validation, and success/paginated-response construction helpers.
+- Defined stable API error codes, field-level validation issues, and a strictly validated error envelope.
+- Added `ApplicationException` for expected client-facing failures and registered `ApiExceptionFilter` globally through NestJS `APP_FILTER`.
+- Mapped framework and unknown failures to safe public responses while discarding original exception bodies, messages, stack traces, database details, credentials, and provider responses.
+- Changed the API root response to use the shared success envelope and added end-to-end coverage for the globally formatted 404 response.
+- Documented contract usage, money representation, response formats, error codes, and the exception boundary.
+
+#### Files changed
+
+- Shared contracts and tests: `packages/shared/package.json`, `packages/shared/tsconfig.json`, `packages/shared/tsconfig.build.json`, `packages/shared/src/index.ts`, `packages/shared/src/contracts/**`, `packages/shared/test/contracts.spec.ts`
+- API exception boundary: `apps/api/src/common/errors/application.exception.ts`, `apps/api/src/common/errors/api-exception.filter.ts`, `apps/api/src/common/errors/api-exception.filter.spec.ts`, `apps/api/src/app.module.ts`
+- API envelope coverage: `apps/api/src/app.controller.ts`, `apps/api/src/app.controller.spec.ts`, `apps/api/test/app.e2e-spec.ts`
+- Dependencies: `pnpm-lock.yaml`
+- Documentation: `README.md`, `docs/API_CONTRACTS.md`, `docs/DECISIONS.md`, `docs/PROGRESS.md`
+
+#### Validation
+
+- Frozen-lockfile dependency installation: passed; pnpm supply-chain policy verification remained valid for 1,054 lockfile entries.
+- Prettier formatting check: passed.
+- Prisma schema validation: passed.
+- ESLint for API, worker, and web: passed.
+- Strict TypeScript checks for all six code workspace projects: passed.
+- Shared contract tests: 2 suites and 7 tests passed, covering lossless money serialization, invalid and out-of-range amounts, currency validation, identities, state vocabulary, pagination, and response envelopes.
+- API Jest tests: 3 suites and 9 tests passed, including safe formatting of expected, framework, provider, and unknown errors.
+- Worker Jest tests: 1 suite and 1 test passed.
+- API end-to-end tests: 1 suite and 2 tests passed, including global 404 error formatting.
+- Database structural/seed verification: passed; migration status confirmed the database is up to date with one migration.
+- Database package, shared packages, NestJS API, NestJS worker, and Next.js production builds: passed.
+- API, web, and worker development Docker image builds: passed.
+- Containerized API runtime smoke test: the root route returned the shared success envelope and a missing route returned the stable `RESOURCE_NOT_FOUND` envelope.
+- `git diff --check`: passed.
+
+#### Decisions made
+
+- Zod is the runtime-validation library for shared application-boundary contracts.
+- API monetary amounts are canonical non-negative decimal strings at JSON boundaries and `bigint` internally; refunds and reversals remain separate positive transactions.
+- Shared states intentionally match the initial Prisma state vocabulary but remain transport contracts rather than generated database-client types.
+- Success responses use `{ success: true, data }`; failures use `{ success: false, error: { code, message, issues? } }`.
+- Clients branch on stable error codes, never human-readable messages.
+- Only expected 4xx `ApplicationException` details may reach a client. Framework, 5xx, and unknown exception details are replaced with generic public definitions, and server-error logs do not interpolate the original exception.
+
+#### Open questions and risks
+
+- Currency precision and the initially supported currency list remain business-policy decisions; the shared schema currently enforces only an uppercase three-letter code and database-sized minor-unit amount.
+- Shared state contracts and Prisma enums must be changed together when a future authorized command introduces a state transition.
+- Future controllers, sessions, jobs, and provider adapters must parse untrusted data with the applicable runtime schema; importing a TypeScript type alone is insufficient.
+- Authentication, authorization guards, ownership checks, and session enforcement are intentionally deferred to Command 5.
+- Payment provider, SMTP delivery provider, production WHM credentials, tax rules, billing policies, and production hosting remain unresolved.
+
+#### Recommended next command
+
+Run **Command 5 — Implement Authentication** after explicit user authorization.
 
 ## Report Template
 

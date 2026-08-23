@@ -20,7 +20,20 @@ describe('AppController (e2e)', () => {
     return request(app.getHttpServer())
       .get('/')
       .expect(200)
-      .expect('Hello World!');
+      .expect({ success: true, data: { message: 'Hello World!' } });
+  });
+
+  it('formats framework errors through the global API exception filter', () => {
+    return request(app.getHttpServer())
+      .get('/missing')
+      .expect(404)
+      .expect({
+        success: false,
+        error: {
+          code: 'RESOURCE_NOT_FOUND',
+          message: 'Resource was not found.',
+        },
+      });
   });
 
   afterEach(async () => {

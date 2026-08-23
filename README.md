@@ -49,6 +49,7 @@ See `docs/DEVELOPMENT.md` for setup, health checks, connectivity, shutdown, and 
 - `HOSTING_BILLING_SYSTEM_PLAN.md` — product requirements and architecture
 - `CODEX_DEVELOPMENT_COMMANDS.md` — ordered development commands
 - `docs/DECISIONS.md` — durable architecture decisions
+- `docs/API_CONTRACTS.md` — shared runtime contracts, money serialization, and API errors
 - `docs/DATABASE.md` — schema, migration, deletion, and seed-data decisions
 - `docs/DEVELOPMENT.md` — local infrastructure and application setup
 - `docs/PROGRESS.md` — command-by-command implementation reports
