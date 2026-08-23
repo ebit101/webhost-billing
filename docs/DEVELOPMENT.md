@@ -99,7 +99,30 @@ The default local endpoints are the web application at `http://localhost:3000` a
 
 ## Database migrations
 
-Command 2 only provides the PostgreSQL service and connection configuration. The Prisma schema and executable migration commands are introduced by Command 3, so there is no migration to run yet. Do not create tables manually; this keeps the initial schema reproducible when migrations are added.
+Validate the Prisma schema, generate the client, and apply development migrations:
+
+```bash
+pnpm db:validate
+pnpm db:generate
+pnpm db:migrate:dev
+```
+
+Check migration state without changing the database:
+
+```bash
+pnpm db:migrate:status
+```
+
+Deployment environments apply committed migrations non-interactively with `pnpm db:migrate:deploy`; they must never use `migrate dev` or generate migration files during deployment.
+
+Load the idempotent, fictional development dataset and verify the resulting schema:
+
+```bash
+pnpm db:seed
+pnpm db:verify
+```
+
+The seed uses only reserved `.test` domains and does not create a usable password. Never run the development seed against staging or production.
 
 ## Stop without deleting data
 

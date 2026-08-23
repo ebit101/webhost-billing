@@ -4,4 +4,5 @@ coverage
 dist
 node_modules
 next-env.d.ts
+packages/database/src/generated
 pnpm-lock.yaml

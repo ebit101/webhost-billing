@@ -1,0 +1,37 @@
+{
+  "name": "@webhost-billing/database",
+  "version": "0.1.0",
+  "private": true,
+  "type": "commonjs",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "pnpm db:generate && tsc -p tsconfig.build.json",
+    "db:format": "prisma format --config prisma.config.ts",
+    "db:generate": "prisma generate --config prisma.config.ts",
+    "db:migrate:deploy": "prisma migrate deploy --config prisma.config.ts",
+    "db:migrate:dev": "prisma migrate dev --config prisma.config.ts",
+    "db:migrate:status": "prisma migrate status --config prisma.config.ts",
+    "db:seed": "prisma db seed --config prisma.config.ts",
+    "db:validate": "prisma validate --config prisma.config.ts",
+    "db:verify": "tsx prisma/verify.ts",
+    "typecheck": "pnpm db:generate && tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "7.9.1",
+    "@prisma/client": "7.9.1",
+    "pg": "8.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "@types/pg": "8.23.1",
+    "prisma": "7.9.1",
+    "tsx": "4.23.12",
+    "typescript": "^5.9.2"
+  }
+}

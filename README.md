@@ -9,6 +9,7 @@ apps/api       NestJS REST API
 apps/web       Next.js App Router frontend
 apps/worker    NestJS worker application context
 packages/config
+packages/database
 packages/shared
 ```
 
@@ -48,5 +49,6 @@ See `docs/DEVELOPMENT.md` for setup, health checks, connectivity, shutdown, and 
 - `HOSTING_BILLING_SYSTEM_PLAN.md` — product requirements and architecture
 - `CODEX_DEVELOPMENT_COMMANDS.md` — ordered development commands
 - `docs/DECISIONS.md` — durable architecture decisions
+- `docs/DATABASE.md` — schema, migration, deletion, and seed-data decisions
 - `docs/DEVELOPMENT.md` — local infrastructure and application setup
 - `docs/PROGRESS.md` — command-by-command implementation reports

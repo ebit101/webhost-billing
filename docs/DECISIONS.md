@@ -82,6 +82,14 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** The cPanel development server already hosts unrelated services. A named Compose project, private bridge network, unique volumes, and loopback-only ports isolate development data and avoid exposing infrastructure publicly.
 - **Consequence:** Developers must create an ignored `.env` file before starting infrastructure. PostgreSQL uses its PostgreSQL 18 volume layout at `/var/lib/postgresql`; application services validate their database, Redis, and secret settings at startup.
 
+## ADR-011 — Initial Relational Schema and Prisma Package
+
+- **Status:** Accepted
+- **Date:** 2026-08-23
+- **Decision:** Place the database schema, migrations, generated-client boundary, fictional seed, and structural verifier in `packages/database`. Use Prisma ORM 7.9.1 with the PostgreSQL driver adapter. Use UUID keys, PostgreSQL `TIMESTAMPTZ(3)`, `BIGINT` minor-unit money, explicit state enums, restrictive foreign keys, immutable historical snapshots, and customized migration SQL for checks and a partial unique price index.
+- **Reason:** Billing and provisioning workflows require database-enforced identity, monetary, state, idempotency, history, and relationship invariants. A dedicated workspace package gives the API and worker one database boundary without splitting the modular monolith.
+- **Consequence:** Generated Prisma Client code is recreated during build and remains outside Git. Only users, customers, products, product prices, and servers have soft-deletion timestamps; financial, payment-event, email, activity, automation, support, and outbox records have no deletion marker and must not be normally hard-deleted. Migration SQL must be reviewed before application because some PostgreSQL constraints are not represented by Prisma Schema Language.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

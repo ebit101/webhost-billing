@@ -5,6 +5,7 @@ node_modules/
 dist/
 coverage/
 *.tsbuildinfo
+packages/database/src/generated/
 
 # Local environment and secrets
 .env
@@ -28,4 +29,5 @@ test-results/
 # Local database and backup files
 *.dump
 *.sql
+!packages/database/prisma/migrations/**/*.sql
 backups/

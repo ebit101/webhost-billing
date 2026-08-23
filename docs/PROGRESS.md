@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 2 — Add Local Infrastructure
+- **Current command:** Command 3 — Design the Database Schema
 - **Current status:** Completed and delivered to GitHub `main`
 - **Last updated:** 2026-08-23
-- **Next command:** Command 3 — Design the Database Schema
+- **Next command:** Command 4 — Add Shared Contracts and Errors
 - **Next command authorized:** No
 
 ## Command Reports
@@ -193,6 +193,76 @@ Run **Command 2 — Add Local Infrastructure** after explicit user authorization
 #### Recommended next command
 
 Run **Command 3 — Design the Database Schema** after explicit user authorization.
+
+### Command 3 — Design the Database Schema
+
+- **Status:** Completed and delivered to GitHub `main`
+- **Date:** 2026-08-23
+
+#### Scope completed
+
+- Added the `@webhost-billing/database` workspace package using Prisma ORM 7.9.1, Prisma Client, the PostgreSQL driver adapter, and `pg`.
+- Implemented all 20 required models: users, customers, administrator profiles, products and prices, orders and items, services and servers, invoices and items, payments and events, tickets and messages, email logs, activity logs, automation runs, settings, and outbox events.
+- Added explicit enums for identity, customer, product, order, service, server, invoice, payment, payment-event, ticket, email, automation, setting, and outbox states.
+- Used UUID primary keys, PostgreSQL `TIMESTAMPTZ(3)` timestamps, `BIGINT` monetary fields, uppercase ISO-style currency codes, unique business numbers, and restrictive foreign keys.
+- Added immutable product, pricing, provisioning, customer, business, address, tax, description, and service-period snapshots where financial history requires them.
+- Added unique payment/provider event identifiers and idempotency keys for payment, payment-event, automation, and outbox retry safety.
+- Limited soft deletion to users, customers, products, product prices, and servers; financial, support, audit, notification, automation, and outbox history has no deletion marker.
+- Created and applied the initial migration with customized PostgreSQL checks for currency/country formats, money totals, valid ranges, payment adjustment relationships, positive counters, JSON snapshot shape, and one active price per product/period/currency.
+- Added an idempotent fictional development seed covering every model and using only reserved `.test` identities and hostnames.
+- Added a database verifier for table coverage, UUID identifiers, money types, timezone-safe timestamps, restrictive foreign keys, custom constraints, the partial unique index, and representative seeded relationships.
+- Added root database commands, Prisma-generated-code ignore rules, OpenSSL support in development images, and database workflow documentation.
+
+#### Files changed
+
+- Database package: `packages/database/package.json`, `packages/database/tsconfig.json`, `packages/database/tsconfig.build.json`, `packages/database/prisma.config.ts`, `packages/database/src/**`
+- Prisma schema and data: `packages/database/prisma/schema.prisma`, `packages/database/prisma/migrations/**`, `packages/database/prisma/seed.ts`, `packages/database/prisma/verify.ts`
+- Workspace and dependencies: `package.json`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`
+- Generated-artifact policy: `.gitignore`, `.dockerignore`, `.prettierignore`
+- Development images: `apps/api/Dockerfile.dev`, `apps/web/Dockerfile.dev`, `apps/worker/Dockerfile.dev`
+- Documentation: `README.md`, `docs/DATABASE.md`, `docs/DEVELOPMENT.md`, `docs/DECISIONS.md`, `docs/PROGRESS.md`
+
+#### Validation
+
+- Frozen-lockfile dependency installation and pnpm supply-chain verification: passed for 1,054 lockfile entries.
+- Prisma lifecycle scripts were explicitly limited to approved `prisma`, `@prisma/engines`, and `esbuild` packages.
+- `prisma format`: passed.
+- `prisma validate`: passed.
+- Prisma Client 7.9.1 generation: passed.
+- Initial migration creation and application to the isolated PostgreSQL database: passed.
+- A subsequent `prisma migrate dev` reported no schema change, pending migration, or drift.
+- `prisma migrate status`: passed; the database is up to date with one migration.
+- Fictional development seed: passed on the first run and on repeated runs, confirming idempotency.
+- Database structural and seed verifier: passed.
+- Prettier formatting: passed.
+- ESLint for API, worker, and web: passed.
+- Strict TypeScript checks for all six code workspace projects, including the generated Prisma client, seed, verifier, and config: passed.
+- API Jest suites: 2 suites and 5 tests passed.
+- Worker Jest suite: 1 test passed.
+- Database package, NestJS API, NestJS worker, and Next.js production builds: passed.
+- API, web, and worker development Docker image builds with generated Prisma Client and OpenSSL support: passed.
+
+#### Decisions made
+
+- Prisma ORM 7.9.1 is the pinned stable baseline; Prisma 8 remains a release candidate and was not selected.
+- The generated Prisma Client is build output and remains outside Git.
+- Database checks and the partial unique price index live in reviewed migration SQL because Prisma Schema Language cannot represent all required PostgreSQL invariants.
+- All foreign keys use `ON DELETE RESTRICT`; application workflows must change state or append corrective financial records instead of cascading deletion.
+- Refunds and reversals are positive adjustment payments linked to an original charge.
+- Settings and provisioning JSON are non-secret; server credential storage is reserved for encrypted ciphertext only.
+- Seed users intentionally have no password and cannot authenticate before Command 5 implements authentication.
+
+#### Open questions and risks
+
+- Invoice numbering format, tax policy, partial-payment policy, and final billing periods remain business configuration decisions; the schema supports them without choosing policy values.
+- Prisma migrations containing custom SQL require manual review and must not be replaced by `prisma db push`.
+- `BIGINT` money requires decimal-string serialization at JSON boundaries; Command 4 will add the shared contract and serializer.
+- Database access is not yet wired into NestJS feature modules; it will be introduced when those modules are implemented.
+- Payment provider, SMTP delivery provider, production WHM credentials, and production hosting remain unresolved.
+
+#### Recommended next command
+
+Run **Command 4 — Add Shared Contracts and Errors** after explicit user authorization.
 
 ## Report Template
 
