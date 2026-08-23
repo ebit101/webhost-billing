@@ -19,7 +19,8 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "pretest:e2e": "pnpm --filter @webhost-billing/config build && pnpm --filter @webhost-billing/shared build && pnpm --filter @webhost-billing/database build",
+    "test:e2e": "NODE_OPTIONS=--experimental-vm-modules jest --config ./test/jest-e2e.json",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -27,9 +28,14 @@
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
     "@webhost-billing/config": "workspace:*",
+    "@webhost-billing/database": "workspace:*",
     "@webhost-billing/shared": "workspace:*",
+    "argon2": "0.45.1",
+    "cookie": "1.0.2",
+    "redis": "6.2.1",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "zod": "^4.1.5"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

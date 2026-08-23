@@ -4,16 +4,20 @@ import { z } from 'zod';
 import {
   apiErrorResponseSchema,
   apiSuccessResponseSchema,
+  authenticatedSessionResponseSchema,
   authenticatedIdentitySchema,
   createApiErrorResponse,
   createPaginationMeta,
   invoiceStatusSchema,
+  loginRequestSchema,
   moneySchema,
+  passwordSchema,
   orderStatusSchema,
   paginatedApiSuccessResponseSchema,
   paginationQuerySchema,
   paymentStatusSchema,
   roleSchema,
+  registrationRequestSchema,
   serializeMoney,
   serviceStatusSchema,
   ticketStatusSchema,
@@ -82,6 +86,50 @@ describe('boundary contracts', () => {
         role: 'CUSTOMER',
       }).success,
       false,
+    );
+  });
+
+  it('normalizes and validates authentication input', () => {
+    const registration = registrationRequestSchema.parse({
+      email: ' Customer@Example.Test ',
+      password: 'correct horse battery staple',
+      firstName: 'Fictional',
+      lastName: 'Customer',
+      addressLine1: '1 Example Road',
+      city: 'Dhaka',
+      countryCode: 'bd',
+    });
+
+    assert.equal(registration.email, 'customer@example.test');
+    assert.equal(registration.countryCode, 'BD');
+    assert.equal(passwordSchema.safeParse('short').success, false);
+    assert.equal(
+      loginRequestSchema.safeParse({
+        email: 'not-an-email',
+        password: 'irrelevant',
+      }).success,
+      false,
+    );
+  });
+
+  it('validates authenticated session responses', () => {
+    assert.equal(
+      authenticatedSessionResponseSchema.safeParse({
+        identity: {
+          userId: '10000000-0000-4000-8000-000000000001',
+          email: 'admin@example.test',
+          role: 'ADMIN',
+          adminProfileId: '10000000-0000-4000-8000-000000000002',
+        },
+        session: {
+          id: '10000000-0000-4000-8000-000000000003',
+          createdAt: '2026-08-24T00:00:00.000Z',
+          lastSeenAt: '2026-08-24T00:00:00.000Z',
+          expiresAt: '2026-08-31T00:00:00.000Z',
+          current: true,
+        },
+      }).success,
+      true,
     );
   });
 

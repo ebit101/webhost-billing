@@ -9,7 +9,7 @@ The current infrastructure contains:
 - PostgreSQL 18.6
 - Redis 8.10
 
-Local SMTP capture is intentionally deferred until email notification work begins.
+Local SMTP capture remains deferred. Authentication creates idempotent verification and password-reset outbox records, but Command 5 does not send email.
 
 ## Prerequisites
 
@@ -96,6 +96,14 @@ pnpm --filter @webhost-billing/worker dev
 ```
 
 The default local endpoints are the web application at `http://localhost:3000` and the API at `http://localhost:3001`.
+
+Authentication requires the exact web origin, session and credential-encryption secrets, token lifetimes, and a rate-limit namespace from `.env`. The placeholder file provides valid local shapes but must be replaced with unique values. See `docs/AUTHENTICATION.md` for the flows and security model.
+
+With PostgreSQL and Redis healthy, run the API end-to-end suites with:
+
+```bash
+pnpm --filter @webhost-billing/api test:e2e
+```
 
 ## Database migrations
 

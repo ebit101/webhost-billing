@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 4 — Add Shared Contracts and Errors
+- **Current command:** Command 5 — Implement Authentication
 - **Current status:** Completed and delivered to GitHub `main`
 - **Last updated:** 2026-08-24
-- **Next command:** Command 5 — Implement Authentication
+- **Next command:** Command 6 — Build the Application Layouts
 - **Next command authorized:** No
 
 ## Command Reports
@@ -326,6 +326,77 @@ Run **Command 4 — Add Shared Contracts and Errors** after explicit user author
 #### Recommended next command
 
 Run **Command 5 — Implement Authentication** after explicit user authorization.
+
+### Command 5 — Implement Authentication
+
+- **Status:** Completed and delivered to GitHub `main`
+- **Date:** 2026-08-24
+
+#### Scope completed
+
+- Added a NestJS authentication module backed by PostgreSQL and Redis, with authentication required by default and explicit public-route metadata.
+- Implemented customer email/password registration, pending-verification accounts, single-use email verification, login, current-session logout, logout-all, session listing, and individual session revocation.
+- Implemented generic password-reset requests and atomic single-use reset confirmation; completing a reset revokes every existing user session.
+- Added Argon2id password hashing, 256-bit opaque tokens, SHA-256 database token lookup, AES-256-GCM protection for pending email action-token delivery, and transactional security flows.
+- Added secure HttpOnly cookie sessions, production `Secure` and `__Host-` cookie behavior, `SameSite=Lax`, exact-origin credentialed CORS, signed double-submit CSRF protection, and no browser token persistence.
+- Added Redis-backed fixed-window rate limits for login and password-reset flows with keyed fingerprints, environment namespaces, and fail-closed behavior.
+- Added administrator/customer role guards and customer-resource ownership guards, including administrator bypass and audit records for denied access.
+- Added immutable security audit events for registration, verification, successful/failed login, reset request/completion, logout, logout-all, session revocation, and authorization denial.
+- Added `AuthSession`, `PasswordResetToken`, and `EmailVerificationToken` models, reviewed migrations, database hash/time checks, and structural verification coverage.
+- Added shared Zod authentication requests, identities, session responses, email normalization, password policy, and stable authentication error codes.
+- Added Next.js pages for registration, login, forgot/reset password, email verification, and a basic authenticated account/session view. Browser mutations automatically obtain and return a CSRF token and always use credentialed requests.
+- Added provider-ready outbox events for verification and reset email. Outbox payloads contain only the recipient, purpose, and token-record identifier; raw tokens remain encrypted outside the payload.
+- Added authentication architecture, operations, security, endpoint, configuration, and testing documentation.
+
+#### Files changed
+
+- API authentication and infrastructure: `apps/api/src/modules/auth/**`, `apps/api/src/infrastructure/**`, `apps/api/src/common/http/**`, `apps/api/src/common/validation/**`, `apps/api/src/app.module.ts`, `apps/api/src/app.controller.ts`, `apps/api/src/main.ts`
+- API tests and dependencies: `apps/api/test/auth.e2e-spec.ts`, `apps/api/test/setup-environment.ts`, `apps/api/test/jest-e2e.json`, `apps/api/package.json`
+- Web authentication UI: `apps/web/src/app/{login,register,forgot-password,reset-password,verify-email,account}/**`, `apps/web/src/components/auth/**`, `apps/web/src/lib/auth-api.ts`, `apps/web/src/app/page.tsx`, `apps/web/src/app/layout.tsx`, `apps/web/src/app/globals.css`
+- Shared contracts/configuration: `packages/shared/src/contracts/authentication.ts`, `packages/shared/src/contracts/errors.ts`, `packages/shared/src/index.ts`, `packages/shared/test/contracts.spec.ts`, `packages/config/src/env.ts`, `.env.example`
+- Database: `packages/database/prisma/schema.prisma`, `packages/database/prisma/migrations/20260823202643_add_authentication/**`, `packages/database/prisma/migrations/20260823202805_add_auth_token_delivery_ciphertext/**`, `packages/database/prisma/migrations/20260823203000_authentication_constraints/**`, `packages/database/prisma/verify.ts`
+- Workspace/dependencies: `pnpm-workspace.yaml`, `pnpm-lock.yaml`
+- Documentation: `README.md`, `docs/AUTHENTICATION.md`, `docs/DATABASE.md`, `docs/DEVELOPMENT.md`, `docs/DECISIONS.md`, `docs/PROGRESS.md`
+
+#### Validation
+
+- Frozen-lockfile dependency installation: passed; pnpm supply-chain policy verification passed for 1,068 entries.
+- Argon2 native lifecycle installation: passed in clean development-image builds.
+- Prettier formatting check and `git diff --check`: passed.
+- ESLint for API, worker, and web: passed.
+- Strict TypeScript checks for all six code workspace projects: passed.
+- Shared contract tests: 2 suites and 9 tests passed.
+- API Jest tests: 4 suites and 13 tests passed, including Argon2, CSRF signing/tamper rejection, token encryption/tamper rejection, rate-limit enforcement, and stable failures.
+- Worker Jest tests: 1 suite and 1 test passed.
+- API end-to-end tests: 2 suites and 8 tests passed against local PostgreSQL and Redis. Authentication coverage includes registration, verification, reused-token rejection, login, generic invalid credentials, role denial, cross-customer denial, expired reset tokens, single-use reset, session revocation, logout-all, and administrator authorization.
+- Prisma schema validation: passed; migration status confirmed all four migrations are applied with no pending migration.
+- Database structural/seed verifier: passed for 23 application tables, UUID identifiers, timezone-safe timestamps, authentication constraints, existing money invariants, restrictive foreign keys, and fictional seed relationships.
+- Database, shared packages, NestJS API, NestJS worker, and Next.js production builds: passed; Next.js generated all eight application routes.
+- API, web, and worker Command 5 development Docker image builds: passed.
+- Containerized runtime smoke tests: the API initialized database, Redis, global guards, and every authentication route and returned a CSRF response; the web application served `/login` successfully.
+
+#### Decisions made
+
+- Authentication uses revocable database-backed opaque sessions in HttpOnly cookies; long-lived bearer tokens are not exposed to browser JavaScript or stored in browser persistence.
+- Unsafe requests use a signed double-submit CSRF cookie/header design, with exact-origin credentialed CORS as an additional browser boundary.
+- Customer registration cannot assign an administrator role. Administrator creation is a separate trusted operational responsibility.
+- Action-token records retain only a lookup hash plus encrypted pending delivery material. Consuming or superseding a token replaces its ciphertext while preserving the historical row.
+- Authentication and authorization are default-deny. Resource ownership is derived from the server-authenticated identity, with an explicit administrator bypass.
+- Redis rate-limit failure returns a stable service-unavailable response instead of silently removing brute-force protection.
+- Email-verification and password-reset delivery use the existing transactional outbox boundary; the email worker/provider remains outside Command 5.
+
+#### Open questions and risks
+
+- Verification and password-reset emails are not yet delivered because no SMTP provider or email worker has been authorized. The records and encrypted delivery boundary are ready, but real customers cannot complete email actions until that consumer exists.
+- A trusted administrator bootstrap/provisioning runbook or command is still required before deployment. Public registration deliberately cannot create an administrator, and fictional seed users remain non-authenticating.
+- Production requires HTTPS, exact `WEB_ORIGIN`, distinct high-entropy session/encryption secrets, a shared protected Redis instance, migration deployment, and an explicit secret-rotation procedure.
+- Rate limits currently use the direct Express request address; deployment behind a reverse proxy must configure and validate trusted proxy handling before relying on forwarded client addresses.
+- The authentication pages passed lint, typecheck, production build, and runtime smoke validation. A frontend interaction-test framework is still not present and should be introduced when the reusable application layouts and form components mature.
+- Payment provider, SMTP delivery provider, production WHM credentials, tax rules, billing policies, and production hosting remain unresolved.
+
+#### Recommended next command
+
+Run **Command 6 — Build the Application Layouts** after explicit user authorization.
 
 ## Report Template
 

@@ -12,6 +12,11 @@ async function bootstrap() {
     PORT: process.env.API_PORT ?? '3001',
   });
   const app = await NestFactory.create(AppModule);
+  app.enableCors({
+    origin: environment.WEB_ORIGIN,
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'X-CSRF-Token'],
+  });
   await app.listen(environment.PORT, '0.0.0.0');
 }
 void bootstrap();

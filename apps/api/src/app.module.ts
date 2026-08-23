@@ -3,9 +3,11 @@ import { APP_FILTER } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ApiExceptionFilter } from './common/errors/api-exception.filter';
+import { EnvironmentModule } from './infrastructure/environment/environment.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
-  imports: [],
+  imports: [EnvironmentModule, AuthModule],
   controllers: [AppController],
   providers: [
     AppService,

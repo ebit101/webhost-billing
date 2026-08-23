@@ -153,23 +153,26 @@ enum OutboxStatus {
 }
 
 model User {
-  id              String          @id @default(uuid()) @db.Uuid
-  email           String          @unique(map: "users_email_key") @db.VarChar(320)
-  passwordHash    String?         @map("password_hash") @db.VarChar(255)
-  role            UserRole
-  status          UserStatus      @default(PENDING_VERIFICATION)
-  emailVerifiedAt DateTime?       @map("email_verified_at") @db.Timestamptz(3)
-  lastLoginAt     DateTime?       @map("last_login_at") @db.Timestamptz(3)
-  createdAt       DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt       DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
-  deletedAt       DateTime?       @map("deleted_at") @db.Timestamptz(3)
-  customer        Customer?
-  adminProfile    AdminProfile?
-  paymentsCreated Payment[]       @relation("PaymentCreatedBy")
-  ticketsAssigned Ticket[]        @relation("TicketAssignedAdmin")
-  ticketMessages  TicketMessage[]
-  activityLogs    ActivityLog[]   @relation("ActivityActor")
-  settingsUpdated Setting[]       @relation("SettingUpdatedBy")
+  id                      String                   @id @default(uuid()) @db.Uuid
+  email                   String                   @unique(map: "users_email_key") @db.VarChar(320)
+  passwordHash            String?                  @map("password_hash") @db.VarChar(255)
+  role                    UserRole
+  status                  UserStatus               @default(PENDING_VERIFICATION)
+  emailVerifiedAt         DateTime?                @map("email_verified_at") @db.Timestamptz(3)
+  lastLoginAt             DateTime?                @map("last_login_at") @db.Timestamptz(3)
+  createdAt               DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt               DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt               DateTime?                @map("deleted_at") @db.Timestamptz(3)
+  customer                Customer?
+  adminProfile            AdminProfile?
+  paymentsCreated         Payment[]                @relation("PaymentCreatedBy")
+  ticketsAssigned         Ticket[]                 @relation("TicketAssignedAdmin")
+  ticketMessages          TicketMessage[]
+  activityLogs            ActivityLog[]            @relation("ActivityActor")
+  settingsUpdated         Setting[]                @relation("SettingUpdatedBy")
+  authSessions            AuthSession[]
+  passwordResetTokens     PasswordResetToken[]
+  emailVerificationTokens EmailVerificationToken[]
 
   @@index([role, status], map: "users_role_status_idx")
   @@index([deletedAt], map: "users_deleted_at_idx")
@@ -218,6 +221,54 @@ model AdminProfile {
   user         User     @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
   @@map("admin_profiles")
+}
+
+model AuthSession {
+  id            String    @id @default(uuid()) @db.Uuid
+  userId        String    @map("user_id") @db.Uuid
+  tokenHash     String    @unique(map: "auth_sessions_token_hash_key") @map("token_hash") @db.Char(64)
+  expiresAt     DateTime  @map("expires_at") @db.Timestamptz(3)
+  lastSeenAt    DateTime  @default(now()) @map("last_seen_at") @db.Timestamptz(3)
+  revokedAt     DateTime? @map("revoked_at") @db.Timestamptz(3)
+  revokedReason String?   @map("revoked_reason") @db.VarChar(64)
+  ipAddressHash String?   @map("ip_address_hash") @db.Char(64)
+  userAgent     String?   @map("user_agent") @db.VarChar(512)
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  user          User      @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([userId, revokedAt, expiresAt], map: "auth_sessions_user_active_idx")
+  @@index([expiresAt], map: "auth_sessions_expires_at_idx")
+  @@map("auth_sessions")
+}
+
+model PasswordResetToken {
+  id                 String    @id @default(uuid()) @db.Uuid
+  userId             String    @map("user_id") @db.Uuid
+  tokenHash          String    @unique(map: "password_reset_tokens_hash_key") @map("token_hash") @db.Char(64)
+  deliveryCiphertext String    @map("delivery_ciphertext") @db.Text
+  expiresAt          DateTime  @map("expires_at") @db.Timestamptz(3)
+  usedAt             DateTime? @map("used_at") @db.Timestamptz(3)
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  user               User      @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([userId, usedAt, expiresAt], map: "password_reset_tokens_user_active_idx")
+  @@index([expiresAt], map: "password_reset_tokens_expires_at_idx")
+  @@map("password_reset_tokens")
+}
+
+model EmailVerificationToken {
+  id                 String    @id @default(uuid()) @db.Uuid
+  userId             String    @map("user_id") @db.Uuid
+  tokenHash          String    @unique(map: "email_verification_tokens_hash_key") @map("token_hash") @db.Char(64)
+  deliveryCiphertext String    @map("delivery_ciphertext") @db.Text
+  expiresAt          DateTime  @map("expires_at") @db.Timestamptz(3)
+  usedAt             DateTime? @map("used_at") @db.Timestamptz(3)
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  user               User      @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([userId, usedAt, expiresAt], map: "email_verification_tokens_user_active_idx")
+  @@index([expiresAt], map: "email_verification_tokens_expires_at_idx")
+  @@map("email_verification_tokens")
 }
 
 model Product {

@@ -52,7 +52,32 @@ const secretEnvironmentSchema = z.object({
 
 export const apiEnvironmentSchema = serverEnvironmentSchema
   .extend(infrastructureEnvironmentSchema.shape)
-  .extend(secretEnvironmentSchema.shape);
+  .extend(secretEnvironmentSchema.shape)
+  .extend({
+    WEB_ORIGIN: z.url().default('http://localhost:3000'),
+    SESSION_TTL_SECONDS: z.coerce
+      .number()
+      .int()
+      .min(900)
+      .max(2_592_000)
+      .default(604_800),
+    PASSWORD_RESET_TTL_SECONDS: z.coerce
+      .number()
+      .int()
+      .min(300)
+      .max(86_400)
+      .default(3_600),
+    EMAIL_VERIFICATION_TTL_SECONDS: z.coerce
+      .number()
+      .int()
+      .min(900)
+      .max(604_800)
+      .default(86_400),
+    AUTH_RATE_LIMIT_NAMESPACE: z
+      .string()
+      .regex(/^[A-Za-z0-9_-]{1,64}$/)
+      .default('default'),
+  });
 
 export const workerEnvironmentSchema = baseEnvironmentSchema
   .extend(infrastructureEnvironmentSchema.shape)

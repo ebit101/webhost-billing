@@ -2,7 +2,7 @@
 
 ## Scope
 
-The initial PostgreSQL schema is owned by `packages/database` and contains these 20 models:
+The PostgreSQL schema is owned by `packages/database`. The initial 20 business models are supplemented by three authentication models:
 
 - Identity: `User`, `Customer`, `AdminProfile`
 - Catalog: `Product`, `ProductPrice`
@@ -10,6 +10,7 @@ The initial PostgreSQL schema is owned by `packages/database` and contains these
 - Billing: `Invoice`, `InvoiceItem`, `Payment`, `PaymentEvent`
 - Support and notifications: `Ticket`, `TicketMessage`, `EmailLog`
 - Operations: `ActivityLog`, `AutomationRun`, `Setting`, `OutboxEvent`
+- Authentication: `AuthSession`, `PasswordResetToken`, `EmailVerificationToken`
 
 The schema remains one modular-monolith database. Model grouping does not create independent services or databases.
 
@@ -57,6 +58,14 @@ The schema remains one modular-monolith database. Model grouping does not create
 - Product provisioning configuration and settings contain non-secret configuration only.
 - Payment events retain a SHA-256 payload hash and an optional normalized, redacted payload. Raw card data, secrets, signatures, and unfiltered provider requests are prohibited.
 - Activity logs may retain a one-way IP-address hash, not authentication secrets.
+- Authentication session and action-token lookups use SHA-256 hashes of random opaque tokens. Raw reset and verification tokens are encrypted only for pending email delivery; raw session tokens are never stored.
+
+### Authentication history
+
+- Sessions have explicit creation, last-seen, expiry, and optional revocation timestamps. Revocation changes state instead of deleting the row.
+- Reset and verification tokens have creation, expiry, and single-use timestamps. Consuming or superseding a token removes its encrypted delivery material while preserving the historical record.
+- Database checks enforce lowercase hexadecimal token hashes and valid timestamp ordering.
+- Password reset, logout-all, and explicit revocation update session state transactionally. Authentication records use restrictive foreign keys like the rest of the schema.
 
 ## Database-enforced checks
 

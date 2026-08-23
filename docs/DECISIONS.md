@@ -98,6 +98,14 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** Static types disappear at runtime, JSON cannot safely represent database-sized integers, and raw framework or provider errors can expose secrets and implementation details.
 - **Consequence:** Untrusted boundary data must be parsed with a runtime schema. Clients branch on stable error codes rather than messages. Expected client errors use `ApplicationException`; original exception bodies, database failures, credentials, stack traces, and provider responses are never returned to clients.
 
+## ADR-013 — Database-Backed Cookie Sessions and Opaque Action Tokens
+
+- **Status:** Accepted
+- **Date:** 2026-08-24
+- **Decision:** Authenticate with Argon2id passwords and revocable, database-backed opaque sessions carried only by secure HttpOnly cookies. Protect unsafe requests with a signed double-submit CSRF token, enforce authentication by default, apply role and ownership guards at the API boundary, and use Redis-backed rate limits for login and reset flows. Store only SHA-256 token hashes for lookup; retain reset and verification token material only as AES-256-GCM ciphertext for pending outbox delivery.
+- **Reason:** The private billing application needs immediate session revocation, server-authoritative roles and ownership, browser CSRF protection, credential-stuffing resistance, and safe single-use email actions without exposing durable bearer tokens to JavaScript or persistence logs.
+- **Consequence:** PostgreSQL and Redis are required for authentication. Public registration creates customers only; administrators require a trusted provisioning process. Production must use HTTPS, an exact CORS origin, unique independent secrets, and shared rate-limit storage. Email delivery remains a future outbox consumer and must decrypt action tokens only at the delivery boundary.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

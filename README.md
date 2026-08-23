@@ -50,6 +50,7 @@ See `docs/DEVELOPMENT.md` for setup, health checks, connectivity, shutdown, and 
 - `CODEX_DEVELOPMENT_COMMANDS.md` — ordered development commands
 - `docs/DECISIONS.md` — durable architecture decisions
 - `docs/API_CONTRACTS.md` — shared runtime contracts, money serialization, and API errors
+- `docs/AUTHENTICATION.md` — authentication flows, cookies, CSRF, authorization, and sessions
 - `docs/DATABASE.md` — schema, migration, deletion, and seed-data decisions
 - `docs/DEVELOPMENT.md` — local infrastructure and application setup
 - `docs/PROGRESS.md` — command-by-command implementation reports
