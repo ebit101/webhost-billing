@@ -10,6 +10,7 @@
     "typecheck": "next typegen && tsc --noEmit"
   },
   "dependencies": {
+    "@webhost-billing/config": "workspace:*",
     "@webhost-billing/shared": "workspace:*",
     "next": "16.3.2",
     "react": "19.2.8",

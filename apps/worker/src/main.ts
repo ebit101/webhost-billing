@@ -1,9 +1,13 @@
 import { NestFactory } from '@nestjs/core';
-import { parseBaseEnvironment } from '@webhost-billing/config';
+import {
+  loadEnvironmentFiles,
+  parseWorkerEnvironment,
+} from '@webhost-billing/config';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  parseBaseEnvironment(process.env);
+  loadEnvironmentFiles();
+  parseWorkerEnvironment(process.env);
   const app = await NestFactory.createApplicationContext(AppModule);
   app.enableShutdownHooks();
 }

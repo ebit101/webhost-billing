@@ -1,9 +1,13 @@
 import { NestFactory } from '@nestjs/core';
-import { parseServerEnvironment } from '@webhost-billing/config';
+import {
+  loadEnvironmentFiles,
+  parseApiEnvironment,
+} from '@webhost-billing/config';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const environment = parseServerEnvironment({
+  loadEnvironmentFiles();
+  const environment = parseApiEnvironment({
     ...process.env,
     PORT: process.env.API_PORT ?? '3001',
   });

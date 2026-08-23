@@ -111,6 +111,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@webhost-billing/config':
+        specifier: workspace:*
+        version: link:../../packages/config
       '@webhost-billing/shared':
         specifier: workspace:*
         version: link:../../packages/shared

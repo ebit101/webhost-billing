@@ -12,7 +12,7 @@ packages/config
 packages/shared
 ```
 
-The workspace uses Node.js 24 LTS, pnpm, TypeScript, PostgreSQL, Prisma, Redis, and BullMQ. PostgreSQL and Redis infrastructure are introduced in Command 2.
+The workspace uses Node.js 24 LTS, pnpm, TypeScript, PostgreSQL, Prisma, Redis, and BullMQ.
 
 ## Requirements
 
@@ -34,9 +34,19 @@ pnpm build
 
 Never commit populated `.env` files. Copy `.env.example` only when local configuration is needed.
 
+Start the local PostgreSQL and Redis services with:
+
+```bash
+cp .env.example .env
+docker compose up --detach --wait postgres redis
+```
+
+See `docs/DEVELOPMENT.md` for setup, health checks, connectivity, shutdown, and safe reset procedures.
+
 ## Project documentation
 
 - `HOSTING_BILLING_SYSTEM_PLAN.md` — product requirements and architecture
 - `CODEX_DEVELOPMENT_COMMANDS.md` — ordered development commands
 - `docs/DECISIONS.md` — durable architecture decisions
+- `docs/DEVELOPMENT.md` — local infrastructure and application setup
 - `docs/PROGRESS.md` — command-by-command implementation reports

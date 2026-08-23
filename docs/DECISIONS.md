@@ -74,6 +74,14 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** Node.js 24 is the current LTS baseline and satisfies the supported runtime requirements of the selected NestJS and Next.js versions. Pinned package-manager and lockfile versions make local, container, and CI installs reproducible.
 - **Consequence:** Developers use Node.js 24 or the supplied development Dockerfiles. Toolchain upgrades require an explicit dependency review and validation pass.
 
+## ADR-010 — Isolated Local Infrastructure
+
+- **Status:** Accepted
+- **Date:** 2026-08-23
+- **Decision:** Run PostgreSQL 18.6 and Redis 8.10 in the dedicated `webhost-billing-dev` Docker Compose project, using named volumes, health checks, password authentication, and host ports bound only to `127.0.0.1`. Defer local SMTP capture until email functionality is implemented.
+- **Reason:** The cPanel development server already hosts unrelated services. A named Compose project, private bridge network, unique volumes, and loopback-only ports isolate development data and avoid exposing infrastructure publicly.
+- **Consequence:** Developers must create an ignored `.env` file before starting infrastructure. PostgreSQL uses its PostgreSQL 18 volume layout at `/var/lib/postgresql`; application services validate their database, Redis, and secret settings at startup.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

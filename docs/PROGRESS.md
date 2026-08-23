@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 1 — Create the Monorepo
+- **Current command:** Command 2 — Add Local Infrastructure
 - **Current status:** Completed and delivered to GitHub `main`
 - **Last updated:** 2026-08-23
-- **Next command:** Command 2 — Add Local Infrastructure
+- **Next command:** Command 3 — Design the Database Schema
 - **Next command authorized:** No
 
 ## Command Reports
@@ -129,6 +129,70 @@ Run **Command 1 — Create the Monorepo** after explicit user authorization.
 #### Recommended next command
 
 Run **Command 2 — Add Local Infrastructure** after explicit user authorization.
+
+### Command 2 — Add Local Infrastructure
+
+- **Status:** Completed and delivered to GitHub `main`
+- **Date:** 2026-08-23
+
+#### Scope completed
+
+- Added an isolated Docker Compose development project containing PostgreSQL 18.6 and Redis 8.10.
+- Added persistent named volumes, a private bridge network, service health checks, password authentication, restart behavior, bounded container logs, and `no-new-privileges` security options.
+- Bound PostgreSQL and Redis host ports to `127.0.0.1` so they are not exposed on the cPanel server's public interfaces.
+- Added safe placeholder configuration to `.env.example` and created an ignored local `.env` for this development environment without committing its values.
+- Added shared Zod validation for API, worker, and web runtime settings, including PostgreSQL/Redis URL protocols and minimum secret lengths.
+- Configured the API, worker, and Next.js applications to load the repository environment and validate their settings before startup.
+- Added root infrastructure commands and ensured local application startup builds shared packages first.
+- Updated all development Dockerfiles to build shared workspace packages before starting applications.
+- Added local setup, connectivity, application startup, migration status, shutdown, troubleshooting, and destructive-reset documentation.
+- Kept local SMTP capture optional and deferred it until the email-notification implementation requires it.
+
+#### Files changed
+
+- Infrastructure and environment: `compose.yaml`, `.env.example`, `.prettierignore`, `package.json`
+- Runtime configuration: `packages/config/src/env.ts`, `packages/config/src/index.ts`, `pnpm-lock.yaml`
+- API: `apps/api/src/main.ts`, `apps/api/src/environment.spec.ts`, `apps/api/Dockerfile.dev`
+- Worker: `apps/worker/src/main.ts`, `apps/worker/Dockerfile.dev`
+- Web: `apps/web/next.config.ts`, `apps/web/package.json`, `apps/web/Dockerfile.dev`
+- Documentation: `README.md`, `docs/DEVELOPMENT.md`, `docs/DECISIONS.md`, `docs/PROGRESS.md`
+
+#### Validation
+
+- `docker compose config --quiet`: passed without printing interpolated secrets.
+- PostgreSQL 18.6 and Redis 8.10 image pulls: passed.
+- `docker compose up --detach --wait postgres redis`: passed; both services reported healthy.
+- PostgreSQL `pg_isready`: passed and accepted connections.
+- Authenticated Redis `PING`: passed with `PONG`.
+- Container inspection confirmed PostgreSQL publishes only `127.0.0.1:5432`, Redis publishes only `127.0.0.1:6379`, and both use their intended named volumes.
+- Frozen-lockfile dependency installation and pnpm supply-chain policy verification: passed.
+- Prettier formatting check: passed.
+- ESLint for API, worker, and web: passed.
+- Strict TypeScript checks for all workspace projects: passed.
+- API Jest suites: 2 suites and 5 tests passed, including environment validation.
+- Worker Jest suite: 1 test passed.
+- NestJS API, NestJS worker, and Next.js production builds: passed.
+- API, web, and worker development Docker image builds: passed.
+- Runtime smoke tests: the API returned `Hello World!`, the web application served HTML, and the worker application context initialized successfully using the validated local environment.
+
+#### Decisions made
+
+- PostgreSQL 18 uses the image's version-aware `/var/lib/postgresql` data layout.
+- Infrastructure has a dedicated `webhost-billing-dev` Compose identity, named network, and named volumes to avoid collision with cPanel or existing containers.
+- Local database and Redis ports remain accessible only from the development host's loopback interface.
+- Local SMTP capture is unnecessary until an email-producing feature exists.
+- Prisma schema creation and executable migration commands remain correctly deferred to Command 3.
+
+#### Open questions and risks
+
+- The ignored local `.env` values are development-only and must be replaced with separately managed secrets in staging and production.
+- The infrastructure remains running for development; `docker compose down` removes its containers while retaining data, and `docker compose down --volumes` is intentionally destructive.
+- Payment provider, SMTP delivery provider, production WHM credentials, tax rules, billing policies, and production hosting remain unresolved.
+- The development server has no swap; future dependency and image builds should continue to be monitored for memory pressure.
+
+#### Recommended next command
+
+Run **Command 3 — Design the Database Schema** after explicit user authorization.
 
 ## Report Template
 

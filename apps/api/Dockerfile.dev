@@ -13,6 +13,8 @@ RUN pnpm install --frozen-lockfile
 
 COPY . .
 
+RUN pnpm build:packages
+
 EXPOSE 3001
 
 CMD ["pnpm", "--filter", "@webhost-billing/api", "dev"]
