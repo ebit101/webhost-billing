@@ -1,0 +1,16 @@
+FROM node:24-bookworm-slim
+
+RUN corepack enable && corepack prepare pnpm@11.22.0 --activate
+
+WORKDIR /workspace
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/worker/package.json apps/worker/package.json
+COPY packages/config/package.json packages/config/package.json
+COPY packages/shared/package.json packages/shared/package.json
+
+RUN pnpm install --frozen-lockfile
+
+COPY . .
+
+CMD ["pnpm", "--filter", "@webhost-billing/worker", "dev"]
