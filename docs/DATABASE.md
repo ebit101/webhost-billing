@@ -36,6 +36,8 @@ The schema remains one modular-monolith database. Model grouping does not create
 - Invoice headers snapshot the customer identity, billing address, business identity, and tax identity.
 - Invoice items snapshot their descriptions, money, currency, quantity, tax, discount, and service period.
 - Later product, customer, or business-setting changes must not rewrite these snapshots.
+- Product archival changes state and public visibility only. Product and price rows remain available through restrictive order-item and service references.
+- Repricing retires an active `ProductPrice` and appends a new active row; it never rewrites or removes the price referenced by a historical order item.
 
 ### State separation and idempotency
 
@@ -80,6 +82,7 @@ The initial migration adds SQL constraints beyond Prisma Schema Language:
 - nonnegative email, automation, and outbox attempt counters;
 - JSON-object invoice identity snapshots;
 - one active, non-deleted product price per product, billing period, and currency through a partial unique index.
+- nonnegative product display order and an indexed public-catalogue lookup across visibility, status, and ordering.
 
 Because check constraints and partial indexes are customized in migration SQL, never replace committed migrations with `prisma db push`.
 

@@ -122,6 +122,14 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** Account access is an administrator policy decision, while email verification proves control of an address. Treating activation as verification would weaken the authentication boundary and make audit history ambiguous.
 - **Consequence:** Administrator-created customers use the verification outbox flow. Customer detail exposes both customer and account status. Administrator mutations are audited atomically, and audit metadata contains field names/state only rather than submitted personal values.
 
+## ADR-016 — Stateful Products and Append-Only Price Versions
+
+- **Status:** Accepted
+- **Date:** 2026-08-24
+- **Decision:** Manage products through `DRAFT`, `ACTIVE`, and `ARCHIVED` states without catalog deletion. Store explicit public ordering, visibility, hosting-package mapping, and display features. Repricing retires the previous active product/period/currency row and appends a new active price row.
+- **Reason:** Historical orders and services must retain stable product and price references, while the storefront needs only current saleable offerings. Appending prices makes changes auditable and avoids silently changing an existing purchase basis.
+- **Consequence:** Activation validates provisioning/display completeness and a supported active price. Archiving forces public visibility off but preserves all rows. Public API responses omit package mapping and retired prices. Command 9 must validate the selected product and price again at order creation rather than trusting storefront query parameters.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

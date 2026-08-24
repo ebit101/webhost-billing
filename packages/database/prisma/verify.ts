@@ -61,6 +61,7 @@ const requiredCustomConstraints = [
   'password_reset_tokens_time_order_check',
   'payments_adjustment_reference_check',
   'payments_amount_check',
+  'products_display_order_check',
   'users_email_normalized_check',
 ] as const;
 
@@ -178,6 +179,14 @@ async function verify(): Promise<void> {
   `;
   assert.equal(partialPriceIndexes[0]?.count, 1n);
 
+  const publicCatalogIndexes = await prisma.$queryRaw<Array<{ count: bigint }>>`
+    SELECT COUNT(*)::bigint AS count
+    FROM pg_indexes
+    WHERE schemaname = 'public'
+      AND indexname = 'products_public_catalog_idx'
+  `;
+  assert.equal(publicCatalogIndexes[0]?.count, 1n);
+
   const foreignKeyDeleteRules = await prisma.$queryRaw<
     Array<{ delete_rule: string }>
   >`
@@ -209,6 +218,10 @@ async function verify(): Promise<void> {
   assert.ok(seededService);
   assert.equal(seededService.customer.customerNumber, 'DEV-CUST-0001');
   assert.equal(seededService.product.slug, 'starter-hosting');
+  assert.equal(seededService.product.publicVisible, true);
+  assert.equal(seededService.product.displayOrder, 10);
+  assert.equal(seededService.product.hostingPackageIdentifier, 'dev_starter');
+  assert.equal(seededService.product.storageFeature, '10 GB SSD');
   assert.equal(seededService.server?.hostname, 'cpanel.example.test');
 }
 

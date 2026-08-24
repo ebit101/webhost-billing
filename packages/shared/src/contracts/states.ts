@@ -2,6 +2,14 @@ import { z } from 'zod';
 
 export const roleSchema = z.enum(['ADMIN', 'CUSTOMER']);
 
+export const productStatusSchema = z.enum(['DRAFT', 'ACTIVE', 'ARCHIVED']);
+
+export const hostingBillingPeriodSchema = z.enum([
+  'MONTHLY',
+  'QUARTERLY',
+  'ANNUAL',
+]);
+
 export const orderStatusSchema = z.enum([
   'PENDING',
   'AWAITING_PAYMENT',
@@ -48,6 +56,8 @@ export const ticketStatusSchema = z.enum([
 ]);
 
 export type Role = z.infer<typeof roleSchema>;
+export type ProductStatus = z.infer<typeof productStatusSchema>;
+export type HostingBillingPeriod = z.infer<typeof hostingBillingPeriodSchema>;
 export type OrderStatus = z.infer<typeof orderStatusSchema>;
 export type InvoiceStatus = z.infer<typeof invoiceStatusSchema>;
 export type PaymentStatus = z.infer<typeof paymentStatusSchema>;

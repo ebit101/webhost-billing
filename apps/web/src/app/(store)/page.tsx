@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { PublicProductCatalog } from '../../components/products/public-product-catalog';
 import { buttonStyles } from '../../components/ui/button';
 import { Icon } from '../../components/ui/icon';
 import { StatusBadge } from '../../components/ui/status-badge';
@@ -26,27 +27,6 @@ const features = [
     title: 'Human support',
     description:
       'Talk to the same small hosting team instead of navigating a global support maze.',
-  },
-] as const;
-
-const plans = [
-  {
-    name: 'Starter',
-    price: '৳1,200',
-    sites: '1 website',
-    storage: '10 GB SSD',
-  },
-  {
-    name: 'Business',
-    price: '৳2,400',
-    sites: '5 websites',
-    storage: '30 GB SSD',
-  },
-  {
-    name: 'Scale',
-    price: '৳4,800',
-    sites: '10 websites',
-    storage: '75 GB SSD',
   },
 ] as const;
 
@@ -222,44 +202,8 @@ export default function HomePage() {
               Compare every plan <Icon name="arrow-right" className="size-4" />
             </Link>
           </div>
-          <div className="mt-10 grid gap-5 lg:grid-cols-3">
-            {plans.map((plan, index) => (
-              <article
-                key={plan.name}
-                className={`relative rounded-3xl border bg-white p-7 ${index === 1 ? 'border-brand-500 shadow-xl shadow-brand-900/10' : 'border-slate-200 shadow-sm'}`}
-              >
-                {index === 1 ? (
-                  <span className="absolute right-5 top-5 rounded-full bg-brand-50 px-2.5 py-1 text-xs font-bold text-brand-700">
-                    Most popular
-                  </span>
-                ) : null}
-                <h3 className="text-lg font-bold text-slate-950">
-                  {plan.name}
-                </h3>
-                <p className="mt-5 text-3xl font-bold tracking-tight text-slate-950">
-                  {plan.price}
-                  <span className="text-sm font-medium text-slate-500">
-                    {' '}
-                    / year
-                  </span>
-                </p>
-                <ul className="mt-7 grid gap-3 text-sm text-slate-600">
-                  {[
-                    plan.sites,
-                    plan.storage,
-                    'Free SSL certificate',
-                    'Daily backup',
-                  ].map((item) => (
-                    <li key={item} className="flex items-center gap-3">
-                      <Icon name="check" className="size-4 text-emerald-600" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </article>
-            ))}
-          </div>
         </div>
+        <PublicProductCatalog />
       </section>
 
       <section

@@ -130,4 +130,18 @@ export async function authenticatedGet<T>(path: string): Promise<T> {
   return (body as unknown as ApiSuccess<T>).data;
 }
 
+export async function publicGet<T>(path: string): Promise<T> {
+  const response = await fetch(`${API_URL}${path}`, { cache: 'no-store' });
+  const body = await responseBody(response);
+  if (
+    !response.ok ||
+    !isRecord(body) ||
+    body.success !== true ||
+    !('data' in body)
+  ) {
+    throw new Error(errorMessage(body));
+  }
+  return (body as unknown as ApiSuccess<T>).data;
+}
+
 export type { ApiFailure, PaginatedApiSuccess };

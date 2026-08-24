@@ -18,6 +18,8 @@ import {
   paymentStatusSchema,
   roleSchema,
   registrationRequestSchema,
+  createProductRequestSchema,
+  productPriceInputSchema,
   serializeMoney,
   serviceStatusSchema,
   ticketStatusSchema,
@@ -130,6 +132,45 @@ describe('boundary contracts', () => {
         },
       }).success,
       true,
+    );
+  });
+
+  it('validates supported hosting products and lossless prices', () => {
+    const product = createProductRequestSchema.parse({
+      slug: 'business-hosting',
+      name: 'Business Hosting',
+      publicVisible: true,
+      displayOrder: 20,
+      hostingPackageIdentifier: 'business_pkg',
+      storageFeature: '30 GB SSD',
+      websiteFeature: '5 websites',
+      emailFeature: '50 email accounts',
+      bandwidthFeature: 'Unlimited',
+      prices: [
+        {
+          billingPeriod: 'ANNUAL',
+          currency: 'BDT',
+          amount: '240000',
+        },
+      ],
+    });
+    assert.equal(product.prices?.[0]?.setupFee, '0');
+    assert.throws(() =>
+      productPriceInputSchema.parse({
+        billingPeriod: 'SEMIANNUAL',
+        currency: 'bdt',
+        amount: '12.50',
+      }),
+    );
+    assert.throws(() =>
+      createProductRequestSchema.parse({
+        slug: 'duplicate-price',
+        name: 'Duplicate Price',
+        prices: [
+          { billingPeriod: 'MONTHLY', currency: 'BDT', amount: '100' },
+          { billingPeriod: 'MONTHLY', currency: 'BDT', amount: '200' },
+        ],
+      }),
     );
   });
 

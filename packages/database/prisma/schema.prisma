@@ -272,21 +272,29 @@ model EmailVerificationToken {
 }
 
 model Product {
-  id                  String         @id @default(uuid()) @db.Uuid
-  slug                String         @unique(map: "products_slug_key") @db.VarChar(120)
-  name                String         @db.VarChar(160)
-  description         String?        @db.Text
-  status              ProductStatus  @default(DRAFT)
-  provisioningAdapter String?        @map("provisioning_adapter") @db.VarChar(64)
-  provisioningConfig  Json?          @map("provisioning_config")
-  createdAt           DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt           DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
-  deletedAt           DateTime?      @map("deleted_at") @db.Timestamptz(3)
-  prices              ProductPrice[]
-  orderItems          OrderItem[]
-  services            Service[]
+  id                       String         @id @default(uuid()) @db.Uuid
+  slug                     String         @unique(map: "products_slug_key") @db.VarChar(120)
+  name                     String         @db.VarChar(160)
+  description              String?        @db.Text
+  status                   ProductStatus  @default(DRAFT)
+  publicVisible            Boolean        @default(false) @map("public_visible")
+  displayOrder             Int            @default(0) @map("display_order")
+  hostingPackageIdentifier String?        @map("hosting_package_identifier") @db.VarChar(191)
+  storageFeature           String?        @map("storage_feature") @db.VarChar(80)
+  websiteFeature           String?        @map("website_feature") @db.VarChar(80)
+  emailFeature             String?        @map("email_feature") @db.VarChar(80)
+  bandwidthFeature         String?        @map("bandwidth_feature") @db.VarChar(80)
+  provisioningAdapter      String?        @map("provisioning_adapter") @db.VarChar(64)
+  provisioningConfig       Json?          @map("provisioning_config")
+  createdAt                DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt                DateTime?      @map("deleted_at") @db.Timestamptz(3)
+  prices                   ProductPrice[]
+  orderItems               OrderItem[]
+  services                 Service[]
 
   @@index([status, deletedAt], map: "products_status_deleted_at_idx")
+  @@index([publicVisible, status, displayOrder], map: "products_public_catalog_idx")
   @@map("products")
 }
 

@@ -6,9 +6,10 @@ import { ApiExceptionFilter } from './common/errors/api-exception.filter';
 import { EnvironmentModule } from './infrastructure/environment/environment.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CustomerModule } from './modules/customers/customer.module';
+import { ProductModule } from './modules/products/product.module';
 
 @Module({
-  imports: [EnvironmentModule, AuthModule, CustomerModule],
+  imports: [EnvironmentModule, AuthModule, CustomerModule, ProductModule],
   controllers: [AppController],
   providers: [
     AppService,

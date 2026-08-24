@@ -1,12 +1,6 @@
 import type { Metadata } from 'next';
-import { SectionPreview } from '../../../../components/dashboard/section-preview';
+import { AdminProductManager } from '../../../../components/products/admin-product-manager';
 export const metadata: Metadata = { title: 'Products' };
 export default function Page() {
-  return (
-    <SectionPreview
-      area="Administrator"
-      title="Products"
-      description="Define the small, focused hosting catalogue and its prices."
-    />
-  );
+  return <AdminProductManager />;
 }

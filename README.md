@@ -52,6 +52,7 @@ See `docs/DEVELOPMENT.md` for setup, health checks, connectivity, shutdown, and 
 - `docs/API_CONTRACTS.md` — shared runtime contracts, money serialization, and API errors
 - `docs/AUTHENTICATION.md` — authentication flows, cookies, CSRF, authorization, and sessions
 - `docs/CUSTOMER_MANAGEMENT.md` — customer API, authorization, account-access rules, and interfaces
+- `docs/PRODUCTS_AND_PRICING.md` — product lifecycle, versioned prices, public catalogue, and selection flow
 - `docs/DATABASE.md` — schema, migration, deletion, and seed-data decisions
 - `docs/DEVELOPMENT.md` — local infrastructure and application setup
 - `docs/FRONTEND_DESIGN_SYSTEM.md` — application shells, design tokens, responsive behavior, and UI components

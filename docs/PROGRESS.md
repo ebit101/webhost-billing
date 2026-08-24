@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 7 — Implement Customer Management
+- **Current command:** Command 8 — Implement Products and Pricing
 - **Current status:** Completed and delivered to GitHub `main`
 - **Last updated:** 2026-08-24
-- **Next command:** Command 8 — Implement Products and Pricing
+- **Next command:** Command 9 — Implement Order Creation
 - **Next command authorized:** No
 
 ## Command Reports
@@ -530,6 +530,73 @@ Run **Command 7 — Implement Customer Management** after explicit user authoriz
 #### Recommended next command
 
 Run **Command 8 — Implement Products and Pricing** after explicit user authorization.
+
+### Command 8 — Implement Products and Pricing
+
+- **Status:** Completed and delivered to GitHub `main`
+- **Date:** 2026-08-24
+
+#### Scope completed
+
+- Extended the product schema with explicit public visibility, nonnegative display ordering, hosting-panel package identifier, and storage/website/email/bandwidth display features.
+- Added and applied a reviewed PostgreSQL migration with a display-order check and public-catalogue lookup index; updated fictional seed data and the structural verifier for the new invariants.
+- Added shared Zod contracts for supported monthly, quarterly, and annual periods; product create/edit/status boundaries; versioned prices; administrator product responses; and privacy-limited public catalogue responses.
+- Added a NestJS `ProductModule` with protected administrator create/list/detail/edit/status/price workflows and a public active-catalogue endpoint.
+- Required complete provisioning/display metadata and at least one supported active price before activation, and prevented edits from making an active product incomplete. Drafts remain private regardless of their visibility flag.
+- Implemented append-only price versioning: redefining a product/period/currency retires the previous active row with a validity end and creates a new active row with lossless minor-unit money.
+- Implemented non-destructive archival that removes storefront visibility while preserving products, prices, and historical foreign-key references.
+- Recorded administrator product creation, edits, lifecycle transitions, and pricing actions in `ActivityLog` without storing package identifiers or monetary values in audit metadata.
+- Replaced the administrator product preview with product creation, selection, editing, catalogue ordering, visibility, package mapping, feature configuration, activation/draft/archive controls, new-price definition, and retained price history.
+- Replaced fictional storefront product cards on `/` and `/hosting` with API-backed active public products, period and currency comparison, exact configured features, lossless currency-aware display, and product/price selection carried into registration for Command 9 checkout.
+- Added shared-contract, product-rule unit, API integration, and frontend interaction tests plus durable product/pricing documentation.
+
+#### Files changed
+
+- Database schema/migration/seed/verifier: `packages/database/prisma/schema.prisma`, `packages/database/prisma/migrations/20260824213000_add_product_catalog_fields/migration.sql`, `packages/database/prisma/seed.ts`, `packages/database/prisma/verify.ts`
+- Shared contracts/tests: `packages/shared/src/contracts/products.ts`, `packages/shared/src/contracts/states.ts`, `packages/shared/src/index.ts`, `packages/shared/test/contracts.spec.ts`
+- Product API and unit tests: `apps/api/src/modules/products/**`, `apps/api/src/app.module.ts`
+- API integration tests: `apps/api/test/products.e2e-spec.ts`
+- Administrator interface: `apps/web/src/app/(admin)/admin/products/page.tsx`, `apps/web/src/components/products/admin-product-manager.tsx`
+- Public catalogue: `apps/web/src/app/(store)/page.tsx`, `apps/web/src/app/(store)/hosting/page.tsx`, `apps/web/src/components/products/public-product-catalog.tsx`
+- Frontend support/tests: `apps/web/src/lib/auth-api.ts`, `apps/web/src/components/products/product-management.test.tsx`
+- Documentation: `README.md`, `docs/DATABASE.md`, `docs/PRODUCTS_AND_PRICING.md`, `docs/DECISIONS.md`, `docs/PROGRESS.md`
+
+#### Validation
+
+- Prettier formatting check and `git diff --check`: passed.
+- ESLint for API, worker, and web: passed without warnings.
+- Strict TypeScript checks for all six code workspace projects: passed, including generated Prisma and Next.js route types.
+- Complete non-integration suite: 10 shared-contract tests, 17 API tests, 1 worker test, and 10 frontend tests passed (38 total).
+- Product rule tests: 2 passed, covering incomplete-product activation denial and complete-product readiness.
+- API end-to-end suite: 4 suites and 13 tests passed against local PostgreSQL and Redis. Product coverage includes draft privacy, incomplete activation denial, editing/ordering, price retirement/versioning, active public browsing, package-identifier privacy, customer role denial, archival, history preservation, and administrator audits.
+- Frontend suite: 4 files and 10 tests passed, including administrator provisioning/pricing controls, public annual/monthly comparison, exact checkout selection links, and comparison-table semantics.
+- Prisma schema validation, migration application/status, fictional seed, and structural database verifier: passed; all five migrations are applied with no pending migration.
+- Database, shared packages, NestJS API, NestJS worker, and Next.js production builds: passed for 24 application routes plus the framework not-found route.
+- Prisma emitted its known OpenSSL detection warning in the generic Node validation container, but client generation, migration, seed, verifier, database-backed integration tests, and builds completed successfully.
+
+#### Decisions made
+
+- New products always begin as drafts. Public visibility is a separate merchandising flag and cannot expose a draft or archived product.
+- Activation requires the hosting package identifier, every authorized display feature, and an active monthly, quarterly, or annual price.
+- Only monthly, quarterly, and annual sale periods are supported by this application even though the original database vocabulary reserves additional periods for possible future use.
+- Product repricing is append-only by period and currency. Retired prices remain visible to administrators and available to historical order references.
+- Archival changes status and forces public visibility off; neither product nor price rows are deleted.
+- Hosting package identifiers are provider-neutral non-secret configuration and are excluded from public responses. Actual cPanel credentials remain encrypted server-integration data.
+- Storefront selection uses product and price IDs as navigation context only. Command 9 must reload and validate both records server-side before calculating or creating an order.
+- Currency display derives ISO currency fraction digits through `Intl.NumberFormat` while calculations and API values remain integer/string minor units.
+
+#### Open questions and risks
+
+- Command 9 has not yet implemented checkout or order creation, so the registration query parameters preserve selection but do not create an order.
+- Supported business currencies are not yet constrained by a business setting; the API currently accepts uppercase three-letter currency codes per price.
+- The existing database validity-window fields are enforced on public reads and price replacement, but administrators do not yet have a future-price scheduling interface.
+- Product package identifiers are not checked against a real cPanel server until the provisioning integration command is authorized.
+- Product copy and limits are administrator-entered display values; operational provisioning limits must later be verified against the configured hosting package.
+- Payment provider, SMTP delivery provider, production WHM credentials, tax rules, billing policies, and production hosting remain unresolved.
+
+#### Recommended next command
+
+Run **Command 9 — Implement Order Creation** after explicit user authorization.
 
 ## Report Template
 

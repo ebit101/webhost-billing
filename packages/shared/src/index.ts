@@ -7,5 +7,6 @@ export * from './contracts/customers';
 export * from './contracts/errors';
 export * from './contracts/money';
 export * from './contracts/pagination';
+export * from './contracts/products';
 export * from './contracts/responses';
 export * from './contracts/states';
