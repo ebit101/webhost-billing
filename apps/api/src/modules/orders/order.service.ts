@@ -1,4 +1,3 @@
-import { randomBytes } from 'node:crypto';
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import {
   CustomerStatus,
@@ -27,6 +26,7 @@ import {
 } from '@webhost-billing/shared';
 import { ApplicationException } from '../../common/errors/application.exception';
 import type { SecurityRequestContext } from '../../common/http/request-context';
+import { createHumanReadableNumber } from '../../common/identifiers/business-number';
 import { PRISMA_CLIENT } from '../../infrastructure/database/database.module';
 import type { AuthRequestContext } from '../auth/auth.types';
 
@@ -60,15 +60,6 @@ export function isOrderTransitionAllowed(
   next: SharedOrderStatus,
 ): boolean {
   return allowedTransitions[current].includes(next);
-}
-
-export function createHumanReadableNumber(
-  prefix: 'ORD' | 'INV',
-  now = new Date(),
-  entropy: Uint8Array = randomBytes(8),
-): string {
-  const date = now.toISOString().slice(0, 10).replaceAll('-', '');
-  return `${prefix}-${date}-${Buffer.from(entropy).toString('hex').toUpperCase()}`;
 }
 
 @Injectable()
@@ -191,6 +182,7 @@ export class OrderService {
         await transaction.invoice.create({
           data: {
             invoiceNumber: createHumanReadableNumber('INV', now),
+            submissionKey: `invoice:${input.submissionKey}`,
             customerId: customer.id,
             orderId: order.id,
             status: InvoiceStatus.UNPAID,
@@ -225,6 +217,7 @@ export class OrderService {
               create: [
                 {
                   orderItemId: orderItem.id,
+                  linePosition: 1,
                   descriptionSnapshot: `${price.product.name} — ${price.billingPeriod.toLowerCase()} hosting for ${input.requestedDomain}`,
                   currency: price.currency,
                   quantity: 1,
@@ -235,6 +228,7 @@ export class OrderService {
                   ? [
                       {
                         orderItemId: orderItem.id,
+                        linePosition: 2,
                         descriptionSnapshot: `${price.product.name} — one-time setup fee`,
                         currency: price.currency,
                         quantity: 1,

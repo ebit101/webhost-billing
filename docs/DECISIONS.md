@@ -138,6 +138,14 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** Browser amounts and redirects are untrusted, a failed partial write would leave inconsistent billing history, and network retries must not produce multiple invoices or hosting requests.
 - **Consequence:** A matching repeated submission returns the original result, while reuse for different input conflicts. New orders begin `AWAITING_PAYMENT` with an `UNPAID` invoice. Direct administrator changes to `PAID` are forbidden; the later verified-payment workflow owns that transition. Rejection or cancellation also cancels a draft/unpaid initial invoice transactionally. The initial business-identity snapshot uses the `business.identity` setting when present and a minimal Webhost Billing name fallback until business settings are configured.
 
+## ADR-018 — Editable Drafts and Immutable Issued Invoices
+
+- **Status:** Accepted
+- **Date:** 2026-08-25
+- **Decision:** Administrator-created invoices begin as editable drafts. Calculate line totals, subtotal, discount, tax, total, credit, paid amount, and balance with checked integer minor-unit arithmetic and matching PostgreSQL constraints. Issuance permanently locks item and identity snapshots. Number invoices with a date prefix and 64 random bits, and protect creation with a unique submission key.
+- **Reason:** The owner needs to prepare custom invoices without weakening issued financial history. Billing calculations must remain lossless at large values, retries must not duplicate documents, and a status click must not fabricate payment or refund evidence.
+- **Consequence:** Only drafts may replace dates, currency, credit, and line items. Zero-balance drafts settle on issuance; positive-balance drafts become unpaid. Past-due unpaid invoices may become overdue, and unpaid invoices may be cancelled without deletion. Paid/refunded state changes remain reserved for verified payment/refund transactions in Command 11. The `business.identity` setting supplies future snapshots, while customer identity is captured from the selected customer at creation.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:
@@ -146,6 +154,6 @@ The following decisions are intentionally unresolved and must be selected before
 2. Exact cPanel/WHM API authentication method and dedicated development account/server.
 3. SMTP delivery provider for staging and production.
 4. Whether domain registration belongs in the MVP; the current default is no registrar automation.
-5. Business identity, invoice numbering, currency precision, VAT/tax rules, reminder schedule, suspension grace period, cancellation policy, and refund policy.
+5. Final business identity values, supported operating currency, VAT/tax rules, reminder schedule, suspension grace period, cancellation policy, and refund policy.
 6. Whether partial payments are enabled; the safe initial default is disabled.
 7. Production VPS/provider and backup destination.

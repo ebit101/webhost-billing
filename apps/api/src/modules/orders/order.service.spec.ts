@@ -1,7 +1,5 @@
-import {
-  createHumanReadableNumber,
-  isOrderTransitionAllowed,
-} from './order.service';
+import { isOrderTransitionAllowed } from './order.service';
+import { createHumanReadableNumber } from '../../common/identifiers/business-number';
 
 describe('order rules', () => {
   it('creates readable numbers with date and 64 bits of entropy', () => {

@@ -256,6 +256,7 @@ async function seed(): Promise<void> {
     await transaction.invoice.upsert({
       where: { invoiceNumber: 'DEV-INV-0001' },
       update: {
+        submissionKey: 'seed:invoice:0001',
         status: InvoiceStatus.PAID,
         amountPaid: monthlyAmount,
         balanceDue: 0n,
@@ -264,6 +265,7 @@ async function seed(): Promise<void> {
       create: {
         id: ids.invoice,
         invoiceNumber: 'DEV-INV-0001',
+        submissionKey: 'seed:invoice:0001',
         customerId: ids.customer,
         orderId: ids.order,
         status: InvoiceStatus.PAID,
@@ -297,6 +299,7 @@ async function seed(): Promise<void> {
       create: {
         id: ids.invoiceItem,
         invoiceId: ids.invoice,
+        linePosition: 1,
         orderItemId: ids.orderItem,
         serviceId: ids.service,
         descriptionSnapshot: 'Starter Hosting — August 2026',

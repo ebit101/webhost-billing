@@ -51,7 +51,9 @@ const requiredCustomConstraints = [
   'automation_runs_counts_check',
   'customers_country_code_check',
   'invoice_items_total_check',
+  'invoice_items_line_position_check',
   'invoices_balance_check',
+  'invoices_settlement_limit_check',
   'invoices_total_check',
   'email_verification_tokens_hash_format_check',
   'email_verification_tokens_time_order_check',
@@ -72,6 +74,7 @@ const expectedMoneyColumns = [
   'invoice_items.unit_amount',
   'invoices.amount_paid',
   'invoices.balance_due',
+  'invoices.credit_total',
   'invoices.discount_total',
   'invoices.subtotal',
   'invoices.tax_total',
@@ -187,6 +190,16 @@ async function verify(): Promise<void> {
   `;
   assert.equal(publicCatalogIndexes[0]?.count, 1n);
 
+  const invoiceItemPositionIndexes = await prisma.$queryRaw<
+    Array<{ count: bigint }>
+  >`
+    SELECT COUNT(*)::bigint AS count
+    FROM pg_indexes
+    WHERE schemaname = 'public'
+      AND indexname = 'invoice_items_invoice_id_line_position_key'
+  `;
+  assert.equal(invoiceItemPositionIndexes[0]?.count, 1n);
+
   const foreignKeyDeleteRules = await prisma.$queryRaw<
     Array<{ delete_rule: string }>
   >`
@@ -207,6 +220,7 @@ async function verify(): Promise<void> {
   assert.equal(seededInvoice.total, 120_000n);
   assert.equal(seededInvoice.balanceDue, 0n);
   assert.equal(seededInvoice.items.length, 1);
+  assert.equal(seededInvoice.items[0]?.linePosition, 1);
   assert.equal(seededInvoice.payments.length, 1);
   assert.equal(seededInvoice.dueAt.toISOString(), '2026-08-08T03:00:00.000Z');
 

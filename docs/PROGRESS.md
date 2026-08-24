@@ -665,6 +665,77 @@ Run **Command 9 — Implement Order Creation** after explicit user authorization
 
 Run **Command 10 — Implement Invoices** after explicit user authorization.
 
+### Command 10 — Implement Invoices
+
+- **Status:** Completed and delivered to GitHub `main`
+- **Date:** 2026-08-25
+
+#### Scope completed
+
+- Extended invoices with database-unique submission keys and invoice-level credit totals, safely backfilled existing rows, and replaced the balance constraint with `total - credit - paid` plus a settlement-limit constraint.
+- Updated order-generated and fictional seed invoices for required idempotency keys and deterministic per-invoice line positions; updated structural verification for the nine-migration schema, credit money column, settlement constraint, and line ordering invariant.
+- Added shared runtime contracts for business identity, billing address snapshots, invoice lines, draft creation/editing, safe actions, listing/filtering, full invoice documents, and idempotent creation results.
+- Added checked integer-only calculation rules for item multiplication, discounts, taxes, invoice aggregation, credits, payments, and balances, with explicit PostgreSQL `BIGINT` overflow detection.
+- Added a NestJS `InvoiceModule` with administrator business identity settings, idempotent standalone draft creation, concurrency-guarded draft replacement and state actions, issuance, overdue marking, cancellation, administrator search/filtering, customer-owned lists, and protected details.
+- Preserved order-created invoices as already-issued unpaid documents while enabling editable administrator drafts with custom historical line descriptions, prices, discounts, taxes, credits, service periods, currency, and due dates.
+- Added stable `INV-YYYYMMDD-<64-bit hex>` numbers, deterministic invoice-line positions, and moved shared order/invoice number generation into a common API identifier utility.
+- Snapshotted customer billing identity, address, tax identity, and configured business identity. Later customer/setting edits do not rewrite existing invoice documents.
+- Enforced cancellation rules: only drafts and unpaid/overdue invoices without received payments may be cancelled; paid invoices require later refund/reversal workflows; issued invoices have no deletion route.
+- Reserved `PAID`, `PARTIALLY_REFUNDED`, and `REFUNDED` financial transitions for verified Command 11 transactions while fully supporting their response/display states.
+- Coordinated cancellation of an initial invoice with a still-pending order and recorded invoice plus order audit events transactionally.
+- Replaced administrator and customer invoice previews with live protected lists, business identity settings, multi-line draft creation, draft editing, detail documents, state actions, balances, and due dates.
+- Added a focused customer printable route with historical business/customer identities, itemized lines, totals, credits, payments, balance, status, and browser print control.
+- Added extensive calculation, state-transition, API integration, authorization, historical snapshot, idempotency, cancellation, non-deletion, overdue, zero-value, large-value, and frontend tests.
+
+#### Files changed
+
+- Database schema/migrations/seed/verifier: `packages/database/prisma/schema.prisma`, `packages/database/prisma/migrations/20260825090000_add_invoice_credit_and_submission_key/migration.sql`, `packages/database/prisma/migrations/20260825193000_preserve_invoice_item_order/migration.sql`, `packages/database/prisma/migrations/20260825194500_remove_redundant_invoice_item_index/migration.sql`, `packages/database/prisma/seed.ts`, `packages/database/prisma/verify.ts`
+- Shared contracts: `packages/shared/src/contracts/invoices.ts`, `packages/shared/src/index.ts`
+- Common numbering and order integration: `apps/api/src/common/identifiers/business-number.ts`, `apps/api/src/modules/orders/order.service.ts`, `apps/api/src/modules/orders/order.service.spec.ts`
+- Invoice API and calculation/state tests: `apps/api/src/modules/invoices/**`, `apps/api/src/app.module.ts`
+- API integration tests: `apps/api/test/invoices.e2e-spec.ts`
+- Administrator interfaces: `apps/web/src/app/(admin)/admin/invoices/**`, `apps/web/src/components/invoices/admin-invoice-manager.tsx`, `apps/web/src/components/invoices/invoice-draft-editor.tsx`
+- Customer and printable interfaces: `apps/web/src/app/(portal)/portal/invoices/**`, `apps/web/src/app/invoices/[invoiceId]/print/page.tsx`, `apps/web/src/components/invoices/customer-invoice-list.tsx`, `apps/web/src/components/invoices/invoice-detail.tsx`, `apps/web/src/components/invoices/invoice-document.tsx`, `apps/web/src/components/invoices/invoice-ui.tsx`
+- Frontend tests: `apps/web/src/components/invoices/invoice-management.test.tsx`
+- Documentation: `README.md`, `docs/DATABASE.md`, `docs/INVOICES.md`, `docs/DECISIONS.md`, `docs/PROGRESS.md`
+
+#### Validation
+
+- Prisma schema validation, nine-migration application/status, fictional seed, and structural database verifier: passed against isolated PostgreSQL.
+- Prettier formatting check, `git diff --check`, and ESLint for API, worker, and web: passed without warnings.
+- Strict TypeScript checks for all six code workspace projects: passed, including generated Prisma and Next.js route types.
+- Complete non-integration suite: 10 shared-contract tests, 29 API tests, 1 worker test, and 15 frontend tests passed (55 total).
+- Invoice calculation/state suite: 10 passed, covering full aggregation, zero values, exact `BIGINT` maximum, overflow, excessive discount/credit, issuance, zero-balance settlement, overdue eligibility, cancellation, and paid-history protection.
+- API end-to-end suite: 6 suites and 22 tests passed against local PostgreSQL and Redis. Invoice coverage includes identity settings, idempotent draft creation, exact calculations, draft replacement, issuance immutability, historical snapshots, customer ownership, role denial, cancellation, non-deletion, zero-value settlement, overdue transition, invalid credit denial, and audit records.
+- Frontend suite: 6 files and 15 tests passed, including customer lists, historical documents, exact balances, print behavior, and administrator draft/identity controls.
+- Database, shared packages, NestJS API, NestJS worker, and Next.js production builds: passed; Next.js generated 29 application routes plus the framework not-found route, including administrator/customer invoice details and the printable route.
+
+#### Decisions made
+
+- Administrator-created invoices start as drafts; order invoices remain issued/unpaid at atomic order creation.
+- Invoice calculations use only checked `bigint` minor-unit arithmetic. Browsers submit item inputs, never calculated invoice totals.
+- Invoice total remains the billed amount before credit/payment settlement; balance subtracts both invoice credit and verified paid amount.
+- Credit is editable only while the invoice is a draft and becomes immutable at issuance. Future credit/refund transaction policy remains Command 11 work.
+- Zero-balance or fully credited drafts become paid when issued without fabricating a payment amount; positive-balance drafts become unpaid.
+- Issued invoice lines, due date, currency, and identity snapshots cannot be edited or deleted. Cancellation is a status/timestamp transition.
+- Direct paid/refunded status actions are not exposed. Those states require verified financial transactions in the next command.
+- Business identity is owner-configurable through the invoice interface and snapshots only into future documents.
+- Invoice items have immutable positive line positions once issued, preserving the administrator's input order in details and printed documents.
+- Submission-key retries compare normalized dates and ordered line content exactly; reordered or otherwise changed requests conflict instead of silently reusing a different document.
+
+#### Open questions and risks
+
+- The owner must enter final legal business identity, supported operating currency, and any real VAT/tax registration values before production invoices are issued.
+- Tax amounts are explicit administrator-entered minor units in this release; automatic tax-rate calculation is intentionally absent until the business tax policy is defined.
+- Credit is an invoice-level settlement snapshot, not yet a separate credit ledger transaction. Command 11 must define how manual payments, credits, refunds, and reversals update settlement aggregates atomically.
+- Automatic overdue marking, renewal invoices, reminders, and suspension remain later automation commands; this command provides a guarded manual overdue transition.
+- Printable invoices use the browser print dialog rather than server-generated PDF storage. A PDF renderer can be added only if a durable PDF requirement arises.
+- The PostgreSQL driver emits a known pg@9 deprecation warning during E2E activity; all database tests pass, but the adapter should be reviewed when upgrading `pg`.
+
+#### Recommended next command
+
+Run **Command 11 — Implement Manual Payments** after explicit user authorization.
+
 ## Report Template
 
 Use this template after every future command:

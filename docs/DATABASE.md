@@ -28,6 +28,7 @@ The schema remains one modular-monolith database. Model grouping does not create
 - Floating-point columns are prohibited for money.
 - Currency snapshots use uppercase, three-letter ISO-style codes enforced by database checks. Supporting a code in business workflows still requires explicit application configuration.
 - Database checks reject negative amounts and inconsistent order, order-item, invoice, and invoice-item totals.
+- Invoice balances include immutable invoice-level credit and payment aggregates: `balance_due = total - credit_total - amount_paid`; the database also prevents combined settlement from exceeding total.
 - JSON APIs must serialize monetary `BigInt` values as decimal strings; shared boundary helpers are introduced in Command 4.
 
 ### Historical records
@@ -47,6 +48,7 @@ The schema remains one modular-monolith database. Model grouping does not create
 - Refunds and reversals are positive-valued adjustment rows linked to the original charge; they never overwrite it.
 - Automation and outbox records have unique idempotency keys for safe retries.
 - Orders have unique submission keys so a repeated checkout request returns the original order and invoice instead of creating duplicate financial records.
+- Invoices have unique submission keys for safe administrator and order-generated creation retries.
 
 ### Relationships and deletion
 
@@ -84,6 +86,7 @@ The initial migration adds SQL constraints beyond Prisma Schema Language:
 - JSON-object invoice identity snapshots;
 - one active, non-deleted product price per product, billing period, and currency through a partial unique index.
 - nonnegative product display order and an indexed public-catalogue lookup across visibility, status, and ordering.
+- positive, unique per-invoice line positions so historical item order remains deterministic.
 
 Because check constraints and partial indexes are customized in migration SQL, never replace committed migrations with `prisma db push`.
 

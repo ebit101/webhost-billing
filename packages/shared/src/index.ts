@@ -5,6 +5,7 @@ export * from './contracts/auth';
 export * from './contracts/authentication';
 export * from './contracts/customers';
 export * from './contracts/errors';
+export * from './contracts/invoices';
 export * from './contracts/money';
 export * from './contracts/orders';
 export * from './contracts/pagination';

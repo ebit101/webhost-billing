@@ -432,6 +432,7 @@ model Server {
 model Invoice {
   id                       String        @id @default(uuid()) @db.Uuid
   invoiceNumber            String        @unique(map: "invoices_number_key") @map("invoice_number") @db.VarChar(32)
+  submissionKey            String        @unique(map: "invoices_submission_key_key") @map("submission_key") @db.VarChar(191)
   customerId               String        @map("customer_id") @db.Uuid
   orderId                  String?       @map("order_id") @db.Uuid
   status                   InvoiceStatus @default(DRAFT)
@@ -440,6 +441,7 @@ model Invoice {
   discountTotal            BigInt        @default(0) @map("discount_total") @db.BigInt
   taxTotal                 BigInt        @default(0) @map("tax_total") @db.BigInt
   total                    BigInt        @db.BigInt
+  creditTotal              BigInt        @default(0) @map("credit_total") @db.BigInt
   amountPaid               BigInt        @default(0) @map("amount_paid") @db.BigInt
   balanceDue               BigInt        @map("balance_due") @db.BigInt
   customerNameSnapshot     String        @map("customer_name_snapshot") @db.VarChar(200)
@@ -468,6 +470,7 @@ model Invoice {
 model InvoiceItem {
   id                  String     @id @default(uuid()) @db.Uuid
   invoiceId           String     @map("invoice_id") @db.Uuid
+  linePosition        Int        @map("line_position")
   orderItemId         String?    @map("order_item_id") @db.Uuid
   serviceId           String?    @map("service_id") @db.Uuid
   descriptionSnapshot String     @map("description_snapshot") @db.Text
@@ -484,7 +487,7 @@ model InvoiceItem {
   orderItem           OrderItem? @relation(fields: [orderItemId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   service             Service?   @relation(fields: [serviceId], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
-  @@index([invoiceId], map: "invoice_items_invoice_id_idx")
+  @@unique([invoiceId, linePosition], map: "invoice_items_invoice_id_line_position_key")
   @@index([serviceId], map: "invoice_items_service_id_idx")
   @@map("invoice_items")
 }

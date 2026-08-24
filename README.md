@@ -54,6 +54,7 @@ See `docs/DEVELOPMENT.md` for setup, health checks, connectivity, shutdown, and 
 - `docs/CUSTOMER_MANAGEMENT.md` — customer API, authorization, account-access rules, and interfaces
 - `docs/PRODUCTS_AND_PRICING.md` — product lifecycle, versioned prices, public catalogue, and selection flow
 - `docs/ORDER_CREATION.md` — authoritative checkout, idempotency, snapshots, numbering, and order states
+- `docs/INVOICES.md` — calculation rules, drafts, issued history, identity snapshots, states, and printing
 - `docs/DATABASE.md` — schema, migration, deletion, and seed-data decisions
 - `docs/DEVELOPMENT.md` — local infrastructure and application setup
 - `docs/FRONTEND_DESIGN_SYSTEM.md` — application shells, design tokens, responsive behavior, and UI components
