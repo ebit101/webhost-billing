@@ -314,11 +314,18 @@ async function seed(): Promise<void> {
 
     await transaction.payment.upsert({
       where: { idempotencyKey: 'seed:manual-payment:0001' },
-      update: { status: PaymentStatus.SUCCEEDED },
+      update: {
+        status: PaymentStatus.SUCCEEDED,
+        reviewedByUserId: ids.adminUser,
+        manualMethod: 'MOBILE_FINANCIAL_SERVICE',
+        proofMetadata: { fictional: true },
+        reviewedAt: paidAt,
+      },
       create: {
         id: ids.payment,
         invoiceId: ids.invoice,
         createdByUserId: ids.adminUser,
+        reviewedByUserId: ids.adminUser,
         kind: PaymentKind.CHARGE,
         status: PaymentStatus.SUCCEEDED,
         provider: 'manual',
@@ -327,7 +334,10 @@ async function seed(): Promise<void> {
         amount: monthlyAmount,
         currency: 'BDT',
         reference: 'Fictional mobile-payment reference',
+        manualMethod: 'MOBILE_FINANCIAL_SERVICE',
+        proofMetadata: { fictional: true },
         receivedAt: paidAt,
+        reviewedAt: paidAt,
         verifiedAt: paidAt,
       },
     });

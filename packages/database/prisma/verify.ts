@@ -63,6 +63,9 @@ const requiredCustomConstraints = [
   'password_reset_tokens_time_order_check',
   'payments_adjustment_reference_check',
   'payments_amount_check',
+  'payments_manual_method_check',
+  'payments_manual_review_state_check',
+  'payments_proof_metadata_object_check',
   'products_display_order_check',
   'users_email_normalized_check',
 ] as const;
@@ -222,6 +225,14 @@ async function verify(): Promise<void> {
   assert.equal(seededInvoice.items.length, 1);
   assert.equal(seededInvoice.items[0]?.linePosition, 1);
   assert.equal(seededInvoice.payments.length, 1);
+  assert.equal(
+    seededInvoice.payments[0]?.manualMethod,
+    'MOBILE_FINANCIAL_SERVICE',
+  );
+  assert.equal(
+    seededInvoice.payments[0]?.reviewedByUserId,
+    '10000000-0000-4000-8000-000000000001',
+  );
   assert.equal(seededInvoice.dueAt.toISOString(), '2026-08-08T03:00:00.000Z');
 
   const seededService = await prisma.service.findUnique({

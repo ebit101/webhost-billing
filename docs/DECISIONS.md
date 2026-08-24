@@ -146,6 +146,14 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** The owner needs to prepare custom invoices without weakening issued financial history. Billing calculations must remain lossless at large values, retries must not duplicate documents, and a status click must not fabricate payment or refund evidence.
 - **Consequence:** Only drafts may replace dates, currency, credit, and line items. Zero-balance drafts settle on issuance; positive-balance drafts become unpaid. Past-due unpaid invoices may become overdue, and unpaid invoices may be cancelled without deletion. Paid/refunded state changes remain reserved for verified payment/refund transactions in Command 11. The `business.identity` setting supplies future snapshots, while customer identity is captured from the selected customer at creation.
 
+## ADR-019 — Reviewed Manual Payments and Append-Only Adjustments
+
+- **Status:** Accepted
+- **Date:** 2026-08-25
+- **Decision:** Customer manual references begin pending; administrator-recorded receipts begin verified. Lock the invoice row and revalidate the current balance and partial-payment setting before applying any verified charge. Preserve verified originals and represent refunds/reversals as separate successful adjustment rows.
+- **Reason:** Customer-entered proof is untrusted, retries and concurrent reviews must not double-settle an invoice, and financial corrections must retain the original evidence and audit trail.
+- **Consequence:** Partial payments default to disabled and require an explicit billing setting. The API accepts structured text proof only, without files or URLs. Verified reference hashes and submission keys prevent duplicates. Adjustments reduce net paid amount and update invoice refund state without automatically changing service state. Gateway callbacks remain a separate provider-neutral workflow in Command 12.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:
@@ -155,5 +163,4 @@ The following decisions are intentionally unresolved and must be selected before
 3. SMTP delivery provider for staging and production.
 4. Whether domain registration belongs in the MVP; the current default is no registrar automation.
 5. Final business identity values, supported operating currency, VAT/tax rules, reminder schedule, suspension grace period, cancellation policy, and refund policy.
-6. Whether partial payments are enabled; the safe initial default is disabled.
-7. Production VPS/provider and backup destination.
+6. Production VPS/provider and backup destination.

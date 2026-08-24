@@ -10,6 +10,7 @@ import {
   createPaginationMeta,
   invoiceStatusSchema,
   loginRequestSchema,
+  manualPaymentStateSchema,
   moneySchema,
   passwordSchema,
   orderStatusSchema,
@@ -18,6 +19,7 @@ import {
   paymentStatusSchema,
   roleSchema,
   registrationRequestSchema,
+  submitManualPaymentRequestSchema,
   createProductRequestSchema,
   productPriceInputSchema,
   serializeMoney,
@@ -62,6 +64,7 @@ describe('boundary contracts', () => {
       'PARTIALLY_REFUNDED',
     );
     assert.equal(paymentStatusSchema.parse('SUCCEEDED'), 'SUCCEEDED');
+    assert.equal(manualPaymentStateSchema.parse('VERIFIED'), 'VERIFIED');
     assert.equal(
       serviceStatusSchema.parse('PROVISION_FAILED'),
       'PROVISION_FAILED',
@@ -69,6 +72,30 @@ describe('boundary contracts', () => {
     assert.equal(
       ticketStatusSchema.parse('WAITING_FOR_STAFF'),
       'WAITING_FOR_STAFF',
+    );
+  });
+
+  it('accepts structured manual proof and rejects file-shaped input', () => {
+    const request = {
+      invoiceId: '10000000-0000-4000-8000-000000000001',
+      amount: '12000',
+      submissionKey: '10000000-0000-4000-8000-000000000002',
+      proof: {
+        method: 'BANK_TRANSFER',
+        reference: 'BANK-REFERENCE-001',
+        payerName: 'Fictional Payer',
+      },
+    };
+    assert.equal(
+      submitManualPaymentRequestSchema.safeParse(request).success,
+      true,
+    );
+    assert.equal(
+      submitManualPaymentRequestSchema.safeParse({
+        ...request,
+        proof: { ...request.proof, fileUrl: 'https://example.test/proof' },
+      }).success,
+      false,
     );
   });
 

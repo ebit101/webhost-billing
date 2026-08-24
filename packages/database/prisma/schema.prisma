@@ -166,6 +166,7 @@ model User {
   customer                Customer?
   adminProfile            AdminProfile?
   paymentsCreated         Payment[]                @relation("PaymentCreatedBy")
+  paymentsReviewed        Payment[]                @relation("PaymentReviewedBy")
   ticketsAssigned         Ticket[]                 @relation("TicketAssignedAdmin")
   ticketMessages          TicketMessage[]
   activityLogs            ActivityLog[]            @relation("ActivityActor")
@@ -497,6 +498,7 @@ model Payment {
   invoiceId             String         @map("invoice_id") @db.Uuid
   originalPaymentId     String?        @map("original_payment_id") @db.Uuid
   createdByUserId       String?        @map("created_by_user_id") @db.Uuid
+  reviewedByUserId      String?        @map("reviewed_by_user_id") @db.Uuid
   kind                  PaymentKind    @default(CHARGE)
   status                PaymentStatus  @default(PENDING)
   provider              String         @db.VarChar(64)
@@ -505,8 +507,11 @@ model Payment {
   amount                BigInt         @db.BigInt
   currency              String         @db.Char(3)
   reference             String?        @db.VarChar(191)
+  manualMethod          String?        @map("manual_method") @db.VarChar(40)
+  proofMetadata         Json?          @map("proof_metadata")
   failureReason         String?        @map("failure_reason") @db.Text
   receivedAt            DateTime?      @map("received_at") @db.Timestamptz(3)
+  reviewedAt            DateTime?      @map("reviewed_at") @db.Timestamptz(3)
   verifiedAt            DateTime?      @map("verified_at") @db.Timestamptz(3)
   createdAt             DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt             DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
@@ -514,11 +519,13 @@ model Payment {
   originalPayment       Payment?       @relation("PaymentAdjustments", fields: [originalPaymentId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   adjustments           Payment[]      @relation("PaymentAdjustments")
   createdBy             User?          @relation("PaymentCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  reviewedBy            User?          @relation("PaymentReviewedBy", fields: [reviewedByUserId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   events                PaymentEvent[]
 
   @@unique([provider, providerTransactionId], map: "payments_provider_transaction_key")
   @@index([invoiceId, status], map: "payments_invoice_status_idx")
   @@index([originalPaymentId], map: "payments_original_payment_id_idx")
+  @@index([reviewedByUserId], map: "payments_reviewed_by_user_id_idx")
   @@index([createdAt], map: "payments_created_at_idx")
   @@map("payments")
 }

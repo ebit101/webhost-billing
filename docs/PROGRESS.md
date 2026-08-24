@@ -736,6 +736,74 @@ Run **Command 10 — Implement Invoices** after explicit user authorization.
 
 Run **Command 11 — Implement Manual Payments** after explicit user authorization.
 
+### Command 11 — Implement Manual Payments
+
+- **Status:** Completed and delivered to GitHub `main`
+- **Date:** 2026-08-25
+
+#### Scope completed
+
+- Extended manual payments with controlled method, structured proof metadata, reviewer identity, review timestamp, and database checks aligning pending/succeeded/failed records with their review and verification history.
+- Added shared strict runtime contracts for customer submissions, administrator-recorded receipts, review actions, append-only adjustments, payment policy, ledger filtering, lossless payment responses, and the business-facing pending/verified/rejected/refunded/reversed states.
+- Added a NestJS `PaymentModule` with administrator policy management, immediately verified administrator receipts, customer-owned pending submissions, protected lists/details, administrator verification/rejection, and idempotent refunds/reversals.
+- Derived payment currency and invoice/customer ownership server-side. Customer proof accepts only controlled text fields and intentionally has no file, URL, attachment, binary, card, secret, or raw-provider-payload field.
+- Made partial payments explicitly configurable through the audited `billing.manual-payments` setting and disabled them by default. The rule is rechecked when a pending payment is verified.
+- Applied verified charges under an invoice row lock in one database transaction, conditionally consumed each pending payment once, recalculated invoice paid/balance values, transitioned fully settled invoices to paid, and marked linked awaiting-payment orders paid without changing service state.
+- Serialized different payments for the same invoice to prevent concurrent overpayment and handled verified manual references plus UUID submission keys idempotently.
+- Preserved every verified original charge. Refunds and reversals append positive-valued linked adjustment rows, enforce the remaining adjustable amount, reduce net paid value, and transition invoices to partially refunded or refunded without deleting or rewriting history.
+- Added administrator/security audit records for policy changes, customer submissions, administrator receipts, reviews, linked paid orders, refunds, and reversals without placing internal reference hashes or secrets in responses.
+- Replaced the administrator payment preview with a live payment ledger, verified receipt form, pending review actions, explicit partial-payment policy, and refund/reversal entry.
+- Added a customer manual-reference form and invoice-scoped payment history to protected customer invoice details, including clear warnings against submitting credentials or financial secrets.
+- Added contract, integration, authorization, idempotency, concurrency, adjustment, database, and responsive-interface tests plus dedicated manual-payment documentation.
+
+#### Files changed
+
+- Database schema/migrations/seed/verifier: `packages/database/prisma/schema.prisma`, `packages/database/prisma/migrations/20260825210000_add_manual_payment_review_metadata/migration.sql`, `packages/database/prisma/migrations/20260825211500_require_manual_payment_reference/migration.sql`, `packages/database/prisma/seed.ts`, `packages/database/prisma/verify.ts`
+- Shared contracts/tests: `packages/shared/src/contracts/payments.ts`, `packages/shared/src/index.ts`, `packages/shared/test/contracts.spec.ts`
+- Payment API and application registration: `apps/api/src/modules/payments/**`, `apps/api/src/app.module.ts`
+- API integration and concurrency tests: `apps/api/test/payments.e2e-spec.ts`
+- Administrator interface: `apps/web/src/app/(admin)/admin/payments/page.tsx`, `apps/web/src/components/payments/admin-payment-manager.tsx`, `apps/web/src/components/payments/payment-ui.ts`
+- Customer interface: `apps/web/src/components/payments/customer-manual-payment.tsx`, `apps/web/src/components/invoices/invoice-detail.tsx`
+- Frontend tests: `apps/web/src/components/payments/payment-management.test.tsx`
+- Documentation: `README.md`, `docs/DATABASE.md`, `docs/INVOICES.md`, `docs/MANUAL_PAYMENTS.md`, `docs/DECISIONS.md`, `docs/PROGRESS.md`
+
+#### Validation
+
+- Prisma schema validation, eleven-migration application/status, fictional seed, and structural database verifier: passed against isolated PostgreSQL.
+- Prettier formatting check, `git diff --check`, and ESLint for API, worker, and web: passed without warnings.
+- Strict TypeScript checks for all six code workspace projects: passed, including generated Prisma and Next.js route types.
+- Complete non-integration suite: 11 shared-contract tests, 29 API tests, 1 worker test, and 17 frontend tests passed (58 total).
+- Manual-payment API suite: 6 passed for owned pending/idempotent submission, disabled partial rejection, concurrent single application, rejection without settlement, explicitly enabled partial payments, concurrent overpayment prevention, append-only refunds/reversals, immutable originals, protected output, and administrator audits.
+- Complete API end-to-end suite: 7 suites and 28 tests passed against local PostgreSQL and Redis.
+- Frontend suite: 7 files and 17 tests passed, including administrator ledger/review/policy controls and structured customer proof submission without file fields.
+- Database, shared packages, NestJS API, NestJS worker, and Next.js production builds: passed; Next.js generated 29 application routes plus the framework not-found route.
+
+#### Decisions made
+
+- The existing provider-neutral database kind/status vocabulary remains stable; the manual-payment API derives the business-facing pending, verified, rejected, refunded, and reversed states.
+- Customer submissions are untrusted pending references. Only an administrator review or authenticated administrator-recorded receipt can establish a verified manual payment.
+- Partial payments default to disabled and require an explicit audited setting. Both submission and verification enforce the current policy and balance.
+- All charge and adjustment amounts are canonical integer minor-unit strings at JSON boundaries and PostgreSQL `BIGINT` internally. Currency always comes from the invoice.
+- Invoice row locking is the concurrency boundary for all settlement changes. Conditional pending-state mutation additionally prevents the same payment from being applied twice.
+- Verified references receive an internal normalized SHA-256 identifier for uniqueness; the hash is never returned. Rejected pending references remain immutable but do not reserve the verified-reference identifier.
+- Refund and reversal amounts are stored as positive append-only adjustment transactions. The original charge and its proof remain unchanged.
+- A fully paid initial order may move from awaiting payment to paid in the settlement transaction. Refunds/reversals do not automatically regress orders or alter hosting services.
+- Manual proof is structured text only. File proof can be designed later only with explicit storage, malware-scanning, content-type, size, authorization, retention, and download controls.
+
+#### Open questions and risks
+
+- The owner must define the accepted bank/mobile methods, customer-facing payment instructions, daily reconciliation process, and who is authorized to verify each method before production use.
+- Partial payments remain disabled unless the owner deliberately enables them. Enabling them affects future submissions and pending-payment reviews immediately.
+- Free-text payer names and notes should contain only the minimum necessary evidence; administrators must not ask customers for passwords, PINs, card data, one-time codes, or account secrets.
+- Refund/reversal eligibility and any service/order consequences require the owner's final refund policy. This command intentionally makes no automatic service change.
+- Payment-received email/outbox work and service provisioning/reactivation remain later commands and must not roll back recorded settlement if those side effects fail.
+- Real provider sessions, signed callbacks, replay protection, merchant verification, and gateway reconciliation belong to Command 12 and later provider commands.
+- The PostgreSQL driver emits a known pg@9 deprecation warning during E2E activity; all database tests pass, but the adapter should be reviewed when upgrading `pg`.
+
+#### Recommended next command
+
+Run **Command 12 — Create the Payment Adapter** after explicit user authorization.
+
 ## Report Template
 
 Use this template after every future command:

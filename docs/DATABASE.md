@@ -46,6 +46,8 @@ The schema remains one modular-monolith database. Model grouping does not create
 - A paid invoice and an active hosting service remain independent facts.
 - Payment transactions and provider events use separate provider identifiers and idempotency keys.
 - Refunds and reversals are positive-valued adjustment rows linked to the original charge; they never overwrite it.
+- Manual payments store a controlled method, structured JSON proof metadata, reviewer identity, and review time. Database checks align pending/succeeded/failed manual rows with their review and verification timestamps.
+- Invoice rows are locked while verified charges or adjustments update settlement aggregates, preventing duplicate application and concurrent overpayment.
 - Automation and outbox records have unique idempotency keys for safe retries.
 - Orders have unique submission keys so a repeated checkout request returns the original order and invoice instead of creating duplicate financial records.
 - Invoices have unique submission keys for safe administrator and order-generated creation retries.
@@ -87,6 +89,7 @@ The initial migration adds SQL constraints beyond Prisma Schema Language:
 - one active, non-deleted product price per product, billing period, and currency through a partial unique index.
 - nonnegative product display order and an indexed public-catalogue lookup across visibility, status, and ordering.
 - positive, unique per-invoice line positions so historical item order remains deterministic.
+- JSON-object manual proof metadata, controlled manual methods, and internally consistent manual review/verification timestamps.
 
 Because check constraints and partial indexes are customized in migration SQL, never replace committed migrations with `prisma db push`.
 

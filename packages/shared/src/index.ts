@@ -8,6 +8,7 @@ export * from './contracts/errors';
 export * from './contracts/invoices';
 export * from './contracts/money';
 export * from './contracts/orders';
+export * from './contracts/payments';
 export * from './contracts/pagination';
 export * from './contracts/products';
 export * from './contracts/responses';

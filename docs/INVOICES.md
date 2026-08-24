@@ -4,7 +4,7 @@
 
 Command 10 implements administrator invoice generation and management, customer-owned invoice history and details, and a printable billing document. Order checkout continues creating issued unpaid invoices transactionally; administrators can additionally create editable standalone drafts.
 
-Payment recording, refunds, reversals, and payment-provider callbacks remain later commands. Their future workflows must use the invoice calculation and state boundaries documented here.
+Manual payment recording, review, refunds, and reversals are implemented by Command 11 using the invoice calculation and state boundaries documented here. Payment-provider callbacks remain a later command.
 
 ## Money calculations
 
@@ -55,7 +55,7 @@ The invoice module exposes only actions that can be proven without fabricating a
 - `MARK_OVERDUE`: a past-due `UNPAID` invoice with a positive balance becomes `OVERDUE`;
 - `CANCEL`: `DRAFT`, unpaid `UNPAID`, or unpaid `OVERDUE` becomes `CANCELLED`.
 
-Paid invoices cannot be cancelled. They require a later refund or reversal transaction. `PAID`, `PARTIALLY_REFUNDED`, and `REFUNDED` transitions are therefore reserved for verified payment/refund workflows in Command 11. Cancelling an initial order invoice also cancels a still-pending/awaiting-payment order in the same transaction and records both audit events.
+Paid invoices cannot be cancelled. They require an append-only refund or reversal transaction. Verified manual charges move a fully settled invoice to `PAID`; successful adjustments move it to `PARTIALLY_REFUNDED` or `REFUNDED` without rewriting the original payment. Cancelling an initial order invoice also cancels a still-pending/awaiting-payment order in the same transaction and records both audit events.
 
 ## Numbering and idempotency
 
