@@ -14,6 +14,7 @@ export const metadata: Metadata = {
 
 const navigation: WorkspaceNavigationItem[] = [
   { href: '/portal', label: 'Overview', icon: 'dashboard' },
+  { href: '/portal/orders', label: 'My orders', icon: 'order' },
   {
     href: '/portal/services',
     label: 'My services',

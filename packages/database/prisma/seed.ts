@@ -192,10 +192,14 @@ async function seed(): Promise<void> {
 
     await transaction.order.upsert({
       where: { orderNumber: 'DEV-ORD-0001' },
-      update: { status: OrderStatus.COMPLETED },
+      update: {
+        status: OrderStatus.COMPLETED,
+        submissionKey: 'seed:order:0001',
+      },
       create: {
         id: ids.order,
         orderNumber: 'DEV-ORD-0001',
+        submissionKey: 'seed:order:0001',
         customerId: ids.customer,
         status: OrderStatus.COMPLETED,
         currency: 'BDT',

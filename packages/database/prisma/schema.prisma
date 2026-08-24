@@ -322,6 +322,7 @@ model ProductPrice {
 model Order {
   id                    String      @id @default(uuid()) @db.Uuid
   orderNumber           String      @unique(map: "orders_number_key") @map("order_number") @db.VarChar(32)
+  submissionKey         String      @unique(map: "orders_submission_key_key") @map("submission_key") @db.VarChar(191)
   customerId            String      @map("customer_id") @db.Uuid
   status                OrderStatus @default(PENDING)
   currency              String      @db.Char(3)

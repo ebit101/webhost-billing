@@ -1,12 +1,6 @@
 import type { Metadata } from 'next';
-import { SectionPreview } from '../../../../components/dashboard/section-preview';
+import { AdminOrderManager } from '../../../../components/orders/admin-order-manager';
 export const metadata: Metadata = { title: 'Orders' };
 export default function Page() {
-  return (
-    <SectionPreview
-      area="Administrator"
-      title="Orders"
-      description="Review incoming hosting orders and their independent states."
-    />
-  );
+  return <AdminOrderManager />;
 }

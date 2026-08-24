@@ -598,6 +598,73 @@ Run **Command 8 — Implement Products and Pricing** after explicit user authori
 
 Run **Command 9 — Implement Order Creation** after explicit user authorization.
 
+### Command 9 — Implement Order Creation
+
+- **Status:** Completed and delivered to GitHub `main`
+- **Date:** 2026-08-24
+
+#### Scope completed
+
+- Added a unique order submission key and applied a safe migration that backfills existing orders before making the field required, bringing the database to six migrations.
+- Added shared runtime contracts for normalized bare domains, customer/admin creation requests, paginated order queries, state updates, lossless order/item/invoice responses, and duplicate-result indicators.
+- Added a NestJS `OrderModule` with authenticated customer checkout, administrator order creation, customer-owned history, administrator listing/search, protected detail, and explicit administrator state transitions.
+- Revalidated active customer/account, matching active product and price, public visibility for customer checkout, price validity windows, hosting package readiness, normalized domain, and monetary range on the server.
+- Calculated recurring, setup, and total amounts only from database values; strict request schemas reject browser-supplied totals or other unrecognized fields.
+- Created the order, immutable item/provisioning snapshots, issued unpaid invoice, separate recurring/setup invoice lines, identity snapshots, and activity audit atomically.
+- Added collision-resistant `ORD-YYYYMMDD-<64-bit hex>` and `INV-YYYYMMDD-<64-bit hex>` identifiers while retaining database uniqueness and UUID relationships.
+- Added database-enforced duplicate submission protection that returns the original order/invoice for a matching retry and rejects submission-key reuse with different selections.
+- Kept payment authoritative: new orders are `AWAITING_PAYMENT`, direct administrator `PAID` updates are rejected, and rejecting/cancelling an unpaid order cancels its initial invoice in the same transaction.
+- Replaced the administrator order preview with protected order creation, operational listing, totals, state badges, and safe reject/cancel actions.
+- Added customer checkout and owned-order history pages, portal navigation, checkout success summary, and direct public-catalogue selection links.
+- Corrected a pre-existing nondeterministic CSRF tampering assertion discovered by full-suite validation so it always changes the token under test.
+- Added order rule, API integration, and frontend interaction tests plus durable order-creation documentation.
+
+#### Files changed
+
+- Database schema/migration/seed: `packages/database/prisma/schema.prisma`, `packages/database/prisma/migrations/20260824224500_add_order_submission_key/migration.sql`, `packages/database/prisma/seed.ts`
+- Shared order contracts: `packages/shared/src/contracts/orders.ts`, `packages/shared/src/index.ts`
+- Order API and unit tests: `apps/api/src/modules/orders/**`, `apps/api/src/app.module.ts`
+- API integration tests: `apps/api/test/orders.e2e-spec.ts`
+- Customer checkout/history: `apps/web/src/app/(portal)/portal/checkout/page.tsx`, `apps/web/src/app/(portal)/portal/orders/page.tsx`, `apps/web/src/components/orders/customer-checkout.tsx`, `apps/web/src/components/orders/customer-order-list.tsx`
+- Administrator orders: `apps/web/src/app/(admin)/admin/orders/page.tsx`, `apps/web/src/components/orders/admin-order-manager.tsx`
+- Catalogue/navigation/frontend tests: `apps/web/src/components/products/public-product-catalog.tsx`, `apps/web/src/components/products/product-management.test.tsx`, `apps/web/src/app/(portal)/portal/layout.tsx`, `apps/web/src/components/orders/order-management.test.tsx`, `apps/web/src/components/orders/order-ui.tsx`
+- Deterministic existing security test: `apps/api/src/modules/auth/services/auth-security.spec.ts`
+- Documentation: `README.md`, `docs/DATABASE.md`, `docs/ORDER_CREATION.md`, `docs/DECISIONS.md`, `docs/PROGRESS.md`
+
+#### Validation
+
+- Prisma schema validation, six-migration application/status, fictional seed, and structural database verifier: passed against the isolated PostgreSQL service.
+- Prettier formatting check, `git diff --check`, and ESLint for API, worker, and web: passed without warnings.
+- Strict TypeScript checks for all six code workspace projects: passed, including generated Prisma and Next.js route types.
+- Complete non-integration suite: 10 shared-contract tests, 19 API tests, 1 worker test, and 12 frontend tests passed (42 total).
+- Order rule tests: 2 passed for collision-resistant number formatting and permitted/forbidden state transitions.
+- API end-to-end suite: 5 suites and 17 tests passed against local PostgreSQL and Redis. Order coverage includes normal atomic customer checkout, server totals, historical snapshots, invalid products, archived prices, browser-total rejection, duplicate submissions, ownership/role denial, administrator creation, invoice cancellation, paid-state protection, listing, and audit records.
+- Frontend suite: 5 files and 12 tests passed, including authoritative checkout payloads, idempotency keys, order success output, administrator state controls, and updated catalogue checkout links.
+- Database, shared packages, NestJS API, NestJS worker, and Next.js production builds: passed; Next.js generated 26 application routes plus the framework not-found route, including dynamic checkout search parameters.
+
+#### Decisions made
+
+- Customer checkout derives the customer ID only from the authenticated session. Administrator creation may select an active customer.
+- Customer checkout requires an active, public product; administrators may order an active hidden product for offline/private sales, but cannot use draft, archived, retired, expired, or future prices.
+- The UUID submission key is stable across client retries. Matching reuse returns the original result; different input with the same key is a conflict.
+- Order subtotal stores recurring price, setup total stores the one-time fee, and invoice lines itemize both while the invoice subtotal/total includes both.
+- New-order invoices are issued unpaid and due immediately. Payment collection and manual-payment approval remain later commands.
+- The initial invoice snapshots `business.identity` when configured and otherwise uses the minimal application name; Command 10 must add the owner-configurable legal business identity and finalized invoice policy.
+- Direct order payment transitions are reserved for verified payment processing. A browser redirect or administrator status patch cannot prove payment.
+
+#### Open questions and risks
+
+- Legal business identity, finalized invoice numbering policy, tax calculation, due-date policy, and invoice presentation belong to Command 10; current initial invoices use collision-resistant provisional numbers, zero tax/discount, immediate due dates, and the minimal configured/fallback identity snapshot.
+- Checkout currently supports one hosting product per order, matching the personal-hosting MVP; multi-item carts and quantity controls are intentionally absent.
+- Domain validation covers normalized ASCII hostnames, including punycode labels, but domain registration, availability lookup, IDN Unicode conversion, and registrar automation are outside scope.
+- Payment, payment callbacks, manual-payment approval, service creation, provisioning, email delivery, and renewal automation remain unimplemented and must preserve the separate state boundaries.
+- The portal and administrator shell identity/search/notification content remains fictional from Command 6; order module data itself comes from protected APIs.
+- The PostgreSQL driver emits a known pg@9 deprecation warning during E2E teardown/query concurrency; all tests pass, but the adapter should be rechecked when upgrading `pg`.
+
+#### Recommended next command
+
+Run **Command 10 — Implement Invoices** after explicit user authorization.
+
 ## Report Template
 
 Use this template after every future command:

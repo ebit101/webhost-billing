@@ -46,6 +46,7 @@ The schema remains one modular-monolith database. Model grouping does not create
 - Payment transactions and provider events use separate provider identifiers and idempotency keys.
 - Refunds and reversals are positive-valued adjustment rows linked to the original charge; they never overwrite it.
 - Automation and outbox records have unique idempotency keys for safe retries.
+- Orders have unique submission keys so a repeated checkout request returns the original order and invoice instead of creating duplicate financial records.
 
 ### Relationships and deletion
 

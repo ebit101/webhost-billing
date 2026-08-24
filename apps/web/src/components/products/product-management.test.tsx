@@ -104,7 +104,7 @@ describe('product and pricing interfaces', () => {
       name: 'Choose Business Hosting',
     });
     expect(choose.getAttribute('href')).toBe(
-      `/register?productId=${productId}&priceId=${annualPriceId}`,
+      `/portal/checkout?productId=${productId}&priceId=${annualPriceId}`,
     );
     expect(screen.getByText('BDT 2,400.00')).toBeTruthy();
 
@@ -114,7 +114,7 @@ describe('product and pricing interfaces', () => {
       screen
         .getByRole('link', { name: 'Choose Business Hosting' })
         .getAttribute('href'),
-    ).toBe(`/register?productId=${productId}&priceId=${monthlyPriceId}`);
+    ).toBe(`/portal/checkout?productId=${productId}&priceId=${monthlyPriceId}`);
     expect(
       screen.getByRole('table', { name: 'Comparison of active hosting plans' }),
     ).toBeTruthy();

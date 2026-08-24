@@ -21,9 +21,10 @@ describe('authentication security services', () => {
   it('generates signed CSRF tokens and rejects tampering', () => {
     const service = new CsrfService(environment);
     const token = service.generate();
+    const replacement = token.endsWith('0') ? '1' : '0';
 
     expect(service.validate(token)).toBe(true);
-    expect(service.validate(`${token.slice(0, -1)}0`)).toBe(false);
+    expect(service.validate(`${token.slice(0, -1)}${replacement}`)).toBe(false);
     expect(service.validate('malformed')).toBe(false);
   });
 

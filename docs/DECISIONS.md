@@ -130,6 +130,14 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** Historical orders and services must retain stable product and price references, while the storefront needs only current saleable offerings. Appending prices makes changes auditable and avoids silently changing an existing purchase basis.
 - **Consequence:** Activation validates provisioning/display completeness and a supported active price. Archiving forces public visibility off but preserves all rows. Public API responses omit package mapping and retired prices. Command 9 must validate the selected product and price again at order creation rather than trusting storefront query parameters.
 
+## ADR-017 — Transactional, Idempotent Order and Invoice Creation
+
+- **Status:** Accepted
+- **Date:** 2026-08-24
+- **Decision:** Create each hosting order, historical order item, unpaid initial invoice, invoice lines, and audit entry in one PostgreSQL transaction. Derive customer identity from the session for customer checkout, calculate every amount from the current eligible database price, and protect submission with a unique client-generated UUID. Use date-prefixed order/invoice numbers with 64 random bits plus database uniqueness.
+- **Reason:** Browser amounts and redirects are untrusted, a failed partial write would leave inconsistent billing history, and network retries must not produce multiple invoices or hosting requests.
+- **Consequence:** A matching repeated submission returns the original result, while reuse for different input conflicts. New orders begin `AWAITING_PAYMENT` with an `UNPAID` invoice. Direct administrator changes to `PAID` are forbidden; the later verified-payment workflow owns that transition. Rejection or cancellation also cancels a draft/unpaid initial invoice transactionally. The initial business-identity snapshot uses the `business.identity` setting when present and a minimal Webhost Billing name fallback until business settings are configured.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:
