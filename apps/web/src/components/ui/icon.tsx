@@ -13,6 +13,7 @@ export type IconName =
   | 'menu'
   | 'order'
   | 'payment'
+  | 'plus'
   | 'product'
   | 'search'
   | 'server'
@@ -105,6 +106,8 @@ function iconPath(name: IconName) {
           <path d="M3 10h18M7 15h2" />
         </>
       );
+    case 'plus':
+      return <path d="M12 5v14M5 12h14" />;
     case 'product':
       return (
         <>

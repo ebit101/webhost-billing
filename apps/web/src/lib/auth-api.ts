@@ -7,6 +7,15 @@ interface ApiSuccess<T> {
   data: T;
 }
 
+interface PaginatedApiSuccess<T> extends ApiSuccess<T[]> {
+  pagination: {
+    page: number;
+    pageSize: number;
+    totalItems: number;
+    totalPages: number;
+  };
+}
+
 interface ApiFailure {
   success: false;
   error: { code: string; message: string };
@@ -57,7 +66,7 @@ async function csrfToken(): Promise<string> {
 
 export async function authMutation<T>(
   path: string,
-  method: 'POST' | 'DELETE',
+  method: 'POST' | 'PATCH' | 'DELETE',
   body?: Record<string, unknown>,
 ): Promise<T> {
   const csrf = await csrfToken();
@@ -84,6 +93,24 @@ export async function authMutation<T>(
   return (responseValue as unknown as ApiSuccess<T>).data;
 }
 
+export async function authenticatedPaginatedGet<T>(path: string) {
+  const response = await fetch(`${API_URL}${path}`, {
+    credentials: 'include',
+    cache: 'no-store',
+  });
+  const body = await responseBody(response);
+  if (
+    !response.ok ||
+    !isRecord(body) ||
+    body.success !== true ||
+    !Array.isArray(body.data) ||
+    !isRecord(body.pagination)
+  ) {
+    throw new Error(errorMessage(body));
+  }
+  return body as unknown as PaginatedApiSuccess<T>;
+}
+
 export async function authenticatedGet<T>(path: string): Promise<T> {
   const response = await fetch(`${API_URL}${path}`, {
     credentials: 'include',
@@ -103,4 +130,4 @@ export async function authenticatedGet<T>(path: string): Promise<T> {
   return (body as unknown as ApiSuccess<T>).data;
 }
 
-export type { ApiFailure };
+export type { ApiFailure, PaginatedApiSuccess };

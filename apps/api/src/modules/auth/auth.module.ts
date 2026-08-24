@@ -54,5 +54,11 @@ import { TokenCipherService } from './services/token-cipher.service';
       useClass: AuthRateLimitGuard,
     },
   ],
+  exports: [
+    AuthService,
+    AuthAuditService,
+    AuthCookieService,
+    PasswordHasherService,
+  ],
 })
 export class AuthModule {}

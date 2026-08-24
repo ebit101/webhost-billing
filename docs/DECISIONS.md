@@ -114,6 +114,14 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** Customers, prospective customers, and the hosting owner have different tasks, but maintaining three unrelated component systems would create inconsistency and unnecessary maintenance for a small private product.
 - **Consequence:** Future feature commands compose the shared shell and primitives rather than introducing new navigation or one-off state patterns. Command 6 module pages contain fictional layout previews only; API authorization remains the security boundary. Important client interactions are tested with Vitest and React Testing Library, and all UI work must retain descriptive page titles, visible focus, reduced-motion support, and sensible small-screen behavior.
 
+## ADR-015 — Customer Access Is Separate From Email Verification
+
+- **Status:** Accepted
+- **Date:** 2026-08-24
+- **Decision:** Keep customer business status, user access status, and email verification as separate facts. Administrator deactivation sets the customer to `INACTIVE`, disables the user, and revokes sessions. Administrator activation restores a verified user to `ACTIVE` but leaves an unverified user `PENDING_VERIFICATION`.
+- **Reason:** Account access is an administrator policy decision, while email verification proves control of an address. Treating activation as verification would weaken the authentication boundary and make audit history ambiguous.
+- **Consequence:** Administrator-created customers use the verification outbox flow. Customer detail exposes both customer and account status. Administrator mutations are audited atomically, and audit metadata contains field names/state only rather than submitted personal values.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

@@ -5,9 +5,10 @@ import { AppService } from './app.service';
 import { ApiExceptionFilter } from './common/errors/api-exception.filter';
 import { EnvironmentModule } from './infrastructure/environment/environment.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { CustomerModule } from './modules/customers/customer.module';
 
 @Module({
-  imports: [EnvironmentModule, AuthModule],
+  imports: [EnvironmentModule, AuthModule, CustomerModule],
   controllers: [AppController],
   providers: [
     AppService,

@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 6 — Build the Application Layouts
+- **Current command:** Command 7 — Implement Customer Management
 - **Current status:** Completed and delivered to GitHub `main`
 - **Last updated:** 2026-08-24
-- **Next command:** Command 7 — Implement Customer Management
+- **Next command:** Command 8 — Implement Products and Pricing
 - **Next command authorized:** No
 
 ## Command Reports
@@ -466,6 +466,70 @@ Run **Command 6 — Build the Application Layouts** after explicit user authoriz
 #### Recommended next command
 
 Run **Command 7 — Implement Customer Management** after explicit user authorization.
+
+### Command 7 — Implement Customer Management
+
+- **Status:** Completed and delivered to GitHub `main`
+- **Date:** 2026-08-24
+
+#### Scope completed
+
+- Added shared, runtime-validated contracts for customer creation, profile and billing edits, access changes, password changes, paginated search/filter input, summaries, detailed linked records, statuses, and lossless monetary responses.
+- Added a NestJS `CustomerModule` with administrator customer creation, paginated search across number/name/company/email, customer-status filtering, owned/admin detail reads, profile editing, administrator billing editing, account access activation/deactivation, and customer password changes.
+- Reused the secure registration boundary for administrator-created customers so passwords remain Argon2id hashed and email verification is queued through the encrypted-token transactional outbox flow.
+- Kept customer status, account access, and email verification separate. Deactivation disables the user and revokes sessions; activation cannot mark an unverified address as verified.
+- Returned total counts and the ten most recent orders, services, invoices, payments, and tickets from customer detail, with all money serialized as decimal-string minor units.
+- Applied administrator role checks to directory, creation, billing, and access routes, and combined role plus exact customer-ID ownership checks for shared profile/detail and customer-only password routes.
+- Recorded administrator creation/profile/billing/access mutations in `ActivityLog`; creation audit is in the registration transaction, and edit metadata contains changed field names rather than submitted personal values.
+- Replaced the administrator customer preview with responsive search, filtering, pagination, customer creation, customer details, profile/billing editing, explicit access confirmation, status indicators, and linked-history summaries.
+- Replaced the portal profile preview with authenticated owned-profile loading, permitted contact/address editing, and current-password-confirmed password change followed by session-ending sign-in redirection.
+- Added customer-management unit, API integration, and frontend tests and durable module documentation.
+
+#### Files changed
+
+- Shared contracts: `packages/shared/src/contracts/customers.ts`, `packages/shared/src/index.ts`
+- Customer API: `apps/api/src/modules/customers/**`, `apps/api/src/app.module.ts`
+- Authentication reuse/export: `apps/api/src/modules/auth/auth.module.ts`, `apps/api/src/modules/auth/services/auth.service.ts`
+- API integration tests: `apps/api/test/customers.e2e-spec.ts`
+- Administrator interface: `apps/web/src/app/(admin)/admin/customers/**`, `apps/web/src/components/customers/admin-customer-manager.tsx`, `apps/web/src/components/customers/admin-customer-detail.tsx`
+- Customer self-service: `apps/web/src/app/(portal)/portal/profile/page.tsx`, `apps/web/src/components/customers/customer-profile.tsx`
+- Shared frontend support/tests: `apps/web/src/components/customers/customer-fields.tsx`, `apps/web/src/components/customers/customer-management.test.tsx`, `apps/web/src/components/ui/icon.tsx`, `apps/web/src/lib/auth-api.ts`
+- Documentation: `README.md`, `docs/CUSTOMER_MANAGEMENT.md`, `docs/DECISIONS.md`, `docs/PROGRESS.md`
+
+#### Validation
+
+- Prettier formatting check and `git diff --check`: passed.
+- ESLint for API, worker, and web: passed without warnings.
+- Strict TypeScript checks for all six code workspace projects: passed, including generated Next.js route types.
+- Complete non-integration test suite: 9 shared-contract tests, 15 API tests, 1 worker test, and 8 frontend tests passed (33 total).
+- Customer unit tests: 2 passed, covering activation behavior for verified and unverified accounts.
+- API end-to-end suite: 3 suites and 10 tests passed against local PostgreSQL and Redis. Customer coverage includes administrator creation/search/filter/detail/profile/billing/access workflows, atomic audit records, verification preservation, role denial, ownership denial, self-profile editing, password change, and session revocation.
+- Frontend suite: 3 files and 8 tests passed, including administrator customer results/detail navigation and authenticated customer-profile loading.
+- Database, shared packages, NestJS API, NestJS worker, and Next.js production builds: passed.
+- Next.js production generation: passed for 24 application routes plus the framework not-found route; the new `/admin/customers/[customerId]` route renders dynamically.
+- Prisma emitted its known OpenSSL detection warning in the generic validation container, but client generation, database-backed integration tests, and all builds completed successfully.
+
+#### Decisions made
+
+- Administrator-created customers start in `PENDING_VERIFICATION`; administrator activation is not evidence of email ownership.
+- Access deactivation uses customer `INACTIVE` plus user `DISABLED` and revokes active sessions. `SUSPENDED` remains available for later service/billing policy rather than being overloaded for manual account deactivation.
+- Customers may edit name, company, phone, and address fields. Email identity, customer number, status, and tax identifier remain outside customer self-service.
+- Email changes are intentionally excluded because a safe change requires a dedicated re-verification workflow; no administrator action silently changes authentication identity in this command.
+- Customer detail returns bounded recent previews with total counts; later order, service, invoice, payment, and ticket commands own full history views.
+- Password changes revoke all sessions and require a fresh sign-in.
+
+#### Open questions and risks
+
+- Verification emails still require the future SMTP/outbox consumer. Administrator-created customers cannot sign in until their queued verification action is delivered and completed.
+- There is no resend-verification administrator action yet; that belongs with email delivery/account lifecycle hardening rather than bypassing verification.
+- Customer email-change and administrator password-reset initiation are intentionally absent until dedicated verified-identity flows are authorized.
+- The dashboard shell still shows fictional identity/search/notification content from Command 6; customer module pages themselves use protected API data.
+- Full linked-record navigation will be completed by Commands 9–14 as those business modules become real.
+- Payment provider, SMTP delivery provider, production WHM credentials, tax rules, billing policies, and production hosting remain unresolved.
+
+#### Recommended next command
+
+Run **Command 8 — Implement Products and Pricing** after explicit user authorization.
 
 ## Report Template
 

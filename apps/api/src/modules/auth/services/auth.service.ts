@@ -47,6 +47,11 @@ export interface LoginResult {
   session: AuthenticationSession;
 }
 
+export interface RegisteredCustomerAccount {
+  userId: string;
+  customerId: string;
+}
+
 function isUniqueConstraintError(error: unknown): boolean {
   return (
     typeof error === 'object' &&
@@ -87,9 +92,10 @@ export class AuthService {
   }
 
   async register(
-    input: RegistrationRequest,
+    input: RegistrationRequest & { taxIdentifier?: string },
     context: SecurityRequestContext,
-  ): Promise<void> {
+    options?: { administratorActorUserId: string },
+  ): Promise<RegisteredCustomerAccount> {
     const passwordHash = await this.passwords.hash(input.password);
     const userId = randomUUID();
     const customerId = randomUUID();
@@ -128,6 +134,9 @@ export class AuthService {
                   : {}),
                 ...(input.region ? { region: input.region } : {}),
                 ...(input.postalCode ? { postalCode: input.postalCode } : {}),
+                ...(input.taxIdentifier
+                  ? { taxIdentifier: input.taxIdentifier }
+                  : {}),
               },
             },
           },
@@ -164,7 +173,20 @@ export class AuthService {
             ipAddressHash: context.ipAddressHash,
           },
         });
+        if (options) {
+          await transaction.activityLog.create({
+            data: {
+              actorUserId: options.administratorActorUserId,
+              action: 'CUSTOMER_CREATED_BY_ADMIN',
+              entityType: 'CUSTOMER',
+              entityId: customerId,
+              ipAddressHash: context.ipAddressHash,
+              metadata: { accountStatus: 'PENDING_VERIFICATION' },
+            },
+          });
+        }
       });
+      return { userId, customerId };
     } catch (error) {
       if (isUniqueConstraintError(error)) {
         throw new ApplicationException({
