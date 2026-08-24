@@ -53,4 +53,5 @@ See `docs/DEVELOPMENT.md` for setup, health checks, connectivity, shutdown, and 
 - `docs/AUTHENTICATION.md` — authentication flows, cookies, CSRF, authorization, and sessions
 - `docs/DATABASE.md` — schema, migration, deletion, and seed-data decisions
 - `docs/DEVELOPMENT.md` — local infrastructure and application setup
+- `docs/FRONTEND_DESIGN_SYSTEM.md` — application shells, design tokens, responsive behavior, and UI components
 - `docs/PROGRESS.md` — command-by-command implementation reports

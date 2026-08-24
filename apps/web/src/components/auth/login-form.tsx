@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
+import type { AuthenticatedSessionResponse } from '@webhost-billing/shared';
 import { authMutation } from '../../lib/auth-api';
 import { Field, FormNotice, SubmitButton } from './form-controls';
 
@@ -18,11 +19,15 @@ export function LoginForm() {
     const form = new FormData(event.currentTarget);
 
     try {
-      await authMutation('/auth/login', 'POST', {
-        email: String(form.get('email') ?? ''),
-        password: String(form.get('password') ?? ''),
-      });
-      router.push('/account');
+      const result = await authMutation<AuthenticatedSessionResponse>(
+        '/auth/login',
+        'POST',
+        {
+          email: String(form.get('email') ?? ''),
+          password: String(form.get('password') ?? ''),
+        },
+      );
+      router.push(result.identity.role === 'ADMIN' ? '/admin' : '/portal');
       router.refresh();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Sign-in failed.');

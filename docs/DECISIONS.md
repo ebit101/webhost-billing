@@ -106,6 +106,14 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** The private billing application needs immediate session revocation, server-authoritative roles and ownership, browser CSRF protection, credential-stuffing resistance, and safe single-use email actions without exposing durable bearer tokens to JavaScript or persistence logs.
 - **Consequence:** PostgreSQL and Redis are required for authentication. Public registration creates customers only; administrators require a trusted provisioning process. Production must use HTTPS, an exact CORS origin, unique independent secrets, and shared rate-limit storage. Email delivery remains a future outbox consumer and must decrypt action tokens only at the delivery boundary.
 
+## ADR-014 — Three-Surface Responsive Interface System
+
+- **Status:** Accepted
+- **Date:** 2026-08-24
+- **Decision:** Organize the Next.js interface into public/store, customer-portal, and administrator route-group shells. Share a slate/cyan design-token system and accessible primitives for buttons, navigation, tables, statuses, feedback states, confirmation, and notifications while allowing the public surface to be more expressive and the operational workspaces to be denser.
+- **Reason:** Customers, prospective customers, and the hosting owner have different tasks, but maintaining three unrelated component systems would create inconsistency and unnecessary maintenance for a small private product.
+- **Consequence:** Future feature commands compose the shared shell and primitives rather than introducing new navigation or one-off state patterns. Command 6 module pages contain fictional layout previews only; API authorization remains the security boundary. Important client interactions are tested with Vitest and React Testing Library, and all UI work must retain descriptive page titles, visible focus, reduced-motion support, and sensible small-screen behavior.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

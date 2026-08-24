@@ -86,12 +86,19 @@ export function AccountPanel() {
           <dd className="mt-1 font-semibold text-slate-950">{identity.role}</dd>
         </div>
       </dl>
+      <Link
+        href={identity.role === 'ADMIN' ? '/admin' : '/portal'}
+        className="inline-flex min-h-11 items-center justify-center rounded-xl bg-brand-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+      >
+        Open {identity.role === 'ADMIN' ? 'administrator' : 'customer'}{' '}
+        workspace
+      </Link>
       <div className="grid gap-3 sm:grid-cols-2">
         <button
           type="button"
           disabled={busy}
           onClick={() => void logout(false)}
-          className="h-11 rounded-xl bg-slate-950 px-5 font-semibold text-white disabled:opacity-60"
+          className="h-11 rounded-xl border border-slate-300 bg-white px-5 font-semibold text-slate-800 transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-600 disabled:opacity-60"
         >
           Sign out
         </button>
@@ -99,7 +106,7 @@ export function AccountPanel() {
           type="button"
           disabled={busy}
           onClick={() => void logout(true)}
-          className="h-11 rounded-xl border border-slate-300 px-5 font-semibold text-slate-800 disabled:opacity-60"
+          className="h-11 rounded-xl border border-red-200 bg-red-50 px-5 font-semibold text-red-700 transition hover:bg-red-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-red-600 disabled:opacity-60"
         >
           Revoke all sessions
         </button>

@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 5 — Implement Authentication
+- **Current command:** Command 6 — Build the Application Layouts
 - **Current status:** Completed and delivered to GitHub `main`
 - **Last updated:** 2026-08-24
-- **Next command:** Command 6 — Build the Application Layouts
+- **Next command:** Command 7 — Implement Customer Management
 - **Next command authorized:** No
 
 ## Command Reports
@@ -397,6 +397,75 @@ Run **Command 5 — Implement Authentication** after explicit user authorization
 #### Recommended next command
 
 Run **Command 6 — Build the Application Layouts** after explicit user authorization.
+
+### Command 6 — Build the Application Layouts
+
+- **Status:** Completed and delivered to GitHub `main`
+- **Date:** 2026-08-24
+
+#### Scope completed
+
+- Reorganized the Next.js application into public/store, customer-portal, and administrator route-group shells without changing their intended public URLs.
+- Built a polished public storefront with sticky desktop/mobile navigation, responsive hero, fictional hosting-plan cards, plan comparison table, trust messaging, support callout, and business footer.
+- Built a calm customer-portal workspace with responsive off-canvas navigation, header search, account controls, summary metrics, fictional service table, invoice callout, support empty state, and preview pages for services, invoices, support, and profile/security.
+- Built a denser administrator workspace with responsive off-canvas navigation, header search, operational metrics, recent billing table, revenue visualization, audit activity, and preview pages for every planned administrator navigation area.
+- Added shared brand, icon, button, page-header, metric-card, generic data-table, status-badge, empty/loading/error-state, confirmation-dialog, toast, public-navigation, footer, and workspace-shell components.
+- Added accessible interaction behavior including skip navigation, visible focus, descriptive page metadata, `aria-current`, disclosure state, mobile body-scroll locking, Escape dismissal, focus movement/restoration, dialog focus containment, live notification announcements, and reduced-motion handling.
+- Restyled the authentication pages to use the shared visual system and changed successful login routing to the appropriate customer or administrator workspace according to the server-returned role.
+- Added global loading and error boundaries that communicate state safely and provide explicit recovery.
+- Added Vitest, jsdom, React Testing Library, and `user-event` as the frontend component-testing baseline.
+- Added focused interaction tests for mobile navigation, selection, Escape dismissal, focus restoration, confirmation and focus containment, toast announcement/dismissal, table captions, and status rendering.
+- Kept every dashboard identity, domain, reference, metric, price, and chart value fictional; placeholder module routes implement layout only and make no business-data writes.
+- Documented route organization, design tokens, shared components, responsive behavior, accessibility expectations, fictional-data boundaries, and frontend testing.
+
+#### Files changed
+
+- Store shell and pages: `apps/web/src/app/(store)/**`
+- Customer shell and previews: `apps/web/src/app/(portal)/**`
+- Administrator shell and previews: `apps/web/src/app/(admin)/**`
+- Root states and design tokens: `apps/web/src/app/layout.tsx`, `apps/web/src/app/globals.css`, `apps/web/src/app/loading.tsx`, `apps/web/src/app/error.tsx`
+- Shared layout and dashboard components: `apps/web/src/components/layout/**`, `apps/web/src/components/dashboard/**`
+- Shared UI primitives and tests: `apps/web/src/components/ui/**`
+- Authentication visual integration: `apps/web/src/app/{login,register,forgot-password,reset-password,verify-email,account}/**`, `apps/web/src/components/auth/**`
+- Frontend test configuration and dependencies: `apps/web/vitest.config.mts`, `apps/web/vitest.setup.ts`, `apps/web/package.json`, `pnpm-lock.yaml`
+- Documentation: `README.md`, `docs/FRONTEND_DESIGN_SYSTEM.md`, `docs/DECISIONS.md`, `docs/PROGRESS.md`
+
+#### Validation
+
+- Frozen-lockfile dependency installation: passed; pnpm supply-chain policy verification passed for 1,175 entries.
+- Prettier formatting check and `git diff --check`: passed.
+- ESLint for API, worker, and web: passed without warnings.
+- Strict TypeScript checks for all six code workspace projects: passed, including generated Next.js route types.
+- Complete unit/contract/component suite: 9 shared-contract tests, 13 API tests, 1 worker test, and 6 web interaction tests passed (29 total).
+- Frontend component tests: 2 suites and 6 tests passed with jsdom and real user-event interactions.
+- Database, shared packages, NestJS API, NestJS worker, and Next.js production builds: passed.
+- Next.js production generation: passed for 23 public application routes plus the framework not-found route; 21 routes are static and 2 token-query routes render dynamically.
+- Rendered-route smoke audit: representative public, plan, login, portal, portal-module, administrator, and administrator-module routes all returned HTTP 200 with descriptive titles.
+- Command 6 web development Docker image: passed from a clean dependency layer, including lockfile policy verification and shared-package generation.
+- Containerized image smoke test: `/`, `/portal`, and `/admin` each returned HTTP 200 with the expected distinct page title.
+
+#### Decisions made
+
+- Route groups own the three application shells while public URLs remain `/`, `/hosting`, `/portal/**`, and `/admin/**`.
+- Public pages use more expressive typography and spacing; customer and administrator workspaces share one maintainable navigation/header system with different information density.
+- Cyan/teal is the primary brand/action color, slate is the neutral foundation, and emerald/amber/red/blue tones have consistent status meaning.
+- Tables retain semantic markup and scroll horizontally on narrow screens instead of collapsing important billing columns.
+- Confirmation and notification patterns are global primitives rather than feature-specific implementations.
+- Placeholder module screens clearly identify themselves as fictional layout previews so later commands can replace them without suggesting a completed workflow.
+- API authorization remains the security boundary. A visible administrator or customer route is not proof of role or ownership, and future data loaders must call protected API endpoints.
+
+#### Open questions and risks
+
+- Portal and administrator dashboard values are fictional and not connected to API data. Each later business-module command must replace only its authorized preview content.
+- The shell search and notification controls are visual placeholders; query behavior and persisted notifications have not been authorized.
+- Next.js pages currently render fictional shells without a server-side route redirect when no session exists. This exposes no private data, but real module pages must add authenticated loading/redirect behavior while retaining API authorization.
+- Automated tests cover keyboard-critical interactions and semantic output, but a full browser accessibility audit and cross-browser visual-regression suite are still future hardening work.
+- Business branding, logo asset, final public copy, real hosting plans, prices, and supported currency remain owner decisions; current marketing data is explicitly fictional.
+- Payment provider, SMTP delivery provider, production WHM credentials, tax rules, billing policies, and production hosting remain unresolved.
+
+#### Recommended next command
+
+Run **Command 7 — Implement Customer Management** after explicit user authorization.
 
 ## Report Template
 
