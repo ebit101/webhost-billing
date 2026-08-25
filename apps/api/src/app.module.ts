@@ -16,6 +16,7 @@ import { HostingPanelModule } from './modules/hosting-panels/hosting-panel.modul
 import { BackgroundJobModule } from './modules/background-jobs/background-job.module';
 import { EmailNotificationModule } from './modules/email-notifications/email-notification.module';
 import { RenewalAutomationModule } from './modules/renewal-automation/renewal-automation.module';
+import { TicketModule } from './modules/tickets/ticket.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { RenewalAutomationModule } from './modules/renewal-automation/renewal-au
     BackgroundJobModule,
     EmailNotificationModule,
     RenewalAutomationModule,
+    TicketModule,
   ],
   controllers: [AppController],
   providers: [

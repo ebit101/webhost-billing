@@ -1,7 +1,7 @@
 import { randomBytes } from 'node:crypto';
 
 export function createHumanReadableNumber(
-  prefix: 'ORD' | 'INV',
+  prefix: 'ORD' | 'INV' | 'TKT',
   now = new Date(),
   entropy: Uint8Array = randomBytes(8),
 ): string {

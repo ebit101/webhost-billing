@@ -306,11 +306,44 @@ export class EmailMessageResolver {
       where: { id: ticketId },
       include: {
         customer: { include: { user: true } },
+        assignedAdmin: { include: { adminProfile: true } },
         messages: { where: { id: messageId }, take: 1 },
       },
     });
     const message = ticket?.messages[0];
     if (!ticket || !message) throw permanent('EMAIL_TICKET_REPLY_UNAVAILABLE');
+    if (message.kind === 'CUSTOMER') {
+      const assignedAdmin =
+        ticket.assignedAdmin?.status === 'ACTIVE' &&
+        ticket.assignedAdmin.deletedAt === null
+          ? ticket.assignedAdmin
+          : await this.prisma.user.findFirst({
+              where: {
+                role: 'ADMIN',
+                status: 'ACTIVE',
+                deletedAt: null,
+                adminProfile: { isNot: null },
+              },
+              include: { adminProfile: true },
+              orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+            });
+      if (!assignedAdmin) throw permanent('EMAIL_TICKET_ADMIN_UNAVAILABLE');
+      return this.render(
+        assignedAdmin.email,
+        {
+          key: 'ticket-reply',
+          recipientName:
+            assignedAdmin.adminProfile?.displayName ?? 'Administrator',
+          ticketNumber: ticket.ticketNumber,
+          subject: ticket.subject,
+          replyExcerpt: message.body.slice(0, 500),
+          ticketUrl: this.url('/admin/support'),
+        },
+        ticket.customerId,
+        undefined,
+        ticket.id,
+      );
+    }
     return this.render(
       ticket.customer.user.email,
       {

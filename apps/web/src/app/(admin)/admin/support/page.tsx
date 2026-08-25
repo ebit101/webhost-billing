@@ -1,12 +1,6 @@
 import type { Metadata } from 'next';
-import { SectionPreview } from '../../../../components/dashboard/section-preview';
+import { AdminTicketManager } from '../../../../components/support/admin-ticket-manager';
 export const metadata: Metadata = { title: 'Support' };
 export default function Page() {
-  return (
-    <SectionPreview
-      area="Administrator"
-      title="Support"
-      description="Keep customer support conversations organized and visible."
-    />
-  );
+  return <AdminTicketManager />;
 }

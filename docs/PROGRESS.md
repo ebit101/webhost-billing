@@ -1313,6 +1313,65 @@ Run **Command 19 — Implement Renewal Automation** only after explicit user aut
 
 Run **Command 20 — Implement Support Tickets** only after explicit user authorization. Keep ticket ownership, administrator assignment/state changes, customer-visible replies, audit history, and email events separate from renewal automation.
 
+### Command 20 — Implement Support Tickets
+
+- **Status:** Completed and delivered to GitHub `main`
+- **Date:** 2026-08-25
+
+#### Scope completed
+
+- Implemented strict shared contracts for plain-text ticket creation, replies, list filters, details, assignment, priority, status controls, setup options, and the existing four-state vocabulary.
+- Added customer ticket creation with authenticated customer identity, optional owned-service validation, `NORMAL` initial priority, `OPEN` initial state, human-readable `TKT` numbering, and exact retry idempotency through client-generated ticket UUIDs.
+- Added append-only customer and administrator replies with message-UUID idempotency. Customer replies move tickets to `WAITING_FOR_STAFF`; administrator replies move them to `WAITING_FOR_CUSTOMER`; closed tickets reject replies until an administrator reopens them.
+- Added service-layer ownership enforcement for customer lists, detail, and replies. URL UUID changes cannot expose or mutate another customer's conversation, and request bodies cannot select a customer identity.
+- Added the administrator support queue with server-backed search, status, priority, service/customer, assignee, and unassigned filters; active-administrator assignment; priority changes; all four explicit statuses; reopen/close controls; and threaded replies.
+- Added transactionally consistent activity records for ticket creation, customer/admin replies, and every administrator assignment, priority, or status update. Audit metadata contains safe IDs and before/after states, never message bodies.
+- Added ticket-creation/reply rate limits through the existing Redis-backed guard and retained global session, role, and CSRF enforcement.
+- Added one durable `EMAIL_TICKET_REPLY` outbox event for each later reply. Administrator replies notify the customer; customer replies notify the assigned active administrator or fall back deterministically to the oldest active administrator. Missing staff leaves a visible permanent email failure without rolling back the reply.
+- Replaced both support placeholders with responsive customer and administrator interfaces for creation, service context, filters, queue management, conversation history, reply workflows, closed-state guidance, and feedback states.
+- Kept attachments out of the initial release. Strict schemas reject additional/file-shaped fields, plain-text contracts reject HTML angle brackets and control characters, React renders text without HTML injection, and the email layer independently escapes persisted text.
+- Added focused support documentation covering routes, ownership, state rules, idempotency, audit, notification routing, interfaces, and the future security requirements for any separately authorized attachment feature.
+
+#### Files changed
+
+- Shared contracts/tests: `packages/shared/src/contracts/tickets.ts`, `packages/shared/src/index.ts`, `packages/shared/test/contracts.spec.ts`
+- Ticket API/tests: `apps/api/src/modules/tickets/**`, `apps/api/src/app.module.ts`, `apps/api/src/common/identifiers/business-number.ts`, `apps/api/src/modules/auth/decorators/rate-limit.decorator.ts`, `apps/api/test/tickets.e2e-spec.ts`
+- Reply-email resolution/tests: `apps/worker/src/email/email-message.resolver.ts`, `apps/worker/src/email/ticket-email-resolution.integration.spec.ts`
+- Administrator/customer interfaces/tests: `apps/web/src/components/support/**`, `apps/web/src/app/(admin)/admin/support/page.tsx`, `apps/web/src/app/(portal)/portal/support/page.tsx`
+- Documentation: `README.md`, `docs/SUPPORT_TICKETS.md`, `docs/API_CONTRACTS.md`, `docs/DATABASE.md`, `docs/DECISIONS.md`, `docs/PROGRESS.md`
+
+#### Validation
+
+- Repository Prettier check, `git diff --check`, API/worker/web ESLint, and strict TypeScript checks for all seven code workspace projects passed without warnings or errors.
+- Shared contracts passed 19 tests; queue infrastructure passed 3 real-Redis tests; API unit suites passed 69 tests; worker suites passed 27 tests; frontend passed 29 tests; and complete API end-to-end validation passed 55 tests across fourteen suites. Total validated tests: 202.
+- Command 20 API coverage passed against real PostgreSQL and Redis for exact create/reply retries, owned and foreign service association, cross-customer denial, strict markup/attachment rejection, customer/admin reply state changes, all administrator controls and filters, durable outbox events, closed-ticket enforcement, and body-free audit evidence.
+- Worker integration coverage passed against real PostgreSQL for opposite-party recipient resolution, assigned administrator delivery, administrator fallback behavior boundary, portal/admin links, ticket linkage, and independent HTML escaping.
+- Prisma formatting, validation, client generation, eighteen-migration status, structural database verification, Docker Compose validation, and PostgreSQL/Redis health checks passed. No schema migration was needed because the Command 3 ticket models already represented the authorized scope.
+- Config/database/shared/queue packages and NestJS API/worker production builds passed. An isolated-output Next.js webpack production build passed and generated all 29 application routes, including both support surfaces, without replacing the running development build output.
+- A source/secret scan passed. Tests used reserved `.test` identities and fake hosting records; no real email, WHM, payment, domain, file-storage, or other external-provider action was executed.
+
+#### Decisions made
+
+- Support remains one simple queue rather than a multi-department help desk. Departments, SLAs, canned responses, satisfaction surveys, knowledge bases, and staff permission matrices remain outside the MVP.
+- Ticket and message IDs double as client submission keys, while `TKT` numbers remain human-facing. This supplies database-enforced exact retry behavior without another schema field or migration.
+- The initial message opens a ticket but is not treated as a reply email. Every subsequent append gets exactly one message-keyed email outbox event.
+- Customer follow-ups notify the assigned active administrator; an unassigned/inactive ticket falls back to the oldest active administrator so a one-owner business still receives the request. Administrator replies always notify the owning customer.
+- Attachments are deliberately absent. Adding them later requires private object storage, authenticated downloads, filename normalization, signature/MIME validation, allowlisted types, size/count limits, malware scanning, retention, and audit design under separate authorization.
+- Ticket status remains independent from service and billing state. Closing a ticket cannot suspend, terminate, cancel, pay, or otherwise mutate a hosting/financial record.
+
+#### Open questions and risks
+
+- Confirm whether the deterministic oldest-active-administrator fallback matches the production staffing workflow. A later staff-permission command may replace it with a configured support recipient or assignment policy.
+- If no active administrator exists, a customer reply is still committed but the email becomes a permanent visible delivery failure. Queue monitoring and at least one active administrator are operational requirements.
+- The production SMTP provider and its bounce/complaint operations remain unresolved from Command 18; ticket notifications currently use the existing preview/SMTP adapter configuration.
+- Attachments are unavailable by design. Customers must use plain text and must not paste passwords, API keys, recovery codes, or other secrets into support conversations.
+- Ticket retention/redaction, SLA reporting, escalation rules, departments, and fine-grained staff permissions are intentionally outside the minimal release and would need explicit business policy before implementation.
+- The PostgreSQL driver continues to emit its known pg@9 concurrent-query deprecation warning in some E2E flows, and Jest emits the existing experimental VM warning. All checks passed.
+
+#### Recommended next command
+
+Run **Command 21 — Implement Settings and Secrets** only after explicit user authorization. Keep ordinary typed business settings separate from encrypted provider secrets, preserve current integration-specific credential boundaries, and audit administrator changes without exposing values.
+
 ## Report Template
 
 Use this template after every future command:

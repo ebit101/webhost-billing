@@ -7,7 +7,9 @@ export interface AuthRateLimitDefinition {
     | 'password-reset-confirmation'
     | 'payment-webhook'
     | 'bkash-callback'
-    | 'sslcommerz-return';
+    | 'sslcommerz-return'
+    | 'ticket-create'
+    | 'ticket-reply';
   limit: number;
   windowMs: number;
   includeEmail: boolean;

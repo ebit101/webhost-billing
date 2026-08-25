@@ -218,6 +218,14 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** UTC instants cross business dates differently, delayed/repeated jobs are normal, concurrent schedulers must not duplicate financial documents, and a later payment must never reactivate a manual or unrelated suspension. A remote WHM mutation can succeed while its acknowledgement or local commit fails.
 - **Consequence:** Renewal periods use UTC month-clamping and a partial unique service/period invoice-line index. Database-safe renewal jobs have bounded retries, while cPanel mutations have one attempt and require verified account state before local changes. Unknown hosting outcomes remain inconsistent. Full verified payment advances the due date and requests unsuspension only for the matching suspension invoice. Initial-release automation has no termination event or handler.
 
+## ADR-028 — Plain-Text, Ownership-Bound Support Conversations
+
+- **Status:** Accepted
+- **Date:** 2026-08-25
+- **Decision:** Keep support as one customer-owned queue with optional owned-service context, append-only plain-text messages, four explicit conversation states, administrator assignment/priority controls, and message-keyed reply email events. Use client-generated UUIDs as ticket/reply IDs for exact retry idempotency and exclude attachments from the initial release.
+- **Reason:** A private hosting business needs reliable conversation history and fast queue ownership without the file-handling, department, SLA, or permission complexity of a general help desk. Ticket URLs and user-supplied markup are untrusted, while network retries must not duplicate messages or notifications.
+- **Consequence:** Customer identity always comes from the session and every detail/reply enforces ownership in the application service. Strict schemas reject HTML-like and attachment-shaped input; React text rendering and email escaping provide independent output defenses. Closed tickets require administrator reopening. Administrator changes and replies are audited without bodies, and customer/staff reply emails use the transactional outbox without rolling back the conversation on delivery failure.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

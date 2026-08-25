@@ -19,3 +19,4 @@ export * from './contracts/responses';
 export * from './contracts/services';
 export * from './contracts/hosting-panels';
 export * from './contracts/states';
+export * from './contracts/tickets';

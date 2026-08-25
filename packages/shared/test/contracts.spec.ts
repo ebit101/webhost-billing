@@ -42,6 +42,9 @@ import {
   renewalAutomationPolicySchema,
   hostingAutomationPayloadSchema,
   ticketStatusSchema,
+  createTicketRequestSchema,
+  replyToTicketRequestSchema,
+  updateTicketRequestSchema,
 } from '../src';
 
 describe('money contracts', () => {
@@ -121,6 +124,52 @@ describe('boundary contracts', () => {
     assert.equal(
       ticketStatusSchema.parse('WAITING_FOR_STAFF'),
       'WAITING_FOR_STAFF',
+    );
+  });
+
+  it('accepts plain-text ticket workflows and rejects markup or attachments', () => {
+    const submissionKey = '10000000-0000-4000-8000-000000000001';
+    assert.equal(
+      createTicketRequestSchema.safeParse({
+        submissionKey,
+        subject: 'Unable to reach my hosting account',
+        body: 'Please check the fictional development hosting account.',
+        serviceId: null,
+      }).success,
+      true,
+    );
+    assert.equal(
+      createTicketRequestSchema.safeParse({
+        submissionKey,
+        subject: '<script>alert(1)</script>',
+        body: 'Unsafe markup',
+      }).success,
+      false,
+    );
+    assert.equal(
+      createTicketRequestSchema.safeParse({
+        submissionKey,
+        subject: 'Attachment attempt',
+        body: 'A file-shaped field must not cross this boundary.',
+        attachments: [{ name: 'proof.html' }],
+      }).success,
+      false,
+    );
+    assert.equal(
+      replyToTicketRequestSchema.safeParse({
+        submissionKey,
+        body: 'A plain-text follow-up.',
+      }).success,
+      true,
+    );
+    assert.equal(updateTicketRequestSchema.safeParse({}).success, false);
+    assert.equal(
+      updateTicketRequestSchema.safeParse({
+        status: 'CLOSED',
+        priority: 'HIGH',
+        assignedAdminId: null,
+      }).success,
+      true,
     );
   });
 

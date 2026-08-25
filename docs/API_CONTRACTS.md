@@ -12,6 +12,7 @@ Zod schemas validate data that crosses an application boundary. Callers must par
 - roles and the separate order, invoice, payment, service, and ticket states;
 - reference-only background job envelopes, queue names, failure visibility, and confirmed retry requests;
 - email event payloads, the twelve active template identifiers, and safe administrator delivery summaries;
+- plain-text support-ticket creation, reply, list, assignment, priority, status, and response schemas;
 - success, paginated-success, and error response envelopes.
 
 Compile-time TypeScript types are inferred from the matching schemas where possible. A TypeScript assertion alone is not boundary validation.
@@ -105,3 +106,7 @@ The filter deliberately ignores original framework exception bodies and unknown 
 ## Renewal automation
 
 Administrator-only renewal endpoints use the strict `RenewalAutomationPolicy` contract. Reminder offsets must be unique and earlier than invoice generation, numerical limits are bounded, and the timezone must be accepted by the runtime as an IANA timezone. Automation-run responses contain safe counts/status/error summaries only; job payloads, credentials, and provider responses are excluded. See `docs/RENEWAL_AUTOMATION.md`.
+
+## Support tickets
+
+Ticket creation and reply requests require UUID submission keys for exact retry safety. Request objects are strict, so attachment-shaped and unexpected fields are rejected. Subject and body contracts allow bounded plain text only and reject HTML angle brackets and unsupported control characters. Customer identity and ownership are never body fields. See `docs/SUPPORT_TICKETS.md` for routes, state rules, email delivery, and the no-attachment policy.

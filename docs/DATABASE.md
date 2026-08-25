@@ -59,6 +59,7 @@ The schema remains one modular-monolith database. Model grouping does not create
 - Orders have unique submission keys so a repeated checkout request returns the original order and invoice instead of creating duplicate financial records.
 - Invoices have unique submission keys for safe administrator and order-generated creation retries.
 - Hosting-panel attempts have unique submission keys and keyed request fingerprints. Matching replays return the original attempt; a changed payload conflicts. Each manual retry is a new row linked to its parent.
+- Ticket creation submission UUIDs become unique ticket IDs, and reply submission UUIDs become unique append-only message IDs. Exact retries return existing history while changed reuse conflicts; each reply email has a separate message-keyed outbox idempotency key.
 
 ### Relationships and deletion
 
@@ -78,6 +79,7 @@ The schema remains one modular-monolith database. Model grouping does not create
 - Activity logs may retain a one-way IP-address hash, not authentication secrets.
 - BullMQ receives outbox/aggregate/correlation references only. Full outbox JSON remains in PostgreSQL and must be revalidated by the trusted consumer; it is never copied wholesale into Redis.
 - Email rows store recipient and subject snapshots plus fixed delivery classifications, but never rendered bodies, raw SMTP responses, reset/verification tokens, or credentials.
+- Ticket rows store bounded plain-text conversations only. The initial release has no attachment model or upload path, and ticket audit metadata excludes message bodies.
 - Authentication session and action-token lookups use SHA-256 hashes of random opaque tokens. Raw reset and verification tokens are encrypted only for pending email delivery; raw session tokens are never stored.
 
 ### Authentication history
