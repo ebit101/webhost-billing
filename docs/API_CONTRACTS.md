@@ -101,3 +101,7 @@ Clients branch on `error.code`, not on the human-readable message.
 `ApiExceptionFilter` is registered globally through `APP_FILTER`. Expected client failures use `ApplicationException` with a stable code, HTTP status, public message, and optional safe issues. Framework exceptions are mapped to generic public definitions by status. Unknown and server-side failures become `INTERNAL_ERROR` responses.
 
 The filter deliberately ignores original framework exception bodies and unknown error messages. Stack traces, SQL or database errors, credentials, internal provider responses, and secret-bearing exception content are never serialized to clients. Its server-error log message is also generic and does not interpolate the original exception.
+
+## Renewal automation
+
+Administrator-only renewal endpoints use the strict `RenewalAutomationPolicy` contract. Reminder offsets must be unique and earlier than invoice generation, numerical limits are bounded, and the timezone must be accepted by the runtime as an IANA timezone. Automation-run responses contain safe counts/status/error summaries only; job payloads, credentials, and provider responses are excluded. See `docs/RENEWAL_AUTOMATION.md`.

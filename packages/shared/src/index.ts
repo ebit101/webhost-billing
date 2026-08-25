@@ -14,6 +14,7 @@ export * from './contracts/payments';
 export * from './contracts/payment-gateways';
 export * from './contracts/pagination';
 export * from './contracts/products';
+export * from './contracts/renewal-automation';
 export * from './contracts/responses';
 export * from './contracts/services';
 export * from './contracts/hosting-panels';

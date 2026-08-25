@@ -1,9 +1,11 @@
 'use client';
 
 import type {
+  AutomationRunSummary,
   BackgroundFailureList,
   FailedBackgroundJob,
   FailedOutboxEvent,
+  RenewalAutomationPolicy,
 } from '@webhost-billing/shared';
 import { useEffect, useState, type ReactNode } from 'react';
 import { authenticatedGet, authMutation } from '../../lib/auth-api';
@@ -17,9 +19,19 @@ const emptyFailures: BackgroundFailureList = {
   outboxEvents: [],
 };
 
+const defaultPolicy: RenewalAutomationPolicy = {
+  enabled: true,
+  invoiceLeadDays: 14,
+  reminderDaysBeforeDue: [7, 3, 1],
+  gracePeriodDays: 3,
+  timeZone: 'Asia/Dhaka',
+};
+
 export function AutomationManager() {
   const [failures, setFailures] =
     useState<BackgroundFailureList>(emptyFailures);
+  const [policy, setPolicy] = useState(defaultPolicy);
+  const [runs, setRuns] = useState<AutomationRunSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingKey, setSavingKey] = useState('');
   const [error, setError] = useState('');
@@ -27,9 +39,17 @@ export function AutomationManager() {
 
   useEffect(() => {
     let active = true;
-    void authenticatedGet<BackgroundFailureList>('/background-jobs/failures')
-      .then((result) => {
-        if (active) setFailures(result);
+    void Promise.all([
+      authenticatedGet<BackgroundFailureList>('/background-jobs/failures'),
+      authenticatedGet<RenewalAutomationPolicy>('/renewal-automation/policy'),
+      authenticatedGet<AutomationRunSummary[]>('/renewal-automation/runs'),
+    ])
+      .then(([failureResult, policyResult, runResult]) => {
+        if (active) {
+          setFailures(failureResult);
+          setPolicy(policyResult);
+          setRuns(runResult);
+        }
       })
       .catch((caught: unknown) => {
         if (active) setError(message(caught));
@@ -41,6 +61,24 @@ export function AutomationManager() {
       active = false;
     };
   }, []);
+
+  async function savePolicy() {
+    setSavingKey('renewal-policy');
+    clearMessages();
+    try {
+      const saved = await authMutation<RenewalAutomationPolicy>(
+        '/renewal-automation/policy',
+        'PUT',
+        policy,
+      );
+      setPolicy(saved);
+      setNotice('Renewal automation settings were saved.');
+    } catch (caught) {
+      setError(message(caught));
+    } finally {
+      setSavingKey('');
+    }
+  }
 
   async function retryQueue(job: FailedBackgroundJob) {
     const key = `queue-${job.queueName}-${job.jobId}`;
@@ -121,6 +159,161 @@ export function AutomationManager() {
           {notice}
         </p>
       ) : null}
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-bold text-slate-950">Renewal policy</h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Daily invoice, reminder, overdue, suspension, and verified-payment
+              reactivation rules.
+            </p>
+          </div>
+          <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+            <input
+              type="checkbox"
+              checked={policy.enabled}
+              onChange={(event) =>
+                setPolicy((current) => ({
+                  ...current,
+                  enabled: event.target.checked,
+                }))
+              }
+            />
+            Automation enabled
+          </label>
+        </div>
+        <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <PolicyField label="Invoice lead days">
+            <input
+              aria-label="Invoice lead days"
+              className={inputStyles}
+              type="number"
+              min={1}
+              max={90}
+              value={policy.invoiceLeadDays}
+              onChange={(event) =>
+                setPolicy((current) => ({
+                  ...current,
+                  invoiceLeadDays: Number(event.target.value),
+                }))
+              }
+            />
+          </PolicyField>
+          <PolicyField label="Reminder days">
+            <input
+              aria-label="Reminder days"
+              className={inputStyles}
+              value={policy.reminderDaysBeforeDue.join(', ')}
+              onChange={(event) =>
+                setPolicy((current) => ({
+                  ...current,
+                  reminderDaysBeforeDue: event.target.value
+                    .split(',')
+                    .map((value) => value.trim())
+                    .filter((value) => value.length > 0)
+                    .map(Number)
+                    .filter(Number.isFinite),
+                }))
+              }
+            />
+          </PolicyField>
+          <PolicyField label="Grace period days">
+            <input
+              aria-label="Grace period days"
+              className={inputStyles}
+              type="number"
+              min={0}
+              max={60}
+              value={policy.gracePeriodDays}
+              onChange={(event) =>
+                setPolicy((current) => ({
+                  ...current,
+                  gracePeriodDays: Number(event.target.value),
+                }))
+              }
+            />
+          </PolicyField>
+          <PolicyField label="Business time zone">
+            <input
+              aria-label="Business time zone"
+              className={inputStyles}
+              value={policy.timeZone}
+              onChange={(event) =>
+                setPolicy((current) => ({
+                  ...current,
+                  timeZone: event.target.value,
+                }))
+              }
+            />
+          </PolicyField>
+        </div>
+        <div className="mt-5 flex justify-end">
+          <Button
+            disabled={loading || savingKey === 'renewal-policy'}
+            onClick={() => void savePolicy()}
+          >
+            Save renewal policy
+          </Button>
+        </div>
+      </section>
+
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold text-slate-950">
+            Recent renewal runs
+          </h2>
+          <span className="text-xs font-semibold text-slate-500">
+            Latest 50
+          </span>
+        </div>
+        {runs.length === 0 ? (
+          <p className="rounded-2xl border border-dashed border-slate-300 bg-white p-5 text-sm text-slate-500">
+            No renewal automation cycle has run yet.
+          </p>
+        ) : (
+          <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
+            <table className="min-w-full text-left text-sm">
+              <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+                <tr>
+                  <th className="px-4 py-3">Run</th>
+                  <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3">Results</th>
+                  <th className="px-4 py-3">Started</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {runs.map((run) => (
+                  <tr key={run.id}>
+                    <td className="px-4 py-3 font-semibold text-slate-900">
+                      {run.jobName}
+                    </td>
+                    <td className="px-4 py-3">
+                      <StatusBadge
+                        tone={
+                          run.status === 'SUCCEEDED'
+                            ? 'success'
+                            : run.status === 'FAILED'
+                              ? 'danger'
+                              : 'warning'
+                        }
+                      >
+                        {run.status}
+                      </StatusBadge>
+                    </td>
+                    <td className="px-4 py-3 text-slate-600">
+                      {run.succeededCount} succeeded · {run.failedCount} failed
+                    </td>
+                    <td className="px-4 py-3 text-slate-600">
+                      {new Date(run.startedAt).toLocaleString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
 
       {loading ? (
         <LoadingState label="Loading background failures" />
@@ -228,6 +421,24 @@ export function AutomationManager() {
         </div>
       )}
     </div>
+  );
+}
+
+const inputStyles =
+  'mt-1 min-h-11 w-full rounded-xl border border-slate-300 px-3 text-sm text-slate-950 outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-100';
+
+function PolicyField({
+  label,
+  children,
+}: {
+  label: string;
+  children: ReactNode;
+}) {
+  return (
+    <label className="text-sm font-semibold text-slate-700">
+      {label}
+      {children}
+    </label>
   );
 }
 

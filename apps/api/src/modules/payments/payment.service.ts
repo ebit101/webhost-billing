@@ -594,6 +594,27 @@ export class PaymentService {
         },
       },
     });
+    if (
+      fullyPaid &&
+      (await transaction.invoiceItem.count({
+        where: {
+          invoiceId: invoice.id,
+          serviceId: { not: null },
+          servicePeriodStart: { not: null },
+          servicePeriodEnd: { not: null },
+        },
+      })) > 0
+    ) {
+      await transaction.outboxEvent.create({
+        data: {
+          aggregateType: 'PAYMENT',
+          aggregateId: paymentId,
+          eventType: 'RENEWAL_PAYMENT_COMPLETED',
+          idempotencyKey: `renewal-payment:${paymentId}`,
+          payload: { schemaVersion: 1, paymentId, invoiceId: invoice.id },
+        },
+      });
+    }
     await transaction.activityLog.create({
       data: {
         actorUserId: actor.identity.userId,

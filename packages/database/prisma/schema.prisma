@@ -418,6 +418,7 @@ model Service {
   productPriceId             String                  @map("product_price_id") @db.Uuid
   serverId                   String                  @map("server_id") @db.Uuid
   terminatedByUserId         String?                 @map("terminated_by_user_id") @db.Uuid
+  suspensionInvoiceId        String?                 @map("suspension_invoice_id") @db.Uuid
   status                     ServiceStatus           @default(PENDING)
   domain                     String?                 @db.VarChar(253)
   productNameSnapshot        String                  @map("product_name_snapshot") @db.VarChar(160)
@@ -446,6 +447,7 @@ model Service {
   productPrice               ProductPrice            @relation(fields: [productPriceId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   server                     Server                  @relation(fields: [serverId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   terminatedBy               User?                   @relation("ServiceTerminatedBy", fields: [terminatedByUserId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  suspensionInvoice          Invoice?                @relation("ServiceSuspensionInvoice", fields: [suspensionInvoiceId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   invoiceItems               InvoiceItem[]
   tickets                    Ticket[]
   hostingPanelOperations     HostingPanelOperation[]
@@ -456,6 +458,7 @@ model Service {
   @@index([serverId, status], map: "services_server_status_idx")
   @@index([productPriceId], map: "services_product_price_id_idx")
   @@index([terminatedByUserId], map: "services_terminated_by_user_id_idx")
+  @@index([suspensionInvoiceId], map: "services_suspension_invoice_id_idx")
   @@map("services")
 }
 
@@ -485,7 +488,8 @@ model HostingPanelOperation {
   id                 String                      @id @default(uuid()) @db.Uuid
   serviceId          String?                     @map("service_id") @db.Uuid
   serverId           String                      @map("server_id") @db.Uuid
-  requestedByUserId  String                      @map("requested_by_user_id") @db.Uuid
+  requestedByUserId  String?                     @map("requested_by_user_id") @db.Uuid
+  automationRunId    String?                     @map("automation_run_id") @db.Uuid
   retryOfOperationId String?                     @unique(map: "hosting_panel_operations_retry_of_operation_id_key") @map("retry_of_operation_id") @db.Uuid
   type               HostingPanelOperationType
   status             HostingPanelOperationStatus @default(RUNNING)
@@ -505,13 +509,15 @@ model HostingPanelOperation {
   updatedAt          DateTime                    @updatedAt @map("updated_at") @db.Timestamptz(3)
   service            Service?                    @relation(fields: [serviceId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   server             Server                      @relation(fields: [serverId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  requestedBy        User                        @relation("HostingOperationRequestedBy", fields: [requestedByUserId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  requestedBy        User?                       @relation("HostingOperationRequestedBy", fields: [requestedByUserId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  automationRun      AutomationRun?              @relation(fields: [automationRunId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   retryOfOperation   HostingPanelOperation?      @relation("HostingOperationRetries", fields: [retryOfOperationId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   retries            HostingPanelOperation[]     @relation("HostingOperationRetries")
 
   @@index([serviceId, createdAt], map: "hosting_panel_operations_service_created_at_idx")
   @@index([serverId, createdAt], map: "hosting_panel_operations_server_created_at_idx")
   @@index([status, createdAt], map: "hosting_panel_operations_status_created_at_idx")
+  @@index([automationRunId], map: "hosting_panel_operations_automation_run_id_idx")
   @@map("hosting_panel_operations")
 }
 
@@ -546,6 +552,7 @@ model Invoice {
   items                    InvoiceItem[]
   payments                 Payment[]
   emailLogs                EmailLog[]
+  suspendedServices        Service[]     @relation("ServiceSuspensionInvoice")
 
   @@index([customerId, createdAt], map: "invoices_customer_created_at_idx")
   @@index([status, dueAt], map: "invoices_status_due_at_idx")
@@ -747,18 +754,19 @@ model ActivityLog {
 }
 
 model AutomationRun {
-  id             String           @id @default(uuid()) @db.Uuid
-  jobName        String           @map("job_name") @db.VarChar(100)
-  idempotencyKey String           @unique(map: "automation_runs_idempotency_key") @map("idempotency_key") @db.VarChar(191)
-  status         AutomationStatus @default(RUNNING)
-  startedAt      DateTime         @default(now()) @map("started_at") @db.Timestamptz(3)
-  completedAt    DateTime?        @map("completed_at") @db.Timestamptz(3)
-  processedCount Int              @default(0) @map("processed_count")
-  succeededCount Int              @default(0) @map("succeeded_count")
-  failedCount    Int              @default(0) @map("failed_count")
-  errorSummary   String?          @map("error_summary") @db.Text
-  metadata       Json?
-  createdAt      DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  id                     String                  @id @default(uuid()) @db.Uuid
+  jobName                String                  @map("job_name") @db.VarChar(100)
+  idempotencyKey         String                  @unique(map: "automation_runs_idempotency_key") @map("idempotency_key") @db.VarChar(191)
+  status                 AutomationStatus        @default(RUNNING)
+  startedAt              DateTime                @default(now()) @map("started_at") @db.Timestamptz(3)
+  completedAt            DateTime?               @map("completed_at") @db.Timestamptz(3)
+  processedCount         Int                     @default(0) @map("processed_count")
+  succeededCount         Int                     @default(0) @map("succeeded_count")
+  failedCount            Int                     @default(0) @map("failed_count")
+  errorSummary           String?                 @map("error_summary") @db.Text
+  metadata               Json?
+  createdAt              DateTime                @default(now()) @map("created_at") @db.Timestamptz(3)
+  hostingPanelOperations HostingPanelOperation[]
 
   @@index([jobName, startedAt], map: "automation_runs_job_started_at_idx")
   @@index([status, startedAt], map: "automation_runs_status_started_at_idx")

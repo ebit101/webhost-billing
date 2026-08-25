@@ -15,6 +15,7 @@ import { ServiceModule } from './modules/services/service.module';
 import { HostingPanelModule } from './modules/hosting-panels/hosting-panel.module';
 import { BackgroundJobModule } from './modules/background-jobs/background-job.module';
 import { EmailNotificationModule } from './modules/email-notifications/email-notification.module';
+import { RenewalAutomationModule } from './modules/renewal-automation/renewal-automation.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { EmailNotificationModule } from './modules/email-notifications/email-not
     HostingPanelModule,
     BackgroundJobModule,
     EmailNotificationModule,
+    RenewalAutomationModule,
   ],
   controllers: [AppController],
   providers: [

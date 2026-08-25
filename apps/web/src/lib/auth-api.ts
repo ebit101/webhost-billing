@@ -66,7 +66,7 @@ async function csrfToken(): Promise<string> {
 
 export async function authMutation<T>(
   path: string,
-  method: 'POST' | 'PATCH' | 'DELETE',
+  method: 'POST' | 'PUT' | 'PATCH' | 'DELETE',
   body?: Record<string, unknown>,
 ): Promise<T> {
   const csrf = await csrfToken();

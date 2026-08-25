@@ -433,6 +433,7 @@ export class ServiceService {
         controlPanelUsername,
         activatedAt: current.activatedAt ?? now,
         provisioningFailureReason: null,
+        suspensionInvoice: { disconnect: true },
       };
     }
     if (input.status === 'SUSPENDED') {
@@ -440,6 +441,7 @@ export class ServiceService {
         status: ServiceStatus.SUSPENDED,
         suspendedAt: now,
         suspensionReason: input.reason,
+        suspensionInvoice: { disconnect: true },
       };
     }
     if (input.status === 'PROVISION_FAILED') {

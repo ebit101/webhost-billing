@@ -60,6 +60,7 @@ const requiredCustomConstraints = [
   'hosting_panel_operations_attempt_check',
   'hosting_panel_operations_fingerprint_check',
   'hosting_panel_operations_metadata_object_check',
+  'hosting_panel_operations_requester_check',
   'hosting_panel_operations_retry_self_check',
   'hosting_panel_operations_service_scope_check',
   'hosting_panel_operations_status_evidence_check',
@@ -221,6 +222,16 @@ async function verify(): Promise<void> {
       AND indexname = 'invoice_items_invoice_id_line_position_key'
   `;
   assert.equal(invoiceItemPositionIndexes[0]?.count, 1n);
+
+  const renewalPeriodIndexes = await prisma.$queryRaw<Array<{ count: bigint }>>`
+    SELECT COUNT(*)::bigint AS count
+    FROM pg_indexes
+    WHERE schemaname = 'public'
+      AND indexname = 'invoice_items_service_period_key'
+      AND indexdef LIKE 'CREATE UNIQUE INDEX%'
+      AND indexdef LIKE '%WHERE%service_id IS NOT NULL%'
+  `;
+  assert.equal(renewalPeriodIndexes[0]?.count, 1n);
 
   const hostingRetryIndexes = await prisma.$queryRaw<Array<{ count: bigint }>>`
     SELECT COUNT(*)::bigint AS count

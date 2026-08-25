@@ -39,6 +39,8 @@ import {
   emailTemplateKeys,
   parseEmailEventPayload,
   routeOutboxEvent,
+  renewalAutomationPolicySchema,
+  hostingAutomationPayloadSchema,
   ticketStatusSchema,
 } from '../src';
 
@@ -68,6 +70,38 @@ describe('money contracts', () => {
 });
 
 describe('boundary contracts', () => {
+  it('validates bounded renewal rules and strict hosting automation references', () => {
+    assert.equal(
+      renewalAutomationPolicySchema.safeParse({
+        enabled: true,
+        invoiceLeadDays: 14,
+        reminderDaysBeforeDue: [7, 3, 1],
+        gracePeriodDays: 3,
+        timeZone: 'Asia/Dhaka',
+      }).success,
+      true,
+    );
+    assert.equal(
+      renewalAutomationPolicySchema.safeParse({
+        enabled: true,
+        invoiceLeadDays: 7,
+        reminderDaysBeforeDue: [7, 7],
+        gracePeriodDays: 3,
+        timeZone: 'not/a-zone',
+      }).success,
+      false,
+    );
+    assert.equal(
+      hostingAutomationPayloadSchema.safeParse({
+        schemaVersion: 1,
+        serviceId: '10000000-0000-4000-8000-000000000001',
+        invoiceId: '10000000-0000-4000-8000-000000000002',
+        automationRunId: '10000000-0000-4000-8000-000000000003',
+        apiToken: 'must-not-pass',
+      }).success,
+      false,
+    );
+  });
   it('keeps shared states aligned with the database state vocabulary', () => {
     assert.equal(roleSchema.parse('ADMIN'), 'ADMIN');
     assert.equal(

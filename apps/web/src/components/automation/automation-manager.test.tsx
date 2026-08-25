@@ -36,6 +36,14 @@ const failures: BackgroundFailureList = {
   ],
 };
 
+const policy = {
+  enabled: true,
+  invoiceLeadDays: 14,
+  reminderDaysBeforeDue: [7, 3, 1],
+  gracePeriodDays: 3,
+  timeZone: 'Asia/Dhaka',
+};
+
 describe('automation manager', () => {
   afterEach(() => vi.unstubAllGlobals());
 
@@ -46,6 +54,12 @@ describe('automation manager', () => {
         const url = String(request);
         if (url.includes('/auth/csrf')) {
           return Promise.resolve(success({ csrfToken: 'x'.repeat(32) }));
+        }
+        if (url.includes('/renewal-automation/policy')) {
+          return Promise.resolve(success(policy));
+        }
+        if (url.includes('/renewal-automation/runs')) {
+          return Promise.resolve(success([]));
         }
         if (init?.method === 'POST') {
           return Promise.resolve(success({ queued: true }));
@@ -63,6 +77,12 @@ describe('automation manager', () => {
       }),
     ).toBeTruthy();
     expect(screen.getByText(/HOSTING_RESULT_UNKNOWN/)).toBeTruthy();
+    expect(
+      screen.getByRole('heading', { name: 'Renewal policy' }),
+    ).toBeTruthy();
+    expect(
+      screen.getByText('No renewal automation cycle has run yet.'),
+    ).toBeTruthy();
     expect(screen.getByText('Reconciliation required')).toBeTruthy();
     expect(
       screen.queryByRole('button', { name: 'Retry temporary job' }),

@@ -151,6 +151,10 @@ const exactOutboxRoutes: Readonly<Record<string, OutboxQueueRoute>> = {
     queueName: 'renewal-invoice-generation',
     jobName: 'generate-renewal-invoice',
   },
+  RENEWAL_PAYMENT_COMPLETED: {
+    queueName: 'renewal-invoice-generation',
+    jobName: 'apply-renewal-payment',
+  },
 };
 
 export function routeOutboxEvent(eventType: string): OutboxQueueRoute | null {

@@ -55,7 +55,7 @@ The dispatcher interval, batch size, and lease timeout are configured through `O
 
 `@webhost-billing/queue` provides the shared `BackgroundWorker` registration boundary. Command 18 registers the `emails` queue consumer with configurable bounded concurrency. It reloads and validates the published outbox event from PostgreSQL, renders the message at the trusted boundary, and persists an `EmailLog` plus an append-only row for every adapter attempt. See `docs/EMAIL_NOTIFICATIONS.md` for the template catalog, SMTP classifications, preview transport, and secret boundary.
 
-Renewal, payment-reconciliation, and hosting consumers remain unregistered until their authorized feature commands implement the real handlers.
+Command 19 registers the database-idempotent renewal consumer plus the one-attempt hosting suspension and unsuspension consumers. The dedicated scheduler is a separate Nest application-context entry point, so scaling ordinary workers does not multiply schedule ownership. Payment/hosting reconciliation consumers remain unregistered until their authorized feature commands implement authenticated reconciliation handlers. See `docs/RENEWAL_AUTOMATION.md`.
 
 Every registered worker:
 
@@ -77,6 +77,9 @@ The Automation page uses administrator-only endpoints:
 | `GET`  | `/background-jobs/failures`                       | List retained queue and durable outbox failures |
 | `POST` | `/background-jobs/queues/:queueName/:jobId/retry` | Retry a failed job classified `TEMPORARY`       |
 | `POST` | `/background-jobs/outbox/:eventId/retry`          | Requeue a failed event with a recognized route  |
+| `GET`  | `/renewal-automation/policy`                      | Read effective renewal settings                 |
+| `PUT`  | `/renewal-automation/policy`                      | Update validated renewal settings               |
+| `GET`  | `/renewal-automation/runs`                        | List recent renewal automation results          |
 
 Queue retry requires exact `RETRY_JOB` confirmation. Outbox retry requires `RETRY_OUTBOX`. Both require administrator authentication/CSRF and append an activity log. Raw BullMQ error strings, stack traces, outbox payloads, and `lastError` values are not returned.
 

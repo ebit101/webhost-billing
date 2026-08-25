@@ -756,13 +756,14 @@ export class HostingPanelService {
           status: ServiceStatus.SUSPENDED,
           suspendedAt: now,
           suspensionReason: input.reason,
+          suspensionInvoiceId: null,
         },
       });
     } else if (type === 'UNSUSPEND_ACCOUNT') {
       emailEventType = 'EMAIL_SERVICE_REACTIVATED';
       await transaction.service.update({
         where: { id: serviceId },
-        data: { status: ServiceStatus.ACTIVE },
+        data: { status: ServiceStatus.ACTIVE, suspensionInvoiceId: null },
       });
     } else if (
       type === 'TERMINATE_ACCOUNT' &&
@@ -1056,6 +1057,7 @@ export class HostingPanelService {
         adapterKey: operation.server.adapterKey,
       },
       requestedByUserId: operation.requestedByUserId,
+      automationRunId: operation.automationRunId,
       retryOfOperationId: operation.retryOfOperationId,
       type: operation.type,
       status: operation.status,

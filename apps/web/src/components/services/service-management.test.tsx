@@ -84,6 +84,7 @@ const operation: HostingPanelOperation = {
   serviceId,
   server: service.server,
   requestedByUserId: '30000000-0000-4000-8000-000000000011',
+  automationRunId: null,
   retryOfOperationId: null,
   type: 'CREATE_ACCOUNT',
   status: 'SUCCEEDED',

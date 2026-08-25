@@ -221,6 +221,18 @@ const workerEnvironmentObjectSchema = baseEnvironmentSchema
       .min(30)
       .max(3_600)
       .default(120),
+    SCHEDULER_POLL_INTERVAL_MS: z.coerce
+      .number()
+      .int()
+      .min(1_000)
+      .max(86_400_000)
+      .default(60_000),
+    HOSTING_PANEL_TIMEOUT_MS: z.coerce
+      .number()
+      .int()
+      .min(1_000)
+      .max(30_000)
+      .default(10_000),
     EMAIL_TRANSPORT: z.enum(['preview', 'smtp']).default('preview'),
     EMAIL_PUBLIC_WEB_URL: z.url().default('http://localhost:3000'),
     EMAIL_BRAND_NAME: emailHeaderValueSchema.default('Webhost Billing'),

@@ -761,6 +761,25 @@ export class PaymentGatewayService {
           payload: { schemaVersion: 1, paymentId, invoiceId },
         },
       });
+      const renewalItems = await transaction.invoiceItem.count({
+        where: {
+          invoiceId,
+          serviceId: { not: null },
+          servicePeriodStart: { not: null },
+          servicePeriodEnd: { not: null },
+        },
+      });
+      if (renewalItems > 0) {
+        await transaction.outboxEvent.create({
+          data: {
+            aggregateType: 'PAYMENT',
+            aggregateId: paymentId,
+            eventType: 'RENEWAL_PAYMENT_COMPLETED',
+            idempotencyKey: `renewal-payment:${paymentId}`,
+            payload: { schemaVersion: 1, paymentId, invoiceId },
+          },
+        });
+      }
     }
   }
 

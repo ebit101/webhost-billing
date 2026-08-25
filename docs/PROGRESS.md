@@ -1252,6 +1252,67 @@ Run **Command 18 — Implement Email Notifications** after explicit user authori
 
 Run **Command 19 — Implement Renewal Automation** only after explicit user authorization. Preserve transactional outbox delivery, database idempotency/locking, controllable time in tests, and the rule that no initial-release workflow automatically terminates hosting.
 
+### Command 19 — Implement Renewal Automation
+
+- **Status:** Completed and delivered to GitHub `main`
+- **Date:** 2026-08-25
+
+#### Scope completed
+
+- Added a strict administrator-configurable renewal policy for enablement, 1–90 invoice lead days, up to ten unique reminder offsets, 0–60 grace days, and a validated IANA business timezone. Defaults are 14 days, reminders at 7/3/1 days, a 3-day grace period, and `Asia/Dhaka`.
+- Added a dedicated non-HTTP Nest scheduler entry point. It derives one daily business-date key, obtains a PostgreSQL transaction advisory lock, records a `RUNNING` or disabled `SKIPPED` `AutomationRun`, and atomically inserts a reference-only renewal outbox request. Daily uniqueness remains a second scheduler-instance barrier.
+- Implemented the `renewal-invoice-generation` worker consumer with controllable time, business-date comparisons, delayed threshold catch-up, UTC month-clamped monthly/quarterly/annual periods, and per-action result/failure counts.
+- Added idempotent renewal invoice creation with immutable customer/business/price descriptions and period snapshots. A partial unique database index prevents billing the same service period twice even under concurrent processing.
+- Added unique renewal reminders, overdue transitions/notices, and grace-period hosting suspension requests. Scheduled database work receives three bounded retries and safe repeated runs; partial/final failures remain visible in `AutomationRun`.
+- Added verified full-payment renewal events for manual and gateway settlement only when the invoice has complete service-period lines. The worker advances `nextDueAt` to the paid period end and requests reactivation only when the service's `suspensionInvoiceId` matches that exact paid invoice.
+- Implemented the real worker-side cPanel/WHM suspension/reactivation boundary using the existing server-bound encrypted token format, certificate-validated WHM API 1, strict configured ports/identity, and post-mutation `accountsummary` verification. Fake-panel development remains zero-network.
+- Persisted human and automated hosting attempts separately. Hosting mutations have one automatic queue attempt; explicit safe temporary retries append attempt evidence up to three, while abandoned/risky/unknown outcomes become non-retryable `INCONSISTENT` records.
+- Preserved manual suspension semantics by clearing automation invoice linkage on manual state changes. Payment therefore cannot reactivate an unrelated/manual suspension.
+- Added administrator-only renewal policy and latest-run endpoints, audit logging, CSRF enforcement, and a responsive Automation screen for editing policy and viewing safe run results alongside retained queue/outbox failures.
+- Added no automatic termination route, event, scheduler action, or worker handler.
+
+#### Files changed
+
+- Durable schema/migration/verification: `packages/database/prisma/schema.prisma`, `packages/database/prisma/migrations/20260826023000_add_renewal_automation/migration.sql`, `packages/database/prisma/verify.ts`
+- Shared/config contracts: `packages/shared/src/contracts/renewal-automation.ts`, background-job/hosting contracts and exports/tests, `packages/config/src/env.ts`, `.env.example`
+- Scheduler and worker implementation/tests: `apps/worker/src/scheduler-main.ts`, `apps/worker/src/scheduler.module.ts`, `apps/worker/src/renewal/**`, worker module/scripts
+- Payment/service integration: manual and gateway payment services, service and hosting-panel state services under `apps/api/src/modules/**`
+- Administrator API/tests: `apps/api/src/modules/renewal-automation/**`, `apps/api/test/renewal-automation.e2e-spec.ts`, API module registration
+- Administrator interface/tests: `apps/web/src/components/automation/**`, shared authenticated mutation helper, hosting-operation fixture
+- Documentation: `README.md`, `docs/RENEWAL_AUTOMATION.md`, `docs/BACKGROUND_JOBS.md`, `docs/API_CONTRACTS.md`, `docs/DEVELOPMENT.md`, `docs/DECISIONS.md`, `docs/PROGRESS.md`
+
+#### Validation
+
+- Prisma formatting, validation, client generation, eighteen-migration deploy/status, and structural/fictional-seed verification passed against local PostgreSQL. The new requester XOR check, suspension-invoice relationship, and partial unique service-period index are present.
+- Docker Compose configuration passed; local PostgreSQL and Redis remained healthy. Command 19 integration artifacts were cleaned, with zero residual command users, runs, or renewal invoices.
+- Repository Prettier check, `git diff --check`, API/worker/web ESLint, and strict TypeScript checks for all seven code workspace projects passed without warnings/errors.
+- Shared contracts passed 18 tests; queue infrastructure passed 3 real-Redis tests; API unit suite passed 69 tests; worker suite passed 26 tests across eight suites; frontend passed 26 tests across ten files. Complete API E2E passed 50 tests across thirteen suites. Total validated tests: 192.
+- Controllable-clock and real-PostgreSQL coverage passed for Dhaka midnight boundaries, month-end and leap-year period calculation, delayed reminders/overdue execution, concurrent duplicate schedulers, duplicate jobs/invoices, bounded retry evidence, suspension, verified-payment due advancement, matching-invoice unsuspension, and absence of termination events.
+- Config/database/shared/queue packages and NestJS API/worker production builds passed. Both worker and scheduler entry files were emitted. An isolated Next.js webpack production build passed and generated all 29 application routes without interrupting the running development UI.
+- No real WHM mutation, payment, email, or other external-provider action was executed. Tests used fictional records and the zero-network fake hosting panel.
+
+#### Decisions made
+
+- Business dates control invoice/reminder/grace thresholds, while all stored instants and invoice periods remain UTC. Calendar-day math is explicit and tested at timezone/month boundaries.
+- The dedicated scheduler owns schedule creation; ordinary worker scaling does not multiply it. Advisory locking plus unique daily run/event keys protects accidental multiple instances.
+- Invoice-line service/start/end uniqueness is the financial duplicate barrier. Outbox keys independently deduplicate reminders and hosting requests.
+- Automated suspension stores its cause invoice. Only a fully paid matching invoice can request automatic unsuspension; manual suspensions remain administrator-owned.
+- cPanel state is changed locally only after the remote account identity and target state are verified. Any provider acknowledgement gap is reconciliation work, not a blind retry.
+- Initial-release renewal automation intentionally excludes termination, cancellation, late fees, multi-currency, tax expansion, and domain renewal.
+
+#### Open questions and risks
+
+- Confirm the real business policy values (invoice lead, reminder offsets, grace period, and timezone) in the administrator Automation screen before starting the scheduler in a customer environment.
+- Run exactly one scheduler process per environment. Production process supervision, health/readiness, alerting, and deployment wiring remain Commands 27 and 29.
+- Real cPanel automated suspension/reactivation was not invoked because no destructive external test window was authorized. Before enabling against customer accounts, use a disposable sandbox account and confirm token privileges, outbound allowlisting, suspension reason behavior, and reconciliation steps.
+- A cPanel timeout or lost verification after a mutation remains deliberately inconsistent and requires panel/account inspection. Automatic termination remains forbidden.
+- The PostgreSQL driver still emits its known pg@9 concurrent-query deprecation warning in some E2E flows, and Jest emits the existing experimental VM warning. All checks passed.
+- The existing Prisma tooling-chain `deepmerge-ts` advisory reported in Command 18 remains unchanged; Command 19 added no dependency.
+
+#### Recommended next command
+
+Run **Command 20 — Implement Support Tickets** only after explicit user authorization. Keep ticket ownership, administrator assignment/state changes, customer-visible replies, audit history, and email events separate from renewal automation.
+
 ## Report Template
 
 Use this template after every future command:

@@ -99,7 +99,10 @@ Run one application at a time when focused development is preferable:
 pnpm --filter @webhost-billing/api dev
 pnpm --filter @webhost-billing/web dev
 pnpm --filter @webhost-billing/worker dev
+pnpm --filter @webhost-billing/worker start:scheduler:dev
 ```
+
+The first worker command runs outbox and queue consumers. The second runs the dedicated renewal scheduler. Run one scheduler instance per environment; PostgreSQL advisory locking and daily unique keys also prevent duplicate cycles. See `docs/RENEWAL_AUTOMATION.md`.
 
 The default local endpoints are the web application at `http://localhost:3000` and the API at `http://localhost:3001`.
 

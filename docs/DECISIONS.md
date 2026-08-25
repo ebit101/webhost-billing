@@ -210,6 +210,14 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** Email failure must not roll back a financial or service transaction, Redis and logs must not become secret stores, and SMTP can lose the final acknowledgement after accepting a message. Retrying that uncertain boundary can duplicate customer communication.
 - **Consequence:** Temporary pre-submission failures receive at most five exponential attempts; permanent and inconsistent failures stop. Every message uses a deterministic outbox-based `Message-ID`, but this identifier is investigation evidence rather than delivery proof. Development writes private RFC `.eml` previews; production requires SMTP, HTTPS links, and certificate-validated TLS. Renewal and ticket templates exist before their Command 19/20 producers.
 
+## ADR-027 — Business-Date Renewal Cycles and Invoice-Linked Suspension
+
+- **Status:** Accepted
+- **Date:** 2026-08-25
+- **Decision:** Run renewal scheduling in one dedicated Nest application-context process. Derive one daily key in a configurable IANA business timezone under a PostgreSQL advisory lock, persist an `AutomationRun` and outbox request atomically, and make each invoice, reminder, overdue transition, payment application, and hosting request independently idempotent. Link an automated service suspension to the exact overdue invoice that caused it.
+- **Reason:** UTC instants cross business dates differently, delayed/repeated jobs are normal, concurrent schedulers must not duplicate financial documents, and a later payment must never reactivate a manual or unrelated suspension. A remote WHM mutation can succeed while its acknowledgement or local commit fails.
+- **Consequence:** Renewal periods use UTC month-clamping and a partial unique service/period invoice-line index. Database-safe renewal jobs have bounded retries, while cPanel mutations have one attempt and require verified account state before local changes. Unknown hosting outcomes remain inconsistent. Full verified payment advances the due date and requests unsuspension only for the matching suspension invoice. Initial-release automation has no termination event or handler.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

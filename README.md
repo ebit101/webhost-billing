@@ -8,6 +8,7 @@ Webhost Billing is a private billing and hosting-service management application 
 apps/api       NestJS REST API
 apps/web       Next.js App Router frontend
 apps/worker    NestJS worker application context
+               and dedicated scheduler entry point
 packages/config
 packages/database
 packages/queue
@@ -62,6 +63,7 @@ See `docs/DEVELOPMENT.md` for setup, health checks, connectivity, shutdown, and 
 - `docs/HOSTING_PANELS.md` — real cPanel/WHM API-token setup, encrypted credentials, operation safety, manual verification, and separate UK2Group scope
 - `docs/BACKGROUND_JOBS.md` — BullMQ queues, transactional outbox dispatch, retries, failure visibility, and worker shutdown
 - `docs/EMAIL_NOTIFICATIONS.md` — queued SMTP delivery, templates, preview files, retries, secret boundaries, and operations
+- `docs/RENEWAL_AUTOMATION.md` — renewal policy, scheduler locking, invoice/reminder lifecycle, and safe cPanel suspension/reactivation
 - `docs/DATABASE.md` — schema, migration, deletion, and seed-data decisions
 - `docs/DEVELOPMENT.md` — local infrastructure and application setup
 - `docs/FRONTEND_DESIGN_SYSTEM.md` — application shells, design tokens, responsive behavior, and UI components
