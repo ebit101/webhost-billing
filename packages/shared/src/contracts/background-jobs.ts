@@ -79,6 +79,46 @@ const exactOutboxRoutes: Readonly<Record<string, OutboxQueueRoute>> = {
     queueName: 'emails',
     jobName: 'send-auth-email',
   },
+  EMAIL_ORDER_RECEIVED: {
+    queueName: 'emails',
+    jobName: 'send-order-email',
+  },
+  EMAIL_ORDER_APPROVED: {
+    queueName: 'emails',
+    jobName: 'send-order-email',
+  },
+  EMAIL_PAYMENT_RECEIVED: {
+    queueName: 'emails',
+    jobName: 'send-payment-email',
+  },
+  EMAIL_INVOICE_CREATED: {
+    queueName: 'emails',
+    jobName: 'send-invoice-email',
+  },
+  EMAIL_RENEWAL_REMINDER: {
+    queueName: 'emails',
+    jobName: 'send-invoice-email',
+  },
+  EMAIL_OVERDUE_NOTICE: {
+    queueName: 'emails',
+    jobName: 'send-invoice-email',
+  },
+  EMAIL_SERVICE_PROVISIONED: {
+    queueName: 'emails',
+    jobName: 'send-service-email',
+  },
+  EMAIL_SERVICE_SUSPENDED: {
+    queueName: 'emails',
+    jobName: 'send-service-email',
+  },
+  EMAIL_SERVICE_REACTIVATED: {
+    queueName: 'emails',
+    jobName: 'send-service-email',
+  },
+  EMAIL_TICKET_REPLY: {
+    queueName: 'emails',
+    jobName: 'send-ticket-email',
+  },
   GATEWAY_PAYMENT_SUCCEEDED: {
     queueName: 'payment-reconciliation',
     jobName: 'reconcile-payment-follow-up',

@@ -189,6 +189,25 @@ describe('Order creation (e2e)', () => {
     expect(stored.total).toBe(12_500n);
     expect(stored.invoices).toHaveLength(1);
     expect(stored.invoices[0]?.items).toHaveLength(2);
+    expect(
+      await prisma.outboxEvent.findMany({
+        where: {
+          OR: [
+            { aggregateType: 'ORDER', aggregateId: orderId },
+            {
+              aggregateType: 'INVOICE',
+              aggregateId: result.order.invoice.id,
+            },
+          ],
+        },
+        select: { eventType: true },
+      }),
+    ).toEqual(
+      expect.arrayContaining([
+        { eventType: 'EMAIL_ORDER_RECEIVED' },
+        { eventType: 'EMAIL_INVOICE_CREATED' },
+      ]),
+    );
 
     await prisma.product.update({
       where: { id: productId },
@@ -316,6 +335,23 @@ describe('Order creation (e2e)', () => {
       status: 'CANCELLED',
       invoice: { status: 'CANCELLED' },
     });
+    await prisma.order.update({
+      where: { id: orderId },
+      data: { status: 'PAID' },
+    });
+    await admin
+      .patch(`/orders/${orderId}/status`)
+      .set('X-CSRF-Token', adminCsrf)
+      .send({ status: 'PROCESSING' })
+      .expect(200);
+    expect(
+      await prisma.outboxEvent.count({
+        where: {
+          aggregateId: orderId,
+          eventType: 'EMAIL_ORDER_APPROVED',
+        },
+      }),
+    ).toBe(1);
     await admin
       .patch(`/orders/${orderId}/status`)
       .set('X-CSRF-Token', adminCsrf)
@@ -389,8 +425,17 @@ describe('Order creation (e2e)', () => {
         where: { orderId: { in: orderIds } },
         select: { id: true },
       });
+      const invoiceIds = invoices.map((invoice) => invoice.id);
+      await prisma.outboxEvent.deleteMany({
+        where: {
+          OR: [
+            { aggregateType: 'ORDER', aggregateId: { in: orderIds } },
+            { aggregateType: 'INVOICE', aggregateId: { in: invoiceIds } },
+          ],
+        },
+      });
       await prisma.invoiceItem.deleteMany({
-        where: { invoiceId: { in: invoices.map((invoice) => invoice.id) } },
+        where: { invoiceId: { in: invoiceIds } },
       });
       await prisma.invoice.deleteMany({ where: { orderId: { in: orderIds } } });
       await prisma.orderItem.deleteMany({

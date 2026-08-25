@@ -339,6 +339,25 @@ export class ServiceService {
       const now = new Date();
       const data = this.transitionData(current, input, actor, now);
       await transaction.service.update({ where: { id: serviceId }, data });
+      const emailEventType =
+        input.status === ServiceStatus.SUSPENDED
+          ? 'EMAIL_SERVICE_SUSPENDED'
+          : input.status === ServiceStatus.ACTIVE
+            ? current.status === ServiceStatus.SUSPENDED
+              ? 'EMAIL_SERVICE_REACTIVATED'
+              : 'EMAIL_SERVICE_PROVISIONED'
+            : null;
+      if (emailEventType) {
+        await transaction.outboxEvent.create({
+          data: {
+            aggregateType: 'SERVICE',
+            aggregateId: serviceId,
+            eventType: emailEventType,
+            idempotencyKey: `email:service-transition:${serviceId}:${current.updatedAt.toISOString()}:${input.status}`,
+            payload: { schemaVersion: 1, serviceId },
+          },
+        });
+      }
       if (input.status === ServiceStatus.ACTIVE && current.orderItem) {
         const remaining = await transaction.orderItem.count({
           where: {

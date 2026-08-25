@@ -511,6 +511,27 @@ export class InvoiceService {
           });
         }
       }
+      if (input.action === 'ISSUE') {
+        await transaction.outboxEvent.create({
+          data: {
+            aggregateType: 'INVOICE',
+            aggregateId: invoiceId,
+            eventType: 'EMAIL_INVOICE_CREATED',
+            idempotencyKey: `email:invoice-created:${invoiceId}`,
+            payload: { schemaVersion: 1, invoiceId },
+          },
+        });
+      } else if (input.action === 'MARK_OVERDUE') {
+        await transaction.outboxEvent.create({
+          data: {
+            aggregateType: 'INVOICE',
+            aggregateId: invoiceId,
+            eventType: 'EMAIL_OVERDUE_NOTICE',
+            idempotencyKey: `email:overdue-notice:${invoiceId}`,
+            payload: { schemaVersion: 1, invoiceId },
+          },
+        });
+      }
       await transaction.activityLog.create({
         data: {
           actorUserId: actor.identity.userId,

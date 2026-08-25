@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 17 — Add Redis, Queues, and Workers
+- **Current command:** Command 18 — Implement Email Notifications
 - **Current status:** Completed and delivered to GitHub `main`
 - **Last updated:** 2026-08-25
-- **Next command:** Command 18 — Implement Email Notifications
+- **Next command:** Command 19 — Implement Renewal Automation
 - **Next command authorized:** No
 
 ## Command Reports
@@ -1188,6 +1188,69 @@ Run **Command 17 — Add Redis, Queues, and Workers** after explicit user author
 #### Recommended next command
 
 Run **Command 18 — Implement Email Notifications** after explicit user authorization. Register only the email consumer, decrypt authentication action tokens at the trusted delivery boundary, and ensure SMTP failure cannot roll back business transactions.
+
+### Command 18 — Implement Email Notifications
+
+- **Status:** Completed and delivered to GitHub `main`
+- **Date:** 2026-08-25
+
+#### Scope completed
+
+- Implemented the real `emails` BullMQ consumer with a provider-neutral adapter boundary, configurable concurrency, graceful shutdown, bounded retries, safe structured failure classification, and no coupling between SMTP success and the originating business transaction.
+- Added SMTP delivery through Nodemailer with certificate validation, TLS 1.2 minimum, required STARTTLS/implicit TLS policy, bounded connection/socket timeouts, optional paired authentication, disabled URL/file content access, and no redirect/browser proof assumptions.
+- Added a zero-network development preview adapter that writes RFC `.eml` messages to a private `0700` directory as `0600` SHA-256-named files. No external email was sent and no real SMTP credential was configured.
+- Created exactly twelve responsive, business-branded HTML templates with plain-text fallbacks for verification, reset, order received/approved, payment received, invoice created, renewal reminder, overdue notice, service provisioned/suspended/reactivated, and ticket reply.
+- Added typed template models, centralized escaping of every untrusted value, header line-break rejection, UTC date presentation, and direct integer-minor-unit money formatting without JavaScript floating-point arithmetic.
+- Added strict versioned email-event contracts and routed all twelve event types through reference-only BullMQ payloads. Authentication action tokens remain encrypted in PostgreSQL and are decrypted only inside the trusted worker immediately before rendering.
+- Added atomic outbox producers for order creation/approval, initial or issued invoices, overdue transitions, verified manual/gateway payments, and verified/manual service activation, suspension, and reactivation. Email failure cannot roll back those committed workflows.
+- Added an idempotent one-event/one-`EmailLog` boundary and append-only numbered `EmailAttempt` records. Successful delivery is terminal; retries use a deterministic outbox-based `Message-ID`; raw bodies, tokens, SMTP responses, credentials, and exception messages are never persisted in the delivery audit.
+- Classified pre-submission SMTP connectivity failures as temporary, provider rejection as permanent, and a lost outcome during `DATA` or abandoned `SENDING` state as inconsistent. Uncertain delivery is never blindly resent.
+- Added an administrator-only `GET /email-notifications` endpoint and responsive `/admin/email` page for the latest safe delivery/attempt history. Customer access is denied and sensitive/internal fields are excluded. Retired historical template identifiers remain displayable without expanding the active twelve-template catalog.
+- Added full shared-contract, worker unit/integration, real PostgreSQL delivery, admin authorization/non-disclosure, and frontend coverage. Renewal-reminder and ticket-reply producers correctly remain deferred to Commands 19 and 20.
+
+#### Files changed
+
+- Dependencies/configuration: `.env.example`, `apps/worker/package.json`, `pnpm-lock.yaml`, `packages/config/src/env.ts`
+- Shared queue/email contracts: `packages/shared/src/contracts/email-notifications.ts`, `background-jobs.ts`, `packages/shared/src/index.ts`, `packages/shared/test/contracts.spec.ts`
+- Durable data: `packages/database/prisma/schema.prisma`, `packages/database/prisma/migrations/20260826013000_add_email_delivery_attempts/migration.sql`, `packages/database/prisma/seed.ts`, `packages/database/prisma/verify.ts`
+- Worker implementation/tests: `apps/worker/src/email/**`, `apps/worker/src/app.module.ts`
+- Business event producers: authentication, orders, invoices, manual payments, payment gateways, services, and hosting-panel services under `apps/api/src/modules/**`
+- Administrator API/tests: `apps/api/src/modules/email-notifications/**`, `apps/api/src/app.module.ts`, `apps/api/test/email-notifications.e2e-spec.ts`
+- Administrator interface/tests: `apps/web/src/app/(admin)/admin/email/page.tsx`, `apps/web/src/components/email/**`, administrator layout navigation
+- Documentation: `README.md`, `docs/EMAIL_NOTIFICATIONS.md`, `docs/BACKGROUND_JOBS.md`, `docs/API_CONTRACTS.md`, `docs/DATABASE.md`, `docs/DEVELOPMENT.md`, `docs/DECISIONS.md`, `docs/PROGRESS.md`
+
+#### Validation
+
+- Reviewed current official Nodemailer SMTP and stream-transport documentation and pinned Nodemailer 9.0.5 with its matching type package. No unsupported SMTP behavior or third-party preview server was introduced.
+- Frozen pnpm dependency install, repository Prettier check, `git diff --check`, API/worker/web ESLint, and strict TypeScript checks for all seven code workspace projects passed.
+- Prisma formatting/validation/client generation, seventeen-migration deploy/status, idempotent fictional seed, and structural database verification passed against local PostgreSQL.
+- Shared-contract suite passed 17 tests; worker suite passed 20 tests across five suites, including all templates, escaping, SMTP classification, private preview files, token-boundary resolution, retries, deterministic idempotency, and real PostgreSQL attempt evidence.
+- Frontend suite passed 26 tests across ten files. Complete API end-to-end validation passed 49 tests across twelve suites, including administrator/customer authorization and sensitive-field exclusion.
+- Complete repository non-E2E tests, production builds for config/database/shared/queue/API/worker/web, Docker Compose validation/health checks, and a source/secret audit passed. No `.env`, preview message, credential, private key, real customer data, or provider response was added.
+- `pnpm audit --prod` reported one high advisory in the existing Prisma configuration-tooling chain: Prisma 7.9.1 currently pins vulnerable `deepmerge-ts` 7.1.5 while the patched release is major version 8. No Nodemailer advisory was reported; an unverified transitive major override was not forced into this command.
+
+#### Decisions made
+
+- PostgreSQL remains the delivery source of truth and Redis remains reference-only. The worker reloads and validates durable event/entity records rather than trusting job data.
+- Preview files replace a network SMTP capture dependency in local development. Their directory/file modes and non-identifying names reduce accidental exposure, but the files are still private data and must not be served or committed.
+- Production cannot start the worker with preview transport, HTTP billing links, or unencrypted SMTP. Authentication settings must be paired and all SMTP certificates remain verified.
+- A deterministic `Message-ID` plus terminal successful log prevents ordinary duplicates. SMTP's acknowledgement gap is handled conservatively as inconsistent; it is not treated as a safe automatic retry.
+- Historical delivery entries may retain old template identifiers, while only the twelve Command 18 template identifiers can be used for new email events.
+- Renewal and ticket templates/routes are ready, but event production stays within their separately authorized Commands 19 and 20.
+
+#### Open questions and risks
+
+- The production/staging SMTP provider, verified sender domain, hostname/port, credentials, sending limits, IP policy, SPF, DKIM, DMARC, bounce handling, alerting, and credential-rotation procedure remain operational decisions. No live provider acceptance test has been authorized.
+- SMTP provides no universal exactly-once delivery. A crash or transport loss after provider acceptance is deliberately held as inconsistent and requires provider/log investigation rather than blind resend.
+- `.eml` preview files may contain customer information and active verification/reset links. Operators must use an access-restricted non-web directory and apply an appropriate local retention policy.
+- Command 19 must create renewal reminders idempotently with scheduler locking and controllable-clock coverage. Command 20 must emit ticket-reply events only for the correct customer-visible reply.
+- Bounce/complaint ingestion, suppression lists, localization, bulk marketing, analytics, and multi-provider failover are intentionally outside this private minimal product.
+- Production dependency audit remains non-clean because of `GHSA-ggr8-5vv4-36mx` in Prisma's `deepmerge-ts` configuration dependency. Monitor Prisma for a compatible patched release and retest before production; the affected path is tooling/configuration rather than the email adapter added here.
+- The PostgreSQL driver continues to emit its known pg@9 concurrency deprecation warning during E2E activity, and Node emits the existing Jest experimental VM warning. All migration, database, test, lint, type, and build checks passed.
+
+#### Recommended next command
+
+Run **Command 19 — Implement Renewal Automation** only after explicit user authorization. Preserve transactional outbox delivery, database idempotency/locking, controllable time in tests, and the rule that no initial-release workflow automatically terminates hosting.
 
 ## Report Template
 

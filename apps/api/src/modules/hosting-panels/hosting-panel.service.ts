@@ -605,6 +605,7 @@ export class HostingPanelService {
           input,
           providerResult.account,
           actor.identity.userId,
+          operationId,
           now,
         );
       }
@@ -703,9 +704,16 @@ export class HostingPanelService {
     input: ExecuteHostingOperationRequest | undefined,
     account: HostingAccount | null,
     actorUserId: string,
+    operationId: string,
     now: Date,
   ): Promise<void> {
+    let emailEventType:
+      | 'EMAIL_SERVICE_PROVISIONED'
+      | 'EMAIL_SERVICE_SUSPENDED'
+      | 'EMAIL_SERVICE_REACTIVATED'
+      | undefined;
     if (type === 'CREATE_ACCOUNT' && account) {
+      emailEventType = 'EMAIL_SERVICE_PROVISIONED';
       const service = await transaction.service.update({
         where: { id: serviceId },
         data: {
@@ -741,6 +749,7 @@ export class HostingPanelService {
       type === 'SUSPEND_ACCOUNT' &&
       input?.type === 'SUSPEND_ACCOUNT'
     ) {
+      emailEventType = 'EMAIL_SERVICE_SUSPENDED';
       await transaction.service.update({
         where: { id: serviceId },
         data: {
@@ -750,6 +759,7 @@ export class HostingPanelService {
         },
       });
     } else if (type === 'UNSUSPEND_ACCOUNT') {
+      emailEventType = 'EMAIL_SERVICE_REACTIVATED';
       await transaction.service.update({
         where: { id: serviceId },
         data: { status: ServiceStatus.ACTIVE },
@@ -765,6 +775,17 @@ export class HostingPanelService {
           terminatedAt: now,
           terminationReason: input.reason,
           terminatedBy: { connect: { id: actorUserId } },
+        },
+      });
+    }
+    if (emailEventType) {
+      await transaction.outboxEvent.create({
+        data: {
+          aggregateType: 'SERVICE',
+          aggregateId: serviceId,
+          eventType: emailEventType,
+          idempotencyKey: `email:service:${operationId}`,
+          payload: { schemaVersion: 1, serviceId },
         },
       });
     }

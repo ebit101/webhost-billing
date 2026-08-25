@@ -202,6 +202,14 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** Redis cannot participate in the business transaction, job payloads are cleartext, and an external mutation can time out after succeeding. Publishing after commit without an outbox can lose work; retrying mutations blindly can duplicate accounts or service changes.
 - **Consequence:** Seven queues have explicit names/policies. Redis contains UUID references and safe classification only, while PostgreSQL retains full event context. Dispatcher crashes are recovered through stale leases plus deterministic IDs. Redis must run as a durable no-eviction queue backend; local AOF uses `appendfsync always`. Failed jobs/outbox rows remain visible to administrators; only explicitly temporary jobs or recognized failed publications can be manually retried and each retry is audited. SMTP/renewal/hosting business consumers are registered only by their later authorized commands.
 
+## ADR-026 — Trusted Queued Email Delivery With Conservative Uncertainty
+
+- **Status:** Accepted
+- **Date:** 2026-08-25
+- **Decision:** Deliver transactional email from the BullMQ worker through a provider-neutral SMTP/preview adapter. Load reference-only outbox events from PostgreSQL, decrypt authentication action tokens only while resolving a message, HTML-escape typed template models, and persist one idempotent `EmailLog` plus append-only `EmailAttempt` evidence. Treat a lost/unknown SMTP outcome or an abandoned `SENDING` attempt as inconsistent and do not blindly resend it.
+- **Reason:** Email failure must not roll back a financial or service transaction, Redis and logs must not become secret stores, and SMTP can lose the final acknowledgement after accepting a message. Retrying that uncertain boundary can duplicate customer communication.
+- **Consequence:** Temporary pre-submission failures receive at most five exponential attempts; permanent and inconsistent failures stop. Every message uses a deterministic outbox-based `Message-ID`, but this identifier is investigation evidence rather than delivery proof. Development writes private RFC `.eml` previews; production requires SMTP, HTTPS links, and certificate-validated TLS. Renewal and ticket templates exist before their Command 19/20 producers.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

@@ -179,7 +179,7 @@ export class OrderService {
           where: { key: 'business.identity' },
           select: { value: true },
         });
-        await transaction.invoice.create({
+        const invoice = await transaction.invoice.create({
           data: {
             invoiceNumber: createHumanReadableNumber('INV', now),
             submissionKey: `invoice:${input.submissionKey}`,
@@ -240,6 +240,24 @@ export class OrderService {
               ],
             },
           },
+        });
+        await transaction.outboxEvent.createMany({
+          data: [
+            {
+              aggregateType: 'ORDER',
+              aggregateId: order.id,
+              eventType: 'EMAIL_ORDER_RECEIVED',
+              idempotencyKey: `email:order-received:${order.id}`,
+              payload: { schemaVersion: 1, orderId: order.id },
+            },
+            {
+              aggregateType: 'INVOICE',
+              aggregateId: invoice.id,
+              eventType: 'EMAIL_INVOICE_CREATED',
+              idempotencyKey: `email:invoice-created:${invoice.id}`,
+              payload: { schemaVersion: 1, invoiceId: invoice.id },
+            },
+          ],
         });
         await transaction.activityLog.create({
           data: {
@@ -351,7 +369,7 @@ export class OrderService {
   ): Promise<Order> {
     const current = await this.prisma.order.findUnique({
       where: { id: orderId },
-      select: { id: true, status: true },
+      select: { id: true, status: true, updatedAt: true },
     });
     if (!current) throw this.notFound();
     if (input.status === OrderStatus.PAID) {
@@ -394,6 +412,17 @@ export class OrderService {
             status: { in: [InvoiceStatus.DRAFT, InvoiceStatus.UNPAID] },
           },
           data: { status: InvoiceStatus.CANCELLED, cancelledAt: now },
+        });
+      }
+      if (input.status === OrderStatus.PROCESSING) {
+        await transaction.outboxEvent.create({
+          data: {
+            aggregateType: 'ORDER',
+            aggregateId: orderId,
+            eventType: 'EMAIL_ORDER_APPROVED',
+            idempotencyKey: `email:order-approved:${orderId}:${current.updatedAt.toISOString()}`,
+            payload: { schemaVersion: 1, orderId },
+          },
         });
       }
       await transaction.activityLog.create({

@@ -257,6 +257,11 @@ describe('Invoice management (e2e)', () => {
       .set('X-CSRF-Token', adminCsrf)
       .send({ action: 'ISSUE' })
       .expect(200);
+    expect(
+      await prisma.outboxEvent.count({
+        where: { aggregateId: invoiceId, eventType: 'EMAIL_INVOICE_CREATED' },
+      }),
+    ).toBe(1);
     await admin
       .patch(`/invoices/${invoiceId}/draft`)
       .set('X-CSRF-Token', adminCsrf)
@@ -412,6 +417,14 @@ describe('Invoice management (e2e)', () => {
     expect(
       apiSuccessResponseSchema(invoiceSchema).parse(overdue.body).data.status,
     ).toBe('OVERDUE');
+    expect(
+      await prisma.outboxEvent.count({
+        where: {
+          aggregateId: overdueCandidate.id,
+          eventType: 'EMAIL_OVERDUE_NOTICE',
+        },
+      }),
+    ).toBe(1);
   });
 
   it('rejects invalid calculations and audits administrator actions', async () => {
@@ -534,6 +547,9 @@ describe('Invoice management (e2e)', () => {
         select: { id: true },
       });
       const ids = invoices.map((invoice) => invoice.id);
+      await prisma.outboxEvent.deleteMany({
+        where: { aggregateType: 'INVOICE', aggregateId: { in: ids } },
+      });
       await prisma.invoiceItem.deleteMany({
         where: { invoiceId: { in: ids } },
       });

@@ -128,6 +128,13 @@ enum EmailStatus {
   FAILED
 }
 
+enum EmailAttemptStatus {
+  STARTED
+  SENT
+  FAILED
+  INCONSISTENT
+}
+
 enum AutomationStatus {
   RUNNING
   SUCCEEDED
@@ -672,24 +679,28 @@ model TicketMessage {
 }
 
 model EmailLog {
-  id                String      @id @default(uuid()) @db.Uuid
-  customerId        String?     @map("customer_id") @db.Uuid
-  invoiceId         String?     @map("invoice_id") @db.Uuid
-  ticketId          String?     @map("ticket_id") @db.Uuid
-  templateKey       String      @map("template_key") @db.VarChar(100)
-  recipientEmail    String      @map("recipient_email") @db.VarChar(320)
-  subjectSnapshot   String      @map("subject_snapshot") @db.VarChar(255)
-  status            EmailStatus @default(QUEUED)
-  provider          String?     @db.VarChar(64)
-  providerMessageId String?     @map("provider_message_id") @db.VarChar(191)
-  attemptCount      Int         @default(0) @map("attempt_count")
-  lastError         String?     @map("last_error") @db.Text
-  queuedAt          DateTime    @default(now()) @map("queued_at") @db.Timestamptz(3)
-  sentAt            DateTime?   @map("sent_at") @db.Timestamptz(3)
-  failedAt          DateTime?   @map("failed_at") @db.Timestamptz(3)
-  customer          Customer?   @relation(fields: [customerId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  invoice           Invoice?    @relation(fields: [invoiceId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  ticket            Ticket?     @relation(fields: [ticketId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  id                String         @id @default(uuid()) @db.Uuid
+  outboxEventId     String?        @unique(map: "email_logs_outbox_event_id_key") @map("outbox_event_id") @db.Uuid
+  customerId        String?        @map("customer_id") @db.Uuid
+  invoiceId         String?        @map("invoice_id") @db.Uuid
+  ticketId          String?        @map("ticket_id") @db.Uuid
+  templateKey       String         @map("template_key") @db.VarChar(100)
+  recipientEmail    String         @map("recipient_email") @db.VarChar(320)
+  subjectSnapshot   String         @map("subject_snapshot") @db.VarChar(255)
+  status            EmailStatus    @default(QUEUED)
+  provider          String?        @db.VarChar(64)
+  providerMessageId String?        @map("provider_message_id") @db.VarChar(191)
+  attemptCount      Int            @default(0) @map("attempt_count")
+  lastError         String?        @map("last_error") @db.Text
+  queuedAt          DateTime       @default(now()) @map("queued_at") @db.Timestamptz(3)
+  sentAt            DateTime?      @map("sent_at") @db.Timestamptz(3)
+  failedAt          DateTime?      @map("failed_at") @db.Timestamptz(3)
+  updatedAt         DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
+  outboxEvent       OutboxEvent?   @relation(fields: [outboxEventId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  customer          Customer?      @relation(fields: [customerId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  invoice           Invoice?       @relation(fields: [invoiceId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  ticket            Ticket?        @relation(fields: [ticketId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  attempts          EmailAttempt[]
 
   @@unique([provider, providerMessageId], map: "email_logs_provider_message_key")
   @@index([status, queuedAt], map: "email_logs_status_queued_at_idx")
@@ -697,6 +708,24 @@ model EmailLog {
   @@index([invoiceId], map: "email_logs_invoice_id_idx")
   @@index([ticketId], map: "email_logs_ticket_id_idx")
   @@map("email_logs")
+}
+
+model EmailAttempt {
+  id                String             @id @default(uuid()) @db.Uuid
+  emailLogId        String             @map("email_log_id") @db.Uuid
+  attemptNumber     Int                @map("attempt_number")
+  status            EmailAttemptStatus @default(STARTED)
+  provider          String             @db.VarChar(64)
+  providerMessageId String?            @map("provider_message_id") @db.VarChar(191)
+  failureKind       String?            @map("failure_kind") @db.VarChar(20)
+  failureCode       String?            @map("failure_code") @db.VarChar(80)
+  startedAt         DateTime           @default(now()) @map("started_at") @db.Timestamptz(3)
+  completedAt       DateTime?          @map("completed_at") @db.Timestamptz(3)
+  emailLog          EmailLog           @relation(fields: [emailLogId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@unique([emailLogId, attemptNumber], map: "email_attempts_log_attempt_key")
+  @@index([status, startedAt], map: "email_attempts_status_started_at_idx")
+  @@map("email_attempts")
 }
 
 model ActivityLog {
@@ -767,6 +796,7 @@ model OutboxEvent {
   lastError      String?      @map("last_error") @db.Text
   createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt      DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+  emailLog       EmailLog?
 
   @@index([status, availableAt], map: "outbox_events_dispatch_idx")
   @@index([aggregateType, aggregateId, createdAt], map: "outbox_events_aggregate_idx")

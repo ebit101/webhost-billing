@@ -36,6 +36,9 @@ import {
   retryHostingOperationRequestSchema,
   hostingPanelLoginUrlSchema,
   configureCpanelServerRequestSchema,
+  emailTemplateKeys,
+  parseEmailEventPayload,
+  routeOutboxEvent,
   ticketStatusSchema,
 } from '../src';
 
@@ -382,6 +385,32 @@ describe('boundary contracts', () => {
       backgroundJobDataSchema.safeParse({ ...data, credential: 'hidden' })
         .success,
       false,
+    );
+  });
+
+  it('routes every email event and strictly validates durable event references', () => {
+    assert.equal(emailTemplateKeys.length, 12);
+    assert.deepEqual(routeOutboxEvent('EMAIL_PAYMENT_RECEIVED'), {
+      queueName: 'emails',
+      jobName: 'send-payment-email',
+    });
+    assert.deepEqual(
+      parseEmailEventPayload('EMAIL_PAYMENT_RECEIVED', {
+        schemaVersion: 1,
+        paymentId: '10000000-0000-4000-8000-000000000001',
+        invoiceId: '10000000-0000-4000-8000-000000000002',
+      }),
+      {
+        schemaVersion: 1,
+        paymentId: '10000000-0000-4000-8000-000000000001',
+        invoiceId: '10000000-0000-4000-8000-000000000002',
+      },
+    );
+    assert.throws(() =>
+      parseEmailEventPayload('EMAIL_INVOICE_CREATED', {
+        invoiceId: '10000000-0000-4000-8000-000000000002',
+        rawToken: 'must-not-pass',
+      }),
     );
   });
 

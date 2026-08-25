@@ -15,7 +15,7 @@ BullMQ uses the environment-specific `BULLMQ_PREFIX`. The worker polls the Postg
 
 Redis AOF uses `appendfsync always` because this instance is a durable queue backend, not a disposable cache. Do not weaken persistence or configure eviction for a staging/production queue deployment without a reviewed recovery design.
 
-Local SMTP capture remains deferred. Authentication creates idempotent verification and password-reset outbox records, but Command 5 does not send email.
+Email delivery is implemented by the worker. Development defaults to the private `.eml` preview transport, while production configuration requires SMTP, HTTPS public links, and TLS. See `docs/EMAIL_NOTIFICATIONS.md`; do not expose or commit the preview directory because messages may contain action links and customer information.
 
 ## Prerequisites
 

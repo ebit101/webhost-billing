@@ -751,6 +751,17 @@ export class PaymentGatewayService {
         },
       },
     });
+    if (eventType === 'GATEWAY_PAYMENT_SUCCEEDED') {
+      await transaction.outboxEvent.create({
+        data: {
+          aggregateType: 'PAYMENT',
+          aggregateId: paymentId,
+          eventType: 'EMAIL_PAYMENT_RECEIVED',
+          idempotencyKey: `email:payment-received:${paymentId}`,
+          payload: { schemaVersion: 1, paymentId, invoiceId },
+        },
+      });
+    }
   }
 
   private async rejectStoredEvent(

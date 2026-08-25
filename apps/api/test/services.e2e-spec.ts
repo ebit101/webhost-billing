@@ -253,6 +253,20 @@ describe('Hosting services (e2e)', () => {
       status: 'ACTIVE',
     });
     expect(reactivated.status).toBe('ACTIVE');
+    expect(
+      (
+        await prisma.outboxEvent.findMany({
+          where: { aggregateType: 'SERVICE', aggregateId: serviceId },
+          select: { eventType: true },
+        })
+      ).map(({ eventType }) => eventType),
+    ).toEqual(
+      expect.arrayContaining([
+        'EMAIL_SERVICE_PROVISIONED',
+        'EMAIL_SERVICE_SUSPENDED',
+        'EMAIL_SERVICE_REACTIVATED',
+      ]),
+    );
     await admin
       .patch(`/services/${serviceId}/status`)
       .set('X-CSRF-Token', csrf)
@@ -425,6 +439,9 @@ describe('Hosting services (e2e)', () => {
       : [];
     const serviceIds = services.map((service) => service.id);
     if (serviceIds.length) {
+      await prisma.outboxEvent.deleteMany({
+        where: { aggregateType: 'SERVICE', aggregateId: { in: serviceIds } },
+      });
       await prisma.activityLog.deleteMany({
         where: { entityType: 'SERVICE', entityId: { in: serviceIds } },
       });

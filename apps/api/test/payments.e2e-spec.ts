@@ -228,6 +228,14 @@ describe('Manual payments (e2e)', () => {
         where: { id: paymentId, status: 'SUCCEEDED' },
       }),
     ).toBe(1);
+    expect(
+      await prisma.outboxEvent.count({
+        where: {
+          aggregateId: paymentId,
+          eventType: 'EMAIL_PAYMENT_RECEIVED',
+        },
+      }),
+    ).toBe(1);
   });
 
   it('rejects a pending reference without changing its invoice', async () => {

@@ -149,7 +149,7 @@ describe('Payment gateways (e2e)', () => {
         .data,
     ).toMatchObject({ duplicate: true, status: 'PROCESSED' });
 
-    const [invoice, payment, events, outbox] = await Promise.all([
+    const [invoice, payment, events, outbox, emailOutbox] = await Promise.all([
       prisma.invoice.findUniqueOrThrow({ where: { id: invoiceId } }),
       prisma.payment.findUniqueOrThrow({ where: { id: session.paymentId } }),
       prisma.paymentEvent.count({ where: { paymentId: session.paymentId } }),
@@ -157,6 +157,12 @@ describe('Payment gateways (e2e)', () => {
         where: {
           aggregateId: session.paymentId,
           eventType: 'GATEWAY_PAYMENT_SUCCEEDED',
+        },
+      }),
+      prisma.outboxEvent.count({
+        where: {
+          aggregateId: session.paymentId,
+          eventType: 'EMAIL_PAYMENT_RECEIVED',
         },
       }),
     ]);
@@ -168,6 +174,7 @@ describe('Payment gateways (e2e)', () => {
     expect(payment).toMatchObject({ status: PaymentStatus.SUCCEEDED });
     expect(events).toBe(1);
     expect(outbox).toBe(1);
+    expect(emailOutbox).toBe(1);
   });
 
   it('rejects an invalid exact-body signature without recording an event', async () => {

@@ -8,7 +8,7 @@ The PostgreSQL schema is owned by `packages/database`. The initial 20 business m
 - Catalog: `Product`, `ProductPrice`
 - Orders and hosting: `Order`, `OrderItem`, `Service`, `Server`
 - Billing: `Invoice`, `InvoiceItem`, `Payment`, `PaymentEvent`
-- Support and notifications: `Ticket`, `TicketMessage`, `EmailLog`
+- Support and notifications: `Ticket`, `TicketMessage`, `EmailLog`, `EmailAttempt`
 - Operations: `ActivityLog`, `AutomationRun`, `HostingPanelOperation`, `Setting`, `OutboxEvent`
 - Authentication: `AuthSession`, `PasswordResetToken`, `EmailVerificationToken`
 
@@ -54,6 +54,7 @@ The schema remains one modular-monolith database. Model grouping does not create
 - Invoice rows are locked while verified charges or adjustments update settlement aggregates, preventing duplicate application and concurrent overpayment.
 - Gateway payment finalization, event processing, invoice settlement, linked-order payment, audits, and outbox creation share one database transaction.
 - Automation and outbox records have unique idempotency keys for safe retries.
+- Each queued email event has at most one `EmailLog`; each provider call appends a numbered `EmailAttempt`. Successful delivery is terminal, while temporary, permanent, and uncertain outcomes retain normalized evidence without raw provider errors.
 - Outbox publication claims due/stale rows with leases and `FOR UPDATE SKIP LOCKED`. A row becomes `PUBLISHED` only after its deterministic reference-only BullMQ job is accepted; exhausted/unroutable publication remains durably `FAILED` for administrator review.
 - Orders have unique submission keys so a repeated checkout request returns the original order and invoice instead of creating duplicate financial records.
 - Invoices have unique submission keys for safe administrator and order-generated creation retries.
@@ -63,7 +64,7 @@ The schema remains one modular-monolith database. Model grouping does not create
 
 - Foreign keys use `ON DELETE RESTRICT`; deleting a parent cannot cascade through billing or operational history.
 - Soft deletion is available only for users, customers, products, product prices, and servers, where hiding an inactive record while retaining references is useful.
-- Orders, services, invoices, invoice items, payments, payment events, hosting-panel operations, tickets, ticket messages, email logs, activity logs, automation runs, settings, and outbox events have no soft-delete field. Normal application workflows must transition their state or append a corrective record instead of deleting them.
+- Orders, services, invoices, invoice items, payments, payment events, hosting-panel operations, tickets, ticket messages, email logs, email attempts, activity logs, automation runs, settings, and outbox events have no soft-delete field. Normal application workflows must transition their state or append a corrective record instead of deleting them.
 - Permanent service termination is represented by service state and timestamps, not row deletion.
 
 ### Secrets and payloads
@@ -76,6 +77,7 @@ The schema remains one modular-monolith database. Model grouping does not create
 - Server integration credentials must store ciphertext and key version together. A `cpanel-whm` server is database-valid only with TLS, port `2087` or `443`, a WHM username, encrypted credential ciphertext, and a credential key version.
 - Activity logs may retain a one-way IP-address hash, not authentication secrets.
 - BullMQ receives outbox/aggregate/correlation references only. Full outbox JSON remains in PostgreSQL and must be revalidated by the trusted consumer; it is never copied wholesale into Redis.
+- Email rows store recipient and subject snapshots plus fixed delivery classifications, but never rendered bodies, raw SMTP responses, reset/verification tokens, or credentials.
 - Authentication session and action-token lookups use SHA-256 hashes of random opaque tokens. Raw reset and verification tokens are encrypted only for pending email delivery; raw session tokens are never stored.
 
 ### Authentication history
@@ -103,6 +105,7 @@ The initial migration adds SQL constraints beyond Prisma Schema Language:
 - JSON-object manual proof metadata, controlled manual methods, and internally consistent manual review/verification timestamps.
 - service due dates after their start date; external account identity for active/post-active states; required evidence for suspended, failed, cancelled, and terminated states; and an administrator identity for permanent termination.
 - positive hosting-panel attempt numbers, lowercase HMAC fingerprints, correct server/service scope, safe JSON-object metadata, non-self retry links, and status/error/completion evidence aligned with retry classification.
+- positive email attempt numbers and state-aligned completion, provider-message, and fixed failure evidence.
 
 Because check constraints and partial indexes are customized in migration SQL, never replace committed migrations with `prisma db push`.
 

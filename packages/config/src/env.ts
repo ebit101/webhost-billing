@@ -194,7 +194,16 @@ export const apiEnvironmentSchema = apiEnvironmentObjectSchema.superRefine(
   },
 );
 
-export const workerEnvironmentSchema = baseEnvironmentSchema
+const emailHeaderValueSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(160)
+  .refine((value) => !/[\r\n]/.test(value), {
+    message: 'Email header values cannot contain line breaks',
+  });
+
+const workerEnvironmentObjectSchema = baseEnvironmentSchema
   .extend(infrastructureEnvironmentSchema.shape)
   .extend({
     CREDENTIAL_ENCRYPTION_KEY:
@@ -212,6 +221,105 @@ export const workerEnvironmentSchema = baseEnvironmentSchema
       .min(30)
       .max(3_600)
       .default(120),
+    EMAIL_TRANSPORT: z.enum(['preview', 'smtp']).default('preview'),
+    EMAIL_PUBLIC_WEB_URL: z.url().default('http://localhost:3000'),
+    EMAIL_BRAND_NAME: emailHeaderValueSchema.default('Webhost Billing'),
+    EMAIL_BRAND_COLOR: z
+      .string()
+      .regex(/^#[0-9A-Fa-f]{6}$/)
+      .default('#0891b2'),
+    EMAIL_FROM_ADDRESS: z.email().max(320).default('no-reply@example.test'),
+    EMAIL_FROM_NAME: emailHeaderValueSchema.default('Webhost Billing'),
+    EMAIL_REPLY_TO_ADDRESS: z.preprocess(
+      (value) => (value === '' ? undefined : value),
+      z.email().max(320).optional(),
+    ),
+    EMAIL_PREVIEW_DIRECTORY: z
+      .string()
+      .min(1)
+      .default('/tmp/webhost-billing-email-preview'),
+    EMAIL_WORKER_CONCURRENCY: z.coerce.number().int().min(1).max(10).default(2),
+    SMTP_HOST: optionalCredentialSchema,
+    SMTP_PORT: z.coerce.number().int().min(1).max(65_535).default(587),
+    SMTP_SECURE: environmentBooleanSchema,
+    SMTP_REQUIRE_TLS: z.preprocess(
+      (value) => (typeof value === 'boolean' ? String(value) : value),
+      z
+        .enum(['true', 'false'])
+        .default('true')
+        .transform((value) => value === 'true'),
+    ),
+    SMTP_USERNAME: optionalCredentialSchema,
+    SMTP_PASSWORD: optionalCredentialSchema,
+    SMTP_CONNECTION_TIMEOUT_MS: z.coerce
+      .number()
+      .int()
+      .min(1_000)
+      .max(30_000)
+      .default(10_000),
+    SMTP_SOCKET_TIMEOUT_MS: z.coerce
+      .number()
+      .int()
+      .min(5_000)
+      .max(120_000)
+      .default(30_000),
+  });
+
+export const workerEnvironmentSchema =
+  workerEnvironmentObjectSchema.superRefine((environment, context) => {
+    const publicUrl = new URL(environment.EMAIL_PUBLIC_WEB_URL);
+    if (
+      publicUrl.username ||
+      publicUrl.password ||
+      publicUrl.search ||
+      publicUrl.hash
+    ) {
+      context.addIssue({
+        code: 'custom',
+        path: ['EMAIL_PUBLIC_WEB_URL'],
+        message:
+          'EMAIL_PUBLIC_WEB_URL must not contain credentials, query, or fragment',
+      });
+    }
+    if (environment.NODE_ENV === 'production') {
+      if (environment.EMAIL_TRANSPORT !== 'smtp') {
+        context.addIssue({
+          code: 'custom',
+          path: ['EMAIL_TRANSPORT'],
+          message: 'Production email delivery must use SMTP',
+        });
+      }
+      if (publicUrl.protocol !== 'https:') {
+        context.addIssue({
+          code: 'custom',
+          path: ['EMAIL_PUBLIC_WEB_URL'],
+          message: 'Production email links must use HTTPS',
+        });
+      }
+      if (!environment.SMTP_SECURE && !environment.SMTP_REQUIRE_TLS) {
+        context.addIssue({
+          code: 'custom',
+          path: ['SMTP_REQUIRE_TLS'],
+          message: 'Production SMTP must use implicit TLS or require STARTTLS',
+        });
+      }
+    }
+    if (environment.EMAIL_TRANSPORT === 'smtp' && !environment.SMTP_HOST) {
+      context.addIssue({
+        code: 'custom',
+        path: ['SMTP_HOST'],
+        message: 'SMTP_HOST is required when SMTP delivery is enabled',
+      });
+    }
+    if (
+      Boolean(environment.SMTP_USERNAME) !== Boolean(environment.SMTP_PASSWORD)
+    ) {
+      context.addIssue({
+        code: 'custom',
+        path: ['SMTP_PASSWORD'],
+        message: 'SMTP username and password must be configured together',
+      });
+    }
   });
 
 export const webEnvironmentSchema = baseEnvironmentSchema.extend({

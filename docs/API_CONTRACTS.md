@@ -11,9 +11,16 @@ Zod schemas validate data that crosses an application boundary. Callers must par
 - authenticated administrator and customer identities;
 - roles and the separate order, invoice, payment, service, and ticket states;
 - reference-only background job envelopes, queue names, failure visibility, and confirmed retry requests;
+- email event payloads, the twelve active template identifiers, and safe administrator delivery summaries;
 - success, paginated-success, and error response envelopes.
 
 Compile-time TypeScript types are inferred from the matching schemas where possible. A TypeScript assertion alone is not boundary validation.
+
+## Email notification administration
+
+`GET /email-notifications` is administrator-only and returns the latest 100 delivery logs, newest first. Each entry contains the recipient, immutable subject snapshot, template identifier, normalized delivery state, provider key, attempt count, timestamps, and attempt summaries with fixed failure classifications. The template identifier is a bounded string in this historical response so a retired or renamed template cannot break delivery-history visibility.
+
+The endpoint never returns rendered bodies, action tokens, raw provider errors, `lastError`, provider message identifiers, credentials, or outbox payloads. Customers receive `FORBIDDEN`. Business endpoints only commit versioned reference payloads to the transactional outbox; SMTP activity occurs asynchronously after the business transaction succeeds.
 
 ## Money
 

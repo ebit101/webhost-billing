@@ -5,6 +5,7 @@ import {
   AutomationStatus,
   BillingPeriod,
   CustomerStatus,
+  EmailAttemptStatus,
   EmailStatus,
   InvoiceStatus,
   OrderStatus,
@@ -55,6 +56,7 @@ const ids = {
   ticket: '10000000-0000-4000-8000-000000000015',
   ticketMessage: '10000000-0000-4000-8000-000000000016',
   emailLog: '10000000-0000-4000-8000-000000000017',
+  emailAttempt: '10000000-0000-4000-8000-000000000022',
   activityLog: '10000000-0000-4000-8000-000000000018',
   automationRun: '10000000-0000-4000-8000-000000000019',
   setting: '10000000-0000-4000-8000-000000000020',
@@ -405,12 +407,15 @@ async function seed(): Promise<void> {
 
     await transaction.emailLog.upsert({
       where: { id: ids.emailLog },
-      update: { status: EmailStatus.SENT },
+      update: {
+        templateKey: 'payment-received',
+        status: EmailStatus.SENT,
+      },
       create: {
         id: ids.emailLog,
         customerId: ids.customer,
         invoiceId: ids.invoice,
-        templateKey: 'invoice-paid',
+        templateKey: 'payment-received',
         recipientEmail: 'customer@example.test',
         subjectSnapshot: 'Payment received for DEV-INV-0001',
         status: EmailStatus.SENT,
@@ -419,6 +424,30 @@ async function seed(): Promise<void> {
         attemptCount: 1,
         queuedAt: paidAt,
         sentAt: paidAt,
+      },
+    });
+
+    await transaction.emailAttempt.upsert({
+      where: {
+        emailLogId_attemptNumber: {
+          emailLogId: ids.emailLog,
+          attemptNumber: 1,
+        },
+      },
+      update: {
+        status: EmailAttemptStatus.SENT,
+        providerMessageId: 'DEV-MESSAGE-0001',
+        completedAt: paidAt,
+      },
+      create: {
+        id: ids.emailAttempt,
+        emailLogId: ids.emailLog,
+        attemptNumber: 1,
+        status: EmailAttemptStatus.SENT,
+        provider: 'fake-smtp',
+        providerMessageId: 'DEV-MESSAGE-0001',
+        startedAt: paidAt,
+        completedAt: paidAt,
       },
     });
 

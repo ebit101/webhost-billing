@@ -581,6 +581,19 @@ export class PaymentService {
         });
       }
     }
+    await transaction.outboxEvent.create({
+      data: {
+        aggregateType: 'PAYMENT',
+        aggregateId: paymentId,
+        eventType: 'EMAIL_PAYMENT_RECEIVED',
+        idempotencyKey: `email:payment-received:${paymentId}`,
+        payload: {
+          schemaVersion: 1,
+          paymentId,
+          invoiceId: invoice.id,
+        },
+      },
+    });
     await transaction.activityLog.create({
       data: {
         actorUserId: actor.identity.userId,

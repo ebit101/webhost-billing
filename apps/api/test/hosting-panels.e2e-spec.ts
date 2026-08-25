@@ -219,6 +219,14 @@ describe('Hosting panel operations (e2e)', () => {
       controlPanelUsername: provisioned.operation.account?.username,
     });
     expect(service.orderItem?.order.status).toBe(OrderStatus.COMPLETED);
+    expect(
+      await prisma.outboxEvent.count({
+        where: {
+          aggregateId: primaryServiceId,
+          eventType: 'EMAIL_SERVICE_PROVISIONED',
+        },
+      }),
+    ).toBe(1);
 
     const replay = await postResult(
       admin,
@@ -555,6 +563,9 @@ describe('Hosting panel operations (e2e)', () => {
       select: { id: true },
     });
     const serviceIds = services.map(({ id }) => id);
+    await prisma.outboxEvent.deleteMany({
+      where: { aggregateType: 'SERVICE', aggregateId: { in: serviceIds } },
+    });
     await prisma.activityLog.deleteMany({
       where: {
         OR: [

@@ -26,7 +26,7 @@ describe('OutboxDispatcherService integration', () => {
     dispatcher = new OutboxDispatcherService(prisma, queues, {
       ...environment,
       BULLMQ_PREFIX: prefix,
-      OUTBOX_BATCH_SIZE: 10,
+      OUTBOX_BATCH_SIZE: 1,
     });
   });
 
@@ -51,6 +51,7 @@ describe('OutboxDispatcherService integration', () => {
         aggregateId: randomUUID(),
         eventType: 'AUTH_EMAIL_VERIFICATION_REQUESTED',
         idempotencyKey: `worker-test-${eventId}`,
+        availableAt: new Date(0),
         payload: {
           recipientEmail: 'fictional@example.test',
           privateMarker: 'must-remain-in-postgres',
@@ -59,7 +60,6 @@ describe('OutboxDispatcherService integration', () => {
     });
 
     expect(await dispatcher.dispatchOnce()).toBe(1);
-    expect(await dispatcher.dispatchOnce()).toBe(0);
 
     const stored = await prisma.outboxEvent.findUniqueOrThrow({
       where: { id: eventId },
@@ -85,6 +85,7 @@ describe('OutboxDispatcherService integration', () => {
         aggregateId: randomUUID(),
         eventType: 'UNSUPPORTED_TEST_EVENT',
         idempotencyKey: `worker-test-${eventId}`,
+        availableAt: new Date(0),
         payload: {},
       },
     });

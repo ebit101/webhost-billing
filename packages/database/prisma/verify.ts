@@ -25,6 +25,7 @@ const expectedTables = [
   'auth_sessions',
   'automation_runs',
   'customers',
+  'email_attempts',
   'email_logs',
   'email_verification_tokens',
   'hosting_panel_operations',
@@ -64,6 +65,9 @@ const requiredCustomConstraints = [
   'hosting_panel_operations_status_evidence_check',
   'email_verification_tokens_hash_format_check',
   'email_verification_tokens_time_order_check',
+  'email_attempts_failure_kind_check',
+  'email_attempts_number_check',
+  'email_attempts_state_check',
   'order_items_total_check',
   'orders_total_check',
   'password_reset_tokens_hash_format_check',
@@ -286,6 +290,16 @@ async function verify(): Promise<void> {
     seededService.nextDueAt.toISOString(),
     '2026-09-01T03:00:00.000Z',
   );
+
+  const seededEmailLog = await prisma.emailLog.findUnique({
+    where: { id: '10000000-0000-4000-8000-000000000017' },
+    include: { attempts: true },
+  });
+  assert.ok(seededEmailLog);
+  assert.equal(seededEmailLog.status, 'SENT');
+  assert.equal(seededEmailLog.attempts.length, 1);
+  assert.equal(seededEmailLog.attempts[0]?.status, 'SENT');
+  assert.equal(seededEmailLog.attempts[0]?.failureCode, null);
 }
 
 verify()

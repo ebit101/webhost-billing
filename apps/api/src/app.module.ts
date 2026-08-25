@@ -14,6 +14,7 @@ import { ProductModule } from './modules/products/product.module';
 import { ServiceModule } from './modules/services/service.module';
 import { HostingPanelModule } from './modules/hosting-panels/hosting-panel.module';
 import { BackgroundJobModule } from './modules/background-jobs/background-job.module';
+import { EmailNotificationModule } from './modules/email-notifications/email-notification.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { BackgroundJobModule } from './modules/background-jobs/background-job.mo
     ServiceModule,
     HostingPanelModule,
     BackgroundJobModule,
+    EmailNotificationModule,
   ],
   controllers: [AppController],
   providers: [

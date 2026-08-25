@@ -157,6 +157,7 @@ export class AuthService {
             eventType: 'AUTH_EMAIL_VERIFICATION_REQUESTED',
             idempotencyKey: `auth-email-verification:${verificationTokenId}`,
             payload: {
+              schemaVersion: 1,
               recipientEmail: input.email,
               tokenRecordId: verificationTokenId,
               purpose: 'EMAIL_VERIFICATION',
@@ -444,6 +445,7 @@ export class AuthService {
           eventType: 'AUTH_PASSWORD_RESET_REQUESTED',
           idempotencyKey: `auth-password-reset:${tokenId}`,
           payload: {
+            schemaVersion: 1,
             recipientEmail: user.email,
             tokenRecordId: tokenId,
             purpose: 'PASSWORD_RESET',

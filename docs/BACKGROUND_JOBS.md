@@ -51,9 +51,11 @@ If the process stops after step 4, the stale lease is reclaimed and the same Bul
 
 The dispatcher interval, batch size, and lease timeout are configured through `OUTBOX_POLL_INTERVAL_MS`, `OUTBOX_BATCH_SIZE`, and `OUTBOX_LOCK_TIMEOUT_SECONDS`. `BULLMQ_PREFIX` isolates one environment's Redis keys.
 
-## Processors and graceful shutdown
+## Email processor and graceful shutdown
 
-`@webhost-billing/queue` provides the shared `BackgroundWorker` registration boundary. Later feature modules register only the queues for which a real handler exists; Command 17 intentionally does not consume email/renewal jobs before those handlers are implemented.
+`@webhost-billing/queue` provides the shared `BackgroundWorker` registration boundary. Command 18 registers the `emails` queue consumer with configurable bounded concurrency. It reloads and validates the published outbox event from PostgreSQL, renders the message at the trusted boundary, and persists an `EmailLog` plus an append-only row for every adapter attempt. See `docs/EMAIL_NOTIFICATIONS.md` for the template catalog, SMTP classifications, preview transport, and secret boundary.
+
+Renewal, payment-reconciliation, and hosting consumers remain unregistered until their authorized feature commands implement the real handlers.
 
 Every registered worker:
 
@@ -94,4 +96,4 @@ The integration tests use unique Redis prefixes and fictional PostgreSQL rows, v
 
 ## Later command boundary
 
-Command 18 registers the email consumer and SMTP adapter. Command 19 adds renewal scheduling and business rules. Neither command may place secrets in Redis or make uncertain external mutations automatically retryable.
+Command 19 adds renewal scheduling and produces renewal-reminder events; Command 20 produces ticket-reply events. Both templates and routes already exist, but neither later business workflow is implemented here. No command may place secrets in Redis or make uncertain external mutations automatically retryable.
