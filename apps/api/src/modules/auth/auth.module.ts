@@ -17,6 +17,7 @@ import { CryptoAuthTokenFactory } from './services/auth-token.service';
 import { CsrfService } from './services/csrf.service';
 import { PasswordHasherService } from './services/password-hasher.service';
 import { TokenCipherService } from './services/token-cipher.service';
+import { TotpService } from './services/totp.service';
 
 @Module({
   imports: [DatabaseModule, RedisModule],
@@ -29,6 +30,7 @@ import { TokenCipherService } from './services/token-cipher.service';
     CsrfService,
     PasswordHasherService,
     TokenCipherService,
+    TotpService,
     {
       provide: AUTH_TOKEN_FACTORY,
       useClass: CryptoAuthTokenFactory,

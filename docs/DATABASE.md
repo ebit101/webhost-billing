@@ -10,7 +10,7 @@ The PostgreSQL schema is owned by `packages/database`. The initial 20 business m
 - Billing: `Invoice`, `InvoiceItem`, `Payment`, `PaymentEvent`
 - Support and notifications: `Ticket`, `TicketMessage`, `EmailLog`, `EmailAttempt`
 - Operations: `ActivityLog`, `AutomationRun`, `HostingPanelOperation`, `Setting`, `OutboxEvent`
-- Authentication: `AuthSession`, `PasswordResetToken`, `EmailVerificationToken`
+- Authentication: `AuthSession`, `PasswordResetToken`, `EmailVerificationToken`, `AdminTotpCredential`, `AdminRecoveryCode`, `AdminLoginChallenge`
 
 The schema remains one modular-monolith database. Model grouping does not create independent services or databases.
 
@@ -63,7 +63,7 @@ The schema remains one modular-monolith database. Model grouping does not create
 
 ### Relationships and deletion
 
-- Foreign keys use `ON DELETE RESTRICT`; deleting a parent cannot cascade through billing or operational history.
+- Foreign keys use `ON DELETE RESTRICT`; deleting a parent cannot cascade through billing or operational history. The only deliberate cascade is from an administrator TOTP credential to its replaceable recovery-code hashes.
 - Soft deletion is available only for users, customers, products, product prices, and servers, where hiding an inactive record while retaining references is useful.
 - Orders, services, invoices, invoice items, payments, payment events, hosting-panel operations, tickets, ticket messages, email logs, email attempts, activity logs, automation runs, settings, and outbox events have no soft-delete field. Normal application workflows must transition their state or append a corrective record instead of deleting them.
 - Permanent service termination is represented by service state and timestamps, not row deletion.
@@ -81,12 +81,14 @@ The schema remains one modular-monolith database. Model grouping does not create
 - Email rows store recipient and subject snapshots plus fixed delivery classifications, but never rendered bodies, raw SMTP responses, reset/verification tokens, or credentials.
 - Ticket rows store bounded plain-text conversations only. The initial release has no attachment model or upload path, and ticket audit metadata excludes message bodies.
 - Authentication session and action-token lookups use SHA-256 hashes of random opaque tokens. Raw reset and verification tokens are encrypted only for pending email delivery; raw session tokens are never stored.
+- Administrator TOTP secrets use purpose-derived AES-256-GCM ciphertext. Recovery codes use keyed hashes, while short-lived login challenges use opaque-token hashes and keyed source-address binding.
 
 ### Authentication history
 
 - Sessions have explicit creation, last-seen, expiry, and optional revocation timestamps. Revocation changes state instead of deleting the row.
+- Administrator sessions record when MFA was verified. TOTP credentials record only the last accepted time step for replay prevention; recovery codes and login challenges have explicit single-use state.
 - Reset and verification tokens have creation, expiry, and single-use timestamps. Consuming or superseding a token removes its encrypted delivery material while preserving the historical record.
-- Database checks enforce lowercase hexadecimal token hashes and valid timestamp ordering.
+- Database checks enforce lowercase hexadecimal token/recovery hashes, bounded MFA challenge failures, nonnegative TOTP time steps, and valid timestamp ordering.
 - Password reset, logout-all, and explicit revocation update session state transactionally. Authentication records use restrictive foreign keys like the rest of the schema.
 
 ## Database-enforced checks

@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { ApiEnvironment } from '@webhost-billing/config';
+import { isIP } from 'node:net';
 import { z } from 'zod';
 import { API_ENVIRONMENT } from '../../infrastructure/environment/environment.module';
 import { HostingPanelProviderError } from './hosting-panel.error';
@@ -37,6 +38,49 @@ export interface WhmApiEnvelope {
 
 export const CPANEL_WHM_FETCH = Symbol('CPANEL_WHM_FETCH');
 export type CpanelWhmFetch = typeof fetch;
+export const CPANEL_WHM_LOOKUP = Symbol('CPANEL_WHM_LOOKUP');
+export type CpanelWhmLookup = (
+  hostname: string,
+) => Promise<readonly { address: string; family: number }[]>;
+
+function isPublicIpv4(address: string): boolean {
+  const octets = address.split('.').map(Number);
+  const [first, second] = octets;
+  if (octets.length !== 4 || first === undefined || second === undefined) {
+    return false;
+  }
+  return !(
+    first === 0 ||
+    first === 10 ||
+    first === 127 ||
+    (first === 100 && second >= 64 && second <= 127) ||
+    (first === 169 && second === 254) ||
+    (first === 172 && second >= 16 && second <= 31) ||
+    (first === 192 && [0, 88, 168].includes(second)) ||
+    (first === 198 && [18, 19, 51].includes(second)) ||
+    (first === 203 && second === 0) ||
+    first >= 224
+  );
+}
+
+function isPublicAddress(address: string): boolean {
+  const family = isIP(address);
+  if (family === 4) return isPublicIpv4(address);
+  if (family !== 6) return false;
+  const normalized = address.toLowerCase();
+  if (normalized.startsWith('::ffff:')) {
+    return isPublicIpv4(normalized.slice('::ffff:'.length));
+  }
+  return !(
+    normalized === '::' ||
+    normalized === '::1' ||
+    normalized.startsWith('fc') ||
+    normalized.startsWith('fd') ||
+    /^fe[89ab]/.test(normalized) ||
+    normalized.startsWith('ff') ||
+    normalized.startsWith('2001:db8:')
+  );
+}
 
 function hasControlCharacters(value: string): boolean {
   return [...value].some((character) => {
@@ -52,6 +96,7 @@ export class CpanelWhmHttpClient {
   constructor(
     @Inject(API_ENVIRONMENT) environment: ApiEnvironment,
     @Inject(CPANEL_WHM_FETCH) private readonly fetchRequest: CpanelWhmFetch,
+    @Inject(CPANEL_WHM_LOOKUP) private readonly lookup: CpanelWhmLookup,
   ) {
     this.timeoutMilliseconds = environment.HOSTING_PANEL_TIMEOUT_MS;
   }
@@ -63,6 +108,7 @@ export class CpanelWhmHttpClient {
     mutation: boolean,
   ): Promise<WhmApiEnvelope> {
     this.validateConnection(connection);
+    await this.validatePublicResolution(connection.hostname, mutation);
     const url = new URL(
       `/json-api/${encodeURIComponent(functionName)}`,
       `https://${connection.hostname}:${connection.port}`,
@@ -156,6 +202,28 @@ export class CpanelWhmHttpClient {
         'PERMANENT',
         'CPANEL_CONFIGURATION_INVALID',
         'The cPanel/WHM server requires HTTPS, an approved WHM port, and an API token.',
+      );
+    }
+  }
+
+  private async validatePublicResolution(
+    hostname: string,
+    mutation: boolean,
+  ): Promise<void> {
+    let addresses: readonly { address: string; family: number }[];
+    try {
+      addresses = await this.lookup(hostname);
+    } catch {
+      throw this.transportFailure(mutation);
+    }
+    if (
+      addresses.length === 0 ||
+      addresses.some(({ address }) => !isPublicAddress(address))
+    ) {
+      throw new HostingPanelProviderError(
+        'PERMANENT',
+        'CPANEL_CONFIGURATION_INVALID',
+        'The cPanel/WHM hostname must resolve only to public network addresses.',
       );
     }
   }

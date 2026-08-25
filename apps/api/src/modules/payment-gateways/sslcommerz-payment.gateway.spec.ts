@@ -85,6 +85,31 @@ describe('SslCommerzPaymentGateway provider contract', () => {
     expect(call?.body).toContain(`value_b=${input.invoiceId}`);
   });
 
+  it('rejects a provider-supplied checkout URL outside the sandbox host', async () => {
+    const request: jest.MockedFunction<PaymentHttpClient['request']> = jest
+      .fn<
+        ReturnType<PaymentHttpClient['request']>,
+        Parameters<PaymentHttpClient['request']>
+      >()
+      .mockResolvedValue({
+        status: 200,
+        body: {
+          status: 'SUCCESS',
+          sessionkey: 'sandbox-session',
+          GatewayPageURL: 'https://attacker.example/collect',
+        },
+      });
+    const gateway = new SslCommerzPaymentGateway(
+      environment,
+      { request },
+      credentials,
+    );
+
+    await expect(gateway.createPaymentSession(input)).rejects.toMatchObject({
+      safeMessage: 'SSLCOMMERZ returned an unsafe checkout URL.',
+    });
+  });
+
   it('accepts an IPN only after authoritative validation and normalizes it', async () => {
     const request: jest.MockedFunction<PaymentHttpClient['request']> = jest
       .fn<

@@ -52,6 +52,7 @@ describe('administrator dashboard', () => {
     );
     const fetchMock = vi.fn(
       (request: RequestInfo | URL, init?: RequestInit) => {
+        void init;
         const url = String(request);
         if (url.includes('/auth/csrf'))
           return Promise.resolve(success({ csrfToken: 'x'.repeat(32) }));

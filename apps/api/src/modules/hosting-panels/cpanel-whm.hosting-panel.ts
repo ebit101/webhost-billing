@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
-import { hostingPanelLoginUrlSchema } from '@webhost-billing/shared';
 import {
   CpanelWhmHttpClient,
   type WhmApiEnvelope,
@@ -42,7 +41,7 @@ const loginDataSchema = z
   .object({
     expires: z.union([z.number(), z.string()]),
     service: z.literal('cpaneld'),
-    url: hostingPanelLoginUrlSchema,
+    url: z.url(),
   })
   .passthrough();
 
@@ -221,6 +220,8 @@ export class CpanelWhmHostingPanel implements HostingPanel {
     const url = new URL(data.url);
     if (
       url.hostname.toLowerCase() !== connection.hostname.toLowerCase() ||
+      url.protocol !== 'https:' ||
+      !['', '443', '2083'].includes(url.port) ||
       url.username ||
       url.password
     ) {

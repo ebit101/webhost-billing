@@ -16,6 +16,9 @@ import {
   authenticatedIdentitySchema,
   authenticatedSessionResponseSchema,
   authenticationSessionSchema,
+  twoFactorRecoveryCodesResponseSchema,
+  twoFactorRequiredResponseSchema,
+  twoFactorSetupResponseSchema,
 } from '@webhost-billing/shared';
 import request from 'supertest';
 import type { App } from 'supertest/types';
@@ -26,6 +29,7 @@ import { API_ENVIRONMENT } from '../src/infrastructure/environment/environment.m
 import { hashOpaqueToken } from '../src/modules/auth/services/auth-token.service';
 import { PasswordHasherService } from '../src/modules/auth/services/password-hasher.service';
 import { TokenCipherService } from '../src/modules/auth/services/token-cipher.service';
+import { TotpService } from '../src/modules/auth/services/totp.service';
 
 const CUSTOMER_EMAIL = 'command5-customer@example.test';
 const ADMIN_EMAIL = 'command5-admin@example.test';
@@ -49,6 +53,7 @@ describe('Authentication (e2e)', () => {
   let prisma: PrismaClient;
   let tokenCipher: TokenCipherService;
   let passwordHasher: PasswordHasherService;
+  let totp: TotpService;
   let customerAgent: ReturnType<typeof request.agent>;
   let customerCsrfToken: string;
   let customerId: string;
@@ -69,6 +74,7 @@ describe('Authentication (e2e)', () => {
     prisma = moduleFixture.get<PrismaClient>(PRISMA_CLIENT);
     tokenCipher = moduleFixture.get(TokenCipherService);
     passwordHasher = moduleFixture.get(PasswordHasherService);
+    totp = moduleFixture.get(TotpService);
     await cleanupTestUsers();
     await createTestAdministrator();
   });
@@ -155,6 +161,22 @@ describe('Authentication (e2e)', () => {
 
     expect(error.error.code).toBe('INVALID_CREDENTIALS');
     expect(JSON.stringify(error)).not.toContain(CUSTOMER_EMAIL);
+  });
+
+  it('rejects a state-changing request from a foreign browser origin', async () => {
+    const anonymousAgent = request.agent(app.getHttpServer());
+    const csrfToken = await issueCsrfToken(anonymousAgent);
+    const response = await anonymousAgent
+      .post('/auth/login')
+      .set('Origin', 'https://attacker.example')
+      .set('Sec-Fetch-Site', 'cross-site')
+      .set('X-CSRF-Token', csrfToken)
+      .send({ email: CUSTOMER_EMAIL, password: ORIGINAL_PASSWORD })
+      .expect(403);
+
+    expect(
+      apiErrorResponseSchema.parse(response.body as unknown).error.code,
+    ).toBe('CSRF_VALIDATION_FAILED');
   });
 
   it('denies customer-only boundary violations and administrator routes', async () => {
@@ -279,6 +301,83 @@ describe('Authentication (e2e)', () => {
       .expect(200);
   });
 
+  it('requires replay-resistant MFA for an enrolled administrator', async () => {
+    const enrollmentAgent = request.agent(app.getHttpServer());
+    const enrollmentCsrf = await issueCsrfToken(enrollmentAgent);
+    await enrollmentAgent
+      .post('/auth/login')
+      .set('X-CSRF-Token', enrollmentCsrf)
+      .send({ email: ADMIN_EMAIL, password: ORIGINAL_PASSWORD })
+      .expect(200);
+
+    const setupResponse = await enrollmentAgent
+      .post('/auth/two-factor/setup')
+      .set('X-CSRF-Token', enrollmentCsrf)
+      .send({ password: ORIGINAL_PASSWORD })
+      .expect(201);
+    const setup = apiSuccessResponseSchema(twoFactorSetupResponseSchema).parse(
+      setupResponse.body as unknown,
+    ).data;
+    const enrollmentCode = totp.codeAt(setup.secret);
+    const enableResponse = await enrollmentAgent
+      .post('/auth/two-factor/enable')
+      .set('X-CSRF-Token', enrollmentCsrf)
+      .send({ code: enrollmentCode })
+      .expect(201);
+    const recoveryCodes = apiSuccessResponseSchema(
+      twoFactorRecoveryCodesResponseSchema,
+    ).parse(enableResponse.body as unknown).data.recoveryCodes;
+
+    const credential = await prisma.adminTotpCredential.findUniqueOrThrow({
+      where: {
+        userId: (
+          await prisma.user.findUniqueOrThrow({ where: { email: ADMIN_EMAIL } })
+        ).id,
+      },
+    });
+    expect(credential.secretCiphertext).not.toContain(setup.secret);
+
+    const mfaAgent = request.agent(app.getHttpServer());
+    const mfaCsrf = await issueCsrfToken(mfaAgent);
+    const challengeResponse = await mfaAgent
+      .post('/auth/login')
+      .set('X-CSRF-Token', mfaCsrf)
+      .send({ email: ADMIN_EMAIL, password: ORIGINAL_PASSWORD })
+      .expect(200);
+    const challenge = apiSuccessResponseSchema(
+      twoFactorRequiredResponseSchema,
+    ).parse(challengeResponse.body as unknown).data;
+    await mfaAgent.get('/auth/admin-check').expect(401);
+    await mfaAgent
+      .post('/auth/login/two-factor')
+      .set('X-CSRF-Token', mfaCsrf)
+      .send({
+        challengeToken: challenge.challengeToken,
+        code: recoveryCodes[0],
+      })
+      .expect(200);
+    await mfaAgent.get('/auth/admin-check').expect(200);
+
+    const replayAgent = request.agent(app.getHttpServer());
+    const replayCsrf = await issueCsrfToken(replayAgent);
+    const replayChallengeResponse = await replayAgent
+      .post('/auth/login')
+      .set('X-CSRF-Token', replayCsrf)
+      .send({ email: ADMIN_EMAIL, password: ORIGINAL_PASSWORD })
+      .expect(200);
+    const replayChallenge = apiSuccessResponseSchema(
+      twoFactorRequiredResponseSchema,
+    ).parse(replayChallengeResponse.body as unknown).data;
+    await replayAgent
+      .post('/auth/login/two-factor')
+      .set('X-CSRF-Token', replayCsrf)
+      .send({
+        challengeToken: replayChallenge.challengeToken,
+        code: recoveryCodes[0],
+      })
+      .expect(401);
+  });
+
   afterAll(async () => {
     if (prisma) {
       await cleanupTestUsers();
@@ -327,6 +426,12 @@ describe('Authentication (e2e)', () => {
     }
 
     await prisma.authSession.deleteMany({ where: { userId: { in: userIds } } });
+    await prisma.adminLoginChallenge.deleteMany({
+      where: { userId: { in: userIds } },
+    });
+    await prisma.adminTotpCredential.deleteMany({
+      where: { userId: { in: userIds } },
+    });
     await prisma.passwordResetToken.deleteMany({
       where: { userId: { in: userIds } },
     });

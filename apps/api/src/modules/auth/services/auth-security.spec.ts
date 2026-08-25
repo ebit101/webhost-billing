@@ -6,6 +6,7 @@ import { AuthRateLimitService } from './auth-rate-limit.service';
 import { CsrfService } from './csrf.service';
 import { PasswordHasherService } from './password-hasher.service';
 import { TokenCipherService } from './token-cipher.service';
+import { TotpService } from './totp.service';
 
 const environment = apiEnvironmentSchema.parse({
   NODE_ENV: 'test',
@@ -47,6 +48,35 @@ describe('authentication security services', () => {
     await expect(service.verify(passwordHash, password)).resolves.toBe(true);
     await expect(service.verify(passwordHash, 'wrong password')).resolves.toBe(
       false,
+    );
+  });
+
+  it('encrypts MFA secrets and accepts only the narrow TOTP clock window', () => {
+    const service = new TotpService(environment);
+    const secret = service.generateSecret();
+    const at = new Date('2026-08-26T08:00:00.000Z');
+    const code = service.codeAt(secret, at);
+    const ciphertext = service.encryptSecret(secret);
+
+    expect(ciphertext).not.toContain(secret);
+    expect(service.decryptSecret(ciphertext)).toBe(secret);
+    expect(service.verify(secret, code, at)).not.toBeNull();
+    expect(
+      service.verify(secret, code, new Date(at.getTime() + 30_000)),
+    ).not.toBeNull();
+    expect(
+      service.verify(secret, code, new Date(at.getTime() + 60_000)),
+    ).toBeNull();
+    expect(() => service.decryptSecret(`${ciphertext}.tampered`)).toThrow();
+  });
+
+  it('normalizes recovery-code case and separators before keyed hashing', () => {
+    const service = new TotpService(environment);
+    const [code] = service.createRecoveryCodes(1);
+
+    expect(code).toMatch(/^(?:[A-Z2-7]{4}-){3}[A-Z2-7]{4}$/);
+    expect(service.hashRecoveryCode(code)).toBe(
+      service.hashRecoveryCode(code.replaceAll('-', '').toLowerCase()),
     );
   });
 

@@ -4,23 +4,28 @@ import { DashboardReportService } from './dashboard-report.service';
 
 describe('DashboardReportService', () => {
   it('calculates net collected revenue without rewriting successful charges', async () => {
-    const paymentFindMany = jest.fn().mockResolvedValue([
-      {
-        kind: PaymentKind.CHARGE,
-        amount: 10_000n,
-        verifiedAt: new Date('2026-08-01T04:00:00Z'),
-      },
-      {
-        kind: PaymentKind.REFUND,
-        amount: 2_000n,
-        verifiedAt: new Date('2026-08-01T05:00:00Z'),
-      },
-      {
-        kind: PaymentKind.REVERSAL,
-        amount: 1_000n,
-        verifiedAt: new Date('2026-08-02T05:00:00Z'),
-      },
-    ]);
+    const paymentFindMany = jest.fn((query: unknown) => {
+      expect(query).toMatchObject({
+        where: { status: 'SUCCEEDED', currency: 'BDT' },
+      });
+      return Promise.resolve([
+        {
+          kind: PaymentKind.CHARGE,
+          amount: 10_000n,
+          verifiedAt: new Date('2026-08-01T04:00:00Z'),
+        },
+        {
+          kind: PaymentKind.REFUND,
+          amount: 2_000n,
+          verifiedAt: new Date('2026-08-01T05:00:00Z'),
+        },
+        {
+          kind: PaymentKind.REVERSAL,
+          amount: 1_000n,
+          verifiedAt: new Date('2026-08-02T05:00:00Z'),
+        },
+      ]);
+    });
     const prisma = {
       payment: { findMany: paymentFindMany },
       invoice: {
@@ -56,13 +61,6 @@ describe('DashboardReportService', () => {
       { date: '2026-08-01', amount: '8000' },
       { date: '2026-08-02', amount: '-1000' },
     ]);
-    expect(paymentFindMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({
-          status: 'SUCCEEDED',
-          currency: 'BDT',
-        }),
-      }),
-    );
+    expect(paymentFindMany).toHaveBeenCalledTimes(1);
   });
 });

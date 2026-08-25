@@ -63,7 +63,7 @@ The fake checkout URL is a non-production placeholder. There is deliberately no 
 
 ## bKash sandbox
 
-The bKash adapter implements the official Tokenized Checkout flow:
+The bKash adapter implements the official Tokenized Checkout flow. A provider-returned checkout URL is accepted only when it is credential-free HTTPS on a pinned supported bKash sandbox checkout hostname; arbitrary provider-controlled redirects are rejected before persistence or navigation.
 
 1. grant and cache a short-lived token using the sandbox app key/secret and username/password;
 2. create a `sale` payment in BDT and return the provider's `bKashURL`;
@@ -77,7 +77,7 @@ Official references: [checkout overview](https://developer.bka.sh/docs/checkout-
 
 ## SSLCOMMERZ sandbox
 
-The SSLCOMMERZ adapter posts BDT invoice/customer/product snapshots to the official v4 sandbox session endpoint and redirects the customer to `GatewayPageURL`. It accepts the provider's form-encoded IPN only after calling the official Order Validation API with `val_id`. The validation result must be `VALID` or `VALIDATED` and must exactly match the IPN transaction, validation ID, internal payment/invoice values, amount, and currency. A `risk_level` of `1` remains pending, is not settled, and is placed in the administrator attention queue.
+The SSLCOMMERZ adapter posts BDT invoice/customer/product snapshots to the official v4 sandbox session endpoint and redirects the customer to `GatewayPageURL` only when it is credential-free HTTPS on `sandbox.sslcommerz.com`. It accepts the provider's form-encoded IPN only after calling the official Order Validation API with `val_id`. The validation result must be `VALID` or `VALIDATED` and must exactly match the IPN transaction, validation ID, internal payment/invoice values, amount, and currency. A `risk_level` of `1` remains pending, is not settled, and is placed in the administrator attention queue.
 
 Browser success/fail/cancel returns only navigate back to the invoice. They never establish payment. Administrator reconciliation uses the Merchant Transaction ID Validation API and the stored merchant transaction reference.
 

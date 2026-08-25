@@ -44,7 +44,23 @@ export function AdminDashboard() {
   }
 
   useEffect(() => {
-    void load();
+    let active = true;
+    void authenticatedGet<DashboardResponse>('/dashboard')
+      .then((result) => {
+        if (!active) return;
+        setDashboard(result);
+        setFrom(result.period.from);
+        setTo(result.period.to);
+      })
+      .catch((requestError: unknown) => {
+        if (active) setError(message(requestError));
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
   }, []);
 
   async function applyPeriod(event: FormEvent) {

@@ -71,6 +71,42 @@ describe('environment validation', () => {
     ).toThrow('API_PUBLIC_ORIGIN must be a credential-free HTTPS origin');
   });
 
+  it('rejects non-origin URLs and weak production transport or secrets', () => {
+    expect(() =>
+      parseApiEnvironment({
+        ...infrastructureEnvironment,
+        PORT: '3001',
+        SESSION_SECRET: 's'.repeat(32),
+        WEB_ORIGIN: 'https://user:password@example.test/private',
+      }),
+    ).toThrow('Expected a credential-free HTTP(S) origin without a path');
+
+    expect(() =>
+      parseApiEnvironment({
+        ...infrastructureEnvironment,
+        NODE_ENV: 'production',
+        PORT: '3001',
+        SESSION_SECRET: 's'.repeat(64),
+        CREDENTIAL_ENCRYPTION_KEY: 'e'.repeat(64),
+        WEB_ORIGIN: 'http://billing.example.test',
+        API_PUBLIC_ORIGIN: 'https://api.example.test',
+      }),
+    ).toThrow('WEB_ORIGIN must use HTTPS in production');
+
+    expect(() =>
+      parseApiEnvironment({
+        ...infrastructureEnvironment,
+        NODE_ENV: 'production',
+        PORT: '3001',
+        SESSION_SECRET: 'replace-with-an-insecure-placeholder-value-000000',
+        CREDENTIAL_ENCRYPTION_KEY:
+          'replace-with-an-insecure-placeholder-value-000001',
+        WEB_ORIGIN: 'https://billing.example.test',
+        API_PUBLIC_ORIGIN: 'https://api.example.test',
+      }),
+    ).toThrow('Production session and encryption secrets');
+  });
+
   it('parses worker infrastructure settings', () => {
     const environment = parseWorkerEnvironment(infrastructureEnvironment);
 

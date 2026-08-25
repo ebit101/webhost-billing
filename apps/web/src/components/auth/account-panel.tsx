@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { authenticatedGet, authMutation } from '../../lib/auth-api';
 import { FormNotice } from './form-controls';
+import { AdminTwoFactorPanel } from './admin-two-factor-panel';
 
 interface Identity {
   userId: string;
@@ -86,6 +87,7 @@ export function AccountPanel() {
           <dd className="mt-1 font-semibold text-slate-950">{identity.role}</dd>
         </div>
       </dl>
+      {identity.role === 'ADMIN' ? <AdminTwoFactorPanel /> : null}
       <Link
         href={identity.role === 'ADMIN' ? '/admin' : '/portal'}
         className="inline-flex min-h-11 items-center justify-center rounded-xl bg-brand-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"

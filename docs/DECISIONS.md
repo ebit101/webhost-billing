@@ -250,6 +250,14 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** Customers and administrators need a stable printable artifact whose financial values match the authoritative invoice. Remote assets, browser-only rendering, or database identifiers would weaken reproducibility, privacy, and operational reliability.
 - **Consequence:** The same serialized invoice produces byte-identical PDF bytes. Issued identity/items stay historically fixed, while legitimate append-only payments, credits, refunds, and status changes appear when the current invoice is downloaded. The raw private response contains human-facing invoice/order numbers only; customer ownership remains enforced before rendering, and editable drafts have no downloadable PDF.
 
+## ADR-032 — Step-Up Administrator Authentication and Layered HTTP Trust
+
+- **Status:** Accepted
+- **Date:** 2026-08-26
+- **Decision:** Add optional administrator RFC 6238 TOTP with encrypted secrets, hashed one-use recovery codes, short-lived source-bound login challenges, and atomic accepted-time-step replay protection. Combine it with idle session expiry, origin/fetch-metadata-aware signed CSRF, exact HTTPS production origins, security headers, pinned provider redirects, and public-address cPanel DNS preflight.
+- **Reason:** Password-only administrator access has disproportionate authority over billing, payments, customer data, and hosting. Cookies, redirects, callbacks, and administrator-configured external hosts cross different trust boundaries and require independent controls; a successful browser/provider navigation or a syntactically valid URL is not proof of trust.
+- **Consequence:** Enrolled administrators receive no session until a second factor is consumed. Enrollment/disable/recovery rotation require reauthentication and revoke affected sessions, while MFA state and failures are auditable without codes or secrets. API/web production deployments require exact secure origins and layered headers. Checkout/panel URLs and cPanel destinations fail closed outside approved hosts, protocols, ports, and public resolution. Production still needs outbound firewall policy because application DNS preflight cannot alone eliminate rebinding.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

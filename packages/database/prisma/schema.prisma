@@ -207,6 +207,8 @@ model User {
   servicesTerminated            Service[]                @relation("ServiceTerminatedBy")
   hostingPanelOperations        HostingPanelOperation[]  @relation("HostingOperationRequestedBy")
   authSessions                  AuthSession[]
+  adminTotpCredential           AdminTotpCredential?
+  adminLoginChallenges          AdminLoginChallenge[]
   passwordResetTokens           PasswordResetToken[]
   emailVerificationTokens       EmailVerificationToken[]
 
@@ -260,21 +262,67 @@ model AdminProfile {
 }
 
 model AuthSession {
-  id            String    @id @default(uuid()) @db.Uuid
-  userId        String    @map("user_id") @db.Uuid
-  tokenHash     String    @unique(map: "auth_sessions_token_hash_key") @map("token_hash") @db.Char(64)
-  expiresAt     DateTime  @map("expires_at") @db.Timestamptz(3)
-  lastSeenAt    DateTime  @default(now()) @map("last_seen_at") @db.Timestamptz(3)
-  revokedAt     DateTime? @map("revoked_at") @db.Timestamptz(3)
-  revokedReason String?   @map("revoked_reason") @db.VarChar(64)
-  ipAddressHash String?   @map("ip_address_hash") @db.Char(64)
-  userAgent     String?   @map("user_agent") @db.VarChar(512)
-  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
-  user          User      @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  id                  String    @id @default(uuid()) @db.Uuid
+  userId              String    @map("user_id") @db.Uuid
+  tokenHash           String    @unique(map: "auth_sessions_token_hash_key") @map("token_hash") @db.Char(64)
+  expiresAt           DateTime  @map("expires_at") @db.Timestamptz(3)
+  lastSeenAt          DateTime  @default(now()) @map("last_seen_at") @db.Timestamptz(3)
+  revokedAt           DateTime? @map("revoked_at") @db.Timestamptz(3)
+  revokedReason       String?   @map("revoked_reason") @db.VarChar(64)
+  ipAddressHash       String?   @map("ip_address_hash") @db.Char(64)
+  userAgent           String?   @map("user_agent") @db.VarChar(512)
+  twoFactorVerifiedAt DateTime? @map("two_factor_verified_at") @db.Timestamptz(3)
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  user                User      @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
   @@index([userId, revokedAt, expiresAt], map: "auth_sessions_user_active_idx")
   @@index([expiresAt], map: "auth_sessions_expires_at_idx")
   @@map("auth_sessions")
+}
+
+model AdminTotpCredential {
+  id               String              @id @default(uuid()) @db.Uuid
+  userId           String              @unique(map: "admin_totp_credentials_user_id_key") @map("user_id") @db.Uuid
+  secretCiphertext String              @map("secret_ciphertext") @db.Text
+  keyVersion       String              @map("key_version") @db.VarChar(64)
+  enabledAt        DateTime?           @map("enabled_at") @db.Timestamptz(3)
+  lastUsedTimeStep BigInt?             @map("last_used_time_step")
+  createdAt        DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime            @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user             User                @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  recoveryCodes    AdminRecoveryCode[]
+
+  @@index([enabledAt], map: "admin_totp_credentials_enabled_at_idx")
+  @@map("admin_totp_credentials")
+}
+
+model AdminRecoveryCode {
+  id           String              @id @default(uuid()) @db.Uuid
+  credentialId String              @map("credential_id") @db.Uuid
+  codeHash     String              @unique(map: "admin_recovery_codes_hash_key") @map("code_hash") @db.Char(64)
+  usedAt       DateTime?           @map("used_at") @db.Timestamptz(3)
+  createdAt    DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+  credential   AdminTotpCredential @relation(fields: [credentialId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([credentialId, usedAt], map: "admin_recovery_codes_credential_used_idx")
+  @@map("admin_recovery_codes")
+}
+
+model AdminLoginChallenge {
+  id             String    @id @default(uuid()) @db.Uuid
+  userId         String    @map("user_id") @db.Uuid
+  tokenHash      String    @unique(map: "admin_login_challenges_token_hash_key") @map("token_hash") @db.Char(64)
+  expiresAt      DateTime  @map("expires_at") @db.Timestamptz(3)
+  usedAt         DateTime? @map("used_at") @db.Timestamptz(3)
+  failedAttempts Int       @default(0) @map("failed_attempts")
+  ipAddressHash  String    @map("ip_address_hash") @db.Char(64)
+  userAgent      String?   @map("user_agent") @db.VarChar(512)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  user           User      @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([userId, usedAt, expiresAt], map: "admin_login_challenges_user_active_idx")
+  @@index([expiresAt], map: "admin_login_challenges_expires_at_idx")
+  @@map("admin_login_challenges")
 }
 
 model PasswordResetToken {

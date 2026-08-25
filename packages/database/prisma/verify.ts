@@ -21,7 +21,10 @@ const prisma = createPrismaClient(databaseUrl);
 
 const expectedTables = [
   'activity_logs',
+  'admin_login_challenges',
   'admin_profiles',
+  'admin_recovery_codes',
+  'admin_totp_credentials',
   'auth_sessions',
   'automation_runs',
   'customers',
@@ -51,6 +54,13 @@ const expectedTables = [
 const requiredCustomConstraints = [
   'auth_sessions_time_order_check',
   'auth_sessions_token_hash_format_check',
+  'auth_sessions_two_factor_time_check',
+  'admin_login_challenges_failed_attempts_check',
+  'admin_login_challenges_hash_format_check',
+  'admin_login_challenges_time_order_check',
+  'admin_recovery_codes_hash_format_check',
+  'admin_recovery_codes_time_order_check',
+  'admin_totp_credentials_state_check',
   'automation_runs_counts_check',
   'customers_country_code_check',
   'invoice_items_total_check',
@@ -155,6 +165,10 @@ async function verify(): Promise<void> {
     FROM information_schema.columns
     WHERE table_schema = 'public'
       AND data_type = 'bigint'
+      AND NOT (
+        table_name = 'admin_totp_credentials'
+        AND column_name = 'last_used_time_step'
+      )
     ORDER BY table_name, column_name
   `;
 
@@ -243,15 +257,18 @@ async function verify(): Promise<void> {
   `;
   assert.equal(hostingRetryIndexes[0]?.count, 1n);
 
-  const foreignKeyDeleteRules = await prisma.$queryRaw<
-    Array<{ delete_rule: string }>
+  const cascadingForeignKeys = await prisma.$queryRaw<
+    Array<{ constraint_name: string }>
   >`
-    SELECT DISTINCT delete_rule
+    SELECT constraint_name
     FROM information_schema.referential_constraints
     WHERE constraint_schema = 'public'
-    ORDER BY delete_rule
+      AND delete_rule = 'CASCADE'
+    ORDER BY constraint_name
   `;
-  assert.deepEqual(foreignKeyDeleteRules, [{ delete_rule: 'RESTRICT' }]);
+  assert.deepEqual(cascadingForeignKeys, [
+    { constraint_name: 'admin_recovery_codes_credential_id_fkey' },
+  ]);
 
   const seededInvoice = await prisma.invoice.findUnique({
     where: { invoiceNumber: 'DEV-INV-0001' },

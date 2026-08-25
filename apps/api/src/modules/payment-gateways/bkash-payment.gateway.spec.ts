@@ -96,6 +96,34 @@ describe('BkashPaymentGateway provider contract', () => {
     expect(create?.body).toContain('"amount":"123.45"');
   });
 
+  it('rejects a provider-supplied checkout URL outside pinned sandbox hosts', async () => {
+    const request: jest.MockedFunction<PaymentHttpClient['request']> = jest
+      .fn<
+        ReturnType<PaymentHttpClient['request']>,
+        Parameters<PaymentHttpClient['request']>
+      >()
+      .mockResolvedValueOnce({
+        status: 200,
+        body: { id_token: 'sandbox-token', expires_in: 3600 },
+      })
+      .mockResolvedValueOnce({
+        status: 200,
+        body: {
+          paymentID: 'TR0011PGW20260825',
+          bKashURL: 'https://attacker.example/collect',
+        },
+      });
+    const gateway = new BkashPaymentGateway(
+      environment,
+      { request },
+      credentials,
+    );
+
+    await expect(gateway.createPaymentSession(input)).rejects.toMatchObject({
+      safeMessage: 'bKash returned an unsafe checkout URL.',
+    });
+  });
+
   it('executes a returned payment and normalizes a completed transaction', async () => {
     const request: jest.MockedFunction<PaymentHttpClient['request']> = jest
       .fn<

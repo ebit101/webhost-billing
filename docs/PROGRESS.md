@@ -1559,6 +1559,66 @@ Run **Command 23 — Add PDF Invoices** only after explicit user authorization. 
 
 Run **Command 24 — Harden Security** only after explicit user authorization. Begin with the known dependency and lint baselines, then verify authentication/session, CSRF, ownership/IDOR, input/output, provider callback/replay, SSRF/redirect, credential/logging, headers/CORS, rate-limit, two-factor, and audit protections with regression tests.
 
+### Command 24 — Harden Security
+
+- **Status:** Completed and delivered to GitHub `main`
+- **Date:** 2026-08-26
+
+#### Scope completed
+
+- Completed an evidence-backed repository security review across authentication/session handling, CSRF, authorization/ownership/IDOR, input validation, SQL injection, stored/reflected XSS, rate limits, payment callbacks/replay, SSRF, redirects, file handling, credential encryption, logging, dependency advisories, headers/CORS, administrator MFA, and audit coverage.
+- Added administrator RFC 6238 TOTP enrollment and login with password-confirmed setup, purpose-derived AES-256-GCM secret encryption, five-minute hashed/source-bound challenges, atomic accepted-time-step replay prevention, ten keyed-hash single-use recovery codes, recovery rotation, disable reauthentication, safe status UI, and session revocation/audit rules.
+- Added one-hour idle session expiry, automatic idle/MFA-required revocation evidence, registration/email-verification/MFA limits, origin and Fetch Metadata CSRF checks, constant-time cookie/header comparison, loopback-only reverse-proxy trust, exact CORS methods/headers, and production origin/secret validation.
+- Added Helmet API headers and non-cacheable API responses. Added Next.js CSP, referrer, clickjacking, MIME, permissions, opener, and production HSTS headers using the installed Next.js 16 documentation.
+- Pinned provider-returned bKash and SSLCOMMERZ checkout redirects to credential-free HTTPS sandbox hosts. Hardened cPanel login URLs to the configured host, HTTPS, and approved ports, and added public-address-only DNS preflight before WHM fetches.
+- Confirmed strict runtime request contracts, service-layer role/ownership checks, Prisma/parameterized database access, React/email escaping, CSV formula protection, and absence of upload endpoints. Retained the strict no-attachment boundary for tickets/manual proof.
+- Remediated the known high-severity Prisma-tooling `deepmerge-ts` advisory with a tested workspace override to `8.0.0`; `pnpm audit --prod` now reports no known vulnerabilities. Added pinned Helmet 8.3.0.
+- Cleared the fourteen carried-forward Command 22 ESLint findings and the newly surfaced dashboard React effect finding without changing financial/report semantics.
+- Added two committed migrations for MFA storage and database-enforced token/hash/time/replay constraints, updated structural verification, and wrote the security control/residual-risk/production checklist.
+
+#### Files changed
+
+- Authentication/MFA API and tests: `apps/api/src/modules/auth/**`, `apps/api/test/auth.e2e-spec.ts`, `apps/api/src/environment.spec.ts`
+- API/web transport hardening: `apps/api/src/main.ts`, `apps/web/next.config.ts`, `packages/config/src/env.ts`
+- Administrator MFA interface/tests: `apps/web/src/components/auth/**`, `apps/web/src/components/dashboard/admin-dashboard.tsx`, `apps/web/src/components/dashboard/admin-dashboard.test.tsx`
+- Payment/cPanel boundaries and tests: `apps/api/src/modules/payment-gateways/**`, `apps/api/src/modules/hosting-panels/**`, `packages/shared/src/contracts/hosting-panels.ts`
+- Shared contracts/errors: `packages/shared/src/contracts/authentication.ts`, `packages/shared/src/contracts/errors.ts`
+- Database schema/migrations/verifier: `packages/database/prisma/schema.prisma`, `packages/database/prisma/migrations/20260826090000_add_admin_two_factor/migration.sql`, `packages/database/prisma/migrations/20260826093000_harden_admin_two_factor_constraints/migration.sql`, `packages/database/prisma/verify.ts`
+- Dependency/lint remediation: `apps/api/package.json`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`, `apps/api/src/modules/dashboard-reports/**`
+- Documentation: `README.md`, `docs/SECURITY_HARDENING.md`, `docs/AUTHENTICATION.md`, `docs/API_CONTRACTS.md`, `docs/DATABASE.md`, `docs/HOSTING_PANELS.md`, `docs/PAYMENT_GATEWAYS.md`, `docs/DECISIONS.md`, `docs/PROGRESS.md`
+
+#### Validation
+
+- Repository Prettier, `git diff --check`, API/worker/web ESLint, strict TypeScript across every code workspace, and config/database/shared/queue/API/worker/web production builds passed.
+- Workspace unit/component validation passed 169 tests: shared contracts 22, queue/Redis 3, API 84, worker 27, and frontend 33. Complete PostgreSQL/Redis API E2E validation passed 61 tests across sixteen suites. Total validated tests: 230.
+- Security regression coverage passed for encrypted MFA secrets, TOTP clock window, challenge/recovery replay, password-to-MFA login, foreign-origin/fetch-metadata CSRF rejection, generic credentials, role/ownership denial, unsafe bKash/SSLCOMMERZ redirects, unsafe cPanel protocol/host/address resolution, password/token encryption, webhook invariants, and file-shaped/markup rejection.
+- Twenty-one migrations deployed successfully. Prisma format/schema/client generation, database structural/custom-constraint/fictional-seed verification, Docker Compose validation, and PostgreSQL/Redis health passed.
+- `pnpm audit --prod` passed with no known vulnerabilities after the override. Helmet contains no transitive runtime dependencies beyond its pinned package.
+- The security review source scans found no unsafe raw Prisma queries, `dangerouslySetInnerHTML`, upload/multipart handlers, committed `.env`, private key, real credential/customer data, or raw provider action. No bKash, SSLCOMMERZ, cPanel, SMTP, domain registrar, or production external action was executed.
+
+#### Decisions made
+
+- Administrator MFA is a deliberate enrollment feature rather than an automatic migration-time lockout. Production administrators must enroll before public exposure; password reset does not remove MFA.
+- TOTP uses the broadly compatible RFC 6238 SHA-1/six-digit/30-second profile with one clock step on either side. Accepted time steps and recovery codes are consumed atomically to prevent replay.
+- Recovery codes are replaceable security material and are the sole intentional database cascade below an MFA credential; financial, operational, audit, and session history retain restrictive deletion behavior.
+- Static Next.js pages retain framework-required inline script/style CSP allowances, while all third-party scripts, object/frame embedding, foreign forms/base URLs, and unconfigured network destinations remain blocked.
+- cPanel DNS preflight rejects any mixed/private resolution before fetch. Network egress allowlisting remains mandatory because application-layer DNS validation alone cannot eliminate rebinding.
+- Provider browser redirects are untrusted output and must match pinned sandbox HTTPS destinations. They still never constitute payment proof.
+
+#### Open questions and risks
+
+- Enroll every real administrator in MFA and store recovery codes offline. The application does not yet impose an organization-wide mandatory-enrollment deadline or hardware/WebAuthn factor.
+- Production reverse-proxy forwarding/header replacement, TLS/HSTS rollout, database/Redis isolation, egress firewall rules, managed secret storage, backup restoration, and security monitoring require an operational deployment review.
+- The static CSP includes `'unsafe-inline'` for current Next.js compatibility. Moving to nonce-based dynamic rendering or stable hash/SRI policy would trade static optimization for a stricter script boundary and needs separate performance/deployment validation.
+- DNS can change after cPanel preflight. Restrict API/worker egress to the approved WHM/provider hosts or IP ranges and use token IP restrictions.
+- No upload feature exists. Any future attachment/logo/import feature requires a separate threat model and private scanning/storage pipeline.
+- Real payment sandbox callbacks, cPanel connectivity, SMTP, UK2Group registrar behavior, and production credentials remain operationally unverified because this command intentionally executed no external provider action.
+- PostgreSQL E2E runs still emit the known pg@9 concurrent-query deprecation warning, and Jest worker/E2E runs emit the existing experimental VM warning. All tests passed.
+
+#### Recommended next command
+
+Run **Command 25 — Test Critical Business Invariants** only after explicit user authorization. Add the dedicated invariant matrix and concurrency/failure tests without weakening the Command 24 security boundaries or invoking real providers.
+
 ## Report Template
 
 Use this template after every future command:

@@ -41,6 +41,29 @@ const redisUrlSchema = z.string().refine(
   { message: 'Expected a Redis connection URL' },
 );
 
+const httpOriginSchema = z.url().refine(
+  (value) => {
+    const url = new URL(value);
+    return (
+      (url.protocol === 'http:' || url.protocol === 'https:') &&
+      !url.username &&
+      !url.password &&
+      url.pathname === '/' &&
+      !url.search &&
+      !url.hash
+    );
+  },
+  { message: 'Expected a credential-free HTTP(S) origin without a path' },
+);
+
+function isSecureOrLoopbackOrigin(value: string): boolean {
+  const url = new URL(value);
+  return (
+    url.protocol === 'https:' ||
+    ['localhost', '127.0.0.1', '::1'].includes(url.hostname)
+  );
+}
+
 const infrastructureEnvironmentSchema = z.object({
   DATABASE_URL: postgresUrlSchema,
   REDIS_URL: redisUrlSchema,
@@ -72,8 +95,8 @@ const apiEnvironmentObjectSchema = serverEnvironmentSchema
   .extend(infrastructureEnvironmentSchema.shape)
   .extend(secretEnvironmentSchema.shape)
   .extend({
-    WEB_ORIGIN: z.url().default('http://localhost:3000'),
-    API_PUBLIC_ORIGIN: z.url().default('http://localhost:3001'),
+    WEB_ORIGIN: httpOriginSchema.default('http://localhost:3000'),
+    API_PUBLIC_ORIGIN: httpOriginSchema.default('http://localhost:3001'),
     PAYMENT_PROVIDER_TIMEOUT_MS: z.coerce
       .number()
       .int()
@@ -137,6 +160,31 @@ function requireCredential(
 
 export const apiEnvironmentSchema = apiEnvironmentObjectSchema.superRefine(
   (environment, context) => {
+    if (environment.NODE_ENV === 'production') {
+      for (const key of ['WEB_ORIGIN', 'API_PUBLIC_ORIGIN'] as const) {
+        if (!isSecureOrLoopbackOrigin(environment[key])) {
+          context.addIssue({
+            code: 'custom',
+            path: [key],
+            message: `${key} must use HTTPS in production`,
+          });
+        }
+      }
+      if (
+        environment.SESSION_SECRET.length < 48 ||
+        environment.CREDENTIAL_ENCRYPTION_KEY.length < 48 ||
+        environment.SESSION_SECRET === environment.CREDENTIAL_ENCRYPTION_KEY ||
+        environment.SESSION_SECRET.startsWith('replace-') ||
+        environment.CREDENTIAL_ENCRYPTION_KEY.startsWith('replace-')
+      ) {
+        context.addIssue({
+          code: 'custom',
+          path: ['SESSION_SECRET'],
+          message:
+            'Production session and encryption secrets must be distinct, randomly generated values of at least 48 characters',
+        });
+      }
+    }
     if (environment.BKASH_ENABLED || environment.SSLCOMMERZ_ENABLED) {
       const callbackOrigin = new URL(environment.API_PUBLIC_ORIGIN);
       if (
@@ -234,7 +282,7 @@ const workerEnvironmentObjectSchema = baseEnvironmentSchema
       .max(30_000)
       .default(10_000),
     EMAIL_TRANSPORT: z.enum(['preview', 'smtp']).default('preview'),
-    EMAIL_PUBLIC_WEB_URL: z.url().default('http://localhost:3000'),
+    EMAIL_PUBLIC_WEB_URL: httpOriginSchema.default('http://localhost:3000'),
     EMAIL_BRAND_NAME: emailHeaderValueSchema.default('Webhost Billing'),
     EMAIL_BRAND_COLOR: z
       .string()
@@ -334,10 +382,23 @@ export const workerEnvironmentSchema =
     }
   });
 
-export const webEnvironmentSchema = baseEnvironmentSchema.extend({
-  WEB_PORT: z.coerce.number().int().min(1).max(65_535).default(3000),
-  NEXT_PUBLIC_API_URL: z.url().default('http://localhost:3001'),
-});
+export const webEnvironmentSchema = baseEnvironmentSchema
+  .extend({
+    WEB_PORT: z.coerce.number().int().min(1).max(65_535).default(3000),
+    NEXT_PUBLIC_API_URL: httpOriginSchema.default('http://localhost:3001'),
+  })
+  .superRefine((environment, context) => {
+    if (
+      environment.NODE_ENV === 'production' &&
+      !isSecureOrLoopbackOrigin(environment.NEXT_PUBLIC_API_URL)
+    ) {
+      context.addIssue({
+        code: 'custom',
+        path: ['NEXT_PUBLIC_API_URL'],
+        message: 'NEXT_PUBLIC_API_URL must use HTTPS in production',
+      });
+    }
+  });
 
 export type BaseEnvironment = z.infer<typeof baseEnvironmentSchema>;
 export type ServerEnvironment = z.infer<typeof serverEnvironmentSchema>;

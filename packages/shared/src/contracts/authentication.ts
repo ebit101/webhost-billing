@@ -40,6 +40,62 @@ export const loginRequestSchema = z
   })
   .strict();
 
+export const twoFactorCodeSchema = z
+  .string()
+  .trim()
+  .regex(/^(?:\d{6}|[A-Z2-7]{4}-[A-Z2-7]{4}-[A-Z2-7]{4}-[A-Z2-7]{4})$/i, {
+    message: 'Enter a six-digit authenticator code or a recovery code',
+  });
+
+export const twoFactorLoginRequestSchema = z
+  .object({
+    challengeToken: z.string().min(32).max(256),
+    code: twoFactorCodeSchema,
+  })
+  .strict();
+
+export const twoFactorPasswordRequestSchema = z
+  .object({ password: z.string().min(1).max(128) })
+  .strict();
+
+export const twoFactorVerificationRequestSchema = z
+  .object({ code: twoFactorCodeSchema })
+  .strict();
+
+export const twoFactorDisableRequestSchema = z
+  .object({
+    password: z.string().min(1).max(128),
+    code: twoFactorCodeSchema,
+  })
+  .strict();
+
+export const twoFactorRequiredResponseSchema = z
+  .object({
+    requiresTwoFactor: z.literal(true),
+    challengeToken: z.string().min(32).max(256),
+    expiresAt: z.iso.datetime({ offset: true }),
+  })
+  .strict();
+
+export const twoFactorStatusSchema = z
+  .object({
+    enabled: z.boolean(),
+    pendingSetup: z.boolean(),
+    recoveryCodesRemaining: z.number().int().min(0),
+  })
+  .strict();
+
+export const twoFactorSetupResponseSchema = z
+  .object({
+    secret: z.string().min(16).max(128),
+    otpauthUri: z.url(),
+  })
+  .strict();
+
+export const twoFactorRecoveryCodesResponseSchema = z
+  .object({ recoveryCodes: z.array(z.string()).min(1).max(20) })
+  .strict();
+
 export const passwordResetRequestSchema = z
   .object({ email: normalizedEmailSchema })
   .strict();
@@ -84,6 +140,26 @@ export const customerProfileSummarySchema = z
 
 export type RegistrationRequest = z.infer<typeof registrationRequestSchema>;
 export type LoginRequest = z.infer<typeof loginRequestSchema>;
+export type TwoFactorLoginRequest = z.infer<typeof twoFactorLoginRequestSchema>;
+export type TwoFactorPasswordRequest = z.infer<
+  typeof twoFactorPasswordRequestSchema
+>;
+export type TwoFactorVerificationRequest = z.infer<
+  typeof twoFactorVerificationRequestSchema
+>;
+export type TwoFactorDisableRequest = z.infer<
+  typeof twoFactorDisableRequestSchema
+>;
+export type TwoFactorRequiredResponse = z.infer<
+  typeof twoFactorRequiredResponseSchema
+>;
+export type TwoFactorStatus = z.infer<typeof twoFactorStatusSchema>;
+export type TwoFactorSetupResponse = z.infer<
+  typeof twoFactorSetupResponseSchema
+>;
+export type TwoFactorRecoveryCodesResponse = z.infer<
+  typeof twoFactorRecoveryCodesResponseSchema
+>;
 export type PasswordResetRequest = z.infer<typeof passwordResetRequestSchema>;
 export type PasswordResetConfirmation = z.infer<
   typeof passwordResetConfirmationSchema

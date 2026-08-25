@@ -50,12 +50,15 @@ export const hostingAccountStateSchema = z.enum([
   'MISSING',
 ]);
 
-export const hostingPanelLoginUrlSchema = z
-  .url()
-  .refine(
-    (value) => new URL(value).protocol === 'https:',
-    'Panel login URL must use HTTPS',
+export const hostingPanelLoginUrlSchema = z.url().refine((value) => {
+  const url = new URL(value);
+  return (
+    url.protocol === 'https:' &&
+    !url.username &&
+    !url.password &&
+    ['', '443', '2083'].includes(url.port)
   );
+}, 'Panel login URL must be credential-free HTTPS on an approved port');
 
 export const hostingAccountSchema = z
   .object({

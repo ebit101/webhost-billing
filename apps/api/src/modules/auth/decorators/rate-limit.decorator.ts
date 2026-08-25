@@ -3,6 +3,9 @@ import { SetMetadata } from '@nestjs/common';
 export interface AuthRateLimitDefinition {
   scope:
     | 'login'
+    | 'registration'
+    | 'email-verification'
+    | 'two-factor-login'
     | 'password-reset-request'
     | 'password-reset-confirmation'
     | 'payment-webhook'

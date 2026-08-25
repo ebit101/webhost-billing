@@ -260,6 +260,20 @@ describe('CpanelWhmHostingPanel', () => {
     await expect(
       panel.generateLoginUrl(connection, reference),
     ).rejects.toMatchObject({ kind: 'INCONSISTENT' });
+
+    call.mockResolvedValueOnce(
+      response(
+        {
+          expires: 1_800_000_000,
+          service: 'cpaneld',
+          url: 'http://whm.example.test:2083/cpsess123/login/?session=fake',
+        },
+        'create_user_session',
+      ),
+    );
+    await expect(
+      panel.generateLoginUrl(connection, reference),
+    ).rejects.toMatchObject({ kind: 'INCONSISTENT' });
   });
 
   it('verifies that a terminated account is absent', async () => {

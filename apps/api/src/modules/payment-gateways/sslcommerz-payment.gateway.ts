@@ -29,6 +29,23 @@ const sessionSchema = z
   })
   .passthrough();
 
+function safeCheckoutUrl(value: string): string {
+  const url = new URL(value);
+  if (
+    url.protocol !== 'https:' ||
+    url.username ||
+    url.password ||
+    url.hostname !== 'sandbox.sslcommerz.com' ||
+    url.port
+  ) {
+    throw new PaymentProviderError(
+      'SSLCOMMERZ returned an unsafe checkout URL.',
+      'FAILED',
+    );
+  }
+  return url.toString();
+}
+
 const ipnSchema = z
   .object({
     val_id: z.string().min(1).max(191),
@@ -153,7 +170,7 @@ export class SslCommerzPaymentGateway implements PaymentGateway {
     const session = this.parse(sessionSchema, response.body, 'UNKNOWN');
     return {
       providerSessionId: transactionId,
-      checkoutUrl: session.GatewayPageURL,
+      checkoutUrl: safeCheckoutUrl(session.GatewayPageURL),
       expiresAt: new Date(Date.now() + 30 * 60 * 1000),
     };
   }

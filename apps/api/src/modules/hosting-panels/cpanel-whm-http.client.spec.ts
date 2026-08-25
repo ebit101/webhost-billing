@@ -5,6 +5,10 @@ import {
 } from './cpanel-whm-http.client';
 import type { HostingPanelConnection } from './hosting-panel.interface';
 
+const publicLookup = jest
+  .fn()
+  .mockResolvedValue([{ address: '93.184.216.34', family: 4 }]);
+
 const environment = parseApiEnvironment({
   NODE_ENV: 'test',
   PORT: '3001',
@@ -39,7 +43,11 @@ describe('CpanelWhmHttpClient', () => {
         { status: 200, headers: { 'content-type': 'application/json' } },
       ),
     );
-    const client = new CpanelWhmHttpClient(environment, fetchMock);
+    const client = new CpanelWhmHttpClient(
+      environment,
+      fetchMock,
+      publicLookup,
+    );
 
     await client.call(
       connection,
@@ -65,7 +73,11 @@ describe('CpanelWhmHttpClient', () => {
     const fetchMock = mockFetch().mockResolvedValueOnce(
       new Response('', { status: 403 }),
     );
-    const client = new CpanelWhmHttpClient(environment, fetchMock);
+    const client = new CpanelWhmHttpClient(
+      environment,
+      fetchMock,
+      publicLookup,
+    );
     await expect(
       client.call(connection, 'listaccts', {}, false),
     ).rejects.toMatchObject({
@@ -90,8 +102,26 @@ describe('CpanelWhmHttpClient', () => {
   it('rejects insecure or malformed connection configuration before fetch', async () => {
     const fetchMock = mockFetch();
     await expect(
-      new CpanelWhmHttpClient(environment, fetchMock).call(
+      new CpanelWhmHttpClient(environment, fetchMock, publicLookup).call(
         { ...connection, useTls: false, port: 2086 },
+        'listaccts',
+        {},
+        false,
+      ),
+    ).rejects.toMatchObject({ code: 'CPANEL_CONFIGURATION_INVALID' });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('rejects hostnames resolving to private or mixed network addresses', async () => {
+    const fetchMock = mockFetch();
+    const privateLookup = jest.fn().mockResolvedValue([
+      { address: '93.184.216.34', family: 4 },
+      { address: '127.0.0.1', family: 4 },
+    ]);
+
+    await expect(
+      new CpanelWhmHttpClient(environment, fetchMock, privateLookup).call(
+        connection,
         'listaccts',
         {},
         false,

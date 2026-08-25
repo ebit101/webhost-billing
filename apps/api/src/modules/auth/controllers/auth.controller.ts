@@ -21,6 +21,10 @@ import {
   passwordResetConfirmationSchema,
   passwordResetRequestSchema,
   registrationRequestSchema,
+  twoFactorDisableRequestSchema,
+  twoFactorLoginRequestSchema,
+  twoFactorPasswordRequestSchema,
+  twoFactorVerificationRequestSchema,
   type ApiSuccessResponse,
   type AuthenticatedIdentity,
   type AuthenticationSession,
@@ -30,6 +34,10 @@ import {
   type PasswordResetConfirmation,
   type PasswordResetRequest,
   type RegistrationRequest,
+  type TwoFactorDisableRequest,
+  type TwoFactorLoginRequest,
+  type TwoFactorPasswordRequest,
+  type TwoFactorVerificationRequest,
 } from '@webhost-billing/shared';
 import type { Request, Response } from 'express';
 import { createSecurityRequestContext } from '../../../common/http/request-context';
@@ -74,6 +82,12 @@ export class AuthController {
   @Public()
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
+  @AuthRateLimit({
+    scope: 'registration',
+    limit: 5,
+    windowMs: 60 * 60 * 1_000,
+    includeEmail: true,
+  })
   async register(
     @Body(new ZodValidationPipe(registrationRequestSchema))
     input: RegistrationRequest,
@@ -88,6 +102,12 @@ export class AuthController {
   @Public()
   @Post('verify-email')
   @HttpCode(HttpStatus.OK)
+  @AuthRateLimit({
+    scope: 'email-verification',
+    limit: 10,
+    windowMs: 15 * 60 * 1_000,
+    includeEmail: false,
+  })
   async verifyEmail(
     @Body(new ZodValidationPipe(emailVerificationRequestSchema))
     input: EmailVerificationRequest,
@@ -118,11 +138,119 @@ export class AuthController {
       input,
       this.securityContext(request),
     );
+    if ('requiresTwoFactor' in result) {
+      return createApiSuccessResponse(result);
+    }
     this.cookies.setSessionCookie(response, result.token);
 
     return createApiSuccessResponse({
       identity: result.identity,
       session: result.session,
+    });
+  }
+
+  @Public()
+  @Post('login/two-factor')
+  @HttpCode(HttpStatus.OK)
+  @AuthRateLimit({
+    scope: 'two-factor-login',
+    limit: 5,
+    windowMs: 15 * 60 * 1_000,
+    includeEmail: false,
+  })
+  async completeTwoFactorLogin(
+    @Body(new ZodValidationPipe(twoFactorLoginRequestSchema))
+    input: TwoFactorLoginRequest,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const result = await this.authService.completeTwoFactorLogin(
+      input,
+      this.securityContext(request),
+    );
+    this.cookies.setSessionCookie(response, result.token);
+    return createApiSuccessResponse({
+      identity: result.identity,
+      session: result.session,
+    });
+  }
+
+  @Get('two-factor')
+  @Roles('ADMIN')
+  async twoFactorStatus(@CurrentAuth() auth: AuthRequestContext) {
+    return createApiSuccessResponse(
+      await this.authService.getTwoFactorStatus(auth),
+    );
+  }
+
+  @Post('two-factor/setup')
+  @Roles('ADMIN')
+  async beginTwoFactorSetup(
+    @CurrentAuth() auth: AuthRequestContext,
+    @Body(new ZodValidationPipe(twoFactorPasswordRequestSchema))
+    input: TwoFactorPasswordRequest,
+    @Req() request: Request,
+  ) {
+    return createApiSuccessResponse(
+      await this.authService.beginTwoFactorSetup(
+        auth,
+        input.password,
+        this.securityContext(request),
+      ),
+    );
+  }
+
+  @Post('two-factor/enable')
+  @Roles('ADMIN')
+  async enableTwoFactor(
+    @CurrentAuth() auth: AuthRequestContext,
+    @Body(new ZodValidationPipe(twoFactorVerificationRequestSchema))
+    input: TwoFactorVerificationRequest,
+    @Req() request: Request,
+  ) {
+    return createApiSuccessResponse(
+      await this.authService.enableTwoFactor(
+        auth,
+        input.code,
+        this.securityContext(request),
+      ),
+    );
+  }
+
+  @Post('two-factor/recovery-codes')
+  @Roles('ADMIN')
+  async regenerateRecoveryCodes(
+    @CurrentAuth() auth: AuthRequestContext,
+    @Body(new ZodValidationPipe(twoFactorDisableRequestSchema))
+    input: TwoFactorDisableRequest,
+    @Req() request: Request,
+  ) {
+    return createApiSuccessResponse(
+      await this.authService.regenerateRecoveryCodes(
+        auth,
+        input,
+        this.securityContext(request),
+      ),
+    );
+  }
+
+  @Delete('two-factor')
+  @Roles('ADMIN')
+  async disableTwoFactor(
+    @CurrentAuth() auth: AuthRequestContext,
+    @Body(new ZodValidationPipe(twoFactorDisableRequestSchema))
+    input: TwoFactorDisableRequest,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    await this.authService.disableTwoFactor(
+      auth,
+      input,
+      this.securityContext(request),
+    );
+    this.cookies.clearSessionCookie(response);
+    return createApiSuccessResponse({
+      message: 'Two-factor authentication disabled. Sign in again.',
     });
   }
 

@@ -39,6 +39,28 @@ const createSchema = z
   })
   .passthrough();
 
+const BKASH_CHECKOUT_HOSTS = new Set([
+  'sandbox.payment.bkash.com',
+  'checkout.sandbox.bka.sh',
+]);
+
+function safeCheckoutUrl(value: string): string {
+  const url = new URL(value);
+  if (
+    url.protocol !== 'https:' ||
+    url.username ||
+    url.password ||
+    !BKASH_CHECKOUT_HOSTS.has(url.hostname) ||
+    url.port
+  ) {
+    throw new PaymentProviderError(
+      'bKash returned an unsafe checkout URL.',
+      'FAILED',
+    );
+  }
+  return url.toString();
+}
+
 const transactionSchema = z
   .object({
     paymentID: z.string().min(1).max(191),
@@ -103,7 +125,7 @@ export class BkashPaymentGateway implements PaymentGateway {
     const session = this.parse(createSchema, response.body, 'UNKNOWN');
     return {
       providerSessionId: session.paymentID,
-      checkoutUrl: session.bKashURL,
+      checkoutUrl: safeCheckoutUrl(session.bKashURL),
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
     };
   }

@@ -23,14 +23,14 @@ export function businessDate(value: Date, timeZone: string): string {
 
 export function addCalendarDays(date: string, days: number): string {
   const [year, month, day] = date.split('-').map(Number);
-  return new Date(Date.UTC(year!, month! - 1, day! + days))
+  return new Date(Date.UTC(year, month - 1, day + days))
     .toISOString()
     .slice(0, 10);
 }
 
 export function startOfBusinessDate(date: string, timeZone: string): Date {
   const [year, month, day] = date.split('-').map(Number);
-  const target = Date.UTC(year!, month! - 1, day!);
+  const target = Date.UTC(year, month - 1, day);
   let candidate = target;
   const formatter = new Intl.DateTimeFormat('en-CA', {
     timeZone,
@@ -50,12 +50,12 @@ export function startOfBusinessDate(date: string, timeZone: string): Date {
         .map((part) => [part.type, Number(part.value)]),
     );
     const represented = Date.UTC(
-      values.year!,
-      values.month! - 1,
-      values.day!,
-      values.hour!,
-      values.minute!,
-      values.second!,
+      values.year,
+      values.month - 1,
+      values.day,
+      values.hour,
+      values.minute,
+      values.second,
     );
     candidate += target - represented;
   }

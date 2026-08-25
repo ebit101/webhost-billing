@@ -75,7 +75,9 @@ Every attempt has a `hosting_panel_operations` row with:
 
 Passwords, credentials, raw provider responses, and generated login URLs are never persisted. A repeated matching submission returns the original operation. Reusing its UUID for another payload conflicts. One running operation per service is allowed by the application orchestration lock.
 
-All provider calls use the bounded `HOSTING_PANEL_TIMEOUT_MS` setting (10 seconds by default, permitted range 1–30 seconds). A read timeout is temporarily retryable. A mutation timeout, network failure, provider `5xx`, oversized response, or malformed mutation response is `INCONSISTENT` because the upstream change may have succeeded; it must be reconciled before another mutation. There is no automatic provider retry.
+All provider calls use the bounded `HOSTING_PANEL_TIMEOUT_MS` setting (10 seconds by default, permitted range 1–30 seconds). Before a request, the configured hostname must resolve to at least one address and every returned address must be public; private, loopback, link-local, carrier-grade NAT, multicast, and other reserved destinations are rejected before fetch. Redirects remain disabled. A read timeout is temporarily retryable. A mutation timeout, network failure, provider `5xx`, oversized response, or malformed mutation response is `INCONSISTENT` because the upstream change may have succeeded; it must be reconciled before another mutation. There is no automatic provider retry.
+
+DNS resolution validation reduces SSRF exposure but cannot alone eliminate DNS rebinding between validation and connection. Production network egress must also be restricted to approved WHM destinations.
 
 Temporary failures may be retried manually, creating a new child operation. The application caps a retry chain at five attempts. Password changes require a newly entered password, and termination requires `TERMINATE` confirmation again. Permanent failures and inconsistent results cannot use the retry endpoint.
 
