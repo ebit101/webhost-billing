@@ -170,6 +170,14 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** The providers expose materially different proof mechanisms, neither browser navigation nor a generic signature convention is sufficient, and retrying an uncertain financial mutation could create duplicates. The application must follow each provider's current official contract without weakening the shared settlement invariants.
 - **Consequence:** Real adapters require complete runtime-validated sandbox credentials and BDT invoices. Mutating create/execute requests are not blindly retried, safe read-only validation/query requests have bounded retry and timeout policies, and raw credentials/provider responses never reach logs or interfaces. SSLCOMMERZ high-risk responses remain pending and are held from settlement. Cash/bank deposits remain the reviewed manual flow. Enabling production endpoints, production credentials, live charges, automated refunds, or provider-driven service changes requires a separately authorized command and review.
 
+## ADR-022 — Paid-Order Fulfilment and Evidence-Based Service State
+
+- **Status:** Accepted
+- **Date:** 2026-08-25
+- **Decision:** Create one hosting service idempotently from each eligible paid order item, assign it to an active capacity-checked server, and preserve product, price, domain, provisioning, and billing snapshots. Keep the service `PENDING` until explicit provisioning transitions supply the evidence required by each state. Require external account identity for activation, reasons for exceptional/final states, and exact administrator confirmation for permanent termination.
+- **Reason:** Invoice payment, order fulfilment, external account creation, and ongoing hosting state can succeed or fail independently. Historical purchase details must survive catalogue changes, retries must not duplicate accounts, and destructive operational state must be attributable.
+- **Consequence:** Payment may move an order to `PAID`, but never creates or activates a service by itself. A paid order moves through `PROCESSING` and reaches `COMPLETED` only when all its order items have active services. Order-item and server row locks protect duplicate creation and account-capacity decisions. Command 14 records manual outcomes only; provider calls, operation retry classification, and external consistency checks begin behind the hosting-panel adapter in Command 15.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

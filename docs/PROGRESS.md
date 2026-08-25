@@ -931,6 +931,65 @@ Run **Command 13 — Integrate the Real Payment Provider** after the production 
 
 Run **Command 14 — Implement Services** after explicit user authorization.
 
+### Command 14 — Implement Services
+
+- **Status:** Completed and delivered to GitHub `main`
+- **Date:** 2026-08-25
+
+#### Scope completed
+
+- Added strict shared contracts for safe server summaries, complete hosting-service responses, administrator list filters, paid-order fulfilment options, idempotent creation results, and state-specific transition evidence.
+- Expanded the service schema with a required product-price reference, server, product name/description/provisioning snapshots, start and next-due dates, external account identity, separate suspension/provisioning-failure/cancellation/termination evidence, and the terminating administrator identity.
+- Added a safe additive migration that backfills existing services, refuses incomplete historical data, enforces restrictive relationships, and applies database checks for due dates, active account identity, and state-specific evidence.
+- Implemented UTC calendar-period calculation with month-end clamping for monthly, quarterly, and annual renewal dates.
+- Added administrator service creation from eligible `PAID` or `PROCESSING` order items only. The order item is the idempotency boundary, and row locks on both the order item and selected server protect duplicate creation and capacity decisions.
+- Kept payment, order fulfilment, and hosting state separate: creation produces a `PENDING` service and moves a paid order to `PROCESSING`; no paid invoice, redirect, or service creation marks provisioning successful.
+- Implemented the validated lifecycle `PENDING` → `PROVISIONING` → `ACTIVE`, failure/retry and pre-activation cancellation paths, active suspension/reactivation, and confirmed terminal termination. Activation requires external account identity, exceptional states require reasons, and termination requires the exact `TERMINATE` confirmation.
+- Completed a processing order only when every order item has an `ACTIVE` service. Pending, failed, suspended, cancelled, and terminated records never satisfy that fulfilment test.
+- Added administrator inventory/fulfilment controls and customer-owned service list/detail pages with status, server, account identity, historical product/price information, renewal data, and safe operational reasons.
+- Enforced administrator-only creation/transitions plus customer resource ownership, safe server serialization, atomic activity logs, and immutable service records.
+- Added transition/date unit coverage, complete service API integration and ownership tests, frontend interaction tests, database verifier coverage, durable service documentation, and an architecture decision.
+
+#### Files changed
+
+- Database and migration: `packages/database/prisma/schema.prisma`, `packages/database/prisma/migrations/20260825230000_complete_service_management/migration.sql`, `packages/database/prisma/seed.ts`, `packages/database/prisma/verify.ts`
+- Shared service contracts/tests: `packages/shared/src/contracts/services.ts`, `packages/shared/src/index.ts`, `packages/shared/test/contracts.spec.ts`
+- Service API and tests: `apps/api/src/modules/services/service-period.ts`, `service.controller.ts`, `service.module.ts`, `service.service.ts`, `service.service.spec.ts`, `apps/api/test/services.e2e-spec.ts`, `apps/api/src/app.module.ts`
+- Historical customer detail: `apps/api/src/modules/customers/customer.service.ts`
+- Administrator/customer interfaces and tests: `apps/web/src/components/services/admin-service-manager.tsx`, `customer-service-list.tsx`, `customer-service-detail.tsx`, `service-ui.tsx`, `service-management.test.tsx`, `apps/web/src/app/(admin)/admin/services/page.tsx`, `apps/web/src/app/(portal)/portal/services/page.tsx`, `apps/web/src/app/(portal)/portal/services/[serviceId]/page.tsx`
+- Documentation: `README.md`, `docs/SERVICES.md`, `docs/DATABASE.md`, `docs/DECISIONS.md`, `docs/PROGRESS.md`
+
+#### Validation
+
+- Prisma schema formatting/validation, thirteen-migration deploy/status, idempotent fictional seed, and structural verifier: passed against isolated PostgreSQL, including all new service evidence constraints and snapshot relationships.
+- Prettier repository formatting check, `git diff --check`, and ESLint for API, worker, and web: passed without warnings.
+- Strict TypeScript checks for all six code workspace projects: passed, including generated Prisma and Next.js route types.
+- Complete non-integration suite: 14 shared-contract tests, 48 API tests, 1 worker test, and 21 frontend tests passed (84 total).
+- Service API suite: 4 passed for paid-order-only/idempotent creation, provisioning/activation/suspension/termination evidence, failure/retry/cancellation metadata, ownership, administrator authorization, and paid-order independence.
+- Complete API end-to-end suite: 9 suites and 42 tests passed against local PostgreSQL and Redis.
+- Database, shared packages, NestJS API, NestJS worker, and Next.js production builds: passed with `NODE_ENV=production`; the route table includes the new dynamic customer service detail page.
+
+#### Decisions made
+
+- A service is an operational record created from a historical paid order item, not a side effect or alias of invoice settlement.
+- Product-price identity, product text, provisioning configuration, domain, billing period, money, and dates are snapshotted so catalogue changes cannot rewrite existing services.
+- Order-item locking and uniqueness make fulfilment idempotent. Server-row locking serializes configured capacity checks across different order items.
+- An active service must contain its real external account identity. State-specific reasons and timestamps are required in both application validation and PostgreSQL checks.
+- Cancellation is terminal before activation; termination is terminal after activation and stores reason, time, and administrator identity. Permanent termination is never scheduled automatically.
+- Command 14 records manual operational outcomes and performs no hosting-panel request. External account creation and consistency handling remain behind the provider-neutral adapter authorized by Command 15.
+
+#### Open questions and risks
+
+- cPanel/WHM versus DirectAdmin, credential/authentication method, dedicated development server identity, and test account/package remain intentionally unresolved until the real adapter command. Command 15 uses a fake adapter only.
+- Service next-due dates are initial historical facts. Renewal invoice generation, due-date advancement, automatic suspension, and reactivation are later automation commands and must retain independent financial/operational evidence.
+- The current administrator interface operates on the first 100 services and eligible order items; server-side pagination/filter controls can be expanded if the private inventory grows beyond that operating size.
+- No server reassignment, domain change, package change, password change, login URL, or external account mutation is performed yet; those operations require the hosting-panel boundary and audit/idempotency rules from Command 15.
+- The PostgreSQL driver continues to emit its known pg@9 concurrency deprecation warning during E2E activity, and the minimal Node validation container emits Prisma OpenSSL auto-detection warnings. All migration, database, concurrency, test, type, lint, and build checks passed.
+
+#### Recommended next command
+
+Run **Command 15 — Create the Hosting-Panel Adapter** after explicit user authorization. Use `FakeHostingPanel` only; do not contact the cPanel development server or use panel credentials in this command.
+
 ## Report Template
 
 Use this template after every future command:

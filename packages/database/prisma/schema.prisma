@@ -171,6 +171,7 @@ model User {
   ticketMessages          TicketMessage[]
   activityLogs            ActivityLog[]            @relation("ActivityActor")
   settingsUpdated         Setting[]                @relation("SettingUpdatedBy")
+  servicesTerminated      Service[]                @relation("ServiceTerminatedBy")
   authSessions            AuthSession[]
   passwordResetTokens     PasswordResetToken[]
   emailVerificationTokens EmailVerificationToken[]
@@ -314,6 +315,7 @@ model ProductPrice {
   deletedAt     DateTime?     @map("deleted_at") @db.Timestamptz(3)
   product       Product       @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   orderItems    OrderItem[]
+  services      Service[]
 
   @@index([productId, billingPeriod, currency], map: "product_prices_lookup_idx")
   @@index([isActive, deletedAt], map: "product_prices_active_idx")
@@ -376,36 +378,50 @@ model OrderItem {
 }
 
 model Service {
-  id                   String        @id @default(uuid()) @db.Uuid
-  customerId           String        @map("customer_id") @db.Uuid
-  orderItemId          String?       @unique(map: "services_order_item_id_key") @map("order_item_id") @db.Uuid
-  productId            String        @map("product_id") @db.Uuid
-  serverId             String?       @map("server_id") @db.Uuid
-  status               ServiceStatus @default(PENDING)
-  domain               String?       @db.VarChar(253)
-  controlPanelUsername String?       @map("control_panel_username") @db.VarChar(64)
-  externalAccountId    String?       @map("external_account_id") @db.VarChar(191)
-  billingPeriod        BillingPeriod @map("billing_period")
-  recurringAmount      BigInt        @map("recurring_amount") @db.BigInt
-  currency             String        @db.Char(3)
-  nextDueAt            DateTime?     @map("next_due_at") @db.Timestamptz(3)
-  activatedAt          DateTime?     @map("activated_at") @db.Timestamptz(3)
-  suspendedAt          DateTime?     @map("suspended_at") @db.Timestamptz(3)
-  terminatedAt         DateTime?     @map("terminated_at") @db.Timestamptz(3)
-  cancellationReason   String?       @map("cancellation_reason") @db.Text
-  createdAt            DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt            DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
-  customer             Customer      @relation(fields: [customerId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  orderItem            OrderItem?    @relation(fields: [orderItemId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  product              Product       @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  server               Server?       @relation(fields: [serverId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  invoiceItems         InvoiceItem[]
-  tickets              Ticket[]
+  id                         String        @id @default(uuid()) @db.Uuid
+  customerId                 String        @map("customer_id") @db.Uuid
+  orderItemId                String?       @unique(map: "services_order_item_id_key") @map("order_item_id") @db.Uuid
+  productId                  String        @map("product_id") @db.Uuid
+  productPriceId             String        @map("product_price_id") @db.Uuid
+  serverId                   String        @map("server_id") @db.Uuid
+  terminatedByUserId         String?       @map("terminated_by_user_id") @db.Uuid
+  status                     ServiceStatus @default(PENDING)
+  domain                     String?       @db.VarChar(253)
+  productNameSnapshot        String        @map("product_name_snapshot") @db.VarChar(160)
+  productDescriptionSnapshot String?       @map("product_description_snapshot") @db.Text
+  provisioningSnapshot       Json?         @map("provisioning_snapshot")
+  controlPanelUsername       String?       @map("control_panel_username") @db.VarChar(64)
+  externalAccountId          String?       @map("external_account_id") @db.VarChar(191)
+  billingPeriod              BillingPeriod @map("billing_period")
+  recurringAmount            BigInt        @map("recurring_amount") @db.BigInt
+  currency                   String        @db.Char(3)
+  startedAt                  DateTime      @map("started_at") @db.Timestamptz(3)
+  nextDueAt                  DateTime      @map("next_due_at") @db.Timestamptz(3)
+  activatedAt                DateTime?     @map("activated_at") @db.Timestamptz(3)
+  suspendedAt                DateTime?     @map("suspended_at") @db.Timestamptz(3)
+  suspensionReason           String?       @map("suspension_reason") @db.Text
+  provisioningFailureReason  String?       @map("provisioning_failure_reason") @db.Text
+  cancelledAt                DateTime?     @map("cancelled_at") @db.Timestamptz(3)
+  cancellationReason         String?       @map("cancellation_reason") @db.Text
+  terminatedAt               DateTime?     @map("terminated_at") @db.Timestamptz(3)
+  terminationReason          String?       @map("termination_reason") @db.Text
+  createdAt                  DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                  DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+  customer                   Customer      @relation(fields: [customerId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  orderItem                  OrderItem?    @relation(fields: [orderItemId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  product                    Product       @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  productPrice               ProductPrice  @relation(fields: [productPriceId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  server                     Server        @relation(fields: [serverId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  terminatedBy               User?         @relation("ServiceTerminatedBy", fields: [terminatedByUserId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  invoiceItems               InvoiceItem[]
+  tickets                    Ticket[]
 
   @@unique([serverId, externalAccountId], map: "services_server_external_account_key")
   @@index([customerId, status], map: "services_customer_status_idx")
   @@index([status, nextDueAt], map: "services_status_next_due_at_idx")
   @@index([serverId, status], map: "services_server_status_idx")
+  @@index([productPriceId], map: "services_product_price_id_idx")
+  @@index([terminatedByUserId], map: "services_terminated_by_user_id_idx")
   @@map("services")
 }
 

@@ -1,12 +1,6 @@
 import type { Metadata } from 'next';
-import { SectionPreview } from '../../../../components/dashboard/section-preview';
+import { AdminServiceManager } from '../../../../components/services/admin-service-manager';
 export const metadata: Metadata = { title: 'Services' };
 export default function Page() {
-  return (
-    <SectionPreview
-      area="Administrator"
-      title="Services"
-      description="Monitor hosting services without conflating payment or provisioning state."
-    />
-  );
+  return <AdminServiceManager />;
 }

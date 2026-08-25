@@ -134,7 +134,6 @@ export class CustomerService {
         services: {
           orderBy: { createdAt: 'desc' },
           take: RECENT_LINKED_RECORD_LIMIT,
-          include: { product: { select: { name: true } } },
         },
         invoices: {
           orderBy: { createdAt: 'desc' },
@@ -196,7 +195,7 @@ export class CustomerService {
         services: customer.services.map((service) => ({
           id: service.id,
           status: service.status,
-          productName: service.product.name,
+          productName: service.productNameSnapshot,
           domain: service.domain,
           recurringAmount: serializeMoney(
             service.recurringAmount,

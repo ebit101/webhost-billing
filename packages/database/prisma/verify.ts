@@ -67,6 +67,12 @@ const requiredCustomConstraints = [
   'payments_manual_review_state_check',
   'payments_proof_metadata_object_check',
   'products_display_order_check',
+  'services_active_identity_check',
+  'services_cancellation_metadata_check',
+  'services_due_after_start_check',
+  'services_failure_metadata_check',
+  'services_suspension_metadata_check',
+  'services_termination_metadata_check',
   'users_email_normalized_check',
 ] as const;
 
@@ -247,7 +253,20 @@ async function verify(): Promise<void> {
   assert.equal(seededService.product.displayOrder, 10);
   assert.equal(seededService.product.hostingPackageIdentifier, 'dev_starter');
   assert.equal(seededService.product.storageFeature, '10 GB SSD');
-  assert.equal(seededService.server?.hostname, 'cpanel.example.test');
+  assert.equal(seededService.server.hostname, 'cpanel.example.test');
+  assert.equal(
+    seededService.productPriceId,
+    '10000000-0000-4000-8000-000000000007',
+  );
+  assert.equal(seededService.productNameSnapshot, 'Starter Hosting');
+  assert.equal(
+    seededService.startedAt.toISOString(),
+    '2026-08-02T05:30:00.000Z',
+  );
+  assert.equal(
+    seededService.nextDueAt.toISOString(),
+    '2026-09-01T03:00:00.000Z',
+  );
 }
 
 verify()

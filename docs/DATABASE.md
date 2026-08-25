@@ -39,11 +39,14 @@ The schema remains one modular-monolith database. Model grouping does not create
 - Later product, customer, or business-setting changes must not rewrite these snapshots.
 - Product archival changes state and public visibility only. Product and price rows remain available through restrictive order-item and service references.
 - Repricing retires an active `ProductPrice` and appends a new active row; it never rewrites or removes the price referenced by a historical order item.
+- Services retain the exact product-price reference plus product name, description, and provisioning snapshots copied from their order item. Catalogue changes do not alter the service's historical purchase basis.
 
 ### State separation and idempotency
 
 - Orders, services, invoices, payments, payment events, tickets, email attempts, automation runs, and outbox events use separate state enums.
 - A paid invoice and an active hosting service remain independent facts.
+- A service is created only from an eligible paid order item and starts `PENDING`; provisioning, activation, suspension, failure, cancellation, and termination remain explicit transitions.
+- The order-item row prevents duplicate service creation, while a selected server row lock makes its account-capacity check safe across concurrent fulfilment requests.
 - Payment transactions and provider events use separate provider identifiers and idempotency keys.
 - Online payment sessions use pending provider payments and retain their provider reference, checkout URL, and expiry for exact idempotent retries. Only authenticated provider evidence may finalize them. Provider event IDs and exact-payload hashes make callback replay safe.
 - Refunds and reversals are positive-valued adjustment rows linked to the original charge; they never overwrite it.
@@ -93,6 +96,7 @@ The initial migration adds SQL constraints beyond Prisma Schema Language:
 - nonnegative product display order and an indexed public-catalogue lookup across visibility, status, and ordering.
 - positive, unique per-invoice line positions so historical item order remains deterministic.
 - JSON-object manual proof metadata, controlled manual methods, and internally consistent manual review/verification timestamps.
+- service due dates after their start date; external account identity for active/post-active states; required evidence for suspended, failed, cancelled, and terminated states; and an administrator identity for permanent termination.
 
 Because check constraints and partial indexes are customized in migration SQL, never replace committed migrations with `prisma db push`.
 

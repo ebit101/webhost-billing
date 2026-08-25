@@ -1,12 +1,6 @@
 import type { Metadata } from 'next';
-import { SectionPreview } from '../../../../components/dashboard/section-preview';
+import { CustomerServiceList } from '../../../../components/services/customer-service-list';
 export const metadata: Metadata = { title: 'My services' };
 export default function ServicesPage() {
-  return (
-    <SectionPreview
-      area="Customer portal"
-      title="My services"
-      description="Review hosting status, renewal dates, and account details."
-    />
-  );
+  return <CustomerServiceList />;
 }

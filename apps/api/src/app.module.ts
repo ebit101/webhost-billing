@@ -11,6 +11,7 @@ import { OrderModule } from './modules/orders/order.module';
 import { PaymentModule } from './modules/payments/payment.module';
 import { PaymentGatewayModule } from './modules/payment-gateways/payment-gateway.module';
 import { ProductModule } from './modules/products/product.module';
+import { ServiceModule } from './modules/services/service.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { ProductModule } from './modules/products/product.module';
     InvoiceModule,
     PaymentModule,
     PaymentGatewayModule,
+    ServiceModule,
   ],
   controllers: [AppController],
   providers: [

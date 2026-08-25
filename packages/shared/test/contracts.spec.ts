@@ -28,6 +28,8 @@ import {
   productPriceInputSchema,
   serializeMoney,
   serviceStatusSchema,
+  createServiceRequestSchema,
+  transitionServiceRequestSchema,
   ticketStatusSchema,
 } from '../src';
 
@@ -168,6 +170,38 @@ describe('boundary contracts', () => {
         storePassword: 'must-not-pass',
       }).success,
       false,
+    );
+  });
+
+  it('validates service creation and state-specific transition evidence', () => {
+    assert.equal(
+      createServiceRequestSchema.safeParse({
+        orderItemId: '10000000-0000-4000-8000-000000000001',
+        serverId: '10000000-0000-4000-8000-000000000002',
+      }).success,
+      true,
+    );
+    assert.equal(
+      transitionServiceRequestSchema.safeParse({
+        status: 'SUSPENDED',
+        reason: 'Invoice overdue after the configured grace period.',
+      }).success,
+      true,
+    );
+    assert.equal(
+      transitionServiceRequestSchema.safeParse({
+        status: 'TERMINATED',
+        reason: 'Administrator-approved closure.',
+      }).success,
+      false,
+    );
+    assert.equal(
+      transitionServiceRequestSchema.safeParse({
+        status: 'TERMINATED',
+        reason: 'Administrator-approved closure.',
+        confirmation: 'TERMINATE',
+      }).success,
+      true,
     );
   });
 
