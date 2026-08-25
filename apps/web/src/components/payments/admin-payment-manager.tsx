@@ -20,6 +20,7 @@ import { EmptyState, LoadingState } from '../ui/feedback-state';
 import { PageHeader } from '../ui/page-header';
 import { StatusBadge } from '../ui/status-badge';
 import { paymentDate, paymentError, paymentTone } from './payment-ui';
+import { GatewayFailurePanel } from './gateway-failure-panel';
 
 export function AdminPaymentManager() {
   const [payments, setPayments] = useState<ManualPayment[]>([]);
@@ -319,11 +320,13 @@ export function AdminPaymentManager() {
     <div className="grid gap-7">
       <PageHeader
         eyebrow="Administrator"
-        title="Manual payments"
-        description="Review customer references, record verified receipts, and append refunds or reversals without rewriting financial history."
+        title="Payments"
+        description="Review gateway exceptions and manual references, record verified receipts, and append refunds or reversals without rewriting financial history."
       />
       {error ? <Message error>{error}</Message> : null}
       {notice ? <Message>{notice}</Message> : null}
+
+      <GatewayFailurePanel />
 
       <div className="grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
         <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">

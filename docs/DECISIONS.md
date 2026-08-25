@@ -162,11 +162,19 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** Browser redirects and client totals are untrusted, provider callbacks can be duplicated or delivered concurrently, and slow follow-up work must not weaken or delay the durable financial decision.
 - **Consequence:** Every callback verifies signature, merchant, payment, invoice, amount, currency, transaction uniqueness, and replay identity before settlement. Exact event replays are acknowledged without another mutation; mismatches retain a failed normalized event without changing money. The fake adapter is restricted to development/tests, while real provider selection, credentials, signature rules, reconciliation, and sandbox behavior remain Command 13.
 
+## ADR-021 — Sandbox-Specific Payment Proof and Reconciliation
+
+- **Status:** Accepted
+- **Date:** 2026-08-25
+- **Decision:** Integrate bKash Tokenized Checkout and SSLCOMMERZ Hosted Checkout as sandbox-only BDT adapters behind the provider-neutral gateway. Treat bKash browser returns as a trigger for authenticated server-side execute/query, and treat SSLCOMMERZ IPNs as untrusted until its Order Validation API confirms the exact transaction. Persist idempotent checkout metadata and route uncertain outcomes to administrator reconciliation.
+- **Reason:** The providers expose materially different proof mechanisms, neither browser navigation nor a generic signature convention is sufficient, and retrying an uncertain financial mutation could create duplicates. The application must follow each provider's current official contract without weakening the shared settlement invariants.
+- **Consequence:** Real adapters require complete runtime-validated sandbox credentials and BDT invoices. Mutating create/execute requests are not blindly retried, safe read-only validation/query requests have bounded retry and timeout policies, and raw credentials/provider responses never reach logs or interfaces. SSLCOMMERZ high-risk responses remain pending and are held from settlement. Cash/bank deposits remain the reviewed manual flow. Enabling production endpoints, production credentials, live charges, automated refunds, or provider-driven service changes requires a separately authorized command and review.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:
 
-1. Exact production payment gateway and sandbox account.
+1. Production approval, credentials, and go-live runbook for bKash and/or SSLCOMMERZ after sandbox acceptance.
 2. Exact cPanel/WHM API authentication method and dedicated development account/server.
 3. SMTP delivery provider for staging and production.
 4. Whether domain registration belongs in the MVP; the current default is no registrar automation.

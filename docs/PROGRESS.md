@@ -866,6 +866,71 @@ Run **Command 12 — Create the Payment Adapter** after explicit user authorizat
 
 Run **Command 13 — Integrate the Real Payment Provider** after the production provider is selected and explicit user authorization is given. Do not use production credentials or make a real charge.
 
+### Command 13 — Integrate the Real Payment Provider
+
+- **Status:** Completed and delivered to GitHub `main`
+- **Date:** 2026-08-25
+
+#### Scope completed
+
+- Implemented sandbox-only bKash Tokenized Checkout and SSLCOMMERZ Hosted Checkout adapters using their current official API contracts while preserving the development/test fake gateway.
+- Added runtime-validated enable flags, the official bKash sandbox host restriction, complete-credential requirements, a public API callback origin, and a bounded 1–30 second provider timeout. Both real adapters remain disabled by default.
+- Added a provider HTTP boundary that rejects redirects, parses responses as unknown data, validates all provider responses with strict runtime schemas, applies bounded retries only to safe token/read operations, and emits fixed redacted failures without response bodies, URLs, credentials, tokens, or secrets.
+- Added lossless BDT major/minor conversion using strings and `bigint`; no JavaScript floating-point money calculation is used. SSLCOMMERZ enforces its documented sandbox amount range.
+- Implemented bKash grant-token caching, checkout creation, browser callback handling, authenticated server-side execute, and payment-status query fallback after an uncertain execute response. Browser callback values alone can never settle an invoice.
+- Implemented SSLCOMMERZ v4 session creation, exact raw form-body IPN parsing, authoritative Order Validation API verification, transaction/validation/payment/invoice/amount/currency matching, high-risk holding, and Merchant Transaction ID reconciliation. Browser success/fail/cancel returns navigate only and cannot settle an invoice.
+- Extended the shared gateway boundary for asynchronous provider verification, sandbox descriptors, customer billing snapshots, completion of redirect-based sessions, and normalized query timestamps/failures.
+- Persisted checkout URL/expiry metadata for exact idempotent session replay and added an atomic external-session claim so simultaneous retries cannot create duplicate provider sessions. Uncertain creation outcomes remain pending for reconciliation instead of being blindly retried.
+- Added enabled gateway discovery, administrator-only safe failure listing and reconciliation, and reuse of the Command 12 merchant/payment/invoice/amount/currency/transaction/replay checks plus invoice-locked settlement for provider callbacks and queries.
+- Added customer invoice checkout choices for enabled bKash/SSLCOMMERZ sandboxes, retained the existing cash/bank-deposit review form, and added an administrator gateway attention queue that exposes only fixed safe failure information.
+- Added mocked provider-contract, money-conversion, configuration, redaction-contract, and frontend tests plus official sandbox setup, callback, retry, reconciliation, and security documentation. No provider network call, production credential, or real/sandbox charge was used during automated validation.
+
+#### Files changed
+
+- Runtime configuration: `.env.example`, `packages/config/src/env.ts`, `apps/api/src/environment.spec.ts`
+- Database and migration: `packages/database/prisma/schema.prisma`, `packages/database/prisma/migrations/20260825220000_add_gateway_session_metadata/migration.sql`
+- Shared gateway contracts/tests: `packages/shared/src/contracts/payment-gateways.ts`, `packages/shared/test/contracts.spec.ts`
+- Provider HTTP/security/money boundary: `apps/api/src/modules/payment-gateways/payment-http.client.ts`, `payment-provider.error.ts`, `payment-money.ts`, `payment-money.spec.ts`
+- Real adapters and mocked contracts: `apps/api/src/modules/payment-gateways/bkash-payment.gateway.ts`, `bkash-payment.gateway.spec.ts`, `sslcommerz-payment.gateway.ts`, `sslcommerz-payment.gateway.spec.ts`
+- Gateway application/API changes: `apps/api/src/modules/payment-gateways/payment-gateway.interface.ts`, `payment-gateway.registry.ts`, `payment-gateway.module.ts`, `payment-gateway.service.ts`, `payment-gateway.controller.ts`, `fake-payment.gateway.ts`, `fake-payment.gateway.spec.ts`, `apps/api/src/modules/auth/decorators/rate-limit.decorator.ts`
+- Customer and administrator interfaces/tests: `apps/web/src/components/payments/customer-gateway-payment.tsx`, `gateway-failure-panel.tsx`, `admin-payment-manager.tsx`, `apps/web/src/components/invoices/invoice-detail.tsx`, `apps/web/src/components/payments/payment-management.test.tsx`
+- Documentation: `README.md`, `docs/PAYMENT_GATEWAYS.md`, `docs/DATABASE.md`, `docs/DECISIONS.md`, `docs/PROGRESS.md`
+
+#### Validation
+
+- Current official provider documentation reviewed for bKash grant/create/execute/query Tokenized Checkout and SSLCOMMERZ v4 create/IPN/Order Validation/Merchant Transaction validation behavior.
+- Prisma schema formatting/validation, twelve-migration deployment/status, and the additive gateway-session metadata migration: passed against local isolated PostgreSQL. No existing financial row was rewritten or removed.
+- Prettier repository formatting check, `git diff --check`, and ESLint for API, worker, and web: passed without warnings.
+- Strict TypeScript checks for all six code workspace projects: passed, including generated Prisma and Next.js route types.
+- Complete non-integration suite: 13 shared-contract tests, 46 API tests, 1 worker test, and 18 frontend tests passed (78 total).
+- Mocked real-provider suites: 9 adapter tests plus 2 money tests passed for exact sandbox endpoints/payloads, no-retry mutations, uncertain-result classification, token caching, execute/query fallback, authoritative SSLCOMMERZ validation, mismatch/high-risk holding, status normalization, and lossless conversion.
+- Complete API end-to-end suite: 8 suites and 38 tests passed against local PostgreSQL and Redis, including the existing gateway settlement/replay/concurrency coverage.
+- Database, shared packages, NestJS API, NestJS worker, and Next.js production builds: passed with `NODE_ENV=production`; Next.js generated 28 application routes including the framework not-found route.
+
+#### Decisions made
+
+- bKash and SSLCOMMERZ are independent adapters because their payment-proof contracts differ. No generic or invented signature algorithm is used.
+- bKash callback status triggers authenticated execute/query; it is never proof. SSLCOMMERZ settlement requires the official Order Validation API even when an IPN contains signature fields.
+- Real-provider support is sandbox-only, disabled by default, BDT-only, and restricted to documented sandbox hosts/endpoints. Production enablement is a separate explicitly authorized security and go-live task.
+- External mutations are not automatically retried after an uncertain result. Token grant retries once; status/validation queries retry at most twice for network or provider `5xx` failures.
+- Provider checkout metadata is private idempotency state. It is returned only to the authorized payer and omitted from administrator failures, logs, audit metadata, provider events, and documentation examples.
+- High-risk SSLCOMMERZ transactions remain pending for review. They never settle invoices automatically or invite an unsafe automatic retry.
+- Cash/bank deposits remain the administrator-reviewed manual-payment flow from Command 11; they are not sent to either online provider.
+- Provider payment success may mark an invoice/order paid but remains independent from hosting provisioning success.
+
+#### Open questions and risks
+
+- Sandbox merchant credentials have not been supplied or placed in the repository, so both adapters remain disabled and no manual sandbox checkout was performed. The owner must obtain provider-issued sandbox credentials and authorize a later deliberate end-to-end sandbox acceptance run.
+- Provider callbacks require an externally reachable HTTPS `API_PUBLIC_ORIGIN`. A secure development hostname/tunnel and provider dashboard callback allowlisting must be prepared before manual sandbox acceptance.
+- Production account approval, live endpoints, credential storage/rotation, provider-side allowlists, go-live checklist, financial reconciliation ownership, refund operations, and production monitoring remain explicitly outside this command.
+- bKash/SSLCOMMERZ API contracts can change; re-check official documentation and rerun mocked plus manual sandbox acceptance before any version/endpoint or production change.
+- Pending session expiry/cleanup and recurring automated reconciliation remain later automation work; uncertain attempts are currently retained for explicit administrator reconciliation.
+- The PostgreSQL driver continues to emit its known pg@9 concurrency deprecation warning during E2E activity, and the minimal Node validation container emits Prisma OpenSSL auto-detection warnings. All migration, database, test, type, lint, and build checks passed.
+
+#### Recommended next command
+
+Run **Command 14 — Implement Services** after explicit user authorization.
+
 ## Report Template
 
 Use this template after every future command:

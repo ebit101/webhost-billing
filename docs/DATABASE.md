@@ -45,7 +45,7 @@ The schema remains one modular-monolith database. Model grouping does not create
 - Orders, services, invoices, payments, payment events, tickets, email attempts, automation runs, and outbox events use separate state enums.
 - A paid invoice and an active hosting service remain independent facts.
 - Payment transactions and provider events use separate provider identifiers and idempotency keys.
-- Online payment sessions use pending provider payments; only verified callbacks may finalize them. Provider event IDs and exact-payload hashes make callback replay safe.
+- Online payment sessions use pending provider payments and retain their provider reference, checkout URL, and expiry for exact idempotent retries. Only authenticated provider evidence may finalize them. Provider event IDs and exact-payload hashes make callback replay safe.
 - Refunds and reversals are positive-valued adjustment rows linked to the original charge; they never overwrite it.
 - Manual payments store a controlled method, structured JSON proof metadata, reviewer identity, and review time. Database checks align pending/succeeded/failed manual rows with their review and verification timestamps.
 - Invoice rows are locked while verified charges or adjustments update settlement aggregates, preventing duplicate application and concurrent overpayment.
@@ -66,6 +66,7 @@ The schema remains one modular-monolith database. Model grouping does not create
 - `Server.credentialsCiphertext` is reserved for encrypted control-panel credentials; plaintext credentials must never be stored there.
 - Product provisioning configuration and settings contain non-secret configuration only.
 - Payment events retain a SHA-256 payload hash and an optional normalized, redacted payload. Raw card data, secrets, signatures, and unfiltered provider requests are prohibited.
+- Provider checkout URLs are private session metadata returned only to the authorized invoice payer; they must not be logged or exposed in administrator failure responses.
 - Activity logs may retain a one-way IP-address hash, not authentication secrets.
 - Authentication session and action-token lookups use SHA-256 hashes of random opaque tokens. Raw reset and verification tokens are encrypted only for pending email delivery; raw session tokens are never stored.
 

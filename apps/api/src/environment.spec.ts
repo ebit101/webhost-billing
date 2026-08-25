@@ -35,6 +35,42 @@ describe('environment validation', () => {
     ).toThrow('Expected a PostgreSQL connection URL');
   });
 
+  it('requires complete sandbox credentials when a provider is enabled', () => {
+    expect(() =>
+      parseApiEnvironment({
+        ...infrastructureEnvironment,
+        PORT: '3001',
+        SESSION_SECRET: 's'.repeat(32),
+        BKASH_ENABLED: 'true',
+      }),
+    ).toThrow('BKASH_APP_KEY is required');
+
+    const environment = parseApiEnvironment({
+      ...infrastructureEnvironment,
+      PORT: '3001',
+      SESSION_SECRET: 's'.repeat(32),
+      API_PUBLIC_ORIGIN: 'https://api.example.test',
+      SSLCOMMERZ_ENABLED: 'true',
+      SSLCOMMERZ_STORE_ID: 'sandbox-store',
+      SSLCOMMERZ_STORE_PASSWORD: 'sandbox-password',
+    });
+    expect(environment.SSLCOMMERZ_ENABLED).toBe(true);
+  });
+
+  it('requires an HTTPS callback origin for enabled providers', () => {
+    expect(() =>
+      parseApiEnvironment({
+        ...infrastructureEnvironment,
+        PORT: '3001',
+        SESSION_SECRET: 's'.repeat(32),
+        API_PUBLIC_ORIGIN: 'http://localhost:3001',
+        SSLCOMMERZ_ENABLED: 'true',
+        SSLCOMMERZ_STORE_ID: 'sandbox-store',
+        SSLCOMMERZ_STORE_PASSWORD: 'sandbox-password',
+      }),
+    ).toThrow('API_PUBLIC_ORIGIN must be a credential-free HTTPS origin');
+  });
+
   it('parses worker infrastructure settings', () => {
     const environment = parseWorkerEnvironment(infrastructureEnvironment);
 

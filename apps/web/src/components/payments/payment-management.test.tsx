@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AdminPaymentManager } from './admin-payment-manager';
 import { CustomerManualPayment } from './customer-manual-payment';
+import { CustomerGatewayPayment } from './customer-gateway-payment';
 
 const invoiceId = '10000000-0000-4000-8000-000000000111';
 const paymentId = '10000000-0000-4000-8000-000000000112';
@@ -87,21 +88,30 @@ describe('manual payment interfaces', () => {
   });
 
   it('loads the administrator ledger, review controls, and settlement policy', async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValueOnce(paginatedResponse([pendingPayment]))
-      .mockResolvedValueOnce(paginatedResponse([invoice]))
-      .mockResolvedValueOnce(
-        jsonResponse({
-          success: true,
-          data: { partialPaymentsEnabled: false },
-        }),
-      );
+    const fetchMock = vi.fn((request: RequestInfo | URL) => {
+      const url = String(request);
+      if (url.includes('/payment-gateways/failures')) {
+        return Promise.resolve(jsonResponse({ success: true, data: [] }));
+      }
+      if (url.includes('/payments/settings')) {
+        return Promise.resolve(
+          jsonResponse({
+            success: true,
+            data: { partialPaymentsEnabled: false },
+          }),
+        );
+      }
+      if (url.includes('/invoices?')) {
+        return Promise.resolve(paginatedResponse([invoice]));
+      }
+      return Promise.resolve(paginatedResponse([pendingPayment]));
+    });
     vi.stubGlobal('fetch', fetchMock);
     render(<AdminPaymentManager />);
     expect(
-      await screen.findByRole('heading', { name: 'Manual payments' }),
+      await screen.findByRole('heading', { name: 'Payments' }),
     ).toBeTruthy();
+    expect(screen.getByText('Gateway attention queue')).toBeTruthy();
     expect(screen.getByText('CUSTOMER-REFERENCE-UI')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Verify' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Reject' })).toBeTruthy();
@@ -169,6 +179,33 @@ describe('manual payment interfaces', () => {
     await waitFor(() =>
       expect(screen.getByText('NEW-UI-REFERENCE')).toBeTruthy(),
     );
+  });
+
+  it('shows enabled sandbox gateways as distinct checkout choices', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        jsonResponse({
+          success: true,
+          data: [
+            { key: 'bkash', displayName: 'bKash', mode: 'SANDBOX' },
+            {
+              key: 'sslcommerz',
+              displayName: 'SSLCOMMERZ',
+              mode: 'SANDBOX',
+            },
+          ],
+        }),
+      ),
+    );
+    render(<CustomerGatewayPayment invoice={invoice} />);
+    expect(
+      await screen.findByRole('button', { name: 'Pay with bKash' }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('button', { name: 'Pay with SSLCOMMERZ' }),
+    ).toBeTruthy();
+    expect(screen.getByText(/return to this page does not/i)).toBeTruthy();
   });
 });
 

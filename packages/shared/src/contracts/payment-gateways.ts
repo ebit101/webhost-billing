@@ -6,6 +6,26 @@ export const paymentGatewayProviderSchema = z
   .trim()
   .regex(/^[a-z][a-z0-9-]{0,63}$/);
 
+export const paymentGatewayDescriptorSchema = z
+  .object({
+    key: paymentGatewayProviderSchema,
+    displayName: z.string().min(1).max(80),
+    mode: z.literal('SANDBOX'),
+  })
+  .strict();
+
+export const paymentGatewayFailureSchema = z
+  .object({
+    paymentId: z.uuid(),
+    invoiceId: z.uuid(),
+    invoiceNumber: z.string().min(1).max(32),
+    provider: paymentGatewayProviderSchema,
+    status: z.enum(['PENDING', 'FAILED']),
+    failureReason: z.string().min(1).max(500),
+    updatedAt: z.iso.datetime({ offset: true }),
+  })
+  .strict();
+
 export const createPaymentSessionRequestSchema = z
   .object({
     invoiceId: z.uuid(),
@@ -62,6 +82,10 @@ export const paymentWebhookResultSchema = z
 export type CreatePaymentSessionRequest = z.infer<
   typeof createPaymentSessionRequestSchema
 >;
+export type PaymentGatewayDescriptor = z.infer<
+  typeof paymentGatewayDescriptorSchema
+>;
+export type PaymentGatewayFailure = z.infer<typeof paymentGatewayFailureSchema>;
 export type PaymentSession = z.infer<typeof paymentSessionSchema>;
 export type NormalizedPaymentEventStatus = z.infer<
   typeof normalizedPaymentEventStatusSchema

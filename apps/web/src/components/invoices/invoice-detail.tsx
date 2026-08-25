@@ -11,6 +11,7 @@ import { InvoiceDocument } from './invoice-document';
 import { InvoiceDraftEditor } from './invoice-draft-editor';
 import { invoiceError } from './invoice-ui';
 import { CustomerManualPayment } from '../payments/customer-manual-payment';
+import { CustomerGatewayPayment } from '../payments/customer-gateway-payment';
 
 export function InvoiceDetail({
   invoiceId,
@@ -118,6 +119,9 @@ export function InvoiceDetail({
         <InvoiceDraftEditor invoice={invoice} onSaved={setInvoice} />
       ) : null}
       <InvoiceDocument invoice={invoice} />
+      {mode === 'customer' ? (
+        <CustomerGatewayPayment invoice={invoice} />
+      ) : null}
       {mode === 'customer' ? <CustomerManualPayment invoice={invoice} /> : null}
     </div>
   );

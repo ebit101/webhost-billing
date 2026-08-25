@@ -17,6 +17,8 @@ import {
   paginatedApiSuccessResponseSchema,
   paginationQuerySchema,
   paymentStatusSchema,
+  paymentGatewayDescriptorSchema,
+  paymentGatewayFailureSchema,
   createPaymentSessionRequestSchema,
   normalizedPaymentEventSchema,
   roleSchema,
@@ -140,6 +142,30 @@ describe('boundary contracts', () => {
         providerTransactionId: 'fake-transaction-1',
         occurredAt: '2026-08-25T10:00:00.000Z',
         failureReason: null,
+      }).success,
+      false,
+    );
+  });
+
+  it('keeps enabled gateways and administrator failures redacted', () => {
+    assert.deepEqual(
+      paymentGatewayDescriptorSchema.parse({
+        key: 'bkash',
+        displayName: 'bKash',
+        mode: 'SANDBOX',
+      }),
+      { key: 'bkash', displayName: 'bKash', mode: 'SANDBOX' },
+    );
+    assert.equal(
+      paymentGatewayFailureSchema.safeParse({
+        paymentId: '10000000-0000-4000-8000-000000000002',
+        invoiceId: '10000000-0000-4000-8000-000000000001',
+        invoiceNumber: 'INV-20260825-0001',
+        provider: 'sslcommerz',
+        status: 'PENDING',
+        failureReason: 'Provider status could not be confirmed.',
+        updatedAt: '2026-08-25T10:00:00.000Z',
+        storePassword: 'must-not-pass',
       }).success,
       false,
     );

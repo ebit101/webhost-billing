@@ -50,11 +50,42 @@ const secretEnvironmentSchema = z.object({
   CREDENTIAL_ENCRYPTION_KEY: z.string().min(32),
 });
 
-export const apiEnvironmentSchema = serverEnvironmentSchema
+const environmentBooleanSchema = z.preprocess(
+  (value) => (typeof value === 'boolean' ? String(value) : value),
+  z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((value) => value === 'true'),
+);
+
+const optionalCredentialSchema = z.preprocess(
+  (value) => (value === '' ? undefined : value),
+  z.string().min(1).max(512).optional(),
+);
+
+const apiEnvironmentObjectSchema = serverEnvironmentSchema
   .extend(infrastructureEnvironmentSchema.shape)
   .extend(secretEnvironmentSchema.shape)
   .extend({
     WEB_ORIGIN: z.url().default('http://localhost:3000'),
+    API_PUBLIC_ORIGIN: z.url().default('http://localhost:3001'),
+    PAYMENT_PROVIDER_TIMEOUT_MS: z.coerce
+      .number()
+      .int()
+      .min(1_000)
+      .max(30_000)
+      .default(10_000),
+    BKASH_ENABLED: environmentBooleanSchema,
+    BKASH_SANDBOX_BASE_URL: z
+      .url()
+      .default('https://tokenized.sandbox.bka.sh/v1.2.0-beta'),
+    BKASH_APP_KEY: optionalCredentialSchema,
+    BKASH_APP_SECRET: optionalCredentialSchema,
+    BKASH_USERNAME: optionalCredentialSchema,
+    BKASH_PASSWORD: optionalCredentialSchema,
+    SSLCOMMERZ_ENABLED: environmentBooleanSchema,
+    SSLCOMMERZ_STORE_ID: optionalCredentialSchema,
+    SSLCOMMERZ_STORE_PASSWORD: optionalCredentialSchema,
     SESSION_TTL_SECONDS: z.coerce
       .number()
       .int()
@@ -78,6 +109,79 @@ export const apiEnvironmentSchema = serverEnvironmentSchema
       .regex(/^[A-Za-z0-9_-]{1,64}$/)
       .default('default'),
   });
+
+function requireCredential(
+  value: string | undefined,
+  path: string,
+  context: z.RefinementCtx,
+): void {
+  if (!value) {
+    context.addIssue({
+      code: 'custom',
+      path: [path],
+      message: `${path} is required when its payment provider is enabled`,
+    });
+  }
+}
+
+export const apiEnvironmentSchema = apiEnvironmentObjectSchema.superRefine(
+  (environment, context) => {
+    if (environment.BKASH_ENABLED || environment.SSLCOMMERZ_ENABLED) {
+      const callbackOrigin = new URL(environment.API_PUBLIC_ORIGIN);
+      if (
+        callbackOrigin.protocol !== 'https:' ||
+        callbackOrigin.username ||
+        callbackOrigin.password ||
+        callbackOrigin.pathname !== '/' ||
+        callbackOrigin.search ||
+        callbackOrigin.hash
+      ) {
+        context.addIssue({
+          code: 'custom',
+          path: ['API_PUBLIC_ORIGIN'],
+          message:
+            'API_PUBLIC_ORIGIN must be a credential-free HTTPS origin when a payment provider is enabled',
+        });
+      }
+    }
+    if (environment.BKASH_ENABLED) {
+      requireCredential(environment.BKASH_APP_KEY, 'BKASH_APP_KEY', context);
+      requireCredential(
+        environment.BKASH_APP_SECRET,
+        'BKASH_APP_SECRET',
+        context,
+      );
+      requireCredential(environment.BKASH_USERNAME, 'BKASH_USERNAME', context);
+      requireCredential(environment.BKASH_PASSWORD, 'BKASH_PASSWORD', context);
+      try {
+        const baseUrl = new URL(environment.BKASH_SANDBOX_BASE_URL);
+        if (
+          baseUrl.toString() !== 'https://tokenized.sandbox.bka.sh/v1.2.0-beta'
+        ) {
+          context.addIssue({
+            code: 'custom',
+            path: ['BKASH_SANDBOX_BASE_URL'],
+            message: 'bKash must use the pinned official sandbox base URL',
+          });
+        }
+      } catch {
+        // The URL schema reports the malformed value.
+      }
+    }
+    if (environment.SSLCOMMERZ_ENABLED) {
+      requireCredential(
+        environment.SSLCOMMERZ_STORE_ID,
+        'SSLCOMMERZ_STORE_ID',
+        context,
+      );
+      requireCredential(
+        environment.SSLCOMMERZ_STORE_PASSWORD,
+        'SSLCOMMERZ_STORE_PASSWORD',
+        context,
+      );
+    }
+  },
+);
 
 export const workerEnvironmentSchema = baseEnvironmentSchema
   .extend(infrastructureEnvironmentSchema.shape)

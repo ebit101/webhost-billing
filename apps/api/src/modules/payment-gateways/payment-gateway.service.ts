@@ -12,12 +12,17 @@ import {
   type PrismaClient,
 } from '@webhost-billing/database';
 import {
+  normalizedPaymentEventSchema,
   paymentSessionSchema,
+  paymentGatewayDescriptorSchema,
+  paymentGatewayFailureSchema,
   paymentWebhookResultSchema,
   serializeMoney,
   type CreatePaymentSessionRequest,
   type NormalizedPaymentEvent,
   type PaymentSession,
+  type PaymentGatewayDescriptor,
+  type PaymentGatewayFailure,
   type PaymentWebhookResult,
 } from '@webhost-billing/shared';
 import { ApplicationException } from '../../common/errors/application.exception';
@@ -25,8 +30,10 @@ import { PRISMA_CLIENT } from '../../infrastructure/database/database.module';
 import type { AuthRequestContext } from '../auth/auth.types';
 import type { PaymentGateway } from './payment-gateway.interface';
 import { PaymentGatewayRegistry } from './payment-gateway.registry';
+import { PaymentProviderError } from './payment-provider.error';
 
 const MAX_WEBHOOK_BYTES = 256 * 1024;
+const SESSION_CREATION_IN_PROGRESS = 'Checkout creation is in progress.';
 
 interface SessionPaymentRecord {
   id: string;
@@ -37,10 +44,14 @@ interface SessionPaymentRecord {
   amount: bigint;
   currency: string;
   reference: string | null;
+  providerCheckoutUrl: string | null;
+  providerSessionExpiresAt: Date | null;
   invoice: {
     invoiceNumber: string;
     customerId: string;
+    customerNameSnapshot: string;
     customerEmailSnapshot: string;
+    customerAddressSnapshot: Prisma.JsonValue;
   };
 }
 
@@ -54,6 +65,40 @@ export class PaymentGatewayService {
     @Inject(PRISMA_CLIENT) private readonly prisma: PrismaClient,
     private readonly gateways: PaymentGatewayRegistry,
   ) {}
+
+  listGateways(): PaymentGatewayDescriptor[] {
+    return this.gateways.list().map((gateway) =>
+      paymentGatewayDescriptorSchema.parse({
+        key: gateway.key,
+        displayName: gateway.displayName,
+        mode: gateway.mode,
+      }),
+    );
+  }
+
+  async listFailures(): Promise<PaymentGatewayFailure[]> {
+    const failures = await this.prisma.payment.findMany({
+      where: {
+        provider: { in: ['bkash', 'sslcommerz'] },
+        status: { in: [PaymentStatus.PENDING, PaymentStatus.FAILED] },
+        failureReason: { not: null },
+      },
+      orderBy: { updatedAt: 'desc' },
+      take: 50,
+      include: { invoice: { select: { invoiceNumber: true } } },
+    });
+    return failures.map((payment) =>
+      paymentGatewayFailureSchema.parse({
+        paymentId: payment.id,
+        invoiceId: payment.invoiceId,
+        invoiceNumber: payment.invoice.invoiceNumber,
+        provider: payment.provider,
+        status: payment.status,
+        failureReason: payment.failureReason,
+        updatedAt: payment.updatedAt.toISOString(),
+      }),
+    );
+  }
 
   async createSession(
     provider: string,
@@ -121,7 +166,9 @@ export class PaymentGatewayService {
                 select: {
                   invoiceNumber: true,
                   customerId: true,
+                  customerNameSnapshot: true,
                   customerEmailSnapshot: true,
+                  customerAddressSnapshot: true,
                 },
               },
             },
@@ -138,18 +185,87 @@ export class PaymentGatewayService {
       }
     }
 
-    const gatewaySession = await gateway.createPaymentSession({
-      paymentId: payment.id,
-      invoiceId: payment.invoiceId,
-      invoiceNumber: payment.invoice.invoiceNumber,
-      amount: payment.amount,
-      currency: payment.currency,
-      customerEmail: payment.invoice.customerEmailSnapshot,
-      idempotencyKey,
+    if (
+      duplicate &&
+      payment.reference &&
+      payment.providerCheckoutUrl &&
+      payment.providerSessionExpiresAt
+    ) {
+      if (payment.providerSessionExpiresAt <= new Date()) {
+        throw this.conflict(
+          'This checkout session has expired. Start a new payment attempt.',
+        );
+      }
+      return paymentSessionSchema.parse({
+        paymentId: payment.id,
+        invoiceId: payment.invoiceId,
+        provider: gateway.key,
+        providerSessionId: payment.reference,
+        checkoutUrl: payment.providerCheckoutUrl,
+        amount: serializeMoney(payment.amount, payment.currency),
+        expiresAt: payment.providerSessionExpiresAt.toISOString(),
+        duplicate: true,
+      });
+    }
+
+    const customerAddress = this.customerAddress(
+      payment.invoice.customerAddressSnapshot,
+    );
+    const claim = await this.prisma.payment.updateMany({
+      where: { id: payment.id, reference: null, failureReason: null },
+      data: { failureReason: SESSION_CREATION_IN_PROGRESS },
     });
+    if (claim.count !== 1) {
+      throw this.conflict(
+        'This checkout is already being created or requires administrator reconciliation.',
+      );
+    }
+
+    let gatewaySession;
+    try {
+      gatewaySession = await gateway.createPaymentSession({
+        paymentId: payment.id,
+        invoiceId: payment.invoiceId,
+        invoiceNumber: payment.invoice.invoiceNumber,
+        amount: payment.amount,
+        currency: payment.currency,
+        customerName: payment.invoice.customerNameSnapshot,
+        customerEmail: payment.invoice.customerEmailSnapshot,
+        customerAddress,
+        idempotencyKey,
+      });
+    } catch (error) {
+      const providerError =
+        error instanceof PaymentProviderError
+          ? error
+          : new PaymentProviderError(
+              'The payment provider returned an unexpected response. Reconciliation is required before retrying.',
+              'UNKNOWN',
+            );
+      await this.prisma.payment.update({
+        where: { id: payment.id },
+        data: {
+          status:
+            providerError.outcome === 'FAILED'
+              ? PaymentStatus.FAILED
+              : PaymentStatus.PENDING,
+          failureReason: providerError.safeMessage,
+        },
+      });
+      throw new ApplicationException({
+        status: HttpStatus.SERVICE_UNAVAILABLE,
+        code: 'SERVICE_UNAVAILABLE',
+        message: providerError.safeMessage,
+      });
+    }
     await this.prisma.payment.updateMany({
       where: { id: payment.id, reference: null },
-      data: { reference: gatewaySession.providerSessionId },
+      data: {
+        reference: gatewaySession.providerSessionId,
+        providerCheckoutUrl: gatewaySession.checkoutUrl,
+        providerSessionExpiresAt: gatewaySession.expiresAt,
+        failureReason: null,
+      },
     });
     return paymentSessionSchema.parse({
       paymentId: payment.id,
@@ -172,11 +288,19 @@ export class PaymentGatewayService {
     if (rawBody.length === 0 || rawBody.length > MAX_WEBHOOK_BYTES) {
       throw this.webhookRejected('Webhook body is missing or too large.');
     }
-    if (!gateway.verifyWebhookSignature(rawBody, signature)) {
+    if (!(await gateway.verifyWebhookSignature(rawBody, signature))) {
       throw this.webhookRejected('Webhook signature is invalid.', true);
     }
     const event = this.normalize(gateway, rawBody);
     const payloadHash = createHash('sha256').update(rawBody).digest('hex');
+    return this.processNormalizedEvent(gateway, event, payloadHash);
+  }
+
+  private async processNormalizedEvent(
+    gateway: PaymentGateway,
+    event: NormalizedPaymentEvent,
+    payloadHash: string,
+  ): Promise<PaymentWebhookResult> {
     const existing = await this.prisma.paymentEvent.findFirst({
       where: { provider: gateway.key, providerEventId: event.providerEventId },
     });
@@ -218,6 +342,12 @@ export class PaymentGatewayService {
           payment,
         );
         if (validationError) {
+          if (payment?.status === PaymentStatus.PENDING) {
+            await transaction.payment.update({
+              where: { id: payment.id },
+              data: { failureReason: validationError },
+            });
+          }
           return this.rejectStoredEvent(
             transaction,
             storedEvent.id,
@@ -232,6 +362,12 @@ export class PaymentGatewayService {
           data: { paymentId: payment.id },
         });
         if (event.status === 'PENDING') {
+          if (event.failureReason) {
+            await transaction.payment.update({
+              where: { id: payment.id },
+              data: { failureReason: event.failureReason },
+            });
+          }
           await transaction.paymentEvent.update({
             where: { id: storedEvent.id },
             data: {
@@ -351,6 +487,145 @@ export class PaymentGatewayService {
     }
   }
 
+  async completeBkashCallback(
+    providerSessionId: string,
+    callbackStatus: string,
+  ): Promise<{ invoiceId: string }> {
+    const gateway = this.gateways.get('bkash');
+    const payment = await this.prisma.payment.findFirst({
+      where: { provider: gateway.key, reference: providerSessionId },
+      select: {
+        id: true,
+        invoiceId: true,
+        amount: true,
+        currency: true,
+        status: true,
+      },
+    });
+    if (!payment) throw this.notFound('Payment session was not found.');
+    if (payment.status !== PaymentStatus.PENDING) {
+      return { invoiceId: payment.invoiceId };
+    }
+
+    try {
+      const context = {
+        providerSessionId,
+        paymentId: payment.id,
+        invoiceId: payment.invoiceId,
+        amount: payment.amount,
+        currency: payment.currency,
+      };
+      let event: NormalizedPaymentEvent;
+      if (callbackStatus === 'success' && gateway.completePaymentSession) {
+        event = await gateway.completePaymentSession(context);
+      } else {
+        const status = await gateway.queryTransactionStatus(providerSessionId);
+        event = normalizedPaymentEventSchema.parse({
+          providerEventId: `bkash:${providerSessionId}:${status.providerTransactionId ?? status.status}`,
+          eventType: `payment.${status.status.toLowerCase()}`,
+          status: status.status === 'REFUNDED' ? 'FAILED' : status.status,
+          merchantId: gateway.merchantId,
+          paymentId: payment.id,
+          invoiceId: payment.invoiceId,
+          amount: status.amount.toString(),
+          currency: status.currency,
+          providerTransactionId: status.providerTransactionId,
+          occurredAt: status.occurredAt.toISOString(),
+          failureReason: status.failureReason,
+        });
+      }
+      await this.processNormalizedEvent(
+        gateway,
+        event,
+        this.eventPayloadHash(event),
+      );
+    } catch (error) {
+      if (!(error instanceof PaymentProviderError)) throw error;
+      await this.prisma.payment.update({
+        where: { id: payment.id },
+        data: {
+          status:
+            error.outcome === 'FAILED'
+              ? PaymentStatus.FAILED
+              : PaymentStatus.PENDING,
+          failureReason: error.safeMessage,
+        },
+      });
+    }
+    return { invoiceId: payment.invoiceId };
+  }
+
+  async reconcilePayment(
+    provider: string,
+    paymentId: string,
+    actor: AuthRequestContext,
+  ): Promise<PaymentWebhookResult> {
+    const gateway = this.gateways.get(provider);
+    const payment = await this.prisma.payment.findUnique({
+      where: { id: paymentId },
+      select: {
+        id: true,
+        invoiceId: true,
+        provider: true,
+        reference: true,
+        amount: true,
+        currency: true,
+        status: true,
+      },
+    });
+    if (!payment || payment.provider !== gateway.key) {
+      throw this.notFound('Payment was not found.');
+    }
+    if (payment.status !== PaymentStatus.PENDING || !payment.reference) {
+      throw this.conflict('Only a pending gateway payment can be reconciled.');
+    }
+    try {
+      const status = await gateway.queryTransactionStatus(payment.reference);
+      if (status.status === 'REFUNDED') {
+        throw this.invalid('Refund reconciliation is not part of this flow.');
+      }
+      const event = normalizedPaymentEventSchema.parse({
+        providerEventId: `reconciliation:${gateway.key}:${payment.id}:${status.providerTransactionId ?? status.status}`,
+        eventType: `payment.${status.status.toLowerCase()}`,
+        status: status.status,
+        merchantId: gateway.merchantId,
+        paymentId: payment.id,
+        invoiceId: payment.invoiceId,
+        amount: status.amount.toString(),
+        currency: status.currency,
+        providerTransactionId: status.providerTransactionId,
+        occurredAt: status.occurredAt.toISOString(),
+        failureReason: status.failureReason,
+      });
+      const result = await this.processNormalizedEvent(
+        gateway,
+        event,
+        this.eventPayloadHash(event),
+      );
+      await this.prisma.activityLog.create({
+        data: {
+          actorUserId: actor.identity.userId,
+          action: 'GATEWAY_PAYMENT_RECONCILED',
+          entityType: 'PAYMENT',
+          entityId: payment.id,
+          metadata: { provider: gateway.key, status: event.status },
+        },
+      });
+      return result;
+    } catch (error) {
+      if (!(error instanceof PaymentProviderError)) throw error;
+      await this.prisma.payment.update({
+        where: { id: payment.id },
+        data: { failureReason: error.safeMessage },
+      });
+      throw new ApplicationException({
+        status: HttpStatus.SERVICE_UNAVAILABLE,
+        code: 'SERVICE_UNAVAILABLE',
+        message: error.safeMessage,
+      });
+    }
+  }
+
   private async validateEvent(
     transaction: Prisma.TransactionClient,
     gateway: PaymentGateway,
@@ -392,7 +667,7 @@ export class PaymentGatewayService {
     if (payment.status !== PaymentStatus.PENDING) {
       return 'Payment has already reached a final state.';
     }
-    if (event.status !== 'PENDING') {
+    if (event.status === 'SUCCEEDED') {
       if (
         invoice.status !== InvoiceStatus.UNPAID &&
         invoice.status !== InvoiceStatus.OVERDUE
@@ -554,6 +829,44 @@ export class PaymentGatewayService {
     };
   }
 
+  private eventPayloadHash(event: NormalizedPaymentEvent): string {
+    return createHash('sha256')
+      .update(JSON.stringify(this.normalizedPayload(event)))
+      .digest('hex');
+  }
+
+  private customerAddress(value: Prisma.JsonValue): {
+    line1: string;
+    line2: string | null;
+    city: string;
+    region: string | null;
+    postalCode: string | null;
+    countryCode: string;
+  } {
+    if (!value || Array.isArray(value) || typeof value !== 'object') {
+      throw this.invalid('Invoice billing address is invalid.');
+    }
+    const stringValue = (key: string, required: boolean): string | null => {
+      const field = value[key];
+      if (typeof field === 'string' && field.trim()) return field.trim();
+      if (
+        !required &&
+        (field === null || field === undefined || field === '')
+      ) {
+        return null;
+      }
+      throw this.invalid('Invoice billing address is invalid.');
+    };
+    return {
+      line1: stringValue('line1', true) as string,
+      line2: stringValue('line2', false),
+      city: stringValue('city', true) as string,
+      region: stringValue('region', false),
+      postalCode: stringValue('postalCode', false),
+      countryCode: stringValue('countryCode', true) as string,
+    };
+  }
+
   private async findSessionPayment(
     idempotencyKey: string,
   ): Promise<SessionPaymentRecord | null> {
@@ -564,7 +877,9 @@ export class PaymentGatewayService {
           select: {
             invoiceNumber: true,
             customerId: true,
+            customerNameSnapshot: true,
             customerEmailSnapshot: true,
+            customerAddressSnapshot: true,
           },
         },
       },

@@ -9,6 +9,11 @@ const environment: ApiEnvironment = {
   SESSION_SECRET: 's'.repeat(32),
   CREDENTIAL_ENCRYPTION_KEY: 'e'.repeat(32),
   WEB_ORIGIN: 'http://localhost:3000',
+  API_PUBLIC_ORIGIN: 'http://localhost:3001',
+  PAYMENT_PROVIDER_TIMEOUT_MS: 10_000,
+  BKASH_ENABLED: false,
+  BKASH_SANDBOX_BASE_URL: 'https://tokenized.sandbox.bka.sh/v1.2.0-beta',
+  SSLCOMMERZ_ENABLED: false,
   SESSION_TTL_SECONDS: 604_800,
   PASSWORD_RESET_TTL_SECONDS: 3_600,
   EMAIL_VERIFICATION_TTL_SECONDS: 86_400,
@@ -25,7 +30,16 @@ describe('FakePaymentGateway', () => {
       invoiceNumber: 'INV-20260825-0000000000000001',
       amount: 12_000n,
       currency: 'BDT',
+      customerName: 'Example Customer',
       customerEmail: 'customer@example.test',
+      customerAddress: {
+        line1: '1 Test Road',
+        line2: null,
+        city: 'Dhaka',
+        region: null,
+        postalCode: '1200',
+        countryCode: 'BD',
+      },
       idempotencyKey: 'gateway-session:fake:test-key',
     };
     const first = await gateway.createPaymentSession(input);
@@ -79,6 +93,8 @@ describe('FakePaymentGateway', () => {
       status: 'SUCCEEDED',
       amount: 12_000n,
       currency: 'BDT',
+      occurredAt: new Date('2026-08-25T10:00:00.000Z'),
+      failureReason: null,
     });
     await expect(
       gateway.queryTransactionStatus('fake-transaction-refundable'),

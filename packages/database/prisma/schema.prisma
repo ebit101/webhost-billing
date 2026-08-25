@@ -494,33 +494,35 @@ model InvoiceItem {
 }
 
 model Payment {
-  id                    String         @id @default(uuid()) @db.Uuid
-  invoiceId             String         @map("invoice_id") @db.Uuid
-  originalPaymentId     String?        @map("original_payment_id") @db.Uuid
-  createdByUserId       String?        @map("created_by_user_id") @db.Uuid
-  reviewedByUserId      String?        @map("reviewed_by_user_id") @db.Uuid
-  kind                  PaymentKind    @default(CHARGE)
-  status                PaymentStatus  @default(PENDING)
-  provider              String         @db.VarChar(64)
-  providerTransactionId String?        @map("provider_transaction_id") @db.VarChar(191)
-  idempotencyKey        String         @unique(map: "payments_idempotency_key") @map("idempotency_key") @db.VarChar(191)
-  amount                BigInt         @db.BigInt
-  currency              String         @db.Char(3)
-  reference             String?        @db.VarChar(191)
-  manualMethod          String?        @map("manual_method") @db.VarChar(40)
-  proofMetadata         Json?          @map("proof_metadata")
-  failureReason         String?        @map("failure_reason") @db.Text
-  receivedAt            DateTime?      @map("received_at") @db.Timestamptz(3)
-  reviewedAt            DateTime?      @map("reviewed_at") @db.Timestamptz(3)
-  verifiedAt            DateTime?      @map("verified_at") @db.Timestamptz(3)
-  createdAt             DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt             DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
-  invoice               Invoice        @relation(fields: [invoiceId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  originalPayment       Payment?       @relation("PaymentAdjustments", fields: [originalPaymentId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  adjustments           Payment[]      @relation("PaymentAdjustments")
-  createdBy             User?          @relation("PaymentCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  reviewedBy            User?          @relation("PaymentReviewedBy", fields: [reviewedByUserId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  events                PaymentEvent[]
+  id                       String         @id @default(uuid()) @db.Uuid
+  invoiceId                String         @map("invoice_id") @db.Uuid
+  originalPaymentId        String?        @map("original_payment_id") @db.Uuid
+  createdByUserId          String?        @map("created_by_user_id") @db.Uuid
+  reviewedByUserId         String?        @map("reviewed_by_user_id") @db.Uuid
+  kind                     PaymentKind    @default(CHARGE)
+  status                   PaymentStatus  @default(PENDING)
+  provider                 String         @db.VarChar(64)
+  providerTransactionId    String?        @map("provider_transaction_id") @db.VarChar(191)
+  idempotencyKey           String         @unique(map: "payments_idempotency_key") @map("idempotency_key") @db.VarChar(191)
+  amount                   BigInt         @db.BigInt
+  currency                 String         @db.Char(3)
+  reference                String?        @db.VarChar(191)
+  providerCheckoutUrl      String?        @map("provider_checkout_url") @db.Text
+  providerSessionExpiresAt DateTime?      @map("provider_session_expires_at") @db.Timestamptz(3)
+  manualMethod             String?        @map("manual_method") @db.VarChar(40)
+  proofMetadata            Json?          @map("proof_metadata")
+  failureReason            String?        @map("failure_reason") @db.Text
+  receivedAt               DateTime?      @map("received_at") @db.Timestamptz(3)
+  reviewedAt               DateTime?      @map("reviewed_at") @db.Timestamptz(3)
+  verifiedAt               DateTime?      @map("verified_at") @db.Timestamptz(3)
+  createdAt                DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
+  invoice                  Invoice        @relation(fields: [invoiceId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  originalPayment          Payment?       @relation("PaymentAdjustments", fields: [originalPaymentId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  adjustments              Payment[]      @relation("PaymentAdjustments")
+  createdBy                User?          @relation("PaymentCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  reviewedBy               User?          @relation("PaymentReviewedBy", fields: [reviewedByUserId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  events                   PaymentEvent[]
 
   @@unique([provider, providerTransactionId], map: "payments_provider_transaction_key")
   @@index([invoiceId, status], map: "payments_invoice_status_idx")

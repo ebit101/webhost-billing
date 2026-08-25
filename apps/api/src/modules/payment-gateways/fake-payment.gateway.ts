@@ -38,6 +38,8 @@ const fakeWebhookPayloadSchema = z
 @Injectable()
 export class FakePaymentGateway implements PaymentGateway {
   readonly key = 'fake';
+  readonly displayName = 'Fake payment';
+  readonly mode = 'SANDBOX' as const;
   readonly merchantId = 'webhost-billing-fake';
   private readonly webhookKey: Buffer;
   private readonly webOrigin: string;
@@ -169,6 +171,9 @@ export class FakePaymentGateway implements PaymentGateway {
   }
 
   rememberTransaction(transaction: GatewayTransactionStatus): void {
+    if (!transaction.providerTransactionId) {
+      throw new Error('Fake transaction identifier is required.');
+    }
     this.transactions.set(transaction.providerTransactionId, {
       ...transaction,
     });
