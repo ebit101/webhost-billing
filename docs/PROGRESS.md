@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 18 — Implement Email Notifications
+- **Current command:** Command 25 — Test Critical Business Invariants
 - **Current status:** Completed and delivered to GitHub `main`
-- **Last updated:** 2026-08-25
-- **Next command:** Command 19 — Implement Renewal Automation
+- **Last updated:** 2026-08-26
+- **Next command:** Command 26 — Add End-to-End Tests
 - **Next command authorized:** No
 
 ## Command Reports
@@ -1618,6 +1618,61 @@ Run **Command 24 — Harden Security** only after explicit user authorization. B
 #### Recommended next command
 
 Run **Command 25 — Test Critical Business Invariants** only after explicit user authorization. Add the dedicated invariant matrix and concurrency/failure tests without weakening the Command 24 security boundaries or invoking real providers.
+
+### Command 25 — Test Critical Business Invariants
+
+- **Status:** Completed and delivered to GitHub `main`
+- **Date:** 2026-08-26
+
+#### Scope completed
+
+- Added one root `pnpm test:invariants` command that builds shared packages and composes the authoritative shared-contract, integer-money, PostgreSQL/Redis API integration, and renewal-worker tests for all thirteen required business invariants.
+- Added a durable invariant matrix mapping each guarantee to its application/database enforcement and named focused regression evidence, plus failure-triage guidance that forbids weakening concurrency, ownership, destructive-confirmation, or provider-proof assertions.
+- Added direct payment-gateway coverage proving that an SSLCOMMERZ browser success return only redirects: the invoice remains unpaid, the checkout payment remains pending, and no payment event is created without authenticated provider proof.
+- Added a supported-repricing regression proving an existing order and its issued invoice retain their snapshotted recurring/setup amounts and line totals after a new active catalogue price is appended.
+- Added an explicit paid-invoice/successful-payment fixture followed by provisioning failure, proving the service can remain `PROVISION_FAILED` without rewriting the paid financial states.
+- Strengthened hosting provisioning from a sequential replay check to simultaneous duplicate account-creation submissions plus a later replay; one durable operation/account performs the work.
+- Added an explicit customer attempt to permanently terminate a service with otherwise valid input and confirmation; the role boundary returns `403` before the administrator-only destructive operation.
+- Reused the owning module's real integration fixtures for duplicate webhook settlement, concurrent overpayment prevention, renewal scheduler/lifecycle replay, append-only refunds/reversals, foreign-customer denial, confirmation parsing, bounded retry classification, and lossless integer money instead of creating a competing all-in-one fixture.
+
+#### Files changed
+
+- Focused suite command: `package.json`
+- Payment proof/replay tests: `apps/api/test/payment-gateways.e2e-spec.ts`
+- Historical pricing tests: `apps/api/test/orders.e2e-spec.ts`
+- Payment/provisioning state-separation tests: `apps/api/test/services.e2e-spec.ts`
+- Provisioning concurrency and termination-authorization tests: `apps/api/test/hosting-panels.e2e-spec.ts`
+- Invariant evidence and decision records: `docs/CRITICAL_BUSINESS_INVARIANTS.md`, `docs/DECISIONS.md`, `README.md`, `docs/PROGRESS.md`
+
+#### Validation
+
+- The final 72-test focused invariant suite passed twice consecutively with identical test counts and no intermittent failure: 22 shared contract tests, 12 API integer-money unit tests, 36 selected PostgreSQL/Redis API integration tests, and 2 renewal worker integration tests per run. Earlier development runs of the same focused layers also passed while the coverage was being strengthened.
+- Complete workspace unit/contract/component/integration validation passed 169 tests: shared contracts 22, queue/Redis 3, API unit 84, worker 27, and frontend 33.
+- Complete API end-to-end validation passed 63 tests across sixteen suites against the isolated PostgreSQL and Redis services. Total unique repository tests validated by the full suites: 232; the focused invariant run intentionally overlaps this total.
+- Repository Prettier, `git diff --check`, API/worker/web ESLint, and strict TypeScript checks for every code workspace passed.
+- Config/database/shared/queue packages, NestJS API/worker, and Next.js 16 production builds passed. Next.js generated all 29 application routes.
+- Prisma formatting/schema/client generation, all 21 migration status checks, database structural/custom-constraint/fictional-seed verification, Docker Compose validation, and healthy loopback-only PostgreSQL/Redis services passed.
+- `pnpm audit --prod` passed with no known vulnerabilities. No schema/dependency change, real credential, production data, or bKash, SSLCOMMERZ, SMTP, cPanel/WHM, UK2Group, or other external-provider action was introduced or executed.
+- One initial full-E2E shell invocation included an unnecessary `--` separator, causing Jest to treat `--runInBand` as a path and exit with “No tests found.” The documented invocation was then run correctly and all 63 E2E tests passed; this was an invocation error rather than a test failure.
+
+#### Decisions made
+
+- Critical invariants are a composed release gate, not a duplicated monolithic test file. Each scenario remains beside the module that owns its realistic fixtures, while one root command and evidence matrix make the cross-module guarantees discoverable and runnable together.
+- Concurrency and retry invariants require PostgreSQL-backed tests. Unit mocks alone cannot prove invoice row locks, unique event/operation keys, advisory scheduler locking, or persisted retry evidence.
+- Browser navigation and financial proof remain distinct test concepts. A success-labelled return URL is explicitly tested as non-financial state.
+- Real provider access is unnecessary and unsafe for this regression gate. Fake adapters exercise idempotency and failure classification deterministically; separately authorized sandbox acceptance remains operational work.
+
+#### Open questions and risks
+
+- Automated tests use fake providers and fictional `.test` identities. Real bKash/SSLCOMMERZ sandbox callbacks, cPanel connectivity, SMTP delivery, and future UK2Group behavior still need separate approved acceptance exercises with dedicated credentials and disposable resources.
+- The focused suite requires the ignored local test environment plus healthy PostgreSQL and Redis. CI must provision isolated equivalents and run `pnpm test:invariants` as a required check before merge/deployment.
+- PostgreSQL E2E concurrency still emits the known pg@9 concurrent-query deprecation warning, and Jest worker/E2E runs emit the existing experimental VM warning. Assertions and exit statuses passed; dependency/runtime upgrades must rerun the focused suite repeatedly.
+- These tests provide strong executable regression evidence but do not replace production database isolation, backups/restoration, provider reconciliation monitoring, egress restrictions, or incident procedures.
+- Full real-browser workflow coverage is intentionally reserved for authorized Command 26 and should consume only isolated fictional test data and fake providers.
+
+#### Recommended next command
+
+Run **Command 26 — Add End-to-End Tests** only after explicit user authorization. Add deterministic, isolated Playwright coverage for the twelve listed customer/administrator workflows, capture traces or screenshots on failure, and keep payment/provisioning/termination proof boundaries intact.
 
 ## Report Template
 

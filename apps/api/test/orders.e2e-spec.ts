@@ -378,6 +378,64 @@ describe('Order creation (e2e)', () => {
     expect(audit.some((entry) => entry.entityId === adminOrder.id)).toBe(true);
   });
 
+  it('keeps historical order and invoice amounts unchanged after repricing', async () => {
+    const before = await prisma.order.findUniqueOrThrow({
+      where: { id: orderId },
+      include: { items: true, invoices: { include: { items: true } } },
+    });
+    const originalInvoice = before.invoices[0];
+    expect(before.items[0]).toMatchObject({
+      unitAmount: 12_000n,
+      setupFee: 500n,
+      lineTotal: 12_500n,
+    });
+    expect(originalInvoice).toMatchObject({
+      subtotal: 12_500n,
+      total: 12_500n,
+      balanceDue: 12_500n,
+    });
+
+    const admin = request.agent(app.getHttpServer());
+    const csrf = await csrfToken(admin);
+    await login(admin, csrf, ADMIN_EMAIL);
+    await admin
+      .post(`/products/${productId}/prices`)
+      .set('X-CSRF-Token', csrf)
+      .send({
+        billingPeriod: 'MONTHLY',
+        currency: 'BDT',
+        amount: '99000',
+        setupFee: '1234',
+      })
+      .expect(201);
+
+    const after = await prisma.order.findUniqueOrThrow({
+      where: { id: orderId },
+      include: { items: true, invoices: { include: { items: true } } },
+    });
+    expect(after.items[0]).toMatchObject({
+      productPriceId: activePriceId,
+      unitAmount: 12_000n,
+      setupFee: 500n,
+      lineTotal: 12_500n,
+    });
+    expect(after.invoices[0]).toMatchObject({
+      id: originalInvoice?.id,
+      subtotal: 12_500n,
+      total: 12_500n,
+      balanceDue: 12_500n,
+    });
+    expect(after.invoices[0]?.items.map((item) => item.lineTotal)).toEqual([
+      12_000n,
+      500n,
+    ]);
+    expect(
+      await prisma.productPrice.findFirstOrThrow({
+        where: { productId, billingPeriod: 'MONTHLY', isActive: true },
+      }),
+    ).toMatchObject({ amount: 99_000n, setupFee: 1_234n });
+  });
+
   afterAll(async () => {
     if (prisma) await cleanup();
     if (app) await app.close();

@@ -218,6 +218,38 @@ describe('Payment gateways (e2e)', () => {
     expect(emailOutbox).toBe(1);
   });
 
+  it('does not treat a browser success return as payment proof', async () => {
+    const invoiceId = await createInvoice(13_000n);
+    const session = await createSession(invoiceId);
+
+    const returned = await request(app.getHttpServer())
+      .post('/payment-gateways/sslcommerz/return/success')
+      .type('form')
+      .send({ value_b: invoiceId, status: 'VALID' })
+      .expect(303);
+
+    expect(returned.headers.location).toBe(
+      `http://localhost:3000/portal/invoices/${invoiceId}`,
+    );
+    expect(
+      await prisma.invoice.findUniqueOrThrow({ where: { id: invoiceId } }),
+    ).toMatchObject({
+      status: InvoiceStatus.UNPAID,
+      amountPaid: 0n,
+      balanceDue: 13_000n,
+    });
+    expect(
+      await prisma.payment.findUniqueOrThrow({
+        where: { id: session.paymentId },
+      }),
+    ).toMatchObject({ status: PaymentStatus.PENDING });
+    expect(
+      await prisma.paymentEvent.count({
+        where: { paymentId: session.paymentId },
+      }),
+    ).toBe(0);
+  });
+
   it('rejects an invalid exact-body signature without recording an event', async () => {
     const invoiceId = await createInvoice(9_000n);
     const session = await createSession(invoiceId);

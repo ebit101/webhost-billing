@@ -195,12 +195,28 @@ describe('Hosting panel operations (e2e)', () => {
     });
 
     const submissionKey = randomUUID();
-    const provisioned = await postResult(
-      admin,
-      csrf,
-      `/hosting-panel/services/${primaryServiceId}/operations`,
-      { type: 'CREATE_ACCOUNT', submissionKey },
-    );
+    const attempts = await Promise.all([
+      postResult(
+        admin,
+        csrf,
+        `/hosting-panel/services/${primaryServiceId}/operations`,
+        { type: 'CREATE_ACCOUNT', submissionKey },
+      ),
+      postResult(
+        admin,
+        csrf,
+        `/hosting-panel/services/${primaryServiceId}/operations`,
+        { type: 'CREATE_ACCOUNT', submissionKey },
+      ),
+    ]);
+    expect(attempts.map(({ duplicate }) => duplicate).sort()).toEqual([
+      false,
+      true,
+    ]);
+    const provisioned = attempts.find(({ duplicate }) => !duplicate);
+    if (!provisioned) {
+      throw new Error('Expected one provisioning attempt to perform the work.');
+    }
     expect(provisioned).toMatchObject({
       duplicate: false,
       operation: {
@@ -309,6 +325,16 @@ describe('Hosting panel operations (e2e)', () => {
       .post(`/hosting-panel/services/${primaryServiceId}/operations`)
       .set('X-CSRF-Token', customerCsrf)
       .send({ type: 'GET_ACCOUNT', submissionKey: randomUUID() })
+      .expect(403);
+    await customer
+      .post(`/hosting-panel/services/${primaryServiceId}/operations`)
+      .set('X-CSRF-Token', customerCsrf)
+      .send({
+        type: 'TERMINATE_ACCOUNT',
+        submissionKey: randomUUID(),
+        reason: 'Unauthorized destructive request.',
+        confirmation: 'TERMINATE',
+      })
       .expect(403);
 
     await admin

@@ -258,6 +258,14 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** Password-only administrator access has disproportionate authority over billing, payments, customer data, and hosting. Cookies, redirects, callbacks, and administrator-configured external hosts cross different trust boundaries and require independent controls; a successful browser/provider navigation or a syntactically valid URL is not proof of trust.
 - **Consequence:** Enrolled administrators receive no session until a second factor is consumed. Enrollment/disable/recovery rotation require reauthentication and revoke affected sessions, while MFA state and failures are auditable without codes or secrets. API/web production deployments require exact secure origins and layered headers. Checkout/panel URLs and cPanel destinations fail closed outside approved hosts, protocols, ports, and public resolution. Production still needs outbound firewall policy because application DNS preflight cannot alone eliminate rebinding.
 
+## ADR-033 — Executable Critical-Invariant Evidence Matrix
+
+- **Status:** Accepted
+- **Date:** 2026-08-26
+- **Decision:** Maintain one focused `pnpm test:invariants` command that composes the authoritative shared-contract, integer-money, PostgreSQL API integration, and renewal-worker tests for the thirteen release-critical business invariants. Keep a documented matrix from each invariant to named regression evidence, and run the composed suite repeatedly when changing financial, provisioning, authorization, scheduler, or retry behavior.
+- **Reason:** These guarantees cross module and process boundaries. A test buried in an individual feature suite is easy to miss during a later change, while copying all scenarios into one large test file would create competing fixtures and weaken the existing realistic integration coverage.
+- **Consequence:** The focused suite intentionally reuses the owning module tests and local fake providers, with real PostgreSQL and Redis where the boundary requires them. It makes no external payment, SMTP, registrar, or WHM request. A change to any listed invariant must update both its owning regression test and `docs/CRITICAL_BUSINESS_INVARIANTS.md`; passing unit tests alone is insufficient for concurrency, replay, ownership, state-separation, and scheduler guarantees.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

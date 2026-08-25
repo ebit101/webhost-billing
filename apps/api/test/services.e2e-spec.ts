@@ -8,7 +8,10 @@ import {
 import {
   BillingPeriod,
   CustomerStatus,
+  InvoiceStatus,
   OrderStatus,
+  PaymentKind,
+  PaymentStatus,
   ProductStatus,
   ServerStatus,
   UserRole,
@@ -286,6 +289,60 @@ describe('Hosting services (e2e)', () => {
 
   it('records provisioning failure and pre-activation cancellation separately', async () => {
     const orderItemId = await createPaidOrder('service-two.example.test');
+    const orderItem = await prisma.orderItem.findUniqueOrThrow({
+      where: { id: orderItemId },
+    });
+    const paidAt = new Date();
+    const invoice = await prisma.invoice.create({
+      data: {
+        invoiceNumber: `CMD25-${randomUUID().slice(0, 12).toUpperCase()}`,
+        submissionKey: `command25:paid-provisioning:${randomUUID()}`,
+        customerId,
+        orderId: orderItem.orderId,
+        status: InvoiceStatus.PAID,
+        currency: 'BDT',
+        subtotal: 14_000n,
+        total: 14_000n,
+        amountPaid: 14_000n,
+        balanceDue: 0n,
+        customerNameSnapshot: 'Service Customer',
+        customerEmailSnapshot: CUSTOMER_EMAIL,
+        customerAddressSnapshot: {
+          line1: '14 Hosting Road',
+          city: 'Dhaka',
+          countryCode: 'BD',
+        },
+        businessIdentitySnapshot: { name: 'Fictional Hosting Ltd' },
+        issuedAt: paidAt,
+        dueAt: paidAt,
+        paidAt,
+        items: {
+          create: {
+            linePosition: 1,
+            orderItemId,
+            descriptionSnapshot: 'Paid hosting awaiting provisioning',
+            currency: 'BDT',
+            quantity: 1,
+            unitAmount: 14_000n,
+            lineTotal: 14_000n,
+          },
+        },
+      },
+    });
+    const payment = await prisma.payment.create({
+      data: {
+        invoiceId: invoice.id,
+        kind: PaymentKind.CHARGE,
+        status: PaymentStatus.SUCCEEDED,
+        provider: 'fake-gateway',
+        providerTransactionId: `cmd25-${randomUUID()}`,
+        idempotencyKey: `command25:payment:${randomUUID()}`,
+        amount: 14_000n,
+        currency: 'BDT',
+        receivedAt: paidAt,
+        verifiedAt: paidAt,
+      },
+    });
     const admin = request.agent(app.getHttpServer());
     const csrf = await csrfToken(admin);
     await login(admin, csrf, ADMIN_EMAIL);
@@ -303,6 +360,19 @@ describe('Hosting services (e2e)', () => {
       reason: 'Fake panel rejected the fictional account.',
     });
     expect(failed.provisioningFailureReason).toContain('Fake panel');
+    expect(
+      await prisma.invoice.findUniqueOrThrow({ where: { id: invoice.id } }),
+    ).toMatchObject({
+      status: InvoiceStatus.PAID,
+      amountPaid: 14_000n,
+      balanceDue: 0n,
+    });
+    expect(
+      await prisma.payment.findUniqueOrThrow({ where: { id: payment.id } }),
+    ).toMatchObject({
+      status: PaymentStatus.SUCCEEDED,
+      amount: 14_000n,
+    });
     await transition(admin, csrf, id, { status: 'PROVISIONING' });
     const cancelled = await transition(admin, csrf, id, {
       status: 'CANCELLED',
@@ -455,6 +525,36 @@ describe('Hosting services (e2e)', () => {
       : [];
     const orderIds = orders.map((order) => order.id);
     if (orderIds.length) {
+      const invoices = await prisma.invoice.findMany({
+        where: { orderId: { in: orderIds } },
+        select: { id: true },
+      });
+      const invoiceIds = invoices.map(({ id }) => id);
+      if (invoiceIds.length) {
+        const payments = await prisma.payment.findMany({
+          where: { invoiceId: { in: invoiceIds } },
+          select: { id: true },
+        });
+        const paymentIds = payments.map(({ id }) => id);
+        await prisma.paymentEvent.deleteMany({
+          where: { paymentId: { in: paymentIds } },
+        });
+        await prisma.outboxEvent.deleteMany({
+          where: {
+            OR: [
+              { aggregateType: 'PAYMENT', aggregateId: { in: paymentIds } },
+              { aggregateType: 'INVOICE', aggregateId: { in: invoiceIds } },
+            ],
+          },
+        });
+        await prisma.payment.deleteMany({
+          where: { invoiceId: { in: invoiceIds } },
+        });
+        await prisma.invoiceItem.deleteMany({
+          where: { invoiceId: { in: invoiceIds } },
+        });
+        await prisma.invoice.deleteMany({ where: { id: { in: invoiceIds } } });
+      }
       await prisma.orderItem.deleteMany({
         where: { orderId: { in: orderIds } },
       });

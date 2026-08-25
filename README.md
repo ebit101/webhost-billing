@@ -54,6 +54,7 @@ See `docs/DEVELOPMENT.md` for setup, health checks, connectivity, shutdown, and 
 - `docs/API_CONTRACTS.md` — shared runtime contracts, money serialization, and API errors
 - `docs/AUTHENTICATION.md` — authentication flows, cookies, CSRF, authorization, and sessions
 - `docs/SECURITY_HARDENING.md` — Command 24 controls, verification evidence, residual risks, and production checklist
+- `docs/CRITICAL_BUSINESS_INVARIANTS.md` — Command 25 invariant matrix, focused test command, and failure interpretation
 - `docs/CUSTOMER_MANAGEMENT.md` — customer API, authorization, account-access rules, and interfaces
 - `docs/PRODUCTS_AND_PRICING.md` — product lifecycle, versioned prices, public catalogue, and selection flow
 - `docs/ORDER_CREATION.md` — authoritative checkout, idempotency, snapshots, numbering, and order states
