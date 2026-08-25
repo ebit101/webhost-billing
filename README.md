@@ -56,7 +56,7 @@ See `docs/DEVELOPMENT.md` for setup, health checks, connectivity, shutdown, and 
 - `docs/CUSTOMER_MANAGEMENT.md` — customer API, authorization, account-access rules, and interfaces
 - `docs/PRODUCTS_AND_PRICING.md` — product lifecycle, versioned prices, public catalogue, and selection flow
 - `docs/ORDER_CREATION.md` — authoritative checkout, idempotency, snapshots, numbering, and order states
-- `docs/INVOICES.md` — calculation rules, drafts, issued history, identity snapshots, states, and printing
+- `docs/INVOICES.md` — calculation rules, drafts, issued history, identity snapshots, states, printing, and PDF downloads
 - `docs/MANUAL_PAYMENTS.md` — manual proof, review, settlement, concurrency, refunds, and reversals
 - `docs/PAYMENT_GATEWAYS.md` — bKash/SSLCOMMERZ sandbox setup, gateway contracts, callbacks, reconciliation, replay protection, and outbox handoff
 - `docs/SERVICES.md` — service creation, snapshots, lifecycle, authorization, and administrator/customer workflows

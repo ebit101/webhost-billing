@@ -11,6 +11,7 @@ import {
   Post,
   Query,
   Req,
+  Res,
 } from '@nestjs/common';
 import type { ApiEnvironment } from '@webhost-billing/config';
 import {
@@ -27,7 +28,7 @@ import {
   type InvoiceListQuery,
   type UpdateDraftInvoiceRequest,
 } from '@webhost-billing/shared';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import { createSecurityRequestContext } from '../../common/http/request-context';
 import { ZodValidationPipe } from '../../common/validation/zod-validation.pipe';
 import { API_ENVIRONMENT } from '../../infrastructure/environment/environment.module';
@@ -35,6 +36,7 @@ import type { AuthRequestContext } from '../auth/auth.types';
 import { CurrentAuth } from '../auth/decorators/current-auth.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { InvoiceService } from './invoice.service';
+import { InvoicePdfService } from './invoice-pdf.service';
 
 @Controller('invoices')
 export class InvoiceController {
@@ -42,6 +44,7 @@ export class InvoiceController {
 
   constructor(
     private readonly invoices: InvoiceService,
+    private readonly invoicePdfs: InvoicePdfService,
     @Inject(API_ENVIRONMENT) environment: ApiEnvironment,
   ) {
     this.auditSecret = environment.SESSION_SECRET;
@@ -118,6 +121,27 @@ export class InvoiceController {
     @CurrentAuth() auth: AuthRequestContext,
   ) {
     return createApiSuccessResponse(await this.invoices.get(invoiceId, auth));
+  }
+
+  @Get(':invoiceId/pdf')
+  @Roles('ADMIN', 'CUSTOMER')
+  async pdf(
+    @Param('invoiceId', new ParseUUIDPipe()) invoiceId: string,
+    @CurrentAuth() auth: AuthRequestContext,
+    @Res() response: Response,
+  ) {
+    const invoice = await this.invoices.get(invoiceId, auth);
+    const pdf = await this.invoicePdfs.render(invoice);
+    response
+      .status(HttpStatus.OK)
+      .set({
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="${this.invoicePdfs.filename(invoice)}"`,
+        'Content-Length': String(pdf.length),
+        'Cache-Control': 'private, no-store',
+        'X-Content-Type-Options': 'nosniff',
+      })
+      .send(pdf);
   }
 
   @Patch(':invoiceId/draft')

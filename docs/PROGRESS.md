@@ -1501,6 +1501,64 @@ Run **Command 22 — Complete Dashboards and Reports** only after explicit user 
 
 Run **Command 23 — Add PDF Invoices** only after explicit user authorization. Generate PDFs from immutable invoice snapshots, keep download authorization role/ownership-bound, avoid remote assets, and verify the rendered financial values against the existing invoice contract.
 
+### Command 23 — Add PDF Invoices
+
+- **Status:** Completed and delivered to GitHub `main`
+- **Date:** 2026-08-26
+
+#### Scope completed
+
+- Added an API-side PDF invoice renderer using pinned PDFKit and embedded pinned Noto Sans Bengali Latin/Bengali font subsets. Rendering is self-contained, uses no remote assets, and supports mixed English/Bengali billing text.
+- Generated A4 documents from the existing ownership-checked serialized invoice: public invoice/order numbers, status, created/issued/due dates, snapshotted business/customer identities, item quantities and service periods, discounts, tax, invoice total, credits, paid amount, and balance due.
+- Kept all calculations lossless by formatting serialized integer minor units directly. BDT values consistently render with two decimal places and grouped whole units.
+- Made generation deterministic for an identical invoice state by removing clock, randomness, remote input, and database identifiers from the renderer and deriving PDF metadata dates from persisted invoice timestamps.
+- Added wrapped long billing/item text, alternating item rows, table headings repeated after page breaks, totals, payment summary, and visible numbered footers for printable single- and multi-page output.
+- Added administrator/owning-customer `GET /invoices/:invoiceId/pdf` access through the existing service-layer ownership check. Editable drafts return `422`; foreign customers return `403` before rendering.
+- Returned a sanitized attachment filename with `application/pdf`, exact content length, `private, no-store`, and `nosniff` response headers. The PDF contains no invoice, order, customer, or item database UUIDs, credentials, provider payloads, or other internal identifiers.
+- Added a responsive Download PDF action to issued administrator and customer invoice detail screens, including progress/error feedback and cookie-authenticated file retrieval. Draft and print-only views do not show the action.
+- Added focused unit, API end-to-end, and frontend interaction coverage for deterministic bytes, pagination, draft rejection, response safety, customer ownership, administrator access, and browser download behavior.
+- Updated invoice/API documentation and recorded the deterministic authorized-snapshot decision.
+
+#### Files changed
+
+- PDF renderer/tests and dependencies: `apps/api/src/modules/invoices/invoice-pdf.service.ts`, `apps/api/src/modules/invoices/invoice-pdf.service.spec.ts`, `apps/api/package.json`, `pnpm-lock.yaml`
+- Protected API delivery/tests: `apps/api/src/modules/invoices/invoice.controller.ts`, `apps/api/src/modules/invoices/invoice.module.ts`, `apps/api/test/invoices.e2e-spec.ts`
+- Administrator/customer download interface/tests: `apps/web/src/components/invoices/invoice-detail.tsx`, `apps/web/src/components/invoices/invoice-management.test.tsx`, `apps/web/src/lib/auth-api.ts`
+- Documentation: `README.md`, `docs/INVOICES.md`, `docs/API_CONTRACTS.md`, `docs/DECISIONS.md`, `docs/PROGRESS.md`
+
+#### Validation
+
+- Repository Prettier checks and `git diff --check` passed. ESLint passed for every Command 23 API/web source and test file.
+- Strict TypeScript checks passed for config, database, shared, queue, API, worker, and web workspaces.
+- Shared contracts passed 22 tests; queue infrastructure passed 3 real-Redis tests; API unit suites passed 78 tests; worker suites passed 27 tests; frontend passed 32 tests; and complete API end-to-end validation passed 59 tests across sixteen suites. Total validated tests: 221.
+- PDF unit coverage produced byte-identical buffers twice for the same mixed Bengali/Latin BDT invoice, verified the PDF 1.7 header, excluded internal UUIDs, paginated a 70-line document, and rejected drafts.
+- Invoice E2E coverage passed against real PostgreSQL/Redis for draft rejection, administrator delivery, owner delivery, byte-identical admin/customer output, required download headers, internal-ID exclusion, and foreign-customer denial.
+- A fictional one-page BDT sample was generated through the production renderer, rasterized at 144 DPI to 1191 × 1684 PNG, and visually inspected. Billing identities wrapped correctly; Bengali/Latin text, item values, totals, payment status, divider, and `Page 1 of 1` footer were legible and aligned. The first visual pass exposed an out-of-bounds footer, which was corrected and re-verified.
+- Config/database/shared/queue packages and NestJS API/worker production builds passed. An isolated-output Next.js 16.3.2 webpack production build passed and generated all 29 application routes without replacing the running development output.
+- Docker Compose configuration passed and local PostgreSQL/Redis remained healthy. The source/private-key marker scan passed, and no generated sample, `.env`, real identity, credential, customer data, payment, email, WHM, registrar, or other external-provider artifact/action was committed or executed.
+
+#### Decisions made
+
+- PDFs exist only after issuance because draft identity, line, date, and credit fields remain editable and are not stable billing artifacts.
+- The renderer consumes the exact serialized invoice already returned after role/ownership authorization rather than querying separately. This keeps API and PDF financial values aligned and prevents a second authorization path.
+- Issued identity and item snapshots remain immutable. Append-only payment/refund transactions legitimately change status, paid amount, and balance, so a later download reflects the current authorized invoice state; identical states remain byte-identical.
+- PDF generation remains synchronous in the modular-monolith API for the bounded private-business invoice size. Background PDF storage, templates, signatures, archival object storage, and batch generation remain outside the MVP.
+- Local embedded font assets provide repeatable offline rendering and Bengali support. Logos and remote images are intentionally absent so asset availability cannot change output bytes or create SSRF/privacy risk.
+- The download is an authenticated non-mutating `GET`, while the existing ownership service remains the object-level authorization boundary. The raw PDF response is not wrapped in the JSON success envelope; errors remain standard JSON.
+
+#### Open questions and risks
+
+- Confirm the real business identity, tax wording, and whether a logo or legally required footer is needed before production invoice use. Any logo must be a reviewed local immutable asset, not a remote URL.
+- PDF generation buffers one bounded invoice in API memory. This is appropriate for the current private system; unusually large invoices or bulk export would require separately authorized queue/storage/retention design.
+- Customers can save downloaded PDFs outside application controls. Operational retention, sharing, and deletion policy still needs to be documented for production.
+- Repository-wide ESLint still reports 14 carried-forward findings in unchanged Command 22 dashboard files (`csv.ts`, `dashboard-period.ts`, and `dashboard-report.service.spec.ts`). All Command 23 files are lint-clean; these unrelated findings were not silently modified under this command.
+- `pnpm audit --prod` continues to report the known high-severity `deepmerge-ts <8.0.0` advisory through the Prisma configuration toolchain. The newly added PDF/font dependency path introduced no additional audit finding. Dependency remediation belongs in the authorized Command 24 hardening pass and must preserve Prisma compatibility.
+- Prisma generation in the generic validation container continues to emit its existing OpenSSL-detection warning, and some E2E suites emit the known pg@9 concurrent-query deprecation and Jest experimental-VM warnings. Builds and tests passed.
+
+#### Recommended next command
+
+Run **Command 24 — Harden Security** only after explicit user authorization. Begin with the known dependency and lint baselines, then verify authentication/session, CSRF, ownership/IDOR, input/output, provider callback/replay, SSRF/redirect, credential/logging, headers/CORS, rate-limit, two-factor, and audit protections with regression tests.
+
 ## Report Template
 
 Use this template after every future command:

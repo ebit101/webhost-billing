@@ -116,3 +116,7 @@ Ticket creation and reply requests require UUID submission keys for exact retry 
 `GET /dashboard` accepts an optional paired `from`/`to` business-date filter and returns a generated timestamp, configured timezone/currency, string-serialized money, current operational counts, a complete daily net-revenue series, and safe recent audit activity. Net collected revenue may be negative; no money value passes through JavaScript floating-point arithmetic.
 
 CSV report routes use administrator-only, CSRF-protected `POST` requests because export creation is audited. They return a raw `text/csv` download rather than the normal JSON success envelope. Error responses continue to use the standard JSON error envelope. See `docs/DASHBOARDS_AND_REPORTS.md` for exact metric, period, field-exclusion, and export rules.
+
+## Invoice PDF downloads
+
+`GET /invoices/:invoiceId/pdf` is available only to administrators and the invoice-owning customer. It returns a raw `application/pdf` attachment generated from the ownership-checked invoice contract; it does not use the JSON success envelope. Drafts return `UNPROCESSABLE_ENTITY`, foreign-customer requests return `FORBIDDEN`, and every error retains the standard JSON envelope. The download is marked private and non-cacheable. See `docs/INVOICES.md` for snapshot, formatting, determinism, and field-exclusion rules.

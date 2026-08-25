@@ -217,6 +217,7 @@ describe('Invoice management (e2e)', () => {
     expect(
       firstResult.invoice.items.map((item) => item.lineTotal.amount),
     ).toEqual(['21850', '5750']);
+    await admin.get(`/invoices/${invoiceId}/pdf`).expect(422);
   });
 
   it('edits only drafts, issues immutable snapshots, and exposes owned detail', async () => {
@@ -308,6 +309,30 @@ describe('Invoice management (e2e)', () => {
     expect(invoice.items[0]?.description).toBe(
       'Final historical hosting description',
     );
+    const customerPdf = await customer
+      .get(`/invoices/${invoiceId}/pdf`)
+      .expect(200)
+      .expect('Content-Type', /application\/pdf/)
+      .expect('Cache-Control', 'private, no-store')
+      .expect('X-Content-Type-Options', 'nosniff');
+    expect(customerPdf.headers['content-disposition']).toMatch(
+      /^attachment; filename="invoice-[A-Z0-9-]+\.pdf"$/,
+    );
+    const customerPdfBody: unknown = customerPdf.body;
+    expect(Buffer.isBuffer(customerPdfBody)).toBe(true);
+    if (!Buffer.isBuffer(customerPdfBody)) {
+      throw new Error('Expected the invoice PDF response to be a Buffer.');
+    }
+    expect(customerPdfBody.subarray(0, 8).toString('ascii')).toBe('%PDF-1.7');
+    expect(customerPdfBody.includes(Buffer.from(invoiceId))).toBe(false);
+
+    const adminPdf = await admin.get(`/invoices/${invoiceId}/pdf`).expect(200);
+    const adminPdfBody: unknown = adminPdf.body;
+    expect(Buffer.isBuffer(adminPdfBody)).toBe(true);
+    if (!Buffer.isBuffer(adminPdfBody)) {
+      throw new Error('Expected the invoice PDF response to be a Buffer.');
+    }
+    expect(adminPdfBody.equals(customerPdfBody)).toBe(true);
     const list = await customer.get('/invoices/my?pageSize=100').expect(200);
     expect(
       paginatedApiSuccessResponseSchema(invoiceSchema)
@@ -321,6 +346,7 @@ describe('Invoice management (e2e)', () => {
     const otherCsrf = await csrfToken(other);
     await login(other, otherCsrf, OTHER_EMAIL);
     await other.get(`/invoices/${invoiceId}`).expect(403);
+    await other.get(`/invoices/${invoiceId}/pdf`).expect(403);
     await other.get('/invoices').expect(403);
 
     const admin = request.agent(app.getHttpServer());

@@ -3,7 +3,11 @@
 import type { Invoice, InvoiceActionRequest } from '@webhost-billing/shared';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { authMutation, authenticatedGet } from '../../lib/auth-api';
+import {
+  authenticatedFile,
+  authenticatedGet,
+  authMutation,
+} from '../../lib/auth-api';
 import { Button, buttonStyles } from '../ui/button';
 import { ErrorState, LoadingState } from '../ui/feedback-state';
 import { Icon } from '../ui/icon';
@@ -23,6 +27,7 @@ export function InvoiceDetail({
   const [invoice, setInvoice] = useState<Invoice>();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -58,6 +63,24 @@ export function InvoiceDetail({
     }
   }
 
+  async function downloadPdf() {
+    setDownloading(true);
+    setError('');
+    try {
+      const download = await authenticatedFile(`/invoices/${invoiceId}/pdf`);
+      const url = URL.createObjectURL(download.blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = download.filename;
+      anchor.click();
+      URL.revokeObjectURL(url);
+    } catch (caught) {
+      setError(invoiceError(caught));
+    } finally {
+      setDownloading(false);
+    }
+  }
+
   if (loading) return <LoadingState label="Loading invoice" />;
   if (error && !invoice) return <ErrorState description={error} />;
   if (!invoice) return <ErrorState description="Invoice was not found." />;
@@ -75,6 +98,16 @@ export function InvoiceDetail({
           ← Back to invoices
         </Link>
         <div className="flex flex-wrap gap-2">
+          {mode !== 'print' && invoice.status !== 'DRAFT' ? (
+            <Button
+              variant="secondary"
+              disabled={downloading}
+              onClick={() => void downloadPdf()}
+            >
+              <Icon name="invoice" className="size-4" />
+              {downloading ? 'Preparing PDF…' : 'Download PDF'}
+            </Button>
+          ) : null}
           {mode === 'admin' && invoice.status === 'DRAFT' ? (
             <Button disabled={saving} onClick={() => void action('ISSUE')}>
               Issue invoice

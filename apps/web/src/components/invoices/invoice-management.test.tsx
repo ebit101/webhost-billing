@@ -95,7 +95,10 @@ const invoice: Invoice = {
   ],
 };
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.restoreAllMocks();
+});
 
 describe('invoice interfaces', () => {
   it('lists customer invoices with status, due date, and balance links', async () => {
@@ -129,6 +132,47 @@ describe('invoice interfaces', () => {
     expect(screen.getByText('BDT 256.00')).toBeTruthy();
     await user.click(screen.getByRole('button', { name: 'Print invoice' }));
     expect(print).toHaveBeenCalledOnce();
+  });
+
+  it('downloads the server-generated PDF from an authorized invoice detail', async () => {
+    const user = userEvent.setup();
+    const createObjectURL = vi.fn(() => 'blob:invoice-pdf');
+    const revokeObjectURL = vi.fn();
+    vi.stubGlobal(
+      'URL',
+      Object.assign(URL, { createObjectURL, revokeObjectURL }),
+    );
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(
+      () => undefined,
+    );
+    const fetchMock = vi.fn((input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.endsWith(`/invoices/${invoiceId}/pdf`)) {
+        return Promise.resolve(
+          new Response(new Blob(['%PDF-1.7']), {
+            headers: {
+              'Content-Type': 'application/pdf',
+              'Content-Disposition':
+                'attachment; filename="invoice-INV-001024.pdf"',
+            },
+          }),
+        );
+      }
+      return Promise.resolve(jsonResponse({ success: true, data: invoice }));
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    render(<InvoiceDetail invoiceId={invoiceId} mode="admin" />);
+    await user.click(
+      await screen.findByRole('button', { name: 'Download PDF' }),
+    );
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining(`/invoices/${invoiceId}/pdf`),
+      expect.objectContaining({ credentials: 'include' }),
+    );
+    expect(createObjectURL).toHaveBeenCalledOnce();
+    expect(revokeObjectURL).toHaveBeenCalledWith('blob:invoice-pdf');
   });
 
   it('loads administrator draft creation and business identity controls', async () => {

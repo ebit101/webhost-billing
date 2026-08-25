@@ -147,6 +147,19 @@ export async function authenticatedDownload(
   return { blob: await response.blob(), filename };
 }
 
+export async function authenticatedFile(
+  path: string,
+): Promise<{ blob: Blob; filename: string }> {
+  const response = await fetch(`${API_URL}${path}`, {
+    credentials: 'include',
+    cache: 'no-store',
+  });
+  if (!response.ok) throw new Error(errorMessage(await responseBody(response)));
+  const disposition = response.headers.get('content-disposition') ?? '';
+  const filename = /filename="([^"]+)"/.exec(disposition)?.[1] ?? 'download';
+  return { blob: await response.blob(), filename };
+}
+
 export async function publicGet<T>(path: string): Promise<T> {
   const response = await fetch(`${API_URL}${path}`, { cache: 'no-store' });
   const body = await responseBody(response);

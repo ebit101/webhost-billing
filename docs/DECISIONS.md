@@ -242,6 +242,14 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** Invoice totals do not prove collected cash, browser redirects do not prove settlement, historical refunds must remain visible, and mixing period metrics with current workflow counts creates misleading comparisons. CSV is sufficient for this private business without introducing a data warehouse or BI subsystem.
 - **Consequence:** Cancelled/draft invoices and non-successful payments are excluded by state; successful refunds/reversals subtract without rewriting charges. Monetary JSON remains string-serialized integer minor units, including signed net revenue. The dashboard mixes no currencies and exposes freshness/timezone. Report creation is a CSRF-protected mutation with a safe audit record; secrets, proof/provider payloads, tax identifiers, and control-panel credentials are never exported. Historical multi-currency analysis, scheduled reports, forecasting, tax reports, and general report builders remain outside the MVP.
 
+## ADR-031 — Deterministic PDFs From Authorized Invoice Snapshots
+
+- **Status:** Accepted
+- **Date:** 2026-08-25
+- **Decision:** Generate invoice PDFs synchronously in the API from the ownership-checked serialized invoice contract. Reject drafts, embed local Latin/Bengali fonts, derive metadata dates from persisted invoice timestamps, and keep the renderer free of clock, random, network, and internal-identifier inputs.
+- **Reason:** Customers and administrators need a stable printable artifact whose financial values match the authoritative invoice. Remote assets, browser-only rendering, or database identifiers would weaken reproducibility, privacy, and operational reliability.
+- **Consequence:** The same serialized invoice produces byte-identical PDF bytes. Issued identity/items stay historically fixed, while legitimate append-only payments, credits, refunds, and status changes appear when the current invoice is downloaded. The raw private response contains human-facing invoice/order numbers only; customer ownership remains enforced before rendering, and editable drafts have no downloadable PDF.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:
