@@ -38,9 +38,7 @@ export class SmtpEmailAdapter implements EmailAdapter {
 
   async send(message: EmailSendRequest): Promise<EmailSendResult> {
     try {
-      const result = await this.transporter.sendMail(
-        mailOptions(message, this.environment),
-      );
+      const result = await this.transporter.sendMail(mailOptions(message));
       if (!result.messageId || result.rejected.length > 0) {
         throw new EmailProviderError('PERMANENT', 'SMTP_RECIPIENT_REJECTED');
       }
@@ -69,7 +67,7 @@ export class PreviewEmailAdapter implements EmailAdapter {
 
   async send(message: EmailSendRequest): Promise<EmailSendResult> {
     const result: unknown = await this.transporter.sendMail(
-      mailOptions(message, this.environment),
+      mailOptions(message),
     );
     if (!isRecord(result) || !Buffer.isBuffer(result.message)) {
       throw new EmailProviderError(
@@ -112,19 +110,14 @@ export class PreviewEmailAdapter implements EmailAdapter {
   }
 }
 
-function mailOptions(
-  message: EmailSendRequest,
-  environment: WorkerEnvironment,
-) {
+function mailOptions(message: EmailSendRequest) {
   return {
     from: {
-      name: environment.EMAIL_FROM_NAME,
-      address: environment.EMAIL_FROM_ADDRESS,
+      name: message.fromName,
+      address: message.fromAddress,
     },
     to: message.recipientEmail,
-    ...(environment.EMAIL_REPLY_TO_ADDRESS
-      ? { replyTo: environment.EMAIL_REPLY_TO_ADDRESS }
-      : {}),
+    ...(message.replyToAddress ? { replyTo: message.replyToAddress } : {}),
     subject: message.subject,
     text: message.text,
     html: message.html,

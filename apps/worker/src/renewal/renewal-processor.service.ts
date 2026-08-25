@@ -1,4 +1,3 @@
-import { randomBytes } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
 import {
   AutomationStatus,
@@ -26,6 +25,7 @@ import {
   businessDate,
   isOnOrAfter,
 } from './renewal-calendar';
+import { allocateInvoiceNumber } from './invoice-number';
 
 type Counters = { processed: number; succeeded: number; failed: number };
 
@@ -181,7 +181,7 @@ export class RenewalProcessorService {
         const paid = amount === 0n;
         const invoice = await transaction.invoice.create({
           data: {
-            invoiceNumber: invoiceNumber(now),
+            invoiceNumber: await allocateInvoiceNumber(transaction),
             submissionKey: `renewal:${service.id}:${periodStart.toISOString()}`,
             customerId: service.customerId,
             status: paid ? InvoiceStatus.PAID : InvoiceStatus.UNPAID,
@@ -605,11 +605,6 @@ function normalizeBusinessIdentity(value: unknown) {
     if (typeof name === 'string' && name.trim()) return { name: name.trim() };
   }
   return { name: PROJECT_NAME };
-}
-
-function invoiceNumber(now: Date): string {
-  const date = now.toISOString().slice(0, 10).replaceAll('-', '');
-  return `INV-${date}-${randomBytes(8).toString('hex').toUpperCase()}`;
 }
 
 function isUniqueConstraint(error: unknown): boolean {

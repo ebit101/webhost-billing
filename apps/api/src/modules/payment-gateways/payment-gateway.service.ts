@@ -66,8 +66,8 @@ export class PaymentGatewayService {
     private readonly gateways: PaymentGatewayRegistry,
   ) {}
 
-  listGateways(): PaymentGatewayDescriptor[] {
-    return this.gateways.list().map((gateway) =>
+  async listGateways(): Promise<PaymentGatewayDescriptor[]> {
+    return (await this.gateways.list()).map((gateway) =>
       paymentGatewayDescriptorSchema.parse({
         key: gateway.key,
         displayName: gateway.displayName,
@@ -105,7 +105,7 @@ export class PaymentGatewayService {
     input: CreatePaymentSessionRequest,
     actor: AuthRequestContext,
   ): Promise<PaymentSession> {
-    const gateway = this.gateways.get(provider);
+    const gateway = await this.gateways.get(provider, true);
     const idempotencyKey = `gateway-session:${provider}:${input.submissionKey}`;
     let duplicate = false;
     let payment = await this.findSessionPayment(idempotencyKey);
@@ -284,7 +284,7 @@ export class PaymentGatewayService {
     rawBody: Buffer,
     signature: string,
   ): Promise<PaymentWebhookResult> {
-    const gateway = this.gateways.get(provider);
+    const gateway = await this.gateways.get(provider);
     if (rawBody.length === 0 || rawBody.length > MAX_WEBHOOK_BYTES) {
       throw this.webhookRejected('Webhook body is missing or too large.');
     }
@@ -491,7 +491,7 @@ export class PaymentGatewayService {
     providerSessionId: string,
     callbackStatus: string,
   ): Promise<{ invoiceId: string }> {
-    const gateway = this.gateways.get('bkash');
+    const gateway = await this.gateways.get('bkash');
     const payment = await this.prisma.payment.findFirst({
       where: { provider: gateway.key, reference: providerSessionId },
       select: {
@@ -560,7 +560,7 @@ export class PaymentGatewayService {
     paymentId: string,
     actor: AuthRequestContext,
   ): Promise<PaymentWebhookResult> {
-    const gateway = this.gateways.get(provider);
+    const gateway = await this.gateways.get(provider);
     const payment = await this.prisma.payment.findUnique({
       where: { id: paymentId },
       select: {

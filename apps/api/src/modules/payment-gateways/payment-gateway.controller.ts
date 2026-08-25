@@ -48,8 +48,8 @@ export class PaymentGatewayController {
 
   @Get()
   @Roles('ADMIN', 'CUSTOMER')
-  listGateways() {
-    return createApiSuccessResponse(this.payments.listGateways());
+  async listGateways() {
+    return createApiSuccessResponse(await this.payments.listGateways());
   }
 
   @Get('failures')

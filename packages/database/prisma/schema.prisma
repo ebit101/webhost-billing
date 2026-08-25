@@ -185,29 +185,30 @@ enum OutboxStatus {
 }
 
 model User {
-  id                      String                   @id @default(uuid()) @db.Uuid
-  email                   String                   @unique(map: "users_email_key") @db.VarChar(320)
-  passwordHash            String?                  @map("password_hash") @db.VarChar(255)
-  role                    UserRole
-  status                  UserStatus               @default(PENDING_VERIFICATION)
-  emailVerifiedAt         DateTime?                @map("email_verified_at") @db.Timestamptz(3)
-  lastLoginAt             DateTime?                @map("last_login_at") @db.Timestamptz(3)
-  createdAt               DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt               DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(3)
-  deletedAt               DateTime?                @map("deleted_at") @db.Timestamptz(3)
-  customer                Customer?
-  adminProfile            AdminProfile?
-  paymentsCreated         Payment[]                @relation("PaymentCreatedBy")
-  paymentsReviewed        Payment[]                @relation("PaymentReviewedBy")
-  ticketsAssigned         Ticket[]                 @relation("TicketAssignedAdmin")
-  ticketMessages          TicketMessage[]
-  activityLogs            ActivityLog[]            @relation("ActivityActor")
-  settingsUpdated         Setting[]                @relation("SettingUpdatedBy")
-  servicesTerminated      Service[]                @relation("ServiceTerminatedBy")
-  hostingPanelOperations  HostingPanelOperation[]  @relation("HostingOperationRequestedBy")
-  authSessions            AuthSession[]
-  passwordResetTokens     PasswordResetToken[]
-  emailVerificationTokens EmailVerificationToken[]
+  id                            String                   @id @default(uuid()) @db.Uuid
+  email                         String                   @unique(map: "users_email_key") @db.VarChar(320)
+  passwordHash                  String?                  @map("password_hash") @db.VarChar(255)
+  role                          UserRole
+  status                        UserStatus               @default(PENDING_VERIFICATION)
+  emailVerifiedAt               DateTime?                @map("email_verified_at") @db.Timestamptz(3)
+  lastLoginAt                   DateTime?                @map("last_login_at") @db.Timestamptz(3)
+  createdAt                     DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                     DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt                     DateTime?                @map("deleted_at") @db.Timestamptz(3)
+  customer                      Customer?
+  adminProfile                  AdminProfile?
+  paymentsCreated               Payment[]                @relation("PaymentCreatedBy")
+  paymentsReviewed              Payment[]                @relation("PaymentReviewedBy")
+  ticketsAssigned               Ticket[]                 @relation("TicketAssignedAdmin")
+  ticketMessages                TicketMessage[]
+  activityLogs                  ActivityLog[]            @relation("ActivityActor")
+  settingsUpdated               Setting[]                @relation("SettingUpdatedBy")
+  integrationCredentialsUpdated IntegrationCredential[]  @relation("IntegrationCredentialUpdatedBy")
+  servicesTerminated            Service[]                @relation("ServiceTerminatedBy")
+  hostingPanelOperations        HostingPanelOperation[]  @relation("HostingOperationRequestedBy")
+  authSessions                  AuthSession[]
+  passwordResetTokens           PasswordResetToken[]
+  emailVerificationTokens       EmailVerificationToken[]
 
   @@index([role, status], map: "users_role_status_idx")
   @@index([deletedAt], map: "users_deleted_at_idx")
@@ -786,6 +787,21 @@ model Setting {
 
   @@index([category], map: "settings_category_idx")
   @@map("settings")
+}
+
+model IntegrationCredential {
+  id               String   @id @default(uuid()) @db.Uuid
+  providerKey      String   @unique(map: "integration_credentials_provider_key_key") @map("provider_key") @db.VarChar(64)
+  ciphertext       String   @db.Text
+  keyVersion       String   @map("key_version") @db.VarChar(64)
+  maskedIdentifier String   @map("masked_identifier") @db.VarChar(200)
+  updatedByUserId  String   @map("updated_by_user_id") @db.Uuid
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  updatedBy        User     @relation("IntegrationCredentialUpdatedBy", fields: [updatedByUserId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([updatedByUserId], map: "integration_credentials_updated_by_user_id_idx")
+  @@map("integration_credentials")
 }
 
 model OutboxEvent {

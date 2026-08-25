@@ -74,6 +74,8 @@ describe('email provider adapters', () => {
         subject: 'Verify your email',
         text: 'Plain text fallback',
         html: '<p>Safe HTML</p>',
+        fromAddress: 'no-reply@example.test',
+        fromName: 'Webhost Billing',
         messageId: '<outbox.test@example.test>',
       });
       const files = await readdir(directory);

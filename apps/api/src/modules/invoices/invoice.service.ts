@@ -28,7 +28,7 @@ import {
   type UpdateDraftInvoiceRequest,
 } from '@webhost-billing/shared';
 import { ApplicationException } from '../../common/errors/application.exception';
-import { createHumanReadableNumber } from '../../common/identifiers/business-number';
+import { allocateInvoiceNumber } from '../../common/identifiers/invoice-number';
 import type { SecurityRequestContext } from '../../common/http/request-context';
 import { PRISMA_CLIENT } from '../../infrastructure/database/database.module';
 import type { AuthRequestContext } from '../auth/auth.types';
@@ -273,7 +273,7 @@ export class InvoiceService {
         });
         const invoice = await transaction.invoice.create({
           data: {
-            invoiceNumber: createHumanReadableNumber('INV'),
+            invoiceNumber: await allocateInvoiceNumber(transaction),
             submissionKey: input.submissionKey,
             customerId: customer.id,
             status: InvoiceStatus.DRAFT,

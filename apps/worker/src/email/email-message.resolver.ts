@@ -5,6 +5,7 @@ import { BackgroundJobError } from '@webhost-billing/queue';
 import {
   emailOutboxEventTypeSchema,
   parseEmailEventPayload,
+  emailBrandingSettingsSchema,
   type BackgroundJobData,
   type EmailOutboxEventType,
 } from '@webhost-billing/shared';
@@ -20,7 +21,8 @@ import type {
 
 @Injectable()
 export class EmailMessageResolver {
-  private readonly branding: EmailBranding;
+  private branding: EmailBranding;
+  private readonly fallbackBranding: EmailBranding;
   private readonly tokenCipher: DeliveryTokenCipher;
 
   constructor(
@@ -31,7 +33,7 @@ export class EmailMessageResolver {
     this.tokenCipher = new DeliveryTokenCipher(
       environment.CREDENTIAL_ENCRYPTION_KEY,
     );
-    this.branding = {
+    this.fallbackBranding = {
       brandName: environment.EMAIL_BRAND_NAME,
       brandColor: environment.EMAIL_BRAND_COLOR,
       fromAddress: environment.EMAIL_FROM_ADDRESS,
@@ -41,9 +43,11 @@ export class EmailMessageResolver {
         : {}),
       publicWebUrl: environment.EMAIL_PUBLIC_WEB_URL,
     };
+    this.branding = this.fallbackBranding;
   }
 
   async resolve(data: BackgroundJobData): Promise<ResolvedEmailMessage> {
+    this.branding = await this.loadBranding();
     const event = await this.prisma.outboxEvent.findUnique({
       where: { id: data.outboxEventId },
     });
@@ -372,6 +376,11 @@ export class EmailMessageResolver {
       templateKey: model.key,
       recipientEmail,
       ...rendered,
+      fromAddress: this.branding.fromAddress,
+      fromName: this.branding.fromName,
+      ...(this.branding.replyToAddress
+        ? { replyToAddress: this.branding.replyToAddress }
+        : {}),
       ...(customerId ? { customerId } : {}),
       ...(invoiceId ? { invoiceId } : {}),
       ...(ticketId ? { ticketId } : {}),
@@ -387,6 +396,21 @@ export class EmailMessageResolver {
       url.searchParams.set(key, value);
     }
     return url.toString();
+  }
+
+  private async loadBranding(): Promise<EmailBranding> {
+    const setting = await this.prisma.setting.findUnique({
+      where: { key: 'email.branding' },
+      select: { value: true },
+    });
+    const parsed = emailBrandingSettingsSchema.safeParse(setting?.value);
+    if (!parsed.success) return this.fallbackBranding;
+    const { replyToAddress, ...branding } = parsed.data;
+    return {
+      ...branding,
+      ...(replyToAddress ? { replyToAddress } : {}),
+      publicWebUrl: this.fallbackBranding.publicWebUrl,
+    };
   }
 }
 

@@ -19,6 +19,7 @@ import {
 } from './payment-http.client';
 import { majorToMinor, minorToMajor } from './payment-money';
 import { PaymentProviderError } from './payment-provider.error';
+import { IntegrationCredentialService } from '../settings/integration-credential.service';
 
 const sessionSchema = z
   .object({
@@ -94,17 +95,19 @@ export class SslCommerzPaymentGateway implements PaymentGateway {
   constructor(
     @Inject(API_ENVIRONMENT) private readonly environment: ApiEnvironment,
     @Inject(PAYMENT_HTTP_CLIENT) private readonly http: PaymentHttpClient,
+    private readonly credentials: IntegrationCredentialService,
   ) {}
 
   async createPaymentSession(
     input: CreateGatewaySessionInput,
   ): Promise<GatewayPaymentSession> {
     this.assertSupported(input.amount, input.currency);
+    const credentials = await this.providerCredentials();
     const transactionId = this.transactionId(input.idempotencyKey);
     const callbacks = `${this.environment.API_PUBLIC_ORIGIN}/payment-gateways/sslcommerz`;
     const body = new URLSearchParams({
-      store_id: this.storeId(),
-      store_passwd: this.storePassword(),
+      store_id: credentials.storeId,
+      store_passwd: credentials.storePassword,
       total_amount: minorToMajor(input.amount),
       currency: 'BDT',
       tran_id: transactionId,
@@ -160,12 +163,13 @@ export class SslCommerzPaymentGateway implements PaymentGateway {
     signature: string,
   ): Promise<boolean> {
     void signature;
+    const credentials = await this.providerCredentials();
     const ipnResult = ipnSchema.safeParse(
       Object.fromEntries(new URLSearchParams(rawBody.toString('utf8'))),
     );
     if (
       !ipnResult.success ||
-      ipnResult.data.store_id !== this.storeId() ||
+      ipnResult.data.store_id !== credentials.storeId ||
       !['VALID', 'VALIDATED'].includes(ipnResult.data.status.toUpperCase())
     ) {
       return false;
@@ -175,8 +179,8 @@ export class SslCommerzPaymentGateway implements PaymentGateway {
     );
     url.search = new URLSearchParams({
       val_id: ipnResult.data.val_id,
-      store_id: this.storeId(),
-      store_passwd: this.storePassword(),
+      store_id: credentials.storeId,
+      store_passwd: credentials.storePassword,
       format: 'json',
       v: '1',
     }).toString();
@@ -243,13 +247,14 @@ export class SslCommerzPaymentGateway implements PaymentGateway {
   async queryTransactionStatus(
     transactionId: string,
   ): Promise<GatewayTransactionStatus> {
+    const credentials = await this.providerCredentials();
     const url = new URL(
       'https://sandbox.sslcommerz.com/validator/api/merchantTransIDvalidationAPI.php',
     );
     url.search = new URLSearchParams({
       tran_id: transactionId,
-      store_id: this.storeId(),
-      store_passwd: this.storePassword(),
+      store_id: credentials.storeId,
+      store_passwd: credentials.storePassword,
       format: 'json',
     }).toString();
     const response = await this.http.request({
@@ -308,24 +313,12 @@ export class SslCommerzPaymentGateway implements PaymentGateway {
     return createHash('sha256').update(rawBody).digest('hex');
   }
 
-  private storeId(): string {
-    if (
-      !this.environment.SSLCOMMERZ_ENABLED ||
-      !this.environment.SSLCOMMERZ_STORE_ID
-    ) {
+  private async providerCredentials() {
+    const credentials = await this.credentials.sslCommerz();
+    if (!credentials) {
       throw this.failure('SSLCOMMERZ sandbox is not configured.');
     }
-    return this.environment.SSLCOMMERZ_STORE_ID;
-  }
-
-  private storePassword(): string {
-    if (
-      !this.environment.SSLCOMMERZ_ENABLED ||
-      !this.environment.SSLCOMMERZ_STORE_PASSWORD
-    ) {
-      throw this.failure('SSLCOMMERZ sandbox is not configured.');
-    }
-    return this.environment.SSLCOMMERZ_STORE_PASSWORD;
+    return credentials.value;
   }
 
   private assertSupported(amount: bigint, currency: string): void {

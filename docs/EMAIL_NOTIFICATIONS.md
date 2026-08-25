@@ -29,6 +29,8 @@ Development defaults to `EMAIL_TRANSPORT=preview`. This produces RFC-compatible 
 
 Production refuses preview delivery and non-HTTPS public links. SMTP requires a host, a valid port, certificate-validated TLS 1.2 or newer, and either implicit TLS or required STARTTLS. Username and password must be supplied together when authentication is used. Keep credentials in the deployment secret store and never commit them.
 
+Command 21 moves non-secret email branding and sender/reply-to identity into typed business settings. The worker reloads and validates that branding for each resolved outbox message. SMTP host authentication remains deployment-managed and is not returned through the settings API.
+
 No live SMTP credential is configured by this command and no external message was sent during development validation.
 
 ## Rendering and secret boundary

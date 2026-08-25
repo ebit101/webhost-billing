@@ -26,6 +26,7 @@ import { ApplicationException } from '../../common/errors/application.exception'
 import type { SecurityRequestContext } from '../../common/http/request-context';
 import { PRISMA_CLIENT } from '../../infrastructure/database/database.module';
 import type { AuthRequestContext } from '../auth/auth.types';
+import { SettingsService } from '../settings/settings.service';
 import { nextServiceDueAt } from './service-period';
 
 const serviceInclude = {
@@ -59,7 +60,10 @@ export function isServiceTransitionAllowed(
 
 @Injectable()
 export class ServiceService {
-  constructor(@Inject(PRISMA_CLIENT) private readonly prisma: PrismaClient) {}
+  constructor(
+    @Inject(PRISMA_CLIENT) private readonly prisma: PrismaClient,
+    private readonly settings: SettingsService,
+  ) {}
 
   async list(query: ServiceListQuery): Promise<{
     data: Service[];
@@ -128,9 +132,14 @@ export class ServiceService {
   }
 
   async setupOptions(): Promise<ServiceSetupOptions> {
+    const activeAdapter = await this.settings.activeHostingPanelAdapter();
     const [servers, orderItems] = await this.prisma.$transaction([
       this.prisma.server.findMany({
-        where: { status: ServerStatus.ACTIVE, deletedAt: null },
+        where: {
+          status: ServerStatus.ACTIVE,
+          adapterKey: activeAdapter,
+          deletedAt: null,
+        },
         orderBy: [{ name: 'asc' }, { id: 'asc' }],
       }),
       this.prisma.orderItem.findMany({
@@ -173,6 +182,7 @@ export class ServiceService {
     actor: AuthRequestContext,
     context: SecurityRequestContext,
   ): Promise<ServiceCreationResult> {
+    const activeAdapter = await this.settings.activeHostingPanelAdapter();
     const duplicate = await this.prisma.service.findUnique({
       where: { orderItemId: input.orderItemId },
       include: serviceInclude,
@@ -216,6 +226,7 @@ export class ServiceService {
         const server = await transaction.server.findFirst({
           where: {
             id: input.serverId,
+            adapterKey: activeAdapter,
             status: ServerStatus.ACTIVE,
             deletedAt: null,
           },

@@ -19,6 +19,11 @@ import {
 } from './payment-http.client';
 import { minorToMajor, majorToMinor } from './payment-money';
 import { PaymentProviderError } from './payment-provider.error';
+import {
+  IntegrationCredentialService,
+  type ResolvedCredentials,
+} from '../settings/integration-credential.service';
+import type { BkashCredentials } from '@webhost-billing/shared';
 
 const tokenSchema = z
   .object({
@@ -51,6 +56,7 @@ const transactionSchema = z
 interface CachedToken {
   value: string;
   expiresAt: number;
+  credentialRevision: string;
 }
 
 @Injectable()
@@ -64,6 +70,7 @@ export class BkashPaymentGateway implements PaymentGateway {
   constructor(
     @Inject(API_ENVIRONMENT) private readonly environment: ApiEnvironment,
     @Inject(PAYMENT_HTTP_CLIENT) private readonly http: PaymentHttpClient,
+    private readonly credentials: IntegrationCredentialService,
   ) {}
 
   async createPaymentSession(
@@ -169,16 +176,23 @@ export class BkashPaymentGateway implements PaymentGateway {
   }
 
   private async authenticatedHeaders(): Promise<Record<string, string>> {
+    const credentials = await this.providerCredentials();
     return {
       accept: 'application/json',
       'content-type': 'application/json',
-      authorization: await this.accessToken(),
-      'x-app-key': this.credential('BKASH_APP_KEY'),
+      authorization: await this.accessToken(credentials),
+      'x-app-key': credentials.value.appKey,
     };
   }
 
-  private async accessToken(): Promise<string> {
-    if (this.token && this.token.expiresAt > Date.now() + 60_000) {
+  private async accessToken(
+    credentials: ResolvedCredentials<BkashCredentials>,
+  ): Promise<string> {
+    if (
+      this.token &&
+      this.token.credentialRevision === credentials.revision &&
+      this.token.expiresAt > Date.now() + 60_000
+    ) {
       return this.token.value;
     }
     const response = await this.http.request({
@@ -187,12 +201,12 @@ export class BkashPaymentGateway implements PaymentGateway {
       headers: {
         accept: 'application/json',
         'content-type': 'application/json',
-        username: this.credential('BKASH_USERNAME'),
-        password: this.credential('BKASH_PASSWORD'),
+        username: credentials.value.username,
+        password: credentials.value.password,
       },
       body: JSON.stringify({
-        app_key: this.credential('BKASH_APP_KEY'),
-        app_secret: this.credential('BKASH_APP_SECRET'),
+        app_key: credentials.value.appKey,
+        app_secret: credentials.value.appSecret,
       }),
       timeoutMs: this.environment.PAYMENT_PROVIDER_TIMEOUT_MS,
       retries: 1,
@@ -204,6 +218,7 @@ export class BkashPaymentGateway implements PaymentGateway {
     this.token = {
       value: token.id_token,
       expiresAt: Date.now() + token.expires_in * 1000,
+      credentialRevision: credentials.revision,
     };
     return token.id_token;
   }
@@ -271,18 +286,14 @@ export class BkashPaymentGateway implements PaymentGateway {
     return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
   }
 
-  private credential(
-    key:
-      | 'BKASH_APP_KEY'
-      | 'BKASH_APP_SECRET'
-      | 'BKASH_USERNAME'
-      | 'BKASH_PASSWORD',
-  ): string {
-    const value = this.environment[key];
-    if (!this.environment.BKASH_ENABLED || !value) {
+  private async providerCredentials(): Promise<
+    ResolvedCredentials<BkashCredentials>
+  > {
+    const credentials = await this.credentials.bkash();
+    if (!credentials) {
       throw this.providerFailure('bKash sandbox is not configured.');
     }
-    return value;
+    return credentials;
   }
 
   private assertBdt(currency: string): void {

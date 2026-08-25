@@ -198,7 +198,7 @@ describe('Invoice management (e2e)', () => {
       .send({ ...body, items: [...body.items].reverse() })
       .expect(409);
     expect(firstResult.invoice.invoiceNumber).toMatch(
-      /^INV-\d{8}-[0-9A-F]{16}$/,
+      /^[A-Z][A-Z0-9]{1,9}-\d{4,12}$/,
     );
     expect(firstResult.invoice).toMatchObject({
       status: 'DRAFT',

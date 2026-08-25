@@ -105,6 +105,8 @@ SSLCOMMERZ_STORE_PASSWORD=replace-with-sandbox-value
 
 Keep populated values only in an ignored runtime `.env` or deployment secret store. Never commit them. `API_PUBLIC_ORIGIN` must be an externally reachable, credential-free HTTPS origin for provider callbacks; local-only origins require a deliberate secure tunnel during sandbox testing. The application refuses incomplete enabled configurations and refuses a bKash base URL other than the pinned official sandbox API base.
 
+Command 21 also supports administrator-managed encrypted bKash and SSLCOMMERZ bundles. A stored bundle takes precedence over the environment fallback, and only the active configured gateway is offered for new checkout sessions. Existing callbacks and reconciliation can still resolve an inactive configured provider. See `docs/SETTINGS_AND_SECRETS.md` for masking and rotation procedures.
+
 No automated test calls either provider. Provider-contract tests use a mocked HTTP boundary and fictional credentials. For a deliberate manual sandbox test, first obtain sandbox credentials from each provider, configure public callback reachability, use only the provider's published sandbox test identity, create a fictional BDT invoice, and verify the payment only through the administrator ledger/provider sandbox portal. Do not substitute production credentials.
 
 ## Timeouts, retries, and reconciliation

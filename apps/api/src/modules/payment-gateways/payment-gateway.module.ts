@@ -9,8 +9,10 @@ import {
   PAYMENT_HTTP_CLIENT,
 } from './payment-http.client';
 import { SslCommerzPaymentGateway } from './sslcommerz-payment.gateway';
+import { SettingsModule } from '../settings/settings.module';
 
 @Module({
+  imports: [SettingsModule],
   controllers: [PaymentGatewayController],
   providers: [
     FakePaymentGateway,

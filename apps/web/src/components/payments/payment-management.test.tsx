@@ -128,6 +128,15 @@ describe('manual payment interfaces', () => {
       .fn()
       .mockResolvedValueOnce(paginatedResponse([]))
       .mockResolvedValueOnce(
+        jsonResponse({
+          success: true,
+          data: {
+            partialPaymentsEnabled: false,
+            instructions: 'Use the fictional bank account.',
+          },
+        }),
+      )
+      .mockResolvedValueOnce(
         jsonResponse({ success: true, data: { csrfToken: 'x'.repeat(32) } }),
       )
       .mockResolvedValueOnce(
@@ -162,7 +171,8 @@ describe('manual payment interfaces', () => {
         'Payment reference submitted for administrator verification.',
       ),
     ).toBeTruthy();
-    const mutation = fetchMock.mock.calls[2];
+    expect(screen.getByText('Use the fictional bank account.')).toBeTruthy();
+    const mutation = fetchMock.mock.calls[3];
     expect(mutation?.[0]).toContain('/payments/manual/customer');
     const options = mutation?.[1] as RequestInit;
     const body = JSON.parse(String(options.body)) as Record<string, unknown>;

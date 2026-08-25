@@ -2,6 +2,7 @@ import type { ApiEnvironment } from '@webhost-billing/config';
 import { BkashPaymentGateway } from './bkash-payment.gateway';
 import type { PaymentHttpClient } from './payment-http.client';
 import { PaymentProviderError } from './payment-provider.error';
+import type { IntegrationCredentialService } from '../settings/integration-credential.service';
 
 const environment = {
   NODE_ENV: 'test',
@@ -27,6 +28,18 @@ const environment = {
   EMAIL_VERIFICATION_TTL_SECONDS: 86_400,
   AUTH_RATE_LIMIT_NAMESPACE: 'test',
 } satisfies ApiEnvironment;
+
+const credentials = {
+  bkash: jest.fn().mockResolvedValue({
+    value: {
+      appKey: 'sandbox-app-key',
+      appSecret: 'sandbox-app-secret',
+      username: 'sandbox-user',
+      password: 'sandbox-password',
+    },
+    revision: 'test-credentials',
+  }),
+} as unknown as IntegrationCredentialService;
 
 const input = {
   paymentId: '10000000-0000-4000-8000-000000000001',
@@ -65,7 +78,11 @@ describe('BkashPaymentGateway provider contract', () => {
           bKashURL: 'https://sandbox.payment.bkash.com/checkout/test',
         },
       });
-    const gateway = new BkashPaymentGateway(environment, { request });
+    const gateway = new BkashPaymentGateway(
+      environment,
+      { request },
+      credentials,
+    );
 
     await expect(gateway.createPaymentSession(input)).resolves.toMatchObject({
       providerSessionId: 'TR0011PGW20260825',
@@ -100,7 +117,11 @@ describe('BkashPaymentGateway provider contract', () => {
           completedTime: '2026-08-25T10:00:00.000Z',
         },
       });
-    const gateway = new BkashPaymentGateway(environment, { request });
+    const gateway = new BkashPaymentGateway(
+      environment,
+      { request },
+      credentials,
+    );
     const event = await gateway.completePaymentSession({
       providerSessionId: 'TR0011PGW20260825',
       paymentId: input.paymentId,
@@ -131,7 +152,11 @@ describe('BkashPaymentGateway provider contract', () => {
         body: { id_token: 'sandbox-token', expires_in: 3600 },
       })
       .mockResolvedValueOnce({ status: 503, body: null });
-    const gateway = new BkashPaymentGateway(environment, { request });
+    const gateway = new BkashPaymentGateway(
+      environment,
+      { request },
+      credentials,
+    );
     await expect(gateway.createPaymentSession(input)).rejects.toMatchObject({
       outcome: 'UNKNOWN',
     });
@@ -161,9 +186,13 @@ describe('BkashPaymentGateway provider contract', () => {
           currency: 'BDT',
         },
       });
-    const gateway = new BkashPaymentGateway(environment, {
-      request,
-    } satisfies PaymentHttpClient);
+    const gateway = new BkashPaymentGateway(
+      environment,
+      {
+        request,
+      } satisfies PaymentHttpClient,
+      credentials,
+    );
     const event = await gateway.completePaymentSession({
       providerSessionId: 'TR0011PGW20260825',
       paymentId: input.paymentId,

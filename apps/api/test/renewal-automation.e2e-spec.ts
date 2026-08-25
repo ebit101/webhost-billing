@@ -33,7 +33,7 @@ describe('Renewal automation administration (e2e)', () => {
   let app: INestApplication<App>;
   let moduleFixture: TestingModule;
   let prisma: PrismaClient;
-  let originalSetting: {
+  type StoredSetting = {
     category:
       | 'BUSINESS'
       | 'BILLING'
@@ -44,7 +44,9 @@ describe('Renewal automation administration (e2e)', () => {
     value: Prisma.JsonValue;
     description: string | null;
     updatedByUserId: string | null;
-  } | null = null;
+  };
+  let originalSetting: StoredSetting | null = null;
+  let originalLocalization: StoredSetting | null = null;
 
   beforeAll(async () => {
     moduleFixture = await Test.createTestingModule({ imports: [AppModule] })
@@ -56,6 +58,15 @@ describe('Renewal automation administration (e2e)', () => {
     prisma = moduleFixture.get(PRISMA_CLIENT);
     originalSetting = await prisma.setting.findUnique({
       where: { key: POLICY_KEY },
+      select: {
+        category: true,
+        value: true,
+        description: true,
+        updatedByUserId: true,
+      },
+    });
+    originalLocalization = await prisma.setting.findUnique({
+      where: { key: 'business.localization' },
       select: {
         category: true,
         value: true,
@@ -112,6 +123,22 @@ describe('Renewal automation administration (e2e)', () => {
       });
     } else {
       await prisma.setting.deleteMany({ where: { key: POLICY_KEY } });
+    }
+    if (originalLocalization) {
+      await prisma.setting.update({
+        where: { key: 'business.localization' },
+        data: {
+          ...originalLocalization,
+          value:
+            originalLocalization.value === null
+              ? Prisma.JsonNull
+              : originalLocalization.value,
+        },
+      });
+    } else {
+      await prisma.setting.deleteMany({
+        where: { key: 'business.localization' },
+      });
     }
     await cleanupUsers();
     await app.close();

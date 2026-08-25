@@ -67,6 +67,9 @@ export interface ResolvedEmailMessage {
   subject: string;
   text: string;
   html: string;
+  fromAddress: string;
+  fromName: string;
+  replyToAddress?: string;
   customerId?: string;
   invoiceId?: string;
   ticketId?: string;

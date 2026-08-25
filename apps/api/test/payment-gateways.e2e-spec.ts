@@ -10,6 +10,8 @@ import {
   InvoiceStatus,
   PaymentEventStatus,
   PaymentStatus,
+  Prisma,
+  SettingCategory,
   UserRole,
   UserStatus,
   type PrismaClient,
@@ -41,6 +43,18 @@ describe('Payment gateways (e2e)', () => {
   let customerId = '';
   let customer: ReturnType<typeof request.agent>;
   let csrf = '';
+  let originalProviderSetting: {
+    category:
+      | 'BUSINESS'
+      | 'BILLING'
+      | 'AUTOMATION'
+      | 'EMAIL'
+      | 'INTEGRATION'
+      | 'SECURITY';
+    value: Prisma.JsonValue;
+    description: string | null;
+    updatedByUserId: string | null;
+  } | null = null;
 
   beforeAll(async () => {
     moduleFixture = await Test.createTestingModule({ imports: [AppModule] })
@@ -52,6 +66,33 @@ describe('Payment gateways (e2e)', () => {
     prisma = moduleFixture.get(PRISMA_CLIENT);
     gateway = moduleFixture.get(FakePaymentGateway);
     await cleanup();
+    originalProviderSetting = await prisma.setting.findUnique({
+      where: { key: 'integration.active-providers' },
+      select: {
+        category: true,
+        value: true,
+        description: true,
+        updatedByUserId: true,
+      },
+    });
+    await prisma.setting.upsert({
+      where: { key: 'integration.active-providers' },
+      update: {
+        category: SettingCategory.INTEGRATION,
+        value: {
+          activeGateway: 'fake',
+          activeHostingPanelAdapter: 'fake-panel',
+        },
+      },
+      create: {
+        key: 'integration.active-providers',
+        category: SettingCategory.INTEGRATION,
+        value: {
+          activeGateway: 'fake',
+          activeHostingPanelAdapter: 'fake-panel',
+        },
+      },
+    });
     const passwords = moduleFixture.get(PasswordHasherService);
     const passwordHash = await passwords.hash(PASSWORD);
     const user = await prisma.user.create({
@@ -333,6 +374,22 @@ describe('Payment gateways (e2e)', () => {
 
   afterAll(async () => {
     if (prisma) await cleanup();
+    if (prisma && originalProviderSetting) {
+      await prisma.setting.update({
+        where: { key: 'integration.active-providers' },
+        data: {
+          ...originalProviderSetting,
+          value:
+            originalProviderSetting.value === null
+              ? Prisma.JsonNull
+              : originalProviderSetting.value,
+        },
+      });
+    } else if (prisma) {
+      await prisma.setting.deleteMany({
+        where: { key: 'integration.active-providers' },
+      });
+    }
     if (app) await app.close();
   });
 

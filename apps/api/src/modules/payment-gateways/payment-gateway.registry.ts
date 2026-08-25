@@ -6,6 +6,8 @@ import { BkashPaymentGateway } from './bkash-payment.gateway';
 import { FakePaymentGateway } from './fake-payment.gateway';
 import type { PaymentGateway } from './payment-gateway.interface';
 import { SslCommerzPaymentGateway } from './sslcommerz-payment.gateway';
+import { IntegrationCredentialService } from '../settings/integration-credential.service';
+import { SettingsService } from '../settings/settings.service';
 
 @Injectable()
 export class PaymentGatewayRegistry {
@@ -14,15 +16,23 @@ export class PaymentGatewayRegistry {
     private readonly bkash: BkashPaymentGateway,
     private readonly sslcommerz: SslCommerzPaymentGateway,
     @Inject(API_ENVIRONMENT) private readonly environment: ApiEnvironment,
+    private readonly settings: SettingsService,
+    private readonly credentials: IntegrationCredentialService,
   ) {}
 
-  get(provider: string): PaymentGateway {
-    if (provider === this.bkash.key && this.environment.BKASH_ENABLED) {
+  async get(provider: string, activeOnly = false): Promise<PaymentGateway> {
+    if (activeOnly && (await this.settings.activeGateway()) !== provider) {
+      throw this.notFound();
+    }
+    if (
+      provider === this.bkash.key &&
+      (await this.credentials.isConfigured('bkash'))
+    ) {
       return this.bkash;
     }
     if (
       provider === this.sslcommerz.key &&
-      this.environment.SSLCOMMERZ_ENABLED
+      (await this.credentials.isConfigured('sslcommerz'))
     ) {
       return this.sslcommerz;
     }
@@ -32,18 +42,25 @@ export class PaymentGatewayRegistry {
     ) {
       return this.fake;
     }
-    throw new ApplicationException({
+    throw this.notFound();
+  }
+
+  async list(): Promise<PaymentGateway[]> {
+    const active = await this.settings.activeGateway();
+    if (active === 'manual') return [];
+    try {
+      return [await this.get(active, true)];
+    } catch (error) {
+      if (error instanceof ApplicationException) return [];
+      throw error;
+    }
+  }
+
+  private notFound(): ApplicationException {
+    return new ApplicationException({
       status: HttpStatus.NOT_FOUND,
       code: 'RESOURCE_NOT_FOUND',
       message: 'Payment gateway was not found.',
     });
-  }
-
-  list(): PaymentGateway[] {
-    const gateways: PaymentGateway[] = [];
-    if (this.environment.BKASH_ENABLED) gateways.push(this.bkash);
-    if (this.environment.SSLCOMMERZ_ENABLED) gateways.push(this.sslcommerz);
-    if (this.environment.NODE_ENV !== 'production') gateways.push(this.fake);
-    return gateways;
   }
 }

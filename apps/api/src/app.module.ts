@@ -17,6 +17,7 @@ import { BackgroundJobModule } from './modules/background-jobs/background-job.mo
 import { EmailNotificationModule } from './modules/email-notifications/email-notification.module';
 import { RenewalAutomationModule } from './modules/renewal-automation/renewal-automation.module';
 import { TicketModule } from './modules/tickets/ticket.module';
+import { SettingsModule } from './modules/settings/settings.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { TicketModule } from './modules/tickets/ticket.module';
     EmailNotificationModule,
     RenewalAutomationModule,
     TicketModule,
+    SettingsModule,
   ],
   controllers: [AppController],
   providers: [

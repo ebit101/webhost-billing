@@ -1372,6 +1372,74 @@ Run **Command 20 — Implement Support Tickets** only after explicit user author
 
 Run **Command 21 — Implement Settings and Secrets** only after explicit user authorization. Keep ordinary typed business settings separate from encrypted provider secrets, preserve current integration-specific credential boundaries, and audit administrator changes without exposing values.
 
+### Command 21 — Implement Settings and Secrets
+
+- **Status:** Completed and delivered to GitHub `main`
+- **Date:** 2026-08-25
+
+#### Scope completed
+
+- Added strict shared contracts and defaults for business identity, one operating currency, IANA business timezone, sequential invoice prefix/next-number/padding, renewal lead/reminder/grace policy, mandatory manual termination confirmation, manual-payment instructions and partial-payment policy, email branding/sender identity, active payment gateway, and active hosting-panel adapter.
+- Replaced the administrator Settings placeholder with a responsive settings workspace covering business/invoice identity, renewals and service safety, payments and hosting adapters, email branding, masked credential status, bKash/SSLCOMMERZ write-only credential replacement, and a link to per-server WHM token management.
+- Added an administrator-only `/settings` API that reads safe defaults, validates and transactionally writes the complete ordinary settings document, keeps the business and renewal timezones aligned, rejects online gateway activation without complete credentials and a credential-free HTTPS callback origin, and audits setting keys/adapter choices without credential values.
+- Added a separate `integration_credentials` table and migration for bKash/SSLCOMMERZ bundles. Credential writes require complete provider-specific schemas plus exact `REPLACE_CREDENTIALS` confirmation and use deployment-key-derived, provider-bound AES-256-GCM authenticated encryption.
+- Kept cPanel/WHM tokens encrypted per server and SMTP authentication deployment-managed. Settings responses contain only configured state, masked identifiers, key-format version, update time, and management location; neither decrypted values nor ciphertext is serialized.
+- Made stored payment credential bundles take precedence over the existing deployment-environment fallback. bKash cached access tokens are tied to the credential revision, inactive configured providers remain available for callbacks/reconciliation, and only the active configured gateway is offered for new checkout sessions.
+- Applied the active hosting-panel adapter to new-service setup/server selection while preserving each existing service's server adapter for lifecycle operations. Development/test environments retain the zero-network fake-panel default until an explicit setting exists; production defaults to cPanel/WHM.
+- Replaced random future invoice presentation numbers with configurable sequential allocation. API order/manual-invoice and worker renewal-invoice creation lock one PostgreSQL setting row, allocate and increment within the invoice transaction, and retain the existing unique invoice constraint and idempotent submission keys.
+- Added a customer-safe manual-payment-instructions endpoint and displayed its validated text on customer invoices. Partial-payment enforcement remains server-side.
+- Made the email worker reload validated brand color/name and sender/reply-to identity from ordinary settings for each resolved queued message; SMTP connection/authentication secrets remain outside the settings table.
+- Added provider-credential and master-key rotation/recovery documentation, including the initial release's deliberate single-key maintenance procedure and required re-entry of all payment/WHM credentials after master-key replacement.
+
+#### Files changed
+
+- Shared contracts/tests: `packages/shared/src/contracts/settings.ts`, `packages/shared/src/index.ts`, `packages/shared/test/settings.spec.ts`
+- Schema/migration: `packages/database/prisma/schema.prisma`, `packages/database/prisma/migrations/20260826043000_add_integration_credentials/migration.sql`
+- Settings API/security/tests: `apps/api/src/modules/settings/**`, `apps/api/src/app.module.ts`, `apps/api/test/settings.e2e-spec.ts`
+- Invoice allocation: `apps/api/src/common/identifiers/invoice-number.ts`, invoice/order services and E2E assertion, `apps/worker/src/renewal/invoice-number.ts`, renewal processor
+- Payment-provider/settings integration: payment-gateway adapters/registry/service/module/controller and adapter tests, manual-payment service/controller
+- Hosting/renewal alignment: service module/service adapter filtering, renewal-automation service and E2E cleanup
+- Email rendering and customer instructions: worker email resolver/types/adapter/tests, customer manual-payment component and frontend tests
+- Administrator interface/tests: `apps/web/src/components/settings/**`, `apps/web/src/app/(admin)/admin/settings/page.tsx`
+- Documentation: `docs/SETTINGS_AND_SECRETS.md`, `docs/PAYMENT_GATEWAYS.md`, `docs/EMAIL_NOTIFICATIONS.md`, `docs/DECISIONS.md`, `docs/PROGRESS.md`
+
+#### Validation
+
+- Repository Prettier check, `git diff --check`, API/worker/web ESLint, and strict TypeScript checks for config/database/shared/queue/API/worker/web passed without warnings or errors.
+- Prisma formatting, schema validation, client generation, nineteen-migration deployment/status, and local PostgreSQL schema currency passed. Docker Compose configuration passed and PostgreSQL/Redis remained healthy.
+- Shared contracts passed 21 tests; queue infrastructure passed 3 real-Redis tests; API unit suites passed 71 tests; worker suites passed 27 tests; frontend passed 30 tests; complete API end-to-end validation passed 57 tests across fifteen suites. Total validated tests: 209.
+- E2E coverage passed against real PostgreSQL/Redis for admin/customer authorization, strict ordinary settings, timezone alignment, complete credential validation, encrypted-at-rest replacement, ciphertext/plaintext response exclusion, masked status, safe audit metadata, sequential invoices, existing gateway callbacks, renewal behavior, cPanel operations, payments, services, and support.
+- Command 21 test cleanup was verified with zero residual reserved users or credentials.
+- Config/database/shared/queue packages and NestJS API/worker production builds passed. Next.js 16.3.2 production build passed and generated all 29 application routes, including `/admin/settings`.
+- The root `pnpm build` wrapper attempted a package-manager dependency status check and stopped at pnpm's no-TTY modules-purge prompt in the long-lived Node container. It changed no source/dependencies; every underlying pinned package/framework production builder was then run directly and passed.
+- A source/secret scan found only documented `.env.example` placeholders and explicit fictional test secrets used to prove ciphertext/redaction. No `.env`, real credential, private key, customer data, raw provider response, email preview, or external-provider action was added or executed.
+
+#### Decisions made
+
+- Ordinary typed configuration and encrypted integration credentials have separate tables, APIs, response shapes, audit metadata, and rotation procedures.
+- cPanel credentials remain server-specific and SMTP credentials remain deployment-specific; duplicating either into the global payment credential vault would weaken their existing scopes.
+- Database-encrypted payment credentials override deployment fallbacks. Provider activation is separate from credential existence so credentials can be rotated while manual payments remain active.
+- Active gateway selection controls new sessions only; authenticated callbacks and reconciliation for an inactive but configured provider remain available for already-started transactions.
+- Active hosting adapter controls server choices for new services. Existing services continue using their assigned server adapter, preventing a global setting change from redirecting established lifecycle operations.
+- Sequential invoice numbers are financial presentation identifiers allocated under a database lock. Submission UUIDs remain the retry/idempotency identity.
+- Business and renewal timezones are one policy. The renewal screen updates business localization, and the settings overview normalizes legacy drift to the business timezone.
+- Permanent termination remains fixed to explicit administrator confirmation and is never automated. The settings screen exposes the policy but cannot weaken it.
+- Master encryption-key rotation is planned maintenance in the initial release, not an implicit dual-key migration. Operators must retain rollback access and re-enter every encrypted payment/WHM credential under the new key.
+
+#### Open questions and risks
+
+- Enter the real private-business identity, operating currency, invoice prefix/start number, manual-payment instructions, sender addresses, renewal reminders, grace period, and adapter choices before customer use.
+- No real bKash, SSLCOMMERZ, cPanel, SMTP, or production secret was used. Sandbox/provider connection acceptance, callback reachability, token privileges, and credential revocation must be verified in separately authorized operational windows.
+- A configured status proves that ciphertext exists, not that the current deployment key or upstream credential is valid. Provider/WHM connection tests and the documented recovery path remain required after restoration or key rotation.
+- The application supports one encryption master key at a time. Losing the matching key makes restored ciphertext unreadable; rotation requires maintenance and complete credential re-entry.
+- Operating currency is now explicit configuration, but historical products, prices, orders, invoices, and services retain their snapshotted currencies. This command intentionally does not rewrite financial history or add currency conversion.
+- The existing PostgreSQL driver pg@9 concurrent-query deprecation warning and Jest experimental VM warning remain visible in some E2E runs; all validation passed.
+- The existing Prisma tooling-chain `deepmerge-ts` advisory from Command 18 was not changed by this command; no dependency was added.
+
+#### Recommended next command
+
+Run **Command 22 — Complete Dashboards and Reports** only after explicit user authorization. Use real database aggregates, integer-minor-unit arithmetic, the configured business timezone/currency, administrator authorization, and actionable operational metrics without exposing credentials or customer-sensitive detail.
+
 ## Report Template
 
 Use this template after every future command:

@@ -226,6 +226,14 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** A private hosting business needs reliable conversation history and fast queue ownership without the file-handling, department, SLA, or permission complexity of a general help desk. Ticket URLs and user-supplied markup are untrusted, while network retries must not duplicate messages or notifications.
 - **Consequence:** Customer identity always comes from the session and every detail/reply enforces ownership in the application service. Strict schemas reject HTML-like and attachment-shaped input; React text rendering and email escaping provide independent output defenses. Closed tickets require administrator reopening. Administrator changes and replies are audited without bodies, and customer/staff reply emails use the transactional outbox without rolling back the conversation on delivery failure.
 
+## ADR-029 — Typed Settings and Provider-Bound Credential Encryption
+
+- **Status:** Accepted
+- **Date:** 2026-08-25
+- **Decision:** Store strict non-secret business configuration in categorized `Setting` JSON records, while storing complete bKash/SSLCOMMERZ bundles in a separate `IntegrationCredential` table encrypted with provider-bound AES-256-GCM. Keep cPanel tokens server-scoped and SMTP authentication deployment-scoped. Allocate configurable sequential invoice numbers under a PostgreSQL row lock.
+- **Reason:** Billing rules must have one visible source of truth, while credentials have different access, masking, rotation, and recovery requirements. Provider secrets must never be serialized to the browser, logs, audit metadata, or queue payloads. Sequential financial identifiers require concurrency control rather than random presentation numbers.
+- **Consequence:** The administrator settings API atomically validates and audits ordinary settings. Credential replacement is write-only, confirmed, and returns only status/masked identifiers. Online checkout activation requires a configured gateway and HTTPS callback origin; inactive configured providers remain available for callbacks/reconciliation. Business and renewal time zones stay aligned, email rendering reloads typed branding, and customer-visible manual-payment instructions have a separate safe endpoint. This ADR supersedes ADR-018's random invoice-number presentation rule without changing invoice immutability or idempotent submission keys. Master-key rotation is planned maintenance requiring re-entry of all encrypted bundles/tokens.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

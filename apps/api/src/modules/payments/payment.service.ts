@@ -15,6 +15,7 @@ import {
   manualPaymentMethodSchema,
   manualPaymentSchema,
   paymentSettingsSchema,
+  manualPaymentInstructionsSchema,
   serializeMoney,
   type CreatePaymentAdjustmentRequest,
   type ManualPayment,
@@ -24,6 +25,7 @@ import {
   type PaginationMeta,
   type PaymentListQuery,
   type PaymentSettings,
+  type ManualPaymentInstructions,
   type RecordManualPaymentRequest,
   type ReviewManualPaymentRequest,
   type SubmitManualPaymentRequest,
@@ -34,6 +36,7 @@ import { PRISMA_CLIENT } from '../../infrastructure/database/database.module';
 import type { AuthRequestContext } from '../auth/auth.types';
 
 const PAYMENT_SETTINGS_KEY = 'billing.manual-payments';
+const PAYMENT_INSTRUCTIONS_KEY = 'billing.manual-payment-instructions';
 
 const paymentInclude = {
   invoice: {
@@ -70,6 +73,25 @@ export class PaymentService {
 
   async getSettings(): Promise<PaymentSettings> {
     return this.readSettings(this.prisma);
+  }
+
+  async getManualPaymentInstructions(): Promise<ManualPaymentInstructions> {
+    const [policy, setting] = await Promise.all([
+      this.readSettings(this.prisma),
+      this.prisma.setting.findUnique({
+        where: { key: PAYMENT_INSTRUCTIONS_KEY },
+        select: { value: true },
+      }),
+    ]);
+    const instructions = manualPaymentInstructionsSchema
+      .pick({ instructions: true })
+      .safeParse(setting?.value);
+    return manualPaymentInstructionsSchema.parse({
+      ...policy,
+      instructions: instructions.success
+        ? instructions.data.instructions
+        : 'Pay by bank deposit, cash, or an approved mobile financial service, then submit the transaction reference for review.',
+    });
   }
 
   async updateSettings(

@@ -1,6 +1,7 @@
 import type { ApiEnvironment } from '@webhost-billing/config';
 import { SslCommerzPaymentGateway } from './sslcommerz-payment.gateway';
 import type { PaymentHttpClient } from './payment-http.client';
+import type { IntegrationCredentialService } from '../settings/integration-credential.service';
 
 const environment = {
   NODE_ENV: 'test',
@@ -24,6 +25,16 @@ const environment = {
   EMAIL_VERIFICATION_TTL_SECONDS: 86_400,
   AUTH_RATE_LIMIT_NAMESPACE: 'test',
 } satisfies ApiEnvironment;
+
+const credentials = {
+  sslCommerz: jest.fn().mockResolvedValue({
+    value: {
+      storeId: 'sandbox-store',
+      storePassword: 'sandbox-password',
+    },
+    revision: 'test-credentials',
+  }),
+} as unknown as IntegrationCredentialService;
 
 const input = {
   paymentId: '20000000-0000-4000-8000-000000000001',
@@ -59,7 +70,11 @@ describe('SslCommerzPaymentGateway provider contract', () => {
           GatewayPageURL: 'https://sandbox.sslcommerz.com/EasyCheckOut/test',
         },
       });
-    const gateway = new SslCommerzPaymentGateway(environment, { request });
+    const gateway = new SslCommerzPaymentGateway(
+      environment,
+      { request },
+      credentials,
+    );
     const session = await gateway.createPaymentSession(input);
     const call = request.mock.calls[0]?.[0];
 
@@ -92,7 +107,11 @@ describe('SslCommerzPaymentGateway provider contract', () => {
           risk_level: '0',
         },
       });
-    const gateway = new SslCommerzPaymentGateway(environment, { request });
+    const gateway = new SslCommerzPaymentGateway(
+      environment,
+      { request },
+      credentials,
+    );
     const raw = Buffer.from(
       new URLSearchParams({
         val_id: 'validation-1',
@@ -126,7 +145,11 @@ describe('SslCommerzPaymentGateway provider contract', () => {
         Parameters<PaymentHttpClient['request']>
       >()
       .mockResolvedValue({ status: 503, body: null });
-    const gateway = new SslCommerzPaymentGateway(environment, { request });
+    const gateway = new SslCommerzPaymentGateway(
+      environment,
+      { request },
+      credentials,
+    );
     await expect(gateway.createPaymentSession(input)).rejects.toMatchObject({
       outcome: 'UNKNOWN',
     });
@@ -153,7 +176,11 @@ describe('SslCommerzPaymentGateway provider contract', () => {
           value_b: input.invoiceId,
         },
       });
-    const gateway = new SslCommerzPaymentGateway(environment, { request });
+    const gateway = new SslCommerzPaymentGateway(
+      environment,
+      { request },
+      credentials,
+    );
     const raw = Buffer.from(
       new URLSearchParams({
         val_id: 'validation-2',
@@ -190,7 +217,11 @@ describe('SslCommerzPaymentGateway provider contract', () => {
           risk_level: '1',
         },
       });
-    const gateway = new SslCommerzPaymentGateway(environment, { request });
+    const gateway = new SslCommerzPaymentGateway(
+      environment,
+      { request },
+      credentials,
+    );
     const raw = Buffer.from(
       new URLSearchParams({
         val_id: 'validation-risk',

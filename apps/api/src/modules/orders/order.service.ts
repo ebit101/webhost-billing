@@ -27,6 +27,7 @@ import {
 import { ApplicationException } from '../../common/errors/application.exception';
 import type { SecurityRequestContext } from '../../common/http/request-context';
 import { createHumanReadableNumber } from '../../common/identifiers/business-number';
+import { allocateInvoiceNumber } from '../../common/identifiers/invoice-number';
 import { PRISMA_CLIENT } from '../../infrastructure/database/database.module';
 import type { AuthRequestContext } from '../auth/auth.types';
 
@@ -181,7 +182,7 @@ export class OrderService {
         });
         const invoice = await transaction.invoice.create({
           data: {
-            invoiceNumber: createHumanReadableNumber('INV', now),
+            invoiceNumber: await allocateInvoiceNumber(transaction),
             submissionKey: `invoice:${input.submissionKey}`,
             customerId: customer.id,
             orderId: order.id,

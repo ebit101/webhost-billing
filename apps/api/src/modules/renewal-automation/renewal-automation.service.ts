@@ -2,8 +2,10 @@ import { Inject, Injectable } from '@nestjs/common';
 import { SettingCategory, type PrismaClient } from '@webhost-billing/database';
 import {
   DEFAULT_RENEWAL_AUTOMATION_POLICY,
+  DEFAULT_BUSINESS_SETTINGS,
   automationRunSummarySchema,
   renewalAutomationPolicySchema,
+  businessLocalizationSettingsSchema,
   type AutomationRunSummary,
   type RenewalAutomationPolicy,
 } from '@webhost-billing/shared';
@@ -32,6 +34,19 @@ export class RenewalAutomationService {
     context: SecurityRequestContext,
   ): Promise<RenewalAutomationPolicy> {
     const policy = renewalAutomationPolicySchema.parse(input);
+    const localizationSetting = await this.prisma.setting.findUnique({
+      where: { key: 'business.localization' },
+      select: { value: true },
+    });
+    const parsedLocalization = businessLocalizationSettingsSchema.safeParse(
+      localizationSetting?.value,
+    );
+    const localization = {
+      currency: parsedLocalization.success
+        ? parsedLocalization.data.currency
+        : DEFAULT_BUSINESS_SETTINGS.currency,
+      timeZone: policy.timeZone,
+    };
     await this.prisma.$transaction([
       this.prisma.setting.upsert({
         where: { key: POLICY_KEY },
@@ -45,6 +60,21 @@ export class RenewalAutomationService {
           category: SettingCategory.AUTOMATION,
           value: policy,
           description: 'Renewal invoice, reminder, overdue, and grace policy.',
+          updatedByUserId: actor.identity.userId,
+        },
+      }),
+      this.prisma.setting.upsert({
+        where: { key: 'business.localization' },
+        update: {
+          category: SettingCategory.BUSINESS,
+          value: localization,
+          updatedByUserId: actor.identity.userId,
+        },
+        create: {
+          key: 'business.localization',
+          category: SettingCategory.BUSINESS,
+          value: localization,
+          description: 'Operating currency and IANA business time zone.',
           updatedByUserId: actor.identity.userId,
         },
       }),

@@ -67,6 +67,14 @@ export class PaymentController {
     );
   }
 
+  @Get('manual/instructions')
+  @Roles('ADMIN', 'CUSTOMER')
+  async manualPaymentInstructions() {
+    return createApiSuccessResponse(
+      await this.payments.getManualPaymentInstructions(),
+    );
+  }
+
   @Post('manual/customer')
   @Roles('CUSTOMER')
   @HttpCode(HttpStatus.CREATED)

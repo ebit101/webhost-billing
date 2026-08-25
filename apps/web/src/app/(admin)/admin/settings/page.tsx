@@ -1,12 +1,6 @@
 import type { Metadata } from 'next';
-import { SectionPreview } from '../../../../components/dashboard/section-preview';
+import { SettingsManager } from '../../../../components/settings/settings-manager';
 export const metadata: Metadata = { title: 'Settings' };
 export default function Page() {
-  return (
-    <SectionPreview
-      area="Administrator"
-      title="Settings"
-      description="Configure business identity and future provider integrations."
-    />
-  );
+  return <SettingsManager />;
 }
