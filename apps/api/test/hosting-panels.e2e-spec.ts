@@ -18,6 +18,7 @@ import {
 } from '@webhost-billing/database';
 import {
   apiSuccessResponseSchema,
+  cpanelServerConfigurationSchema,
   hostingPanelOperationResultSchema,
   paginatedApiSuccessResponseSchema,
   hostingPanelOperationSchema,
@@ -37,6 +38,7 @@ const OTHER_EMAIL = 'command15-other@example.test';
 const PASSWORD = 'command fifteen secure password';
 const PRODUCT_SLUG = 'command-fifteen-hosting';
 const SERVER_HOSTNAME = 'command15-whm.example.test';
+const CONFIG_SERVER_HOSTNAME = 'command16-whm.example.test';
 
 describe('Hosting panel operations (e2e)', () => {
   let app: INestApplication<App>;
@@ -111,6 +113,70 @@ describe('Hosting panel operations (e2e)', () => {
     });
     serverId = server.id;
     primaryServiceId = await createPendingService('panel-one.example.test');
+  });
+
+  it('encrypts and audits administrator-only cPanel server configuration', async () => {
+    const server = await prisma.server.create({
+      data: {
+        name: `Command Sixteen WHM ${randomUUID().slice(0, 8)}`,
+        hostname: CONFIG_SERVER_HOSTNAME,
+        status: ServerStatus.ACTIVE,
+        adapterKey: 'fake-panel',
+      },
+    });
+    const admin = request.agent(app.getHttpServer());
+    const csrf = await authenticate(admin, ADMIN_EMAIL);
+    const apiToken = 'FictionalCommand16Token'.repeat(2);
+    const configuredResponse = await admin
+      .post(`/hosting-panel/servers/${server.id}/cpanel-configuration`)
+      .set('X-CSRF-Token', csrf)
+      .send({
+        hostname: CONFIG_SERVER_HOSTNAME,
+        port: 2087,
+        apiUsername: 'reseller',
+        apiToken,
+        confirmation: 'CONFIGURE_CPANEL',
+      })
+      .expect(201);
+    const configured = apiSuccessResponseSchema(
+      cpanelServerConfigurationSchema,
+    ).parse(configuredResponse.body).data;
+    expect(configured).toMatchObject({
+      server: { adapterKey: 'cpanel-whm' },
+      port: 2087,
+      useTls: true,
+      apiUsername: 'reseller',
+      credentialConfigured: true,
+      credentialKeyVersion: 'cpanel-token-v1',
+    });
+    expect(JSON.stringify(configuredResponse.body)).not.toContain(apiToken);
+    expect(JSON.stringify(configuredResponse.body)).not.toContain(
+      'credentialsCiphertext',
+    );
+    const persisted = await prisma.server.findUniqueOrThrow({
+      where: { id: server.id },
+    });
+    expect(persisted.credentialsCiphertext).not.toContain(apiToken);
+    expect(persisted.credentialsCiphertext).toMatch(/^v1\./);
+    expect(
+      await prisma.activityLog.count({
+        where: { entityId: server.id, action: 'CPANEL_SERVER_CONFIGURED' },
+      }),
+    ).toBe(1);
+
+    const customer = request.agent(app.getHttpServer());
+    const customerCsrf = await authenticate(customer, CUSTOMER_EMAIL);
+    await customer
+      .post(`/hosting-panel/servers/${server.id}/cpanel-configuration`)
+      .set('X-CSRF-Token', customerCsrf)
+      .send({
+        hostname: CONFIG_SERVER_HOSTNAME,
+        port: 2087,
+        apiUsername: 'reseller',
+        apiToken,
+        confirmation: 'CONFIGURE_CPANEL',
+      })
+      .expect(403);
   });
 
   it('tests the server and provisions exactly one account idempotently', async () => {
@@ -505,7 +571,9 @@ describe('Hosting panel operations (e2e)', () => {
     const orderIds = orders.map(({ id }) => id);
     await prisma.orderItem.deleteMany({ where: { orderId: { in: orderIds } } });
     await prisma.order.deleteMany({ where: { id: { in: orderIds } } });
-    await prisma.server.deleteMany({ where: { hostname: SERVER_HOSTNAME } });
+    await prisma.server.deleteMany({
+      where: { hostname: { in: [SERVER_HOSTNAME, CONFIG_SERVER_HOSTNAME] } },
+    });
     const product = await prisma.product.findUnique({
       where: { slug: PRODUCT_SLUG },
     });

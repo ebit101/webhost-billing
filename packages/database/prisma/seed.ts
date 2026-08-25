@@ -141,7 +141,7 @@ async function seed(): Promise<void> {
         name: 'Fictional Development Server',
         hostname: 'cpanel.example.test',
         status: ServerStatus.ACTIVE,
-        adapterKey: 'fake-cpanel',
+        adapterKey: 'fake-panel',
         maxAccounts: 100,
       },
     });
@@ -171,7 +171,7 @@ async function seed(): Promise<void> {
         websiteFeature: '1 website',
         emailFeature: '10 email accounts',
         bandwidthFeature: '100 GB monthly',
-        provisioningAdapter: 'fake-cpanel',
+        provisioningAdapter: 'fake-panel',
         provisioningConfig: { packageName: 'dev_starter' },
       },
     });

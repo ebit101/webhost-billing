@@ -186,12 +186,20 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** Hosting-account operations and registrar operations have different resources, credentials, failure ambiguity, and lifecycle effects. External mutations can time out after succeeding, so a generic retry loop or a shared "panel" credential would risk duplicate accounts, accidental domain actions, and secret exposure.
 - **Consequence:** Command 16 implements cPanel/WHM only after reviewing current official documentation. UK2Group requires a separate registrar contract, domain data/workflows, test mode, credentials, and later explicit authorization. Hosting mutations receive no automatic retry; temporary failures allow bounded deliberate retry, while timeouts/inconsistent results require reconciliation. Passwords, credentials, raw responses, and login URLs are never persisted in operation history.
 
+## ADR-024 — WHM API Tokens and Verified cPanel Mutations
+
+- **Status:** Accepted
+- **Date:** 2026-08-26
+- **Decision:** Implement cPanel/WHM with WHM API 1 over certificate-validated HTTPS on port 2087 or 443, authenticated only by a scoped WHM API token. Store the token as AES-256-GCM ciphertext bound to the server UUID under the versioned `cpanel-token-v1` key context. Verify account creation and every later mutation with `accountsummary` before changing internal service state.
+- **Reason:** WHM API tokens are revocable, expirable, IP-restrictable, and privilege-scoped, while passwords and access hashes carry unnecessary authority. A successful transport response alone does not prove the intended account identity or final state.
+- **Consequence:** The adapter key is `cpanel-whm`; redirects, plaintext WHM ports, malformed/oversized responses, unexpected login hosts, and missing credentials fail safely. Exact existing accounts make provisioning idempotent. Network, timeout, `5xx`, and post-mutation verification uncertainty are held for reconciliation. Token rotation requires re-entry and creates an audit record; plaintext tokens, raw responses, passwords, and session URLs are never persisted or returned from configuration endpoints.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:
 
 1. Production approval, credentials, and go-live runbook for bKash and/or SSLCOMMERZ after sandbox acceptance.
-2. Exact cPanel/WHM API authentication method and dedicated development account/server; the hosting-panel provider itself is selected.
+2. Dedicated cPanel development reseller/token, hostname, outbound-IP allowlist, disposable packages/account/domain, and explicitly approved manual mutation window. WHM API-token authentication is selected and implemented.
 3. SMTP delivery provider for staging and production.
 4. UK2Group API product/brand, current official documentation, test environment, contact policy, supported TLDs, pricing/renewal behavior, and the separately authorized registrar-command position.
 5. Final business identity values, supported operating currency, VAT/tax rules, reminder schedule, suspension grace period, cancellation policy, and refund policy.

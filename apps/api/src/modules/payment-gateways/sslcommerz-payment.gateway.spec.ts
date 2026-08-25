@@ -12,6 +12,7 @@ const environment = {
   WEB_ORIGIN: 'http://localhost:3000',
   API_PUBLIC_ORIGIN: 'https://api.example.test',
   PAYMENT_PROVIDER_TIMEOUT_MS: 5_000,
+  HOSTING_PANEL_TIMEOUT_MS: 10_000,
   BKASH_ENABLED: false,
   BKASH_SANDBOX_BASE_URL: 'https://tokenized.sandbox.bka.sh/v1.2.0-beta',
   SSLCOMMERZ_ENABLED: true,

@@ -180,6 +180,65 @@ describe('service management interfaces', () => {
     ).toBeTruthy();
   });
 
+  it('submits a cPanel API token once and clears it after encrypted storage', async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.fn(
+      (request: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(request);
+        if (url.includes('/auth/csrf')) {
+          return Promise.resolve(success({ csrfToken: 'x'.repeat(32) }));
+        }
+        if (init?.method === 'POST') {
+          return Promise.resolve(
+            success({
+              server: { ...service.server, adapterKey: 'cpanel-whm' },
+              port: 2087,
+              useTls: true,
+              apiUsername: 'reseller',
+              credentialConfigured: true,
+              credentialKeyVersion: 'cpanel-token-v1',
+            }),
+          );
+        }
+        if (url.includes('/hosting-panel/operations')) {
+          return Promise.resolve(paginated([operation]));
+        }
+        if (url.includes('/services/setup-options')) {
+          return Promise.resolve(success(options));
+        }
+        return Promise.resolve(paginated([activeService]));
+      },
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    render(<AdminHostingOperationManager />);
+    await user.type(
+      await screen.findByRole('textbox', { name: 'WHM username' }),
+      'reseller',
+    );
+    const tokenInput = screen.getByLabelText('New API token');
+    await user.type(tokenInput, 'FictionalTokenValue1234567890');
+    await user.click(
+      screen.getByRole('button', { name: 'Encrypt and save cPanel' }),
+    );
+
+    expect(
+      await screen.findByText(/configuration encrypted and saved/i),
+    ).toBeTruthy();
+    expect((tokenInput as HTMLInputElement).value).toBe('');
+    const mutation = fetchMock.mock.calls.find(
+      ([request, init]) =>
+        String(request).includes('/cpanel-configuration') &&
+        (init as RequestInit | undefined)?.method === 'POST',
+    );
+    expect(JSON.parse(String((mutation?.[1] as RequestInit).body))).toEqual({
+      hostname: 'server.example.test',
+      port: 2087,
+      apiUsername: 'reseller',
+      apiToken: 'FictionalTokenValue1234567890',
+      confirmation: 'CONFIGURE_CPANEL',
+    });
+  });
+
   it('lists only the customer service cards with renewal and account data', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(paginated([service])));
     render(<CustomerServiceList />);

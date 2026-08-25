@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 12 — Create the Payment Adapter
+- **Current command:** Command 16 — Integrate the Real cPanel/WHM Hosting Panel
 - **Current status:** Completed and delivered to GitHub `main`
-- **Last updated:** 2026-08-25
-- **Next command:** Command 13 — Integrate the Real Payment Provider
+- **Last updated:** 2026-08-26
+- **Next command:** Command 17 — Add Redis, Queues, and Workers
 - **Next command authorized:** No
 
 ## Command Reports
@@ -1054,6 +1054,73 @@ Run **Command 15 — Create the Hosting-Panel Adapter** after explicit user auth
 #### Recommended next command
 
 Run **Command 16 — Integrate the Real Hosting Panel** after explicit authorization. Implement cPanel/WHM only, consult current official documentation, use mocked provider tests, configure no plaintext credential, and make no external mutation until the dedicated development account/package and manual test scope are explicitly approved.
+
+### Command 16 — Integrate the Real cPanel/WHM Hosting Panel
+
+- **Status:** Completed and delivered to GitHub `main`
+- **Date:** 2026-08-26
+
+#### Scope completed
+
+- Implemented the real `cpanel-whm` hosting adapter against documented WHM API 1 functions for connection testing, account creation/status, suspension, unsuspension, package/password changes, temporary cPanel sessions, and account removal.
+- Added a hardened HTTPS client restricted to fully qualified hostnames and secure WHM ports `2087`/`443`, WHM API-token authorization, rejected redirects, bounded timeouts and response bodies, strict response parsing, and redacted normalized failures.
+- Added deterministic 16-character service-derived cPanel usernames, username/domain preflight checks, exact-account idempotency, generated-password account creation, and post-operation `accountsummary` verification for every mutation.
+- Classified mutation transport, timeout, provider `5xx`, malformed-response, and failed-verification uncertainty as `INCONSISTENT`, preventing unsafe automatic/manual replay until reconciliation.
+- Added AES-256-GCM token encryption with server-ID authenticated context and the versioned `cpanel-token-v1` key context. Plaintext tokens exist only during administrator submission and provider-call construction and are excluded from APIs, audit metadata, operation history, tests, and documentation.
+- Added an administrator-only, confirmation-protected cPanel server configuration endpoint and interface for hostname, secure port, WHM username, and one-time API-token entry/rotation. The interface clears the token after successful encrypted storage.
+- Added database constraints requiring complete credential ciphertext/key-version pairs and complete TLS/port/username/credential configuration for every `cpanel-whm` server. Migrated the obsolete fictional `fake-cpanel` adapter key to `fake-panel`.
+- Kept `FakeHostingPanel` available only outside production and wired `cpanel-whm` through the existing provider-neutral registry without changing service/payment/order separation.
+- Added shared contract, cipher, HTTP boundary, real adapter, interface, authorization, encryption/non-disclosure, database, and full E2E coverage.
+- Documented the official WHM endpoints, required least-privilege ACLs, credential lifecycle, error/reconciliation rules, and an approval-gated manual development-server acceptance checklist.
+- Made no cPanel/WHM network request, configured no credential, and performed no live account mutation. UK2Group registrar integration remains completely separate and unchanged.
+
+#### Files changed
+
+- Configuration/contracts: `.env.example`, `packages/config/src/env.ts`, `packages/shared/src/contracts/hosting-panels.ts`, `packages/shared/test/contracts.spec.ts`
+- Encrypted credentials and WHM boundary: `apps/api/src/modules/hosting-panels/cpanel-credential-cipher.ts`, `cpanel-whm-http.client.ts`, `cpanel-whm.hosting-panel.ts`, and their unit specifications
+- Hosting orchestration/API wiring: `apps/api/src/modules/hosting-panels/hosting-panel.controller.ts`, `hosting-panel.module.ts`, `hosting-panel.registry.ts`, `hosting-panel.service.ts`
+- Existing environment fixtures: bKash, SSLCOMMERZ, and fake payment-gateway unit specifications
+- Database: `packages/database/prisma/migrations/20260826001500_secure_cpanel_server_configuration/migration.sql`, `packages/database/prisma/seed.ts`, `packages/database/prisma/verify.ts`
+- API/UI acceptance: `apps/api/test/hosting-panels.e2e-spec.ts`, `apps/web/src/components/services/admin-hosting-operation-manager.tsx`, `service-management.test.tsx`
+- Documentation: `README.md`, `docs/HOSTING_PANELS.md`, `docs/DATABASE.md`, `docs/SERVICES.md`, `docs/DEVELOPMENT.md`, `docs/DECISIONS.md`, `docs/PROGRESS.md`
+
+#### Validation
+
+- Reviewed current official cPanel documentation for WHM API-token authentication, WHM API 1 account/session functions, secure ports, and ACL requirements. No third-party API contract was invented.
+- Prisma schema formatting/validation, sixteen-migration deploy/status, idempotent fictional seed, and structural database verifier: passed against isolated PostgreSQL, including the new encrypted-credential and cPanel configuration constraints.
+- Prettier repository formatting check, `git diff --check`, and ESLint for API, worker, and web: passed without warnings.
+- Strict TypeScript checks for all six code workspace projects: passed, including generated Prisma and Next.js route types.
+- Complete non-integration suite: 15 shared-contract tests, 69 API tests, 1 worker test, and 24 frontend tests passed (109 total).
+- cPanel-focused unit suite: 13 passed for credential encryption/tamper and server binding, HTTP authentication/timeout/response safety, exact WHM functions/parameters, idempotent creation/conflict handling, mutation verification, temporary login validation, termination reconciliation, and malformed/rejected responses.
+- Hosting-panel API suite: 5 passed, including administrator-only encrypted configuration, token non-disclosure, audit evidence, fake-provider operations, retries, inconsistency holds, ownership, and termination confirmation.
+- Complete API end-to-end suite: 10 suites and 47 tests passed against local PostgreSQL and Redis.
+- Database, config/shared packages, NestJS API, NestJS worker, and Next.js production builds: passed with `NODE_ENV=production`; all 28 Next.js routes generated successfully.
+- Verified the diff contains no credential, private key, real customer data, generated database artifact, or copied UK2Group screenshot value.
+
+#### Decisions made
+
+- WHM API tokens are the only supported cPanel authentication mechanism; passwords and access hashes are deliberately unsupported.
+- The adapter uses certificate-validated HTTPS on port `2087` or `443`, refuses redirects, and never provides a TLS-disable option.
+- A dedicated, restricted reseller/token is preferred. The documented complete capability set requires the relevant account-list/create/suspend/upgrade/password/session/removal ACLs; unnecessary operations should be withheld instead of granting `all`.
+- Existing exact username/domain/package identity makes provisioning idempotent. Any identity conflict or uncertain mutation result is an explicit reconciliation condition.
+- cPanel may generate the initial password; the application neither requests nor stores it. Password changes remain one-time input and are never persisted.
+- Temporary login URLs must be HTTPS, contain no URL credentials, and match the configured WHM hostname. They remain ephemeral and are never stored.
+- Credential rotation is explicit administrator re-entry under the current key version and produces only safe audit evidence.
+- UK2Group is a registrar integration and must have separate domain models, credentials, provider contract, and explicit command authorization.
+
+#### Open questions and risks
+
+- No real WHM credential, hostname, outbound-IP allowlist, disposable package/account/domain, or mutation window has been approved. The owner must define and authorize those exact targets before even the documented manual acceptance sequence is run.
+- `create-user-session`, password, and account-removal ACLs are high risk. cPanel notes that user-session creation can bypass token restrictions; omit these privileges and accept safely disabled related features if they are not operationally necessary.
+- Losing or changing `CREDENTIAL_ENCRYPTION_KEY` without a backup/rotation plan makes stored tokens unreadable. A formal production key-management and rotation runbook remains required.
+- cPanel versions and reseller ACL behavior can differ. Re-check current official documentation and run the approval-gated disposable-account checklist before staging or production enablement.
+- Mutation uncertainty is intentionally not retryable. Administrator reconciliation workflow/monitoring and abandoned `RUNNING` operation recovery remain later automation work.
+- UK2Group API selection, credentials, sandbox/test behavior, TLD/contact policies, and domain lifecycle data remain unresolved and outside this command.
+- The PostgreSQL driver continues to emit its known pg@9 concurrency deprecation warning during E2E activity, and the minimal Node validation container emits Prisma OpenSSL auto-detection warnings. All migration, database, test, type, lint, and build checks passed.
+
+#### Recommended next command
+
+Run **Command 17 — Add Redis, Queues, and Workers** after explicit user authorization. Preserve the rule that uncertain external mutations are never blindly retried by a queue.
 
 ## Report Template
 

@@ -75,6 +75,12 @@ const apiEnvironmentObjectSchema = serverEnvironmentSchema
       .min(1_000)
       .max(30_000)
       .default(10_000),
+    HOSTING_PANEL_TIMEOUT_MS: z.coerce
+      .number()
+      .int()
+      .min(1_000)
+      .max(30_000)
+      .default(10_000),
     BKASH_ENABLED: environmentBooleanSchema,
     BKASH_SANDBOX_BASE_URL: z
       .url()

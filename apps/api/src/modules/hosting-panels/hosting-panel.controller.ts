@@ -13,10 +13,12 @@ import type { ApiEnvironment } from '@webhost-billing/config';
 import {
   createApiSuccessResponse,
   createPaginatedApiSuccessResponse,
+  configureCpanelServerRequestSchema,
   executeHostingOperationRequestSchema,
   hostingPanelOperationListQuerySchema,
   retryHostingOperationRequestSchema,
   testHostingConnectionRequestSchema,
+  type ConfigureCpanelServerRequest,
   type ExecuteHostingOperationRequest,
   type HostingPanelOperationListQuery,
   type RetryHostingOperationRequest,
@@ -40,6 +42,25 @@ export class HostingPanelController {
     @Inject(API_ENVIRONMENT) environment: ApiEnvironment,
   ) {
     this.auditSecret = environment.SESSION_SECRET;
+  }
+
+  @Post('servers/:serverId/cpanel-configuration')
+  @Roles('ADMIN')
+  async configureCpanelServer(
+    @Param('serverId', new ParseUUIDPipe()) serverId: string,
+    @Body(new ZodValidationPipe(configureCpanelServerRequestSchema))
+    input: ConfigureCpanelServerRequest,
+    @CurrentAuth() auth: AuthRequestContext,
+    @Req() request: Request,
+  ) {
+    return createApiSuccessResponse(
+      await this.hostingPanels.configureCpanelServer(
+        serverId,
+        input,
+        auth,
+        this.context(request),
+      ),
+    );
   }
 
   @Get('operations')

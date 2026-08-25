@@ -33,6 +33,7 @@ import {
   executeHostingOperationRequestSchema,
   retryHostingOperationRequestSchema,
   hostingPanelLoginUrlSchema,
+  configureCpanelServerRequestSchema,
   ticketStatusSchema,
 } from '../src';
 
@@ -235,6 +236,26 @@ describe('boundary contracts', () => {
     );
     assert.equal(
       hostingPanelLoginUrlSchema.safeParse('javascript:alert(1)').success,
+      false,
+    );
+    assert.equal(
+      configureCpanelServerRequestSchema.safeParse({
+        hostname: 'whm.example.test',
+        port: 2087,
+        apiUsername: 'reseller',
+        apiToken: 'fictional-token-value-123456',
+        confirmation: 'CONFIGURE_CPANEL',
+      }).success,
+      true,
+    );
+    assert.equal(
+      configureCpanelServerRequestSchema.safeParse({
+        hostname: 'http://whm.example.test/path',
+        port: 2086,
+        apiUsername: 'reseller',
+        apiToken: 'short',
+        confirmation: 'CONFIGURE_CPANEL',
+      }).success,
       false,
     );
   });

@@ -1,6 +1,7 @@
 'use client';
 
 import type {
+  CpanelServerConfiguration,
   HostingPanelOperation,
   HostingPanelOperationResult,
   Service,
@@ -141,6 +142,43 @@ export function AdminHostingOperationManager() {
     );
   }
 
+  async function configureServer(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const values = new FormData(form);
+    setSaving(true);
+    setError('');
+    setNotice('');
+    try {
+      const configured = await authMutation<CpanelServerConfiguration>(
+        `/hosting-panel/servers/${String(values.get('serverId'))}/cpanel-configuration`,
+        'POST',
+        {
+          hostname: String(values.get('hostname')),
+          port: Number(values.get('port')),
+          apiUsername: String(values.get('apiUsername')),
+          apiToken: String(values.get('apiToken')),
+          confirmation: 'CONFIGURE_CPANEL',
+        },
+      );
+      setOptions((current) => ({
+        ...current,
+        servers: current.servers.map((server) =>
+          server.id === configured.server.id ? configured.server : server,
+        ),
+      }));
+      const tokenInput = form.elements.namedItem('apiToken');
+      if (tokenInput instanceof HTMLInputElement) tokenInput.value = '';
+      setNotice(
+        'cPanel/WHM configuration encrypted and saved. Run the connection test when this server is approved for network access.',
+      );
+    } catch (caught) {
+      setError(serviceError(caught));
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function retry(operation: HostingPanelOperation) {
     await mutate(
       `/hosting-panel/operations/${operation.id}/retry`,
@@ -232,19 +270,73 @@ export function AdminHostingOperationManager() {
           Hosting-panel connections
         </h2>
         <p className="mt-1 text-sm text-slate-600">
-          Only the fake cPanel/WHM adapter is enabled in development and tests.
-          Credentials are never returned to this interface.
+          Configure a WHM API token over HTTPS. Tokens are encrypted before
+          storage and are never returned to this interface.
         </p>
-        <div className="mt-4 flex flex-wrap gap-3">
+        <div className="mt-5 grid gap-4">
           {options.servers.map((server) => (
-            <Button
+            <form
               key={server.id}
-              variant="secondary"
-              disabled={saving}
-              onClick={() => void testServer(server.id)}
+              onSubmit={configureServer}
+              className="grid gap-3 rounded-xl border border-slate-200 p-4 lg:grid-cols-5 lg:items-end"
             >
-              Test {server.name}
-            </Button>
+              <input type="hidden" name="serverId" value={server.id} />
+              <label className="text-sm font-semibold text-slate-700 lg:col-span-2">
+                {server.name} hostname
+                <input
+                  name="hostname"
+                  type="text"
+                  required
+                  defaultValue={server.hostname}
+                  autoComplete="off"
+                  className={fieldClass}
+                />
+              </label>
+              <label className="text-sm font-semibold text-slate-700">
+                HTTPS port
+                <select name="port" defaultValue="2087" className={fieldClass}>
+                  <option value="2087">2087</option>
+                  <option value="443">443</option>
+                </select>
+              </label>
+              <label className="text-sm font-semibold text-slate-700">
+                WHM username
+                <input
+                  name="apiUsername"
+                  required
+                  autoComplete="username"
+                  className={fieldClass}
+                />
+              </label>
+              <label className="text-sm font-semibold text-slate-700">
+                New API token
+                <input
+                  name="apiToken"
+                  type="password"
+                  minLength={20}
+                  maxLength={512}
+                  required
+                  autoComplete="new-password"
+                  className={fieldClass}
+                />
+              </label>
+              <div className="flex flex-wrap gap-2 lg:col-span-5">
+                <Button type="submit" disabled={saving}>
+                  Encrypt and save cPanel
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  disabled={saving}
+                  onClick={() => void testServer(server.id)}
+                >
+                  Test {server.name}
+                </Button>
+                <span className="self-center text-xs font-semibold text-slate-500">
+                  Adapter: {server.adapterKey}
+                </span>
+              </div>
+            </form>
           ))}
         </div>
       </section>

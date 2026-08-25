@@ -72,6 +72,7 @@ The schema remains one modular-monolith database. Model grouping does not create
 - Payment events retain a SHA-256 payload hash and an optional normalized, redacted payload. Raw card data, secrets, signatures, and unfiltered provider requests are prohibited.
 - Provider checkout URLs are private session metadata returned only to the authorized invoice payer; they must not be logged or exposed in administrator failure responses.
 - Hosting-panel request/result metadata is restricted to JSON objects containing normalized safe fields. Passwords, credentials, raw provider responses, and ephemeral panel login URLs are prohibited.
+- Server integration credentials must store ciphertext and key version together. A `cpanel-whm` server is database-valid only with TLS, port `2087` or `443`, a WHM username, encrypted credential ciphertext, and a credential key version.
 - Activity logs may retain a one-way IP-address hash, not authentication secrets.
 - Authentication session and action-token lookups use SHA-256 hashes of random opaque tokens. Raw reset and verification tokens are encrypted only for pending email delivery; raw session tokens are never stored.
 

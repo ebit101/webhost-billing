@@ -60,7 +60,7 @@ Customers cannot create or transition services and cannot access another custome
 
 ## Administrator and customer interfaces
 
-The administrator service inventory supports paid-order fulfilment, server assignment, adapter-backed provisioning, explicit termination confirmation, status, renewal, and account identity. Its operation console adds connection tests, account lookup, package/password changes, ephemeral login links, safe failure details, and deliberate retries. Only `FakeHostingPanel` is enabled in Command 15.
+The administrator service inventory supports paid-order fulfilment, server assignment, adapter-backed provisioning, explicit termination confirmation, status, renewal, and account identity. Its operation console adds encrypted cPanel/WHM server configuration, connection tests, account lookup, package/password changes, ephemeral login links, safe failure details, and deliberate retries. `FakeHostingPanel` remains the no-network development/test adapter; `cpanel-whm` is the selected real adapter.
 
 The customer portal lists only the authenticated customer's services and provides a detail view with product snapshot, domain, current state, server hostname, control-panel username, billing period, recurring amount, start date, next due date, operational timestamps, and the relevant safe state reason. An active service may request an ownership-protected, ephemeral panel login URL.
 
@@ -68,4 +68,4 @@ The customer portal lists only the authenticated customer's services and provide
 
 Creation and every transition write an activity record in the same transaction as the state change. Audit metadata records identifiers and state evidence without server credentials. Rows are never normally deleted.
 
-Command 15 adds the provider-neutral boundary, fake adapter, normalized failures, durable operation idempotency, and bounded manual retry workflow. It does not contact cPanel. Command 16 implements the selected real cPanel/WHM adapter after current official documentation and credential handling are reviewed. UK2Group remains a separate future domain-registrar integration.
+Command 15 adds the provider-neutral boundary, fake adapter, normalized failures, durable operation idempotency, and bounded manual retry workflow. Command 16 implements the selected real cPanel/WHM adapter using encrypted WHM API tokens and mocked provider contracts. No live cPanel request is part of automated validation. UK2Group remains a separate future domain-registrar integration.

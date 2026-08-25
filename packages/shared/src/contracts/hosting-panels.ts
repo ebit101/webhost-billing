@@ -3,6 +3,22 @@ import { paginationQuerySchema } from './pagination';
 import { requestedDomainSchema } from './orders';
 import { serviceServerSchema } from './services';
 
+const cpanelHostnameSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .min(1)
+  .max(253)
+  .regex(
+    /^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/,
+    'Enter a fully qualified server hostname',
+  );
+
+const cpanelApiUsernameSchema = z
+  .string()
+  .trim()
+  .regex(/^[a-zA-Z][a-zA-Z0-9_-]{0,127}$/);
+
 export const hostingPanelOperationTypeSchema = z.enum([
   'TEST_CONNECTION',
   'CREATE_ACCOUNT',
@@ -152,6 +168,34 @@ export const retryHostingOperationRequestSchema = z
   })
   .strict();
 
+export const configureCpanelServerRequestSchema = z
+  .object({
+    hostname: cpanelHostnameSchema,
+    port: z.union([z.literal(443), z.literal(2087)]).default(2087),
+    apiUsername: cpanelApiUsernameSchema,
+    apiToken: z
+      .string()
+      .min(20)
+      .max(512)
+      .refine(
+        (value) => !/[\u0000-\u001f\u007f]/.test(value),
+        'API token must not contain control characters',
+      ),
+    confirmation: z.literal('CONFIGURE_CPANEL'),
+  })
+  .strict();
+
+export const cpanelServerConfigurationSchema = z
+  .object({
+    server: serviceServerSchema,
+    port: z.union([z.literal(443), z.literal(2087)]),
+    useTls: z.literal(true),
+    apiUsername: cpanelApiUsernameSchema,
+    credentialConfigured: z.boolean(),
+    credentialKeyVersion: z.string().min(1).max(64).nullable(),
+  })
+  .strict();
+
 export const hostingPanelOperationResultSchema = z
   .object({
     operation: hostingPanelOperationSchema,
@@ -186,6 +230,12 @@ export type TestHostingConnectionRequest = z.infer<
 >;
 export type RetryHostingOperationRequest = z.infer<
   typeof retryHostingOperationRequestSchema
+>;
+export type ConfigureCpanelServerRequest = z.infer<
+  typeof configureCpanelServerRequestSchema
+>;
+export type CpanelServerConfiguration = z.infer<
+  typeof cpanelServerConfigurationSchema
 >;
 export type HostingPanelOperationResult = z.infer<
   typeof hostingPanelOperationResultSchema

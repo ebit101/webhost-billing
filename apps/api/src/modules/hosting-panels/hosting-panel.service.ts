@@ -12,10 +12,13 @@ import {
 } from '@webhost-billing/database';
 import {
   createPaginationMeta,
+  cpanelServerConfigurationSchema,
   hostingAccountSchema,
   hostingPanelLoginUrlSchema,
   hostingPanelOperationResultSchema,
   hostingPanelOperationSchema,
+  type ConfigureCpanelServerRequest,
+  type CpanelServerConfiguration,
   type ExecuteHostingOperationRequest,
   type HostingAccount,
   type HostingPanelOperation,
@@ -31,6 +34,7 @@ import type { SecurityRequestContext } from '../../common/http/request-context';
 import { PRISMA_CLIENT } from '../../infrastructure/database/database.module';
 import { API_ENVIRONMENT } from '../../infrastructure/environment/environment.module';
 import type { AuthRequestContext } from '../auth/auth.types';
+import { CpanelCredentialCipher } from './cpanel-credential-cipher';
 import {
   HostingPanelProviderError,
   normalizeHostingPanelError,
@@ -43,7 +47,6 @@ import type {
 } from './hosting-panel.interface';
 import { HostingPanelRegistry } from './hosting-panel.registry';
 
-const PANEL_TIMEOUT_MILLISECONDS = 5_000;
 const MAX_MANUAL_ATTEMPTS = 5;
 
 const operationInclude = {
@@ -83,13 +86,70 @@ interface ProviderSuccess {
 @Injectable()
 export class HostingPanelService {
   private readonly fingerprintKey: string;
+  private readonly panelTimeoutMilliseconds: number;
 
   constructor(
     @Inject(PRISMA_CLIENT) private readonly prisma: PrismaClient,
     @Inject(API_ENVIRONMENT) environment: ApiEnvironment,
     private readonly registry: HostingPanelRegistry,
+    private readonly credentialCipher: CpanelCredentialCipher,
   ) {
     this.fingerprintKey = environment.CREDENTIAL_ENCRYPTION_KEY;
+    this.panelTimeoutMilliseconds = environment.HOSTING_PANEL_TIMEOUT_MS;
+  }
+
+  async configureCpanelServer(
+    serverId: string,
+    input: ConfigureCpanelServerRequest,
+    actor: AuthRequestContext,
+    context: SecurityRequestContext,
+  ): Promise<CpanelServerConfiguration> {
+    if (actor.identity.role !== 'ADMIN') {
+      throw this.forbidden('Only administrators can configure panel servers.');
+    }
+    const configured = await this.prisma.$transaction(async (transaction) => {
+      await transaction.$queryRaw`
+        SELECT "id" FROM "servers"
+        WHERE "id" = ${serverId}::uuid FOR UPDATE
+      `;
+      const current = await transaction.server.findFirst({
+        where: { id: serverId, deletedAt: null },
+      });
+      if (!current) throw this.notFound('Server was not found.');
+      const encryptedToken = this.credentialCipher.encrypt(
+        current.id,
+        input.apiToken,
+      );
+      const server = await transaction.server.update({
+        where: { id: current.id },
+        data: {
+          hostname: input.hostname,
+          port: input.port,
+          useTls: true,
+          adapterKey: 'cpanel-whm',
+          apiUsername: input.apiUsername,
+          credentialsCiphertext: encryptedToken,
+          credentialKeyVersion: this.credentialCipher.keyVersion,
+        },
+      });
+      await transaction.activityLog.create({
+        data: {
+          actorUserId: actor.identity.userId,
+          action: 'CPANEL_SERVER_CONFIGURED',
+          entityType: 'SERVER',
+          entityId: server.id,
+          ipAddressHash: context.ipAddressHash,
+          metadata: {
+            previousAdapterKey: current.adapterKey,
+            adapterKey: server.adapterKey,
+            credentialKeyVersion: server.credentialKeyVersion,
+            tokenRotated: true,
+          },
+        },
+      });
+      return server;
+    });
+    return this.toCpanelConfiguration(configured);
   }
 
   async list(query: HostingPanelOperationListQuery): Promise<{
@@ -210,7 +270,7 @@ export class HostingPanelService {
       const panel = this.registry.get(server.adapterKey);
       providerResult = await withHostingPanelTimeout(
         panel.testConnection(this.connection(server)),
-        PANEL_TIMEOUT_MILLISECONDS,
+        this.panelTimeoutMilliseconds,
         false,
       );
     } catch (error) {
@@ -452,7 +512,7 @@ export class HostingPanelService {
           contactEmail: service.customer.user.email,
           idempotencyKey,
         }),
-        PANEL_TIMEOUT_MILLISECONDS,
+        this.panelTimeoutMilliseconds,
         true,
       );
       return {
@@ -468,42 +528,42 @@ export class HostingPanelService {
     if (input.type === 'GET_ACCOUNT') {
       account = await withHostingPanelTimeout(
         panel.getAccount(connection, reference),
-        PANEL_TIMEOUT_MILLISECONDS,
+        this.panelTimeoutMilliseconds,
         false,
       );
       metadata = { account };
     } else if (input.type === 'SUSPEND_ACCOUNT') {
       account = await withHostingPanelTimeout(
         panel.suspendAccount(connection, reference, input.reason),
-        PANEL_TIMEOUT_MILLISECONDS,
+        this.panelTimeoutMilliseconds,
         true,
       );
       metadata = { account };
     } else if (input.type === 'UNSUSPEND_ACCOUNT') {
       account = await withHostingPanelTimeout(
         panel.unsuspendAccount(connection, reference),
-        PANEL_TIMEOUT_MILLISECONDS,
+        this.panelTimeoutMilliseconds,
         true,
       );
       metadata = { account };
     } else if (input.type === 'CHANGE_PACKAGE') {
       account = await withHostingPanelTimeout(
         panel.changePackage(connection, reference, input.packageIdentifier),
-        PANEL_TIMEOUT_MILLISECONDS,
+        this.panelTimeoutMilliseconds,
         true,
       );
       metadata = { account };
     } else if (input.type === 'CHANGE_PASSWORD') {
       account = await withHostingPanelTimeout(
         panel.changePassword(connection, reference, input.newPassword),
-        PANEL_TIMEOUT_MILLISECONDS,
+        this.panelTimeoutMilliseconds,
         true,
       );
       metadata = { account };
     } else if (input.type === 'GENERATE_LOGIN_URL') {
       const login = await withHostingPanelTimeout(
         panel.generateLoginUrl(connection, reference),
-        PANEL_TIMEOUT_MILLISECONDS,
+        this.panelTimeoutMilliseconds,
         false,
       );
       loginUrl = hostingPanelLoginUrlSchema.parse(login.url);
@@ -511,7 +571,7 @@ export class HostingPanelService {
     } else {
       await withHostingPanelTimeout(
         panel.terminateAccount(connection, reference, input.reason),
-        PANEL_TIMEOUT_MILLISECONDS,
+        this.panelTimeoutMilliseconds,
         true,
       );
       metadata = { terminated: true };
@@ -1000,15 +1060,53 @@ export class HostingPanelService {
     port: number;
     useTls: boolean;
     apiUsername: string | null;
+    credentialsCiphertext: string | null;
+    credentialKeyVersion: string | null;
   }): HostingPanelConnection {
+    const credential =
+      server.credentialsCiphertext && server.credentialKeyVersion
+        ? this.credentialCipher.decrypt(
+            server.id,
+            server.credentialKeyVersion,
+            server.credentialsCiphertext,
+          )
+        : null;
     return {
       serverId: server.id,
       hostname: server.hostname,
       port: server.port,
       useTls: server.useTls,
       apiUsername: server.apiUsername,
-      credential: null,
+      credential,
     };
+  }
+
+  private toCpanelConfiguration(server: {
+    id: string;
+    name: string;
+    hostname: string;
+    status: 'ACTIVE' | 'MAINTENANCE' | 'DISABLED';
+    adapterKey: string;
+    port: number;
+    useTls: boolean;
+    apiUsername: string | null;
+    credentialsCiphertext: string | null;
+    credentialKeyVersion: string | null;
+  }): CpanelServerConfiguration {
+    return cpanelServerConfigurationSchema.parse({
+      server: {
+        id: server.id,
+        name: server.name,
+        hostname: server.hostname,
+        status: server.status,
+        adapterKey: server.adapterKey,
+      },
+      port: server.port,
+      useTls: server.useTls,
+      apiUsername: server.apiUsername,
+      credentialConfigured: Boolean(server.credentialsCiphertext),
+      credentialKeyVersion: server.credentialKeyVersion,
+    });
   }
 
   private reference(service: {

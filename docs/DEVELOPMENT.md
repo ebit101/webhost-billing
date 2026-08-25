@@ -4,6 +4,8 @@
 
 The local infrastructure is an isolated Docker Compose project named `webhost-billing-dev`. It does not use cPanel's MariaDB service or the existing RustDesk containers.
 
+`HOSTING_PANEL_TIMEOUT_MS` bounds cPanel/WHM requests between 1 and 30 seconds and defaults to 10 seconds. Real WHM credentials are configured only through the administrator connection form and stored as encrypted database ciphertext; do not add them to `.env`, shell history, fixtures, or documentation. See `docs/HOSTING_PANELS.md` before any manually authorized development-server check.
+
 The current infrastructure contains:
 
 - PostgreSQL 18.6
