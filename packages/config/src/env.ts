@@ -1,6 +1,7 @@
 import { z } from 'zod';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { parseEnv } from 'node:util';
 
 export const nodeEnvironmentSchema = z.enum([
   'development',
@@ -43,6 +44,10 @@ const redisUrlSchema = z.string().refine(
 const infrastructureEnvironmentSchema = z.object({
   DATABASE_URL: postgresUrlSchema,
   REDIS_URL: redisUrlSchema,
+  BULLMQ_PREFIX: z
+    .string()
+    .regex(/^[A-Za-z][A-Za-z0-9_-]{0,63}$/)
+    .default('webhost-billing'),
 });
 
 const secretEnvironmentSchema = z.object({
@@ -194,6 +199,19 @@ export const workerEnvironmentSchema = baseEnvironmentSchema
   .extend({
     CREDENTIAL_ENCRYPTION_KEY:
       secretEnvironmentSchema.shape.CREDENTIAL_ENCRYPTION_KEY,
+    OUTBOX_POLL_INTERVAL_MS: z.coerce
+      .number()
+      .int()
+      .min(250)
+      .max(60_000)
+      .default(1_000),
+    OUTBOX_BATCH_SIZE: z.coerce.number().int().min(1).max(100).default(25),
+    OUTBOX_LOCK_TIMEOUT_SECONDS: z.coerce
+      .number()
+      .int()
+      .min(30)
+      .max(3_600)
+      .default(120),
   });
 
 export const webEnvironmentSchema = baseEnvironmentSchema.extend({
@@ -214,7 +232,10 @@ export function loadEnvironmentFiles(
     const absolutePath = resolve(process.cwd(), path);
 
     if (existsSync(absolutePath)) {
-      process.loadEnvFile(absolutePath);
+      const values = parseEnv(readFileSync(absolutePath, 'utf8'));
+      for (const [key, value] of Object.entries(values)) {
+        if (process.env[key] === undefined) process.env[key] = value;
+      }
       return;
     }
   }

@@ -54,6 +54,7 @@ The schema remains one modular-monolith database. Model grouping does not create
 - Invoice rows are locked while verified charges or adjustments update settlement aggregates, preventing duplicate application and concurrent overpayment.
 - Gateway payment finalization, event processing, invoice settlement, linked-order payment, audits, and outbox creation share one database transaction.
 - Automation and outbox records have unique idempotency keys for safe retries.
+- Outbox publication claims due/stale rows with leases and `FOR UPDATE SKIP LOCKED`. A row becomes `PUBLISHED` only after its deterministic reference-only BullMQ job is accepted; exhausted/unroutable publication remains durably `FAILED` for administrator review.
 - Orders have unique submission keys so a repeated checkout request returns the original order and invoice instead of creating duplicate financial records.
 - Invoices have unique submission keys for safe administrator and order-generated creation retries.
 - Hosting-panel attempts have unique submission keys and keyed request fingerprints. Matching replays return the original attempt; a changed payload conflicts. Each manual retry is a new row linked to its parent.
@@ -74,6 +75,7 @@ The schema remains one modular-monolith database. Model grouping does not create
 - Hosting-panel request/result metadata is restricted to JSON objects containing normalized safe fields. Passwords, credentials, raw provider responses, and ephemeral panel login URLs are prohibited.
 - Server integration credentials must store ciphertext and key version together. A `cpanel-whm` server is database-valid only with TLS, port `2087` or `443`, a WHM username, encrypted credential ciphertext, and a credential key version.
 - Activity logs may retain a one-way IP-address hash, not authentication secrets.
+- BullMQ receives outbox/aggregate/correlation references only. Full outbox JSON remains in PostgreSQL and must be revalidated by the trusted consumer; it is never copied wholesale into Redis.
 - Authentication session and action-token lookups use SHA-256 hashes of random opaque tokens. Raw reset and verification tokens are encrypted only for pending email delivery; raw session tokens are never stored.
 
 ### Authentication history

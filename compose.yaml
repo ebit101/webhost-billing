@@ -42,7 +42,7 @@ services:
       - --appendonly
       - 'yes'
       - --appendfsync
-      - everysec
+      - always
       - --requirepass
       - ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}
     ports:

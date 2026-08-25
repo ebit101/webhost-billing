@@ -10,6 +10,7 @@ Zod schemas validate data that crosses an application boundary. Callers must par
 - pagination queries and response metadata;
 - authenticated administrator and customer identities;
 - roles and the separate order, invoice, payment, service, and ticket states;
+- reference-only background job envelopes, queue names, failure visibility, and confirmed retry requests;
 - success, paginated-success, and error response envelopes.
 
 Compile-time TypeScript types are inferred from the matching schemas where possible. A TypeScript assertion alone is not boundary validation.

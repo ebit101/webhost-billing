@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { z } from 'zod';
 import {
+  backgroundJobDataSchema,
+  backgroundQueuePolicies,
   apiErrorResponseSchema,
   apiSuccessResponseSchema,
   authenticatedSessionResponseSchema,
@@ -359,6 +361,27 @@ describe('boundary contracts', () => {
           { billingPeriod: 'MONTHLY', currency: 'BDT', amount: '200' },
         ],
       }),
+    );
+  });
+
+  it('keeps background payloads reference-only and risky mutations single-attempt', () => {
+    const data = backgroundJobDataSchema.parse({
+      schemaVersion: 1,
+      outboxEventId: '10000000-0000-4000-8000-000000000001',
+      aggregateType: 'SERVICE',
+      aggregateId: '10000000-0000-4000-8000-000000000002',
+      eventType: 'HOSTING_PROVISIONING_REQUESTED',
+      correlationId: '10000000-0000-4000-8000-000000000001',
+    });
+    assert.equal('payload' in data, false);
+    assert.equal(backgroundQueuePolicies['hosting-provisioning'].attempts, 1);
+    assert.equal(backgroundQueuePolicies['hosting-suspension'].attempts, 1);
+    assert.equal(backgroundQueuePolicies['hosting-unsuspension'].attempts, 1);
+    assert.equal(backgroundQueuePolicies.emails.attempts, 5);
+    assert.equal(
+      backgroundJobDataSchema.safeParse({ ...data, credential: 'hidden' })
+        .success,
+      false,
     );
   });
 

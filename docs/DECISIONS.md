@@ -194,6 +194,14 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** WHM API tokens are revocable, expirable, IP-restrictable, and privilege-scoped, while passwords and access hashes carry unnecessary authority. A successful transport response alone does not prove the intended account identity or final state.
 - **Consequence:** The adapter key is `cpanel-whm`; redirects, plaintext WHM ports, malformed/oversized responses, unexpected login hosts, and missing credentials fail safely. Exact existing accounts make provisioning idempotent. Network, timeout, `5xx`, and post-mutation verification uncertainty are held for reconciliation. Token rotation requires re-entry and creates an audit record; plaintext tokens, raw responses, passwords, and session URLs are never persisted or returned from configuration endpoints.
 
+## ADR-025 — PostgreSQL Outbox Before BullMQ Delivery
+
+- **Status:** Accepted
+- **Date:** 2026-08-26
+- **Decision:** PostgreSQL `OutboxEvent` rows are the durable background-work handoff. A dedicated worker claims due/stale rows with leases and `FOR UPDATE SKIP LOCKED`, then adds reference-only BullMQ jobs with deterministic IDs. Mark an event published only after Redis accepts the job. Apply per-queue bounded exponential retry; give hosting mutations one automatic attempt and use BullMQ unrecoverable classification for permanent/inconsistent failures.
+- **Reason:** Redis cannot participate in the business transaction, job payloads are cleartext, and an external mutation can time out after succeeding. Publishing after commit without an outbox can lose work; retrying mutations blindly can duplicate accounts or service changes.
+- **Consequence:** Seven queues have explicit names/policies. Redis contains UUID references and safe classification only, while PostgreSQL retains full event context. Dispatcher crashes are recovered through stale leases plus deterministic IDs. Redis must run as a durable no-eviction queue backend; local AOF uses `appendfsync always`. Failed jobs/outbox rows remain visible to administrators; only explicitly temporary jobs or recognized failed publications can be manually retried and each retry is audited. SMTP/renewal/hosting business consumers are registered only by their later authorized commands.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

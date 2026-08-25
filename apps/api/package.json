@@ -19,7 +19,7 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "pretest:e2e": "pnpm --filter @webhost-billing/config build && pnpm --filter @webhost-billing/shared build && pnpm --filter @webhost-billing/database build",
+    "pretest:e2e": "pnpm --filter @webhost-billing/config build && pnpm --filter @webhost-billing/shared build && pnpm --filter @webhost-billing/database build && pnpm --filter @webhost-billing/queue build",
     "test:e2e": "NODE_OPTIONS=--experimental-vm-modules jest --config ./test/jest-e2e.json",
     "typecheck": "tsc --noEmit"
   },
@@ -29,6 +29,7 @@
     "@nestjs/platform-express": "^11.0.1",
     "@webhost-billing/config": "workspace:*",
     "@webhost-billing/database": "workspace:*",
+    "@webhost-billing/queue": "workspace:*",
     "@webhost-billing/shared": "workspace:*",
     "argon2": "0.45.1",
     "cookie": "1.0.2",

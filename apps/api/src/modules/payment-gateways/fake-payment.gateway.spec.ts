@@ -6,6 +6,7 @@ const environment: ApiEnvironment = {
   PORT: 3001,
   DATABASE_URL: 'postgresql://example.test/database',
   REDIS_URL: 'redis://example.test',
+  BULLMQ_PREFIX: 'test',
   SESSION_SECRET: 's'.repeat(32),
   CREDENTIAL_ENCRYPTION_KEY: 'e'.repeat(32),
   WEB_ORIGIN: 'http://localhost:3000',

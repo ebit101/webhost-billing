@@ -13,6 +13,7 @@ import { PaymentGatewayModule } from './modules/payment-gateways/payment-gateway
 import { ProductModule } from './modules/products/product.module';
 import { ServiceModule } from './modules/services/service.module';
 import { HostingPanelModule } from './modules/hosting-panels/hosting-panel.module';
+import { BackgroundJobModule } from './modules/background-jobs/background-job.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { HostingPanelModule } from './modules/hosting-panels/hosting-panel.modul
     PaymentGatewayModule,
     ServiceModule,
     HostingPanelModule,
+    BackgroundJobModule,
   ],
   controllers: [AppController],
   providers: [

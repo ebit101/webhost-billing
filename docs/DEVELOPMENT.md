@@ -11,6 +11,10 @@ The current infrastructure contains:
 - PostgreSQL 18.6
 - Redis 8.10
 
+BullMQ uses the environment-specific `BULLMQ_PREFIX`. The worker polls the PostgreSQL outbox according to `OUTBOX_POLL_INTERVAL_MS`, `OUTBOX_BATCH_SIZE`, and `OUTBOX_LOCK_TIMEOUT_SECONDS`; see `docs/BACKGROUND_JOBS.md`. Redis job data is reference-only and must never contain credentials or raw outbox payloads.
+
+Redis AOF uses `appendfsync always` because this instance is a durable queue backend, not a disposable cache. Do not weaken persistence or configure eviction for a staging/production queue deployment without a reviewed recovery design.
+
 Local SMTP capture remains deferred. Authentication creates idempotent verification and password-reset outbox records, but Command 5 does not send email.
 
 ## Prerequisites
@@ -105,6 +109,13 @@ With PostgreSQL and Redis healthy, run the API end-to-end suites with:
 
 ```bash
 pnpm --filter @webhost-billing/api test:e2e
+```
+
+The queue-package and worker tests are Redis/PostgreSQL integration tests and therefore also require both healthy services:
+
+```bash
+pnpm --filter @webhost-billing/queue test --runInBand
+pnpm --filter @webhost-billing/worker test --runInBand
 ```
 
 ## Database migrations

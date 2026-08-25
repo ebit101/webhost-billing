@@ -10,7 +10,7 @@
   },
   "scripts": {
     "build": "pnpm -r --if-present build",
-    "build:packages": "pnpm --filter @webhost-billing/config build && pnpm --filter @webhost-billing/shared build && pnpm --filter @webhost-billing/database build",
+    "build:packages": "pnpm --filter @webhost-billing/config build && pnpm --filter @webhost-billing/shared build && pnpm --filter @webhost-billing/database build && pnpm --filter @webhost-billing/queue build",
     "db:format": "pnpm --filter @webhost-billing/database db:format",
     "db:generate": "pnpm --filter @webhost-billing/database db:generate",
     "db:migrate:deploy": "pnpm --filter @webhost-billing/database db:migrate:deploy",
@@ -20,6 +20,7 @@
     "db:validate": "pnpm --filter @webhost-billing/database db:validate",
     "db:verify": "pnpm --filter @webhost-billing/database db:verify",
     "predev": "pnpm build:packages",
+    "pretest": "pnpm build:packages",
     "dev": "pnpm --parallel --stream --filter @webhost-billing/api --filter @webhost-billing/web --filter @webhost-billing/worker dev",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

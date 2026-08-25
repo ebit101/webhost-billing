@@ -1,12 +1,6 @@
 import type { Metadata } from 'next';
-import { SectionPreview } from '../../../../components/dashboard/section-preview';
+import { AutomationManager } from '../../../../components/automation/automation-manager';
 export const metadata: Metadata = { title: 'Automation' };
 export default function Page() {
-  return (
-    <SectionPreview
-      area="Administrator"
-      title="Automation"
-      description="Inspect scheduled work, retries, results, and audit context."
-    />
-  );
+  return <AutomationManager />;
 }

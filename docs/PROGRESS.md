@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 16 — Integrate the Real cPanel/WHM Hosting Panel
+- **Current command:** Command 17 — Add Redis, Queues, and Workers
 - **Current status:** Completed and delivered to GitHub `main`
-- **Last updated:** 2026-08-26
-- **Next command:** Command 17 — Add Redis, Queues, and Workers
+- **Last updated:** 2026-08-25
+- **Next command:** Command 18 — Implement Email Notifications
 - **Next command authorized:** No
 
 ## Command Reports
@@ -1058,7 +1058,7 @@ Run **Command 16 — Integrate the Real Hosting Panel** after explicit authoriza
 ### Command 16 — Integrate the Real cPanel/WHM Hosting Panel
 
 - **Status:** Completed and delivered to GitHub `main`
-- **Date:** 2026-08-26
+- **Date:** 2026-08-25
 
 #### Scope completed
 
@@ -1121,6 +1121,73 @@ Run **Command 16 — Integrate the Real Hosting Panel** after explicit authoriza
 #### Recommended next command
 
 Run **Command 17 — Add Redis, Queues, and Workers** after explicit user authorization. Preserve the rule that uncertain external mutations are never blindly retried by a queue.
+
+### Command 17 — Add Redis, Queues, and Workers
+
+- **Status:** Completed and delivered to GitHub `main`
+- **Date:** 2026-08-26
+
+#### Scope completed
+
+- Added the reusable `@webhost-billing/queue` package with BullMQ 6, explicit ioredis connectivity, environment-isolated prefixes, producer fail-fast behavior, worker reconnect behavior, deterministic IDs, retained failures, and graceful queue/worker shutdown.
+- Defined strict shared contracts for seven queues: email, hosting provisioning, suspension, unsuspension, hosting-status reconciliation, payment reconciliation, and renewal-invoice generation.
+- Established per-queue bounded retry policies with exponential backoff. Hosting mutations have one automatic attempt; email, read-only reconciliation, and database-idempotent renewal work have small bounded retry budgets.
+- Added a reference-only versioned job envelope containing outbox/aggregate/correlation identifiers and safe failure classification only. Full outbox JSON, recipients, tokens, passwords, provider data, raw requests, and credentials are not copied into Redis.
+- Implemented a shared processor boundary that validates every job, supports cancellation, emits structured correlation logs, classifies failures as `TEMPORARY`, `PERMANENT`, or `INCONSISTENT`, and uses BullMQ `UnrecoverableError` to stop retrying permanent/uncertain work.
+- Implemented the Nest worker infrastructure with runtime-validated environment, Prisma and BullMQ lifecycles, and a continuously polling transactional-outbox dispatcher.
+- Added PostgreSQL `FOR UPDATE SKIP LOCKED` batch claiming, stale-lease recovery, bounded publication backoff, safe fixed failure codes, and deterministic publication deduplication. Outbox rows become `PUBLISHED` only after BullMQ accepts the job; unsupported or exhausted events remain durably `FAILED`.
+- Configured local Redis AOF with `appendfsync always` so acknowledged queue writes use durable local persistence before outbox publication is considered complete.
+- Added administrator-only queue/outbox failure visibility, confirmed manual retry actions, CSRF/role enforcement, safe serialization, and retry audit records. Permanent, inconsistent, malformed, or unroutable work cannot be retried through the interface.
+- Replaced the Automation placeholder with a responsive operational failure screen that clearly separates safely retryable jobs from reconciliation/route-repair conditions.
+- Added real Redis/PostgreSQL integration coverage for deduplication, reference-only payloads, bounded retry, unrecoverable failure, retained inspection, outbox publication, unsupported routing, and graceful lifecycle behavior.
+- Kept SMTP delivery, renewal scheduling/business rules, and hosting mutation consumers outside this command. Their jobs can be published/retained, but consumers are registered only when their later feature commands implement the actual handlers.
+
+#### Files changed
+
+- Queue package and lockfile: `packages/queue/**`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, root/app package scripts and dependencies
+- Shared/config boundaries: `packages/shared/src/contracts/background-jobs.ts`, `packages/shared/src/index.ts`, `packages/shared/test/contracts.spec.ts`, `packages/config/src/env.ts`, `.env.example`
+- Worker runtime/tests: `apps/worker/src/infrastructure/**`, `apps/worker/src/outbox/**`, `apps/worker/src/app.module.ts`, `apps/worker/src/main.ts`, `apps/worker/package.json`, `apps/worker/README.md`
+- Administrator API/tests: `apps/api/src/modules/background-jobs/**`, `apps/api/src/app.module.ts`, `apps/api/test/background-jobs.e2e-spec.ts`, API package/environment fixtures
+- Administrator interface/tests: `apps/web/src/components/automation/**`, `apps/web/src/app/(admin)/admin/automation/page.tsx`
+- Infrastructure/documentation: `compose.yaml`, `README.md`, `docs/BACKGROUND_JOBS.md`, `docs/API_CONTRACTS.md`, `docs/DATABASE.md`, `docs/DEVELOPMENT.md`, `docs/DECISIONS.md`, `docs/PROGRESS.md`
+
+#### Validation
+
+- Reviewed current official BullMQ documentation for custom job IDs, exponential retries, unrecoverable errors, producer/worker connection behavior, retained failed jobs, and graceful shutdown.
+- Frozen pnpm install and supply-chain policy check passed for all eight workspace projects. Optional `msgpackr-extract` native building remains explicitly disabled; BullMQ's required ioredis peer is pinned directly.
+- Docker Compose configuration passed with loopback-only PostgreSQL/Redis and Redis AOF `appendfsync always`; both running services remained healthy throughout validation.
+- Prisma schema validation, sixteen-migration status, idempotent fictional seed, and structural verifier passed. No migration was required because the existing durable outbox/automation schema already supports Command 17.
+- Prettier repository check, `git diff --check`, and API/worker/web ESLint passed without errors.
+- Strict TypeScript checks passed for all seven code workspace projects, including the new queue package, generated Prisma, and Next.js route types.
+- Complete non-E2E suite: 16 shared-contract tests, 69 API tests, 25 frontend tests, 3 queue integration tests, and 3 worker/integration tests passed (116 total).
+- Queue/worker integration tests passed against real Redis/PostgreSQL for deterministic deduplication, reference-only data, temporary retry then success, permanent failure stopping at one attempt, retained failure inspection, outbox lease/publication state, unsupported-event failure, and lifecycle closure.
+- Complete API end-to-end suite: 11 suites and 48 tests passed, including administrator/customer authorization, safe failure output, confirmed outbox retry, and atomic audit evidence.
+- Config, database, shared, queue, NestJS API, NestJS worker, and Next.js production builds passed with `NODE_ENV=production`; Next.js generated all 28 routes.
+- Secret audit confirmed no `.env`, credential, raw outbox payload, private key, production/customer data, or provider secret was added.
+
+#### Decisions made
+
+- PostgreSQL outbox rows—not direct Redis calls—are the only durable handoff from committed business transactions.
+- BullMQ job IDs are deterministic `outbox-<uuid>` references. A crash after queue acceptance but before database acknowledgement republishes the same ID rather than duplicating work.
+- Redis is a durable queue backend, not an evictable cache. Environment prefixes are mandatory and production requires durable persistence, no eviction, restricted access, monitoring, and tested recovery.
+- Hosting provisioning/suspension/unsuspension are mutation queues and never retry automatically. Future handlers must classify ambiguous outcomes as inconsistent and require reconciliation.
+- Outbox `PUBLISHED` means Redis accepted the job, not that its business handler succeeded. Every future handler must be independently idempotent and persist its real business outcome.
+- Failed BullMQ jobs remain in Redis for inspection; failed outbox publications remain in PostgreSQL. The administrator receives safe normalized facts only.
+- Queue consumer modules are opt-in. The worker does not consume email, renewal, payment, or hosting work until the relevant authorized command supplies and tests a real handler.
+
+#### Open questions and risks
+
+- SMTP provider/settings and email rendering/delivery remain Command 18. Existing authentication email jobs will wait in the email queue until that consumer is implemented.
+- Renewal schedules, billing policy, grace periods, automatic suspension/reactivation rules, and distributed schedule locks remain Command 19 and later automation work.
+- Payment and hosting reconciliation handlers remain unimplemented. They must use authenticated/read-only proof and must never convert an unknown external mutation into a blind retry.
+- Production Redis topology, persistence/backup destination, memory/no-eviction policy, alerting, recovery objectives, and failover testing remain deployment decisions. Redis data loss after accepted publication requires an operational recovery/replay plan.
+- The administrator screen intentionally shows retained failures, not a complete queue dashboard. Waiting/active/delayed metrics and alert delivery can be added when production operations are configured.
+- Queue job success/failure business records must be added by each later handler (for example `EmailLog` or `AutomationRun`); BullMQ state alone is not the financial/service source of truth.
+- The PostgreSQL driver continues to emit its known pg@9 concurrency deprecation warning during parallel E2E tests, and the minimal Node validation container emits Prisma OpenSSL auto-detection/experimental VM warnings. All database, queue, test, lint, type, and build checks passed.
+
+#### Recommended next command
+
+Run **Command 18 — Implement Email Notifications** after explicit user authorization. Register only the email consumer, decrypt authentication action tokens at the trusted delivery boundary, and ensure SMTP failure cannot roll back business transactions.
 
 ## Report Template
 
