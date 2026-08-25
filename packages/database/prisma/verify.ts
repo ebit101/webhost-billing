@@ -29,6 +29,7 @@ const expectedTables = [
   'email_logs',
   'email_verification_tokens',
   'hosting_panel_operations',
+  'integration_credentials',
   'invoice_items',
   'invoices',
   'order_items',

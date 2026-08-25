@@ -65,6 +65,7 @@ See `docs/DEVELOPMENT.md` for setup, health checks, connectivity, shutdown, and 
 - `docs/EMAIL_NOTIFICATIONS.md` — queued SMTP delivery, templates, preview files, retries, secret boundaries, and operations
 - `docs/RENEWAL_AUTOMATION.md` — renewal policy, scheduler locking, invoice/reminder lifecycle, and safe cPanel suspension/reactivation
 - `docs/SUPPORT_TICKETS.md` — customer/admin ticket workflows, ownership, plain-text policy, audit, and reply emails
+- `docs/DASHBOARDS_AND_REPORTS.md` — live metric definitions, business-date periods, audited CSV exports, and report safety
 - `docs/DATABASE.md` — schema, migration, deletion, and seed-data decisions
 - `docs/DEVELOPMENT.md` — local infrastructure and application setup
 - `docs/FRONTEND_DESIGN_SYSTEM.md` — application shells, design tokens, responsive behavior, and UI components

@@ -234,6 +234,14 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** Billing rules must have one visible source of truth, while credentials have different access, masking, rotation, and recovery requirements. Provider secrets must never be serialized to the browser, logs, audit metadata, or queue payloads. Sequential financial identifiers require concurrency control rather than random presentation numbers.
 - **Consequence:** The administrator settings API atomically validates and audits ordinary settings. Credential replacement is write-only, confirmed, and returns only status/masked identifiers. Online checkout activation requires a configured gateway and HTTPS callback origin; inactive configured providers remain available for callbacks/reconciliation. Business and renewal time zones stay aligned, email rendering reloads typed branding, and customer-visible manual-payment instructions have a separate safe endpoint. This ADR supersedes ADR-018's random invoice-number presentation rule without changing invoice immutability or idempotent submission keys. Master-key rotation is planned maintenance requiring re-entry of all encrypted bundles/tokens.
 
+## ADR-030 — Transaction-Sourced Operational Reporting
+
+- **Status:** Accepted
+- **Date:** 2026-08-25
+- **Decision:** Build the administrator dashboard directly from authoritative PostgreSQL financial and workflow states. Calculate selected-period revenue from successful charge/refund/reversal transactions at `verifiedAt`, keep current queue and balance metrics explicitly separate, and derive calendar boundaries from the configured IANA business timezone. Provide only administrator-authorized, audited CSV exports with bounded rows and spreadsheet-injection protection.
+- **Reason:** Invoice totals do not prove collected cash, browser redirects do not prove settlement, historical refunds must remain visible, and mixing period metrics with current workflow counts creates misleading comparisons. CSV is sufficient for this private business without introducing a data warehouse or BI subsystem.
+- **Consequence:** Cancelled/draft invoices and non-successful payments are excluded by state; successful refunds/reversals subtract without rewriting charges. Monetary JSON remains string-serialized integer minor units, including signed net revenue. The dashboard mixes no currencies and exposes freshness/timezone. Report creation is a CSRF-protected mutation with a safe audit record; secrets, proof/provider payloads, tax identifiers, and control-panel credentials are never exported. Historical multi-currency analysis, scheduled reports, forecasting, tax reports, and general report builders remain outside the MVP.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

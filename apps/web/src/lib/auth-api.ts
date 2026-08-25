@@ -130,6 +130,23 @@ export async function authenticatedGet<T>(path: string): Promise<T> {
   return (body as unknown as ApiSuccess<T>).data;
 }
 
+export async function authenticatedDownload(
+  path: string,
+  body: Record<string, unknown>,
+): Promise<{ blob: Blob; filename: string }> {
+  const csrf = await csrfToken();
+  const response = await fetch(`${API_URL}${path}`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'X-CSRF-Token': csrf, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) throw new Error(errorMessage(await responseBody(response)));
+  const disposition = response.headers.get('content-disposition') ?? '';
+  const filename = /filename="([^"]+)"/.exec(disposition)?.[1] ?? 'report.csv';
+  return { blob: await response.blob(), filename };
+}
+
 export async function publicGet<T>(path: string): Promise<T> {
   const response = await fetch(`${API_URL}${path}`, { cache: 'no-store' });
   const body = await responseBody(response);

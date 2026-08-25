@@ -45,6 +45,9 @@ import {
   createTicketRequestSchema,
   replyToTicketRequestSchema,
   updateTicketRequestSchema,
+  dashboardQuerySchema,
+  dashboardResponseSchema,
+  reportResourceSchema,
 } from '../src';
 
 describe('money contracts', () => {
@@ -73,6 +76,64 @@ describe('money contracts', () => {
 });
 
 describe('boundary contracts', () => {
+  it('validates bounded dashboard dates, lossless metrics, and report resources', () => {
+    assert.equal(
+      dashboardQuerySchema.safeParse({
+        from: '2026-08-01',
+        to: '2026-08-31',
+      }).success,
+      true,
+    );
+    assert.equal(
+      dashboardQuerySchema.safeParse({ from: '2026-08-01' }).success,
+      false,
+    );
+    assert.equal(reportResourceSchema.safeParse('payments').success, true);
+    assert.equal(reportResourceSchema.safeParse('secrets').success, false);
+    assert.equal(
+      dashboardResponseSchema.safeParse({
+        generatedAt: '2026-08-25T12:00:00.000Z',
+        timeZone: 'Asia/Dhaka',
+        currency: 'BDT',
+        period: { from: '2026-08-01', to: '2026-08-31' },
+        metrics: {
+          collectedRevenue: { amount: '9007199254740993', currency: 'BDT' },
+          outstandingBalance: { amount: '0', currency: 'BDT' },
+          overdueBalance: { amount: '0', currency: 'BDT' },
+          activeServices: 1,
+          suspendedServices: 0,
+          pendingOrders: 2,
+          openTickets: 3,
+          failedAutomationJobs: 0,
+        },
+        revenueSeries: [{ date: '2026-08-01', amount: '-100' }],
+        recentActivity: [],
+      }).success,
+      true,
+    );
+    assert.equal(
+      dashboardResponseSchema.safeParse({
+        generatedAt: '2026-08-25T12:00:00.000Z',
+        timeZone: 'Asia/Dhaka',
+        currency: 'BDT',
+        period: { from: '2026-08-01', to: '2026-08-01' },
+        metrics: {
+          collectedRevenue: { amount: '-0', currency: 'BDT' },
+          outstandingBalance: { amount: '0', currency: 'BDT' },
+          overdueBalance: { amount: '0', currency: 'BDT' },
+          activeServices: 0,
+          suspendedServices: 0,
+          pendingOrders: 0,
+          openTickets: 0,
+          failedAutomationJobs: 0,
+        },
+        revenueSeries: [],
+        recentActivity: [],
+      }).success,
+      false,
+    );
+  });
+
   it('validates bounded renewal rules and strict hosting automation references', () => {
     assert.equal(
       renewalAutomationPolicySchema.safeParse({

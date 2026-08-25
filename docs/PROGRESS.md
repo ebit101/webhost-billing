@@ -1440,6 +1440,67 @@ Run **Command 21 — Implement Settings and Secrets** only after explicit user a
 
 Run **Command 22 — Complete Dashboards and Reports** only after explicit user authorization. Use real database aggregates, integer-minor-unit arithmetic, the configured business timezone/currency, administrator authorization, and actionable operational metrics without exposing credentials or customer-sensitive detail.
 
+### Command 22 — Complete Dashboards and Reports
+
+- **Status:** Completed and delivered to GitHub `main`
+- **Date:** 2026-08-25
+
+#### Scope completed
+
+- Replaced the fictional administrator dashboard with a live PostgreSQL-backed operational view and strict shared request/response contracts.
+- Added inclusive business-date period filtering in the configured IANA timezone, month-to-date defaults, a 366-day maximum, explicit response freshness, and a complete daily net-revenue series.
+- Calculated collected revenue only from successful verified payment transactions: charges add while append-only refunds and reversals subtract. Failed, pending, and cancelled payments are excluded without rewriting original charges.
+- Calculated outstanding and overdue balances only from configured-currency `UNPAID`/`OVERDUE` invoice balances, excluding draft, cancelled, paid, and refunded invoices.
+- Added current actionable counts for active/suspended services, non-terminal orders, non-closed tickets, plus selected-period failed/partly successful automation runs.
+- Added safe recent auditable activity with actor, action, entity, and occurrence time while deliberately excluding arbitrary metadata, IP hashes, bodies, provider data, and secrets.
+- Added administrator-only, CSRF-protected CSV exports for customers, invoices, payments, and services. Invoice/payment exports follow the selected period; customer/service exports are current snapshots.
+- Made every CSV creation auditable with resource, row count, period, currency, and timezone only. Added a 10,000-row rejection limit, UTF-8 BOM, consistent quoting, exact `BIGINT` serialization, formula-injection neutralization, cache prevention, and sensitive-field exclusions.
+- Added a responsive dashboard with eight metric cards, period controls, an accessible daily net-revenue chart, four report downloads, load/retry/error states, and recent activity.
+- Corrected the structural database verifier's carried-forward expected-table list to include Command 21's already-migrated `integration_credentials` table.
+- Added focused documentation defining source, grain, time scope, freshness, exclusions, routes, CSV safety, and intentionally unsupported analytics scope.
+
+#### Files changed
+
+- Shared contracts/tests: `packages/shared/src/contracts/dashboard-reports.ts`, `packages/shared/src/index.ts`, `packages/shared/test/contracts.spec.ts`
+- Dashboard/report API/tests: `apps/api/src/modules/dashboard-reports/**`, `apps/api/src/app.module.ts`, `apps/api/test/dashboard-reports.e2e-spec.ts`
+- Administrator interface/tests: `apps/web/src/components/dashboard/admin-dashboard.tsx`, `apps/web/src/components/dashboard/admin-dashboard.test.tsx`, `apps/web/src/app/(admin)/admin/page.tsx`, `apps/web/src/lib/auth-api.ts`, `apps/web/src/components/orders/order-ui.tsx`
+- Database verifier: `packages/database/prisma/verify.ts`
+- Documentation: `README.md`, `docs/DASHBOARDS_AND_REPORTS.md`, `docs/API_CONTRACTS.md`, `docs/DECISIONS.md`, `docs/PROGRESS.md`
+
+#### Validation
+
+- Repository Prettier check, `git diff --check`, API/worker/web ESLint, and strict TypeScript checks for config/database/shared/queue/API/worker/web passed without warnings or errors.
+- Shared contracts passed 22 tests; queue infrastructure passed 3 real-Redis tests; API unit suites passed 76 tests; worker suites passed 27 tests; frontend passed 31 tests; and complete API end-to-end validation passed 59 tests across sixteen suites. Total validated tests: 218.
+- Command 22 E2E coverage passed against real PostgreSQL/Redis for administrator/customer authorization, typed real dashboard responses, business-date series completeness, CSRF protection, CSV delivery, spreadsheet-formula neutralization, sensitive-field exclusion, and export audit creation.
+- Focused unit coverage passed for charge-minus-refund-minus-reversal arithmetic, selected-period query state, signed daily revenue, Dhaka boundaries, daylight-saving transitions, reversed/overlong period rejection, exact large-integer CSV output, and formula neutralization.
+- Prisma formatting, schema validation, client generation, nineteen-migration status, structural database verification, Docker Compose validation, and PostgreSQL/Redis health checks passed. No schema migration was needed because existing financial, workflow, activity, and automation models represented the authorized scope.
+- Shared/database/queue package builds, NestJS API/worker production builds, and an isolated-output Next.js 16.3.2 webpack production build passed. The web build generated all 29 application routes, including the completed `/admin` dashboard, without replacing the running development output.
+- Reserved Command 22 E2E users and export audit fixtures were verified at zero after cleanup. A source/private-key scan passed. No real customer data, credential, payment, email, WHM, registrar, or other external-provider action was used or executed.
+
+#### Decisions made
+
+- Collected revenue is transaction-sourced net cash movement, not invoice total or browser redirect state. It uses successful rows at `verifiedAt`; refunds and reversals remain separate negative contributions.
+- Money balances and revenue use only the configured operating currency. The dashboard performs no historical currency mixing or exchange-rate conversion.
+- Revenue and failed-automation counts use the selected period. Outstanding balances and workflow queue counts are current point-in-time metrics so a date-filter change cannot misrepresent current work.
+- Pending orders means every non-terminal operational state: `PENDING`, `AWAITING_PAYMENT`, `PAID`, and `PROCESSING`.
+- Recent activity is intentionally metadata-free. The dashboard is an overview, not a raw audit-log or sensitive event-payload browser.
+- CSV export creation is a state-changing audited operation and therefore uses administrator-only `POST` plus CSRF rather than an unaudited download `GET`.
+- Customers/services export current records; invoices/payments use creation timestamps within the selected business-date period. CSV values remain raw minor units with an adjacent currency column for lossless reconciliation.
+- The product remains intentionally small: no general report builder, forecasting, scheduled email reports, tax report engine, analytics warehouse, multi-currency consolidation, or BI integration was added.
+
+#### Open questions and risks
+
+- Historical records in a currency other than the currently configured operating currency are intentionally excluded from money totals. A currency change requires separate reconciliation rather than conversion.
+- The 10,000-row CSV safety ceiling is appropriate for the current private business. Growth beyond it will require a separately designed asynchronous/batched export flow with protected storage and expiry.
+- CSV files contain administrator-authorized business/customer data and should be stored, shared, and deleted according to a documented retention policy. Spreadsheet formula protection does not replace endpoint authorization or secure file handling.
+- Failed automation runs have no resolved/acknowledged state in the current schema, so the actionable card is explicitly limited to the selected period. A later incident workflow could add acknowledgement without rewriting run history.
+- The existing PostgreSQL driver pg@9 concurrent-query deprecation warning and Jest experimental VM warning remain visible in some E2E runs; all checks passed.
+- The existing Prisma tooling-chain `deepmerge-ts` advisory from Command 18 remains unchanged; Command 22 added no dependency.
+
+#### Recommended next command
+
+Run **Command 23 — Add PDF Invoices** only after explicit user authorization. Generate PDFs from immutable invoice snapshots, keep download authorization role/ownership-bound, avoid remote assets, and verify the rendered financial values against the existing invoice contract.
+
 ## Report Template
 
 Use this template after every future command:

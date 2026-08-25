@@ -7,13 +7,17 @@ export function formatMinor(amount: string, currency: string) {
       currency,
     }).resolvedOptions().maximumFractionDigits ?? 2;
   const value = BigInt(amount);
+  const negative = value < 0n;
+  const absolute = negative ? -value : value;
   const divisor = 10n ** BigInt(fractionDigits);
-  const whole = value / divisor;
+  const whole = absolute / divisor;
   if (fractionDigits === 0) {
-    return `${currency} ${whole.toLocaleString('en-US')}`;
+    return `${negative ? '-' : ''}${currency} ${whole.toLocaleString('en-US')}`;
   }
-  const fraction = (value % divisor).toString().padStart(fractionDigits, '0');
-  return `${currency} ${whole.toLocaleString('en-US')}.${fraction}`;
+  const fraction = (absolute % divisor)
+    .toString()
+    .padStart(fractionDigits, '0');
+  return `${negative ? '-' : ''}${currency} ${whole.toLocaleString('en-US')}.${fraction}`;
 }
 
 export function orderTone(status: OrderStatus) {

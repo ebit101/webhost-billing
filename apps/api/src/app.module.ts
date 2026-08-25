@@ -18,6 +18,7 @@ import { EmailNotificationModule } from './modules/email-notifications/email-not
 import { RenewalAutomationModule } from './modules/renewal-automation/renewal-automation.module';
 import { TicketModule } from './modules/tickets/ticket.module';
 import { SettingsModule } from './modules/settings/settings.module';
+import { DashboardReportModule } from './modules/dashboard-reports/dashboard-report.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { SettingsModule } from './modules/settings/settings.module';
     RenewalAutomationModule,
     TicketModule,
     SettingsModule,
+    DashboardReportModule,
   ],
   controllers: [AppController],
   providers: [

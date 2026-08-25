@@ -6,6 +6,7 @@ export * from './contracts/authentication';
 export * from './contracts/background-jobs';
 export * from './contracts/email-notifications';
 export * from './contracts/customers';
+export * from './contracts/dashboard-reports';
 export * from './contracts/errors';
 export * from './contracts/invoices';
 export * from './contracts/money';

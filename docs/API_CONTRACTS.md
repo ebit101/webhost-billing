@@ -110,3 +110,9 @@ Administrator-only renewal endpoints use the strict `RenewalAutomationPolicy` co
 ## Support tickets
 
 Ticket creation and reply requests require UUID submission keys for exact retry safety. Request objects are strict, so attachment-shaped and unexpected fields are rejected. Subject and body contracts allow bounded plain text only and reject HTML angle brackets and unsupported control characters. Customer identity and ownership are never body fields. See `docs/SUPPORT_TICKETS.md` for routes, state rules, email delivery, and the no-attachment policy.
+
+## Administrator dashboard and reports
+
+`GET /dashboard` accepts an optional paired `from`/`to` business-date filter and returns a generated timestamp, configured timezone/currency, string-serialized money, current operational counts, a complete daily net-revenue series, and safe recent audit activity. Net collected revenue may be negative; no money value passes through JavaScript floating-point arithmetic.
+
+CSV report routes use administrator-only, CSRF-protected `POST` requests because export creation is audited. They return a raw `text/csv` download rather than the normal JSON success envelope. Error responses continue to use the standard JSON error envelope. See `docs/DASHBOARDS_AND_REPORTS.md` for exact metric, period, field-exclusion, and export rules.
