@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 8 — Implement Products and Pricing
+- **Current command:** Command 12 — Create the Payment Adapter
 - **Current status:** Completed and delivered to GitHub `main`
-- **Last updated:** 2026-08-24
-- **Next command:** Command 9 — Implement Order Creation
+- **Last updated:** 2026-08-25
+- **Next command:** Command 13 — Integrate the Real Payment Provider
 - **Next command authorized:** No
 
 ## Command Reports
@@ -803,6 +803,68 @@ Run **Command 11 — Implement Manual Payments** after explicit user authorizati
 #### Recommended next command
 
 Run **Command 12 — Create the Payment Adapter** after explicit user authorization.
+
+### Command 12 — Create the Payment Adapter
+
+- **Status:** Completed and delivered to GitHub `main`
+- **Date:** 2026-08-25
+
+#### Scope completed
+
+- Added strict shared contracts for payment-session requests/results, normalized provider events, webhook acknowledgements, and a stable payment-webhook rejection error.
+- Added a provider-neutral `PaymentGateway` interface covering idempotent session creation, exact-raw-body signature verification, event normalization, transaction-status lookup, transaction-ID extraction, and an optional refund operation.
+- Implemented `FakePaymentGateway` for development and automated tests with deterministic sessions, domain-separated HMAC-SHA256 signatures, normalized fake events, status fixtures, and optional fake refunds.
+- Restricted the fake provider to development/test environments and added a provider registry that rejects unknown or production fake gateways.
+- Added protected customer/administrator session creation with ownership enforcement, full current invoice balance derived server-side, UUID retry protection, pending gateway payments, provider session references, and audit history.
+- Enabled NestJS raw-body capture and added a narrowly scoped CSRF exemption for authenticated provider callbacks while retaining Redis-backed source rate limiting and a 256 KiB body limit.
+- Added a callback pipeline that verifies signatures before parsing, validates merchant/payment/invoice/amount/currency/status/transaction identity, hashes the exact payload, and records unique normalized provider events without storing raw payloads or signatures.
+- Added invoice-row locking and one financial transaction for payment finalization, event processing, invoice settlement, linked awaiting-payment order transition, machine audit records, and a durable outbox handoff.
+- Made exact event replays idempotent, rejected reused event IDs with different bytes, rejected duplicate provider transactions, and serialized simultaneous deliveries so settlement occurs once.
+- Recorded provider-declared failures without changing invoice balances and stored pending notifications as ignored. Slow email, provisioning, renewal, and reactivation effects remain outside the webhook request.
+- Added focused interface/adapter tests, comprehensive API integration and concurrency tests, durable gateway documentation, and the raw-body callback architecture decision.
+
+#### Files changed
+
+- Shared contracts/tests: `packages/shared/src/contracts/payment-gateways.ts`, `packages/shared/src/contracts/errors.ts`, `packages/shared/src/index.ts`, `packages/shared/test/contracts.spec.ts`
+- Provider-neutral gateway and fake adapter: `apps/api/src/modules/payment-gateways/payment-gateway.interface.ts`, `apps/api/src/modules/payment-gateways/fake-payment.gateway.ts`, `apps/api/src/modules/payment-gateways/payment-gateway.registry.ts`
+- Gateway API and processing pipeline: `apps/api/src/modules/payment-gateways/payment-gateway.controller.ts`, `apps/api/src/modules/payment-gateways/payment-gateway.service.ts`, `apps/api/src/modules/payment-gateways/payment-gateway.module.ts`, `apps/api/src/app.module.ts`
+- Exact raw-body and callback security: `apps/api/src/main.ts`, `apps/api/src/modules/auth/decorators/skip-csrf.decorator.ts`, `apps/api/src/modules/auth/decorators/rate-limit.decorator.ts`, `apps/api/src/modules/auth/guards/csrf.guard.ts`
+- Adapter and API tests: `apps/api/src/modules/payment-gateways/fake-payment.gateway.spec.ts`, `apps/api/test/payment-gateways.e2e-spec.ts`
+- Documentation: `README.md`, `docs/DATABASE.md`, `docs/MANUAL_PAYMENTS.md`, `docs/PAYMENT_GATEWAYS.md`, `docs/DECISIONS.md`, `docs/PROGRESS.md`
+
+#### Validation
+
+- Prisma schema validation, eleven-migration status, idempotent fictional seed, and structural database verifier: passed against the isolated PostgreSQL service; no schema migration was required because the provider-neutral payment/event/outbox tables and uniqueness constraints already existed.
+- Prettier formatting check, `git diff --check`, and ESLint for API, worker, and web: passed without warnings.
+- Strict TypeScript checks for all six code workspace projects: passed, including generated Prisma and Next.js route types.
+- Complete non-integration suite: 12 shared-contract tests, 33 API tests, 1 worker test, and 17 frontend tests passed (63 total).
+- Fake gateway unit suite: 4 passed for deterministic session idempotency, exact-byte signature validation, event normalization/transaction extraction, transaction query, and optional refund behavior.
+- Gateway API suite: 10 passed for session ownership/idempotency, verified settlement, exact replay, exact-body tampering, wrong merchant/amount/currency/invoice, duplicate transactions, concurrent delivery, provider failure, event audit state, and outbox uniqueness.
+- Complete API end-to-end suite: 8 suites and 38 tests passed against local PostgreSQL and Redis.
+- Database, shared packages, NestJS API, NestJS worker, and Next.js production builds: passed with `NODE_ENV=production`; Next.js generated 29 application routes plus the framework not-found route.
+- The first aggregate build inherited the development environment from `.env`, which caused a Next.js development/production React mismatch during prerendering. Re-running the production build with the correct `NODE_ENV=production` passed; no source change was needed.
+
+#### Decisions made
+
+- Gateway checkout attempts are persisted as pending full-balance charges. A session response or browser redirect never changes payment or invoice state.
+- The invoice row remains the concurrency boundary. A successful callback must still equal both the stored session amount and current invoice balance, so a stale session cannot overpay an invoice changed by another payment.
+- Signature verification uses the exact raw request bytes before parsing. Only a SHA-256 payload hash and strict normalized fields are retained; raw provider payloads and signatures are discarded.
+- Public webhook routes explicitly skip browser CSRF because they use provider authentication, but keep bounded payloads and Redis-backed source throttling.
+- Validly signed mismatches are retained as failed immutable provider events for reconciliation without financial mutation. Invalid signatures and malformed untrusted payloads are not persisted as financial events.
+- Financial callback work completes synchronously and atomically; slow/retryable follow-up work receives an outbox event and cannot roll back settlement.
+- The fake adapter derives a domain-separated test/development signing key from existing non-production secret material and is unavailable in production. A real gateway must receive independent validated secrets in Command 13.
+
+#### Open questions and risks
+
+- The production payment provider and sandbox account remain unselected. Endpoint behavior, signature rules, credentials, reconciliation semantics, timeouts, and retry policy must come from that provider's current official documentation in Command 13.
+- The fake checkout URL is intentionally a development placeholder; no customer-facing fake checkout page or browser-success settlement endpoint was added.
+- Outbox consumption, payment emails, provisioning, service renewal/reactivation, and administrator reconciliation interfaces remain later work. Their failure must never alter the verified financial record.
+- Pending sessions do not yet have an automated expiry/cleanup workflow. They retain auditable pending state and can be addressed with provider reconciliation/automation after the real provider contract is known.
+- The PostgreSQL driver continues to emit its known pg@9 concurrency deprecation warning during E2E activity, and the minimal Node validation container emits Prisma OpenSSL auto-detection warnings. All database, concurrency, and build checks passed.
+
+#### Recommended next command
+
+Run **Command 13 — Integrate the Real Payment Provider** after the production provider is selected and explicit user authorization is given. Do not use production credentials or make a real charge.
 
 ## Report Template
 

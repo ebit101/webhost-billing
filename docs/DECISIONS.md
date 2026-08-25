@@ -154,6 +154,14 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** Customer-entered proof is untrusted, retries and concurrent reviews must not double-settle an invoice, and financial corrections must retain the original evidence and audit trail.
 - **Consequence:** Partial payments default to disabled and require an explicit billing setting. The API accepts structured text proof only, without files or URLs. Verified reference hashes and submission keys prevent duplicates. Adjustments reduce net paid amount and update invoice refund state without automatically changing service state. Gateway callbacks remain a separate provider-neutral workflow in Command 12.
 
+## ADR-020 — Pending Gateway Sessions and Raw-Body Callback Settlement
+
+- **Status:** Accepted
+- **Date:** 2026-08-25
+- **Decision:** Represent each online checkout attempt as an idempotent pending provider payment for the invoice's full current balance. Finalize it only from a provider adapter that verifies the exact raw callback bytes and normalizes the event. Persist the event, financial settlement, linked-order state, audit records, and an outbox handoff atomically under an invoice lock.
+- **Reason:** Browser redirects and client totals are untrusted, provider callbacks can be duplicated or delivered concurrently, and slow follow-up work must not weaken or delay the durable financial decision.
+- **Consequence:** Every callback verifies signature, merchant, payment, invoice, amount, currency, transaction uniqueness, and replay identity before settlement. Exact event replays are acknowledged without another mutation; mismatches retain a failed normalized event without changing money. The fake adapter is restricted to development/tests, while real provider selection, credentials, signature rules, reconciliation, and sandbox behavior remain Command 13.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

@@ -13,6 +13,7 @@ export const apiErrorCodeSchema = z.enum([
   'CONFLICT',
   'RATE_LIMITED',
   'UNPROCESSABLE_ENTITY',
+  'PAYMENT_WEBHOOK_REJECTED',
   'INTERNAL_ERROR',
   'SERVICE_UNAVAILABLE',
 ]);

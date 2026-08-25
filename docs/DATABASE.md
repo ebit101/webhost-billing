@@ -45,9 +45,11 @@ The schema remains one modular-monolith database. Model grouping does not create
 - Orders, services, invoices, payments, payment events, tickets, email attempts, automation runs, and outbox events use separate state enums.
 - A paid invoice and an active hosting service remain independent facts.
 - Payment transactions and provider events use separate provider identifiers and idempotency keys.
+- Online payment sessions use pending provider payments; only verified callbacks may finalize them. Provider event IDs and exact-payload hashes make callback replay safe.
 - Refunds and reversals are positive-valued adjustment rows linked to the original charge; they never overwrite it.
 - Manual payments store a controlled method, structured JSON proof metadata, reviewer identity, and review time. Database checks align pending/succeeded/failed manual rows with their review and verification timestamps.
 - Invoice rows are locked while verified charges or adjustments update settlement aggregates, preventing duplicate application and concurrent overpayment.
+- Gateway payment finalization, event processing, invoice settlement, linked-order payment, audits, and outbox creation share one database transaction.
 - Automation and outbox records have unique idempotency keys for safe retries.
 - Orders have unique submission keys so a repeated checkout request returns the original order and invoice instead of creating duplicate financial records.
 - Invoices have unique submission keys for safe administrator and order-generated creation retries.

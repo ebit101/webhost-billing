@@ -9,6 +9,7 @@ import { CustomerModule } from './modules/customers/customer.module';
 import { InvoiceModule } from './modules/invoices/invoice.module';
 import { OrderModule } from './modules/orders/order.module';
 import { PaymentModule } from './modules/payments/payment.module';
+import { PaymentGatewayModule } from './modules/payment-gateways/payment-gateway.module';
 import { ProductModule } from './modules/products/product.module';
 
 @Module({
@@ -20,6 +21,7 @@ import { ProductModule } from './modules/products/product.module';
     OrderModule,
     InvoiceModule,
     PaymentModule,
+    PaymentGatewayModule,
   ],
   controllers: [AppController],
   providers: [

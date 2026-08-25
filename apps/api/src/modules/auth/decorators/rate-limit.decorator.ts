@@ -1,7 +1,11 @@
 import { SetMetadata } from '@nestjs/common';
 
 export interface AuthRateLimitDefinition {
-  scope: 'login' | 'password-reset-request' | 'password-reset-confirmation';
+  scope:
+    | 'login'
+    | 'password-reset-request'
+    | 'password-reset-confirmation'
+    | 'payment-webhook';
   limit: number;
   windowMs: number;
   includeEmail: boolean;

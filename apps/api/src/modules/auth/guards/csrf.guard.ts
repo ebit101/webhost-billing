@@ -4,21 +4,30 @@ import {
   HttpStatus,
   Injectable,
 } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import type { Request } from 'express';
 import { ApplicationException } from '../../../common/errors/application.exception';
 import { AuthCookieService } from '../services/auth-cookie.service';
 import { CsrfService } from '../services/csrf.service';
+import { SKIP_CSRF_KEY } from '../decorators/skip-csrf.decorator';
 
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 
 @Injectable()
 export class CsrfGuard implements CanActivate {
   constructor(
+    private readonly reflector: Reflector,
     private readonly cookies: AuthCookieService,
     private readonly csrf: CsrfService,
   ) {}
 
   canActivate(context: ExecutionContext): boolean {
+    const skipCsrf = this.reflector.getAllAndOverride<boolean>(SKIP_CSRF_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    if (skipCsrf) return true;
+
     const request = context.switchToHttp().getRequest<Request>();
 
     if (SAFE_METHODS.has(request.method)) {

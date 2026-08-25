@@ -17,6 +17,8 @@ import {
   paginatedApiSuccessResponseSchema,
   paginationQuerySchema,
   paymentStatusSchema,
+  createPaymentSessionRequestSchema,
+  normalizedPaymentEventSchema,
   roleSchema,
   registrationRequestSchema,
   submitManualPaymentRequestSchema,
@@ -94,6 +96,50 @@ describe('boundary contracts', () => {
       submitManualPaymentRequestSchema.safeParse({
         ...request,
         proof: { ...request.proof, fileUrl: 'https://example.test/proof' },
+      }).success,
+      false,
+    );
+  });
+
+  it('validates gateway sessions and normalized provider events', () => {
+    const invoiceId = '10000000-0000-4000-8000-000000000001';
+    const paymentId = '10000000-0000-4000-8000-000000000002';
+    assert.equal(
+      createPaymentSessionRequestSchema.safeParse({
+        invoiceId,
+        submissionKey: '10000000-0000-4000-8000-000000000003',
+      }).success,
+      true,
+    );
+    assert.equal(
+      normalizedPaymentEventSchema.safeParse({
+        providerEventId: 'fake-event-1',
+        eventType: 'payment.succeeded',
+        status: 'SUCCEEDED',
+        merchantId: 'webhost-billing-fake',
+        paymentId,
+        invoiceId,
+        amount: '12000',
+        currency: 'BDT',
+        providerTransactionId: 'fake-transaction-1',
+        occurredAt: '2026-08-25T10:00:00.000Z',
+        failureReason: null,
+      }).success,
+      true,
+    );
+    assert.equal(
+      normalizedPaymentEventSchema.safeParse({
+        providerEventId: 'fake-event-1',
+        eventType: 'payment.succeeded',
+        status: 'SUCCEEDED',
+        merchantId: 'webhost-billing-fake',
+        paymentId,
+        invoiceId,
+        amount: 12000,
+        currency: 'BDT',
+        providerTransactionId: 'fake-transaction-1',
+        occurredAt: '2026-08-25T10:00:00.000Z',
+        failureReason: null,
       }).success,
       false,
     );

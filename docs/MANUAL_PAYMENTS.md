@@ -2,7 +2,7 @@
 
 ## Scope
 
-Command 11 implements text-only manual payment submission, administrator review, administrator-recorded receipts, invoice settlement, and append-only refunds and reversals. It does not implement a payment gateway, webhook, file upload, automatic provisioning, renewal, or service reactivation.
+Command 11 implements text-only manual payment submission, administrator review, administrator-recorded receipts, invoice settlement, and append-only refunds and reversals. Online gateway processing is a separate boundary documented in `PAYMENT_GATEWAYS.md`; this manual flow still does not implement file upload, automatic provisioning, renewal, or service reactivation.
 
 ## Payment vocabulary
 
