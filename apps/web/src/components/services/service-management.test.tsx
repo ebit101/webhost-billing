@@ -1,8 +1,13 @@
-import type { Service, ServiceSetupOptions } from '@webhost-billing/shared';
+import type {
+  HostingPanelOperation,
+  Service,
+  ServiceSetupOptions,
+} from '@webhost-billing/shared';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AdminServiceManager } from './admin-service-manager';
+import { AdminHostingOperationManager } from './admin-hosting-operation-manager';
 import { CustomerServiceDetail } from './customer-service-detail';
 import { CustomerServiceList } from './customer-service-list';
 
@@ -66,12 +71,46 @@ const options: ServiceSetupOptions = {
   ],
 };
 
+const activeService: Service = {
+  ...service,
+  status: 'ACTIVE',
+  externalAccountId: 'fake-whm-account-one',
+  controlPanelUsername: 'customer1',
+  activatedAt: '2026-08-25T10:05:00.000Z',
+};
+
+const operation: HostingPanelOperation = {
+  id: '30000000-0000-4000-8000-000000000010',
+  serviceId,
+  server: service.server,
+  requestedByUserId: '30000000-0000-4000-8000-000000000011',
+  retryOfOperationId: null,
+  type: 'CREATE_ACCOUNT',
+  status: 'SUCCEEDED',
+  adapterKey: 'fake-panel',
+  attemptNumber: 1,
+  retryable: false,
+  errorKind: null,
+  errorCode: null,
+  errorMessage: null,
+  account: {
+    externalAccountId: 'fake-whm-account-one',
+    username: 'customer1',
+    domain: 'customer-site.example.test',
+    packageIdentifier: 'starter_package',
+    state: 'ACTIVE',
+  },
+  startedAt: '2026-08-25T10:04:00.000Z',
+  completedAt: '2026-08-25T10:05:00.000Z',
+  createdAt: '2026-08-25T10:04:00.000Z',
+};
+
 describe('service management interfaces', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
   });
 
-  it('shows paid-order fulfilment and advances a pending service manually', async () => {
+  it('shows paid-order fulfilment and provisions through the panel adapter', async () => {
     const user = userEvent.setup();
     const fetchMock = vi.fn(
       (request: RequestInfo | URL, init?: RequestInit) => {
@@ -82,10 +121,13 @@ describe('service management interfaces', () => {
         if (url.includes('/auth/csrf')) {
           return Promise.resolve(success({ csrfToken: 'x'.repeat(32) }));
         }
-        if (init?.method === 'PATCH') {
+        if (init?.method === 'POST') {
           return Promise.resolve(
-            success({ ...service, status: 'PROVISIONING' }),
+            success({ operation, duplicate: false, loginUrl: null }),
           );
+        }
+        if (url.includes(`/services/${serviceId}`)) {
+          return Promise.resolve(success(activeService));
         }
         return Promise.resolve(paginated([service]));
       },
@@ -96,21 +138,46 @@ describe('service management interfaces', () => {
       await screen.findByRole('heading', { name: 'Hosting services' }),
     ).toBeTruthy();
     expect(screen.getByText('Create service from paid order')).toBeTruthy();
-    await user.click(
-      screen.getByRole('button', { name: 'Begin provisioning' }),
-    );
+    await user.click(screen.getByRole('button', { name: 'Provision account' }));
     expect(
       await screen.findByText(
-        'customer-site.example.test moved to provisioning.',
+        'create account completed for customer-site.example.test.',
       ),
     ).toBeTruthy();
     const mutation = fetchMock.mock.calls.find(
-      ([, init]) => (init as RequestInit | undefined)?.method === 'PATCH',
+      ([, init]) => (init as RequestInit | undefined)?.method === 'POST',
     );
-    expect(String(mutation?.[0])).toContain(`/services/${serviceId}/status`);
-    expect(JSON.parse(String((mutation?.[1] as RequestInit).body))).toEqual({
-      status: 'PROVISIONING',
-    });
+    expect(String(mutation?.[0])).toContain(
+      `/hosting-panel/services/${serviceId}/operations`,
+    );
+    expect(JSON.parse(String((mutation?.[1] as RequestInit).body)).type).toBe(
+      'CREATE_ACCOUNT',
+    );
+  });
+
+  it('shows connection, account tools, and durable operation history', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((request: RequestInfo | URL) => {
+        const url = String(request);
+        if (url.includes('/hosting-panel/operations')) {
+          return Promise.resolve(paginated([operation]));
+        }
+        if (url.includes('/services/setup-options')) {
+          return Promise.resolve(success(options));
+        }
+        return Promise.resolve(paginated([activeService]));
+      }),
+    );
+    render(<AdminHostingOperationManager />);
+    expect(
+      await screen.findByRole('heading', { name: 'Hosting-panel connections' }),
+    ).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Account tools' })).toBeTruthy();
+    expect(screen.getByText('CREATE ACCOUNT')).toBeTruthy();
+    expect(
+      screen.getByRole('button', { name: /Test Development Server/i }),
+    ).toBeTruthy();
   });
 
   it('lists only the customer service cards with renewal and account data', async () => {
@@ -138,6 +205,40 @@ describe('service management interfaces', () => {
     ).toBeTruthy();
     expect(screen.getByText('server.example.test')).toBeTruthy();
     expect(screen.getByText('Order CMD14-ORDER')).toBeTruthy();
+  });
+
+  it('generates a customer-owned temporary panel login link', async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((request: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(request);
+        if (url.includes('/auth/csrf')) {
+          return Promise.resolve(success({ csrfToken: 'x'.repeat(32) }));
+        }
+        if (init?.method === 'POST') {
+          return Promise.resolve(
+            success({
+              operation: { ...operation, type: 'GENERATE_LOGIN_URL' },
+              duplicate: false,
+              loginUrl: 'https://server.example.test/fake-login/session',
+            }),
+          );
+        }
+        return Promise.resolve(success(activeService));
+      }),
+    );
+    render(<CustomerServiceDetail serviceId={serviceId} />);
+    await user.click(
+      await screen.findByRole('button', {
+        name: 'Generate secure panel login',
+      }),
+    );
+    expect(
+      (
+        await screen.findByRole('link', { name: /Open control panel/i })
+      ).getAttribute('href'),
+    ).toBe('https://server.example.test/fake-login/session');
   });
 });
 

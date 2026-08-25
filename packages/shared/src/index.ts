@@ -14,4 +14,5 @@ export * from './contracts/pagination';
 export * from './contracts/products';
 export * from './contracts/responses';
 export * from './contracts/services';
+export * from './contracts/hosting-panels';
 export * from './contracts/states';

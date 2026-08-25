@@ -12,6 +12,7 @@ import { PaymentModule } from './modules/payments/payment.module';
 import { PaymentGatewayModule } from './modules/payment-gateways/payment-gateway.module';
 import { ProductModule } from './modules/products/product.module';
 import { ServiceModule } from './modules/services/service.module';
+import { HostingPanelModule } from './modules/hosting-panels/hosting-panel.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { ServiceModule } from './modules/services/service.module';
     PaymentModule,
     PaymentGatewayModule,
     ServiceModule,
+    HostingPanelModule,
   ],
   controllers: [AppController],
   providers: [

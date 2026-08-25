@@ -30,6 +30,9 @@ import {
   serviceStatusSchema,
   createServiceRequestSchema,
   transitionServiceRequestSchema,
+  executeHostingOperationRequestSchema,
+  retryHostingOperationRequestSchema,
+  hostingPanelLoginUrlSchema,
   ticketStatusSchema,
 } from '../src';
 
@@ -202,6 +205,37 @@ describe('boundary contracts', () => {
         confirmation: 'TERMINATE',
       }).success,
       true,
+    );
+  });
+
+  it('validates hosting-panel actions without accepting weak destructive input', () => {
+    assert.equal(
+      executeHostingOperationRequestSchema.safeParse({
+        type: 'CHANGE_PASSWORD',
+        submissionKey: '10000000-0000-4000-8000-000000000001',
+        newPassword: 'fictional-secure-password-123',
+      }).success,
+      true,
+    );
+    assert.equal(
+      executeHostingOperationRequestSchema.safeParse({
+        type: 'TERMINATE_ACCOUNT',
+        submissionKey: '10000000-0000-4000-8000-000000000001',
+        reason: 'Confirmed closure.',
+        confirmation: 'terminate',
+      }).success,
+      false,
+    );
+    assert.equal(
+      retryHostingOperationRequestSchema.safeParse({
+        submissionKey: '10000000-0000-4000-8000-000000000002',
+        newPassword: 'short',
+      }).success,
+      false,
+    );
+    assert.equal(
+      hostingPanelLoginUrlSchema.safeParse('javascript:alert(1)').success,
+      false,
     );
   });
 

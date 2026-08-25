@@ -178,13 +178,21 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** Invoice payment, order fulfilment, external account creation, and ongoing hosting state can succeed or fail independently. Historical purchase details must survive catalogue changes, retries must not duplicate accounts, and destructive operational state must be attributable.
 - **Consequence:** Payment may move an order to `PAID`, but never creates or activates a service by itself. A paid order moves through `PROCESSING` and reaches `COMPLETED` only when all its order items have active services. Order-item and server row locks protect duplicate creation and account-capacity decisions. Command 14 records manual outcomes only; provider calls, operation retry classification, and external consistency checks begin behind the hosting-panel adapter in Command 15.
 
+## ADR-023 — Durable Hosting Operations and Separate Provider Domains
+
+- **Status:** Accepted
+- **Date:** 2026-08-25
+- **Decision:** Use cPanel/WHM as the only hosting-panel provider and UK2Group as a separate future domain-registrar provider. Put hosting actions behind a provider-neutral `HostingPanel` contract and persist every attempt as a fingerprinted, idempotent operation with safe result/error evidence. Enable only `FakeHostingPanel` in Command 15.
+- **Reason:** Hosting-account operations and registrar operations have different resources, credentials, failure ambiguity, and lifecycle effects. External mutations can time out after succeeding, so a generic retry loop or a shared "panel" credential would risk duplicate accounts, accidental domain actions, and secret exposure.
+- **Consequence:** Command 16 implements cPanel/WHM only after reviewing current official documentation. UK2Group requires a separate registrar contract, domain data/workflows, test mode, credentials, and later explicit authorization. Hosting mutations receive no automatic retry; temporary failures allow bounded deliberate retry, while timeouts/inconsistent results require reconciliation. Passwords, credentials, raw responses, and login URLs are never persisted in operation history.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:
 
 1. Production approval, credentials, and go-live runbook for bKash and/or SSLCOMMERZ after sandbox acceptance.
-2. Exact cPanel/WHM API authentication method and dedicated development account/server.
+2. Exact cPanel/WHM API authentication method and dedicated development account/server; the hosting-panel provider itself is selected.
 3. SMTP delivery provider for staging and production.
-4. Whether domain registration belongs in the MVP; the current default is no registrar automation.
+4. UK2Group API product/brand, current official documentation, test environment, contact policy, supported TLDs, pricing/renewal behavior, and the separately authorized registrar-command position.
 5. Final business identity values, supported operating currency, VAT/tax rules, reminder schedule, suspension grace period, cancellation policy, and refund policy.
 6. Production VPS/provider and backup destination.

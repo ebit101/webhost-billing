@@ -416,7 +416,7 @@ Test success, timeout, temporary failure, permanent failure, duplicate provision
 ## Command 16 — Integrate the Real Hosting Panel
 
 ```text
-Implement the real HostingPanel adapter for [CPANEL_WHM_OR_DIRECTADMIN].
+Implement the real HostingPanel adapter for cPanel/WHM only.
 
 Consult the provider's current official API documentation.
 
@@ -426,6 +426,8 @@ Do not log credentials or complete upstream responses containing secrets.
 
 Use mocks for automated tests. If a real development server is not configured, stop before making external mutations and provide a documented manual verification checklist.
 ```
+
+UK2Group domain registration is a separate selected provider requirement. Do not place registrar credentials or domain workflows in the cPanel/WHM adapter. Add it only through a separately authorized future registrar command after domain models, contact ownership, registration/renewal/transfer rules, test mode, idempotency, and current official UK2Group API documentation are defined.
 
 ## Command 17 — Add Redis, Queues, and Workers
 

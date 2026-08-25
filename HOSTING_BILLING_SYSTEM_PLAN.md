@@ -351,7 +351,11 @@ These rules should be explicit configuration, not scattered constants in the cod
 - Backup and restore process
 - Security review, monitoring, and operational documentation
 
-### Possible later additions
+### Selected later addition
+
+- UK2Group domain registrar integration through a dedicated registrar adapter, separate from cPanel/WHM hosting operations
+
+### Other possible later additions
 
 - Domain registrar integration
 - Coupons
@@ -393,10 +397,10 @@ When panel and gateway automation are added, duplicated callbacks and repeated j
 
 Before implementation starts, choose the exact providers for:
 
-1. Hosting control panel
+1. Hosting control panel — **selected: cPanel/WHM only**
 2. Payment gateway or manual-payment method
 3. Email delivery
-4. Domain registration, if domains are included in the MVP
+4. Domain registration — **selected for a later separately authorized integration: UK2Group**
 
 The initial implementation should then optimize for one real business workflow:
 

@@ -27,6 +27,7 @@ const expectedTables = [
   'customers',
   'email_logs',
   'email_verification_tokens',
+  'hosting_panel_operations',
   'invoice_items',
   'invoices',
   'order_items',
@@ -55,6 +56,12 @@ const requiredCustomConstraints = [
   'invoices_balance_check',
   'invoices_settlement_limit_check',
   'invoices_total_check',
+  'hosting_panel_operations_attempt_check',
+  'hosting_panel_operations_fingerprint_check',
+  'hosting_panel_operations_metadata_object_check',
+  'hosting_panel_operations_retry_self_check',
+  'hosting_panel_operations_service_scope_check',
+  'hosting_panel_operations_status_evidence_check',
   'email_verification_tokens_hash_format_check',
   'email_verification_tokens_time_order_check',
   'order_items_total_check',
@@ -208,6 +215,15 @@ async function verify(): Promise<void> {
       AND indexname = 'invoice_items_invoice_id_line_position_key'
   `;
   assert.equal(invoiceItemPositionIndexes[0]?.count, 1n);
+
+  const hostingRetryIndexes = await prisma.$queryRaw<Array<{ count: bigint }>>`
+    SELECT COUNT(*)::bigint AS count
+    FROM pg_indexes
+    WHERE schemaname = 'public'
+      AND indexname = 'hosting_panel_operations_retry_of_operation_id_key'
+      AND indexdef LIKE 'CREATE UNIQUE INDEX%'
+  `;
+  assert.equal(hostingRetryIndexes[0]?.count, 1n);
 
   const foreignKeyDeleteRules = await prisma.$queryRaw<
     Array<{ delete_rule: string }>

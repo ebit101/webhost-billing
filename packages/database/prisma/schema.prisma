@@ -136,6 +136,31 @@ enum AutomationStatus {
   SKIPPED
 }
 
+enum HostingPanelOperationType {
+  TEST_CONNECTION
+  CREATE_ACCOUNT
+  GET_ACCOUNT
+  SUSPEND_ACCOUNT
+  UNSUSPEND_ACCOUNT
+  CHANGE_PACKAGE
+  CHANGE_PASSWORD
+  GENERATE_LOGIN_URL
+  TERMINATE_ACCOUNT
+}
+
+enum HostingPanelOperationStatus {
+  RUNNING
+  SUCCEEDED
+  FAILED
+  INCONSISTENT
+}
+
+enum HostingPanelErrorKind {
+  TEMPORARY
+  PERMANENT
+  INCONSISTENT
+}
+
 enum SettingCategory {
   BUSINESS
   BILLING
@@ -172,6 +197,7 @@ model User {
   activityLogs            ActivityLog[]            @relation("ActivityActor")
   settingsUpdated         Setting[]                @relation("SettingUpdatedBy")
   servicesTerminated      Service[]                @relation("ServiceTerminatedBy")
+  hostingPanelOperations  HostingPanelOperation[]  @relation("HostingOperationRequestedBy")
   authSessions            AuthSession[]
   passwordResetTokens     PasswordResetToken[]
   emailVerificationTokens EmailVerificationToken[]
@@ -378,43 +404,44 @@ model OrderItem {
 }
 
 model Service {
-  id                         String        @id @default(uuid()) @db.Uuid
-  customerId                 String        @map("customer_id") @db.Uuid
-  orderItemId                String?       @unique(map: "services_order_item_id_key") @map("order_item_id") @db.Uuid
-  productId                  String        @map("product_id") @db.Uuid
-  productPriceId             String        @map("product_price_id") @db.Uuid
-  serverId                   String        @map("server_id") @db.Uuid
-  terminatedByUserId         String?       @map("terminated_by_user_id") @db.Uuid
-  status                     ServiceStatus @default(PENDING)
-  domain                     String?       @db.VarChar(253)
-  productNameSnapshot        String        @map("product_name_snapshot") @db.VarChar(160)
-  productDescriptionSnapshot String?       @map("product_description_snapshot") @db.Text
-  provisioningSnapshot       Json?         @map("provisioning_snapshot")
-  controlPanelUsername       String?       @map("control_panel_username") @db.VarChar(64)
-  externalAccountId          String?       @map("external_account_id") @db.VarChar(191)
-  billingPeriod              BillingPeriod @map("billing_period")
-  recurringAmount            BigInt        @map("recurring_amount") @db.BigInt
-  currency                   String        @db.Char(3)
-  startedAt                  DateTime      @map("started_at") @db.Timestamptz(3)
-  nextDueAt                  DateTime      @map("next_due_at") @db.Timestamptz(3)
-  activatedAt                DateTime?     @map("activated_at") @db.Timestamptz(3)
-  suspendedAt                DateTime?     @map("suspended_at") @db.Timestamptz(3)
-  suspensionReason           String?       @map("suspension_reason") @db.Text
-  provisioningFailureReason  String?       @map("provisioning_failure_reason") @db.Text
-  cancelledAt                DateTime?     @map("cancelled_at") @db.Timestamptz(3)
-  cancellationReason         String?       @map("cancellation_reason") @db.Text
-  terminatedAt               DateTime?     @map("terminated_at") @db.Timestamptz(3)
-  terminationReason          String?       @map("termination_reason") @db.Text
-  createdAt                  DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt                  DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
-  customer                   Customer      @relation(fields: [customerId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  orderItem                  OrderItem?    @relation(fields: [orderItemId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  product                    Product       @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  productPrice               ProductPrice  @relation(fields: [productPriceId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  server                     Server        @relation(fields: [serverId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  terminatedBy               User?         @relation("ServiceTerminatedBy", fields: [terminatedByUserId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  id                         String                  @id @default(uuid()) @db.Uuid
+  customerId                 String                  @map("customer_id") @db.Uuid
+  orderItemId                String?                 @unique(map: "services_order_item_id_key") @map("order_item_id") @db.Uuid
+  productId                  String                  @map("product_id") @db.Uuid
+  productPriceId             String                  @map("product_price_id") @db.Uuid
+  serverId                   String                  @map("server_id") @db.Uuid
+  terminatedByUserId         String?                 @map("terminated_by_user_id") @db.Uuid
+  status                     ServiceStatus           @default(PENDING)
+  domain                     String?                 @db.VarChar(253)
+  productNameSnapshot        String                  @map("product_name_snapshot") @db.VarChar(160)
+  productDescriptionSnapshot String?                 @map("product_description_snapshot") @db.Text
+  provisioningSnapshot       Json?                   @map("provisioning_snapshot")
+  controlPanelUsername       String?                 @map("control_panel_username") @db.VarChar(64)
+  externalAccountId          String?                 @map("external_account_id") @db.VarChar(191)
+  billingPeriod              BillingPeriod           @map("billing_period")
+  recurringAmount            BigInt                  @map("recurring_amount") @db.BigInt
+  currency                   String                  @db.Char(3)
+  startedAt                  DateTime                @map("started_at") @db.Timestamptz(3)
+  nextDueAt                  DateTime                @map("next_due_at") @db.Timestamptz(3)
+  activatedAt                DateTime?               @map("activated_at") @db.Timestamptz(3)
+  suspendedAt                DateTime?               @map("suspended_at") @db.Timestamptz(3)
+  suspensionReason           String?                 @map("suspension_reason") @db.Text
+  provisioningFailureReason  String?                 @map("provisioning_failure_reason") @db.Text
+  cancelledAt                DateTime?               @map("cancelled_at") @db.Timestamptz(3)
+  cancellationReason         String?                 @map("cancellation_reason") @db.Text
+  terminatedAt               DateTime?               @map("terminated_at") @db.Timestamptz(3)
+  terminationReason          String?                 @map("termination_reason") @db.Text
+  createdAt                  DateTime                @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                  DateTime                @updatedAt @map("updated_at") @db.Timestamptz(3)
+  customer                   Customer                @relation(fields: [customerId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  orderItem                  OrderItem?              @relation(fields: [orderItemId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  product                    Product                 @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  productPrice               ProductPrice            @relation(fields: [productPriceId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  server                     Server                  @relation(fields: [serverId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  terminatedBy               User?                   @relation("ServiceTerminatedBy", fields: [terminatedByUserId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   invoiceItems               InvoiceItem[]
   tickets                    Ticket[]
+  hostingPanelOperations     HostingPanelOperation[]
 
   @@unique([serverId, externalAccountId], map: "services_server_external_account_key")
   @@index([customerId, status], map: "services_customer_status_idx")
@@ -426,24 +453,59 @@ model Service {
 }
 
 model Server {
-  id                    String       @id @default(uuid()) @db.Uuid
-  name                  String       @unique(map: "servers_name_key") @db.VarChar(120)
-  hostname              String       @unique(map: "servers_hostname_key") @db.VarChar(253)
-  status                ServerStatus @default(ACTIVE)
-  adapterKey            String       @map("adapter_key") @db.VarChar(64)
-  apiUsername           String?      @map("api_username") @db.VarChar(128)
-  credentialsCiphertext String?      @map("credentials_ciphertext") @db.Text
-  credentialKeyVersion  String?      @map("credential_key_version") @db.VarChar(64)
-  port                  Int          @default(2087)
-  useTls                Boolean      @default(true) @map("use_tls")
-  maxAccounts           Int?         @map("max_accounts")
-  createdAt             DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt             DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
-  deletedAt             DateTime?    @map("deleted_at") @db.Timestamptz(3)
-  services              Service[]
+  id                     String                  @id @default(uuid()) @db.Uuid
+  name                   String                  @unique(map: "servers_name_key") @db.VarChar(120)
+  hostname               String                  @unique(map: "servers_hostname_key") @db.VarChar(253)
+  status                 ServerStatus            @default(ACTIVE)
+  adapterKey             String                  @map("adapter_key") @db.VarChar(64)
+  apiUsername            String?                 @map("api_username") @db.VarChar(128)
+  credentialsCiphertext  String?                 @map("credentials_ciphertext") @db.Text
+  credentialKeyVersion   String?                 @map("credential_key_version") @db.VarChar(64)
+  port                   Int                     @default(2087)
+  useTls                 Boolean                 @default(true) @map("use_tls")
+  maxAccounts            Int?                    @map("max_accounts")
+  createdAt              DateTime                @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt              DateTime                @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt              DateTime?               @map("deleted_at") @db.Timestamptz(3)
+  services               Service[]
+  hostingPanelOperations HostingPanelOperation[]
 
   @@index([status, deletedAt], map: "servers_status_deleted_at_idx")
   @@map("servers")
+}
+
+model HostingPanelOperation {
+  id                 String                      @id @default(uuid()) @db.Uuid
+  serviceId          String?                     @map("service_id") @db.Uuid
+  serverId           String                      @map("server_id") @db.Uuid
+  requestedByUserId  String                      @map("requested_by_user_id") @db.Uuid
+  retryOfOperationId String?                     @unique(map: "hosting_panel_operations_retry_of_operation_id_key") @map("retry_of_operation_id") @db.Uuid
+  type               HostingPanelOperationType
+  status             HostingPanelOperationStatus @default(RUNNING)
+  adapterKey         String                      @map("adapter_key") @db.VarChar(64)
+  idempotencyKey     String                      @unique(map: "hosting_panel_operations_idempotency_key") @map("idempotency_key") @db.VarChar(191)
+  requestFingerprint String                      @map("request_fingerprint") @db.Char(64)
+  attemptNumber      Int                         @default(1) @map("attempt_number")
+  retryable          Boolean                     @default(false)
+  errorKind          HostingPanelErrorKind?      @map("error_kind")
+  errorCode          String?                     @map("error_code") @db.VarChar(80)
+  errorMessage       String?                     @map("error_message") @db.Text
+  requestMetadata    Json?                       @map("request_metadata")
+  resultMetadata     Json?                       @map("result_metadata")
+  startedAt          DateTime                    @default(now()) @map("started_at") @db.Timestamptz(3)
+  completedAt        DateTime?                   @map("completed_at") @db.Timestamptz(3)
+  createdAt          DateTime                    @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt          DateTime                    @updatedAt @map("updated_at") @db.Timestamptz(3)
+  service            Service?                    @relation(fields: [serviceId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  server             Server                      @relation(fields: [serverId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  requestedBy        User                        @relation("HostingOperationRequestedBy", fields: [requestedByUserId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  retryOfOperation   HostingPanelOperation?      @relation("HostingOperationRetries", fields: [retryOfOperationId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  retries            HostingPanelOperation[]     @relation("HostingOperationRetries")
+
+  @@index([serviceId, createdAt], map: "hosting_panel_operations_service_created_at_idx")
+  @@index([serverId, createdAt], map: "hosting_panel_operations_server_created_at_idx")
+  @@index([status, createdAt], map: "hosting_panel_operations_status_created_at_idx")
+  @@map("hosting_panel_operations")
 }
 
 model Invoice {

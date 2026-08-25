@@ -1,6 +1,7 @@
 'use client';
 
 import type {
+  HostingPanelOperationResult,
   Service,
   ServiceCreationResult,
   ServiceSetupOptions,
@@ -21,7 +22,10 @@ import { PageHeader } from '../ui/page-header';
 import { StatusBadge } from '../ui/status-badge';
 import { serviceDate, serviceError, serviceTone } from './service-ui';
 
-type EvidenceStatus = Exclude<ServiceStatus, 'PENDING' | 'PROVISIONING'>;
+type EvidenceStatus = Extract<
+  ServiceStatus,
+  'SUSPENDED' | 'CANCELLED' | 'TERMINATED'
+>;
 
 interface ActionState {
   service: Service;
@@ -166,22 +170,32 @@ export function AdminServiceManager() {
     }
   }
 
-  async function directTransition(
+  async function runPanelOperation(
     service: Service,
-    status: 'PROVISIONING' | 'ACTIVE',
+    body: Record<string, unknown>,
   ) {
     setSaving(true);
     clearMessages();
     try {
-      const updated = await authMutation<Service>(
-        `/services/${service.id}/status`,
-        'PATCH',
-        { status },
+      const result = await authMutation<HostingPanelOperationResult>(
+        `/hosting-panel/services/${service.id}/operations`,
+        'POST',
+        { submissionKey: crypto.randomUUID(), ...body },
+      );
+      const updated = await authenticatedGet<Service>(
+        `/services/${service.id}`,
       );
       replaceService(updated);
-      setNotice(
-        `${updated.domain} moved to ${updated.status.toLowerCase().replaceAll('_', ' ')}.`,
-      );
+      if (result.operation.status === 'SUCCEEDED') {
+        setNotice(
+          `${result.operation.type.toLowerCase().replaceAll('_', ' ')} completed for ${updated.domain}.`,
+        );
+      } else {
+        setError(
+          result.operation.errorMessage ??
+            'The hosting operation needs administrator attention.',
+        );
+      }
     } catch (caught) {
       setError(serviceError(caught));
     } finally {
@@ -193,23 +207,41 @@ export function AdminServiceManager() {
     event.preventDefault();
     if (!action) return;
     const values = new FormData(event.currentTarget);
-    const body: Record<string, unknown> = { status: action.status };
-    if (action.status === 'ACTIVE') {
-      body.externalAccountId = String(values.get('externalAccountId'));
-      body.controlPanelUsername = String(values.get('controlPanelUsername'));
-    } else {
-      body.reason = String(values.get('reason'));
-      if (action.status === 'TERMINATED') {
-        body.confirmation = String(values.get('confirmation'));
-      }
-    }
+    const reason = String(values.get('reason'));
     setSaving(true);
     clearMessages();
     try {
-      const updated = await authMutation<Service>(
-        `/services/${action.service.id}/status`,
-        'PATCH',
-        body,
+      if (action.status === 'CANCELLED') {
+        await authMutation<Service>(
+          `/services/${action.service.id}/status`,
+          'PATCH',
+          { status: action.status, reason },
+        );
+      } else {
+        const type =
+          action.status === 'SUSPENDED'
+            ? 'SUSPEND_ACCOUNT'
+            : 'TERMINATE_ACCOUNT';
+        const result = await authMutation<HostingPanelOperationResult>(
+          `/hosting-panel/services/${action.service.id}/operations`,
+          'POST',
+          {
+            type,
+            submissionKey: crypto.randomUUID(),
+            reason,
+            ...(action.status === 'TERMINATED'
+              ? { confirmation: String(values.get('confirmation')) }
+              : {}),
+          },
+        );
+        if (result.operation.status !== 'SUCCEEDED') {
+          throw new Error(
+            result.operation.errorMessage ?? 'The hosting operation failed.',
+          );
+        }
+      }
+      const updated = await authenticatedGet<Service>(
+        `/services/${action.service.id}`,
       );
       replaceService(updated);
       setAction(undefined);
@@ -230,9 +262,11 @@ export function AdminServiceManager() {
           <Button
             size="sm"
             disabled={saving}
-            onClick={() => void directTransition(service, 'PROVISIONING')}
+            onClick={() =>
+              void runPanelOperation(service, { type: 'CREATE_ACCOUNT' })
+            }
           >
-            Begin provisioning
+            Provision account
           </Button>
           <Button
             size="sm"
@@ -247,35 +281,13 @@ export function AdminServiceManager() {
     }
     if (service.status === 'PROVISIONING') {
       return (
-        <ActionGroup>
-          <Button
-            size="sm"
-            disabled={saving}
-            onClick={() => setAction({ service, status: 'ACTIVE' })}
-          >
-            Activate
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            disabled={saving}
-            onClick={() => setAction({ service, status: 'PROVISION_FAILED' })}
-          >
-            Mark failed
-          </Button>
-        </ActionGroup>
+        <span className="text-xs text-slate-500">Panel operation running</span>
       );
     }
     if (service.status === 'PROVISION_FAILED') {
       return (
         <ActionGroup>
-          <Button
-            size="sm"
-            disabled={saving}
-            onClick={() => void directTransition(service, 'PROVISIONING')}
-          >
-            Retry provisioning
-          </Button>
+          <span className="text-xs text-amber-700">Review operation log</span>
           <Button
             size="sm"
             variant="ghost"
@@ -315,7 +327,9 @@ export function AdminServiceManager() {
           <Button
             size="sm"
             disabled={saving}
-            onClick={() => void directTransition(service, 'ACTIVE')}
+            onClick={() =>
+              void runPanelOperation(service, { type: 'UNSUSPEND_ACCOUNT' })
+            }
           >
             Reactivate
           </Button>
@@ -420,8 +434,8 @@ export function AdminServiceManager() {
         <div className="border-b border-slate-200 px-5 py-4">
           <h2 className="font-bold text-slate-950">Service inventory</h2>
           <p className="mt-1 text-sm text-slate-600">
-            Manual lifecycle controls only. Control-panel calls begin in Command
-            15.
+            Hosting lifecycle calls use the configured adapter. This command
+            enables only the development/test fake panel.
           </p>
         </div>
         {services.length ? (
@@ -469,33 +483,16 @@ function ActionForm({
           : 'Provide the operational evidence required for this transition.'}
       </p>
       <form onSubmit={onSubmit} className="mt-5 grid gap-4 md:grid-cols-2">
-        {action.status === 'ACTIVE' ? (
-          <>
-            <label className="text-sm font-semibold text-slate-700">
-              External account ID
-              <input name="externalAccountId" required className={fieldClass} />
-            </label>
-            <label className="text-sm font-semibold text-slate-700">
-              Control-panel username
-              <input
-                name="controlPanelUsername"
-                required
-                className={fieldClass}
-              />
-            </label>
-          </>
-        ) : (
-          <label className="text-sm font-semibold text-slate-700 md:col-span-2">
-            Reason
-            <textarea
-              name="reason"
-              required
-              maxLength={1000}
-              className={fieldClass}
-              rows={3}
-            />
-          </label>
-        )}
+        <label className="text-sm font-semibold text-slate-700 md:col-span-2">
+          Reason
+          <textarea
+            name="reason"
+            required
+            maxLength={1000}
+            className={fieldClass}
+            rows={3}
+          />
+        </label>
         {action.status === 'TERMINATED' ? (
           <label className="text-sm font-semibold text-red-800 md:col-span-2">
             Type TERMINATE to confirm

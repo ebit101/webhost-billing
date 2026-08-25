@@ -990,6 +990,71 @@ Run **Command 14 — Implement Services** after explicit user authorization.
 
 Run **Command 15 — Create the Hosting-Panel Adapter** after explicit user authorization. Use `FakeHostingPanel` only; do not contact the cPanel development server or use panel credentials in this command.
 
+### Command 15 — Create the Hosting-Panel Adapter
+
+- **Status:** Completed and delivered to GitHub `main`
+- **Date:** 2026-08-25
+
+#### Scope completed
+
+- Added a provider-neutral `HostingPanel` interface covering connection testing, idempotent account creation, account lookup, suspension, unsuspension, package/password changes, ephemeral login URLs, and termination.
+- Implemented `FakeHostingPanel` with the `fake-panel` adapter key for development/tests only, including deterministic account identity, restart-safe reconstruction of fictional persisted accounts, duplicate provisioning protection, normalized account state, temporary login links, controlled failure injection, and no network access.
+- Added a fixed five-second timeout boundary and safe `TEMPORARY`, `PERMANENT`, and `INCONSISTENT` provider errors. Unknown errors are replaced with redacted messages; read timeouts may be retried, while uncertain mutation timeouts require reconciliation.
+- Added strict shared runtime contracts for hosting actions, account/result state, operation history, retries, confirmation, password strength, safe server summaries, pagination, and HTTPS-only login URLs.
+- Added the durable `HostingPanelOperation` model with adapter/action snapshots, keyed request fingerprints, global submission idempotency, attempt/retry linkage, normalized failure evidence, safe JSON metadata, and UTC execution timestamps.
+- Added database constraints aligning operation scope/status/error/retry evidence, prohibiting invalid fingerprints/self-retries, requiring JSON objects, and enforcing one linear retry child per attempt.
+- Implemented administrator orchestration that serializes service operations, blocks concurrent work, moves provisioning to `PROVISIONING`, activates only after a matching provider account, completes fully active orders, and updates suspension/reactivation/termination state only after validated provider success.
+- Made matching requests replay-safe and conflicting submission-key reuse fail. No operation retries automatically; safely temporary failures allow a deliberate linear manual retry chain capped at five attempts. Passwords must be re-entered and termination must be reconfirmed.
+- Held domain/account/state mismatches and uncertain mutations in `INCONSISTENT` without inviting retry. Provider failure never changes financial history, and failed provisioning remains separate from payment/order settlement.
+- Added administrator connection tests, account tools, durable operation history, retry/reconciliation controls, and adapter-backed service lifecycle actions. Added ownership-protected customer generation of short-lived control-panel login URLs.
+- Persisted atomic start/success/failure activity logs with safe identifiers/classification only. Passwords, credentials, raw provider responses, and login URLs are excluded from database rows, logs, errors, and API operation history.
+- Recorded cPanel/WHM as the only selected hosting-panel provider and UK2Group as a separate future domain-registrar provider. Updated Command 16 to cPanel/WHM only and documented that registrar models, credentials, APIs, and workflows require separate authorization.
+- Added shared validation, fake adapter, timeout/redaction, UI, database, and complete API integration coverage. No cPanel/WHM or UK2Group request was made, and no screenshot value was copied.
+
+#### Files changed
+
+- Architecture/provider plan: `HOSTING_BILLING_SYSTEM_PLAN.md`, `CODEX_DEVELOPMENT_COMMANDS.md`
+- Database and migrations: `packages/database/prisma/schema.prisma`, `packages/database/prisma/migrations/20260825234000_add_hosting_panel_operations/migration.sql`, `packages/database/prisma/migrations/20260825235000_bound_hosting_operation_retries/migration.sql`, `packages/database/prisma/verify.ts`
+- Shared contracts/tests: `packages/shared/src/contracts/hosting-panels.ts`, `packages/shared/src/index.ts`, `packages/shared/test/contracts.spec.ts`
+- Hosting-panel boundary/orchestration: `apps/api/src/modules/hosting-panels/hosting-panel.interface.ts`, `hosting-panel.error.ts`, `fake-hosting-panel.ts`, `hosting-panel.registry.ts`, `hosting-panel.service.ts`, `hosting-panel.controller.ts`, `hosting-panel.module.ts`, `apps/api/src/app.module.ts`
+- API tests: `apps/api/src/modules/hosting-panels/fake-hosting-panel.spec.ts`, `apps/api/test/hosting-panels.e2e-spec.ts`
+- Administrator/customer interfaces and tests: `apps/web/src/components/services/admin-hosting-operation-manager.tsx`, `admin-service-manager.tsx`, `customer-service-detail.tsx`, `service-management.test.tsx`, `apps/web/src/app/(admin)/admin/services/page.tsx`
+- Documentation: `README.md`, `docs/HOSTING_PANELS.md`, `docs/SERVICES.md`, `docs/DATABASE.md`, `docs/DECISIONS.md`, `docs/PROGRESS.md`
+
+#### Validation
+
+- Prisma schema formatting/validation, fifteen-migration deploy/status, idempotent fictional seed, and structural database verifier: passed against isolated PostgreSQL, including hosting-operation status/evidence constraints and bounded retry uniqueness.
+- Prettier repository formatting check, `git diff --check`, and ESLint for API, worker, and web: passed without warnings.
+- Strict TypeScript checks for all six code workspace projects: passed, including generated Prisma and Next.js route types.
+- Complete non-integration suite: 15 shared-contract tests, 56 API tests, 1 worker test, and 23 frontend tests passed (95 total).
+- Fake hosting-panel suite: 8 passed for the full capability contract, duplicate provisioning, conflicting domains, temporary/permanent/inconsistent failures, read-versus-mutation timeouts, and unknown-error redaction.
+- Hosting-panel API suite: 4 passed for connection testing, idempotent provisioning, submission misuse, service/order activation, account query/package/password operations, secret non-persistence, suspension/reactivation, owned login URLs, confirmed termination, temporary failure/manual retry/replay bounds, inconsistency hold, authorization, and safe history.
+- Complete API end-to-end suite: 10 suites and 46 tests passed against local PostgreSQL and Redis.
+- Database, shared packages, NestJS API, NestJS worker, and Next.js production builds: passed with `NODE_ENV=production`.
+
+#### Decisions made
+
+- cPanel/WHM is the only hosting-panel target. Command 15 uses the provider-neutral contract and fake implementation; real `cpanel-whm` behavior belongs exclusively to Command 16.
+- UK2Group is a registrar, not a hosting-panel adapter. It must use separate domain models, credential encryption context, settings, authorization, idempotency, operation history, and provider documentation in a future separately authorized command.
+- Every hosting attempt is durable and append-only. The operation row, not a browser response or transient log, is the retry/reconciliation record.
+- Request fingerprints use HMAC with existing secret material so even a password-bearing request cannot create a useful offline password hash. Persisted request metadata contains only `REDACTED` for password input.
+- External mutations never retry automatically. A provider-declared temporary failure may be retried manually; timeout/unknown/mismatched results stay held until reconciliation.
+- Only successful, identity- and state-matched provider results change service state. Financial state remains independent.
+- Temporary login URLs must use HTTPS, are returned only to the requesting authorized user, and are never persisted.
+
+#### Open questions and risks
+
+- Command 16 must select the exact cPanel/WHM authentication mechanism, credential rotation/versioning approach, API token scope, development-server hostname/account, package mapping, and manual acceptance targets from current official documentation.
+- No real cPanel credential is configured and no connection or mutation was attempted. Even after a real adapter is coded with mocks, development-server mutations require a dedicated test account/package and explicit authorization.
+- UK2Group's exact current API product/brand, official documentation, sandbox/test endpoint, reseller authorization, contact ownership, TLD set, registration/renewal/transfer behavior, domain pricing, and required database model remain unresolved. The supplied screenshot is context only, not an API contract.
+- `RUNNING` operations abandoned by an application crash need a later worker/reconciliation recovery policy. Command 17 introduces queues and observable failed-job handling; it must not blindly retry uncertain mutations.
+- Fake account reconstruction supports fictional persisted services after an application restart, but the fake provider remains in-memory and is not a production consistency simulation.
+- The PostgreSQL driver continues to emit its known pg@9 concurrency deprecation warning during E2E activity, and the minimal Node validation container emits Prisma OpenSSL auto-detection warnings. All migration, database, concurrency, test, type, lint, and build checks passed.
+
+#### Recommended next command
+
+Run **Command 16 — Integrate the Real Hosting Panel** after explicit authorization. Implement cPanel/WHM only, consult current official documentation, use mocked provider tests, configure no plaintext credential, and make no external mutation until the dedicated development account/package and manual test scope are explicitly approved.
+
 ## Report Template
 
 Use this template after every future command:
