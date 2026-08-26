@@ -1,4 +1,7 @@
-import type { BackgroundFailureList } from '@webhost-billing/shared';
+import type {
+  BackgroundFailureList,
+  OperationalOverview,
+} from '@webhost-billing/shared';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -44,6 +47,31 @@ const policy = {
   timeZone: 'Asia/Dhaka',
 };
 
+const overview: OperationalOverview = {
+  generatedAt: '2026-08-26T02:00:00.000Z',
+  queues: [
+    {
+      queueName: 'hosting-provisioning',
+      waiting: 2,
+      active: 1,
+      delayed: 0,
+      failed: 1,
+    },
+  ],
+  queueTotals: { waiting: 2, active: 1, delayed: 0, failed: 1 },
+  failedOutboxEvents: 1,
+  automation: { running: 0, failedLast24Hours: 0, latestRuns: [] },
+  providerFailures: [
+    {
+      providerType: 'HOSTING_PANEL',
+      provider: 'cpanel',
+      failedLast24Hours: 1,
+      inconsistentLast24Hours: 1,
+      mostRecentAt: '2026-08-26T01:30:00.000Z',
+    },
+  ],
+};
+
 describe('automation manager', () => {
   afterEach(() => vi.unstubAllGlobals());
 
@@ -60,6 +88,9 @@ describe('automation manager', () => {
         }
         if (url.includes('/renewal-automation/runs')) {
           return Promise.resolve(success([]));
+        }
+        if (url.includes('/observability/overview')) {
+          return Promise.resolve(success(overview));
         }
         if (init?.method === 'POST') {
           return Promise.resolve(success({ queued: true }));
@@ -84,6 +115,10 @@ describe('automation manager', () => {
       screen.getByText('No renewal automation cycle has run yet.'),
     ).toBeTruthy();
     expect(screen.getByText('Reconciliation required')).toBeTruthy();
+    expect(
+      screen.getByRole('heading', { name: 'Operational health' }),
+    ).toBeTruthy();
+    expect(screen.getByText('HOSTING PANEL · cpanel')).toBeTruthy();
     expect(
       screen.queryByRole('button', { name: 'Retry temporary job' }),
     ).toBeNull();

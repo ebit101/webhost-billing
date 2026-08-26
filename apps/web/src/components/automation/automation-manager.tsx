@@ -5,6 +5,7 @@ import type {
   BackgroundFailureList,
   FailedBackgroundJob,
   FailedOutboxEvent,
+  OperationalOverview,
   RenewalAutomationPolicy,
 } from '@webhost-billing/shared';
 import { useEffect, useState, type ReactNode } from 'react';
@@ -32,6 +33,7 @@ export function AutomationManager() {
     useState<BackgroundFailureList>(emptyFailures);
   const [policy, setPolicy] = useState(defaultPolicy);
   const [runs, setRuns] = useState<AutomationRunSummary[]>([]);
+  const [overview, setOverview] = useState<OperationalOverview | null>(null);
   const [loading, setLoading] = useState(true);
   const [savingKey, setSavingKey] = useState('');
   const [error, setError] = useState('');
@@ -43,12 +45,14 @@ export function AutomationManager() {
       authenticatedGet<BackgroundFailureList>('/background-jobs/failures'),
       authenticatedGet<RenewalAutomationPolicy>('/renewal-automation/policy'),
       authenticatedGet<AutomationRunSummary[]>('/renewal-automation/runs'),
+      authenticatedGet<OperationalOverview>('/observability/overview'),
     ])
-      .then(([failureResult, policyResult, runResult]) => {
+      .then(([failureResult, policyResult, runResult, overviewResult]) => {
         if (active) {
           setFailures(failureResult);
           setPolicy(policyResult);
           setRuns(runResult);
+          setOverview(overviewResult);
         }
       })
       .catch((caught: unknown) => {
@@ -158,6 +162,93 @@ export function AutomationManager() {
         >
           {notice}
         </p>
+      ) : null}
+
+      {overview ? (
+        <section className="space-y-4" aria-labelledby="operational-health">
+          <div>
+            <h2
+              id="operational-health"
+              className="text-lg font-bold text-slate-950"
+            >
+              Operational health
+            </h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Queue backlog and failures recorded during the last 24 hours.
+            </p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
+            <MetricCard label="Waiting" value={overview.queueTotals.waiting} />
+            <MetricCard label="Active" value={overview.queueTotals.active} />
+            <MetricCard label="Delayed" value={overview.queueTotals.delayed} />
+            <MetricCard
+              label="Failed jobs"
+              value={overview.queueTotals.failed}
+            />
+            <MetricCard
+              label="Failed outbox"
+              value={overview.failedOutboxEvents}
+            />
+            <MetricCard
+              label="Failed automation"
+              value={overview.automation.failedLast24Hours}
+            />
+          </div>
+          <div className="grid gap-4 xl:grid-cols-2">
+            <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
+              <table className="min-w-full text-left text-sm">
+                <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+                  <tr>
+                    <th className="px-4 py-3">Queue</th>
+                    <th className="px-4 py-3">Backlog</th>
+                    <th className="px-4 py-3">Failed</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {overview.queues.map((queue) => (
+                    <tr key={queue.queueName}>
+                      <td className="px-4 py-3 font-semibold text-slate-900">
+                        {queue.queueName}
+                      </td>
+                      <td className="px-4 py-3 text-slate-600">
+                        {queue.waiting + queue.active + queue.delayed}
+                      </td>
+                      <td className="px-4 py-3 text-slate-600">
+                        {queue.failed}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-white p-5">
+              <h3 className="font-bold text-slate-950">Provider failures</h3>
+              {overview.providerFailures.length === 0 ? (
+                <p className="mt-3 text-sm text-slate-500">
+                  No payment, hosting, or email provider failures in 24 hours.
+                </p>
+              ) : (
+                <ul className="mt-3 divide-y divide-slate-100 text-sm">
+                  {overview.providerFailures.map((metric) => (
+                    <li
+                      key={`${metric.providerType}-${metric.provider}`}
+                      className="flex items-center justify-between gap-4 py-3"
+                    >
+                      <span className="font-semibold text-slate-900">
+                        {metric.providerType.replaceAll('_', ' ')} ·{' '}
+                        {metric.provider}
+                      </span>
+                      <span className="text-slate-600">
+                        {metric.failedLast24Hours} failed ·{' '}
+                        {metric.inconsistentLast24Hours} inconsistent
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        </section>
       ) : null}
 
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -439,6 +530,17 @@ function PolicyField({
       {label}
       {children}
     </label>
+  );
+}
+
+function MetricCard({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+        {label}
+      </p>
+      <p className="mt-2 text-2xl font-black text-slate-950">{value}</p>
+    </div>
   );
 }
 

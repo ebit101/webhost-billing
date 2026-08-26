@@ -19,6 +19,7 @@ import { RenewalAutomationModule } from './modules/renewal-automation/renewal-au
 import { TicketModule } from './modules/tickets/ticket.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { DashboardReportModule } from './modules/dashboard-reports/dashboard-report.module';
+import { ObservabilityModule } from './modules/observability/observability.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { DashboardReportModule } from './modules/dashboard-reports/dashboard-rep
     TicketModule,
     SettingsModule,
     DashboardReportModule,
+    ObservabilityModule,
   ],
   controllers: [AppController],
   providers: [

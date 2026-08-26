@@ -4,6 +4,8 @@ import {
   backgroundQueueNames,
   backgroundQueuePolicies,
   failedBackgroundJobSchema,
+  backgroundQueueMetricSchema,
+  type BackgroundQueueMetric,
   type BackgroundJobData,
   type BackgroundQueueName,
   type FailedBackgroundJob,
@@ -110,6 +112,26 @@ export class BackgroundQueueCatalog {
         (right.failedAt ?? '').localeCompare(left.failedAt ?? ''),
       )
       .slice(0, limit);
+  }
+
+  async metrics(): Promise<BackgroundQueueMetric[]> {
+    return Promise.all(
+      backgroundQueueNames.map(async (queueName) => {
+        const counts = await this.queue(queueName).getJobCounts(
+          'waiting',
+          'active',
+          'delayed',
+          'failed',
+        );
+        return backgroundQueueMetricSchema.parse({
+          queueName,
+          waiting: counts.waiting ?? 0,
+          active: counts.active ?? 0,
+          delayed: counts.delayed ?? 0,
+          failed: counts.failed ?? 0,
+        });
+      }),
+    );
   }
 
   async close(): Promise<void> {

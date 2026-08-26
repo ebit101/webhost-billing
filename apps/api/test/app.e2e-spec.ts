@@ -23,6 +23,36 @@ describe('AppController (e2e)', () => {
       .expect({ success: true, data: { message: 'Hello World!' } });
   });
 
+  it('exposes liveness and propagates a validated request ID', async () => {
+    const requestId = '10000000-0000-4000-8000-000000000027';
+    const response = await request(app.getHttpServer())
+      .get('/health')
+      .set('X-Request-ID', requestId)
+      .expect(200);
+
+    expect(response.headers['x-request-id']).toBe(requestId);
+    expect(response.body).toMatchObject({
+      success: true,
+      data: { status: 'OK', service: 'api' },
+    });
+  });
+
+  it('exposes PostgreSQL and Redis readiness without connection details', async () => {
+    const response = await request(app.getHttpServer())
+      .get('/ready')
+      .expect(200);
+
+    expect(response.body).toMatchObject({
+      success: true,
+      data: {
+        status: 'READY',
+        components: { postgresql: 'UP', redis: 'UP' },
+      },
+    });
+    expect(JSON.stringify(response.body)).not.toMatch(/postgres(?:ql)?:\/\//i);
+    expect(JSON.stringify(response.body)).not.toMatch(/redis:\/\//i);
+  });
+
   it('formats framework errors through the global API exception filter', () => {
     return request(app.getHttpServer())
       .get('/missing')

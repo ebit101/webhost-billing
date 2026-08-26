@@ -41,5 +41,6 @@ class ApiBackgroundQueueLifecycle implements OnApplicationShutdown {
     ApiBackgroundQueueLifecycle,
     BackgroundJobService,
   ],
+  exports: [API_BACKGROUND_QUEUES],
 })
 export class BackgroundJobModule {}

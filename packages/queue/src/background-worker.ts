@@ -4,6 +4,7 @@ import {
   type BackgroundFailureKind,
   type BackgroundJobData,
   type BackgroundQueueName,
+  runWithStructuredLogContext,
 } from '@webhost-billing/shared';
 import { createBullConnectionOptions } from './connection';
 
@@ -90,50 +91,59 @@ export class BackgroundWorker {
     } catch {
       throw new UnrecoverableError('BACKGROUND_JOB_PAYLOAD_INVALID');
     }
-    this.log({
-      level: 'info',
-      event: 'background_job_started',
-      queueName,
-      jobId: job.id ?? 'unknown',
-      correlationId: data.correlationId,
-    });
-    try {
-      await handler(data, signal);
-      this.log({
-        level: 'info',
-        event: 'background_job_succeeded',
-        queueName,
-        jobId: job.id ?? 'unknown',
+    await runWithStructuredLogContext(
+      {
         correlationId: data.correlationId,
-      });
-    } catch (error) {
-      const classified =
-        error instanceof BackgroundJobError
-          ? error
-          : new BackgroundJobError(
-              'TEMPORARY',
-              'BACKGROUND_JOB_UNEXPECTED',
-              'The background job failed unexpectedly.',
-            );
-      await job.updateData({
-        ...data,
-        failureKind: classified.kind,
-        failureCode: classified.code,
-        manualRetryAllowed: classified.kind === 'TEMPORARY',
-      });
-      this.log({
-        level: 'error',
-        event: 'background_job_failed',
-        queueName,
         jobId: job.id ?? 'unknown',
-        correlationId: data.correlationId,
-        failureKind: classified.kind,
-        failureCode: classified.code,
-      });
-      if (classified.kind !== 'TEMPORARY') {
-        throw new UnrecoverableError(classified.code);
-      }
-      throw new Error(classified.code);
-    }
+        queueName,
+      },
+      async () => {
+        this.log({
+          level: 'info',
+          event: 'background_job_started',
+          queueName,
+          jobId: job.id ?? 'unknown',
+          correlationId: data.correlationId,
+        });
+        try {
+          await handler(data, signal);
+          this.log({
+            level: 'info',
+            event: 'background_job_succeeded',
+            queueName,
+            jobId: job.id ?? 'unknown',
+            correlationId: data.correlationId,
+          });
+        } catch (error) {
+          const classified =
+            error instanceof BackgroundJobError
+              ? error
+              : new BackgroundJobError(
+                  'TEMPORARY',
+                  'BACKGROUND_JOB_UNEXPECTED',
+                  'The background job failed unexpectedly.',
+                );
+          await job.updateData({
+            ...data,
+            failureKind: classified.kind,
+            failureCode: classified.code,
+            manualRetryAllowed: classified.kind === 'TEMPORARY',
+          });
+          this.log({
+            level: 'error',
+            event: 'background_job_failed',
+            queueName,
+            jobId: job.id ?? 'unknown',
+            correlationId: data.correlationId,
+            failureKind: classified.kind,
+            failureCode: classified.code,
+          });
+          if (classified.kind !== 'TEMPORARY') {
+            throw new UnrecoverableError(classified.code);
+          }
+          throw new Error(classified.code);
+        }
+      },
+    );
   }
 }

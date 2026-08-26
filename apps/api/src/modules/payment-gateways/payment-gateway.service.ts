@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
 import {
   InvoiceStatus,
   OrderStatus,
@@ -61,6 +61,8 @@ type WebhookTransactionResult =
 
 @Injectable()
 export class PaymentGatewayService {
+  private readonly logger = new Logger(PaymentGatewayService.name);
+
   constructor(
     @Inject(PRISMA_CLIENT) private readonly prisma: PrismaClient,
     private readonly gateways: PaymentGatewayRegistry,
@@ -304,7 +306,11 @@ export class PaymentGatewayService {
     const existing = await this.prisma.paymentEvent.findFirst({
       where: { provider: gateway.key, providerEventId: event.providerEventId },
     });
-    if (existing) return this.replay(existing, payloadHash, event);
+    if (existing) {
+      const replay = this.replay(existing, payloadHash, event);
+      this.logPaymentEvent(gateway.key, replay);
+      return replay;
+    }
 
     try {
       const result = await this.prisma.$transaction(async (transaction) => {
@@ -466,25 +472,55 @@ export class PaymentGatewayService {
       if (result.outcome === 'rejected') {
         throw this.webhookRejected(result.message);
       }
-      return paymentWebhookResultSchema.parse({
+      const webhookResult = paymentWebhookResultSchema.parse({
         accepted: true,
         duplicate: false,
         providerEventId: event.providerEventId,
         status: result.outcome === 'processed' ? 'PROCESSED' : 'IGNORED',
       });
+      this.logPaymentEvent(gateway.key, webhookResult);
+      return webhookResult;
     } catch (error) {
-      if (!this.isUniqueConstraintError(error)) throw error;
+      if (!this.isUniqueConstraintError(error)) {
+        this.logger.error(
+          JSON.stringify({
+            event: 'payment_event_processing_failed',
+            provider: gateway.key,
+            providerEventId: event.providerEventId,
+          }),
+        );
+        throw error;
+      }
       const raced = await this.prisma.paymentEvent.findFirst({
         where: {
           provider: gateway.key,
           providerEventId: event.providerEventId,
         },
       });
-      if (raced) return this.replay(raced, payloadHash, event);
+      if (raced) {
+        const replay = this.replay(raced, payloadHash, event);
+        this.logPaymentEvent(gateway.key, replay);
+        return replay;
+      }
       throw this.webhookRejected(
         'Provider transaction has already been recorded.',
       );
     }
+  }
+
+  private logPaymentEvent(
+    provider: string,
+    result: PaymentWebhookResult,
+  ): void {
+    this.logger.log(
+      JSON.stringify({
+        event: 'payment_event_processed',
+        provider,
+        providerEventId: result.providerEventId,
+        status: result.status,
+        duplicate: result.duplicate,
+      }),
+    );
   }
 
   async completeBkashCallback(

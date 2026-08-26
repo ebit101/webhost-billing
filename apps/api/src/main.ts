@@ -5,6 +5,7 @@ import {
   loadEnvironmentFiles,
   parseApiEnvironment,
 } from '@webhost-billing/config';
+import { StructuredLogger } from '@webhost-billing/shared';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -13,7 +14,11 @@ async function bootstrap() {
     ...process.env,
     PORT: process.env.API_PORT ?? '3001',
   });
-  const app = await NestFactory.create(AppModule, { rawBody: true });
+  const logger = new StructuredLogger({
+    service: 'api',
+    environment: environment.NODE_ENV,
+  });
+  const app = await NestFactory.create(AppModule, { rawBody: true, logger });
   const express = app.getHttpAdapter().getInstance() as Express;
   express.set('trust proxy', 'loopback');
   app.use(
@@ -34,11 +39,15 @@ async function bootstrap() {
   app.enableCors({
     origin: environment.WEB_ORIGIN,
     credentials: true,
-    allowedHeaders: ['Content-Type', 'X-CSRF-Token'],
+    allowedHeaders: ['Content-Type', 'X-CSRF-Token', 'X-Request-ID'],
     methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    exposedHeaders: ['Content-Disposition'],
+    exposedHeaders: ['Content-Disposition', 'X-Request-ID'],
     maxAge: 600,
   });
   await app.listen(environment.PORT, '0.0.0.0');
+  logger.log({
+    event: 'api_started',
+    port: environment.PORT,
+  });
 }
 void bootstrap();

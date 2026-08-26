@@ -274,6 +274,14 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** The release-critical journey crosses browser routing, secure cookies, CSRF, API authorization, financial settlement, PostgreSQL state, and worker-owned automation. Module tests cannot prove those boundaries compose into a usable workflow, while live provider calls or shared development data would make the suite unsafe and nondeterministic.
 - **Consequence:** `pnpm test:e2e` runs with one worker and retains traces, screenshots, and video only on failure. The PostgreSQL adapter must honor the URL `schema` parameter for runtime queries, not only Prisma migrations. Browser payment still requires an authenticated signed fake callback, provisioning remains distinct from payment, and wrong termination confirmation must preserve the active service. Real-provider acceptance and parallel/sharded browser suites remain separately authorized work.
 
+## ADR-035 — Redacted Correlation and Split Liveness/Readiness
+
+- **Status:** Accepted
+- **Date:** 2026-08-26
+- **Decision:** Emit one structured JSON record per application event through a shared fail-safe redactor, correlate HTTP requests and background jobs with UUIDs, and record only safe payment event identifiers. Keep dependency-free liveness separate from bounded PostgreSQL/Redis readiness. Aggregate administrator-only operational metrics from retained BullMQ, outbox, automation, payment, hosting, and email evidence.
+- **Reason:** Operators need to connect API, worker, scheduler, and provider failures without placing credentials or sensitive payloads into a second data store. Process survival and ability to accept traffic are different questions, while financial and hosting uncertainty requires durable business evidence rather than browser redirects or generic uptime alone.
+- **Consequence:** `/health` can remain up while `/ready` returns `503`; neither endpoint exposes topology or error details. `X-Request-ID` accepts UUIDs only, request logging omits queries/bodies/headers/cookies, and job logs carry reference-only correlation. Provider totals and retained failed counts are investigation signals, not authorization for blind retries. Deployment monitoring must implement the wake/business-hours thresholds in `docs/OBSERVABILITY.md`; no third-party alert destination is selected in this command.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

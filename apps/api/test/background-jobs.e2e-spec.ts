@@ -14,6 +14,7 @@ import {
 import {
   apiSuccessResponseSchema,
   backgroundFailureListSchema,
+  operationalOverviewSchema,
 } from '@webhost-billing/shared';
 import request from 'supertest';
 import type { App } from 'supertest/types';
@@ -102,6 +103,7 @@ describe('Background job administration (e2e)', () => {
     const customer = request.agent(app.getHttpServer());
     await authenticate(customer, CUSTOMER_EMAIL);
     await customer.get('/background-jobs/failures').expect(403);
+    await customer.get('/observability/overview').expect(403);
 
     const admin = request.agent(app.getHttpServer());
     const csrf = await authenticate(admin, ADMIN_EMAIL);
@@ -121,6 +123,18 @@ describe('Background job administration (e2e)', () => {
     );
     expect(JSON.stringify(response.body)).not.toContain('lastError');
     expect(JSON.stringify(response.body)).not.toContain('payload');
+
+    const overviewResponse = await admin
+      .get('/observability/overview')
+      .expect(200);
+    const overview = apiSuccessResponseSchema(operationalOverviewSchema).parse(
+      overviewResponse.body,
+    ).data;
+    expect(overview.queues).toHaveLength(7);
+    expect(overview.failedOutboxEvents).toBeGreaterThanOrEqual(1);
+    expect(JSON.stringify(overviewResponse.body)).not.toMatch(
+      /(?:password|cookie|apiKey|signature|payload)/i,
+    );
 
     await admin
       .post(`/background-jobs/outbox/${outboxEventId}/retry`)

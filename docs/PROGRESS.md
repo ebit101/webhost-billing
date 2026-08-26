@@ -1771,6 +1771,58 @@ Run **Command 26 — Add End-to-End Tests** only after explicit user authorizati
 
 Run **Command 27 — Add Observability and Health Checks** only after explicit user authorization. Add structured redacted logs, request/job/payment correlation, dependency readiness, queue/failure visibility, automation history, provider failure metrics, and an administrator alert policy without exposing secrets or sensitive payloads.
 
+### Command 27 — Add Observability and Health Checks
+
+- **Status:** Completed and delivered to GitHub `main`
+- **Date:** 2026-08-26
+
+#### Scope completed
+
+- Added newline-delimited structured JSON logging for the API, worker, and scheduler with service/environment/event fields and recursive fail-safe secret redaction.
+- Added UUID request correlation through `X-Request-ID`, safe request completion telemetry without queries or inputs, and AsyncLocalStorage-backed job correlation across the complete BullMQ handler lifecycle.
+- Added safe payment processing records containing provider event identifiers, result state, and duplicate/replay status without webhook bodies, signatures, gateway responses, or credentials.
+- Added public dependency-free `GET /health` liveness and bounded `GET /ready` PostgreSQL/Redis readiness; readiness returns `503` without exposing infrastructure details when a dependency is down.
+- Added administrator-only `GET /observability/overview` with per-queue backlog/failed counts, failed outbox totals, running/recent/failed automation evidence, and 24-hour payment, cPanel, and email provider failure/inconsistent metrics.
+- Extended the existing administrator automation page with operational KPI cards, per-queue backlog visibility, and provider failure summaries while preserving the safe retained-failure/retry controls and automation history.
+- Documented correlation, endpoint semantics, log exclusions, retained-failure interpretation, investigation order, and explicit wake-the-administrator/business-hours alert thresholds.
+
+#### Files changed
+
+- Shared contracts, correlation context, structured logger, and redaction tests: `packages/shared/src/contracts/observability.ts`, `packages/shared/src/observability.ts`, `packages/shared/src/index.ts`, `packages/shared/test/observability.spec.ts`
+- BullMQ metrics and handler-scoped correlation: `packages/queue/src/background-queue.catalog.ts`, `packages/queue/src/background-worker.ts`
+- API health/readiness/metrics and request telemetry: `apps/api/src/modules/observability/**`, `apps/api/src/app.module.ts`, `apps/api/src/main.ts`, `apps/api/src/common/errors/api-exception.filter.ts`, `apps/api/src/modules/background-jobs/background-job.module.ts`
+- Safe payment event telemetry: `apps/api/src/modules/payment-gateways/payment-gateway.service.ts`
+- Worker and scheduler logger bootstrap: `apps/worker/src/main.ts`, `apps/worker/src/scheduler-main.ts`
+- Administrator operations UI and tests: `apps/web/src/components/automation/automation-manager.tsx`, `apps/web/src/components/automation/automation-manager.test.tsx`
+- Integration tests and operator documentation: `apps/api/test/app.e2e-spec.ts`, `apps/api/test/background-jobs.e2e-spec.ts`, `docs/OBSERVABILITY.md`, `docs/DECISIONS.md`, `README.md`, `docs/PROGRESS.md`
+
+#### Validation
+
+- Repository Prettier, `git diff --check`, API/worker/web ESLint, and strict TypeScript checks for every code workspace passed. The first root typecheck inherited the operator's production/plain-HTTP web origin and correctly rejected it; the complete check passed with the intended test environment, and the production build passed with fictional HTTPS origins.
+- All 189 workspace unit/contract/component/integration tests passed: shared 25, queue/Redis 3, API 87, worker 27, and frontend 47. The complete API PostgreSQL/Redis E2E suite passed 65 tests across sixteen suites, including health/readiness, UUID response correlation, administrator metrics, and customer denial.
+- The 75-test focused critical-invariant gate passed: 25 contracts, 12 integer-money unit tests, 36 selected API integration tests, and 2 renewal worker integration tests. The complete sequential Playwright Chromium hosting lifecycle also passed.
+- Config/database/shared/queue packages, NestJS API/worker, and the Next.js 16.3.2 production build passed; all 29 routes were generated with fictional HTTPS production origins. The final payment-failure metric query refinement passed API typecheck, its focused unit suite, and the two affected API E2E suites.
+- Prisma formatting/validation/generation, all 21 migration status checks, structural/custom-constraint/fictional-seed verification, Docker Compose validation, and healthy loopback-only PostgreSQL/Redis services passed. `pnpm audit --prod` reported no known vulnerabilities.
+- No real credentials, customer data, production infrastructure, payment/SMTP/cPanel/UK2Group provider call, or destructive external action was used.
+
+#### Decisions made
+
+- Liveness answers whether the API process can serve HTTP; readiness answers whether PostgreSQL and Redis are usable. A dependency outage must not leak a URL or exception through the public endpoint.
+- Logs carry identifiers and safe state only. Redaction is defense in depth; bodies, headers, cookies, credentials, proof, and provider responses remain prohibited at the call site.
+- Retained failed-job totals are evidence rather than a promise that a current incident remains active. External mutation uncertainty requires authenticated read-only reconciliation and never authorizes blind retry.
+- Operational metrics use durable application evidence and a bounded 24-hour window. Third-party paging integration is deferred until an alert destination and production deployment are explicitly authorized.
+
+#### Open questions and risks
+
+- Command 29 deployment must configure process/readiness monitors, log collection/retention/access, reverse-proxy filtering/rate limits for public health routes, and the alert delivery destination.
+- In-process JSON output and redaction reduce exposure but do not replace host-level access controls, encrypted log transport/storage, retention limits, or incident-response procedures.
+- Provider failure totals are polling snapshots rather than Prometheus counters. They are intentionally sufficient for the private initial deployment; higher-volume time-series monitoring remains future scope.
+- PostgreSQL and Redis readiness proves connectivity, not capacity, replication, backup integrity, or recovery. Those controls begin in Command 28.
+
+#### Recommended next command
+
+Run **Command 28 — Prepare Backups and Recovery** only after explicit user authorization. Create encrypted PostgreSQL backup/restore procedures, verify a fictional local backup in an isolated database, document configuration-secret recovery, migration recovery, rollback decisions, and the disaster-recovery checklist without touching production data.
+
 ## Report Template
 
 Use this template after every future command:

@@ -125,7 +125,13 @@ export class ApiExceptionFilter implements ExceptionFilter {
     const formatted = formatApiException(exception);
 
     if (formatted.status >= HTTP_STATUS.INTERNAL_SERVER_ERROR) {
-      this.logger.error('Unhandled exception converted to a safe API error.');
+      this.logger.error(
+        JSON.stringify({
+          event: 'api_request_failed',
+          statusCode: formatted.status,
+          errorCode: formatted.body.error.code,
+        }),
+      );
     }
 
     const response = host.switchToHttp().getResponse<Response>();
