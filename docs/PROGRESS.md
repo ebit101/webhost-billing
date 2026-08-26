@@ -1982,6 +1982,59 @@ Run **Command 30 — Conduct the Release Audit** only after explicit user author
 
 Run **Command 31 — Deploy to Staging** only after explicit user authorization and after the exact staging target, externally supplied non-placeholder secrets, backup/rollback ownership, DNS/TLS plan, and allowed fake/sandbox provider mode are confirmed. Do not deploy to production.
 
+### Command 31 — Deploy to Staging
+
+- **Status:** Completed on staging and delivered to GitHub `main`
+- **Date:** 2026-08-26
+
+#### Scope completed
+
+- Confirmed `my.speedhost.bd` resolves to the newly supplied server at `46.250.239.221`, authenticated it with a repository-specific Ed25519 deployment key and pinned host key, and verified the target is an Ubuntu 24.04 shared staging host rather than an authorized production target.
+- Inventoried the host before mutation: Docker/Compose and host Nginx were already installed; Nodewatch Pilot, RemotePilot production, and the RemotePilot RustDesk test stack were live. Preserved all unrelated containers, networks, ports, Nginx sites, files, and firewall behavior.
+- Installed the application under the isolated `/srv/webhost-billing-staging` root with a `current` release symlink, root-only secrets and login records, project-prefixed containers/networks/volumes, loopback web/API ports `19500`/`19600`, and no published PostgreSQL, Redis, Mailpit, worker, or scheduler ports.
+- Streamed the five previously audited application images and pinned PostgreSQL, Redis, and Mailpit images to the host. No source build, registry login, broad image cleanup, Docker prune, or global service restart occurred on the shared server.
+- Added a scoped host Nginx site for `my.speedhost.bd`, retained an encrypted pre-change Nginx archive, obtained a hostname-specific Let's Encrypt certificate, and activated HTTPS only after `nginx -t` succeeded. The edge uses exact path routing to API/web loopback listeners, a 1 MiB body limit, authentication rate limiting, HSTS/security headers, and HTTP-to-HTTPS redirect.
+- Applied all 21 Prisma migrations exactly once to a fresh staging database, seeded fictional release data, and bootstrapped separate random administrator/customer passwords into protected root-only files. Fixed the fictional invoice snapshot to include explicit nullable address line 2 so detail and PDF serialization match the runtime schema.
+- Started one API, web, worker, scheduler, PostgreSQL, Redis, and TLS-required Mailpit container. Real bKash, SSLCOMMERZ, cPanel/WHM, and UK2Group credentials were not supplied or used; their production-capable adapters remain disabled.
+- Created `docs/STAGING_DEPLOYMENT.md` with the shared-host guardrails, protected paths, scoped inspection/start/stop commands, migration boundary, certificate-renewal step, rollback process, provider posture, and backup limitation.
+
+#### Files changed
+
+- Staging Compose, environment example, Nginx templates, fictional-user bootstrap, end-to-end staging smoke, and offline fake-provider smoke: `deploy/staging/*`
+- Fictional seed invoice snapshot compatibility: `packages/database/prisma/seed.ts`
+- Local credential-file exclusion: `.gitignore`
+- Staging runbook, architecture decision, and command tracking: `docs/STAGING_DEPLOYMENT.md`, `docs/DECISIONS.md`, `docs/PROGRESS.md`
+
+#### Validation
+
+- Staging and production Compose files rendered together successfully. All three staging CommonJS scripts passed Node syntax checks, the fictional seed passed strict TypeScript validation, repository formatting checks for changed code/config passed, and `git diff --check` passed.
+- All seven `webhost-billing-staging` containers are healthy with zero restarts, PostgreSQL and Redis readiness are `UP`, and exactly one scheduler process is running. Container resources and volumes are scoped to the staging project.
+- Public HTTP `/login` redirects to HTTPS; HTTPS `/login`, `/health`, and `/ready` pass. The Let's Encrypt certificate matches `my.speedhost.bd`; security headers are present once; a 1.1 MiB authentication body is rejected with `413`.
+- The credentialed smoke passed administrator and customer login, administrator dashboard, customer portal, administrator dashboard/customer APIs, customer denial of the administrator customer list (`403`), invoice detail/PDF, support tickets, payment adapter listing, hosting operations, password-reset queueing, logout, and post-logout denial.
+- The fake payment and fake hosting-panel adapter contracts passed in an offline container. Credentialed bKash, SSLCOMMERZ, and cPanel checks correctly remained disabled without secrets; no external provider mutation was attempted.
+- TLS-required Mailpit received the fictional customer's password-reset email. The transactional outbox, failed outbox, and failed email counts were zero, and recent staging logs contained no fatal-pattern matches.
+- An encrypted PostgreSQL custom-format backup passed SHA-256, OpenPGP integrity, archive-structure, required-table, PostgreSQL 18.6, and 21-migration verification. The artifact and its separate passphrase are protected on the staging host.
+- After deployment, every previously running unrelated container remained healthy with its original uptime, host Nginx validation passed, and both `https://nodewatch.speedhost.bd` and `https://remotepilot.speedhost.bd` returned HTTP 200. No unrelated service was restarted.
+
+#### Decisions made
+
+- Use the host's existing Nginx as the shared public edge and use one same-origin hostname with an explicit API route allowlist. The application containers never bind public addresses.
+- Treat this as a narrowly approved staging exception on a shared host, not a change to the dedicated-VPS production recommendation. All lifecycle commands must remain Compose-project-scoped.
+- Use fictional accounts and the local TLS-required Mailpit sandbox until real SMTP/provider credentials and exact mutation boundaries receive separate authorization.
+- Keep forward-only migrations manual. Roll back application releases only when schema-compatible; otherwise restore a verified pre-migration backup into a separate database before a deliberate cutover.
+
+#### Open questions and risks
+
+- bKash and SSLCOMMERZ sandbox credentials, a cPanel development token/package/account, and real SMTP remain unconfigured. UK2Group remains a later separately authorized registrar integration. Fake contracts do not prove provider acceptance.
+- The verified encrypted backup and passphrase currently reside on the same host. There is no approved immutable off-site destination, centralized log retention, alert destination, HA, PITR, or host-level resource reservation; these remain production blockers.
+- Staging shares CPU, memory, Docker, and host Nginx with important applications. Capacity is currently adequate, but future deployment must repeat the inventory/isolation checks and must never use global restart/prune/firewall actions.
+- Certbot renews the host certificate automatically, but Mailpit consumes a protected copy. Its copy and only the Mailpit/worker/scheduler services must be refreshed after certificate renewal.
+- Production business identity, tax/VAT, cancellation/refund policy, renewal/grace values, operational owners, credential escrow/rotation, image registry/signing, monitoring, and final launch acceptance are unresolved.
+
+#### Recommended next command
+
+Run **Command 32 — Prepare the Production Launch** only after explicit user authorization. Prepare and review the production runbook and remaining gates, but do not mutate production or reuse staging credentials.
+
 ## Report Template
 
 Use this template after every future command:

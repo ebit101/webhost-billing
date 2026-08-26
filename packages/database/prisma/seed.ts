@@ -276,6 +276,14 @@ async function seed(): Promise<void> {
         amountPaid: monthlyAmount,
         balanceDue: 0n,
         paidAt,
+        customerAddressSnapshot: {
+          line1: '1 Example Road',
+          line2: null,
+          city: 'Dhaka',
+          region: 'Dhaka',
+          postalCode: '1000',
+          countryCode: 'BD',
+        },
       },
       create: {
         id: ids.invoice,
@@ -293,6 +301,7 @@ async function seed(): Promise<void> {
         customerEmailSnapshot: 'customer@example.test',
         customerAddressSnapshot: {
           line1: '1 Example Road',
+          line2: null,
           city: 'Dhaka',
           region: 'Dhaka',
           postalCode: '1000',

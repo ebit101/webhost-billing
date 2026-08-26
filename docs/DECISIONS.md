@@ -306,6 +306,14 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** Mock/fake-provider evidence can prove local authorization, idempotency, accounting, state, build, migration, and recovery behavior, but it cannot prove credentials, network policy, third-party account permissions, TLS/DNS, alert delivery, off-site backups, or provider-version behavior. The full plan also retains minor interface/policy gaps that must be accepted or completed rather than hidden by a green test suite.
 - **Consequence:** The release is a staging candidate with a production `NO-GO`. Command 31 requires an identified staging target, externally supplied secrets, backup/rollback ownership, and a reviewed action list. Production remains blocked until credentialed staging acceptance, monitoring/alerting, off-site recovery controls, final business policies, and the documented release-checklist gaps are resolved or explicitly accepted.
 
+## ADR-039 — Isolated Shared-Host Staging With a Same-Origin Edge
+
+- **Status:** Accepted
+- **Date:** 2026-08-26
+- **Decision:** Deploy staging as the isolated `webhost-billing-staging` Compose project under `/srv/webhost-billing-staging`, publish only loopback web/API ports, retain private PostgreSQL/Redis/Mailpit networks, and route selected API prefixes plus the web application through the existing host Nginx on the single HTTPS origin `my.speedhost.bd`. Keep all real providers disabled until separately authorized credentials and mutation limits are supplied.
+- **Reason:** The authorized server already runs several important applications and its host Nginx owns ports 80/443. A dedicated project name, directories, ports, volumes, secrets, and graceful Nginx site addition prevent name/port collisions and avoid a second public edge. The application accepts a same-origin API URL, while the explicit route allowlist preserves the frontend invoice-print exception.
+- **Consequence:** Staging is reachable at one HTTPS hostname and its seven containers can be operated without global Docker, firewall, or Nginx actions. Existing public applications and containers must be checked before and after every staging mutation. The Mailpit certificate copy needs a targeted refresh after certificate renewal. This shared-host exception does not supersede the dedicated-VPS production preference, and local encrypted backup evidence does not satisfy the off-site immutable-backup requirement.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

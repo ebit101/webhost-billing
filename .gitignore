@@ -12,6 +12,7 @@ packages/database/src/generated/
 .env
 .env.*
 !.env.example
+webhost-billing.txt
 
 # Logs and runtime files
 *.log

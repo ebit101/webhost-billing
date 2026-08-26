@@ -1,0 +1,65 @@
+services:
+  api:
+    ports:
+      - '127.0.0.1:${STAGING_API_PORT:-19600}:3001'
+
+  web:
+    ports:
+      - '127.0.0.1:${STAGING_WEB_PORT:-19500}:3000'
+    networks:
+      - frontend
+      - edge
+
+  worker:
+    environment:
+      SMTP_HOST: ${STAGING_SMTP_HOST:?Set STAGING_SMTP_HOST}
+      SMTP_PORT: 1025
+      SMTP_SECURE: 'false'
+      SMTP_REQUIRE_TLS: 'true'
+    depends_on:
+      mailpit:
+        condition: service_started
+
+  scheduler:
+    environment:
+      SMTP_HOST: ${STAGING_SMTP_HOST:?Set STAGING_SMTP_HOST}
+      SMTP_PORT: 1025
+      SMTP_SECURE: 'false'
+      SMTP_REQUIRE_TLS: 'true'
+    depends_on:
+      mailpit:
+        condition: service_started
+
+  mailpit:
+    image: axllent/mailpit:v1.31.0
+    restart: unless-stopped
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      MP_DATABASE: /data/mailpit.db
+      MP_UI_BIND_ADDR: 0.0.0.0:8025
+      MP_SMTP_BIND_ADDR: 0.0.0.0:1025
+      MP_SMTP_AUTH_ACCEPT_ANY: 'true'
+      MP_SMTP_REQUIRE_STARTTLS: 'true'
+      MP_SMTP_TLS_CERT: /run/secrets/tls_certificate
+      MP_SMTP_TLS_KEY: /run/secrets/tls_private_key
+    secrets:
+      - tls_certificate
+      - tls_private_key
+    expose:
+      - '1025'
+      - '8025'
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=32m
+    volumes:
+      - mailpit_data:/data
+    networks:
+      egress:
+        aliases:
+          - ${STAGING_SMTP_HOST:?Set STAGING_SMTP_HOST}
+
+volumes:
+  mailpit_data:
