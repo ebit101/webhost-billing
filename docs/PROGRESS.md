@@ -1698,6 +1698,7 @@ Run **Command 26 — Add End-to-End Tests** only after explicit user authorizati
 - Frontend ESLint and strict TypeScript passed. Prettier and `git diff --check` passed.
 - The Next.js 16.3.2 production build passed and classified all administrator and customer workspace routes as dynamic server-rendered routes.
 - The production-mode build used a fictional HTTPS API origin because the cPanel development URL is intentionally plain HTTP and production configuration correctly rejects it.
+- The corrected development image was deployed at `my.speedhost.bd:3000`. Live anonymous smoke tests returned `200` for `/login` and `307` to `/login` for `/admin`, `/admin/customers`, `/portal`, and `/portal/invoices`; the API returned `401` for anonymous `/auth/me`. PostgreSQL and Redis remained healthy.
 
 #### Decisions made
 
@@ -1708,7 +1709,7 @@ Run **Command 26 — Add End-to-End Tests** only after explicit user authorizati
 #### Open questions and risks
 
 - The current cPanel development deployment uses plain HTTP. Before production exposure, deploy the web and API behind reviewed HTTPS reverse-proxy origins so production secure cookies and HSTS operate correctly.
-- The live development deployment must be rebuilt and smoke-tested after the pre-render correction; results are recorded in the delivery handoff rather than claimed here in advance.
+- Two stopped stateless web containers and their immutable images are retained temporarily for deployment rollback. They contain no database or Redis state and can be removed during a separately authorized cleanup.
 
 #### Recommended next command
 
