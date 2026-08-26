@@ -1928,6 +1928,60 @@ Run **Command 29 — Prepare Production Deployment** only after explicit user au
 
 Run **Command 30 — Conduct the Release Audit** only after explicit user authorization. Compare the complete plan to implementation; rerun formatting, lint, typecheck, unit/integration/E2E, production builds, Prisma/empty-database migrations, dependency audit, and backup recovery; inspect primary workflows; fix local release blockers; and create `docs/RELEASE_CHECKLIST.md` without deploying.
 
+### Command 30 — Conduct the Release Audit
+
+- **Status:** Completed and delivered to GitHub `main`
+- **Date:** 2026-08-26
+
+#### Scope completed
+
+- Compared every requirement in `HOSTING_BILLING_SYSTEM_PLAN.md` with the implemented administrator, customer, automation, data, integration, architecture, security, billing-policy, MVP-acceptance, and operational-safety boundaries.
+- Created `docs/RELEASE_CHECKLIST.md` with a requirement-by-requirement status matrix, complete validation evidence, missing requirements, known defects and coverage gaps, security/operational risks, credentialed provider tests, deployment/rollback steps, and the launch recommendation.
+- Verified the complete local release gate against fictional data and fake/mocked providers, including all workspace tests, critical invariants, the full API E2E suite, sequential Chromium lifecycle, production images, Prisma/schema/migrations, dependency audit, and encrypted recovery drill.
+- Captured a correctly prepared Playwright trace and manually inspected the primary desktop administrator/customer route flow, status presentation, feedback, role redirects, provisioning lifecycle, support conversation, and destructive termination treatment.
+- Recorded the release decision in ADR-038: local readiness permits an explicitly authorized staging step but does not authorize production. No external deployment, real provider request, live credential use, DNS/TLS mutation, registry push, or production/customer data access occurred.
+- Found no release-blocking local integrity, authorization, financial-state, migration, recovery, build, or primary-workflow defect. Documented non-critical plan gaps and operational blockers instead of expanding the product during the release audit.
+
+#### Files changed
+
+- Release audit and operator checklist: `docs/RELEASE_CHECKLIST.md`
+- Release decision: `docs/DECISIONS.md`
+- Command tracking: `docs/PROGRESS.md`
+
+#### Validation
+
+- Repository Prettier, `git diff --check`, API/worker/web ESLint, and strict TypeScript checks for every code workspace passed.
+- All **191** workspace unit/contract/component/integration tests passed: shared 25, queue 3, API 88, worker 28, and frontend 47.
+- The **75-test** critical-invariant gate passed: contracts 25, money/API unit 12, selected API integration 36, and renewal worker 2.
+- The complete API PostgreSQL/Redis E2E suite passed **65 tests across 16 suites**.
+- The sequential Chromium hosting lifecycle passed all fourteen release-critical workflow steps. A second correctly prepared trace run also passed and supplied the manual desktop workflow evidence.
+- API, web, worker, migration, and Nginx production images built successfully. Image inspection reported API/web/worker/migration UID/GID `10001:10001` and Nginx user `nginx`; production Compose rendered successfully from the non-secret example configuration.
+- Prisma formatting, validation, generation, current migration status, and structural/fictional-seed verification passed. The recovery drill applied all **21 migrations** to an empty isolated database.
+- `pnpm audit --prod` reported **no known vulnerabilities**.
+- The encrypted recovery drill passed: authentic backup accepted, deliberately corrupted ciphertext rejected, restored evidence reported 30 tables, 21 migrations, no relationship or financial violations, source/restored table counts matched, and temporary databases/key/artifact were removed.
+- The first recovery-drill attempt was refused because its explicit fictional-reset confirmation was intentionally absent. A containerized retry then stopped because its fresh GPG home did not exist. The final run supplied the exact confirmation and a private GPG home and passed; neither attempt touched the active database.
+- One optional browser trace-capture attempt invoked Playwright without its schema-reset pre-step and correctly failed on an existing fictional email. The normal browser release command had already passed; the trace run was repeated with the required preparation and passed. This was an invocation error, not a product regression.
+- Expected non-failing diagnostics remain: Jest experimental VM modules, a `pg` concurrent-query deprecation warning relevant to a future `pg` 9 upgrade, and Next.js's smooth-scroll route-transition hint.
+
+#### Decisions made
+
+- The complete local evidence is sufficient to classify the codebase as a staging candidate, not a production release.
+- Dashboard recent payments, a full paginated activity-log interface, and direct external administrator alert delivery are real plan gaps but are not local financial/integrity blockers; they must be accepted or completed before production approval.
+- Provider mocks prove internal contracts and failure handling only. bKash, SSLCOMMERZ, SMTP, and cPanel/WHM remain credentialed staging gates; UK2Group stays a later separately authorized registrar project.
+- No broad feature work or speculative WHMCS scope belongs in a release audit. Final tax/VAT, cancellation/refund, branding, order-approval, alerting, hosting, backup, and provider choices remain explicit owner/operations decisions.
+
+#### Open questions and risks
+
+- Staging host identity, cPanel/Apache port/resource compatibility, DNS/TLS, externally managed secrets, SMTP, monitoring/alert recipient, centralized logs, and immutable off-site backups require owner approval.
+- Real provider acceptance must use sandbox/development identities, disposable records, least-privilege credentials, exact target review, and separate authorization for destructive cPanel termination.
+- Production remains single-host without HA/PITR. Historical encryption-key escrow, image registry scanning/signing/digest pinning, clock monitoring, and a timed staging-hardware restore are launch requirements.
+- Final business identity, tax/VAT position, cancellation/refund policy, manual-payment evidence criteria, renewal/grace values, and the documented minor plan gaps require owner acceptance or remediation.
+- Browser coverage is Chromium desktop for the critical lifecycle; mobile, other engines, MFA/settings/PDF/manual-payment browser paths and credentialed providers rely on lower-layer tests until expanded.
+
+#### Recommended next command
+
+Run **Command 31 — Deploy to Staging** only after explicit user authorization and after the exact staging target, externally supplied non-placeholder secrets, backup/rollback ownership, DNS/TLS plan, and allowed fake/sandbox provider mode are confirmed. Do not deploy to production.
+
 ## Report Template
 
 Use this template after every future command:

@@ -298,6 +298,14 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** The private business needs a reproducible deployment smaller than an orchestrator/microservice platform while preserving clear process isolation, cookie/origin rules, queue durability, TLS termination, and operator control over schema changes. Application configuration intentionally accepts origins without path prefixes, so distinct hostnames avoid weakening callback/CORS validation.
 - **Consequence:** The web image is bound to its API origin at build time and must be rebuilt when that hostname changes. Only Nginx publishes host ports; forwarded headers are replaced and the API trusts one hop. Application filesystems are read-only, images use explicit unprivileged users, logs rotate locally, and Redis uses authenticated AOF/no-eviction configuration. Named volumes are persistence rather than backup, migrations remain forward-only, and production still requires approved infrastructure, SMTP/TLS/DNS/secrets/monitoring/off-site backups plus the Command 30 release audit. cPanel port ownership makes a dedicated VPS preferable to an unmanaged side-by-side install on the existing WHM host.
 
+## ADR-038 — Local Release Gate Before Credentialed Staging
+
+- **Status:** Accepted
+- **Date:** 2026-08-26
+- **Decision:** Treat the successful Command 30 local audit as approval for an explicitly authorized staging deployment, not as production launch approval. Require staging evidence for real infrastructure, SMTP, selected sandbox payment providers, and the cPanel development boundary before any production decision. Keep UK2Group outside this release.
+- **Reason:** Mock/fake-provider evidence can prove local authorization, idempotency, accounting, state, build, migration, and recovery behavior, but it cannot prove credentials, network policy, third-party account permissions, TLS/DNS, alert delivery, off-site backups, or provider-version behavior. The full plan also retains minor interface/policy gaps that must be accepted or completed rather than hidden by a green test suite.
+- **Consequence:** The release is a staging candidate with a production `NO-GO`. Command 31 requires an identified staging target, externally supplied secrets, backup/rollback ownership, and a reviewed action list. Production remains blocked until credentialed staging acceptance, monitoring/alerting, off-site recovery controls, final business policies, and the documented release-checklist gaps are resolved or explicitly accepted.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:
