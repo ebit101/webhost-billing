@@ -1,6 +1,6 @@
 import { Injectable, Logger, type NestMiddleware } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { runWithStructuredLogContext } from '@webhost-billing/shared';
+import { runWithStructuredLogContext } from '@webhost-billing/shared/observability';
 import type { NextFunction, Request, Response } from 'express';
 
 const REQUEST_ID_HEADER = 'X-Request-ID';

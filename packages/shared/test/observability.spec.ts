@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
+import { operationalOverviewSchema } from '../src';
 import {
   StructuredLogger,
-  operationalOverviewSchema,
   redactLogValue,
   runWithStructuredLogContext,
-} from '../src';
+} from '../src/observability';
 
 describe('observability contracts', () => {
   it('redacts sensitive keys and common inline credentials', () => {

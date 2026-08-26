@@ -3,7 +3,7 @@ import {
   loadEnvironmentFiles,
   parseWorkerEnvironment,
 } from '@webhost-billing/config';
-import { StructuredLogger } from '@webhost-billing/shared';
+import { StructuredLogger } from '@webhost-billing/shared/observability';
 import { SchedulerModule } from './scheduler.module';
 
 async function bootstrap(): Promise<void> {

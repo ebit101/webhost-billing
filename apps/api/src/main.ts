@@ -5,7 +5,7 @@ import {
   loadEnvironmentFiles,
   parseApiEnvironment,
 } from '@webhost-billing/config';
-import { StructuredLogger } from '@webhost-billing/shared';
+import { StructuredLogger } from '@webhost-billing/shared/observability';
 import { AppModule } from './app.module';
 
 async function bootstrap() {

@@ -8,6 +8,10 @@
     ".": {
       "types": "./src/index.ts",
       "default": "./dist/index.js"
+    },
+    "./observability": {
+      "types": "./src/observability.ts",
+      "default": "./dist/observability.js"
     }
   },
   "scripts": {

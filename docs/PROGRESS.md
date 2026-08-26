@@ -2574,6 +2574,73 @@ Use `https://my.speedhost.bd/admin` for administrators and
 `https://my.speedhost.bd/login` for customers. Authorize the next numbered command separately;
 the existing production launch blockers remain in force.
 
+## Operational Hotfix — Settings Browser Bundle Boundary
+
+- **Status:** Implemented and validated; web-only staging deployment pending
+- **Date:** 2026-08-26
+
+### Scope completed
+
+- Reproduced the administrator settings failure in a clean headless Chromium session against
+  `https://my.speedhost.bd/admin/settings` while reading the protected administrator password
+  only through an SSH pipe.
+- Confirmed login, `GET /settings`, response shape, and the server-rendered settings page all
+  returned 200. The database/settings API and authentication boundary were healthy.
+- Captured the client exception: the settings chunk tried to load Node-only
+  `node:async_hooks` because the browser used a runtime settings constant from the shared
+  CommonJS root, whose barrel also eagerly exported the server structured logger.
+- Added a dedicated `@webhost-billing/shared/observability` package export, removed the
+  Node-only module from the browser-compatible root, and moved API/worker/queue imports to the
+  explicit server-only subpath.
+- Added a regression test that preserves this package boundary.
+
+### Files changed
+
+- Shared package entrypoints and boundary test: `packages/shared/package.json`,
+  `packages/shared/src/index.ts`, `packages/shared/test/observability.spec.ts`,
+  `packages/shared/test/package-boundaries.spec.ts`
+- Explicit Node-only observability consumers: `apps/api/src/main.ts`,
+  `apps/api/src/modules/observability/request-observability.middleware.ts`,
+  `apps/worker/src/main.ts`, `apps/worker/src/scheduler-main.ts`,
+  `packages/queue/src/background-worker.ts`
+- Operational tracking: `docs/PROGRESS.md`
+
+### Validation
+
+- The clean live-browser reproduction failed before the fix with the exact
+  `Cannot find module 'node:async_hooks'` client error, proving the fault independently from
+  the screenshot.
+- All 26 shared contract/observability/boundary tests passed. Shared, queue, API, worker and
+  web TypeScript checks passed; changed API/worker files passed ESLint.
+- Shared, queue, API and worker builds passed, and the new observability subpath resolved at
+  runtime from an application workspace.
+- The settings component test passed. The Next.js production build passed with all 29 routes,
+  including `/admin/settings`, and `node:async_hooks` was absent from every generated static
+  client chunk.
+
+### Decisions made
+
+- Keep runtime contracts/constants browser-compatible at the shared root. Node-only logging
+  context must be imported through the explicit observability subpath.
+- Do not change the settings API, database values or authentication policy: each was healthy
+  and was not the cause.
+- Deployment must recreate only the Webhost Billing web container. The source-level import
+  updates keep future API/worker images buildable but do not require those healthy running
+  containers to be replaced for this browser-only fault.
+
+### Open questions and risks
+
+- The running web image still contains the bad client chunk until the focused image is
+  committed, published and deployed. Existing browsers may need one hard refresh after
+  deployment to discard cached chunk state.
+- This operational fix does not resume Command 34 remediation, promote production, or alter
+  any production launch gate.
+
+### Recommended next action
+
+Publish the validated fix, deploy only the web image, rerun the clean credentialed Chromium
+settings check, and confirm every non-web/shared-server container remains unchanged.
+
 ## Report Template
 
 Use this template after every future command:

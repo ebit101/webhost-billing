@@ -4,8 +4,8 @@ import {
   type BackgroundFailureKind,
   type BackgroundJobData,
   type BackgroundQueueName,
-  runWithStructuredLogContext,
 } from '@webhost-billing/shared';
+import { runWithStructuredLogContext } from '@webhost-billing/shared/observability';
 import { createBullConnectionOptions } from './connection';
 
 export class BackgroundJobError extends Error {

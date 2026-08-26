@@ -23,4 +23,3 @@ export * from './contracts/settings';
 export * from './contracts/hosting-panels';
 export * from './contracts/states';
 export * from './contracts/tickets';
-export * from './observability';
