@@ -32,6 +32,8 @@ pnpm format:check
 pnpm lint
 pnpm typecheck
 pnpm test
+pnpm --filter @webhost-billing/web exec playwright install chromium
+pnpm test:e2e
 pnpm build
 ```
 
@@ -55,6 +57,7 @@ See `docs/DEVELOPMENT.md` for setup, health checks, connectivity, shutdown, and 
 - `docs/AUTHENTICATION.md` — authentication flows, cookies, CSRF, authorization, and sessions
 - `docs/SECURITY_HARDENING.md` — Command 24 controls, verification evidence, residual risks, and production checklist
 - `docs/CRITICAL_BUSINESS_INVARIANTS.md` — Command 25 invariant matrix, focused test command, and failure interpretation
+- `docs/END_TO_END_TESTING.md` — isolated Playwright lifecycle, test-data boundaries, failure artifacts, and local execution
 - `docs/CUSTOMER_MANAGEMENT.md` — customer API, authorization, account-access rules, and interfaces
 - `docs/PRODUCTS_AND_PRICING.md` — product lifecycle, versioned prices, public catalogue, and selection flow
 - `docs/ORDER_CREATION.md` — authoritative checkout, idempotency, snapshots, numbering, and order states

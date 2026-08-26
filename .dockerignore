@@ -1,7 +1,10 @@
 .git
 .next
+.next-e2e
 .pnpm-store
 coverage
+playwright-report
+test-results
 dist
 node_modules
 packages/database/src/generated

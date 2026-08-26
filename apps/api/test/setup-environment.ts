@@ -20,3 +20,5 @@ for (const [key, value] of Object.entries(
 
 process.env.NODE_ENV = 'test';
 process.env.AUTH_RATE_LIMIT_NAMESPACE = `e2e-${process.pid}`;
+process.env.WEB_ORIGIN = 'http://localhost:3000';
+process.env.API_PUBLIC_ORIGIN = 'http://localhost:3001';

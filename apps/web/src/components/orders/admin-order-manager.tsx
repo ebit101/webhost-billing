@@ -125,7 +125,15 @@ export function AdminOrderManager() {
         header: 'Actions',
         align: 'right',
         render: (order) =>
-          order.status === 'AWAITING_PAYMENT' ? (
+          order.status === 'PAID' ? (
+            <Button
+              size="sm"
+              disabled={saving}
+              onClick={() => void changeStatus(order.id, 'PROCESSING')}
+            >
+              Approve
+            </Button>
+          ) : order.status === 'AWAITING_PAYMENT' ? (
             <span className="inline-flex gap-2">
               <Button
                 size="sm"
@@ -193,7 +201,7 @@ export function AdminOrderManager() {
 
   async function changeStatus(
     orderId: string,
-    status: 'REJECTED' | 'CANCELLED',
+    status: 'PROCESSING' | 'REJECTED' | 'CANCELLED',
   ) {
     setSaving(true);
     setError('');

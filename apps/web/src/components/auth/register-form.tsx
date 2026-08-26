@@ -15,16 +15,20 @@ export function RegisterForm() {
     setBusy(true);
     setError(undefined);
     setMessage(undefined);
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
+    const payload = Object.fromEntries(
+      Array.from(form.entries()).filter(([, value]) => value !== ''),
+    );
 
     try {
       const result = await authMutation<{ message: string }>(
         '/auth/register',
         'POST',
-        Object.fromEntries(form.entries()),
+        payload,
       );
       setMessage(result.message);
-      event.currentTarget.reset();
+      formElement.reset();
     } catch (caught) {
       setError(
         caught instanceof Error ? caught.message : 'Registration failed.',

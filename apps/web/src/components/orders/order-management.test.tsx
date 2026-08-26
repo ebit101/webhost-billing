@@ -197,6 +197,51 @@ describe('order interfaces', () => {
     expect(screen.getByRole('button', { name: 'Reject' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeTruthy();
   });
+
+  it('lets an administrator approve a paid order for fulfilment', async () => {
+    const user = userEvent.setup();
+    const paidOrder: Order = {
+      ...order,
+      status: 'PAID',
+      invoice: {
+        ...order.invoice,
+        status: 'PAID',
+        balanceDue: { amount: '0', currency: 'BDT' },
+      },
+    };
+    let approved = false;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input);
+        if (url.includes('/orders?')) return paginatedResponse([paidOrder]);
+        if (url.includes('/customers?')) return paginatedResponse([customer]);
+        if (url.endsWith('/products')) {
+          return jsonResponse({ success: true, data: [product] });
+        }
+        if (url.endsWith('/auth/csrf')) {
+          return jsonResponse({
+            success: true,
+            data: { csrfToken: 'a'.repeat(32) },
+          });
+        }
+        if (url.endsWith(`/orders/${orderId}/status`)) {
+          approved = JSON.parse(String(init?.body)).status === 'PROCESSING';
+          return jsonResponse({
+            success: true,
+            data: { ...paidOrder, status: 'PROCESSING' },
+          });
+        }
+        throw new Error(`Unexpected request: ${url}`);
+      }),
+    );
+
+    render(<AdminOrderManager />);
+    await user.click(await screen.findByRole('button', { name: 'Approve' }));
+
+    expect(approved).toBe(true);
+    expect(await screen.findByText(/moved to processing/i)).toBeTruthy();
+  });
 });
 
 function jsonResponse(body: unknown) {

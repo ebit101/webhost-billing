@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 25 — Test Critical Business Invariants
+- **Current command:** Command 26 — Add End-to-End Tests
 - **Current status:** Completed and delivered to GitHub `main`
 - **Last updated:** 2026-08-26
-- **Next command:** Command 26 — Add End-to-End Tests
+- **Next command:** Command 27 — Add Observability and Health Checks
 - **Next command authorized:** No
 
 ## Command Reports
@@ -1714,6 +1714,62 @@ Run **Command 26 — Add End-to-End Tests** only after explicit user authorizati
 #### Recommended next command
 
 Run **Command 26 — Add End-to-End Tests** only after explicit user authorization. Include real-browser anonymous and cross-role navigation cases alongside the already planned workflows.
+
+### Command 26 — Add End-to-End Tests
+
+- **Status:** Completed and delivered to GitHub `main`
+- **Date:** 2026-08-26
+
+#### Scope completed
+
+- Added a pinned Playwright 1.62.1 Chromium suite and root `pnpm test:e2e` release command with one sequential lifecycle, isolated API/web ports, a dedicated Next.js output directory, and trace/screenshot/video retention on failure.
+- Added safe environment preparation that accepts only loopback PostgreSQL, drops and recreates only the exact `command26_e2e` schema, deploys all 21 migrations, and seeds a fictional administrator, customer journey, active monthly product/price, fake hosting server, and fake provider selection.
+- Covered anonymous and cross-role route protection plus all twelve authorized workflows: plan browsing; registration, verification, and login; order creation; signed fake payment; administrator approval; fake-panel provisioning; active-service visibility; renewal invoice generation; overdue suspension; payment-linked unsuspension; customer ticket/administrator reply; and exact-confirmation manual termination.
+- Executed the real renewal and hosting automation services at controlled business instants through a separate test runner while keeping browser assertions, cookie authentication, CSRF, API authorization, database state, and fake-provider proof in the same lifecycle.
+- Corrected PostgreSQL adapter schema routing so Prisma runtime queries honor the URL `schema` parameter just as migrations do; the isolated browser schema no longer reads or writes the ordinary `public` application schema.
+- Added the missing paid-order administrator approval action and regression coverage so the UI can deliberately move a paid order into `PROCESSING` before fulfilment.
+- Fixed two registration defects found by the real browser: empty optional inputs are now omitted from the strict request, and the form element is captured before the asynchronous mutation so successful registration can safely reset it. Added component regression coverage.
+- Made the existing API integration bootstrap pin localhost web/API origins so operator deployment values cannot alter deterministic redirect assertions.
+
+#### Files changed
+
+- Playwright environment, fixtures, database/automation helpers, lifecycle, configuration, and scripts: `apps/web/e2e/**`, `apps/web/playwright.config.ts`, `apps/web/package.json`, `package.json`, `pnpm-lock.yaml`
+- Test/build output isolation: `apps/web/next.config.ts`, `apps/web/tsconfig.json`, `apps/web/vitest.config.mts`, `apps/web/eslint.config.mjs`, `.gitignore`, `.dockerignore`
+- Runtime schema selection: `packages/database/src/client.ts`
+- Registration and approval fixes/tests: `apps/web/src/components/auth/register-form.tsx`, `apps/web/src/components/auth/register-form.test.tsx`, `apps/web/src/components/orders/admin-order-manager.tsx`, `apps/web/src/components/orders/order-management.test.tsx`
+- Existing API E2E origin isolation: `apps/api/test/setup-environment.ts`
+- Documentation and decisions: `README.md`, `docs/END_TO_END_TESTING.md`, `docs/DECISIONS.md`, `docs/PROGRESS.md`
+
+#### Validation
+
+- The final root `pnpm test:e2e` run rebuilt required packages/worker, recreated and migrated the isolated schema, started isolated API/Next.js servers, and passed the complete Chromium lifecycle in 47.5 seconds. A prior clean full lifecycle also passed in 52.7 seconds after implementation fixes.
+- All 183 workspace unit/contract/component/integration tests passed: shared 22, queue/Redis 3, API 84, worker 27, and frontend 47 across seventeen files. Complete API PostgreSQL/Redis E2E passed 63 tests across sixteen suites. Total unique validated repository tests: 247 including the Playwright lifecycle.
+- The focused 72-test critical-invariant release gate passed: 22 contracts, 12 integer-money unit tests, 36 selected API integration tests, and 2 renewal worker integration tests.
+- Repository Prettier, `git diff --check`, API/worker/web ESLint, and strict TypeScript for every code workspace including E2E helpers passed.
+- Config/database/shared/queue packages, NestJS API/worker, and the isolated-output Next.js 16.3.2 production build passed; all 29 application routes were generated.
+- Prisma format/validation/generation, all 21 public-schema migration status checks, structural/custom-constraint/fictional-seed verification, Docker Compose validation, and healthy loopback PostgreSQL/Redis passed.
+- `pnpm audit --prod` reported no known vulnerabilities. No real credential, production/customer data, live payment, SMTP, cPanel/WHM, UK2Group, or other external-provider action was used.
+- One validation run of the existing API E2E suite initially inherited the development `my.speedhost.bd` web origin and failed its localhost redirect assertion; the test bootstrap was isolated from operator origins and the complete 63-test suite then passed. This was an environment leak, not a business-state failure.
+
+#### Decisions made
+
+- One ordered lifecycle is the correct initial browser release gate because each later workflow must consume the exact order, invoice, service, suspension, and ticket created earlier. Parallelism and sharding would require separately designed independent fixtures.
+- Financial proof remains an authenticated raw signed fake callback, never a browser redirect. Payment, order approval, service creation, provisioning, and service state remain separate assertions.
+- Worker-owned automation runs through the production service implementations, but from a subprocess loading compiled worker output so Playwright does not transform NestJS decorator sources.
+- Failure artifacts are local and ignored by Git. Successful runs do not retain screenshots/videos/traces, limiting noise and test-data exposure.
+- Test keys and credentials are fixed fictional values confined to the isolated suite; real sandbox/live provider credentials are neither needed nor allowed.
+
+#### Open questions and risks
+
+- The browser gate currently covers desktop Chromium only. Firefox, WebKit, mobile viewports, accessibility scanning, and visual regression baselines require separately authorized scope and additional execution time.
+- Developers and CI must provide healthy loopback PostgreSQL/Redis and install the pinned Playwright Chromium runtime. CI still needs a required-check workflow and artifact-retention policy.
+- The isolated schema is recreated at the beginning of every run and contains fictional data only; it is retained after a run for failure investigation. It never targets or resets `public`.
+- Next.js reports its existing smooth-scroll route-transition advisory, Node reports `NO_COLOR`/experimental-VM warnings, and PostgreSQL integration activity reports the known pg@9 concurrent-query deprecation. Exit statuses and assertions pass; review the driver warning during a future dependency upgrade.
+- Real bKash/SSLCOMMERZ callbacks, cPanel/WHM connectivity, SMTP, and future UK2Group behavior remain separate explicitly approved acceptance work.
+
+#### Recommended next command
+
+Run **Command 27 — Add Observability and Health Checks** only after explicit user authorization. Add structured redacted logs, request/job/payment correlation, dependency readiness, queue/failure visibility, automation history, provider failure metrics, and an administrator alert policy without exposing secrets or sensitive payloads.
 
 ## Report Template
 

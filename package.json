@@ -31,6 +31,8 @@
     "infra:ps": "docker compose ps",
     "infra:up": "docker compose up --detach --wait postgres redis",
     "test": "pnpm -r --if-present test",
+    "pretest:e2e": "pnpm build:packages",
+    "test:e2e": "pnpm --filter @webhost-billing/web test:e2e",
     "pretest:invariants": "pnpm build:packages",
     "test:invariants": "pnpm run test:invariants:contracts && pnpm run test:invariants:api-unit && pnpm run test:invariants:api-e2e && pnpm run test:invariants:worker",
     "test:invariants:contracts": "pnpm --filter @webhost-billing/shared test",

@@ -22,6 +22,7 @@ const csp = [
 ].join('; ');
 
 const nextConfig: NextConfig = {
+  distDir: process.env.NEXT_DIST_DIR ?? '.next',
   env: {
     NEXT_PUBLIC_API_URL: environment.NEXT_PUBLIC_API_URL,
   },

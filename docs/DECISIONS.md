@@ -266,6 +266,14 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** These guarantees cross module and process boundaries. A test buried in an individual feature suite is easy to miss during a later change, while copying all scenarios into one large test file would create competing fixtures and weaken the existing realistic integration coverage.
 - **Consequence:** The focused suite intentionally reuses the owning module tests and local fake providers, with real PostgreSQL and Redis where the boundary requires them. It makes no external payment, SMTP, registrar, or WHM request. A change to any listed invariant must update both its owning regression test and `docs/CRITICAL_BUSINESS_INVARIANTS.md`; passing unit tests alone is insufficient for concurrency, replay, ownership, state-separation, and scheduler guarantees.
 
+## ADR-034 — Isolated Sequential Browser Lifecycle
+
+- **Status:** Accepted
+- **Date:** 2026-08-26
+- **Decision:** Maintain one sequential Playwright Chromium lifecycle for the twelve Command 26 customer/administrator workflows. Recreate a dedicated `command26_e2e` PostgreSQL schema for every run, use separate loopback API/web ports and Next.js output, seed only fictional data and fake providers, and execute the real renewal and hosting automation services at controlled business instants.
+- **Reason:** The release-critical journey crosses browser routing, secure cookies, CSRF, API authorization, financial settlement, PostgreSQL state, and worker-owned automation. Module tests cannot prove those boundaries compose into a usable workflow, while live provider calls or shared development data would make the suite unsafe and nondeterministic.
+- **Consequence:** `pnpm test:e2e` runs with one worker and retains traces, screenshots, and video only on failure. The PostgreSQL adapter must honor the URL `schema` parameter for runtime queries, not only Prisma migrations. Browser payment still requires an authenticated signed fake callback, provisioning remains distinct from payment, and wrong termination confirmation must preserve the active service. Real-provider acceptance and parallel/sharded browser suites remain separately authorized work.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

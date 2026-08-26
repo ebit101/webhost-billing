@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "typecheck": "next typegen && tsc --noEmit"
+    "pretest:e2e": "pnpm --filter @webhost-billing/worker build && tsx e2e/prepare-environment.ts",
+    "test:e2e": "playwright test",
+    "typecheck": "next typegen && tsc --noEmit && tsc --noEmit -p e2e/tsconfig.json"
   },
   "dependencies": {
     "@webhost-billing/config": "workspace:*",
@@ -18,6 +20,7 @@
     "react-dom": "19.2.8"
   },
   "devDependencies": {
+    "@playwright/test": "1.62.1",
     "@tailwindcss/postcss": "^4",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.0",
@@ -25,10 +28,13 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@webhost-billing/database": "workspace:*",
+    "argon2": "0.45.1",
     "eslint": "^9",
     "eslint-config-next": "16.3.2",
     "jsdom": "^26.1.0",
     "tailwindcss": "^4",
+    "tsx": "^4.23.12",
     "typescript": "^5",
     "vite-tsconfig-paths": "^6.0.2",
     "vitest": "^3.2.4"
