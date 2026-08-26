@@ -2125,6 +2125,88 @@ Do not execute a production mutation yet. After every `BLOCKED` gate in `docs/PR
 
 Run **Command 33 — Finalize Business and Launch Policies** only after explicit user authorization and provision of the owner-approved non-secret business decisions. Do not include credentials in the prompt.
 
+### Command 33 — Finalize Business and Launch Policies
+
+- **Status:** Completed and delivered to GitHub `main`; deferred values remain production blockers
+- **Date:** 2026-08-26
+
+#### Scope completed
+
+- Reviewed the product plan, settings/secrets model, release audit, production launch
+  runbook, current safe application defaults, architecture decisions, and prior progress for
+  existing owner-approved values.
+- Created `docs/PRODUCTION_BUSINESS_POLICIES.md` as a non-secret approval worksheet that
+  separates confirmed product scope, non-production code defaults, engineering constraints,
+  and owner decisions.
+- Recorded every unresolved legal identity, tax/VAT, invoicing, billing-period,
+  payment-evidence, order-approval, cancellation/refund, retention, renewal, provider-mode,
+  operational-contact, and interface-gap decision as a launch blocker.
+- Linked the production business/legal gate to the policy record. No application default,
+  production setting, provider credential, external system, or production host was changed.
+- Recorded the owner's `ALL` instruction as approval of every clearly proposed safe default:
+  BDT; `INV`/6/1001 invoice numbering; generic manual-payment wording; disabled partial
+  payments; 14-day/7-3-1/3-day renewal policy in Asia/Dhaka; the proposed backup retention;
+  and manual-first payment and hosting launch modes.
+- Updated the launch matrix to show both provider modes selected as manual-first and the
+  first-renewal gate as partial. Credentials/WHM authority remain absent requirements, not
+  completed provider evidence.
+- Recorded the owner's decision to keep unresolved fields configurable and complete them
+  later. Added an exact configuration/control-location matrix covering administrator
+  settings, Products/Pricing, provider authority, policy/runbook records, deployment
+  lifecycle controls, and separately authorized feature gaps.
+
+#### Files changed
+
+- Owner policy, approved defaults, deferred values, and configuration-location record:
+  `docs/PRODUCTION_BUSINESS_POLICIES.md`
+- Production business/legal launch-gate reference: `docs/PRODUCTION_LAUNCH_RUNBOOK.md`
+- In-progress command tracking: `docs/PROGRESS.md`
+
+#### Validation
+
+- The three changed Markdown files passed the repository's installed Prettier 3 check, and
+  `git diff --check` passed. The initial package-manager shim invocation was unavailable from
+  the shell path and then refused a non-interactive dependency-directory refresh, so the
+  existing pinned Prettier binary was invoked directly without installing or changing
+  dependencies.
+- No code/schema/default change exists, so application tests are not yet required for this
+  draft.
+
+#### Decisions made
+
+- The product name `Webhost Billing` is not evidence of the owner's legal business name.
+- Existing `BDT`, `Asia/Dhaka`, `INV-001001`, 14/7-3-1/3 renewal values, disabled partial
+  payments, manual gateway, generic manual-payment instructions, proposed backup retention,
+  and manual-first provider modes are now owner-approved policy values. They already match
+  safe defaults, so no code change is required.
+- Command 33 cannot change defaults, close launch gates, or authorize Command 34 based only
+  on inferred geography, staging configuration, or code defaults.
+- `ALL` applies only to rows containing a concrete proposed/default value. It does not supply
+  a legal identity, tax opinion, policy wording, contact, date, owner name, evidence rule, or
+  interface-gap acceptance that was never proposed.
+- Existing runtime controls remain the configuration boundary for business identity,
+  localization, invoice numbering, manual payments, renewal policy, provider selection, and
+  product billing periods. Policy/legal wording, retention, contacts, first-run evidence,
+  and gap acceptance remain document/operations controlled; this command does not invent a
+  policy CMS or claim absent UI fields exist.
+
+#### Open questions and risks
+
+- Every row marked `UNRESOLVED` in `docs/PRODUCTION_BUSINESS_POLICIES.md` requires the
+  owner's explicit value or acceptance. Legal and tax answers must come from the owner and,
+  where appropriate, qualified local advice.
+- Until approval is recorded, production remains `NO-GO`; production workers/scheduler and
+  real payment/cPanel authority must remain disabled.
+- A deferred value is still a final-audit blocker. Completing Command 33 and starting later
+  infrastructure-readiness commands does not permit production invoices, live customers,
+  provider authority, scheduler startup, or production launch.
+
+#### Recommended next command
+
+Run **Command 34 — Select and Audit Production Infrastructure** only after explicit user
+authorization. It may prepare a dedicated target and evidence, but production launch remains
+blocked until every deferred Command 33 value and every other launch gate is resolved.
+
 ## Report Template
 
 Use this template after every future command:
