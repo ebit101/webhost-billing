@@ -2290,6 +2290,83 @@ recovery, exact existing-port ownership, backup checkpoint, and permission for s
 SSH/firewall/swap/patch/resource-limit changes. It must preserve every unrelated application
 and stop on any failed preflight.
 
+### Command 35 — Establish Production Secret Management
+
+- **Status:** Blocked before mutation; production prerequisites and custody approvals missing
+- **Date:** 2026-08-26
+
+#### Scope completed
+
+- Reconciled the authorized command with the canonical command list. Command 35 establishes
+  production secret management; it does not promote, relabel, or deploy the application.
+- Recorded the owner's clarification that the existing shared host is the intended final
+  physical production server. This target-purpose decision does not waive the unresolved
+  Command 34 hardening, recovery, resource, provider, cost, and ownership findings.
+- Performed a read-only preflight through the existing staging-only SSH identity and pinned
+  host-key file. Confirmed that no `/srv/webhost-billing-production` root, production-named
+  Webhost Billing container, or production-named Webhost Billing volume exists.
+- Inspected only access-boundary metadata for the current fictional staging deployment. No
+  secret value, password, key, recovery code, provider credential, or customer data was read
+  into the report.
+- Stopped before generating any PostgreSQL, Redis, session, credential-encryption, backup,
+  SMTP, TLS, deployment-SSH, provider, or recovery value. No production file, directory,
+  user, key, image, container, database, volume, network, setting, or external service was
+  created or changed.
+
+#### Files changed
+
+- Blocked command/preflight record: `docs/PROGRESS.md`
+
+#### Validation
+
+- Strict SSH host-key verification succeeded for the already pinned target. The host reported
+  its audited identity as `vmi3398336.contaboserver.net`.
+- The existing staging root and secret directory are mode `0700`; its secret files use mode
+  `0400` or `0444`. API and web containers run as UID/GID `10001:10001`; API bind-mounted
+  secret files appear as mode `0444`, matching the already documented Docker Compose
+  file-secret limitation rather than proving an approved production secret manager.
+- All seven staging containers remained healthy. The preflight found zero production-named
+  containers and zero production-named volumes. No application or unrelated workload was
+  restarted or mutated.
+- Repository status was clean and synchronized with `origin/main` before this documentation
+  record.
+
+#### Decisions made
+
+- The assistant's conversational suggestion to call an in-place promotion “Command 35” was
+  incorrect. The repository's canonical Command 35 title and boundary remain authoritative.
+- A final-server designation is accepted as the owner's target intent, but it is not a final
+  production `GO` decision and cannot substitute for a production-only SSH boundary,
+  approved secret storage, independent escrow, named custodians, or Command 34 remediation.
+- Staging credentials, keys, certificate copies, volumes, queue prefix, backup passphrase,
+  and fictional database must never be reused or silently relabeled as production.
+- An external secret manager or paid service requires explicit owner selection and cost
+  approval. The existing Compose bind-mounted files cannot be treated as an approved manager
+  without a documented owner decision, off-server encrypted escrow, recovery test, and
+  accepted root/Docker access boundary.
+
+#### Open questions and risks
+
+- Command 34 remains blocked by the missing provider account/server ID, plan/region/cost,
+  provider-console recovery evidence, production-only SSH key, shared-host firewall/SSH and
+  patch plan, resource limits/monitoring, and named infrastructure/rollback owners.
+- Command 35 still requires the exact secret-management choice, primary and backup
+  secret/security custodians with reachable private contacts, approved recovery/escrow
+  location, access and revocation policy, and approval for any external or paid service.
+- Administrator MFA and offline recovery-code custody cannot be verified for a production
+  administrator because no production identity or deployment exists. Historical
+  credential-encryption keys and backup passphrases also need separately controlled escrow.
+- Creating production secrets now would place unrecoverable authority on a host whose
+  administrative and recovery boundaries remain unapproved. Production remains `NO-GO`.
+
+#### Recommended next command
+
+Authorize **Command 34 Remediation — Harden the Selected Shared Host** with the required
+maintenance window, provider/plan/cost and console-recovery evidence, exact port ownership,
+production SSH/firewall/patch/resource scope, and named infrastructure and rollback owners.
+Then resume Command 35 with an explicit secret-manager/escrow choice and named primary and
+backup custodians. Do not start Command 36 yet.
+
 ## Operational Hotfix — Staging Login Browser API Origin
 
 - **Status:** Completed, deployed to staging, and delivered to GitHub `main`
