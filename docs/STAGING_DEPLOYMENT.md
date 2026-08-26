@@ -50,6 +50,21 @@ curl --fail --silent --show-error https://my.speedhost.bd/ready
 nginx -t
 ```
 
+Verify that the browser bundle was built for the staging API origin. The API-only smoke is
+not sufficient because it can pass even when the Next.js client bundle contains a placeholder
+or different origin:
+
+```bash
+node deploy/staging/verify-web-origin.cjs \
+  https://my.speedhost.bd \
+  https://my.speedhost.bd
+```
+
+Run this check after every web-image build and deployment. It validates both the CSP and the
+JavaScript assets and fails if `api.billing.example.com` appears. `NEXT_PUBLIC_API_URL` is a
+Next.js build input; changing only the runtime environment cannot repair an already-built
+client bundle.
+
 Inspect logs only for this project:
 
 ```bash
@@ -123,6 +138,20 @@ If Nginx rollback is required, inspect the timestamped archive in
 `/srv/webhost-billing-staging/rollback`, restore only the files added or changed for
 `my.speedhost.bd`, run `nginx -t`, and use a graceful reload. Do not replace the complete
 Nginx configuration without a separate shared-host review.
+
+### 2026-08-26 login-origin hotfix
+
+The original `b2b2d61` web image was built with the production example API origin even though
+the staging API and Nginx route were healthy. Browsers displayed `Failed to fetch` because
+the bundle requested `https://api.billing.example.com`. The replacement
+`webhost-billing-web:72ef8ee-login-hotfix1` was built with
+`NEXT_PUBLIC_API_URL=https://my.speedhost.bd`; its image ID begins `sha256:2e9a2476f59e`.
+
+Only the Webhost Billing web container was recreated. The protected environment-file backup
+is `/srv/webhost-billing-staging/rollback/env-staging-pre-login-hotfix-20260826T103700Z`.
+Rollback requires exact image/config review, restoring only the prior `IMAGE_TAG`, recreating
+only `web`, and rerunning the browser-origin and credentialed smokes. Do not roll back to the
+known-bad web image merely because it is available.
 
 ## Provider posture
 

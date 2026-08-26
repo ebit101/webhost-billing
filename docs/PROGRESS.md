@@ -2290,6 +2290,70 @@ recovery, exact existing-port ownership, backup checkpoint, and permission for s
 SSH/firewall/swap/patch/resource-limit changes. It must preserve every unrelated application
 and stop on any failed preflight.
 
+## Operational Hotfix — Staging Login Browser API Origin
+
+- **Status:** Completed, deployed to staging, and delivered to GitHub `main`
+- **Date:** 2026-08-26
+
+### Scope completed
+
+- Investigated the user's `Failed to fetch` login report at
+  `https://my.speedhost.bd/login`. Confirmed the API, same-origin Nginx routes, CORS
+  preflight, PostgreSQL, and Redis were healthy, while the login response CSP and compiled
+  Next.js browser bundle referenced the placeholder `https://api.billing.example.com`.
+- Built `webhost-billing-web:72ef8ee-login-hotfix1` with
+  `NEXT_PUBLIC_API_URL=https://my.speedhost.bd`, verified the placeholder was absent and the
+  expected origin existed, and streamed only that image to the staging host.
+- Preserved the protected pre-change staging environment, added equivalent release tags for
+  unchanged component images, updated only the staging image tag, validated Compose, and
+  recreated only `webhost-billing-staging-web-1`.
+- Added `deploy/staging/verify-web-origin.cjs` so future staging checks validate the browser
+  CSP and JavaScript bundle instead of proving only that the API itself works.
+
+### Files changed
+
+- Browser-origin deployment verifier: `deploy/staging/verify-web-origin.cjs`
+- Staging verification, incident, and rollback record: `docs/STAGING_DEPLOYMENT.md`
+- Operational tracking: `docs/PROGRESS.md`
+
+### Validation
+
+- The replacement image built successfully as unprivileged user `10001:10001`; its browser
+  files contained `https://my.speedhost.bd` and no `api.billing.example.com`.
+- The recreated web container became healthy with zero restarts. The public login CSP now
+  contains `connect-src 'self' https://my.speedhost.bd`; `/auth/csrf` returned 200 with the
+  correct origin and secure cookie boundary.
+- The protected credentialed smoke passed administrator/customer login, both dashboards,
+  authorization denial, invoice detail/PDF, ticket, payment/hosting adapters, password-reset
+  queueing, logout, and post-logout denial. Passwords were read only from protected files and
+  were never printed.
+- Every other running container retained the same container ID/status across the web
+  recreation. Webhost Billing API/worker/scheduler/PostgreSQL/Redis/Mailpit and unrelated
+  applications were not recreated or restarted.
+- The new verifier passed Node syntax, live origin validation, Prettier, and the repository
+  diff check. The changed set contained no secret/private-key markers.
+
+### Decisions made
+
+- Treat `NEXT_PUBLIC_API_URL` as immutable web-image provenance. A runtime environment value
+  cannot repair an already compiled Next.js client bundle.
+- Keep staging on the one same-origin `my.speedhost.bd` topology. Do not introduce a second
+  API hostname to fix a build mistake.
+- Preserve the prior image/config for evidence, but classify the old web image as known-bad
+  for browser authentication.
+
+### Open questions and risks
+
+- Browsers that kept the old page open must reload it; a hard refresh may be needed to discard
+  an already-loaded JavaScript bundle.
+- This fixes staging login only. It does not promote staging to production or close the
+  Command 34 infrastructure, recovery, policy, SMTP, monitoring, or provider gates.
+
+### Recommended next action
+
+Retry login after a hard refresh. Continue numbered production-readiness commands only after
+the user confirms browser login and explicitly authorizes the next command.
+
 ## Report Template
 
 Use this template after every future command:
