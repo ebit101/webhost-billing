@@ -60,7 +60,7 @@ The supported roles are `ADMIN` and `CUSTOMER`.
 
 `GET /auth/admin-check` and `GET /auth/customer-profile/:customerId` are intentionally small authorization probes for Command 5. Feature modules must apply the same service/API-layer checks when their routes are introduced.
 
-Administrator accounts are not publicly registrable. They must be provisioned through a trusted operational process; the fictional development seed remains non-authenticating because it has no password.
+Administrator accounts are not publicly registrable. The first production administrator is provisioned only through the confirmation-gated `deploy/production/bootstrap-admin.cjs` procedure in `docs/PRODUCTION_LAUNCH_RUNBOOK.md`. It refuses an existing administrator/email, reads a protected newline-free password file, hashes with the application Argon2id profile, and writes `PRODUCTION_ADMIN_BOOTSTRAPPED` audit evidence. Remove the one-time password file and enroll TOTP before public exposure. The fictional development seed remains non-authenticating and must never run in production.
 
 ## API endpoints
 

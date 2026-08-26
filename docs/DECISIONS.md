@@ -314,6 +314,14 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** The authorized server already runs several important applications and its host Nginx owns ports 80/443. A dedicated project name, directories, ports, volumes, secrets, and graceful Nginx site addition prevent name/port collisions and avoid a second public edge. The application accepts a same-origin API URL, while the explicit route allowlist preserves the frontend invoice-print exception.
 - **Consequence:** Staging is reachable at one HTTPS hostname and its seven containers can be operated without global Docker, firewall, or Nginx actions. Existing public applications and containers must be checked before and after every staging mutation. The Mailpit certificate copy needs a targeted refresh after certificate renewal. This shared-host exception does not supersede the dedicated-VPS production preference, and local encrypted backup evidence does not satisfy the off-site immutable-backup requirement.
 
+## ADR-040 — Evidence-Gated Production Launch and One-Time Administrator Bootstrap
+
+- **Status:** Accepted
+- **Date:** 2026-08-26
+- **Decision:** Keep production at `NO-GO` until every target, recovery, secret, DNS/TLS, communication, SMTP, monitoring, business-policy, provider-mode, and first-renewal gate has a named owner and linked evidence. Permit a manual-first launch only through explicit owner acceptance with online gateways and/or cPanel inactive. Create the first administrator through a confirmation-gated one-time utility that refuses an existing administrator/email, reads a protected password file, uses the application Argon2id profile, and writes an audit record.
+- **Reason:** Command 31 proved the core stack with fictional data but did not establish production infrastructure or credentialed external behavior. A small private business can start with reviewed manual payments/provisioning, but untested integrations must never become implicit launch dependencies. Public registration cannot create an administrator, while running the development seed or silently upserting a privileged user would be unsafe.
+- **Consequence:** Command 32 makes no production mutation and does not authorize launch. The final runbook has mandatory stop conditions, staged scheduler activation, exact owner/evidence records, and scoped rollback. The bootstrap utility works only for an empty administrator boundary, never prints the password, and must be followed by password-file removal and TOTP enrollment. bKash/SSLCOMMERZ production use, credentialed cPanel automation, SMTP, off-site recovery, and alert delivery remain separate gates.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

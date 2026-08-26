@@ -2035,6 +2035,58 @@ Run **Command 31 — Deploy to Staging** only after explicit user authorization 
 
 Run **Command 32 — Prepare the Production Launch** only after explicit user authorization. Prepare and review the production runbook and remaining gates, but do not mutate production or reuse staging credentials.
 
+### Command 32 — Prepare the Production Launch
+
+- **Status:** Completed and delivered to GitHub `main`; production remains `NO-GO`
+- **Date:** 2026-08-26
+
+#### Scope completed
+
+- Audited the current release, staging report, production topology, security, backup/recovery, observability, email, payment, cPanel, renewal, settings, and accepted decision boundaries against every Command 32 launch gate.
+- Created `docs/PRODUCTION_LAUNCH_RUNBOOK.md` with a launch control state, non-negotiable safety boundaries, named owner roles, evidence-based gate matrix, limited manual-first provider choices, mandatory approval/launch records, exact commands, eight deployment phases, checkpoints, immediate stop conditions, scoped rollback matrix, and final acceptance record.
+- Kept production at `NO-GO`. No production server, SSH identity, registry, DNS, certificate, firewall, database, secret manager, backup destination, alert destination, SMTP provider, payment account, WHM account, or real customer record was accessed or changed.
+- Classified the ready, partial, and blocked gates honestly. Migration tooling and manual termination controls are ready; production target, off-site restore, secrets/escrow, DNS/TLS, communication, SMTP, monitoring, business policy, provider acceptance, supply-chain delivery, first-renewal impact, and assigned rollback authority remain incomplete.
+- Defined a safer manual-first option: keep `manual` as the active payment gateway and leave all WHM server tokens unconfigured. Online bKash/SSLCOMMERZ production use remains blocked because the current adapters are sandbox-only; automated cPanel remains blocked until credentialed disposable-account acceptance passes. UK2Group remains outside this launch.
+- Added a one-time production administrator bootstrap utility. It requires exact confirmation, a protected newline-free password file, validated email/display fields, and an empty administrator boundary; hashes with the application Argon2id profile under a database advisory lock, creates one active super-administrator, appends safe audit evidence, and refuses an existing administrator/email or concurrent bootstrap.
+- Sequenced production startup so API/web/edge start without worker or scheduler. Business/sender settings and SMTP are reviewed before one worker starts; renewal policy/eligible services are reviewed before exactly one scheduler starts. Automatic termination remains absent.
+
+#### Files changed
+
+- Final production launch gates, commands, records, stop conditions, and rollback procedure: `docs/PRODUCTION_LAUNCH_RUNBOOK.md`
+- One-time first-administrator utility: `deploy/production/bootstrap-admin.cjs`
+- Production/authentication cross-references: `docs/PRODUCTION_DEPLOYMENT.md`, `docs/AUTHENTICATION.md`
+- Launch and bootstrap decision: `docs/DECISIONS.md`
+- Command tracking: `docs/PROGRESS.md`
+
+#### Validation
+
+- Production Compose rendered from a temporary non-secret environment and temporary empty secret files. Only Nginx had public ports, API gateway environment fallbacks remained disabled, and the dedicated scheduler command remained distinct.
+- The bootstrap utility passed Node syntax validation and ran against an exact isolated `command32_bootstrap_test` PostgreSQL schema after all 21 migrations. It created exactly one administrator, one super-admin profile, and one `PRODUCTION_ADMIN_BOOTSTRAPPED` audit event; a second invocation failed with the intended existing-administrator refusal. The test schema and one-time password artifacts were removed.
+- The focused renewal lifecycle and scheduler invariant suites passed two tests. Evidence includes one daily scheduler request across concurrent/replayed runs and zero termination events in the overdue lifecycle.
+- The staging environment remained healthy during the read-only review: API liveness and PostgreSQL/Redis readiness passed, all seven staging containers were running, exactly one scheduler existed, and the encrypted staging-backup SHA-256 sidecar verified.
+- Changed JavaScript/Markdown files passed Prettier, the staged script passed syntax checking in the audited production API image, and `git diff --check` passed. No credential/private-key marker or protected environment artifact entered the change set.
+
+#### Decisions made
+
+- A complete runbook is not launch approval. Every placeholder and owner/evidence line must be completed, and production deployment requires a new explicit authorization after the `NO-GO` gates are closed.
+- Prefer a dedicated production host. The Command 31 shared server remains staging and its secrets, volumes, ports, queue names, passwords and certificate material must never be reused.
+- Permit a consciously reduced manual-first launch only when the owner signs the limitation. Selecting the cPanel adapter name without any configured WHM token gives the application no panel authority; operators must not invoke hosting operations in that mode.
+- Create only the first administrator through a refusal-based tool rather than the public registration route, the fictional seed, or an idempotent privileged upsert. Remove its temporary password file and enroll administrator TOTP before exposure.
+- Keep migrations forward-only and manual. Compatible code rollback can select a prior digest; incompatible schema/data recovery restores the verified pre-migration backup into a separate database before an explicit cutover.
+
+#### Open questions and risks
+
+- No production target, public billing/API hostname, production SSH host key, registry, image signing/scanner, secret manager, immutable off-site backup destination, SMTP provider, monitoring/log platform, or alert recipient has been selected.
+- The staging backup is valid same-host rollback evidence, not an off-site production backup. A timed isolated restore on production-like hardware and measured RPO/RTO remain mandatory.
+- bKash and SSLCOMMERZ are sandbox-only and have not passed credentialed sandbox acceptance. Production endpoints/live credentials require separately authorized implementation/review. cPanel has not passed the documented credentialed development-server sequence.
+- Final business identity, BDT/tax/VAT position, invoice numbering, order/manual-payment evidence policy, cancellation/refund/retention rules, first renewal date, lead/reminder/grace values, and suspension supervision need owner decisions.
+- The documented product gaps remain: no dedicated recent-payments dashboard card, no full paginated activity-log page, and no direct external administrator alert delivery. Owner acceptance or remediation is required before final go/no-go.
+- Single-host PostgreSQL/Redis has no HA/PITR by default. Redis recovery, WAL/managed database choice, log retention, clock/capacity monitoring, historical key escrow, credential rotation, and provider uncertainty procedures need assigned operational owners.
+
+#### Recommended next command
+
+Do not execute a production mutation yet. After every `BLOCKED` gate in `docs/PRODUCTION_LAUNCH_RUNBOOK.md` has evidence and the owner explicitly authorizes the exact target/release, use the canonical continuation command: **“Execute the approved production launch runbook exactly as documented.”** Stop immediately on any listed mismatch, failed check, or rollback condition.
+
 ## Report Template
 
 Use this template after every future command:

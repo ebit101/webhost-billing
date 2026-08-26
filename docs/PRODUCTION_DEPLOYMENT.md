@@ -2,6 +2,8 @@
 
 This runbook describes the initial single-host production topology for Webhost Billing. It is a deployment specification, not evidence that production has been deployed. Command 29 builds and validates the images locally only.
 
+The authorization-gated, checkpoint-by-checkpoint launch procedure is in `docs/PRODUCTION_LAUNCH_RUNBOOK.md`. Its current decision is `NO-GO`; this topology document alone does not authorize production mutation.
+
 ## Topology and trust boundaries
 
 ```text
