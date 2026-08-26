@@ -322,6 +322,28 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** Command 31 proved the core stack with fictional data but did not establish production infrastructure or credentialed external behavior. A small private business can start with reviewed manual payments/provisioning, but untested integrations must never become implicit launch dependencies. Public registration cannot create an administrator, while running the development seed or silently upserting a privileged user would be unsafe.
 - **Consequence:** Command 32 makes no production mutation and does not authorize launch. The final runbook has mandatory stop conditions, staged scheduler activation, exact owner/evidence records, and scoped rollback. The bootstrap utility works only for an empty administrator boundary, never prints the password, and must be followed by password-file removal and TOTP enrollment. bKash/SSLCOMMERZ production use, credentialed cPanel automation, SMTP, off-site recovery, and alert delivery remain separate gates.
 
+## ADR-041 — Owner-Selected Shared-Host Production Exception Remains Evidence-Gated
+
+- **Status:** Accepted
+- **Date:** 2026-08-26
+- **Decision:** Accept the owner's explicit choice to evaluate the current
+  `my.speedhost.bd` shared host for this personal, low-traffic production deployment, using
+  one same-origin web/API edge. Preserve project/directory/network/volume/port isolation and
+  keep production `NO-GO` until the Command 34 audit's SSH, firewall, patching, encryption,
+  backup/recovery, resource-limit, provider/cost, and named-owner findings have evidence.
+- **Reason:** The observed six-vCPU, 11.68-GiB host has adequate current capacity and already
+  runs the isolated staging project, while the owner does not want a separate VM. However,
+  the server also runs important Nodewatch, RemotePilot, database, proxy, and RustDesk
+  workloads. Low application traffic reduces capacity demand but does not reduce root,
+  firewall, disk, provider-account, backup, or shared-daemon blast radius.
+- **Consequence:** This owner exception supersedes ADR-006's separate-infrastructure
+  preference and ADR-037's split-origin requirement only for the named bounded deployment;
+  it does not supersede security or release gates. Command 34 made no server change and did
+  not promote fictional staging data. Any later production work must be explicitly
+  authorized, project-scoped, rollback-reviewed, and preceded by the missing evidence.
+  Global Docker/Nginx/firewall/package operations remain prohibited without a separately
+  audited shared-host maintenance window.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:
@@ -331,4 +353,5 @@ The following decisions are intentionally unresolved and must be selected before
 3. SMTP delivery provider for staging and production.
 4. UK2Group API product/brand, current official documentation, test environment, contact policy, supported TLDs, pricing/renewal behavior, and the separately authorized registrar-command position.
 5. Final business identity values, supported operating currency, VAT/tax rules, reminder schedule, suspension grace period, cancellation policy, and refund policy.
-6. Production VPS/provider and backup destination.
+6. Exact shared-server provider/account ID, plan/region/cost, recovery controls, named
+   infrastructure/rollback owners, and off-site immutable backup destination.

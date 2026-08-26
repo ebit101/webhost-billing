@@ -2207,6 +2207,89 @@ Run **Command 34 — Select and Audit Production Infrastructure** only after exp
 authorization. It may prepare a dedicated target and evidence, but production launch remains
 blocked until every deferred Command 33 value and every other launch gate is resolved.
 
+### Command 34 — Select and Audit Production Infrastructure
+
+- **Status:** Completed and delivered to GitHub `main`; selected shared target remains `NO-GO`
+- **Date:** 2026-08-26
+
+#### Scope completed
+
+- Recorded the owner's explicit choice to use the existing `my.speedhost.bd` server for a
+  personal, low-traffic deployment instead of a separate VM/VPS, and selected one same-origin
+  web/API hostname.
+- Reused only the existing application-specific staging audit key with the independently
+  pinned ED25519 host key to perform a read-only audit of `46.250.239.221`. Did not accept a
+  new host key, use a password, expose private key material, or create production access.
+- Inventoried target identity, KVM virtualization, Ubuntu support, CPU, memory, swap, disk,
+  inodes, filesystem/encryption visibility, time sync, Docker/Compose, containers, networks,
+  volumes, listeners, host/Docker firewall posture, SSH policy, patch state, failed units,
+  certificates, backup artifacts, application health, and unrelated workloads.
+- Created `docs/PRODUCTION_INFRASTRUCTURE_AUDIT.md` with the owner-selected exception,
+  target inventory, capacity evidence, same-origin topology, inbound/outbound firewall plan,
+  isolation limits, backup/recovery state, blockers, and explicit no-mutation boundary.
+- Updated the launch matrix to show `BLOCKED — SHARED EXCEPTION` for target identity and
+  `PARTIAL — SAME ORIGIN SELECTED` for DNS/TLS. Added ADR-041 without silently waiving the
+  final evidence gates.
+
+#### Files changed
+
+- Production target audit, capacity/firewall plan, and blocking evidence:
+  `docs/PRODUCTION_INFRASTRUCTURE_AUDIT.md`
+- Shared-host and same-origin launch-gate updates: `docs/PRODUCTION_LAUNCH_RUNBOOK.md`
+- Owner-selected bounded architecture exception: `docs/DECISIONS.md`
+- Command report: `docs/PROGRESS.md`
+
+#### Validation
+
+- Strict SSH host-key checking matched the pinned fingerprint; the forward address remained
+  `46.250.239.221`. Every remote command was read-only. No package, user, key, firewall,
+  DNS, TLS, Nginx, service, Docker, file, volume, database, backup, or application mutation
+  was attempted.
+- Ubuntu 24.04.4, six vCPUs, 11.68 GiB RAM, synchronized time, Docker 29.6.2, Compose 5.3.1,
+  valid Nginx configuration, seven healthy Webhost Billing containers, API liveness,
+  PostgreSQL/Redis readiness, public app health, and a valid `my.speedhost.bd` certificate
+  were observed.
+- The changed Markdown files passed the installed Prettier 3 check and `git diff --check`.
+  The staged change set was scanned for private-key/credential markers before commit.
+
+#### Decisions made
+
+- Observed capacity is adequate for the stated personal low-traffic use, but capacity does
+  not prove security or resilience. The owner-selected shared-host exception replaces the
+  separate-VPS preference for this bounded deployment only.
+- Keep `my.speedhost.bd` as one same-origin web/API edge. No DNS or Nginx change occurs in
+  Command 34; the current deployment remains fictional staging release `b2b2d61`.
+- A completed audit can return `NO-GO`. The current server must not be promoted merely by
+  renaming staging or introducing real records/secrets.
+
+#### Open questions and risks
+
+- Exact provider account/server ID, region, plan, monthly cost/cap, provider encryption,
+  snapshot/recovery controls, and named infrastructure/rollback/security/recovery/incident
+  owners are unresolved. PTR/RDAP evidence is not a substitute for the owner's contract.
+- The host runs 20 containers plus shared Nginx, databases, Node processes, and public
+  RustDesk/other listeners. UFW is inactive, INPUT accepts traffic, effective SSH permits
+  root/password/X11/TCP-forwarding access, and a provider firewall was not evidenced.
+- Root disk is 71% used, no swap exists, no production container resource reservations were
+  proven, and 43 packages including Docker/MongoDB are pending. Two network/cloud-init units
+  are failed and Docker live-restore is disabled.
+- The only Webhost Billing backup is encrypted but same-host and one-time. No scheduled
+  off-site immutable backup, provider snapshot evidence, or timed production-like restore
+  exists.
+- A new production-only deployment key, hardened administrative boundary, IPv4/IPv6
+  firewall, monitored resource thresholds, patch window, off-site recovery, and same-origin
+  production topology review remain blocking. No production secret or real customer data
+  should be placed on the target yet.
+
+#### Recommended next command
+
+Do not start Command 35 on the blocked target yet. First explicitly authorize a bounded
+**Command 34 Remediation — Harden the Selected Shared Host**, with named infrastructure and
+rollback owners, provider/plan/cost evidence, approved maintenance window, provider-console
+recovery, exact existing-port ownership, backup checkpoint, and permission for scoped
+SSH/firewall/swap/patch/resource-limit changes. It must preserve every unrelated application
+and stop on any failed preflight.
+
 ## Report Template
 
 Use this template after every future command:
