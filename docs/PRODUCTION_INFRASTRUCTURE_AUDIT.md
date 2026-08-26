@@ -10,6 +10,12 @@
 - Audit verdict: **BLOCKED — NOT READY FOR PRODUCTION PROMOTION**
 - Production mutation performed: **None**
 
+The separately authorized Command 34 remediation preflight is recorded in
+`docs/PRODUCTION_INFRASTRUCTURE_REMEDIATION.md`. It found additional exact listener and SSH
+key ownership requirements and stopped before mutation because the maintenance window,
+provider-console recovery, named owners, source policy, and unrelated-service decisions were
+not supplied. This audit therefore remains blocked.
+
 The owner explicitly chose the current server instead of a separate VM/VPS and accepted that
 Webhost Billing will share host resources with important applications. This exception removes
 the dedicated-host selection requirement for this private low-traffic deployment only. It

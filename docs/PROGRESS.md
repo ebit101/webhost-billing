@@ -2290,6 +2290,80 @@ recovery, exact existing-port ownership, backup checkpoint, and permission for s
 SSH/firewall/swap/patch/resource-limit changes. It must preserve every unrelated application
 and stop on any failed preflight.
 
+### Command 34 Remediation — Harden the Selected Shared Host
+
+- **Status:** Blocked safely after read-only preflight; no host mutation performed
+- **Date:** 2026-08-26
+
+#### Scope completed
+
+- Accepted the owner's explicit authorization for bounded shared-host hardening and re-read
+  the architecture, launch, audit, and command boundaries.
+- Reconfirmed the exact pinned target using the existing staging audit key, then inventoried
+  current identity/capacity, TCP/UDP listeners, owning processes/directories, Docker network
+  modes and Compose projects, Nginx upstreams, SSH effective policy/key fingerprints,
+  firewall state, updates, failed units, storage layout, backup timers, DNS, and all Webhost
+  Billing/unrelated container health.
+- Created `docs/PRODUCTION_INFRASTRUCTURE_REMEDIATION.md` with the exact preserve/approve port
+  matrix, nine required owner inputs, phased SSH/firewall/capacity/patch procedure, rollback
+  checks, and stop conditions.
+- Stopped before every mutation because no exact maintenance window, provider-console
+  recovery, named infrastructure/rollback owner, operator source policy, root-key ownership,
+  or unrelated-port decision was supplied.
+
+#### Files changed
+
+- Shared-host preflight, approval matrix, staged procedure, rollback boundaries and stop
+  conditions: `docs/PRODUCTION_INFRASTRUCTURE_REMEDIATION.md`
+- Audit cross-reference/current blocked status: `docs/PRODUCTION_INFRASTRUCTURE_AUDIT.md`
+- Command report: `docs/PROGRESS.md`
+
+#### Validation
+
+- Strict pinned-host-key SSH validation passed. `my.speedhost.bd` still resolved to the audited
+  IPv4, time was synchronized, and the target remained KVM Ubuntu with 11 GiB RAM.
+- Root disk use increased from the prior 71% observation to 72%; 111 GiB remained. No swap
+  exists, 43 packages remain pending, Docker live restore is disabled, and the same two
+  network/cloud-init units remain failed.
+- UFW remains inactive; IPv4/IPv6 INPUT defaults remain ACCEPT. Effective SSH still permits
+  root/password/key login, X11 and TCP forwarding, with 12 root public keys.
+- Exact public ownership includes host Nginx on TCP 80/443, SSH on 22, unrelated Node
+  services on TCP 3101/4180, and host-network RustDesk on TCP 21115–21119 plus UDP 21116 and
+  a currently dynamic UDP port. Webhost Billing ports 19500/19600 remain loopback only.
+- All seven Webhost Billing staging containers and 13 unrelated containers remained running;
+  no container, service, Nginx configuration, firewall, SSH setting, package, file, key,
+  swap, database, volume, network, DNS, TLS or application setting was changed.
+
+#### Decisions made
+
+- Authorization to harden does not identify which unrelated listeners may be closed or supply
+  a safe SSH allowlist. Firewall default-deny and password/root-SSH changes must not be
+  guessed on a shared production host.
+- A provider-console/rescue test and a second independently verified key-based session are
+  mandatory before SSH hardening. A timed firewall rollback guard and independent rollback
+  confirmation are mandatory before changing INPUT policy.
+- Docker live-restore, swap, patch and reboot changes affect the whole host and require an
+  all-application checkpoint/window, not merely Webhost Billing authorization.
+- The intended final-server designation remains recorded, but production stays `NO-GO` and
+  fictional staging remains unchanged.
+
+#### Open questions and risks
+
+- The exact provider account/server ID, region, plan, monthly cost/cap, account MFA,
+  snapshot/rescue controls and tested console operator remain unprovided.
+- Infrastructure/rollback owners, emergency custodian, maintenance window, SSH source policy,
+  root-key ownership/expiry, public-port decisions, swap/resource allocation, patch/reboot
+  approval and independent checkpoint are required before mutation.
+- The host currently has no inbound default-deny boundary, permits password root access, and
+  exposes unrelated services outside Nginx. These remain real risks, but changing them
+  without ownership evidence creates a higher immediate lockout/outage risk.
+
+#### Recommended next command
+
+Resume **Command 34 Remediation — Apply Approved Shared-Host Hardening** only after completing
+the nine non-secret approvals in `docs/PRODUCTION_INFRASTRUCTURE_REMEDIATION.md`. Do not
+resume Command 35 or create production secrets until the operator/recovery boundary passes.
+
 ### Command 35 — Establish Production Secret Management
 
 - **Status:** Blocked before mutation; production prerequisites and custody approvals missing
