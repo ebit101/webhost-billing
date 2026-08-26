@@ -8,6 +8,19 @@ const navigation = vi.hoisted(() => ({ push: vi.fn(), refresh: vi.fn() }));
 vi.mock('next/navigation', () => ({ useRouter: () => navigation }));
 
 describe('administrator login security', () => {
+  it('shows the administrator entry without customer registration', () => {
+    render(<LoginForm audience="admin" />);
+
+    expect(
+      screen
+        .getByRole('link', { name: 'Customer sign in' })
+        .getAttribute('href'),
+    ).toBe('/login');
+    expect(
+      screen.queryByRole('link', { name: 'Create an account' }),
+    ).toBeNull();
+  });
+
   it('completes the password and MFA challenge without putting credentials in the URL', async () => {
     const user = userEvent.setup();
     const fetchMock = vi.fn(

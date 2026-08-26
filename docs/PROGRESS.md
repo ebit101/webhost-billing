@@ -2354,6 +2354,66 @@ and stop on any failed preflight.
 Retry login after a hard refresh. Continue numbered production-readiness commands only after
 the user confirms browser login and explicitly authorizes the next command.
 
+## Operational Change — Separate Administrator and Customer Entry Routes
+
+- **Status:** Implemented and validated; staging deployment pending
+- **Date:** 2026-08-26
+
+### Scope completed
+
+- Replaced the public root landing page with a redirect from `/` to the customer login at
+  `/login`.
+- Made `/login` explicitly customer-facing and retained customer registration access there.
+- Made `/admin` the dedicated administrator entry. Anonymous visitors see an administrator
+  sign-in form at that URL, without the public customer-registration link.
+- Kept authenticated role routing authoritative: administrators enter `/admin`, customers
+  enter `/portal`, and a customer session attempting `/admin` is returned to `/portal`.
+- Changed anonymous administrator subpages such as `/admin/customers` to redirect to
+  `/admin`; anonymous customer portal pages continue to redirect to `/login`.
+
+### Files changed
+
+- Root redirect and Next.js redirect configuration: `apps/web/src/app/(store)/page.tsx`,
+  `apps/web/next.config.ts`
+- Dedicated login presentation and administrator access boundary:
+  `apps/web/src/app/login/page.tsx`, `apps/web/src/app/(admin)/admin/layout.tsx`,
+  `apps/web/src/components/auth/login-form.tsx`, `apps/web/src/lib/server-auth.ts`,
+  `apps/web/src/proxy.ts`
+- Focused unit and end-to-end coverage: `apps/web/src/components/auth/login-form.test.tsx`,
+  `apps/web/src/lib/server-auth.test.ts`, `apps/web/src/proxy.test.ts`,
+  `apps/web/e2e/specs/hosting-lifecycle.spec.ts`
+
+### Validation
+
+- Focused Vitest authentication/routing suite: 3 files and 16 tests passed.
+- Changed web files passed ESLint; application and Playwright TypeScript checks passed.
+- The Next.js 16.3.2 production build completed successfully with `/`, `/login`, `/admin`,
+  and all existing portal/workspace routes present.
+- A local production HTTP smoke proved `/` returns 307 to `/login`, `/admin` returns 200
+  with `Administrator sign in`, `/login` returns 200 with `Customer sign in`, the admin form
+  omits customer registration, and `/admin/customers` returns 307 to `/admin` anonymously.
+
+### Decisions made
+
+- Separate entry URLs do not weaken API authorization. The administrator layout validates
+  the server-side session before mounting any workspace content, and every API endpoint keeps
+  its existing role and ownership enforcement.
+- Existing public `/hosting` and account-registration routes remain available by direct URL;
+  only the unwanted root landing page is removed from the entry flow.
+
+### Open questions and risks
+
+- Staging still serves the prior web image until this focused change is committed, published,
+  and deployed. Only the Webhost Billing web container may be recreated; unrelated services
+  must remain untouched.
+- This operational route change does not promote staging to production or close any existing
+  production launch gate.
+
+### Recommended next action
+
+Publish the validated change, deploy only the staging web image, and verify the three public
+entry routes plus credentialed administrator/customer role routing.
+
 ## Report Template
 
 Use this template after every future command:

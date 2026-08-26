@@ -10,7 +10,11 @@ import type {
 import { authMutation } from '../../lib/auth-api';
 import { Field, FormNotice, SubmitButton } from './form-controls';
 
-export function LoginForm() {
+export function LoginForm({
+  audience = 'customer',
+}: {
+  audience?: 'admin' | 'customer';
+}) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
@@ -122,12 +126,21 @@ export function LoginForm() {
         >
           Forgot password?
         </Link>
-        <Link
-          href="/register"
-          className="font-medium text-cyan-700 hover:underline"
-        >
-          Create an account
-        </Link>
+        {audience === 'customer' ? (
+          <Link
+            href="/register"
+            className="font-medium text-cyan-700 hover:underline"
+          >
+            Create an account
+          </Link>
+        ) : (
+          <Link
+            href="/login"
+            className="font-medium text-cyan-700 hover:underline"
+          >
+            Customer sign in
+          </Link>
+        )}
       </div>
     </form>
   );

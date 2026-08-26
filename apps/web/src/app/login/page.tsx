@@ -2,15 +2,15 @@ import type { Metadata } from 'next';
 import { AuthShell } from '../../components/auth/auth-shell';
 import { LoginForm } from '../../components/auth/login-form';
 
-export const metadata: Metadata = { title: 'Sign in' };
+export const metadata: Metadata = { title: 'Customer sign in' };
 
 export default function LoginPage() {
   return (
     <AuthShell
-      title="Welcome back"
-      description="Sign in to your customer or administrator account."
+      title="Customer sign in"
+      description="Manage your hosting services, invoices, payments, and support."
     >
-      <LoginForm />
+      <LoginForm audience="customer" />
     </AuthShell>
   );
 }

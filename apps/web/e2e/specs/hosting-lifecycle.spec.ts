@@ -19,9 +19,16 @@ test('complete hosting customer and administrator lifecycle', async ({
   let renewalInvoiceId = '';
   let serviceId = '';
 
-  await test.step('anonymous workspaces require login', async () => {
-    await page.goto('/admin');
+  await test.step('root and anonymous workspaces use their dedicated login entries', async () => {
+    await page.goto('/');
     await expect(page).toHaveURL(/\/login$/);
+    await page.goto('/admin');
+    await expect(page).toHaveURL(/\/admin$/);
+    await expect(
+      page.getByRole('heading', { name: 'Administrator sign in' }),
+    ).toBeVisible();
+    await page.goto('/admin/customers');
+    await expect(page).toHaveURL(/\/admin$/);
     await page.goto('/portal');
     await expect(page).toHaveURL(/\/login$/);
   });
@@ -238,7 +245,7 @@ async function login(
   password: string,
   expectedPath: '/admin' | '/portal',
 ) {
-  await page.goto('/login');
+  await page.goto(expectedPath === '/admin' ? '/admin' : '/login');
   await page.getByLabel('Email address').fill(email);
   await page.getByLabel('Password').fill(password);
   await page.getByRole('button', { name: 'Sign in' }).click();

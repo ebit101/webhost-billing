@@ -7,7 +7,14 @@ export function proxy(request: NextRequest) {
     request.cookies.get('webhost_session');
 
   if (!sessionCookie) {
-    return NextResponse.redirect(new URL('/login', request.url));
+    if (request.nextUrl.pathname === '/admin') {
+      return NextResponse.next();
+    }
+
+    const destination = request.nextUrl.pathname.startsWith('/admin/')
+      ? '/admin'
+      : '/login';
+    return NextResponse.redirect(new URL(destination, request.url));
   }
 
   return NextResponse.next();

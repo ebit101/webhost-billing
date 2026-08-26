@@ -1,10 +1,13 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
+import { redirect } from 'next/navigation';
+import { AuthShell } from '../../../components/auth/auth-shell';
+import { LoginForm } from '../../../components/auth/login-form';
 import {
   WorkspaceShell,
   type WorkspaceNavigationItem,
 } from '../../../components/layout/workspace-shell';
-import { requireWorkspaceRole } from '../../../lib/server-auth';
+import { getAuthenticatedIdentity } from '../../../lib/server-auth';
 
 export const metadata: Metadata = {
   title: {
@@ -32,7 +35,22 @@ export default async function AdminLayout({
 }: {
   children: ReactNode;
 }) {
-  const identity = await requireWorkspaceRole('ADMIN');
+  const identity = await getAuthenticatedIdentity();
+
+  if (!identity) {
+    return (
+      <AuthShell
+        title="Administrator sign in"
+        description="Authorized staff can access billing operations and system settings here."
+      >
+        <LoginForm audience="admin" />
+      </AuthShell>
+    );
+  }
+
+  if (identity.role !== 'ADMIN') {
+    redirect('/portal');
+  }
 
   return (
     <WorkspaceShell

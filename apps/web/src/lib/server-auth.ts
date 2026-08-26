@@ -13,16 +13,14 @@ const authenticatedIdentityResponseSchema = apiSuccessResponseSchema(
 
 export type WorkspaceRole = AuthenticatedIdentity['role'];
 
-export async function requireWorkspaceRole(
-  requiredRole: WorkspaceRole,
-): Promise<AuthenticatedIdentity> {
+export async function getAuthenticatedIdentity(): Promise<AuthenticatedIdentity | null> {
   const cookieStore = await cookies();
   const sessionCookie =
     cookieStore.get('__Host-webhost_session') ??
     cookieStore.get('webhost_session');
 
   if (!sessionCookie) {
-    redirect('/login');
+    return null;
   }
 
   let response: Response;
@@ -38,7 +36,7 @@ export async function requireWorkspaceRole(
   }
 
   if (response.status === 401 || response.status === 403) {
-    redirect('/login');
+    return null;
   }
 
   if (!response.ok) {
@@ -53,7 +51,18 @@ export async function requireWorkspaceRole(
     throw new Error('The authentication service returned an invalid response.');
   }
 
-  const identity = parsedResponse.data.data;
+  return parsedResponse.data.data;
+}
+
+export async function requireWorkspaceRole(
+  requiredRole: WorkspaceRole,
+): Promise<AuthenticatedIdentity> {
+  const identity = await getAuthenticatedIdentity();
+
+  if (!identity) {
+    redirect('/login');
+  }
+
   if (identity.role !== requiredRole) {
     redirect(identity.role === 'ADMIN' ? '/admin' : '/portal');
   }

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { requireWorkspaceRole } from './server-auth';
+import { getAuthenticatedIdentity, requireWorkspaceRole } from './server-auth';
 
 const nextServer = vi.hoisted(() => ({
   cookies: vi.fn(),
@@ -33,6 +33,15 @@ describe('server workspace authorization', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it('returns no identity for an anonymous administrator entry page', async () => {
+    nextServer.cookies.mockResolvedValue({ get: () => undefined });
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(getAuthenticatedIdentity()).resolves.toBeNull();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it('redirects an expired or invalid session to login', async () => {
     vi.stubGlobal(
       'fetch',
@@ -42,6 +51,15 @@ describe('server workspace authorization', () => {
     await expect(requireWorkspaceRole('CUSTOMER')).rejects.toThrow(
       'NEXT_REDIRECT:/login',
     );
+  });
+
+  it('returns no identity for an expired administrator session', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response(null, { status: 401 })),
+    );
+
+    await expect(getAuthenticatedIdentity()).resolves.toBeNull();
   });
 
   it('allows an administrator into the administrator workspace', async () => {
