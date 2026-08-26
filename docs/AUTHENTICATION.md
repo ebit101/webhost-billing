@@ -51,6 +51,8 @@ Recovery-code rotation and MFA disable both require the current password plus an
 
 The supported roles are `ADMIN` and `CUSTOMER`.
 
+- The Next.js `/admin/**` and `/portal/**` workspaces validate the incoming HttpOnly session against `GET /auth/me` before rendering their shells. Anonymous or expired sessions redirect to `/login`; a valid user who opens the other role's workspace is redirected to their own workspace.
+- The server-rendering guard forwards only the recognized session cookie, disables fetch caching, validates the API response through the shared runtime identity schema, and fails closed if authentication cannot be verified. It complements rather than replaces API role and ownership enforcement.
 - The global session guard protects routes unless `@Public()` is explicitly present.
 - `@Roles('ADMIN')` protects administrator-only endpoints.
 - `@RequireCustomerOwnership('customerId')` requires a customer to own the referenced customer resource; administrators may pass the ownership boundary.

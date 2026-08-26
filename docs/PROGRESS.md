@@ -1674,6 +1674,46 @@ Run **Command 25 — Test Critical Business Invariants** only after explicit use
 
 Run **Command 26 — Add End-to-End Tests** only after explicit user authorization. Add deterministic, isolated Playwright coverage for the twelve listed customer/administrator workflows, capture traces or screenshots on failure, and keep payment/provisioning/termination proof boundaries intact.
 
+### Post-Command 25 — Protect administrator and customer workspace routes
+
+- **Status:** Completed and delivered to GitHub `main`
+- **Date:** 2026-08-26
+
+#### Scope completed
+
+- Added a server-side Next.js authorization layer that validates the incoming HttpOnly session with the API before rendering `/admin/**` or `/portal/**`.
+- Anonymous, missing-cookie, expired-session, and rejected-session requests redirect to `/login`. Authenticated users who open the other role's workspace redirect to their correct workspace.
+- Forwarded only the recognized development or production session cookie, disabled authentication fetch caching, validated the API response with the shared runtime schema, and failed closed on unavailable or malformed authentication responses.
+- Replaced fictional hard-coded shell identities with the authenticated account email and role-appropriate detail.
+
+#### Files changed
+
+- Server authorization and regression tests: `apps/web/src/lib/server-auth.ts`, `apps/web/src/lib/server-auth.test.ts`
+- Protected route layouts: `apps/web/src/app/(admin)/admin/layout.tsx`, `apps/web/src/app/(portal)/portal/layout.tsx`
+- Authentication and progress records: `docs/AUTHENTICATION.md`, `docs/PROGRESS.md`
+
+#### Validation
+
+- All 39 frontend tests passed across fifteen files, including six new server-authorization cases for missing cookies, invalid sessions, permitted roles, cross-role redirects, and invalid API responses.
+- Frontend ESLint and strict TypeScript passed. Prettier and `git diff --check` passed.
+- The Next.js 16.3.2 production build passed and classified all administrator and customer workspace routes as dynamic server-rendered routes.
+- The production-mode build used a fictional HTTPS API origin because the cPanel development URL is intentionally plain HTTP and production configuration correctly rejects it.
+
+#### Decisions made
+
+- The secure API remains the authorization authority. The Next.js guard prevents an unauthorized workspace shell from rendering, while every data request and mutation still requires API role and ownership checks.
+- Session verification is request-time and uncached. A browser cannot obtain an administrator or customer shell merely by entering its URL.
+- Wrong-role users are sent to their own workspace rather than shown another role's shell or a misleading login prompt.
+
+#### Open questions and risks
+
+- The current cPanel development deployment uses plain HTTP. Before production exposure, deploy the web and API behind reviewed HTTPS reverse-proxy origins so production secure cookies and HSTS operate correctly.
+- The live development deployment must be rebuilt and smoke-tested after this source correction; results are recorded in the delivery handoff rather than claimed here in advance.
+
+#### Recommended next command
+
+Run **Command 26 — Add End-to-End Tests** only after explicit user authorization. Include real-browser anonymous and cross-role navigation cases alongside the already planned workflows.
+
 ## Report Template
 
 Use this template after every future command:

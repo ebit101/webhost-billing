@@ -4,6 +4,7 @@ import {
   WorkspaceShell,
   type WorkspaceNavigationItem,
 } from '../../../components/layout/workspace-shell';
+import { requireWorkspaceRole } from '../../../lib/server-auth';
 
 export const metadata: Metadata = {
   title: {
@@ -26,13 +27,19 @@ const navigation: WorkspaceNavigationItem[] = [
   { href: '/admin/settings', label: 'Settings', icon: 'settings' },
 ];
 
-export default function AdminLayout({ children }: { children: ReactNode }) {
+export default async function AdminLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  const identity = await requireWorkspaceRole('ADMIN');
+
   return (
     <WorkspaceShell
       mode="admin"
       navigation={navigation}
-      userName="Nadia Karim"
-      userDetail="Owner administrator"
+      userName={identity.email}
+      userDetail="Administrator"
     >
       {children}
     </WorkspaceShell>

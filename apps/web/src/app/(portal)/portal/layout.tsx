@@ -4,6 +4,7 @@ import {
   WorkspaceShell,
   type WorkspaceNavigationItem,
 } from '../../../components/layout/workspace-shell';
+import { requireWorkspaceRole } from '../../../lib/server-auth';
 
 export const metadata: Metadata = {
   title: {
@@ -26,13 +27,19 @@ const navigation: WorkspaceNavigationItem[] = [
   { href: '/portal/profile', label: 'Profile & security', icon: 'user' },
 ];
 
-export default function PortalLayout({ children }: { children: ReactNode }) {
+export default async function PortalLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  const identity = await requireWorkspaceRole('CUSTOMER');
+
   return (
     <WorkspaceShell
       mode="portal"
       navigation={navigation}
-      userName="Amina Rahman"
-      userDetail="amina@example.test"
+      userName={identity.email}
+      userDetail="Customer account"
     >
       {children}
     </WorkspaceShell>
