@@ -8,6 +8,7 @@
 - Compose project: `webhost-billing-staging`
 - Host root: `/srv/webhost-billing-staging`
 - Current release: `/srv/webhost-billing-staging/releases/b2b2d61`
+- Current web overlay: `webhost-billing-web:5ee6e7b-entry-routes`
 - Web listener: `127.0.0.1:19500`
 - API listener: `127.0.0.1:19600`
 - Edge: the host Nginx instance, after a successful `nginx -t` and graceful reload
@@ -152,6 +153,27 @@ is `/srv/webhost-billing-staging/rollback/env-staging-pre-login-hotfix-20260826T
 Rollback requires exact image/config review, restoring only the prior `IMAGE_TAG`, recreating
 only `web`, and rerunning the browser-origin and credentialed smokes. Do not roll back to the
 known-bad web image merely because it is available.
+
+### 2026-08-26 separate entry routes
+
+Web commit `5ee6e7b` removed the public root landing page and established these entry rules:
+
+- `/` returns 307 to `/login`;
+- `/login` is the customer sign-in page;
+- `/admin` is the administrator sign-in page when no valid session exists;
+- anonymous `/admin/*` subpages return to `/admin`, while anonymous `/portal/*` pages return
+  to `/login`.
+
+The deployed image is `webhost-billing-web:5ee6e7b-entry-routes`; its image ID begins
+`sha256:d27cea3afc5b`. Only `webhost-billing-staging-web-1` was recreated. All non-web
+container IDs remained unchanged, and the web container became healthy with zero restarts.
+The protected pre-change environment backup is
+`/srv/webhost-billing-staging/rollback/env-staging-pre-entry-routes-20260826T111104Z` at mode
+`0600`.
+
+Rollback requires restoring only the prior `IMAGE_TAG` after confirming the previous web
+image, recreating only `web`, and rerunning the browser-origin, route, and credentialed role
+smokes. No schema or data change belongs to this web-only deployment.
 
 ## Provider posture
 

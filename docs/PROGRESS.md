@@ -2356,7 +2356,7 @@ the user confirms browser login and explicitly authorizes the next command.
 
 ## Operational Change — Separate Administrator and Customer Entry Routes
 
-- **Status:** Implemented and validated; staging deployment pending
+- **Status:** Completed, deployed to staging, and delivered to GitHub `main`
 - **Date:** 2026-08-26
 
 ### Scope completed
@@ -2392,6 +2392,15 @@ the user confirms browser login and explicitly authorizes the next command.
 - A local production HTTP smoke proved `/` returns 307 to `/login`, `/admin` returns 200
   with `Administrator sign in`, `/login` returns 200 with `Customer sign in`, the admin form
   omits customer registration, and `/admin/customers` returns 307 to `/admin` anonymously.
+- Built and deployed `webhost-billing-web:5ee6e7b-entry-routes` with the correct same-origin
+  browser API URL. The live HTTPS route smoke proved the same 307/200 behavior, and the
+  browser-origin verifier passed.
+- The protected credentialed smoke passed both role logins, both dashboards, administrator
+  authorization, customer denial, invoice/PDF, ticket, provider-adapter, password-reset,
+  logout, and post-logout checks.
+- Only `webhost-billing-staging-web-1` was recreated. It became healthy with zero restarts;
+  every non-web container retained its container ID. The pre-change environment backup is
+  protected at mode `0600` under the staging rollback directory.
 
 ### Decisions made
 
@@ -2403,16 +2412,16 @@ the user confirms browser login and explicitly authorizes the next command.
 
 ### Open questions and risks
 
-- Staging still serves the prior web image until this focused change is committed, published,
-  and deployed. Only the Webhost Billing web container may be recreated; unrelated services
-  must remain untouched.
+- Existing browser tabs may retain the prior page briefly; reload the requested URL if a tab
+  does not immediately show the new entry page.
 - This operational route change does not promote staging to production or close any existing
   production launch gate.
 
 ### Recommended next action
 
-Publish the validated change, deploy only the staging web image, and verify the three public
-entry routes plus credentialed administrator/customer role routing.
+Use `https://my.speedhost.bd/admin` for administrators and
+`https://my.speedhost.bd/login` for customers. Authorize the next numbered command separately;
+the existing production launch blockers remain in force.
 
 ## Report Template
 
