@@ -1,0 +1,370 @@
+name: ${COMPOSE_PROJECT_NAME:-webhost-billing-production}
+
+x-json-logging: &json-logging
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: '5'
+
+x-app-security: &app-security
+  init: true
+  restart: unless-stopped
+  read_only: true
+  user: '10001:10001'
+  cap_drop:
+    - ALL
+  security_opt:
+    - no-new-privileges:true
+  tmpfs:
+    - /tmp:rw,noexec,nosuid,size=64m
+  logging: *json-logging
+
+x-worker-environment: &worker-environment
+  NODE_ENV: production
+  DATABASE_URL_FILE: /run/secrets/database_url
+  REDIS_URL_FILE: /run/secrets/redis_url
+  CREDENTIAL_ENCRYPTION_KEY_FILE: /run/secrets/credential_encryption_key
+  BULLMQ_PREFIX: ${BULLMQ_PREFIX:-webhost-billing-production}
+  HOSTING_PANEL_TIMEOUT_MS: ${HOSTING_PANEL_TIMEOUT_MS:-10000}
+  EMAIL_TRANSPORT: smtp
+  EMAIL_PUBLIC_WEB_URL: https://${BILLING_HOST:?Set BILLING_HOST}
+  EMAIL_BRAND_NAME: ${EMAIL_BRAND_NAME:-Webhost Billing}
+  EMAIL_BRAND_COLOR: ${EMAIL_BRAND_COLOR:-#0891b2}
+  EMAIL_FROM_ADDRESS: ${EMAIL_FROM_ADDRESS:?Set EMAIL_FROM_ADDRESS}
+  EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-Webhost Billing}
+  EMAIL_REPLY_TO_ADDRESS: ${EMAIL_REPLY_TO_ADDRESS:-}
+  EMAIL_WORKER_CONCURRENCY: ${EMAIL_WORKER_CONCURRENCY:-2}
+  SMTP_HOST: ${SMTP_HOST:?Set SMTP_HOST}
+  SMTP_PORT: ${SMTP_PORT:-587}
+  SMTP_SECURE: ${SMTP_SECURE:-false}
+  SMTP_REQUIRE_TLS: ${SMTP_REQUIRE_TLS:-true}
+  SMTP_USERNAME_FILE: /run/secrets/smtp_username
+  SMTP_PASSWORD_FILE: /run/secrets/smtp_password
+  SMTP_CONNECTION_TIMEOUT_MS: ${SMTP_CONNECTION_TIMEOUT_MS:-10000}
+  SMTP_SOCKET_TIMEOUT_MS: ${SMTP_SOCKET_TIMEOUT_MS:-30000}
+
+x-worker-secrets: &worker-secrets
+  - database_url
+  - redis_url
+  - credential_encryption_key
+  - smtp_username
+  - smtp_password
+
+services:
+  postgres:
+    image: postgres:18.6-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-webhost_billing}
+      POSTGRES_USER: ${POSTGRES_USER:-webhost_billing}
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    secrets:
+      - postgres_password
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    stop_grace_period: 60s
+    security_opt:
+      - no-new-privileges:true
+    logging: *json-logging
+    networks:
+      - backend
+
+  redis:
+    image: redis:8.10-alpine
+    user: '999:999'
+    restart: unless-stopped
+    entrypoint:
+      - /usr/local/bin/redis-entrypoint
+    environment:
+      REDIS_PASSWORD_FILE: /run/secrets/redis_password
+    secrets:
+      - redis_password
+    configs:
+      - source: redis_entrypoint
+        target: /usr/local/bin/redis-entrypoint
+        mode: 0555
+      - source: redis_config
+        target: /usr/local/etc/redis/redis.conf.template
+        mode: 0444
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - REDISCLI_AUTH="$$(cat /run/secrets/redis_password)" redis-cli --no-auth-warning ping | grep -q PONG
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    stop_grace_period: 30s
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    logging: *json-logging
+    networks:
+      - backend
+
+  migrate:
+    image: webhost-billing-migration:${IMAGE_TAG:-local}
+    build:
+      context: ../..
+      dockerfile: deploy/production/migration/Dockerfile
+      target: migration
+    profiles:
+      - tools
+    user: '10001:10001'
+    read_only: true
+    environment:
+      NODE_ENV: production
+      DATABASE_URL_FILE: /run/secrets/database_url
+    secrets:
+      - database_url
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      postgres:
+        condition: service_healthy
+    logging: *json-logging
+    networks:
+      - backend
+
+  api:
+    <<: *app-security
+    image: webhost-billing-api:${IMAGE_TAG:-local}
+    build:
+      context: ../..
+      dockerfile: apps/api/Dockerfile
+      target: api
+    environment:
+      NODE_ENV: production
+      API_PORT: 3001
+      DATABASE_URL_FILE: /run/secrets/database_url
+      REDIS_URL_FILE: /run/secrets/redis_url
+      SESSION_SECRET_FILE: /run/secrets/session_secret
+      CREDENTIAL_ENCRYPTION_KEY_FILE: /run/secrets/credential_encryption_key
+      WEB_ORIGIN: https://${BILLING_HOST:?Set BILLING_HOST}
+      API_PUBLIC_ORIGIN: https://${API_HOST:?Set API_HOST}
+      TRUST_PROXY_HOPS: 1
+      BULLMQ_PREFIX: ${BULLMQ_PREFIX:-webhost-billing-production}
+      BKASH_ENABLED: 'false'
+      SSLCOMMERZ_ENABLED: 'false'
+    secrets:
+      - database_url
+      - redis_url
+      - session_secret
+      - credential_encryption_key
+    expose:
+      - '3001'
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - fetch('http://127.0.0.1:3001/ready').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    stop_grace_period: 45s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - backend
+      - egress
+
+  web:
+    <<: *app-security
+    image: webhost-billing-web:${IMAGE_TAG:-local}
+    build:
+      context: ../..
+      dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: https://${API_HOST:?Set API_HOST}
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: https://${API_HOST:?Set API_HOST}
+      HOSTNAME: 0.0.0.0
+      PORT: 3000
+    expose:
+      - '3000'
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+      - /app/apps/web/.next/cache:rw,noexec,nosuid,size=64m,uid=10001,gid=10001
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - fetch('http://127.0.0.1:3000/login').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    stop_grace_period: 30s
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - frontend
+
+  worker:
+    <<: *app-security
+    image: webhost-billing-worker:${IMAGE_TAG:-local}
+    build:
+      context: ../..
+      dockerfile: apps/worker/Dockerfile
+      target: worker
+    environment:
+      <<: *worker-environment
+    secrets: *worker-secrets
+    command:
+      - node
+      - dist/main.js
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - process.kill(1,0)
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    stop_grace_period: 90s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - backend
+      - egress
+
+  scheduler:
+    <<: *app-security
+    image: webhost-billing-worker:${IMAGE_TAG:-local}
+    environment:
+      <<: *worker-environment
+    secrets: *worker-secrets
+    command:
+      - node
+      - dist/scheduler-main.js
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - process.kill(1,0)
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    stop_grace_period: 60s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - backend
+      - egress
+
+  nginx:
+    image: webhost-billing-nginx:${IMAGE_TAG:-local}
+    build:
+      context: ../..
+      dockerfile: deploy/production/nginx/Dockerfile
+    user: '101:101'
+    init: true
+    restart: unless-stopped
+    read_only: true
+    environment:
+      BILLING_HOST: ${BILLING_HOST:?Set BILLING_HOST}
+      API_HOST: ${API_HOST:?Set API_HOST}
+    secrets:
+      - tls_certificate
+      - tls_private_key
+    ports:
+      - '${HTTP_PORT:-80}:8080'
+      - '${HTTPS_PORT:-443}:8443'
+    tmpfs:
+      - /tmp/nginx:rw,noexec,nosuid,size=32m,uid=101,gid=101
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget -q -O /dev/null http://127.0.0.1:8080/nginx-health
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    stop_grace_period: 30s
+    depends_on:
+      api:
+        condition: service_healthy
+      web:
+        condition: service_healthy
+    logging: *json-logging
+    networks:
+      - frontend
+      - backend
+      - edge
+
+configs:
+  redis_entrypoint:
+    file: ./redis/redis-entrypoint.sh
+  redis_config:
+    file: ./redis/redis.conf.template
+
+secrets:
+  postgres_password:
+    file: ${PRODUCTION_SECRET_DIRECTORY:?Set PRODUCTION_SECRET_DIRECTORY}/postgres_password
+  redis_password:
+    file: ${PRODUCTION_SECRET_DIRECTORY:?Set PRODUCTION_SECRET_DIRECTORY}/redis_password
+  database_url:
+    file: ${PRODUCTION_SECRET_DIRECTORY:?Set PRODUCTION_SECRET_DIRECTORY}/database_url
+  redis_url:
+    file: ${PRODUCTION_SECRET_DIRECTORY:?Set PRODUCTION_SECRET_DIRECTORY}/redis_url
+  session_secret:
+    file: ${PRODUCTION_SECRET_DIRECTORY:?Set PRODUCTION_SECRET_DIRECTORY}/session_secret
+  credential_encryption_key:
+    file: ${PRODUCTION_SECRET_DIRECTORY:?Set PRODUCTION_SECRET_DIRECTORY}/credential_encryption_key
+  smtp_username:
+    file: ${PRODUCTION_SECRET_DIRECTORY:?Set PRODUCTION_SECRET_DIRECTORY}/smtp_username
+  smtp_password:
+    file: ${PRODUCTION_SECRET_DIRECTORY:?Set PRODUCTION_SECRET_DIRECTORY}/smtp_password
+  tls_certificate:
+    file: ${PRODUCTION_SECRET_DIRECTORY:?Set PRODUCTION_SECRET_DIRECTORY}/tls_certificate.pem
+  tls_private_key:
+    file: ${PRODUCTION_SECRET_DIRECTORY:?Set PRODUCTION_SECRET_DIRECTORY}/tls_private_key.pem
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  frontend:
+    internal: true
+  backend:
+    internal: true
+  edge:
+  egress:

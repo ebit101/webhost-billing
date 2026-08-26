@@ -23,6 +23,7 @@ const csp = [
 
 const nextConfig: NextConfig = {
   distDir: process.env.NEXT_DIST_DIR ?? '.next',
+  output: 'standalone',
   env: {
     NEXT_PUBLIC_API_URL: environment.NEXT_PUBLIC_API_URL,
   },

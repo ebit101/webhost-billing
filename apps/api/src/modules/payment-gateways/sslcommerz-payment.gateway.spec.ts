@@ -13,6 +13,7 @@ const environment = {
   CREDENTIAL_ENCRYPTION_KEY: 'e'.repeat(32),
   WEB_ORIGIN: 'http://localhost:3000',
   API_PUBLIC_ORIGIN: 'https://api.example.test',
+  TRUST_PROXY_HOPS: 0,
   PAYMENT_PROVIDER_TIMEOUT_MS: 5_000,
   HOSTING_PANEL_TIMEOUT_MS: 10_000,
   BKASH_ENABLED: false,

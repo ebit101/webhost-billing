@@ -38,7 +38,6 @@ export class RenewalSchedulerService
       () => void this.tick(),
       this.environment.SCHEDULER_POLL_INTERVAL_MS,
     );
-    this.timer.unref();
     void this.tick();
   }
 

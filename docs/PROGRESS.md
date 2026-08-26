@@ -1875,6 +1875,59 @@ Run **Command 28 — Prepare Backups and Recovery** only after explicit user aut
 
 Run **Command 29 — Prepare Production Deployment** only after explicit user authorization. Add non-root production images, API/web/worker/scheduler services, PostgreSQL/Redis configuration, health checks, graceful shutdown, reviewed migration execution, persistent storage guidance, Nginx/HTTPS/security limits, secret injection, log rotation, and deployment/rollback checklists; build locally and do not deploy externally.
 
+### Command 29 — Prepare Production Deployment
+
+- **Status:** Completed and delivered to GitHub `main`
+- **Date:** 2026-08-26
+
+#### Scope completed
+
+- Added multi-stage Node.js 24 production images for the NestJS API, standalone Next.js web application, BullMQ worker/dedicated scheduler, and an isolated Prisma migration tool, plus a non-root Nginx image. All five final images declare explicit unprivileged users and exclude development/build artifacts from runtime layers.
+- Added a production Docker Compose topology with PostgreSQL 18.6, authenticated Redis 8.10 AOF/no-eviction persistence, API, web, worker, exactly one scheduler, reviewed one-shot migration profile, Nginx, health checks, bounded stop grace periods, read-only filesystems, bounded tmpfs, dropped capabilities, `no-new-privileges`, private service networks, and explicit edge/provider-egress networks.
+- Added allowlisted file-secret loading without value logging; kept provider credentials in the existing encrypted database settings path; documented root-only secret-directory permissions, local Compose bind-mount constraints, independent key escrow, and external secret-manager migration.
+- Added split billing/API HTTPS-host routing, unknown-host rejection, HTTP-to-HTTPS redirects, TLS 1.2/1.3, secure response headers, sanitized proxy/request-ID headers, exact one-hop API proxy trust, 1 MiB body limits, conservative timeouts, JSON access logs, and Docker log rotation.
+- Enabled API SIGINT/SIGTERM shutdown hooks and fixed the dedicated renewal scheduler so its referenced interval keeps the scheduler process alive until an explicit shutdown. Added regression coverage for that process-lifecycle guarantee.
+- Added durable production guidance for DNS/TLS/ACME, SMTP, firewalling, cPanel port conflicts, immutable image tags/digests, manual forward-only migrations, persistent PostgreSQL/Redis storage, encrypted backups, monitoring, graceful maintenance, deployment checks, compatible code rollback, isolated database restore, and uncertain-provider reconciliation.
+- Added root production commands for config validation, all-image builds, reviewed migration execution, startup with health waiting, and volume-preserving shutdown. No production/staging host, registry, provider, DNS, certificate authority, or real credential was touched.
+
+#### Files changed
+
+- Production images and context: `apps/api/Dockerfile`, `apps/web/Dockerfile`, `apps/worker/Dockerfile`, `deploy/production/migration/Dockerfile`, `.dockerignore`
+- Compose, secrets, PostgreSQL/Redis, Nginx, and example configuration: `deploy/production/compose.production.yaml`, `deploy/production/app-entrypoint.sh`, `deploy/production/.env.example`, `deploy/production/redis/*`, `deploy/production/nginx/*`
+- Proxy trust, shutdown, standalone output, scheduler lifecycle, and tests: `packages/config/src/env.ts`, `apps/api/src/main.ts`, `apps/api/src/environment.spec.ts`, `apps/api/src/modules/payment-gateways/*.spec.ts`, `apps/web/next.config.ts`, `apps/worker/src/renewal/renewal-scheduler.service.ts`, `apps/worker/src/renewal/renewal-scheduler-lifecycle.spec.ts`
+- Commands and operator/architecture records: `package.json`, `docs/PRODUCTION_DEPLOYMENT.md`, `docs/DECISIONS.md`, `README.md`, `docs/PROGRESS.md`
+
+#### Validation
+
+- Repository Prettier, `git diff --check`, API/worker/web ESLint, and strict TypeScript checks for every code workspace passed.
+- All 191 workspace unit/contract/component/integration tests passed: shared 25, queue/Redis 3, API 88, worker 28, and frontend 47. The new proxy-bound validation and referenced scheduler-timer regression passed.
+- Every final production image built locally from the corrected clean context: API 198,031,064 bytes, web 93,348,207 bytes, worker 190,530,191 bytes, migration 191,437,236 bytes, and Nginx 27,392,972 bytes. Image inspection reported API/web/worker/migration UID/GID `10001:10001` and Nginx user `nginx`; the migration image successfully loaded Prisma 7.9.1 and all migration files as UID 10001.
+- An isolated fictional production smoke stack created fresh named volumes, started PostgreSQL/Redis, and applied all 21 migrations through the one-shot non-root migration image. API `/health` and `/ready`, web `/login`, every Compose health check, separate-host self-signed HTTPS routing, known-host HTTP 308 redirect, security headers, and the 1 MiB Nginx limit (`413` for a 1.1 MB request) passed.
+- The corrected worker and dedicated scheduler remained healthy with zero restarts through seven five-second lifecycle checks. SIGTERM stops completed within the configured timeout without forced kills; Nginx exited 0 and Node/tini containers reported the expected signal exit 143. The isolated containers, networks, volumes, certificate, and fictional secrets were removed after the smoke run.
+- Production Compose rendering, Bash/POSIX shell syntax for all entry points, migration-tool contents, image user metadata, and no-host-published API/web/PostgreSQL/Redis ports were verified. `pnpm audit --prod` reported no known vulnerabilities.
+- Initial local build/smoke attempts exposed and then resolved pnpm workspace deploy mode, OpenSSL availability, build-context size, non-root Compose file permissions, read-only Nginx temp paths, edge/egress network routing, and the unreferenced scheduler interval. The final complete checks passed after each correction.
+
+#### Decisions made
+
+- Use two HTTPS origins on one Nginx edge—billing UI and API—because the existing security schemas intentionally permit origins without path prefixes. The web build embeds the API origin and must be rebuilt if that hostname changes.
+- Keep migrations manual, reviewed, and forward-only. API startup never performs schema mutation; incompatible rollback uses a verified isolated pre-migration restore/cutover rather than a down migration.
+- Keep authoritative PostgreSQL and durable BullMQ Redis volumes separate; Redis uses AOF every second and `noeviction`, but neither named volume is treated as backup. PostgreSQL retains the Command 28 encrypted/off-site backup boundary.
+- Separate internal application networks from an edge network needed for published 80/443 and an egress network needed for SMTP/payment/cPanel traffic. No service other than Nginx publishes a host port; production firewalls should restrict outbound provider destinations.
+- Local Compose file secrets use container-readable files inside a root-only non-traversable directory because bind-mounted `0400` root files cannot be read by non-root containers. A secret driver with UID/mode mapping should use container-owner `0400` instead.
+- Prefer a dedicated VPS. A side-by-side cPanel host deployment needs a separate authorization/review because Apache/cPanel normally owns ports 80/443 and Docker resource/firewall/update behavior can conflict.
+
+#### Open questions and risks
+
+- Production VPS/provider, host capacity, registry/signing/scanning, DNS names, trusted certificate/ACME renewal, SMTP provider, firewall/egress allowlists, monitoring/alert destination, centralized log retention, and off-site immutable backup destination still require owner approval.
+- The initial Compose database/cache are single-host services without high availability or point-in-time recovery. A managed replacement needs TLS, least privilege, supported-version compatibility, tested backups/PITR, Redis persistence, and `noeviction` behavior.
+- Docker Compose file secrets are protected bind mounts rather than a complete secret manager. Host root/Docker access remains privileged, and historical encryption-key escrow/rotation must be tested before launch.
+- Real bKash/SSLCommerz, SMTP, cPanel/WHM, and future UK2Group acceptance still require separately authorized credentialed staging checks. No browser redirect, container health, or paid invoice proves provider settlement/provisioning.
+- Command 30 must complete the full release audit, empty-database migration test, backup/restore verification, browser E2E, manual workflow inspection, and launch recommendation before any staging or production deployment.
+
+#### Recommended next command
+
+Run **Command 30 — Conduct the Release Audit** only after explicit user authorization. Compare the complete plan to implementation; rerun formatting, lint, typecheck, unit/integration/E2E, production builds, Prisma/empty-database migrations, dependency audit, and backup recovery; inspect primary workflows; fix local release blockers; and create `docs/RELEASE_CHECKLIST.md` without deploying.
+
 ## Report Template
 
 Use this template after every future command:

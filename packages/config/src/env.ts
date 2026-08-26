@@ -97,6 +97,7 @@ const apiEnvironmentObjectSchema = serverEnvironmentSchema
   .extend({
     WEB_ORIGIN: httpOriginSchema.default('http://localhost:3000'),
     API_PUBLIC_ORIGIN: httpOriginSchema.default('http://localhost:3001'),
+    TRUST_PROXY_HOPS: z.coerce.number().int().min(0).max(2).default(0),
     PAYMENT_PROVIDER_TIMEOUT_MS: z.coerce
       .number()
       .int()

@@ -290,6 +290,14 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** The database contains financial history, customer data, authentication state, and encrypted provider authority. A plaintext dump or untested backup creates a second breach surface and false recovery confidence, while overwriting an active/failed database destroys rollback and forensic options.
 - **Consequence:** Backup keys remain separate from data and the database host; deployment secrets/roles are recovered from protected configuration rather than the dump. Migrations remain forward-only, and incompatible rollback uses an isolated pre-migration restore plus deliberate connection cutover. PostgreSQL recovery does not prove Redis/BullMQ recovery: lost published jobs and uncertain external mutations require evidence-based reconciliation, never bulk blind replay. The initial six-hour RPO/four-hour RTO and retention baseline remain subject to final infrastructure, legal, and business approval.
 
+## ADR-037 — Single-Host Non-Root Compose With Split HTTPS Origins
+
+- **Status:** Accepted
+- **Date:** 2026-08-26
+- **Decision:** Package the initial release as non-root API, standalone web, worker, dedicated scheduler, one-shot migration, and Nginx images in a single-host Docker Compose topology. Expose only Nginx on 80/443, use separate billing/API HTTPS hostnames, keep PostgreSQL/Redis on private networks with persistent volumes, inject secrets from mounted files, and require a reviewed manual migration before application cutover.
+- **Reason:** The private business needs a reproducible deployment smaller than an orchestrator/microservice platform while preserving clear process isolation, cookie/origin rules, queue durability, TLS termination, and operator control over schema changes. Application configuration intentionally accepts origins without path prefixes, so distinct hostnames avoid weakening callback/CORS validation.
+- **Consequence:** The web image is bound to its API origin at build time and must be rebuilt when that hostname changes. Only Nginx publishes host ports; forwarded headers are replaced and the API trusts one hop. Application filesystems are read-only, images use explicit unprivileged users, logs rotate locally, and Redis uses authenticated AOF/no-eviction configuration. Named volumes are persistence rather than backup, migrations remain forward-only, and production still requires approved infrastructure, SMTP/TLS/DNS/secrets/monitoring/off-site backups plus the Command 30 release audit. cPanel port ownership makes a dedicated VPS preferable to an unmanaged side-by-side install on the existing WHM host.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

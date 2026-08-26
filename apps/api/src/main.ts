@@ -20,7 +20,8 @@ async function bootstrap() {
   });
   const app = await NestFactory.create(AppModule, { rawBody: true, logger });
   const express = app.getHttpAdapter().getInstance() as Express;
-  express.set('trust proxy', 'loopback');
+  express.set('trust proxy', environment.TRUST_PROXY_HOPS);
+  app.enableShutdownHooks(['SIGINT', 'SIGTERM']);
   app.use(
     helmet({
       contentSecurityPolicy: false,

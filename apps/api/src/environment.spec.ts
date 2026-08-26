@@ -22,6 +22,26 @@ describe('environment validation', () => {
 
     expect(environment.PORT).toBe(3001);
     expect(environment.NODE_ENV).toBe('test');
+    expect(environment.TRUST_PROXY_HOPS).toBe(0);
+  });
+
+  it('accepts only a bounded explicit reverse-proxy hop count', () => {
+    const environment = parseApiEnvironment({
+      ...infrastructureEnvironment,
+      PORT: '3001',
+      SESSION_SECRET: 's'.repeat(32),
+      TRUST_PROXY_HOPS: '1',
+    });
+
+    expect(environment.TRUST_PROXY_HOPS).toBe(1);
+    expect(() =>
+      parseApiEnvironment({
+        ...infrastructureEnvironment,
+        PORT: '3001',
+        SESSION_SECRET: 's'.repeat(32),
+        TRUST_PROXY_HOPS: '3',
+      }),
+    ).toThrow();
   });
 
   it('rejects a non-PostgreSQL database URL', () => {

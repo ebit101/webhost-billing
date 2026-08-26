@@ -1,0 +1,130 @@
+worker_processes auto;
+pid /tmp/nginx/run/nginx.pid;
+error_log /dev/stderr warn;
+
+events {
+  worker_connections 1024;
+}
+
+http {
+  include /etc/nginx/mime.types;
+  default_type application/octet-stream;
+  server_tokens off;
+
+  log_format structured escape=json
+    '{"time":"$time_iso8601","request_id":"$request_id","remote_addr":"$remote_addr",'
+    '"method":"$request_method","host":"$host","uri":"$uri","status":$status,'
+    '"bytes":$body_bytes_sent,"request_time":$request_time,"upstream_time":"$upstream_response_time"}';
+  access_log /dev/stdout structured;
+
+  client_body_temp_path /tmp/nginx/cache/client_temp;
+  proxy_temp_path /tmp/nginx/cache/proxy_temp;
+  fastcgi_temp_path /tmp/nginx/cache/fastcgi_temp;
+  uwsgi_temp_path /tmp/nginx/cache/uwsgi_temp;
+  scgi_temp_path /tmp/nginx/cache/scgi_temp;
+
+  sendfile on;
+  keepalive_timeout 30s;
+  client_max_body_size 1m;
+  client_body_timeout 15s;
+  client_header_timeout 15s;
+  large_client_header_buffers 4 8k;
+
+  proxy_connect_timeout 5s;
+  proxy_send_timeout 30s;
+  proxy_read_timeout 30s;
+  proxy_http_version 1.1;
+  proxy_set_header Connection "";
+  proxy_set_header Host $host;
+  proxy_set_header X-Real-IP $remote_addr;
+  proxy_set_header X-Forwarded-For $remote_addr;
+  proxy_set_header X-Forwarded-Host $host;
+  proxy_set_header X-Forwarded-Proto https;
+  proxy_set_header X-Request-ID $request_id;
+
+  map $http_upgrade $connection_upgrade {
+    default upgrade;
+    '' close;
+  }
+
+  server {
+    listen 8080 default_server;
+    server_name _;
+
+    location = /nginx-health {
+      access_log off;
+      add_header Content-Type text/plain;
+      return 200 'ok\n';
+    }
+
+    location / {
+      return 444;
+    }
+  }
+
+  server {
+    listen 8080;
+    server_name ${BILLING_HOST} ${API_HOST};
+    return 308 https://$host$request_uri;
+  }
+
+  server {
+    listen 8443 ssl default_server;
+    http2 on;
+    server_name _;
+    ssl_certificate /run/secrets/tls_certificate;
+    ssl_certificate_key /run/secrets/tls_private_key;
+    return 444;
+  }
+
+  server {
+    listen 8443 ssl;
+    http2 on;
+    server_name ${BILLING_HOST};
+
+    ssl_certificate /run/secrets/tls_certificate;
+    ssl_certificate_key /run/secrets/tls_private_key;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_session_cache shared:TLS:10m;
+    ssl_session_timeout 1d;
+    ssl_session_tickets off;
+
+    add_header Strict-Transport-Security 'max-age=31536000; includeSubDomains' always;
+    add_header X-Content-Type-Options nosniff always;
+    add_header X-Frame-Options DENY always;
+    add_header Referrer-Policy strict-origin-when-cross-origin always;
+    add_header Permissions-Policy 'camera=(), microphone=(), geolocation=(), payment=()' always;
+    proxy_hide_header Strict-Transport-Security;
+
+    location / {
+      proxy_pass http://web:3000;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
+    }
+  }
+
+  server {
+    listen 8443 ssl;
+    http2 on;
+    server_name ${API_HOST};
+
+    ssl_certificate /run/secrets/tls_certificate;
+    ssl_certificate_key /run/secrets/tls_private_key;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_session_cache shared:TLS:10m;
+    ssl_session_timeout 1d;
+    ssl_session_tickets off;
+
+    add_header Strict-Transport-Security 'max-age=31536000; includeSubDomains' always;
+    add_header X-Content-Type-Options nosniff always;
+    add_header X-Frame-Options DENY always;
+    add_header Referrer-Policy no-referrer always;
+    add_header Permissions-Policy 'camera=(), microphone=(), geolocation=(), payment=()' always;
+    add_header Cache-Control 'no-store' always;
+    proxy_hide_header Strict-Transport-Security;
+
+    location / {
+      proxy_pass http://api:3001;
+    }
+  }
+}
