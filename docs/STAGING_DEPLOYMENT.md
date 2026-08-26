@@ -8,7 +8,7 @@
 - Compose project: `webhost-billing-staging`
 - Host root: `/srv/webhost-billing-staging`
 - Current release: `/srv/webhost-billing-staging/releases/b2b2d61`
-- Current web overlay: `webhost-billing-web:5ee6e7b-entry-routes`
+- Current web overlay: `webhost-billing-web:3bedc40-settings-hotfix1`
 - Web listener: `127.0.0.1:19500`
 - API listener: `127.0.0.1:19600`
 - Edge: the host Nginx instance, after a successful `nginx -t` and graceful reload
@@ -174,6 +174,35 @@ The protected pre-change environment backup is
 Rollback requires restoring only the prior `IMAGE_TAG` after confirming the previous web
 image, recreating only `web`, and rerunning the browser-origin, route, and credentialed role
 smokes. No schema or data change belongs to this web-only deployment.
+
+### 2026-08-26 settings browser-bundle hotfix
+
+The administrator settings page failed in the browser because the shared CommonJS root
+exported Node-only observability code alongside a runtime settings constant. The client chunk
+therefore attempted to load `node:async_hooks`. Commit `3bedc40` moved structured logging to
+the explicit `@webhost-billing/shared/observability` server subpath and added a package-boundary
+regression test.
+
+The deployed image is `webhost-billing-web:3bedc40-settings-hotfix1`; its image ID begins
+`sha256:00e328c5184c`. Only `webhost-billing-staging-web-1` was recreated. Every non-web
+container retained its ID, and the replacement became healthy with zero restarts. The
+protected pre-change environment backup is
+`/srv/webhost-billing-staging/rollback/env-staging-pre-settings-hotfix-20260826T115804Z` at
+mode `0600`.
+
+Run the clean Chromium regression from the trusted operator workspace without placing the
+password in arguments, files or output:
+
+```bash
+ssh <strict-pinned-staging-ssh-options> root@my.speedhost.bd \
+  'cat /srv/webhost-billing-staging/secrets/staging_admin_password' | \
+  NODE_PATH=apps/web/node_modules \
+  node deploy/staging/verify-settings-browser.cjs https://my.speedhost.bd
+```
+
+Rollback requires restoring only the prior `IMAGE_TAG`, recreating only `web`, and rerunning
+the browser settings, browser-origin and credentialed role smokes. No schema, settings value,
+API, worker, scheduler or unrelated-service change belongs to this hotfix.
 
 ## Provider posture
 

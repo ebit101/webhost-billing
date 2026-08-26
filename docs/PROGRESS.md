@@ -2576,7 +2576,7 @@ the existing production launch blockers remain in force.
 
 ## Operational Hotfix — Settings Browser Bundle Boundary
 
-- **Status:** Implemented and validated; web-only staging deployment pending
+- **Status:** Completed, deployed to staging, and delivered to GitHub `main`
 - **Date:** 2026-08-26
 
 ### Scope completed
@@ -2593,6 +2593,8 @@ the existing production launch blockers remain in force.
   Node-only module from the browser-compatible root, and moved API/worker/queue imports to the
   explicit server-only subpath.
 - Added a regression test that preserves this package boundary.
+- Added a clean Chromium staging verifier that accepts the protected administrator password
+  through standard input and reports no credential value.
 
 ### Files changed
 
@@ -2604,6 +2606,7 @@ the existing production launch blockers remain in force.
   `apps/worker/src/main.ts`, `apps/worker/src/scheduler-main.ts`,
   `packages/queue/src/background-worker.ts`
 - Operational tracking: `docs/PROGRESS.md`
+- Clean live-browser verifier: `deploy/staging/verify-settings-browser.cjs`
 
 ### Validation
 
@@ -2617,6 +2620,16 @@ the existing production launch blockers remain in force.
 - The settings component test passed. The Next.js production build passed with all 29 routes,
   including `/admin/settings`, and `node:async_hooks` was absent from every generated static
   client chunk.
+- Built and deployed `webhost-billing-web:3bedc40-settings-hotfix1`. The clean credentialed
+  Chromium check passed against the live settings page with the expected heading, no error
+  boundary, no client exception, and no non-aborted failed request. The browser-origin
+  verifier also passed.
+- The full protected credentialed smoke passed both role logins, dashboards, authorization,
+  invoice/PDF, ticket, adapter, email-queue, logout and post-logout checks.
+- Only the Webhost Billing web container was recreated. It is healthy with zero restarts;
+  every non-web container retained its ID, all seven project containers are healthy, and all
+  13 unrelated containers remain running. The environment rollback backup is protected at
+  mode `0600`.
 
 ### Decisions made
 
@@ -2630,16 +2643,14 @@ the existing production launch blockers remain in force.
 
 ### Open questions and risks
 
-- The running web image still contains the bad client chunk until the focused image is
-  committed, published and deployed. Existing browsers may need one hard refresh after
-  deployment to discard cached chunk state.
+- A browser tab that loaded the failed chunk before deployment may need one hard refresh.
 - This operational fix does not resume Command 34 remediation, promote production, or alter
   any production launch gate.
 
 ### Recommended next action
 
-Publish the validated fix, deploy only the web image, rerun the clean credentialed Chromium
-settings check, and confirm every non-web/shared-server container remains unchanged.
+Retry `/admin/settings` after a hard refresh. Resume Command 34 remediation only after its
+separately documented owner, recovery, maintenance, SSH and unrelated-port approvals exist.
 
 ## Report Template
 
