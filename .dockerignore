@@ -9,6 +9,11 @@ dist
 node_modules
 packages/database/src/generated
 *.log
+*.dump
+*.dump.gpg
+*.dump.gpg.sha256
+*.dump.gpg.metadata.json
+backups
 .env
 .env.*
 !.env.example

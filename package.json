@@ -11,6 +11,11 @@
   "scripts": {
     "build": "pnpm -r --if-present build",
     "build:packages": "pnpm --filter @webhost-billing/config build && pnpm --filter @webhost-billing/shared build && pnpm --filter @webhost-billing/database build && pnpm --filter @webhost-billing/queue build",
+    "backup:create": "scripts/backups/create-postgres-backup.sh",
+    "backup:verify": "scripts/backups/verify-postgres-backup.sh",
+    "backup:restore": "scripts/backups/restore-postgres-backup.sh",
+    "backup:verify-restore": "scripts/backups/verify-restored-database.sh",
+    "backup:test-recovery": "scripts/backups/test-recovery-drill.sh",
     "db:format": "pnpm --filter @webhost-billing/database db:format",
     "db:generate": "pnpm --filter @webhost-billing/database db:generate",
     "db:migrate:deploy": "pnpm --filter @webhost-billing/database db:migrate:deploy",

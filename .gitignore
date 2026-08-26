@@ -30,5 +30,11 @@ test-results/
 # Local database and backup files
 *.dump
 *.sql
+*.dump.gpg
+*.dump.gpg.sha256
+*.dump.gpg.metadata.json
+*.backup-passphrase
 !packages/database/prisma/migrations/**/*.sql
 backups/
+!scripts/backups/
+!scripts/backups/*.sh

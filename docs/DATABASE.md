@@ -144,3 +144,9 @@ pnpm db:verify
 The seed is idempotent and contains a fictional administrator, customer, hosting product and price, fake server, completed order, active service, paid invoice, manual payment, payment event, ticket, email log, activity log, automation run, business setting, and outbox event. All email addresses and hostnames use reserved `.test` domains. Seeded users have no password and cannot authenticate.
 
 The verifier confirms table coverage, UUID primary keys, `BIGINT` monetary columns, timezone-aware timestamps, restrictive foreign keys, custom checks, the partial unique price index, and representative seeded relationships.
+
+## Backup and recovery
+
+Use the streamed encrypted backup and allowlisted isolated-restore tooling in `scripts/backups/`. The complete retention policy, commands, migration/secret recovery rules, Redis reconciliation boundary, recovery drill, and disaster checklist are documented in `docs/BACKUP_AND_RECOVERY.md`.
+
+Never store a plaintext dump, populated `.env`, backup passphrase, or credential-encryption key in the repository. Never restore over the active database or use `prisma db push` as a recovery tool.

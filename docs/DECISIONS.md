@@ -282,6 +282,14 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** Operators need to connect API, worker, scheduler, and provider failures without placing credentials or sensitive payloads into a second data store. Process survival and ability to accept traffic are different questions, while financial and hosting uncertainty requires durable business evidence rather than browser redirects or generic uptime alone.
 - **Consequence:** `/health` can remain up while `/ready` returns `503`; neither endpoint exposes topology or error details. `X-Request-ID` accepts UUIDs only, request logging omits queries/bodies/headers/cookies, and job logs carry reference-only correlation. Provider totals and retained failed counts are investigation signals, not authorization for blind retries. Deployment monitoring must implement the wake/business-hours thresholds in `docs/OBSERVABILITY.md`; no third-party alert destination is selected in this command.
 
+## ADR-036 — Streamed Encrypted Logical Backups and Isolated Recovery
+
+- **Status:** Accepted
+- **Date:** 2026-08-26
+- **Decision:** Create PostgreSQL custom-format dumps through the matching Compose PostgreSQL client and stream them directly into OpenPGP symmetric AES-256 encryption. Verify checksum, encrypted integrity, archive structure, and required tables before acceptance. Restore only into a new explicitly confirmed database with the `webhost_billing_restore_` prefix, then compare migration history, row counts, relationships, and financial invariants before any cutover.
+- **Reason:** The database contains financial history, customer data, authentication state, and encrypted provider authority. A plaintext dump or untested backup creates a second breach surface and false recovery confidence, while overwriting an active/failed database destroys rollback and forensic options.
+- **Consequence:** Backup keys remain separate from data and the database host; deployment secrets/roles are recovered from protected configuration rather than the dump. Migrations remain forward-only, and incompatible rollback uses an isolated pre-migration restore plus deliberate connection cutover. PostgreSQL recovery does not prove Redis/BullMQ recovery: lost published jobs and uncertain external mutations require evidence-based reconciliation, never bulk blind replay. The initial six-hour RPO/four-hour RTO and retention baseline remain subject to final infrastructure, legal, and business approval.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

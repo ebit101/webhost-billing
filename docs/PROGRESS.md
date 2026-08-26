@@ -1823,6 +1823,58 @@ Run **Command 27 — Add Observability and Health Checks** only after explicit u
 
 Run **Command 28 — Prepare Backups and Recovery** only after explicit user authorization. Create encrypted PostgreSQL backup/restore procedures, verify a fictional local backup in an isolated database, document configuration-secret recovery, migration recovery, rollback decisions, and the disaster-recovery checklist without touching production data.
 
+### Command 28 — Prepare Backups and Recovery
+
+- **Status:** Completed and delivered to GitHub `main`
+- **Date:** 2026-08-26
+
+#### Scope completed
+
+- Added PostgreSQL custom-format backup tooling that streams directly from the matching PostgreSQL 18 Compose client into OpenPGP symmetric AES-256 encryption without writing a plaintext dump.
+- Added mandatory explicit source database selection, protected passphrase-file validation, private output permissions, atomic backup publication, SHA-256 transport checks, encrypted archive integrity/parse checks, and validation that all 30 application/migration tables are present.
+- Added safe metadata sidecars containing backup time, source database, PostgreSQL client, application commit, completed migration count, encryption format, and encrypted-file checksum without credentials or connection strings.
+- Added isolated restore tooling that accepts only a new `webhost_billing_restore_*` database, requires target-specific confirmation, refuses replacement, restores in one transaction without ownership/privileges, removes only its newly created target on failure, and never overwrites the active database.
+- Added restored-database checks for schema/migration presence, critical relationship orphans, financial arithmetic, and important row totals, plus source/restore comparison across all 30 table counts and complete successful migration history.
+- Added a guarded fictional recovery drill that recreates only two fixed Command 28 databases, deploys 21 migrations, loads/verifies reserved `.test` data, creates/verifies an encrypted backup, proves corrupted ciphertext is rejected, restores and compares it, verifies migration recovery, and removes the temporary databases, key, and artifact on exit.
+- Documented the initial RPO/RTO and retention baseline, off-site/immutable/key-separation requirements, backup/restore commands, historical application-secret recovery, PostgreSQL role recreation, forward-only migration recovery, rollback/cutover choices, Redis/outbox reconciliation, and the complete disaster-recovery checklist.
+
+#### Files changed
+
+- Backup, verification, restore, comparison, and fictional drill tooling: `scripts/backups/common.sh`, `scripts/backups/create-postgres-backup.sh`, `scripts/backups/verify-postgres-backup.sh`, `scripts/backups/restore-postgres-backup.sh`, `scripts/backups/verify-restored-database.sh`, `scripts/backups/compare-postgres-databases.sh`, `scripts/backups/test-recovery-drill.sh`
+- Root commands and artifact exclusions: `package.json`, `.gitignore`, `.dockerignore`
+- Recovery policy and architecture records: `docs/BACKUP_AND_RECOVERY.md`, `docs/DATABASE.md`, `docs/DECISIONS.md`, `README.md`, `docs/PROGRESS.md`
+
+#### Validation
+
+- The final clean `pnpm backup:test-recovery` drill passed. It migrated and seeded a separate fictional source, verified the seed, accepted the authentic encrypted backup, rejected a deliberately truncated/corrupted encrypted copy, restored into the allowlisted isolated target, and matched all 30 table counts and all 21 completed migrations.
+- Restored evidence was `tables=30`, `migrations=21`, `users=2`, `customers=1`, `orders=1`, `invoices=1`, `payments=1`, `services=1`, `orphans=0`, and `financial_violations=0`. Prisma reported no pending restored migration, and the full schema/fictional relationship verifier passed after restoration.
+- The final drill cleanup left neither fixed Command 28 database nor its temporary passphrase/backup artifact. A separate negative check confirmed that the restore command rejects a non-allowlisted ordinary database name before reading an archive.
+- Bash syntax validation passed for all seven scripts. Repository Prettier, `git diff --check`, API/worker/web ESLint, and strict TypeScript checks for every code workspace passed.
+- All 189 workspace unit/contract/component/integration tests passed: shared 25, queue/Redis 3, API 87, worker 27, and frontend 47. No application business behavior changed, so the unchanged API/Playwright E2E suites were not rerun for this scripts-and-runbook command.
+- Config/database/shared/queue packages, NestJS API/worker, and the Next.js 16.3.2 production build passed with fictional HTTPS origins; all 29 routes were generated.
+- Prisma formatting/validation/generation, all 21 ordinary development migration status checks, structural/custom-constraint/fictional-seed verification, Docker Compose validation, and healthy loopback PostgreSQL/Redis services passed. `pnpm audit --prod` reported no known vulnerabilities.
+- No production/customer data, real credential, external provider, active application database mutation, or production backup destination was accessed. The first development drill stopped on an overly broad order-item arithmetic assertion and automatically cleaned up both isolated databases; the corrected final drills then passed completely.
+
+#### Decisions made
+
+- A backup is accepted only after checksum, GPG integrity/decryption, PostgreSQL archive parsing, and complete required-table checks; a successful dump command alone is insufficient.
+- Restores are always additive into a new isolated database. The active and failed databases remain untouched for rollback and forensic review until an owner-approved connection cutover.
+- Database migrations remain forward-only. Compatible application rollback may reuse an additive schema; incompatible or data-changing rollback requires a verified pre-migration restore into a new database instead of an improvised down migration.
+- The PostgreSQL dump carries encrypted application credential state but not the encryption key, deployment secrets, global roles, Redis, images, or source. Those must be recovered independently from protected infrastructure/configuration sources.
+- Published outbox rows and external payment/hosting/email effects cannot be blindly replayed after Redis loss. Recovery uses durable evidence plus authenticated read-only provider reconciliation before safe retry controls are enabled.
+
+#### Open questions and risks
+
+- The off-site immutable backup provider, secret manager, scheduler, alert delivery, legal retention/deletion policy, production PostgreSQL/WAL option, and Redis snapshot/AOF destination remain deployment decisions.
+- The six-hour RPO, four-hour RTO, and proposed retention schedule are an initial minimum and require owner/provider approval plus a timed staging-hardware drill before launch.
+- Symmetric GPG recovery depends on the separately stored high-entropy passphrase. Losing that passphrase loses the backup; storing it beside the dump defeats the isolation model.
+- Losing the historical `CREDENTIAL_ENCRYPTION_KEY` makes restored payment/WHM credential bundles, administrator TOTP secrets, and pending encrypted action tokens unreadable. Key escrow/rotation testing is a production launch requirement.
+- Logical dumps do not provide point-in-time recovery and these scripts deliberately exclude PostgreSQL global roles. Production must recreate least-privilege roles and add managed physical/WAL recovery if the accepted RPO requires it.
+
+#### Recommended next command
+
+Run **Command 29 — Prepare Production Deployment** only after explicit user authorization. Add non-root production images, API/web/worker/scheduler services, PostgreSQL/Redis configuration, health checks, graceful shutdown, reviewed migration execution, persistent storage guidance, Nginx/HTTPS/security limits, secret injection, log rotation, and deployment/rollback checklists; build locally and do not deploy externally.
+
 ## Report Template
 
 Use this template after every future command:
