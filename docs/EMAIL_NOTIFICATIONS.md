@@ -76,3 +76,5 @@ Before enabling SMTP outside development:
 6. Monitor failed/inconsistent attempts and the retained BullMQ failures.
 
 Provider-specific bounce ingestion and delivery analytics are not part of Command 18.
+Use `docs/PRODUCTION_SMTP_ACCEPTANCE.md` for the Command 38 provider, DNS, reputation,
+credential, fictional-recipient, evidence, and rollback gate.

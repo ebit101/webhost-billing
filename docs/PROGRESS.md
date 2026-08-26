@@ -2652,6 +2652,94 @@ the existing production launch blockers remain in force.
 Retry `/admin/settings` after a hard refresh. Resume Command 34 remediation only after its
 separately documented owner, recovery, maintenance, SSH and unrelated-port approvals exist.
 
+### Command 38 — Configure Production SMTP and Email Reputation
+
+- **Status:** Blocked before mutation; read-only preflight completed
+- **Date:** 2026-08-26
+
+#### Scope completed
+
+- Reconciled the authorized command with its mandatory preconditions and audited the existing
+  email architecture, production deployment configuration, current shared host, isolated
+  staging namespace, and authoritative public DNS without sending an email or changing any
+  service, secret, container, DNS record, or provider account.
+- Confirmed the application already enforces production SMTP, HTTPS links, certificate-validated
+  TLS 1.2 or newer, implicit TLS or required STARTTLS, paired optional authentication values,
+  bounded connection/socket timeouts, reference-only jobs, deterministic message identifiers,
+  bounded temporary retries, and no blind resend after an uncertain SMTP outcome.
+- Confirmed the deployed worker uses only private TLS-required Mailpit sandbox delivery. No
+  production namespace exists; no host mail transfer service or public SMTP listener was found;
+  and the protected staging SMTP files are sandbox-only and cannot be promoted.
+- Queried both authoritative Cloudflare name servers. They consistently returned EmailDesk MX,
+  MailChannels SPF with soft-fail, and monitoring-only relaxed DMARC for `speedhost.bd`.
+  `my.speedhost.bd` has no separate SPF/TXT result, and no provider-issued DKIM selector was
+  supplied, so sender alignment and DKIM cannot be accepted.
+- Added a durable production SMTP acceptance record with required owner inputs, safe evidence,
+  exact acceptance steps, redacted-evidence rules, and stop conditions.
+- Added focused coverage proving Bengali and Latin content survives in both HTML and plain-text
+  email alternatives.
+
+#### Files changed
+
+- Production provider/DNS/reputation acceptance gate: `docs/PRODUCTION_SMTP_ACCEPTANCE.md`
+- Email operations cross-reference: `docs/EMAIL_NOTIFICATIONS.md`
+- Bengali/Latin rendering regression: `apps/worker/src/email/email-template.catalog.spec.ts`
+- Command tracking: `docs/PROGRESS.md`
+
+#### Validation
+
+- Both authoritative name servers returned matching MX, SPF, and DMARC answers. The current app
+  A/PTR, subdomain TXT/MX posture, and MailChannels include were resolved read-only.
+- SSH used the dedicated pinned deployment key. All seven isolated staging containers remained
+  healthy; all 13 unrelated containers remained running. No service/container was restarted or
+  recreated.
+- The host audit found no active Postfix, Exim, or Dovecot service and no host listener on SMTP
+  ports 25, 465, 587, 1025, or 8025. Worker environment inspection returned names only; secret
+  values were not read or printed.
+- Focused worker Jest passed 17 tests across the template and provider suites, including all 12
+  template alternatives, Bengali/Latin preservation, SMTP failure classification, TLS production
+  guards, and private preview output.
+- Worker TypeScript checking and focused ESLint passed. Changed files passed Prettier and
+  `git diff --check`.
+- The first pnpm wrapper attempt could not run because pnpm was absent from the default shell
+  PATH; after locating the pinned runtime, its dependency-status hook requested an interactive
+  modules purge. No dependencies were changed. Equivalent direct pinned-runtime Jest, TypeScript,
+  ESLint, and Prettier commands completed successfully.
+
+#### Decisions made
+
+- Do not infer the production SMTP provider from existing EmailDesk/MailChannels DNS. Those
+  records may belong to another mail workflow and do not prove account authorization, outbound
+  endpoint, authentication, quota, sender verification, or bounce/complaint operations.
+- Do not reuse the staging Mailpit identity or credentials. The staging sender is fictional, the
+  parent SPF record is not inherited by `my.speedhost.bd`, and direct delivery from the host's
+  generic reverse-DNS identity is not approved.
+- Keep the production worker absent and do not send even a fictional acceptance message until
+  provider/account identity, sender, controlled test inboxes, cost, DNS mutation authority,
+  protected credentials, reputation operations, and rollback ownership are explicit.
+- A provider-issued DKIM selector is required for an exact lookup. Guessed common selectors are
+  not acceptance evidence, and DMARC `p=none` is monitoring rather than enforcement.
+
+#### Open questions and risks
+
+- Missing: exact SMTP provider/account/operator, approved plan/quota/cost, envelope and header
+  sender identities, sender-domain verification, deliverable fictional test inboxes, DNS change
+  operator/window/rollback, protected production credential delivery, bounce/complaint and
+  suppression owner, alert destination, logging/privacy acceptance, rotation/escrow custodians,
+  and named rollback operator.
+- SPF alignment depends on the selected provider and envelope sender. DKIM cannot be evaluated
+  until the provider supplies its selector and expected record. The DMARC aggregate-report
+  mailbox and report-review owner are unconfirmed.
+- Provider certificate, authentication, quota/throttling, delivery evidence, inbox placement,
+  bounce/complaint behavior, credential rotation/revocation, and temporary/permanent outcomes
+  remain untested. Production email stays disabled and production remains `NO-GO`.
+
+#### Recommended next command
+
+Resume **Command 38 — Configure Production SMTP and Email Reputation** only after supplying the
+required owner inputs through safe channels and authorizing the bounded DNS/provider acceptance
+window. Do not start Command 39 while Command 38 is blocked.
+
 ## Report Template
 
 Use this template after every future command:

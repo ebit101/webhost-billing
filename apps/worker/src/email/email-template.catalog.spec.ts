@@ -115,4 +115,25 @@ describe('EmailTemplateCatalog', () => {
     expect(rendered.html).toContain('&lt;script&gt;');
     expect(rendered.text).toContain('<script>alert(1)</script>');
   });
+
+  it('preserves Bengali and Latin text in both alternatives', () => {
+    const rendered = catalog.render(
+      {
+        key: 'ticket-reply',
+        recipientName: 'Amina Rahman — আমিনা রহমান',
+        ticketNumber: 'TKT-UTF8',
+        subject: 'DNS সহায়তা / DNS support',
+        replyExcerpt: 'আপনার DNS রেকর্ড আপডেট করা হয়েছে। Record updated.',
+        ticketUrl: 'https://billing.example.test/portal/support',
+      },
+      branding,
+    );
+
+    for (const alternative of [rendered.text, rendered.html]) {
+      expect(alternative).toContain('আমিনা রহমান');
+      expect(alternative).toContain('DNS support');
+      expect(alternative).toContain('রেকর্ড আপডেট করা হয়েছে');
+      expect(alternative).toContain('Record updated');
+    }
+  });
 });
