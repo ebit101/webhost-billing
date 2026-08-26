@@ -811,6 +811,355 @@ After deployment, run read-only smoke tests and record the release version, migr
 
 ---
 
+# Production Readiness and Launch Commands
+
+Commands 33–48 close the production gates identified by Command 32. Run them in order except where an explicitly documented manual-first choice allows an optional provider command to be skipped. A skipped command still needs an owner-signed decision and evidence that the related provider remains unconfigured and unusable.
+
+No command inherits authorization for the next command. Credentials must be supplied through protected files, a secret manager, or an authenticated administrator form—never through a prompt, Git, logs, screenshots, or shell output.
+
+## Command 33 — Finalize Business and Launch Policies
+
+```text
+Read AGENTS.md, HOSTING_BILLING_SYSTEM_PLAN.md, docs/SETTINGS_AND_SECRETS.md, docs/RELEASE_CHECKLIST.md, docs/PRODUCTION_LAUNCH_RUNBOOK.md, and docs/PROGRESS.md.
+
+Finalize the owner-approved production policy record for this single hosting business:
+
+- legal business name, billing address, email, and phone
+- operating currency
+- tax/VAT treatment and invoice wording
+- invoice prefix, padding, and starting number
+- supported billing periods
+- manual-payment instructions and evidence requirements
+- partial-payment policy
+- new-order approval policy
+- cancellation and refund policies
+- customer-data, invoice, log, and backup retention
+- renewal invoice lead time
+- reminder schedule
+- suspension grace period
+- business timezone
+- first supervised renewal date
+- manual-first versus automated payment mode
+- manual-first versus automated cPanel mode
+- maintenance communication and incident contacts
+- accepted or remediated release-checklist interface gaps
+
+Do not invent legal or tax answers. Record unresolved owner decisions as blockers. Update the production launch approval record and safe application defaults/documentation only after explicit values are provided. Do not enter real credentials or mutate production.
+
+Validate changed schemas/defaults/tests if code changes. Update docs/PROGRESS.md, commit, reconcile, push main, stop, and request Command 34 authorization.
+```
+
+## Command 34 — Select and Audit Production Infrastructure
+
+```text
+Using the exact owner-approved production provider, server identifier, hostname, IP addresses, region, plan, and dedicated SSH key, conduct a read-only production infrastructure audit.
+
+Before connecting, require:
+
+- exact target identity and purpose
+- pinned SSH host-key fingerprint obtained through a trusted independent channel
+- confirmation that this is the intended dedicated production host
+- approved monthly cost and capacity
+- named infrastructure and rollback owners
+
+Verify OS/support lifecycle, CPU, memory, disk, encryption/provider controls, inodes, time synchronization, Docker/Compose support, listening ports, firewall/cloud security groups, patching, backups, provider recovery, outbound connectivity design, and whether any unrelated application exists.
+
+Do not install packages, change firewall/DNS, restart services, create users, copy source/images, or deploy the application. Stop on any target mismatch, unexpected shared workload, insufficient capacity, unpinned host key, cPanel/Apache conflict, or unsupported Docker setup.
+
+Create a production target inventory and capacity/firewall plan without secrets. Update the launch gate and docs/PROGRESS.md, commit, reconcile, push main, stop, and request Command 35 authorization.
+```
+
+## Command 35 — Establish Production Secret Management
+
+```text
+Establish the approved production secret-management and recovery boundary on the exact audited production target, without deploying the application.
+
+Require explicit authorization for the external secret manager and any paid service. Generate independent production-only values for PostgreSQL, Redis, session signing, credential encryption, backup encryption, SMTP, TLS, deployment SSH, and any later provider credentials. Never reuse staging values.
+
+Verify:
+
+- root/operator and container access boundaries
+- secret file/driver ownership and mode behavior
+- no secrets in Git, images, build arguments, Compose rendering, process listings, logs, shell history, reports, or prompts
+- separate escrow for the historical credential-encryption key and backup passphrase
+- named primary/backup custodians and recovery access
+- rotation and revocation procedures
+- session-secret rotation behavior
+- credential re-entry requirements after encryption-key rotation
+- administrator MFA and offline recovery-code custody
+
+Do not configure payment or WHM credentials in this command. Do not print generated values. Produce status/fingerprint metadata only where safe. Update docs/PROGRESS.md, commit, reconcile, push main, stop, and request Command 36 authorization.
+```
+
+## Command 36 — Establish Off-Site Backups and Prove Recovery
+
+```text
+Configure the owner-approved immutable off-site PostgreSQL backup destination and production backup schedule using docs/BACKUP_AND_RECOVERY.md.
+
+Require the exact target, destination, retention, cost approval, backup owner, recovery owner, and protected passphrase location. Configure at least the documented six-hour schedule, 14-day/8-week/12-month baseline, three-copy/two-storage/one-off-site rule, backup-age alerts, and separately protected key recovery.
+
+Create or retrieve a current encrypted backup, verify checksum, OpenPGP integrity, PostgreSQL archive structure, required tables, metadata, application commit, and all migrations. If no production database exists yet, use only a newly created fictional/staging backup to prove the destination and recovery procedure; Command 45 must still create the production baseline/pre-migration evidence. Restore only into a new allowlisted isolated database. Never overwrite an active database.
+
+Run structural, row-count, relationship, financial, ownership, authentication, invoice, service, and audit checks. Start an isolated application with callbacks, SMTP, workers, scheduler, payment, and cPanel mutations disabled. Measure real recovery point and recovery time. Reconcile Redis/outbox/provider uncertainty rules.
+
+Stop on failed integrity, missing historical encryption key, target mismatch, incomplete restore, relationship/financial discrepancy, or RPO/RTO failure. Record object version/checksum and timing without secret values or customer data. Update docs/PROGRESS.md, commit, reconcile, push main, stop, and request Command 37 authorization.
+```
+
+## Command 37 — Prepare Production DNS, TLS, and Edge Cutover
+
+```text
+Prepare the production DNS/TLS/edge plan for the approved distinct billing and API hostnames.
+
+Verify current and intended A/AAAA records, authoritative DNS, TTL, CAA if used, rollback values, propagation plan, certificate issuance method, exact SANs, certificate/key match, expiry, renewal, post-renewal container refresh, port ownership, unknown-host rejection, HTTP-to-HTTPS redirects, HSTS scope, request limits, forwarded-header replacement, and public/private port boundaries.
+
+Create exact pre-cutover, cutover, external validation, certificate renewal, and DNS rollback commands with named owners and checkpoints. The web image must be rebuilt for the final API origin.
+
+This command authorizes planning and safe validation only. Do not change public DNS, issue a production certificate, open firewall ports, or cut over traffic unless those exact mutations are separately stated and authorized by the user. Update docs/PROGRESS.md, commit, reconcile, push main, stop, and request Command 38 authorization.
+```
+
+## Command 38 — Configure Production SMTP and Email Reputation
+
+```text
+Configure and verify the exact owner-approved production SMTP provider and sender domain.
+
+Before mutation, require provider/account identity, sender/domain, fictional recipient addresses, cost approval, DNS-change authorization, credential delivery through protected storage, and a rollback/disable plan.
+
+Verify certificate-validated TLS, authentication, sender/from/reply-to alignment, SPF, DKIM, DMARC, quotas, throttling, bounce/complaint handling, credential rotation, provider logging/privacy, alerting, and worker timeout behavior. Use fictional messages only for verification, reset, invoice, renewal, service, and ticket templates.
+
+Confirm HTML/plain-text rendering, Bengali/Latin text, deterministic Message-ID, delivery evidence, and that temporary/permanent/inconsistent outcomes follow the no-blind-resend policy. Do not send to real customers or enable the production worker for existing work.
+
+Record safe provider evidence without message bodies, tokens, recipients beyond reserved test identities, or credentials. Update docs/PROGRESS.md, commit, reconcile, push main, stop, and request Command 39 authorization.
+```
+
+## Command 39 — Configure Monitoring, Alerts, and Log Retention
+
+```text
+Configure the approved production monitoring, alerting, and centralized log-retention services using docs/OBSERVABILITY.md.
+
+Require exact vendor/accounts, destinations, cost approval, primary/backup responders, retention/deletion policy, and credential delivery through protected storage.
+
+Monitor external UI/API reachability, /health, /ready, container restarts, PostgreSQL, Redis, queues, outbox, worker, exactly one scheduler, renewal recency, payment/hosting/email failures and inconsistent outcomes, certificate expiry, DNS, time synchronization, disk/inodes, memory/CPU, backup age/integrity, and log collector failure.
+
+Ship only redacted structured logs over encrypted transport. Never send bodies, queries, headers, cookies, credentials, provider payloads, ticket text, payment proof, or login URLs. Configure the immediate and business-hours thresholds from docs/OBSERVABILITY.md.
+
+Trigger safe synthetic alerts and prove both primary and backup responders receive, acknowledge, and escalate them. Do not trigger real payment/hosting incidents. Update docs/PROGRESS.md, commit, reconcile, push main, stop.
+
+If manual-first payment was selected, record Command 40 and 41 as explicitly skipped with gateways unconfigured and request Command 42 or 43 as appropriate. Otherwise request Command 40 authorization.
+```
+
+## Command 40 — Run Credentialed bKash Sandbox Acceptance
+
+```text
+Run the bKash Tokenized Checkout credentialed sandbox acceptance defined in docs/PAYMENT_GATEWAYS.md.
+
+This command is optional only when the owner selected manual-first payment and bKash remains unconfigured. Otherwise require exact sandbox merchant identity, official sandbox endpoints, fictional BDT invoice/customer, public sandbox callback URL, protected credential entry, expected amount, operator, time window, and approval for sandbox mutations.
+
+Verify token grant, session creation, pinned checkout redirect, successful execute/query proof, exact merchant/payment/invoice/amount/currency/transaction checks, callback replay idempotency, failed/cancelled paths, timeout/uncertain reconciliation, duplicate prevention, safe logs/audit, and that browser navigation never settles payment.
+
+Never use live credentials, real money, real customers, automatic refunds, or service termination. Stop on endpoint/merchant mismatch, TLS failure, unexpected charge, unsafe redirect, signature/proof mismatch, or uncertain state that cannot be reconciled read-only.
+
+Record redacted sandbox evidence and remaining production-endpoint/code review requirements. Update docs/PROGRESS.md, commit, reconcile, push main, stop, and request Command 41 authorization.
+```
+
+## Command 41 — Run Credentialed SSLCOMMERZ Sandbox Acceptance
+
+```text
+Run the SSLCOMMERZ Hosted Checkout credentialed sandbox acceptance defined in docs/PAYMENT_GATEWAYS.md.
+
+This command is optional only when the owner selected manual-first payment and SSLCOMMERZ remains unconfigured. Otherwise require exact sandbox store identity, official endpoints, fictional BDT invoice/customer, public IPN/return URLs, protected credential entry, expected amount, operator, time window, and approval for sandbox mutations.
+
+Verify session creation, pinned GatewayPageURL, Order Validation API proof, exact store/transaction/validation/payment/invoice/amount/currency matching, duplicate IPN idempotency, success/fail/cancel returns, risk_level=1 pending behavior, transaction query/reconciliation, safe logs/audit, and that browser returns never settle payment.
+
+Never use live credentials, real money, real customers, automatic refunds, or service termination. Stop on endpoint/store mismatch, TLS failure, unexpected charge, unsafe redirect, validation mismatch, high-risk accidental settlement, or unreconciled uncertainty.
+
+Record redacted sandbox evidence and remaining production-endpoint/code review requirements. Update docs/PROGRESS.md, commit, reconcile, push main, stop, and request Command 42 authorization.
+```
+
+## Command 42 — Run Credentialed cPanel/WHM Development Acceptance
+
+```text
+Run the cPanel/WHM credentialed development acceptance checklist from docs/HOSTING_PANELS.md.
+
+This command is optional only when the owner selected manual-first hosting, no WHM token/server is configured, and application hosting operations remain unused. Otherwise require exact development WHM hostname/certificate, dedicated reseller identity, least-privilege IP-restricted expiring API token, disposable packages, disposable domain/account, verified backup, outbound IP, operator, maintenance window, and the approved mutation sequence.
+
+Run the read-only connection test first. Under the approved window, test exactly one disposable account: create and idempotent replay, accountsummary identity, suspend, unsuspend, package change, password change, and temporary login URL. Reconcile after every result. Do not test a later operation after uncertainty.
+
+Termination requires a second explicit user authorization naming the exact disposable username/domain and confirmation phrase. Without it, skip termination and leave the disposable account intact for manual cleanup. Never touch a real customer, disable TLS verification, grant all privileges, persist passwords/session URLs, or blindly retry an uncertain mutation.
+
+Record redacted operation/audit evidence and cPanel-version differences. Revoke or narrow the development token afterward. Update docs/PROGRESS.md, commit, reconcile, push main, stop, and request Command 43 authorization.
+```
+
+## Command 43 — Publish the Immutable Production Release
+
+```text
+Prepare the final immutable production images from the exact clean, reviewed main-branch commit without deploying them.
+
+Require the approved private registry, repository paths, scanner, signer/provenance identity, retention policy, release operator, and cost/access approval. Re-run formatting, lint, typecheck, unit/integration/E2E/invariant tests, dependency audit, empty-database migrations, production Compose rendering, production builds, non-root user inspection, secret/source scan, and local production smoke.
+
+Scan every image and resolve release-blocking findings. Sign and publish only immutable commit tags/digests through the approved identity. Record registry digests and verify pulled content, platform, user, entrypoint, health checks, SBOM/provenance, and source commit. Never use latest, embed credentials, expose private ports, or deploy to production.
+
+Update the production launch record and rollback image set without secrets. Update docs/PROGRESS.md, commit documentation only if needed, reconcile, push main, stop, and request Command 44 authorization.
+```
+
+## Command 44 — Conduct the Final Production Readiness Audit
+
+```text
+Conduct the final production readiness audit against docs/PRODUCTION_LAUNCH_RUNBOOK.md.
+
+Verify every gate has a named primary/backup owner and linked current evidence:
+
+- exact production target and pinned SSH host key
+- clean approved release commit and immutable image digests
+- capacity, patching, time sync, firewall, and port boundaries
+- production-only secrets and recovery escrow
+- current off-site immutable backup and timed isolated restore
+- DNS/TLS issuance, cutover, renewal, and rollback
+- migration list, one-shot plan, compatible image rollback, and isolated restore/cutover
+- maintenance communication and decision authority
+- owner-approved business, payment, hosting, retention, and renewal policies
+- real SMTP acceptance
+- monitoring, alerts, log retention, and responder test
+- manual-first evidence or credentialed provider acceptance
+- exactly one scheduler plan and no termination automation
+- first-renewal impact list and supervision
+- initial administrator/MFA process
+- accepted or remediated release-checklist gaps
+
+Re-run the complete local release gate and perform read-only staging health/backup checks. Do not mutate production. Produce an explicit GO or NO-GO with exact blockers; never waive missing evidence implicitly.
+
+Update docs/PROGRESS.md, commit, reconcile, push main, stop. Request Command 45 authorization only if the result is GO and the user supplies the exact target, release, maintenance window, and explicit production-mutation approval.
+```
+
+## Command 45 — Execute the Approved Production Launch
+
+```text
+Execute docs/PRODUCTION_LAUNCH_RUNBOOK.md exactly against [PRODUCTION_SSH_TARGET] using approved release [RELEASE_COMMIT] during [MAINTENANCE_WINDOW]. This prompt explicitly authorizes only the documented production mutations after all placeholders are replaced and Command 44 is GO.
+
+Before mutation, restate the exact target identity, pinned host-key fingerprint, IPs, release/digests, backup object/version/checksum, migration list, DNS values, provider modes, operators, rollback point, and stop conditions. Require a final explicit confirmation if any value is absent, changed, or ambiguous.
+
+Follow the runbook checkpoints in order. Apply migrations once. Start API/web/edge without worker/scheduler, bootstrap only the first administrator if the database is new, enroll MFA before exposure, verify settings/SMTP before one worker, and verify renewal impact before exactly one scheduler. Change DNS only at the authorized cutover checkpoint.
+
+Stop and report immediately if the target/digest differs, backup/restore evidence fails, migration validation fails, health/security/authentication/authorization fails, alerts do not arrive, a provider proof check fails, a worker/scheduler is unhealthy, multiple schedulers exist, an external outcome is uncertain, or any rollback condition is reached.
+
+Never force-push, down-migrate, erase volumes/evidence, blindly retry external mutations, enable automatic termination, reuse staging secrets, or touch unrelated systems. Run the documented read-only smoke tests, record release/migration/health/monitoring evidence, update docs/PROGRESS.md, commit the safe release record, reconcile, push main, stop, and request Command 46 authorization.
+```
+
+## Command 46 — Observe and Verify the New Production Launch
+
+```text
+Conduct the authorized post-launch observation for the exact production release without expanding provider authority or changing business policy.
+
+Monitor the runbook-defined observation window for external UI/API/TLS/DNS, container restarts, PostgreSQL, Redis, worker, exactly one scheduler, queues/outbox, SMTP, payment/hosting/manual workflows, renewal recency, certificate, clock, disk/capacity, backups, logs, and alerts.
+
+Run bounded read-only checks plus fictional administrator/customer workflows. Reconcile every pending/failed/inconsistent payment, email, hosting, automation, and outbox record using durable application evidence and authenticated read-only provider queries. Do not blindly retry or modify real customer/financial/service state.
+
+Apply the documented rollback conditions immediately when reached. Record uptime/health, incidents, alert delivery, backup completion, unresolved effects, and owner acceptance. Update docs/PROGRESS.md, commit, reconcile, push main, stop, and request Command 47 authorization.
+```
+
+## Command 47 — Supervise the First Renewal Cycle
+
+```text
+Supervise the first production renewal cycle for the exact owner-approved business date, timezone, policy, and eligible-service list.
+
+Before the run, verify a current backup, health/readiness, one scheduler, worker/queues/outbox, SMTP, monitoring/alerts, manual or accepted provider mode, invoice numbering, service due dates, grace policy, and that automatic termination remains absent. Reconcile existing failures before continuing.
+
+Observe the daily run record, generated invoice uniqueness and snapshots, reminder thresholds, email attempts, overdue transitions, and any suspension/unsuspension requests. Do not permit automatic suspension unless the approved hosting mode and eligible overdue list were explicitly accepted. Never infer payment or provider state and never blindly retry an uncertain external mutation.
+
+Stop scheduler then worker on duplicate invoices, wrong dates/amounts/customers, unexpected eligible services, email inconsistency, provider uncertainty, failed alerts, or any termination event. Reconcile and roll back according to durable evidence.
+
+Record counts, IDs only where safe, outcomes, exceptions, manual actions, and owner acceptance. Update docs/PROGRESS.md, commit, reconcile, push main, stop, and request Command 48 authorization.
+```
+
+## Command 48 — Close the Launch and Hand Over Operations
+
+```text
+Close the production launch after Command 46 observation and Command 47 first-renewal acceptance pass.
+
+Create the final operational handover containing:
+
+- deployed commit and image digests
+- target/DNS/TLS identity and renewal ownership
+- migration status
+- current backup object/version and latest restore-drill evidence
+- RPO/RTO and retention
+- secret/key/credential rotation schedule without values
+- provider modes and accepted credentialed evidence
+- business and renewal policies
+- monitoring/log/alert destinations and responders
+- scheduler/worker/queue/outbox normal baselines
+- incident, reconciliation, rollback, and disaster-recovery procedures
+- maintenance and update cadence
+- remaining accepted risks and backlog
+
+Verify all temporary launch access/password artifacts are removed, unnecessary credentials are revoked, administrator MFA/recovery custody is complete, and no staging secret or fictional account exists in production. Do not delete financial/provider/audit evidence.
+
+Update docs/PROGRESS.md with the final launch status, commit, reconcile, push main, and stop. Do not begin optional features automatically.
+```
+
+---
+
+# Optional Post-Launch Commands
+
+Commands 49–53 are not production-launch prerequisites unless the owner explicitly makes them prerequisites. Run them only for a concrete business need.
+
+## Command 49 — Discover and Design the UK2Group Registrar Integration
+
+```text
+Research and design the separately authorized UK2Group domain registrar integration without implementing it or using credentials.
+
+Confirm the exact current UK2Group/StarGate/LogicBoxes API product, official primary documentation, supported test environment, authentication, reseller identity, source-IP restrictions, contact/designated-agent obligations, supported TLDs, availability/pricing behavior, registration/renewal/transfer/nameserver operations, asynchronous events, rate limits, idempotency, error model, and credential rotation.
+
+Design a registrar-neutral adapter, domain/contact models, encrypted credential boundary, operation history, ownership/authorization, pricing snapshots, renewal policy, reconciliation, UI workflows, migration plan, fake adapter, and test plan. Keep registrar authority separate from cPanel/WHM hosting authority.
+
+Do not trust screenshots as specifications, copy visible values, use credentials, call the API, register/renew/transfer a domain, or alter nameservers. Record open legal/business questions and a GO/NO-GO implementation recommendation. Update docs/PROGRESS.md, commit, reconcile, push main, stop, and request Command 50 authorization only if GO.
+```
+
+## Command 50 — Implement the UK2Group Registrar Module
+
+```text
+Implement only the approved Command 49 UK2Group registrar scope behind the registrar-neutral adapter.
+
+Add reviewed Prisma migrations, strict shared contracts, encrypted provider-bound credentials, administrator/customer authorization and ownership, append-only/idempotent operation evidence, safe reconciliation, fake adapter, official test-mode adapter, service/domain separation, UI, logs, documentation, and tests. Preserve integer-money snapshots and UTC dates. Never mix WHM tokens or hosting state with registrar credentials/domain state.
+
+Use mocked/fake boundaries only. Do not configure credentials, call UK2Group, mutate a real/test domain, or enable automatic domain renewal until separately authorized. Run full relevant validation, update docs/PROGRESS.md, commit, reconcile, push main, stop, and request Command 51 authorization.
+```
+
+## Command 51 — Run Credentialed UK2Group Test Acceptance
+
+```text
+Run credentialed UK2Group acceptance only in the confirmed official test environment using the exact approved reseller identity and disposable test domains/contacts.
+
+Require protected credentials, source-IP approval, test-mode proof, supported TLDs, exact expected charges, mutation sequence, contact/designated-agent policy, operator/window, and rollback/cleanup plan. Begin with read-only connection, availability, pricing, and account-balance/status checks.
+
+Under explicit mutation authorization, test idempotent registration, status, nameservers, contact handling, renewal, failure/duplicate/replay behavior, and reconciliation only where the test environment supports them safely. Transfer, deletion, restore, or real-domain/name-server changes need separate exact approval.
+
+Stop on production endpoint/account, real domain/contact, unexpected charge, identity mismatch, legal-policy uncertainty, or unreconciled external outcome. Record redacted evidence, revoke/narrow credentials, update docs/PROGRESS.md, commit, reconcile, push main, and stop.
+```
+
+## Command 52 — Complete Accepted Interface and Alerting Gaps
+
+```text
+Implement only the release-checklist gaps the owner explicitly selected: a recent-payments dashboard section, a searchable/paginated administrator activity-log page, and/or direct external administrator alert delivery.
+
+Keep transaction-sourced financial semantics, administrator authorization, metadata redaction, bounded pagination/exports, alert deduplication, provider-neutral delivery, retries, secret management, and existing observability thresholds. Do not expose arbitrary activity metadata, provider payloads, customer message bodies, credentials, or financial proof.
+
+Add tests and documentation, run full relevant validation, update docs/PROGRESS.md, commit, reconcile, push main, and stop.
+```
+
+## Command 53 — Expand Resilience and Browser Coverage
+
+```text
+Expand only the owner-approved resilience or quality scope justified by production evidence.
+
+Possible independent scopes include managed PostgreSQL with PITR, Redis recovery, high availability, mobile/Firefox/WebKit E2E, MFA/settings/PDF/manual-payment browser paths, capacity/load testing, or visual/accessibility regression testing. Select one bounded scope before implementation; do not combine unrelated infrastructure and UI projects.
+
+Preserve all billing, authorization, idempotency, backup, provider, and deployment invariants. Require explicit authorization for external infrastructure, costs, load against shared/production systems, failover, DNS, or destructive recovery tests. Use isolated fictional data by default.
+
+Document success criteria and rollback, implement/test the selected scope, update docs/PROGRESS.md, commit, reconcile, push main, and stop.
+```
+
+---
+
 ## Continuation Command
 
 If a phase encounters errors or remains incomplete, use this prompt in the same Codex task:

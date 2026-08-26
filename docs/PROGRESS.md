@@ -2087,6 +2087,44 @@ Run **Command 32 — Prepare the Production Launch** only after explicit user au
 
 Do not execute a production mutation yet. After every `BLOCKED` gate in `docs/PRODUCTION_LAUNCH_RUNBOOK.md` has evidence and the owner explicitly authorizes the exact target/release, use the canonical continuation command: **“Execute the approved production launch runbook exactly as documented.”** Stop immediately on any listed mismatch, failed check, or rollback condition.
 
+## Planning Update — Remaining Codex Command Catalogue
+
+- **Status:** Completed and delivered to GitHub `main`; no numbered command executed
+- **Date:** 2026-08-26
+
+#### Scope completed
+
+- Extended `CODEX_DEVELOPMENT_COMMANDS.md` with copy-ready Commands 33–48 for business policy, production infrastructure, secret management, off-site recovery, DNS/TLS, SMTP, monitoring, optional credentialed providers, immutable images, final audit, production launch, observation, first renewal, and operational handover.
+- Added explicit manual-first skip paths for bKash, SSLCOMMERZ, and cPanel. A skipped provider command requires owner acceptance plus evidence that credentials/authority remain absent.
+- Added optional post-launch Commands 49–53 for UK2Group discovery/implementation/test acceptance, accepted interface/alerting gaps, and one bounded resilience/browser-coverage improvement at a time.
+- Preserved command-level authorization boundaries: no command automatically authorizes its successor, credential handling, provider mutation, production mutation, destructive cPanel termination, DNS changes, or paid infrastructure.
+
+#### Files changed
+
+- Remaining copy-ready command catalogue: `CODEX_DEVELOPMENT_COMMANDS.md`
+- Planning record: `docs/PROGRESS.md`
+
+#### Validation
+
+- Confirmed continuous unique numbering from Command 33 through Command 53, command titles, fenced copy-ready prompts, explicit stop/report/update/push boundaries, provider skip conditions, and production authorization gates.
+- Prettier and `git diff --check` passed for the changed Markdown files. No credential, private key, environment file, customer data, external mutation, production connection, or provider call was used.
+
+#### Decisions made
+
+- Keep production-readiness work sequential through Command 39. Commands 40–42 may be skipped only through documented manual-first decisions; Command 43 then resumes the common release path.
+- Command 45 is the sole production-deployment command and is unusable until placeholders are replaced, Command 44 returns `GO`, and the user explicitly authorizes the exact target/release/window.
+- Keep UK2Group after the initial launch as a separate registrar project, not a cPanel hosting module. Optional quality/resilience work remains bounded and evidence-driven.
+
+#### Open questions and risks
+
+- The owner still needs to supply the business decisions for Command 33 and the exact dedicated production target/cost approval for Command 34.
+- Payment and cPanel skip/run choices determine whether Commands 40–42 are executed before the immutable release command.
+- Optional Commands 49–53 are not launch prerequisites unless the owner explicitly changes the production acceptance scope.
+
+#### Recommended next command
+
+Run **Command 33 — Finalize Business and Launch Policies** only after explicit user authorization and provision of the owner-approved non-secret business decisions. Do not include credentials in the prompt.
+
 ## Report Template
 
 Use this template after every future command:
