@@ -2742,8 +2742,8 @@ window. Do not start Command 39 while Command 38 is blocked.
 
 ### Command 54 — Prepare Public Open-Source Distribution
 
-- **Status:** Completed and delivered to GitHub `main`; repository-owner settings and
-  the first alpha tag remain follow-up actions
+- **Status:** Completed and delivered to GitHub `main`; the first alpha tag remains a
+  separately authorized follow-up
 - **Date:** 2026-09-30
 
 #### Scope completed
@@ -2757,6 +2757,9 @@ window. Do not start Command 39 while Command 38 is blocked.
   provenance, and repository-setting expectations.
 - Added GitHub issue forms, pull-request template, CODEOWNERS, Dependabot, CI, CodeQL,
   dependency review, full-history secret scanning, and browser-lifecycle validation.
+- Enabled GitHub vulnerability alerts, Dependabot security updates, secret scanning,
+  push protection, private vulnerability reporting, merged-branch cleanup, and
+  protected `main` review/check requirements.
 - Updated repository/package metadata and the main project documentation to describe
   Webhost Billing as an open-source alpha rather than a private application.
 - Upgraded Next.js, NestJS, Nodemailer, Prisma, and vulnerable transitive dependencies;
@@ -2810,6 +2813,15 @@ window. Do not start Command 39 while Command 38 is blocked.
 - GitHub CI run `36713267843` passed every configured database, format, lint, type,
   package-test, API integration, invariant, Chromium lifecycle, audit, license, and
   build step on commit `531fe2e`. CodeQL run `36713267992` also completed successfully.
+- Final documentation commit `ac0b8f7` independently passed GitHub CI run
+  `36714122818` and CodeQL run `36714122769`.
+- GitHub reports the repository as public with Apache-2.0 detected. Vulnerability
+  alerts, Dependabot security updates, secret scanning, push protection, private
+  vulnerability reporting, and automatic merged-branch deletion are enabled. The
+  `main` protection rule requires current `Validate` and CodeQL checks, one approving
+  code-owner review, last-push approval, resolved conversations, and linear history;
+  force-pushes and deletion are disabled. Administrator enforcement remains off only
+  for emergency recovery or documented maintenance bypass.
 - No staging or production service, provider, DNS record, credential, customer record,
   or live application was changed.
 
@@ -2829,10 +2841,6 @@ window. Do not start Command 39 while Command 38 is blocked.
 
 #### Open questions and risks
 
-- The GitHub repository is already publicly readable, but repository-owner settings
-  still need confirmation: required branch checks and review, force-push/deletion
-  protection, secret-scanning push protection, private vulnerability reporting,
-  Dependabot security updates, and automatic branch deletion.
 - No alpha tag, GitHub Release, container image, SBOM, checksum, or provenance artifact
   has been published. The application remains alpha software, and the separate
   production-readiness track remains blocked at Command 38.
