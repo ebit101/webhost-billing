@@ -2742,8 +2742,8 @@ window. Do not start Command 39 while Command 38 is blocked.
 
 ### Command 54 — Prepare Public Open-Source Distribution
 
-- **Status:** Completed locally; repository-owner settings and first alpha tag remain
-  post-push actions
+- **Status:** Completed and delivered to GitHub `main`; repository-owner settings and
+  the first alpha tag remain follow-up actions
 - **Date:** 2026-09-30
 
 #### Scope completed
@@ -2778,8 +2778,8 @@ window. Do not start Command 39 while Command 38 is blocked.
   `HOSTING_BILLING_SYSTEM_PLAN.md`, `docs/DECISIONS.md`, `package.json`,
   workspace `package.json` files, `pnpm-workspace.yaml`, `pnpm-lock.yaml`,
   `.gitattributes`, environment examples
-- Cross-platform validation: API/worker scripts, `apps/web/e2e/database.ts`,
-  `apps/web/e2e/prepare-environment.ts`,
+- Cross-platform validation: API/worker scripts, `apps/api/test/jest-e2e.json`,
+  `apps/web/e2e/database.ts`, `apps/web/e2e/prepare-environment.ts`,
   `apps/web/e2e/specs/hosting-lifecycle.spec.ts`,
   `apps/web/playwright.config.ts`, `apps/web/vitest.config.mts`,
   `packages/queue/tsconfig.spec.json`
@@ -2799,10 +2799,17 @@ window. Do not start Command 39 while Command 38 is blocked.
   termination.
 - `pnpm audit --prod` reported no known vulnerabilities. The production license
   inventory completed and its JSON output parsed successfully.
-- actionlint 1.7.12 accepted both workflows. Gitleaks 8.30.1 scanned all 47 existing
-  commits and reported no leaks after seven findings were individually verified as
+- actionlint 1.7.12 accepted both workflows. Gitleaks 8.30.1 scanned the complete Git
+  history and reported no leaks after seven findings were individually verified as
   documentation phrases or explicitly fictional test values and captured in an
   exact-value allowlist.
+- The first hosted CI run exposed a Linux argument-forwarding mismatch that treated
+  `--runInBand` as a Jest filename pattern. The corrected portable invocation passed
+  all 65 API integration tests locally, and the API E2E timeout was raised from the
+  unit-test default to tolerate real Nest/Prisma startup time on loaded runners.
+- GitHub CI run `36713267843` passed every configured database, format, lint, type,
+  package-test, API integration, invariant, Chromium lifecycle, audit, license, and
+  build step on commit `531fe2e`. CodeQL run `36713267992` also completed successfully.
 - No staging or production service, provider, DNS record, credential, customer record,
   or live application was changed.
 
@@ -2826,18 +2833,16 @@ window. Do not start Command 39 while Command 38 is blocked.
   still need confirmation: required branch checks and review, force-push/deletion
   protection, secret-scanning push protection, private vulnerability reporting,
   Dependabot security updates, and automatic branch deletion.
-- The new CI and CodeQL workflows cannot be considered hosted evidence until this
-  commit is pushed and their first GitHub runs succeed.
 - No alpha tag, GitHub Release, container image, SBOM, checksum, or provenance artifact
   has been published. The application remains alpha software, and the separate
   production-readiness track remains blocked at Command 38.
 
 #### Recommended next command
 
-After the pushed CI and CodeQL runs pass, confirm the repository-owner security and
-branch settings, then authorize creation of `v0.1.0-alpha.1` with checksums, SBOMs,
-provenance, migration notes, and known limitations. Resume Command 38 separately only
-after its documented SMTP owner inputs and protected credentials exist.
+Confirm the repository-owner security and branch settings, then authorize creation of
+`v0.1.0-alpha.1` with checksums, SBOMs, provenance, migration notes, and known
+limitations. Resume Command 38 separately only after its documented SMTP owner inputs
+and protected credentials exist.
 
 ## Report Template
 
