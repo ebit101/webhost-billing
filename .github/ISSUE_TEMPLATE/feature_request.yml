@@ -1,0 +1,40 @@
+name: Feature request
+description: Propose a focused improvement that fits the project scope.
+title: '[Feature]: '
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What real hosting-business problem needs to be solved?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Describe the smallest useful workflow, without prescribing an implementation unless needed.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: textarea
+    id: safety
+    attributes:
+      label: Security, billing, and operational impact
+      description: Consider permissions, money, audit history, migrations, provider authority, retries, and rollback.
+    validations:
+      required: true
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope checks
+      options:
+        - label: This supports a single hosting business and does not require multi-tenant marketplace, reseller, affiliate, worldwide tax, or multi-currency expansion.
+          required: true
+        - label: I searched existing issues, decisions, and documentation.
+          required: true

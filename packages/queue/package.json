@@ -2,6 +2,7 @@
   "name": "@webhost-billing/queue",
   "version": "0.1.0",
   "private": true,
+  "license": "Apache-2.0",
   "type": "commonjs",
   "types": "./src/index.ts",
   "exports": {
@@ -40,6 +41,7 @@
       "^.+\\.ts$": [
         "ts-jest",
         {
+          "tsconfig": "tsconfig.spec.json",
           "diagnostics": {
             "ignoreCodes": [
               151002

@@ -37,9 +37,15 @@ async function main(): Promise<void> {
   await administration.$executeRawUnsafe(`CREATE SCHEMA "${E2E_SCHEMA}"`);
   await administration.$disconnect();
 
+  const pnpmArguments = [
+    '--filter',
+    '@webhost-billing/database',
+    'db:migrate:deploy',
+  ];
+  const isWindows = process.platform === 'win32';
   execFileSync(
-    'pnpm',
-    ['--filter', '@webhost-billing/database', 'db:migrate:deploy'],
+    isWindows ? (process.env.ComSpec ?? 'cmd.exe') : 'pnpm',
+    isWindows ? ['/d', '/s', '/c', 'pnpm', ...pnpmArguments] : pnpmArguments,
     {
       cwd: repositoryRoot,
       env: e2eApiEnvironment,

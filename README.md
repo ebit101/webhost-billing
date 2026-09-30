@@ -1,6 +1,18 @@
 # Webhost Billing
 
-Webhost Billing is a private billing and hosting-service management application for a single web-hosting business. It focuses on customer accounts, products, orders, invoices, payments, hosting provisioning, renewals, and support without reproducing the worldwide feature set of WHMCS.
+[![CI](https://github.com/ebit101/webhost-billing/actions/workflows/ci.yml/badge.svg)](https://github.com/ebit101/webhost-billing/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/ebit101/webhost-billing/actions/workflows/codeql.yml/badge.svg)](https://github.com/ebit101/webhost-billing/actions/workflows/codeql.yml)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+
+Webhost Billing is an open-source billing and hosting-service management application
+for a single web-hosting business. It focuses on customer accounts, products, orders,
+invoices, payments, hosting provisioning, renewals, and support without reproducing
+the worldwide feature set of WHMCS.
+
+> **Alpha software:** there is no stable `1.0` release yet. Use fictional data and
+> disabled/fake external providers while evaluating the project. Before handling real
+> customers or credentials, complete the production, backup, monitoring, MFA, SMTP,
+> payment-provider, and hosting-provider acceptance steps documented under `docs/`.
 
 ## Architecture
 
@@ -48,6 +60,17 @@ docker compose up --detach --wait postgres redis
 
 See `docs/DEVELOPMENT.md` for setup, health checks, connectivity, shutdown, and safe reset procedures.
 
+## Project status and scope
+
+The application is intentionally a focused modular monolith for one hosting business.
+It is not a multi-tenant reseller platform, a tax engine, or a drop-in WHMCS clone.
+Payment and hosting integrations are disabled until their credentials and operating
+boundaries are explicitly configured. Publishing this source does not make the hosted
+demonstration or staging instance a public test target.
+
+See `docs/PUBLIC_RELEASE.md` for release channels, compatibility expectations,
+distribution checks, and maintainer procedures.
+
 ## Project documentation
 
 - `HOSTING_BILLING_SYSTEM_PLAN.md` — product requirements and architecture
@@ -78,3 +101,18 @@ See `docs/DEVELOPMENT.md` for setup, health checks, connectivity, shutdown, and 
 - `docs/DEVELOPMENT.md` — local infrastructure and application setup
 - `docs/FRONTEND_DESIGN_SYSTEM.md` — application shells, design tokens, responsive behavior, and UI components
 - `docs/PROGRESS.md` — command-by-command implementation reports
+
+## Contributing and support
+
+- Read `CONTRIBUTING.md` before proposing a change.
+- Use GitHub Issues for reproducible bugs and setup questions; see `SUPPORT.md`.
+- Report vulnerabilities privately according to `SECURITY.md`.
+- Community participation follows `CODE_OF_CONDUCT.md`.
+- Project decisions and maintainer responsibilities are described in `GOVERNANCE.md`.
+
+## License
+
+Webhost Billing is licensed under the [Apache License 2.0](LICENSE). Third-party
+dependencies and assets retain their own licenses; see `THIRD_PARTY_NOTICES.md`.
+The license does not grant permission to imply endorsement by the project or present
+a modified distribution as an official Webhost Billing release.

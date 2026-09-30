@@ -1,0 +1,32 @@
+name: Setup or usage question
+description: Ask a question after reviewing the documentation.
+title: '[Question]: '
+labels:
+  - question
+body:
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+    validations:
+      required: true
+  - type: textarea
+    id: goal
+    attributes:
+      label: What are you trying to do?
+    validations:
+      required: true
+  - type: textarea
+    id: tried
+    attributes:
+      label: What have you tried?
+      description: Link the documentation followed and include only redacted output.
+    validations:
+      required: true
+  - type: checkboxes
+    id: safe
+    attributes:
+      label: Safety check
+      options:
+        - label: I removed credentials, customer data, payment evidence, private hosts, and unredacted logs.
+          required: true

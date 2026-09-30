@@ -249,7 +249,18 @@ async function login(
   await page.getByLabel('Email address').fill(email);
   await page.getByLabel('Password').fill(password);
   await page.getByRole('button', { name: 'Sign in' }).click();
+  await expect
+    .poll(async () => {
+      const cookies = await page.context().cookies(E2E_API_ORIGIN);
+      return cookies.some(
+        (cookie) =>
+          cookie.name === 'webhost_session' ||
+          cookie.name === '__Host-webhost_session',
+      );
+    })
+    .toBe(true);
   await expect(page).toHaveURL(new RegExp(`${expectedPath}$`));
+  await expect(page.getByRole('button', { name: 'Sign in' })).toBeHidden();
 }
 
 async function settleFakeGateway(page: Page, invoiceId: string) {

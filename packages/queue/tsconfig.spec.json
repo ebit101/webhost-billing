@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@webhost-billing/shared/observability": [
+        "../shared/src/observability.ts"
+      ]
+    }
+  }
+}

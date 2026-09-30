@@ -3,7 +3,7 @@
 ## Product Requirements and Architecture Plan
 
 **Document status:** Initial planning draft  
-**Target use:** A single web-hosting business  
+**Target use:** A single web-hosting business per installation
 **Product approach:** Simple, secure, and focused on essential daily operations
 
 **Technical identifier:** `webhost-billing`
@@ -12,7 +12,7 @@
 
 ## 1. Executive Summary
 
-This project is a lightweight web-hosting billing and service-management system inspired by the useful core of WHMCS. It is intended for one hosting business, not for worldwide distribution or use as a general-purpose hosting platform.
+This project is a lightweight, open-source web-hosting billing and service-management system inspired by the useful core of WHMCS. Each installation is intended for one hosting business; public source distribution does not expand the product into a multi-tenant, worldwide, general-purpose hosting platform.
 
 The system will help the business owner:
 

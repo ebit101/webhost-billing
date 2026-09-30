@@ -1,0 +1,123 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      CI: true
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Scan complete Git history for secrets
+        run: |
+          docker run --rm \
+            -v "$PWD:/repo:ro" \
+            -w /repo \
+            ghcr.io/gitleaks/gitleaks@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f \
+            detect --source=/repo --config=/repo/.gitleaks.toml --no-banner --redact
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: '24'
+
+      - name: Activate pinned pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.22.0 --activate
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Create isolated CI environment
+        run: cp .env.example .env
+
+      - name: Start PostgreSQL and Redis
+        run: docker compose up --detach --wait postgres redis
+
+      - name: Prepare and verify database
+        run: |
+          pnpm db:generate
+          pnpm db:migrate:deploy
+          pnpm db:seed
+          pnpm db:verify
+
+      - name: Check formatting
+        run: pnpm format:check
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Prepare worker artifacts for E2E type imports
+        run: pnpm --filter @webhost-billing/worker build
+
+      - name: Type check
+        run: pnpm typecheck
+
+      - name: Run package tests
+        run: pnpm test
+
+      - name: Run API integration tests
+        run: pnpm --filter @webhost-billing/api test:e2e -- --runInBand
+
+      - name: Run critical invariant tests
+        run: pnpm test:invariants
+
+      - name: Install Chromium for browser tests
+        run: pnpm --filter @webhost-billing/web exec playwright install --with-deps chromium
+
+      - name: Run browser lifecycle test
+        run: pnpm test:e2e
+
+      - name: Audit production dependencies
+        run: pnpm audit --prod --audit-level high
+
+      - name: Verify production license inventory
+        run: pnpm licenses list --prod > /dev/null
+
+      - name: Build production artifacts
+        env:
+          NODE_ENV: production
+        run: pnpm build
+
+      - name: Stop CI infrastructure
+        if: always()
+        run: docker compose down
+
+  dependency-review:
+    name: Dependency review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Review dependency changes
+        uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4.9.0
+        with:
+          fail-on-severity: high

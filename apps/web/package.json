@@ -1,7 +1,9 @@
 {
   "name": "@webhost-billing/web",
   "version": "0.1.0",
+  "description": "Webhost Billing customer and administrator web application",
   "private": true,
+  "license": "Apache-2.0",
   "scripts": {
     "dev": "next dev --hostname 0.0.0.0",
     "build": "next build",
@@ -15,7 +17,7 @@
   "dependencies": {
     "@webhost-billing/config": "workspace:*",
     "@webhost-billing/shared": "workspace:*",
-    "next": "16.3.2",
+    "next": "16.3.7",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },
@@ -31,7 +33,7 @@
     "@webhost-billing/database": "workspace:*",
     "argon2": "0.45.1",
     "eslint": "^9",
-    "eslint-config-next": "16.3.2",
+    "eslint-config-next": "16.3.7",
     "jsdom": "^26.1.0",
     "tailwindcss": "^4",
     "tsx": "^4.23.12",

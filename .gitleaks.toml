@@ -1,0 +1,16 @@
+title = "Webhost Billing secret-scanning configuration"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Verified documentation phrases and explicitly fictional test values"
+regexTarget = "secret"
+regexes = [
+  '''^bounce/complaint$''',
+  '''^MIME/signature$''',
+  '''^signature/MIME$''',
+  '''^bKash/SSLCOMMERZ$''',
+  '''^test-encryption-key-at-least-32-characters$''',
+  '''^abc123def456$''',
+]

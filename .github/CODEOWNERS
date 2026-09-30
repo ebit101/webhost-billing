@@ -1,0 +1,12 @@
+# Default review ownership
+* @ebit101
+
+# High-risk boundaries
+/apps/api/src/modules/auth/ @ebit101
+/apps/api/src/modules/payment-gateways/ @ebit101
+/apps/api/src/modules/hosting-panels/ @ebit101
+/packages/database/prisma/ @ebit101
+/deploy/ @ebit101
+/.github/ @ebit101
+/SECURITY.md @ebit101
+/LICENSE @ebit101

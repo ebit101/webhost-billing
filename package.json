@@ -2,8 +2,8 @@
   "name": "webhost-billing",
   "version": "0.1.0",
   "private": true,
-  "description": "Private web-hosting billing and service-management system",
-  "license": "UNLICENSED",
+  "description": "Open-source billing and service-management system for web-hosting businesses",
+  "license": "Apache-2.0",
   "packageManager": "pnpm@11.22.0",
   "engines": {
     "node": ">=24.0.0 <25"
@@ -47,11 +47,12 @@
     "test:invariants": "pnpm run test:invariants:contracts && pnpm run test:invariants:api-unit && pnpm run test:invariants:api-e2e && pnpm run test:invariants:worker",
     "test:invariants:contracts": "pnpm --filter @webhost-billing/shared test",
     "test:invariants:api-unit": "pnpm --filter @webhost-billing/api exec jest --runInBand --runTestsByPath src/modules/invoices/invoice.service.spec.ts src/modules/payment-gateways/payment-money.spec.ts",
-    "test:invariants:api-e2e": "pnpm --filter @webhost-billing/api exec env NODE_OPTIONS=--experimental-vm-modules jest --config ./test/jest-e2e.json --runInBand --runTestsByPath test/payment-gateways.e2e-spec.ts test/payments.e2e-spec.ts test/orders.e2e-spec.ts test/invoices.e2e-spec.ts test/services.e2e-spec.ts test/hosting-panels.e2e-spec.ts",
-    "test:invariants:worker": "pnpm --filter @webhost-billing/worker exec env NODE_OPTIONS=--experimental-vm-modules jest --runInBand --runTestsByPath src/renewal/renewal-lifecycle.integration.spec.ts src/renewal/renewal-scheduler.integration.spec.ts",
+    "test:invariants:api-e2e": "pnpm --filter @webhost-billing/api exec cross-env NODE_OPTIONS=--experimental-vm-modules jest --config ./test/jest-e2e.json --runInBand --runTestsByPath test/payment-gateways.e2e-spec.ts test/payments.e2e-spec.ts test/orders.e2e-spec.ts test/invoices.e2e-spec.ts test/services.e2e-spec.ts test/hosting-panels.e2e-spec.ts",
+    "test:invariants:worker": "pnpm --filter @webhost-billing/worker exec cross-env NODE_OPTIONS=--experimental-vm-modules jest --runInBand --runTestsByPath src/renewal/renewal-lifecycle.integration.spec.ts src/renewal/renewal-scheduler.integration.spec.ts",
     "typecheck": "pnpm build:packages && pnpm -r --if-present typecheck"
   },
   "devDependencies": {
+    "cross-env": "10.1.0",
     "prettier": "^3.6.2",
     "typescript": "^5.9.2"
   }

@@ -3,6 +3,9 @@ packages:
   - 'packages/*'
 overrides:
   deepmerge-ts: 8.0.0
+  fast-uri: 3.1.8
+  mysql2: 3.23.1
+  qs: 6.16.0
 allowBuilds:
   '@prisma/engines': true
   argon2: true
@@ -10,3 +13,9 @@ allowBuilds:
   msgpackr-extract: false
   prisma: true
   unrs-resolver: true
+minimumReleaseAgeExclude:
+  - '@nestjs/common@11.2.7'
+  - '@nestjs/core@11.2.7'
+  - '@nestjs/platform-express@11.2.7'
+  - '@nestjs/testing@11.2.7'
+  - nodemailer@10.0.13

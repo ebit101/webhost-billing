@@ -344,6 +344,14 @@ This document records durable technical and product decisions. New decisions sho
   Global Docker/Nginx/firewall/package operations remain prohibited without a separately
   audited shared-host maintenance window.
 
+## ADR-042 — Apache-2.0 Public Project With Single-Business Scope
+
+- **Status:** Accepted
+- **Date:** 2026-09-30
+- **Decision:** Publish Webhost Billing as an open-source project under the Apache License 2.0 while retaining `private: true` in workspace packages to prevent accidental npm publication. Accept contributions under the same inbound license, maintain public security/support/conduct/governance policies, and distribute official releases only through reviewed, versioned, traceable artifacts. Keep the application designed for one hosting business per installation.
+- **Reason:** A public GitHub repository without a license grants no general right to use, modify, or redistribute the code. Apache-2.0 enables free personal and commercial adoption with explicit patent terms and preserved notices, while project governance and release controls establish safe contribution and distribution boundaries for security- and finance-sensitive software.
+- **Consequence:** Repository metadata, documentation, packages, and official source releases use SPDX identifier `Apache-2.0`; third-party components retain their own licenses and require release-time notice/SBOM review. Public source availability does not authorize probing hosted installations, does not make a hosted service free, does not grant project trademark endorsement, and does not relax production evidence gates. Pre-1.0 releases remain alpha until the complete release gate passes.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

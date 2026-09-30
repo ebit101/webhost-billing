@@ -2,7 +2,7 @@
 
 ## Product Scope
 
-- This repository contains **Webhost Billing**, a private billing and service-management application for one web-hosting business.
+- This repository contains **Webhost Billing**, an open-source billing and service-management application designed for one web-hosting business per installation.
 - Build only the features required by `HOSTING_BILLING_SYSTEM_PLAN.md` and the currently authorized command in `CODEX_DEVELOPMENT_COMMANDS.md`.
 - Keep the product intentionally smaller than WHMCS. Do not introduce multi-tenant reseller, marketplace, affiliate, multi-currency, or worldwide tax functionality unless explicitly authorized.
 

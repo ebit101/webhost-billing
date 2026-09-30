@@ -57,17 +57,19 @@ export async function applyRenewalPaymentAndUnsuspend(
 }
 
 function runAutomation(action: string, ...identifiers: string[]): void {
+  const pnpmArguments = [
+    'exec',
+    'tsx',
+    '--tsconfig',
+    'e2e/tsconfig.json',
+    'e2e/automation-runner.ts',
+    action,
+    ...identifiers,
+  ];
+  const isWindows = process.platform === 'win32';
   execFileSync(
-    'pnpm',
-    [
-      'exec',
-      'tsx',
-      '--tsconfig',
-      'e2e/tsconfig.json',
-      'e2e/automation-runner.ts',
-      action,
-      ...identifiers,
-    ],
+    isWindows ? (process.env.ComSpec ?? 'cmd.exe') : 'pnpm',
+    isWindows ? ['/d', '/s', '/c', 'pnpm', ...pnpmArguments] : pnpmArguments,
     {
       cwd: webDirectory,
       env: process.env,

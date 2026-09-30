@@ -11,7 +11,7 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   retries: 0,
-  timeout: 90_000,
+  timeout: 180_000,
   expect: { timeout: 12_000 },
   outputDir: './test-results',
   reporter: [['line'], ['html', { open: 'never' }]],

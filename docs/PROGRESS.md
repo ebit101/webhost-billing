@@ -2740,6 +2740,105 @@ Resume **Command 38 — Configure Production SMTP and Email Reputation** only af
 required owner inputs through safe channels and authorizing the bounded DNS/provider acceptance
 window. Do not start Command 39 while Command 38 is blocked.
 
+### Command 54 — Prepare Public Open-Source Distribution
+
+- **Status:** Completed locally; repository-owner settings and first alpha tag remain
+  post-push actions
+- **Date:** 2026-09-30
+
+#### Scope completed
+
+- Adopted Apache License 2.0 for free use, modification, and redistribution while
+  preserving the product's single-business-per-installation scope and keeping every
+  workspace package private from accidental npm publication.
+- Added the public-project foundation: notice, changelog, contribution guide, code of
+  conduct, security policy, support boundaries, governance model, third-party license
+  notice, and a public-release guide with versioning, release, branding, SBOM,
+  provenance, and repository-setting expectations.
+- Added GitHub issue forms, pull-request template, CODEOWNERS, Dependabot, CI, CodeQL,
+  dependency review, full-history secret scanning, and browser-lifecycle validation.
+- Updated repository/package metadata and the main project documentation to describe
+  Webhost Billing as an open-source alpha rather than a private application.
+- Upgraded Next.js, NestJS, Nodemailer, Prisma, and vulnerable transitive dependencies;
+  the production dependency graph now has no known audit findings.
+- Made the test commands portable across Windows and Unix-like systems, isolated Jest
+  from generated Next.js output, repaired the queue test compiler's shared subpath
+  resolution, and made the browser lifecycle wait for completed cookie authentication.
+
+#### Files changed
+
+- Licensing and community: `LICENSE`, `NOTICE`, `CHANGELOG.md`, `CONTRIBUTING.md`,
+  `CODE_OF_CONDUCT.md`, `SECURITY.md`, `SUPPORT.md`, `GOVERNANCE.md`,
+  `THIRD_PARTY_NOTICES.md`, `docs/PUBLIC_RELEASE.md`
+- GitHub automation and templates: `.github/CODEOWNERS`,
+  `.github/PULL_REQUEST_TEMPLATE.md`, `.github/ISSUE_TEMPLATE/*`,
+  `.github/dependabot.yml`, `.github/workflows/ci.yml`,
+  `.github/workflows/codeql.yml`, `.gitleaks.toml`
+- Project metadata and policy: `README.md`, `AGENTS.md`,
+  `HOSTING_BILLING_SYSTEM_PLAN.md`, `docs/DECISIONS.md`, `package.json`,
+  workspace `package.json` files, `pnpm-workspace.yaml`, `pnpm-lock.yaml`,
+  `.gitattributes`, environment examples
+- Cross-platform validation: API/worker scripts, `apps/web/e2e/database.ts`,
+  `apps/web/e2e/prepare-environment.ts`,
+  `apps/web/e2e/specs/hosting-lifecycle.spec.ts`,
+  `apps/web/playwright.config.ts`, `apps/web/vitest.config.mts`,
+  `packages/queue/tsconfig.spec.json`
+- Command tracking: `docs/PROGRESS.md`
+
+#### Validation
+
+- PostgreSQL and Redis remained healthy in Docker. Prisma 7.10 generation, schema
+  validation, all 21 migration status checks, and database verification passed.
+- Prettier, ESLint, strict TypeScript checks, Compose rendering, and the complete
+  production build passed; Next.js built all 29 routes.
+- All 196 package tests passed. All 65 API integration tests, the complete critical
+  invariant suite, and the isolated Chromium hosting lifecycle passed. The browser
+  lifecycle covered customer registration and verification, role boundaries, orders,
+  invoice payment, administrator approval, fake-panel provisioning, renewal invoicing,
+  suspension, verified-payment unsuspension, support replies, and explicitly confirmed
+  termination.
+- `pnpm audit --prod` reported no known vulnerabilities. The production license
+  inventory completed and its JSON output parsed successfully.
+- actionlint 1.7.12 accepted both workflows. Gitleaks 8.30.1 scanned all 47 existing
+  commits and reported no leaks after seven findings were individually verified as
+  documentation phrases or explicitly fictional test values and captured in an
+  exact-value allowlist.
+- No staging or production service, provider, DNS record, credential, customer record,
+  or live application was changed.
+
+#### Decisions made
+
+- Use Apache-2.0 as the project's permissive distribution license. Keep branding and
+  trademark rights separate, require attribution/license preservation, and use the
+  standard Apache patent grant.
+- Publish an alpha-quality source project, not a claim of production readiness or a
+  support warranty. Official releases must use reviewed immutable tags and include
+  checksums, SBOMs, provenance, migration notes, and known limitations.
+- Keep fake providers as the default development and automated-test boundary. Open
+  sourcing does not authorize live payment, SMTP, hosting-panel, DNS, or production
+  operations.
+- Keep complete-history secret scanning in CI. Exceptions must match an exact reviewed
+  non-secret value; path-wide, rule-wide, and ambiguous suppressions are prohibited.
+
+#### Open questions and risks
+
+- The GitHub repository is already publicly readable, but repository-owner settings
+  still need confirmation: required branch checks and review, force-push/deletion
+  protection, secret-scanning push protection, private vulnerability reporting,
+  Dependabot security updates, and automatic branch deletion.
+- The new CI and CodeQL workflows cannot be considered hosted evidence until this
+  commit is pushed and their first GitHub runs succeed.
+- No alpha tag, GitHub Release, container image, SBOM, checksum, or provenance artifact
+  has been published. The application remains alpha software, and the separate
+  production-readiness track remains blocked at Command 38.
+
+#### Recommended next command
+
+After the pushed CI and CodeQL runs pass, confirm the repository-owner security and
+branch settings, then authorize creation of `v0.1.0-alpha.1` with checksums, SBOMs,
+provenance, migration notes, and known limitations. Resume Command 38 separately only
+after its documented SMTP owner inputs and protected credentials exist.
+
 ## Report Template
 
 Use this template after every future command:
