@@ -2854,7 +2854,7 @@ and protected credentials exist.
 
 ### Command 55 — Publish the First Source Alpha Release
 
-- **Status:** Release candidate prepared; publication validation in progress
+- **Status:** Completed and published
 - **Date:** 2026-09-30
 
 #### Scope completed
@@ -2871,8 +2871,13 @@ and protected credentials exist.
   and generates Git source archives, complete and production-only CycloneDX 1.7
   SBOMs, and SHA-256 checksums in an ignored local output directory.
 - Enabled immutable releases for the GitHub repository before creating the first
-  release so the published tag/assets will be locked and receive GitHub's release
-  attestation.
+  release. Published the verified draft as immutable prerelease
+  `v0.1.0-alpha.1` at
+  `https://github.com/ebit101/webhost-billing/releases/tag/v0.1.0-alpha.1` from
+  commit `0f24a2704364f0d5ab25707c2576fc3ac1de2b0f`.
+- Attached deterministic `.tar.gz` and `.zip` source archives, complete and
+  production-only CycloneDX 1.7 SBOMs, and `SHA256SUMS`. No container image, npm
+  package, `latest` tag, deployment, or environment mutation was performed.
 
 #### Files changed
 
@@ -2882,6 +2887,8 @@ and protected credentials exist.
   `docs/releases/v0.1.0-alpha.1.md`, `docs/DECISIONS.md`
 - Reproducible artifact tooling: `scripts/releases/build-source-release.mjs`,
   `.gitignore`, root `package.json`
+- Release-day dependency remediation: `pnpm-workspace.yaml`, `pnpm-lock.yaml`,
+  `apps/web/package.json`
 - Authorized command and tracking: `CODEX_DEVELOPMENT_COMMANDS.md`,
   `docs/PROGRESS.md`
 
@@ -2903,8 +2910,9 @@ and protected credentials exist.
 - The first local Chromium attempt reached the verified 201/202 payment flow, then
   failed to load Next.js chunks with `ERR_INSUFFICIENT_RESOURCES`. A repeat ended
   when the dev server could not allocate 16 MiB while the workstation had about
-  1 GiB physical memory free. This is retained as a release blocker until the exact
-  commit passes the Chromium lifecycle on GitHub's clean hosted runner.
+  1 GiB physical memory free. This was classified as a constrained-workstation
+  failure after the exact commit passed the Chromium lifecycle on GitHub's clean
+  hosted runner.
 - The exact release-candidate commit then passed hosted CI run `36720353677` and
   CodeQL run `36720353763`; hosted CI provided the required clean checkout and
   independently passed the database, full test, Chromium, audit, license, build,
@@ -2912,7 +2920,7 @@ and protected credentials exist.
 - The first local artifact build exposed Windows Node 24 `spawnSync pnpm.cmd EINVAL`
   before either SBOM was written. No remote tag or Release existed. The local tag was
   removed and the builder was corrected to execute pnpm through its pinned JavaScript
-  entrypoint; the corrected artifact run remains pending.
+  entrypoint; the corrected run generated and validated all five release assets.
 - GitHub then surfaced 14 release-day Dependabot alerts that the npm production audit
   did not report: patched `brace-expansion` 1/2/5 and `js-yaml` 3/4 transitive lines,
   plus the development-only Vitest mocker path. Publication was paused; compatible
@@ -2921,11 +2929,31 @@ and protected credentials exist.
   50 web tests; formatting, lint, strict type checks, all 196 package tests, all 65
   API integration tests, the complete invariant suite, frozen install, full and
   production dependency audits, production build, license inventory, and both
-  Compose renderings passed. A final clean hosted Chromium/security run remains
-  required on the remediation commit before recreating the release tag.
-- Pending corrected artifact, checksum, remote tag, and immutable-release
-  verification. This report will be completed with exact
-  evidence before the command is declared delivered.
+  Compose renderings passed.
+- The exact remediated release commit passed hosted CI run `36723176934` and CodeQL
+  run `36723176762`. GitHub reported zero open Dependabot security alerts before
+  publication.
+- The release builder generated archives containing exactly the 518 files in the
+  tagged Git tree. Both SBOMs identify `0.1.0-alpha.1` and contain 1,071 complete
+  and 359 production components respectively. Checksums and remote asset digests
+  matched exactly:
+  - source `.tar.gz`: `b4aea18217e4692a4062ccaa3a45a5f03a539e0320d7dcfd989be7d317fd3b7d`
+    (767,008 bytes)
+  - source `.zip`: `4e96be0c37123accc0ef89e37bcd77c1fa39738c8f661eb7175c5232d22cc5c4`
+    (1,090,416 bytes)
+  - complete SBOM: `239b656b4e0b9d197a76ccc320772da3c495c9930dafbb917e86e1148a8f4ff4`
+    (1,548,850 bytes)
+  - production SBOM: `be7a4c957d18a05c4757116e32434864877ce93546acf2dbdd5283c3bb01db96`
+    (477,662 bytes)
+  - `SHA256SUMS`: `c7514e4660d11cbbeceb7c779d80512c11b17319f698d8a0933e7ab224d0c411`
+    (440 bytes)
+- Pinned Gitleaks scanned all 71 commits, both extracted final archives, and the
+  final asset directory without finding a leak. The remote annotated tag peeled to
+  the expected commit before publication.
+- GitHub Release `400094460` was created draft-first. All five assets were uploaded
+  and checked before publication. Post-publication verification reported
+  `draft=false`, `prerelease=true`, `immutable=true`; the public release page and
+  every public asset URL returned HTTP 200.
 
 #### Decisions made
 
@@ -2938,15 +2966,17 @@ and protected credentials exist.
 
 #### Open questions and risks
 
-- Publication must stop if any required validation, hosted check, archive scan,
-  checksum, remote metadata, or immutable-release verification fails.
-- Production remains `NO-GO` and separately blocked at Command 38 regardless of this
-  source release.
+- This is alpha evaluation software. Its immutable tag and release assets cannot be
+  replaced; any correction requires a new version.
+- Production remains `NO-GO` and separately blocked at Command 38 regardless of
+  this source release. Real provider credentials, production data, and environment
+  deployment remain outside the delivered scope.
 
 #### Recommended next command
 
-Complete Command 55 validation and immutable publication. After delivery, stop and
-request separate authorization before resuming Command 38 or any other command.
+Stop after Command 55. The exact next recommended command is to resume Command 38
+only after the documented SMTP owner inputs and protected credentials are supplied;
+that command requires separate user authorization.
 
 ## Report Template
 
