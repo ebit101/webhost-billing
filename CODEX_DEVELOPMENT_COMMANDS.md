@@ -1226,6 +1226,30 @@ available, commit, reconcile, push main, verify hosted checks, then stop and req
 separate authorization for any next command.
 ```
 
+## Command 58 — Implement Starter Issue #18: Add a Read-Only `demo:doctor` Preflight
+
+```text
+Implement public starter issue #18 as a cross-platform Node.js `demo:doctor`
+preflight. Report sanitized Docker and Compose versions, Docker Engine availability,
+whether loopback port 3100 is available, and whether the local demo runtime file
+exists. The command must be read-only, must not read or print runtime values or raw
+command errors, and must not start, stop, rebuild, or remove anything.
+
+Return non-zero with a clear remediation for every failed prerequisite. Treat the
+missing runtime file as a normal first-run state because `demo:up` creates it. Add
+focused automated coverage for success, redaction, missing Docker, unsupported
+Compose, unavailable Engine, busy port, and invalid runtime metadata; include the
+focused tests in the ordinary test gate. Update safe-demo and contributor
+documentation without changing provider, deployment, financial, or production
+boundaries.
+
+Run the focused tests, formatting, lint, strict type checks, the complete package
+tests, relevant Compose/demo smoke checks, and source/secret review. Update
+docs/PROGRESS.md, commit, reconcile, push main, verify hosted checks, close issue #18
+if repository authority is available, then stop and request separate authorization
+for any next command.
+```
+
 ---
 
 ## Continuation Command

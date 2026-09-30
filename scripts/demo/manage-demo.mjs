@@ -10,6 +10,8 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
+import { runDemoDoctor } from './demo-doctor.mjs';
+
 const repositoryRoot = resolve(
   dirname(fileURLToPath(import.meta.url)),
   '../..',
@@ -138,6 +140,10 @@ function runPnpm(args, environment) {
 
 async function main() {
   const command = process.argv[2] ?? 'help';
+  if (command === 'doctor') {
+    process.exitCode = await runDemoDoctor();
+    return;
+  }
   if (command === 'up') {
     initializeRuntime();
     ensureDocker();
@@ -209,6 +215,9 @@ async function main() {
   }
 
   process.stdout.write(`Safe evaluation demo commands:\n\n`);
+  process.stdout.write(
+    `  pnpm demo:doctor       Check local prerequisites without changing anything\n`,
+  );
   process.stdout.write(
     `  pnpm demo:up           Build and start the fictional demo\n`,
   );

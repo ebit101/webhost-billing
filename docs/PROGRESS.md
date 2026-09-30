@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 57 — Build the Safe Evaluation Demo and Adoption Pack
+- **Current command:** Command 58 — Implement starter issue #18: Add a read-only `demo:doctor` preflight
 - **Current status:** Completed and delivered to GitHub `main`
 - **Last updated:** 2026-10-01
-- **Next command:** Command 58 — Implement starter issue #18: Add a read-only `demo:doctor` preflight
+- **Next command:** Command 59 — Implement starter issue #19: Replace customer portal overview fixtures with authenticated data
 - **Next command authorized:** No
 
 ## Command Reports
@@ -3154,6 +3154,97 @@ providers or changing the production `NO-GO` decision.
 
 Authorize **Command 58 — Implement starter issue #18: Add a read-only `demo:doctor`
 preflight**. Do not begin it without separate user authorization.
+
+### Command 58 — Implement Starter Issue #18: Add a Read-Only `demo:doctor` Preflight
+
+- **Status:** Completed and delivered to GitHub `main`
+- **Date:** 2026-10-01
+
+#### Scope completed
+
+- Added `pnpm demo:doctor` as a Node.js-only preflight that runs consistently from
+  supported PowerShell and Unix-like shells.
+- Reports sanitized Docker CLI and Docker Compose versions, Docker Engine
+  reachability, loopback `127.0.0.1:3100` availability, and runtime-file metadata.
+- Keeps the diagnostic path read-only: it never initializes the runtime, reads
+  `.demo-runtime/demo.env` contents, prints raw command errors, or invokes a Docker
+  lifecycle/build command.
+- Returns non-zero with a fixed remediation for missing Docker, missing or unsupported
+  Compose, unavailable Engine, unavailable loopback port, and invalid/unreadable
+  runtime metadata. A missing runtime file remains an expected first-run information
+  state because `demo:up` creates it.
+- Added focused injected-outcome tests for success, absent runtime, redaction, missing
+  Docker, unsupported Compose, Engine failure, busy port, and invalid runtime type.
+  Integrated the focused suite into the ordinary root `pnpm test` gate.
+- Updated the evaluator, contributor, changelog, decision, starter-issue, and command
+  records. The demo/provider/deployment/financial boundaries and production `NO-GO`
+  decision remain unchanged.
+
+#### Files changed
+
+- Doctor implementation and tests: `scripts/demo/demo-doctor.mjs`,
+  `scripts/demo/demo-doctor.test.mjs`
+- Demo command entrypoint and root scripts: `scripts/demo/manage-demo.mjs`,
+  `package.json`
+- Evaluator/contributor documentation: `README.md`, `CONTRIBUTING.md`,
+  `docs/SAFE_EVALUATION_DEMO.md`, `docs/STARTER_ISSUES.md`, `CHANGELOG.md`
+- Durable decision, authorized command, and command evidence: `docs/DECISIONS.md`,
+  `CODEX_DEVELOPMENT_COMMANDS.md`, `docs/PROGRESS.md`
+
+#### Validation
+
+- Focused Node test suite passed all six tests on Windows and again inside the pinned
+  Linux Node 24 container. Coverage includes successful versions, runtime-value
+  non-disclosure, missing Docker, Compose v1, unavailable Engine, busy port, missing
+  runtime, and invalid runtime metadata.
+- Real Windows preflight reported Docker CLI `29.7.2`, Docker Compose `5.4.0`, and
+  Engine server `29.7.2`. With the demo running, the expected busy-port failure exited
+  non-zero while runtime-file SHA-256 and all five running container IDs remained
+  unchanged. With the demo stopped, every prerequisite passed while the runtime hash
+  remained unchanged and no container was started by the doctor.
+- The retained fictional demo was restored through `demo:up`; all five long-running
+  services are healthy and `http://127.0.0.1:3100/ready` returns `200`. Demo Compose
+  rendering and new-script Node syntax checks passed.
+- Repository Prettier, `git diff --check`, API/worker/web ESLint, and strict TypeScript
+  checks across all seven code workspaces passed.
+- The complete root package gate passed 203 tests: 6 doctor, 26 shared, 3 queue, 51
+  web, 88 API, and 29 worker tests.
+- The first complete package run began while the ordinary post-reset Redis service was
+  absent and the three pre-existing queue integration tests timed out on
+  `127.0.0.1:6379`. The isolated demo was unaffected. Recreating the loopback-only
+  development PostgreSQL/Redis services, applying all 21 migrations, seeding fictional
+  data, and verifying schema/data invariants resolved the environment prerequisite;
+  the unchanged complete suite then passed.
+- Reviewed the complete change set and Git ignore boundary. No runtime file, generated
+  credential, provider secret, customer data, external-provider action, deployment,
+  or production change was introduced.
+
+#### Decisions made
+
+- Keep diagnostic output allowlisted and fixed. Version tokens are parsed from
+  successful Docker output, while raw stdout/stderr and spawn errors are discarded.
+- Treat runtime-file absence as informational, not a failed prerequisite. A non-file
+  or unreadable path is a failure because `demo:up` cannot safely use it.
+- Bind and immediately close an exclusive IPv4 loopback socket to test the exact host
+  endpoint the demo publishes. A later process may still win the normal race between
+  preflight and startup.
+- A running safe demo intentionally makes `demo:doctor` report port `3100` as busy;
+  `demo:status` remains the inspection command for an active stack.
+
+#### Open questions and risks
+
+- The preflight proves current local prerequisites only. It does not guarantee later
+  image-download speed, available disk/memory, or that port `3100` remains free after
+  the check.
+- The safe demo remains fictional alpha evaluation software and is not fit for live
+  use. Production is still `NO-GO`, and no provider or operational acceptance gate is
+  changed by this command.
+
+#### Recommended next command
+
+Authorize **Command 59 — Implement starter issue #19: Replace customer portal overview
+fixtures with authenticated data** only after separate review and authorization. Do
+not start it automatically.
 
 ## Report Template
 

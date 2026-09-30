@@ -55,10 +55,14 @@ The workspace uses Node.js 24 LTS, pnpm, TypeScript, PostgreSQL, Prisma, Redis, 
 With Node.js 24/Corepack and Docker running, start the complete fictional-data demo:
 
 ```bash
+corepack pnpm demo:doctor
 corepack pnpm demo:up
 ```
 
-It prints generated administrator and customer logins and exposes only
+The read-only preflight reports Docker/Compose versions, Engine availability,
+loopback port `3100`, and whether the ignored runtime file exists without printing
+its values or changing local state. `demo:up` then prints generated administrator
+and customer logins and exposes only
 `http://localhost:3100` on loopback. Application and data services use an internal
 network; only the hardened gateway joins a dedicated ingress bridge. The stack uses
 separate volumes and disabled external providers. Stop it with

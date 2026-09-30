@@ -7,6 +7,8 @@ customer data or credentials.
 
 ## 1. [Add a read-only demo preflight command](https://github.com/ebit101/webhost-billing/issues/18)
 
+**Status:** Completed by Command 58 on 2026-10-01.
+
 **Suggested labels:** `good first issue`, `help wanted`, `docker`
 
 Add `demo:doctor` to report the installed Docker/Compose versions, Docker Engine

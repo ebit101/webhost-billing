@@ -14,6 +14,21 @@ Redis, and same-origin gateway. Every record is fictional.
 Requirements: Node.js 24 with Corepack, Docker Engine or Docker Desktop, and Docker
 Compose v2. Port `3100` on loopback must be available.
 
+Check those local prerequisites first:
+
+```bash
+corepack pnpm demo:doctor
+```
+
+The doctor command is read-only. It reports sanitized Docker/Compose versions,
+Docker Engine availability, whether `127.0.0.1:3100` can be bound, and whether the
+local runtime file exists. It does not create or read `.demo-runtime/demo.env`, does
+not print command errors or credentials, and does not start, stop, rebuild, or remove
+anything. A missing runtime file is normal before the first start; `demo:up` creates
+it locally.
+
+When every prerequisite passes, start the demo:
+
 ```bash
 corepack pnpm demo:up
 ```
@@ -82,6 +97,7 @@ all acceptance gates. Running this demo does not change production `NO-GO`.
 
 | Command                          | Purpose                                             |
 | -------------------------------- | --------------------------------------------------- |
+| `corepack pnpm demo:doctor`      | Check prerequisites without changing local state    |
 | `corepack pnpm demo:up`          | Build, initialize, start, and health-check the demo |
 | `corepack pnpm demo:credentials` | Reprint the generated fictional logins              |
 | `corepack pnpm demo:status`      | Show container state and health                     |
@@ -104,6 +120,10 @@ profile, and support screens use authenticated application APIs.
 
 ## Troubleshooting
 
+- Run `corepack pnpm demo:doctor` before the first start. Every failed prerequisite
+  includes a fixed remediation without echoing local command errors. The command
+  intentionally reports port `3100` as busy while an existing demo is running; use
+  `demo:status` to inspect that running stack.
 - If Docker is unavailable, start Docker Engine/Desktop and rerun `demo:up`.
 - If port `3100` is already in use, stop the conflicting local process. The fixed
   port is intentional so cookie and origin checks remain deterministic.

@@ -376,6 +376,14 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** Public adoption needs a reproducible path that demonstrates real application boundaries without asking evaluators to configure secrets or creating a route to real external mutations. A separate demo topology is easier to reason about and safer than reusing development or production state.
 - **Consequence:** Demo bootstrap refuses any non-demo database identity, runtime values remain Git-ignored, screenshots are generated from authenticated fictional journeys, and evaluator documentation distinguishes visible, implemented-but-disabled, unaccepted, and out-of-scope capabilities. Loopback HTTP is permitted only for this isolated demo; it does not relax production HTTPS, credential, provider, staging, backup, monitoring, MFA, or operator gates, and production remains `NO-GO`.
 
+## ADR-046 — Read-Only Redacted Demo Preflight
+
+- **Status:** Accepted
+- **Date:** 2026-10-01
+- **Decision:** Provide `demo:doctor` as a Node.js-only, cross-platform preflight that inspects Docker CLI and Compose versions, Docker Engine reachability, loopback port `3100`, and runtime-file metadata. Keep its output fixed and redacted, never read runtime-file contents or expose raw command errors, and perform no Docker or filesystem mutation. Treat a missing runtime file as normal first-run information because `demo:up` creates it.
+- **Reason:** Evaluators need actionable prerequisite diagnostics before an expensive image build, but support output must not leak generated secrets or turn a diagnostic command into another lifecycle controller. A Node.js entrypoint behaves consistently from PowerShell and Unix-like shells without requiring platform-specific scripts.
+- **Consequence:** Any failed prerequisite exits non-zero with a controlled remediation. A busy port is reported as a failure even when the existing safe demo owns it; `demo:status` remains the correct command for inspecting a running stack. Focused tests inject command and port outcomes, prove sensitive output is discarded, and run in the ordinary repository test gate.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:
