@@ -33,6 +33,8 @@ and will be called out in release notes.
   boundaries.
 - Added full-history Gitleaks scanning with a narrow reviewed false-positive
   allowlist; the production dependency audit now reports no known vulnerabilities.
+- Updated Vitest and pinned patched `brace-expansion` and `js-yaml` lines after
+  release-day advisories, clearing the repository's open Dependabot alerts.
 
 [Unreleased]: https://github.com/ebit101/webhost-billing/compare/v0.1.0-alpha.1...HEAD
 [0.1.0-alpha.1]: https://github.com/ebit101/webhost-billing/releases/tag/v0.1.0-alpha.1

@@ -2913,6 +2913,16 @@ and protected credentials exist.
   before either SBOM was written. No remote tag or Release existed. The local tag was
   removed and the builder was corrected to execute pnpm through its pinned JavaScript
   entrypoint; the corrected artifact run remains pending.
+- GitHub then surfaced 14 release-day Dependabot alerts that the npm production audit
+  did not report: patched `brace-expansion` 1/2/5 and `js-yaml` 3/4 transitive lines,
+  plus the development-only Vitest mocker path. Publication was paused; compatible
+  per-major overrides and Vitest 4.1.11 were selected for validation.
+- The refreshed lockfile removed every vulnerable version. Vitest 4.1.11 passed all
+  50 web tests; formatting, lint, strict type checks, all 196 package tests, all 65
+  API integration tests, the complete invariant suite, frozen install, full and
+  production dependency audits, production build, license inventory, and both
+  Compose renderings passed. A final clean hosted Chromium/security run remains
+  required on the remediation commit before recreating the release tag.
 - Pending corrected artifact, checksum, remote tag, and immutable-release
   verification. This report will be completed with exact
   evidence before the command is declared delivered.
