@@ -368,6 +368,14 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** The development process is a meaningful and transparent part of the project, but calling the application "AI-powered" would imply runtime capabilities it does not contain. Clear human review, authority, evidence, and readiness boundaries let the project share its AI-assisted work path without misleading evaluators or confusing development attribution with product functionality or endorsement.
 - **Consequence:** Public descriptions may use "AI-assisted technical preview," "developed with a human-directed, human-reviewed Codex workflow," and similar accurate language. They must not claim production readiness, autonomous engineering authority, an OpenAI partnership, sponsorship, or embedded AI features unless separately implemented and documented. Each command remains human-authorized, every accepted change remains human-reviewed, validations remain inspectable, and live providers, data, deployments, costs, and destructive actions require explicit approval.
 
+## ADR-045 — Loopback-Only Fictional Evaluation Stack
+
+- **Status:** Accepted
+- **Date:** 2026-09-30
+- **Decision:** Provide one evaluator command that builds production-shaped web/API images, migrates and idempotently seeds a dedicated fictional PostgreSQL database, generates local credentials, and exposes a same-origin gateway only on `127.0.0.1:3100`. Keep the Compose network internal and omit workers, the scheduler, SMTP, payment gateways, and hosting providers.
+- **Reason:** Public adoption needs a reproducible path that demonstrates real application boundaries without asking evaluators to configure secrets or creating a route to real external mutations. A separate demo topology is easier to reason about and safer than reusing development or production state.
+- **Consequence:** Demo bootstrap refuses any non-demo database identity, runtime values remain Git-ignored, screenshots are generated from authenticated fictional journeys, and evaluator documentation distinguishes visible, implemented-but-disabled, unaccepted, and out-of-scope capabilities. Loopback HTTP is permitted only for this isolated demo; it does not relax production HTTPS, credential, provider, staging, backup, monitoring, MFA, or operator gates, and production remains `NO-GO`.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

@@ -1202,6 +1202,30 @@ links, update docs/PROGRESS.md, commit, reconcile, push main, verify hosted chec
 repository metadata, then stop and request separate authorization for any next command.
 ```
 
+## Command 57 — Build the Safe Evaluation Demo and Adoption Pack
+
+```text
+Build a one-command local evaluation demo that uses only fictional data and generated
+local credentials. Isolate its PostgreSQL and Redis state, bind its gateway only to
+loopback, block container egress, disable real payment, hosting, and email providers,
+and make initialization repeatable without touching development, staging, or
+production state.
+
+Add reviewed screenshots, a five-minute admin/customer walkthrough, a precise
+capability and limitation matrix, and bounded contributor-ready starter issues with
+acceptance and validation criteria. Keep the technical-preview warning prominent and
+state honestly which surfaces still contain presentation fixtures or require separate
+provider/operational acceptance.
+
+Do not use real data or credentials, contact an external provider, deploy an
+environment, change the production NO-GO decision, or modify the immutable
+v0.1.0-alpha.1 release. Validate first-run and repeat startup, role journeys,
+isolation, screenshots, documentation, tests, builds, and Compose rendering. Update
+docs/PROGRESS.md, create the approved public starter issues if repository authority is
+available, commit, reconcile, push main, verify hosted checks, then stop and request
+separate authorization for any next command.
+```
+
 ---
 
 ## Continuation Command

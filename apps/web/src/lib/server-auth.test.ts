@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getAuthenticatedIdentity, requireWorkspaceRole } from './server-auth';
 
 const nextServer = vi.hoisted(() => ({
@@ -12,6 +12,10 @@ vi.mock('next/headers', () => ({ cookies: nextServer.cookies }));
 vi.mock('next/navigation', () => ({ redirect: nextServer.redirect }));
 
 describe('server workspace authorization', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     nextServer.cookies.mockResolvedValue({
@@ -75,6 +79,21 @@ describe('server workspace authorization', () => {
         cache: 'no-store',
         headers: { cookie: 'webhost_session=opaque-session-token' },
       }),
+    );
+  });
+
+  it('uses the private API origin for server-side identity checks when configured', async () => {
+    vi.stubEnv('INTERNAL_API_URL', 'http://api:3001');
+    vi.resetModules();
+    const privateOriginModule = await import('./server-auth');
+    const fetchMock = vi.fn().mockResolvedValue(identityResponse('ADMIN'));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await privateOriginModule.getAuthenticatedIdentity();
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'http://api:3001/auth/me',
+      expect.any(Object),
     );
   });
 

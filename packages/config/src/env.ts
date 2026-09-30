@@ -387,6 +387,7 @@ export const webEnvironmentSchema = baseEnvironmentSchema
   .extend({
     WEB_PORT: z.coerce.number().int().min(1).max(65_535).default(3000),
     NEXT_PUBLIC_API_URL: httpOriginSchema.default('http://localhost:3001'),
+    INTERNAL_API_URL: httpOriginSchema.optional(),
   })
   .superRefine((environment, context) => {
     if (

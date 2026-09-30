@@ -1,0 +1,217 @@
+name: webhost-billing-demo
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: 5m
+    max-file: '2'
+
+x-app-security: &app-security
+  init: true
+  restart: unless-stopped
+  read_only: true
+  user: '10001:10001'
+  cap_drop:
+    - ALL
+  security_opt:
+    - no-new-privileges:true
+  tmpfs:
+    - /tmp:rw,noexec,nosuid,size=64m
+  logging: *logging
+
+services:
+  postgres:
+    image: postgres:18.6-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: webhost_billing_demo
+      POSTGRES_USER: webhost_billing_demo
+      POSTGRES_PASSWORD: ${DEMO_POSTGRES_PASSWORD:?Demo runtime is not initialized}
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U webhost_billing_demo -d webhost_billing_demo
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    security_opt:
+      - no-new-privileges:true
+    logging: *logging
+    networks:
+      - demo
+
+  redis:
+    image: redis:8.10-alpine
+    restart: unless-stopped
+    command:
+      - redis-server
+      - --appendonly
+      - 'yes'
+      - --appendfsync
+      - always
+      - --requirepass
+      - ${DEMO_REDIS_PASSWORD:?Demo runtime is not initialized}
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - REDISCLI_AUTH="$${DEMO_REDIS_PASSWORD}" redis-cli --no-auth-warning ping | grep -q PONG
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 5s
+    environment:
+      DEMO_REDIS_PASSWORD: ${DEMO_REDIS_PASSWORD:?Demo runtime is not initialized}
+    security_opt:
+      - no-new-privileges:true
+    logging: *logging
+    networks:
+      - demo
+
+  initialize:
+    image: webhost-billing-demo-initialize:${DEMO_IMAGE_TAG:-local}
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+      target: builder
+    restart: 'no'
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://webhost_billing_demo:${DEMO_POSTGRES_PASSWORD}@postgres:5432/webhost_billing_demo?schema=public
+      DEMO_MODE: fictional-only
+      DEMO_ADMIN_PASSWORD: ${DEMO_ADMIN_PASSWORD:?Demo runtime is not initialized}
+      DEMO_CUSTOMER_PASSWORD: ${DEMO_CUSTOMER_PASSWORD:?Demo runtime is not initialized}
+    command:
+      - bash
+      - -lc
+      - cd packages/database && ./node_modules/.bin/prisma migrate deploy --config prisma.config.ts && ./node_modules/.bin/tsx prisma/seed.ts && cd /workspace && node demo/bootstrap-users.cjs
+    depends_on:
+      postgres:
+        condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
+    logging: *logging
+    networks:
+      - demo
+
+  api:
+    <<: *app-security
+    image: webhost-billing-demo-api:${DEMO_IMAGE_TAG:-local}
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+      target: api
+    environment:
+      NODE_ENV: development
+      API_PORT: 3001
+      DATABASE_URL: postgresql://webhost_billing_demo:${DEMO_POSTGRES_PASSWORD}@postgres:5432/webhost_billing_demo?schema=public
+      REDIS_URL: redis://:${DEMO_REDIS_PASSWORD}@redis:6379/0
+      SESSION_SECRET: ${DEMO_SESSION_SECRET:?Demo runtime is not initialized}
+      CREDENTIAL_ENCRYPTION_KEY: ${DEMO_CREDENTIAL_ENCRYPTION_KEY:?Demo runtime is not initialized}
+      WEB_ORIGIN: ${DEMO_PUBLIC_ORIGIN:-http://localhost:3100}
+      API_PUBLIC_ORIGIN: ${DEMO_PUBLIC_ORIGIN:-http://localhost:3100}
+      AUTH_RATE_LIMIT_NAMESPACE: demo
+      BULLMQ_PREFIX: webhost-billing-demo
+      BKASH_ENABLED: 'false'
+      SSLCOMMERZ_ENABLED: 'false'
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - fetch('http://127.0.0.1:3001/ready').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 15s
+    depends_on:
+      initialize:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    networks:
+      - demo
+
+  web:
+    <<: *app-security
+    image: webhost-billing-demo-web:${DEMO_IMAGE_TAG:-local}
+    build:
+      context: ..
+      dockerfile: apps/web/Dockerfile
+      target: web
+      args:
+        NEXT_PUBLIC_API_URL: ${DEMO_PUBLIC_ORIGIN:-http://localhost:3100}
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: ${DEMO_PUBLIC_ORIGIN:-http://localhost:3100}
+      INTERNAL_API_URL: http://api:3001
+      HOSTNAME: 0.0.0.0
+      PORT: 3000
+    tmpfs:
+      - /app/apps/web/.next/cache:rw,noexec,nosuid,size=64m,uid=10001,gid=10001
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - fetch('http://127.0.0.1:3000/login').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 15s
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - demo
+
+  gateway:
+    image: webhost-billing-demo-gateway:${DEMO_IMAGE_TAG:-local}
+    build:
+      context: .
+      dockerfile: Dockerfile.gateway
+    restart: unless-stopped
+    read_only: true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_ADMIN
+      - SETGID
+      - SETUID
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /var/cache/nginx:rw,noexec,nosuid,size=16m,uid=101,gid=101
+      - /var/run:rw,noexec,nosuid,size=1m,uid=101,gid=101
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - 127.0.0.1:${DEMO_WEB_PORT:-3100}:3100
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget -q -O /dev/null http://127.0.0.1:3100/login
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    depends_on:
+      web:
+        condition: service_healthy
+    logging: *logging
+    networks:
+      - demo
+      - ingress
+
+networks:
+  demo:
+    internal: true
+  ingress:
+
+volumes:
+  postgres_data:
+  redis_data:

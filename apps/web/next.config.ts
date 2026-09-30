@@ -7,6 +7,8 @@ import {
 loadEnvironmentFiles();
 const environment = parseWebEnvironment(process.env);
 const isDevelopment = environment.NODE_ENV === 'development';
+const isSecurePublicOrigin =
+  new URL(environment.NEXT_PUBLIC_API_URL).protocol === 'https:';
 const csp = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${isDevelopment ? " 'unsafe-eval'" : ''}`,
@@ -18,7 +20,9 @@ const csp = [
   "base-uri 'self'",
   "form-action 'self'",
   "frame-ancestors 'none'",
-  ...(isDevelopment ? [] : ['upgrade-insecure-requests']),
+  ...(isDevelopment || !isSecurePublicOrigin
+    ? []
+    : ['upgrade-insecure-requests']),
 ].join('; ');
 
 const nextConfig: NextConfig = {
@@ -50,7 +54,7 @@ const nextConfig: NextConfig = {
             value: 'camera=(), microphone=(), geolocation=(), payment=()',
           },
           { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
-          ...(environment.NODE_ENV === 'production'
+          ...(environment.NODE_ENV === 'production' && isSecurePublicOrigin
             ? [
                 {
                   key: 'Strict-Transport-Security',

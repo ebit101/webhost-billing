@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 26 — Add End-to-End Tests
+- **Current command:** Command 57 — Build the Safe Evaluation Demo and Adoption Pack
 - **Current status:** Completed and delivered to GitHub `main`
-- **Last updated:** 2026-08-26
-- **Next command:** Command 27 — Add Observability and Health Checks
+- **Last updated:** 2026-10-01
+- **Next command:** Command 58 — Implement starter issue #18: Add a read-only `demo:doctor` preflight
 - **Next command authorized:** No
 
 ## Command Reports
@@ -3044,6 +3044,116 @@ Authorize Command 57 — Build the Safe Evaluation Demo and Adoption Pack: provi
 one-command fictional-data demo, screenshots, a short walkthrough, a capability and
 limitation matrix, and contributor-ready starter issues without enabling real
 providers or changing the production `NO-GO` decision.
+
+### Command 57 — Build the Safe Evaluation Demo and Adoption Pack
+
+- **Status:** Completed and delivered to GitHub `main`
+- **Date:** 2026-10-01
+
+#### Scope completed
+
+- Added `pnpm demo:up` as a one-command evaluator path that generates local random
+  secrets, migrates and idempotently seeds a dedicated fictional database, creates
+  fictional admin/customer logins, builds production-shaped API/web images, starts
+  the stack, and waits for health/readiness.
+- Added a dedicated Compose project with isolated PostgreSQL/Redis volumes, no
+  host-published data or application ports, a loopback-only gateway, internal
+  application/data networking, bounded container logs, read-only application
+  filesystems, dropped capabilities, and `no-new-privileges`.
+- Added a hardened gateway that installs an outbound firewall before dropping to
+  UID/GID 101. It permits only Docker DNS, the internal web/API upstreams, loopback,
+  and replies to evaluator requests; IPv4 and IPv6 outbound traffic otherwise drops.
+- Omitted worker, scheduler, SMTP, and hosting-provider processes and explicitly
+  disabled bKash and SSLCOMMERZ. Demo bootstrap refuses any mode, database host, or
+  database name outside the exact fictional demo boundary.
+- Added repeatable status, log, credential, screenshot, and non-destructive shutdown
+  commands. Generated runtime credentials remain in a Git-ignored local file and
+  `demo:down` preserves only the dedicated fictional state.
+- Added a private server-side API origin for container traffic while preserving the
+  browser's public same-origin URL. Production HSTS and upgrade headers remain tied
+  to an HTTPS public origin, allowing the explicit loopback HTTP demo without
+  weakening HTTPS production configurations.
+- Added reviewed public catalogue, administrator, and customer screenshots captured
+  through semantic Playwright journeys from the fictional demo.
+- Added the five-minute evaluator walkthrough, safety boundary, troubleshooting,
+  exact capability/limitation matrix, and four bounded starter tasks. Created the
+  approved public GitHub issues #18, #19, #20, and #21.
+- Preserved the immutable `v0.1.0-alpha.1` release and the production `NO-GO`
+  decision; no environment was deployed and no real provider, credential, customer,
+  payment, email address, or domain was used.
+
+#### Files changed
+
+- Demo runtime and gateway: `demo/compose.demo.yaml`, `demo/Dockerfile.gateway`,
+  `demo/gateway-entrypoint.sh`, `demo/nginx.conf`, `demo/bootstrap-users.cjs`
+- Demo orchestration and screenshots: `scripts/demo/manage-demo.mjs`,
+  `apps/web/e2e/capture-demo-screenshots.ts`, `docs/assets/demo/*.png`
+- Container/runtime support: `apps/api/Dockerfile`, `apps/web/next.config.ts`,
+  `apps/web/src/lib/server-auth.ts`, `apps/web/src/lib/server-auth.test.ts`,
+  `packages/config/src/env.ts`, `.dockerignore`, `.gitignore`, `package.json`
+- Evaluator and contributor documentation: `README.md`, `CONTRIBUTING.md`,
+  `CHANGELOG.md`, `docs/SAFE_EVALUATION_DEMO.md`, `docs/CAPABILITY_MATRIX.md`,
+  `docs/STARTER_ISSUES.md`
+- Durable decision, authorization, and evidence: `docs/DECISIONS.md`,
+  `CODEX_DEVELOPMENT_COMMANDS.md`, `docs/PROGRESS.md`
+
+#### Validation
+
+- Clean first startup applied all 21 migrations, idempotently seeded fictional data,
+  bootstrapped both generated-password users, and brought PostgreSQL, Redis, API,
+  web, and gateway health checks to healthy. Repeated `demo:up` reran initialization
+  safely and retained the same isolated state.
+- The host gateway returned HTTP 200 from `127.0.0.1:3100/ready`; inspection showed
+  the only published binding was `127.0.0.1:3100`. PostgreSQL, Redis, API, and web
+  exposed no host ports.
+- Gateway checks reached internal web/API endpoints successfully and failed a direct
+  request to `example.com` under the default-drop OUTPUT policy. Process inspection
+  showed UID/GID 101, zero effective capabilities, and `NoNewPrivs: 1` after setup.
+- `pnpm demo:screenshots` passed authenticated administrator and customer journeys
+  and recreated all three images. Each image was visually reviewed for layout,
+  fictional-only content, loaded application state, and absence of credentials.
+- Prettier, ESLint, strict workspace TypeScript, the full production build (all 29
+  Next.js routes), development Compose rendering, demo Compose rendering, and
+  production Compose rendering with the checked-in example environment passed.
+- The full monorepo test run passed: 26 shared tests, 3 queue tests, 51 web tests, 88
+  API tests, and 29 worker tests. The first full run had one web test exceed its
+  five-second timeout during Docker contention; the focused file immediately passed
+  all 6 tests, and the complete unmodified suite then passed all 197 tests.
+- `git diff --check` passed. Pinned Gitleaks scanned all 73 commits with redaction
+  enabled and found no leak. The generated runtime file stayed ignored, and the
+  reviewed source/screenshots contained no generated demo credential values.
+
+#### Decisions made
+
+- Keep the evaluation stack separate from development and production by Compose
+  project name, network, volumes, runtime file, database identity, queue prefix, and
+  rate-limit namespace.
+- Use production-built application images for realistic evaluation, but omit every
+  process capable of scheduled or external work and block container egress at both
+  the internal-network and gateway-firewall boundaries.
+- Keep the fixed `localhost:3100` origin so cookies, CSRF/origin checks, screenshots,
+  and documentation remain deterministic across supported evaluator systems.
+- Document implemented capability separately from demo visibility and provider or
+  operational acceptance; a visible UI or passing local demo is not a live-readiness
+  claim.
+
+#### Open questions and risks
+
+- This remains an alpha technical preview and is not fit for live use. Production is
+  still `NO-GO`; real providers, credentials, data, payments, email, hosting changes,
+  deployment, backup, monitoring, TLS/DNS, operator, and provider acceptance remain
+  outside this command.
+- The customer portal overview still contains explicitly fictional presentation
+  fixtures; detailed customer pages use authenticated application APIs. GitHub issue
+  #19 scopes the replacement without broadening the product.
+- Generated credentials are intentionally printed to the local evaluator and stored
+  in `.demo-runtime/demo.env`; users must not publish that ignored file or paste its
+  values into issues.
+
+#### Recommended next command
+
+Authorize **Command 58 — Implement starter issue #18: Add a read-only `demo:doctor`
+preflight**. Do not begin it without separate user authorization.
 
 ## Report Template
 

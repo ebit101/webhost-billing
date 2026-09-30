@@ -5,12 +5,17 @@
 **/coverage
 **/playwright-report
 **/test-results
+apps/web/e2e/capture-demo-screenshots.ts
 **/dist
 **/node_modules
 **/*.spec.ts
 **/test
 docs
 scripts
+demo/*.conf
+demo/*.sh
+demo/*.yaml
+demo/Dockerfile.gateway
 **/*.md
 packages/database/src/generated
 *.log

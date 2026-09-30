@@ -6,7 +6,10 @@ import {
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+const API_URL =
+  process.env.INTERNAL_API_URL ??
+  process.env.NEXT_PUBLIC_API_URL ??
+  'http://localhost:3001';
 const authenticatedIdentityResponseSchema = apiSuccessResponseSchema(
   authenticatedIdentitySchema,
 );

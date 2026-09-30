@@ -8,11 +8,22 @@ and will be called out in release notes.
 
 ## [Unreleased]
 
+### Added
+
+- Added a one-command, loopback-only fictional evaluation demo with isolated
+  PostgreSQL/Redis state, generated logins, disabled external providers, and
+  repeatable admin/customer screenshot capture.
+- Added an evaluator walkthrough, capability/limitation matrix, and bounded
+  contributor starter-issue pack.
+
 ### Changed
 
 - Positioned the project explicitly as an AI-assisted technical preview, documented
   its human-directed and human-reviewed Codex work path, and strengthened the warning
   that it is not fit for live use.
+- Made production-built web images support a separate container-internal API origin
+  while retaining the public origin for browser traffic and HTTPS-only production
+  headers.
 
 ## [0.1.0-alpha.1] - 2026-09-30
 

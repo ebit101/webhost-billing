@@ -20,6 +20,20 @@ Small bug fixes, documentation improvements, and tests may be submitted directly
 
 Requirements: Node.js 24, pnpm 11.22, Git, and Docker.
 
+For orientation, start with the isolated fictional-data demo:
+
+```bash
+corepack pnpm demo:up
+```
+
+Use the generated logins only at `http://localhost:3100`, follow
+[`docs/SAFE_EVALUATION_DEMO.md`](docs/SAFE_EVALUATION_DEMO.md), and stop it with
+`corepack pnpm demo:down`. The demo uses separate volumes and does not replace the
+development setup below.
+
+New contributors can choose a bounded task from
+[`docs/STARTER_ISSUES.md`](docs/STARTER_ISSUES.md).
+
 ```bash
 corepack enable
 corepack prepare pnpm@11.22.0 --activate

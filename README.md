@@ -50,6 +50,27 @@ The workspace uses Node.js 24 LTS, pnpm, TypeScript, PostgreSQL, Prisma, Redis, 
 - Node.js 24 LTS and pnpm 11.22, or Docker
 - Git
 
+## Safe local evaluation
+
+With Node.js 24/Corepack and Docker running, start the complete fictional-data demo:
+
+```bash
+corepack pnpm demo:up
+```
+
+It prints generated administrator and customer logins and exposes only
+`http://localhost:3100` on loopback. Application and data services use an internal
+network; only the hardened gateway joins a dedicated ingress bridge. The stack uses
+separate volumes and disabled external providers. Stop it with
+`corepack pnpm demo:down`.
+
+![Webhost Billing safe-demo administrator view](docs/assets/demo/admin-dashboard.png)
+
+Follow the five-minute [`safe evaluation walkthrough`](docs/SAFE_EVALUATION_DEMO.md),
+check the [`capability and limitation matrix`](docs/CAPABILITY_MATRIX.md), or choose a
+bounded [`contributor starter issue`](docs/STARTER_ISSUES.md). The demo does not
+change the production `NO-GO` decision.
+
 ## Install and validate
 
 ```bash
@@ -101,6 +122,9 @@ distribution checks, and maintainer procedures.
 - `docs/BACKUP_AND_RECOVERY.md` — encrypted PostgreSQL backups, isolated restores, migration recovery, secrets recovery, and disaster checklist
 - `docs/PRODUCTION_DEPLOYMENT.md` — production Compose/Nginx topology, HTTPS, secrets, storage, migration, deployment, and rollback runbooks
 - `docs/CODEX_WORKFLOW.md` — human-directed AI-assisted development path, evidence, authority, and attribution
+- `docs/SAFE_EVALUATION_DEMO.md` — isolated one-command fictional demo, walkthrough, commands, and screenshots
+- `docs/CAPABILITY_MATRIX.md` — evaluator-visible features, disabled integrations, limitations, and non-goals
+- `docs/STARTER_ISSUES.md` — bounded contribution tasks with acceptance and validation criteria
 - `docs/CUSTOMER_MANAGEMENT.md` — customer API, authorization, account-access rules, and interfaces
 - `docs/PRODUCTS_AND_PRICING.md` — product lifecycle, versioned prices, public catalogue, and selection flow
 - `docs/ORDER_CREATION.md` — authoritative checkout, idempotency, snapshots, numbering, and order states

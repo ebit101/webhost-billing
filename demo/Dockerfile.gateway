@@ -1,0 +1,13 @@
+# syntax=docker/dockerfile:1.7
+
+FROM nginx:1.29.5-alpine
+
+RUN apk add --no-cache iptables su-exec
+
+COPY gateway-entrypoint.sh /usr/local/bin/safe-gateway-entrypoint
+
+RUN sed -i 's/\r$//' /usr/local/bin/safe-gateway-entrypoint \
+  && chmod 0555 /usr/local/bin/safe-gateway-entrypoint
+
+ENTRYPOINT ["/usr/local/bin/safe-gateway-entrypoint"]
+CMD ["nginx", "-e", "stderr", "-g", "daemon off;"]
