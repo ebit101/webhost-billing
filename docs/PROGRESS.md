@@ -2905,8 +2905,16 @@ and protected credentials exist.
   when the dev server could not allocate 16 MiB while the workstation had about
   1 GiB physical memory free. This is retained as a release blocker until the exact
   commit passes the Chromium lifecycle on GitHub's clean hosted runner.
-- Pending hosted clean-checkout, full-history secret, artifact, checksum, remote tag,
-  and immutable-release verification. This report will be completed with exact
+- The exact release-candidate commit then passed hosted CI run `36720353677` and
+  CodeQL run `36720353763`; hosted CI provided the required clean checkout and
+  independently passed the database, full test, Chromium, audit, license, build,
+  Compose, and full-history Gitleaks gates.
+- The first local artifact build exposed Windows Node 24 `spawnSync pnpm.cmd EINVAL`
+  before either SBOM was written. No remote tag or Release existed. The local tag was
+  removed and the builder was corrected to execute pnpm through its pinned JavaScript
+  entrypoint; the corrected artifact run remains pending.
+- Pending corrected artifact, checksum, remote tag, and immutable-release
+  verification. This report will be completed with exact
   evidence before the command is declared delivered.
 
 #### Decisions made

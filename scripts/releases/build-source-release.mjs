@@ -91,7 +91,12 @@ run('git', [
   requestedTag,
 ]);
 
-const pnpm = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
+const pnpmEntrypoint = process.env.npm_execpath;
+if (!pnpmEntrypoint) {
+  throw new Error(
+    'Run the release builder through the pnpm release:source:build script.',
+  );
+}
 const sbomBaseArguments = [
   'sbom',
   '--sbom-format',
@@ -105,8 +110,14 @@ const sbomBaseArguments = [
   '--sbom-supplier',
   'Webhost Billing contributors',
 ];
-run(pnpm, [...sbomBaseArguments, '--out', join(outputDirectory, artifacts[2])]);
-run(pnpm, [
+run(process.execPath, [
+  pnpmEntrypoint,
+  ...sbomBaseArguments,
+  '--out',
+  join(outputDirectory, artifacts[2]),
+]);
+run(process.execPath, [
+  pnpmEntrypoint,
   ...sbomBaseArguments,
   '--prod',
   '--out',
