@@ -1158,6 +1158,30 @@ Preserve all billing, authorization, idempotency, backup, provider, and deployme
 Document success criteria and rollback, implement/test the selected scope, update docs/PROGRESS.md, commit, reconcile, push main, and stop.
 ```
 
+## Command 55 — Publish the First Source Alpha Release
+
+```text
+Publish `v0.1.0-alpha.1` as a source-only prerelease from a clean reviewed `main`
+commit. Synchronize private workspace metadata to the prerelease version, prepare
+release notes covering installation, all forward-only migrations, configuration,
+known limitations, rollback constraints, and the production `NO-GO` status, and
+generate reproducible Git source archives, complete and production CycloneDX SBOMs,
+and SHA-256 checksums.
+
+From a fresh clone, install exactly from `pnpm-lock.yaml` and rerun formatting,
+lint, strict type checks, package tests, API integration tests, invariant tests,
+Chromium lifecycle, Prisma generation/schema/migration/database checks, dependency
+audit, license inventory, production build, Compose rendering, full-history secret
+scan, and artifact scan. Do not create the tag while a required check is failing.
+
+Enable GitHub release immutability, create the release as a draft, attach every
+artifact, verify remote digests and metadata, then publish it as a prerelease so
+the tag/assets receive GitHub release attestation and become immutable. Do not
+publish container images, a `latest` tag, npm packages, or deploy any environment.
+Update `docs/PROGRESS.md`, commit, reconcile and push `main`, then publish and verify
+the tag/release. Stop and request separate authorization for any next command.
+```
+
 ---
 
 ## Continuation Command

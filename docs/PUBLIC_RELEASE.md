@@ -43,8 +43,9 @@ Before creating a tag:
 5. Review `pnpm licenses list --prod`, update `THIRD_PARTY_NOTICES.md`, and preserve
    all required third-party license material.
 6. Generate an SPDX or CycloneDX SBOM for each distributed artifact.
-7. Build containers from the exact tag without embedded credentials, scan every
-   image, and identify images by immutable digest.
+7. If containers are distributed, build them from the exact tag without embedded
+   credentials, scan every image, and identify images by immutable digest. A
+   source-only release must say explicitly that it contains no container images.
 8. Attach checksums, SBOMs, provenance attestations, upgrade instructions, migration
    notes, known limitations, and rollback information to the GitHub Release.
 9. Verify the release from a fresh clone and, for images, by pulling the published
@@ -59,6 +60,20 @@ The repository's `.gitleaks.toml` extends the default Gitleaks rules with only
 reviewed exact-value exceptions for documentation phrases and explicitly fictional
 test data. New exceptions require the same line-by-line review and must never be
 used to suppress a real or ambiguous credential.
+
+## Source release artifacts
+
+Run `pnpm release:source:build -- <tag>` from the clean commit named by the tag.
+The command refuses a dirty or mismatched checkout and produces Git archives,
+complete and production-only CycloneDX SBOMs, and `SHA256SUMS` under the ignored
+`release-artifacts/<tag>/` directory. Publish the release as a draft, upload every
+asset, and publish only after verifying the remote tag, asset digests, release
+notes, and prerelease status.
+
+Enable GitHub release immutability before the first release. An immutable release
+locks its tag and assets and receives GitHub's release attestation. Consumers can
+verify the release with `gh release verify <tag>` and an individual downloaded
+asset with `gh release verify-asset <tag> <path>`.
 
 ## Repository settings
 

@@ -1,6 +1,6 @@
 {
   "name": "@webhost-billing/web",
-  "version": "0.1.0",
+  "version": "0.1.0-alpha.1",
   "description": "Webhost Billing customer and administrator web application",
   "private": true,
   "license": "Apache-2.0",

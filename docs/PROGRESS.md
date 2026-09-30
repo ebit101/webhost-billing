@@ -2852,6 +2852,84 @@ Confirm the repository-owner security and branch settings, then authorize creati
 limitations. Resume Command 38 separately only after its documented SMTP owner inputs
 and protected credentials exist.
 
+### Command 55 — Publish the First Source Alpha Release
+
+- **Status:** Release candidate prepared; publication validation in progress
+- **Date:** 2026-09-30
+
+#### Scope completed
+
+- Authorized `v0.1.0-alpha.1` as the first public source-only prerelease and kept
+  container publication, npm publication, `latest`, staging, and production outside
+  this command.
+- Synchronized the private monorepo package metadata to `0.1.0-alpha.1` and promoted
+  the public-project changelog entries into the versioned release section.
+- Added release notes with install, configuration, all 21 forward-only migration,
+  rollback, security, artifact-verification, known-limitations, and production
+  `NO-GO` guidance.
+- Added a cross-platform release builder that refuses a dirty or mismatched checkout
+  and generates Git source archives, complete and production-only CycloneDX 1.7
+  SBOMs, and SHA-256 checksums in an ignored local output directory.
+- Enabled immutable releases for the GitHub repository before creating the first
+  release so the published tag/assets will be locked and receive GitHub's release
+  attestation.
+
+#### Files changed
+
+- Release metadata and changelog: root and workspace `package.json` files,
+  `CHANGELOG.md`
+- Release policy and notes: `docs/PUBLIC_RELEASE.md`,
+  `docs/releases/v0.1.0-alpha.1.md`, `docs/DECISIONS.md`
+- Reproducible artifact tooling: `scripts/releases/build-source-release.mjs`,
+  `.gitignore`, root `package.json`
+- Authorized command and tracking: `CODEX_DEVELOPMENT_COMMANDS.md`,
+  `docs/PROGRESS.md`
+
+#### Validation
+
+- Pinned pnpm 11.22.0 accepted the unchanged lockfile. Node syntax, Prettier, package
+  metadata, and `git diff --check` passed.
+- Docker PostgreSQL and Redis were healthy. Prisma 7.10 generated the client,
+  validated the schema, found all 21 migrations applied, reseeded fictional data,
+  and verified schema/data invariants.
+- ESLint, strict workspace TypeScript, all 196 package tests, all 65 API integration
+  tests, and the full critical invariant suite passed.
+- `pnpm audit --prod --audit-level high` reported no known vulnerabilities. The
+  production license inventory parsed and matched the existing reviewed notice:
+  342 packages across permissive, attribution, font/data, and documented compound
+  license categories.
+- The production build passed with all 29 Next.js routes; development and production
+  Compose rendering passed. The changed content passed a redacted Gitleaks scan.
+- The first local Chromium attempt reached the verified 201/202 payment flow, then
+  failed to load Next.js chunks with `ERR_INSUFFICIENT_RESOURCES`. A repeat ended
+  when the dev server could not allocate 16 MiB while the workstation had about
+  1 GiB physical memory free. This is retained as a release blocker until the exact
+  commit passes the Chromium lifecycle on GitHub's clean hosted runner.
+- Pending hosted clean-checkout, full-history secret, artifact, checksum, remote tag,
+  and immutable-release verification. This report will be completed with exact
+  evidence before the command is declared delivered.
+
+#### Decisions made
+
+- Treat this as an evaluation source release, not a production image release or a
+  production-readiness claim.
+- Publish through GitHub's draft-first immutable workflow. Upload and verify every
+  asset before publication because immutable assets cannot later be replaced.
+- Attach both complete and production-only dependency SBOMs so consumers can inspect
+  the build toolchain separately from the runtime dependency surface.
+
+#### Open questions and risks
+
+- Publication must stop if any required validation, hosted check, archive scan,
+  checksum, remote metadata, or immutable-release verification fails.
+- Production remains `NO-GO` and separately blocked at Command 38 regardless of this
+  source release.
+
+#### Recommended next command
+
+Complete Command 55 validation and immutable publication. After delivery, stop and
+request separate authorization before resuming Command 38 or any other command.
+
 ## Report Template
 
 Use this template after every future command:

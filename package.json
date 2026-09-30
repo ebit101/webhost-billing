@@ -1,6 +1,6 @@
 {
   "name": "webhost-billing",
-  "version": "0.1.0",
+  "version": "0.1.0-alpha.1",
   "private": true,
   "description": "Open-source billing and service-management system for web-hosting businesses",
   "license": "Apache-2.0",
@@ -30,6 +30,7 @@
     "production:down": "docker compose --env-file deploy/production/.env.production -f deploy/production/compose.production.yaml down",
     "production:migrate": "docker compose --env-file deploy/production/.env.production -f deploy/production/compose.production.yaml --profile tools run --rm migrate",
     "production:up": "docker compose --env-file deploy/production/.env.production -f deploy/production/compose.production.yaml up --detach --wait",
+    "release:source:build": "node scripts/releases/build-source-release.mjs",
     "pretest": "pnpm build:packages",
     "dev": "pnpm --parallel --stream --filter @webhost-billing/api --filter @webhost-billing/web --filter @webhost-billing/worker dev",
     "format": "prettier --write .",

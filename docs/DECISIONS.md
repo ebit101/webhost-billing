@@ -352,6 +352,14 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** A public GitHub repository without a license grants no general right to use, modify, or redistribute the code. Apache-2.0 enables free personal and commercial adoption with explicit patent terms and preserved notices, while project governance and release controls establish safe contribution and distribution boundaries for security- and finance-sensitive software.
 - **Consequence:** Repository metadata, documentation, packages, and official source releases use SPDX identifier `Apache-2.0`; third-party components retain their own licenses and require release-time notice/SBOM review. Public source availability does not authorize probing hosted installations, does not make a hosted service free, does not grant project trademark endorsement, and does not relax production evidence gates. Pre-1.0 releases remain alpha until the complete release gate passes.
 
+## ADR-043 — Immutable Source-Only First Alpha
+
+- **Status:** Accepted
+- **Date:** 2026-09-30
+- **Decision:** Publish `v0.1.0-alpha.1` as a source-only GitHub prerelease with Git-generated `.tar.gz` and `.zip` archives, complete and production-only CycloneDX 1.7 SBOMs, SHA-256 checksums, and GitHub's immutable-release attestation. Keep every workspace package private and publish no npm package, container image, `latest` tag, or deployment.
+- **Reason:** The public project needs a verifiable evaluation snapshot without implying that the separately blocked production gates have passed. Draft-first immutable publication prevents later tag or asset replacement, while two dependency views make both build-time and runtime review possible.
+- **Consequence:** The release tag and assets cannot be changed after publication. Corrections require a new version. The tagged release stays an alpha evaluation candidate with production `NO-GO`; external providers, production infrastructure, DNS, live data, and hosted applications remain untouched and separately authorized.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

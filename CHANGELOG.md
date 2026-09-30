@@ -8,6 +8,8 @@ and will be called out in release notes.
 
 ## [Unreleased]
 
+## [0.1.0-alpha.1] - 2026-09-30
+
 ### Added
 
 - Apache License 2.0 and public-project governance documentation.
@@ -32,4 +34,5 @@ and will be called out in release notes.
 - Added full-history Gitleaks scanning with a narrow reviewed false-positive
   allowlist; the production dependency audit now reports no known vulnerabilities.
 
-[Unreleased]: https://github.com/ebit101/webhost-billing/compare/main...HEAD
+[Unreleased]: https://github.com/ebit101/webhost-billing/compare/v0.1.0-alpha.1...HEAD
+[0.1.0-alpha.1]: https://github.com/ebit101/webhost-billing/releases/tag/v0.1.0-alpha.1

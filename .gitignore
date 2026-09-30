@@ -27,6 +27,7 @@ webhost-billing.txt
 # Test output
 playwright-report/
 test-results/
+release-artifacts/
 
 # Local database and backup files
 *.dump
