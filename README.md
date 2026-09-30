@@ -4,15 +4,31 @@
 [![CodeQL](https://github.com/ebit101/webhost-billing/actions/workflows/codeql.yml/badge.svg)](https://github.com/ebit101/webhost-billing/actions/workflows/codeql.yml)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
-Webhost Billing is an open-source billing and hosting-service management application
-for a single web-hosting business. It focuses on customer accounts, products, orders,
-invoices, payments, hosting provisioning, renewals, and support without reproducing
-the worldwide feature set of WHMCS.
+Webhost Billing is an AI-assisted, open-source technical foundation for billing and
+hosting-service management at a single web-hosting business. It focuses on customer
+accounts, products, orders, invoices, payments, hosting provisioning, renewals, and
+support without reproducing the worldwide feature set of WHMCS.
 
-> **Alpha software:** there is no stable `1.0` release yet. Use fictional data and
-> disabled/fake external providers while evaluating the project. Before handling real
-> customers or credentials, complete the production, backup, monitoring, MFA, SMTP,
-> payment-provider, and hosting-provider acceptance steps documented under `docs/`.
+> [!WARNING]
+> **Technical preview — not fit for live use.** There is no stable `1.0` release.
+> Do not use real customer data, credentials, payments, email delivery, or hosting
+> provisioning. Evaluate only with fictional data and disabled/fake external
+> providers. Production remains `NO-GO` until every acceptance gate documented under
+> `docs/` has passed.
+
+## Human-directed Codex workflow
+
+This repository is being developed through a documented, command-by-command workflow
+in which OpenAI Codex assists with implementation, testing, review, and documentation.
+Every accepted change is human-reviewed. The human maintainer defines the product,
+authorizes each bounded command, reviews the evidence, controls releases, and retains
+responsibility for every decision.
+
+This describes how the project is developed; the application does not currently ship
+an AI runtime or AI-powered billing feature. Webhost Billing is an independent project
+and is not affiliated with or endorsed by OpenAI. See
+[`docs/CODEX_WORKFLOW.md`](docs/CODEX_WORKFLOW.md) for the work path, evidence model,
+and authority boundaries.
 
 ## Architecture
 
@@ -84,6 +100,7 @@ distribution checks, and maintainer procedures.
 - `docs/OBSERVABILITY.md` — structured logging, correlation, health/readiness, operational metrics, and administrator alert policy
 - `docs/BACKUP_AND_RECOVERY.md` — encrypted PostgreSQL backups, isolated restores, migration recovery, secrets recovery, and disaster checklist
 - `docs/PRODUCTION_DEPLOYMENT.md` — production Compose/Nginx topology, HTTPS, secrets, storage, migration, deployment, and rollback runbooks
+- `docs/CODEX_WORKFLOW.md` — human-directed AI-assisted development path, evidence, authority, and attribution
 - `docs/CUSTOMER_MANAGEMENT.md` — customer API, authorization, account-access rules, and interfaces
 - `docs/PRODUCTS_AND_PRICING.md` — product lifecycle, versioned prices, public catalogue, and selection flow
 - `docs/ORDER_CREATION.md` — authoritative checkout, idempotency, snapshots, numbering, and order states

@@ -2978,6 +2978,73 @@ Stop after Command 55. The exact next recommended command is to resume Command 3
 only after the documented SMTP owner inputs and protected credentials are supplied;
 that command requires separate user authorization.
 
+### Command 56 — Publish the AI-Assisted Technical-Preview Positioning
+
+- **Status:** Completed
+- **Date:** 2026-09-30
+
+#### Scope completed
+
+- Repositioned Webhost Billing publicly as an AI-assisted, human-reviewed,
+  open-source technical foundation rather than an AI-powered application.
+- Added a prominent warning that the technical preview is not fit for live use and
+  must not receive real customer data, credentials, payments, email delivery, or
+  hosting provisioning while production remains `NO-GO`.
+- Documented the human-directed Codex work path from planning and authorization
+  through implementation, validation, human review, evidence recording, delivery,
+  and the mandatory stop before another command.
+- Documented human authority boundaries, the inspectable evidence trail, contributor
+  expectations, accurate public wording, and the independent-project/no-endorsement
+  disclosure.
+- Updated the public GitHub description and ten discovery topics to match the
+  approved positioning. The immutable `v0.1.0-alpha.1` release was not changed.
+
+#### Files changed
+
+- Public positioning and navigation: `README.md`, `CHANGELOG.md`
+- AI-assisted development policy: `docs/CODEX_WORKFLOW.md`,
+  `docs/PUBLIC_RELEASE.md`
+- Durable decision and authorized command: `docs/DECISIONS.md`,
+  `CODEX_DEVELOPMENT_COMMANDS.md`
+- Command evidence: `docs/PROGRESS.md`
+
+#### Validation
+
+- Prettier accepted every changed Markdown file and `git diff --check` passed.
+- The README's relative Codex-workflow link resolves to the new tracked document.
+- The wording distinguishes development assistance from runtime AI behavior and
+  consistently states that every accepted change is human-reviewed.
+- Repository metadata was read back from GitHub. Its description exactly matches the
+  approved AI-assisted, human-reviewed, not-for-live-use wording, and its ten topics
+  include `ai-assisted-development`, `billing`, `web-hosting`, and `self-hosted`.
+- Official OpenAI branding guidance was reviewed before using Codex as factual
+  attribution. The product name and visual identity remain Webhost Billing, with no
+  partnership, sponsorship, or endorsement claim.
+
+#### Decisions made
+
+- Use **AI-assisted technical preview** as the primary public positioning.
+- Treat “all accepted changes are human-reviewed” as a project-level assurance while
+  preserving automated checks as supporting evidence rather than a substitute for
+  review.
+- Reserve **AI-powered** for future separately authorized runtime AI capabilities;
+  Codex attribution describes the engineering workflow only.
+
+#### Open questions and risks
+
+- The project remains a technical foundation and production `NO-GO`. Public interest
+  must not be interpreted as authorization for live evaluation or hosted-system
+  probing.
+- AI-assisted development does not transfer legal, security, financial, operational,
+  or production responsibility away from maintainers and operators.
+
+#### Recommended next command
+
+Authorize Command 57 — Build the Safe Evaluation Demo and Adoption Pack: provide a
+one-command fictional-data demo, screenshots, a short walkthrough, a capability and
+limitation matrix, and contributor-ready starter issues without enabling real
+providers or changing the production `NO-GO` decision.
+
 ## Report Template
 
 Use this template after every future command:

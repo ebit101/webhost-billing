@@ -8,6 +8,12 @@ and will be called out in release notes.
 
 ## [Unreleased]
 
+### Changed
+
+- Positioned the project explicitly as an AI-assisted technical preview, documented
+  its human-directed and human-reviewed Codex work path, and strengthened the warning
+  that it is not fit for live use.
+
 ## [0.1.0-alpha.1] - 2026-09-30
 
 ### Added

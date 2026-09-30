@@ -104,3 +104,14 @@ Apache-2.0 permits modification and redistribution but does not grant trademark
 rights. Forks should use a distinct name and visual identity when their changes could
 reasonably be mistaken for an official release. Accurate statements such as "based on
 Webhost Billing" are welcome.
+
+Describe Webhost Billing as an **AI-assisted open-source technical preview** while its
+production gate remains `NO-GO`. "AI-assisted" refers to the documented development
+workflow; it does not claim that the released application contains an AI runtime or
+AI-powered billing behavior. Every accepted change is human-reviewed. Do not market
+an alpha source release as production-ready.
+
+Codex may be identified factually as a development assistant in documentation and
+project history. Keep Webhost Billing as the product identity, do not incorporate
+OpenAI names or logos into its branding, do not imply sponsorship or endorsement, and
+include the independent-project disclaimer wherever the Codex workflow is introduced.

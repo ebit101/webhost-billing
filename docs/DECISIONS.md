@@ -360,6 +360,14 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** The public project needs a verifiable evaluation snapshot without implying that the separately blocked production gates have passed. Draft-first immutable publication prevents later tag or asset replacement, while two dependency views make both build-time and runtime review possible.
 - **Consequence:** The release tag and assets cannot be changed after publication. Corrections require a new version. The tagged release stays an alpha evaluation candidate with production `NO-GO`; external providers, production infrastructure, DNS, live data, and hosted applications remain untouched and separately authorized.
 
+## ADR-044 — AI-Assisted Technical-Preview Positioning
+
+- **Status:** Accepted
+- **Date:** 2026-09-30
+- **Decision:** Present Webhost Billing as an AI-assisted, open-source technical foundation developed through a documented human-directed and human-reviewed Codex workflow. Keep Webhost Billing as the product identity, state that the application has no current AI runtime or AI-powered billing behavior, disclose that it is independent and not endorsed by OpenAI, and display a prominent not-for-live-use warning while production remains `NO-GO`.
+- **Reason:** The development process is a meaningful and transparent part of the project, but calling the application "AI-powered" would imply runtime capabilities it does not contain. Clear human review, authority, evidence, and readiness boundaries let the project share its AI-assisted work path without misleading evaluators or confusing development attribution with product functionality or endorsement.
+- **Consequence:** Public descriptions may use "AI-assisted technical preview," "developed with a human-directed, human-reviewed Codex workflow," and similar accurate language. They must not claim production readiness, autonomous engineering authority, an OpenAI partnership, sponsorship, or embedded AI features unless separately implemented and documented. Each command remains human-authorized, every accepted change remains human-reviewed, validations remain inspectable, and live providers, data, deployments, costs, and destructive actions require explicit approval.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

@@ -1182,6 +1182,26 @@ Update `docs/PROGRESS.md`, commit, reconcile and push `main`, then publish and v
 the tag/release. Stop and request separate authorization for any next command.
 ```
 
+## Command 56 — Publish the AI-Assisted Technical-Preview Positioning
+
+```text
+Present Webhost Billing accurately as an AI-assisted, open-source technical
+foundation developed through a human-directed and human-reviewed Codex workflow. Add
+a prominent not-for-live-use warning, document the command-by-command work path,
+human authority boundaries, validation evidence, contributor expectations, and
+independent-project attribution, and record the durable positioning decision.
+
+Do not call the application AI-powered unless it contains separately authorized and
+documented runtime AI behavior. Do not imply production readiness, autonomous release
+authority, an OpenAI partnership, sponsorship, or endorsement. Keep Webhost Billing
+as the product identity and use Codex only as factual development attribution.
+
+Update the public repository description and discovery topics to match the approved
+positioning without changing the immutable alpha release. Validate documentation and
+links, update docs/PROGRESS.md, commit, reconcile, push main, verify hosted checks and
+repository metadata, then stop and request separate authorization for any next command.
+```
+
 ---
 
 ## Continuation Command
