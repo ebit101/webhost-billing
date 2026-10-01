@@ -106,7 +106,35 @@ all acceptance gates. Running this demo does not change production `NO-GO`.
 | `corepack pnpm demo:status`      | Show container state and health                     |
 | `corepack pnpm demo:logs`        | Follow bounded local demo logs                      |
 | `corepack pnpm demo:screenshots` | Recreate the reviewed evaluator screenshots         |
+| `corepack pnpm demo:a11y`        | Run the bounded accessibility smoke audit           |
 | `corepack pnpm demo:down`        | Stop the demo and retain its fictional state        |
+
+## Accessibility smoke audit
+
+With the healthy safe demo running, execute:
+
+```bash
+corepack pnpm demo:a11y
+```
+
+The command uses the repository-pinned Chromium and `@axe-core/playwright` to audit
+the public hosting catalogue, customer sign-in, authenticated customer overview,
+and authenticated administrator dashboard at the fixed
+`http://localhost:3100` origin. It fails on automated serious or critical WCAG A/AA
+findings. Output is deliberately limited to routes and bounded rule IDs; generated
+passwords, cookies, tokens, node details, raw browser errors, screenshots, traces,
+and videos are never printed or retained.
+
+The audit also checks that the skip link is first in the keyboard path and that the
+mobile public navigation can be opened, entered, and closed from the keyboard. It
+waits for named headings, form controls, and authenticated page content rather than
+arbitrary delays. It signs in only with the generated fictional accounts and does
+not submit a billing, payment, provisioning, support, provider, or other business
+mutation.
+
+This is a bounded automated smoke test, not accessibility certification. It cannot
+replace assistive-technology testing, human keyboard review, usability evaluation,
+or the component checks described in `FRONTEND_DESIGN_SYSTEM.md`.
 
 ## Screenshots
 
@@ -144,7 +172,8 @@ application APIs with fictional demo records.
 - If startup fails, run `corepack pnpm demo:status` and
   `corepack pnpm demo:logs`. Redact generated credentials before sharing output.
 - If Chromium is missing, `demo:screenshots` installs the repository-pinned browser
-  before capture. Normal evaluation does not require Playwright.
+  before capture. `demo:a11y` does the same before auditing. Normal evaluation does
+  not require Playwright.
 - First-run image compilation is much slower than later cached starts. Do not bypass
   a failed health check or connect directly to the database to make the UI appear
   ready.

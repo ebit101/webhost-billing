@@ -25,6 +25,7 @@
     "db:validate": "pnpm --filter @webhost-billing/database db:validate",
     "db:verify": "pnpm --filter @webhost-billing/database db:verify",
     "docs:links": "node scripts/docs/check-markdown-links.mjs",
+    "demo:a11y": "node scripts/demo/manage-demo.mjs a11y",
     "demo:credentials": "node scripts/demo/manage-demo.mjs credentials",
     "demo:doctor": "node scripts/demo/manage-demo.mjs doctor",
     "demo:down": "node scripts/demo/manage-demo.mjs down",

@@ -77,7 +77,7 @@ export function WorkspaceShell({
           </button>
         </div>
         <div className="px-5 pt-5">
-          <p className="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-slate-500">
+          <p className="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-slate-400">
             {mode === 'admin' ? 'Administrator' : 'Customer portal'}
           </p>
         </div>
@@ -103,7 +103,7 @@ export function WorkspaceShell({
                     aria-current={active ? 'page' : undefined}
                     className={`flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
                       active
-                        ? 'bg-brand-500 text-white shadow-lg shadow-brand-950/25'
+                        ? 'bg-brand-700 text-white shadow-lg shadow-brand-950/25'
                         : 'text-slate-300 hover:bg-white/8 hover:text-white'
                     }`}
                   >

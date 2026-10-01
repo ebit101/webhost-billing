@@ -84,8 +84,14 @@ function initializeRuntime() {
   }
 }
 
-function readEnvironment() {
-  initializeRuntime();
+function readEnvironment(options = {}) {
+  if (options.createIfMissing === false) {
+    if (!existsSync(environmentPath)) {
+      throw new Error('Start the safe demo before running this command');
+    }
+  } else {
+    initializeRuntime();
+  }
   return Object.fromEntries(
     readFileSync(environmentPath, 'utf8')
       .split(/\r?\n/u)
@@ -213,6 +219,33 @@ async function main() {
     );
     return;
   }
+  if (command === 'a11y') {
+    ensureDocker();
+    const environment = readEnvironment({ createIfMissing: false });
+    await waitForReady();
+    runPnpm(
+      [
+        '--filter',
+        '@webhost-billing/web',
+        'exec',
+        'playwright',
+        'install',
+        'chromium',
+      ],
+      environment,
+    );
+    runPnpm(
+      [
+        '--filter',
+        '@webhost-billing/web',
+        'exec',
+        'tsx',
+        'e2e/audit-safe-demo-accessibility.ts',
+      ],
+      environment,
+    );
+    return;
+  }
 
   process.stdout.write(`Safe evaluation demo commands:\n\n`);
   process.stdout.write(
@@ -226,6 +259,9 @@ async function main() {
   process.stdout.write(`  pnpm demo:logs         Follow demo logs\n`);
   process.stdout.write(
     `  pnpm demo:screenshots  Refresh reviewed screenshots\n`,
+  );
+  process.stdout.write(
+    `  pnpm demo:a11y         Audit the running fictional demo\n`,
   );
   process.stdout.write(
     `  pnpm demo:down         Stop containers and retain data\n`,

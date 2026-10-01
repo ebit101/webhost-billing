@@ -22,7 +22,9 @@ export function Brand({ inverse = false }: { inverse?: boolean }) {
         <Icon name="server" className="size-5" />
       </span>
       <span className="leading-none">
-        <span className="block text-[0.68rem] font-bold uppercase tracking-[0.18em] opacity-65">
+        <span
+          className={`block text-[0.68rem] font-bold uppercase tracking-[0.18em] ${inverse ? 'text-white' : 'opacity-65'}`}
+        >
           Webhost
         </span>
         <span className="mt-1 block text-base font-bold tracking-tight">

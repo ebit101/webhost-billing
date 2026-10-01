@@ -10,6 +10,9 @@ and will be called out in release notes.
 
 ### Added
 
+- Added a loopback-only safe-demo accessibility smoke audit for four evaluator
+  routes, serious/critical WCAG A/AA findings, the skip link, and responsive keyboard
+  navigation with redacted bounded output.
 - Added an offline, cross-platform Markdown link validator with fixture coverage,
   contributor documentation, and an ordinary CI gate.
 - Added the second bounded contributor starter-issue set covering offline Markdown

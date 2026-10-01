@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 63 — Implement starter issue #22: Add offline Markdown link validation to CI
-- **Current status:** Completed and delivered to GitHub `main`
+- **Current command:** Command 64 — Implement starter issue #23: Add a safe-demo accessibility smoke audit
+- **Current status:** Completed locally; GitHub delivery verification pending
 - **Last updated:** 2026-10-01
-- **Next command:** Command 64 — Implement starter issue #23: Add a safe-demo accessibility smoke audit
+- **Next command:** Command 65 — Implement starter issue #24: Add an explicitly guarded safe-demo reset command
 - **Next command authorized:** No
 
 ## Command Reports
@@ -3694,6 +3694,106 @@ automatically.
 Authorize **Command 64 — Implement starter issue #23: Add a safe-demo accessibility
 smoke audit** only after separate review and authorization. Do not start it
 automatically.
+
+### Command 64 — Implement Starter Issue #23: Add a Safe-Demo Accessibility Smoke Audit
+
+- **Status:** Completed locally; GitHub delivery verification pending
+- **Date:** 2026-10-01
+
+#### Scope completed
+
+- Added `pnpm demo:a11y`, which requires an already-running safe demo at the fixed
+  loopback origin and refuses to generate a replacement runtime credential file.
+- Added a Playwright accessibility runner using repository-pinned Chromium and
+  pinned `@axe-core/playwright` `4.13.0` to audit `/hosting`, `/login`, authenticated
+  `/portal`, and authenticated `/admin`.
+- Limited the automated gate to serious or critical WCAG A/AA findings and bounded
+  failure reports to route names and at most eight sorted rule IDs per route. Raw
+  nodes, HTML, browser errors, credentials, cookies, tokens, screenshots, traces,
+  and videos are not emitted.
+- Used the generated fictional administrator and customer credentials only inside
+  the runner, waited for route-specific semantic content, and added keyboard checks
+  for the skip link plus opening, entering, and closing the responsive public
+  navigation.
+- Corrected the serious findings found by the audit: named the live notification
+  region semantically and raised contrast for the authentication brand treatment,
+  workspace labels and active navigation, and administrator chart dates.
+- Documented command usage, audited routes, severity and output boundaries,
+  credential handling, keyboard coverage, non-mutation boundary, and the explicit
+  fact that the smoke audit is not accessibility certification.
+- Marked starter issue #23 complete in the contributor task catalogue. No billing,
+  payment, provisioning, support, schema, provider, release, or production behavior
+  changed.
+
+#### Files changed
+
+- Audit runner: `apps/web/e2e/audit-safe-demo-accessibility.ts`
+- Demo command orchestration and root command: `scripts/demo/manage-demo.mjs`,
+  `package.json`
+- Pinned accessibility engine and lockfile: `apps/web/package.json`, `pnpm-lock.yaml`
+- Focused accessibility corrections and coverage:
+  `apps/web/src/components/auth/auth-shell.tsx`,
+  `apps/web/src/components/dashboard/admin-dashboard.tsx`,
+  `apps/web/src/components/layout/brand.tsx`,
+  `apps/web/src/components/layout/workspace-shell.tsx`,
+  `apps/web/src/components/ui/toast.tsx`,
+  `apps/web/src/components/ui/ui-interactions.test.tsx`
+- Evaluator and public change documentation: `docs/SAFE_EVALUATION_DEMO.md`,
+  `docs/STARTER_ISSUES.md`, `CHANGELOG.md`
+- Command evidence and next authorization: `docs/PROGRESS.md`
+
+#### Validation
+
+- `pnpm demo:a11y` passed against the healthy loopback demo: `/hosting`, `/login`,
+  authenticated `/portal`, authenticated `/admin`, the skip link, and responsive
+  public navigation all passed.
+- Five relevant web test files passed all 12 tests, including the notification-region
+  assertion and existing workspace, authentication, customer-overview, and
+  administrator-dashboard coverage.
+- `pnpm format:check`, `pnpm docs:links`, `pnpm lint`, strict `pnpm typecheck`, and
+  `pnpm install --frozen-lockfile --lockfile-only` passed.
+- The web production build passed and generated all 29 static/dynamic application
+  routes successfully.
+- The Windows root `pnpm test` run passed all six demo-doctor tests, all four
+  documentation-link tests, all 26 shared tests, all three queue tests, all 55 web
+  tests, and 21 API suites/80 tests. Windows Application Control prevented the
+  existing native `argon2` binary from loading in two remaining API suites; it was
+  not a test assertion failure.
+- The two policy-blocked API suites were rerun from the current API source in the
+  isolated Linux demo builder image and passed both suites/all eight tests.
+- The separately run worker package suite passed all ten suites/all 29 tests.
+- Hosted CI and CodeQL verification are pending the delivery commit.
+
+#### Decisions made
+
+- Keep the audit evaluator-operated and loopback-only instead of adding a hosted
+  scanner, remote target option, browser matrix, or CI dependency on a demo stack.
+- Use explicit semantic readiness checks for each route and control; no arbitrary
+  browser delay is used.
+- Keep credentials in process memory only and configure no retained Playwright
+  artifacts so generated passwords and authenticated state cannot enter reports.
+- Treat the audit as a narrow regression smoke gate. Manual review and broader
+  assistive-technology testing remain necessary for accessibility assurance.
+- Make only the smallest contrast and live-region corrections demonstrated by the
+  audit; no general interface redesign was introduced.
+
+#### Open questions and risks
+
+- Automated axe checks cannot establish full WCAG conformance or replace keyboard,
+  screen-reader, zoom, reflow, and cognitive-accessibility review.
+- The command requires the existing safe demo and fixed port `3100`; it deliberately
+  does not start, reset, or target another environment.
+- Windows Application Control continues to block the installed native `argon2`
+  binary; Linux/hosted validation remains required for the affected API suites on
+  this machine.
+- Production remains `NO-GO`; the immutable `v0.1.0-alpha.1` release, schemas,
+  providers, real identities, and live environments were not changed.
+
+#### Recommended next command
+
+Authorize **Command 65 — Implement starter issue #24: Add an explicitly guarded
+safe-demo reset command** only after separate review and authorization. Do not start
+it automatically.
 
 ## Report Template
 

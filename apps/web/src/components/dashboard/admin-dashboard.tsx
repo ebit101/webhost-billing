@@ -281,7 +281,7 @@ export function AdminDashboard() {
               );
             })}
           </div>
-          <div className="mt-2 flex justify-between text-xs text-slate-400">
+          <div className="mt-2 flex justify-between text-xs text-slate-600">
             <span>{from}</span>
             <span>{to}</span>
           </div>

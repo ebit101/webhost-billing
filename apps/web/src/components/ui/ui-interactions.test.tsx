@@ -84,6 +84,7 @@ describe('interactive UI primitives', () => {
       </ToastProvider>,
     );
 
+    expect(screen.getByRole('region', { name: 'Notifications' })).toBeTruthy();
     await user.click(screen.getByRole('button', { name: 'Show notification' }));
     expect(screen.getByRole('status').textContent).toContain('Saved safely');
     await user.click(

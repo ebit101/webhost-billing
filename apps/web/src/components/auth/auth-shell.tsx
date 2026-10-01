@@ -41,7 +41,7 @@ export function AuthShell({
               ))}
             </ul>
           </div>
-          <p className="text-xs text-cyan-100/65">Private hosting workspace</p>
+          <p className="text-xs text-cyan-50">Private hosting workspace</p>
         </div>
         <div className="px-6 py-7 sm:px-10 sm:py-10 lg:px-12">
           <div className="mb-9 flex items-center justify-between lg:hidden">

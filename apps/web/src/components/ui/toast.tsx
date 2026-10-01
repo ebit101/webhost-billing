@@ -50,6 +50,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {children}
       <div
         className="pointer-events-none fixed inset-x-4 bottom-4 z-[60] flex flex-col items-end gap-3 sm:left-auto sm:w-96"
+        role="region"
         aria-live="polite"
         aria-label="Notifications"
       >
