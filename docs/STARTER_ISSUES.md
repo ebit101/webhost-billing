@@ -51,6 +51,8 @@ general dashboard redesign.
 
 ## 3. [Add a mobile safe-demo screenshot](https://github.com/ebit101/webhost-billing/issues/20)
 
+**Status:** Completed by Command 60 on 2026-10-01.
+
 **Suggested labels:** `good first issue`, `help wanted`, `accessibility`
 
 Extend the existing Playwright capture script with one useful mobile viewport image

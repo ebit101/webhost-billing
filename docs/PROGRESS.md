@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 59 — Implement starter issue #19: Replace customer portal overview fixtures with authenticated data
+- **Current command:** Command 60 — Implement starter issue #20: Add a mobile safe-demo screenshot
 - **Current status:** Completed and delivered to GitHub `main`
 - **Last updated:** 2026-10-01
-- **Next command:** Command 60 — Implement starter issue #20: Add a mobile safe-demo screenshot
+- **Next command:** Command 61 — Implement starter issue #21: Add a Bengali safe-demo quick-start translation
 - **Next command authorized:** No
 
 ## Command Reports
@@ -3351,6 +3351,85 @@ not start it automatically.
 Authorize **Command 60 — Implement starter issue #20: Add a mobile safe-demo
 screenshot** only after separate review and authorization. Do not start it
 automatically.
+
+### Command 60 — Implement Starter Issue #20: Add a Mobile Safe-Demo Screenshot
+
+- **Status:** Completed and delivered to GitHub `main`
+- **Date:** 2026-10-01
+
+#### Scope completed
+
+- Extended the existing safe-demo Playwright capture with one public hosting
+  catalogue asset at a 390-pixel-wide touch/mobile viewport.
+- Kept the established desktop catalogue, administrator dashboard, and authenticated
+  customer portal captures in the same repository-pinned Chromium journey.
+- Waited for the catalogue heading, fictional Starter Hosting plan, selected monthly
+  billing state, and primary checkout action rather than an arbitrary timeout.
+- Sized the mobile capture from the measured primary-action boundary so the plan,
+  price, features, and **Choose Starter Hosting** action are all visible without the
+  horizontally scrollable comparison table.
+- Disabled CSS animations and carets only during screenshot writing to avoid
+  mid-transition pixels without changing application behavior.
+- Documented and visually reviewed the new asset. It contains only public fictional
+  catalogue data and no authentication or private-host material.
+- Marked starter issue #20 complete in the contributor pack and added the separately
+  gated Command 61 for starter issue #21.
+
+#### Files changed
+
+- Deterministic Playwright capture: `apps/web/e2e/capture-demo-screenshots.ts`
+- Reviewed mobile asset: `docs/assets/demo/hosting-catalog-mobile.png`
+- Regenerated reviewed desktop assets: `docs/assets/demo/hosting-catalog.png`,
+  `docs/assets/demo/admin-dashboard.png`
+- Evaluator and contributor documentation: `docs/SAFE_EVALUATION_DEMO.md`,
+  `docs/STARTER_ISSUES.md`, `CHANGELOG.md`
+- Authorized/current command records: `CODEX_DEVELOPMENT_COMMANDS.md`,
+  `docs/PROGRESS.md`
+
+#### Validation
+
+- The isolated fictional demo reported HTTP `200` readiness and all five demo
+  services were healthy before capture.
+- The focused repository-pinned Chromium capture completed and created a 390×1045
+  mobile PNG. Visual review confirmed readable branding, heading, billing selector,
+  BDT price, feature list, and primary checkout action with no clipped primary
+  content.
+- Visual/source review found no password, cookie, token, generated secret, private
+  host detail, or real identity in the new image or capture code.
+- Repository ESLint and strict TypeScript checks across all seven code workspaces
+  passed.
+- All 55 web component/server tests passed, and the Next.js production build passed
+  with all 29 routes.
+- Repository Prettier, `git diff --check`, documentation asset-reference checks, and
+  a high-confidence changed-text secret scan passed; no demo runtime or environment
+  file is tracked.
+
+#### Decisions made
+
+- Use the unauthenticated catalogue rather than a customer service page so the mobile
+  adoption asset cannot contain session-bound or account-private content.
+- Use a 390-pixel width with touch/mobile emulation and derive the capture height from
+  the visible primary action. This preserves a recognizable mobile page while
+  excluding lower horizontally scrollable comparison content.
+- Treat application semantics as the readiness boundary and Playwright's built-in
+  animation disabling as capture stabilization; do not introduce sleep timers or a
+  hosted visual-regression service.
+
+#### Open questions and risks
+
+- The screenshots remain reviewed examples from fictional local data, not automated
+  pixel-diff assertions and not evidence of production readiness.
+- Rapid repeated full capture attempts correctly encounter the existing 5-per-15-
+  minute login rate limit. The script does not bypass or clear that security control;
+  normal evaluator capture remains the supported path.
+- The safe demo remains local alpha evaluation software. Production is still
+  `NO-GO`, and no provider, application, schema, or deployment behavior changed.
+
+#### Recommended next command
+
+Authorize **Command 61 — Implement starter issue #21: Add a Bengali safe-demo
+quick-start translation** only after separate review and authorization. Do not start
+it automatically.
 
 ## Report Template
 

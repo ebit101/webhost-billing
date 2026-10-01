@@ -1296,6 +1296,28 @@ checks, close issue #20 if repository authority is available, then stop and requ
 separate authorization for any next command.
 ```
 
+## Command 61 — Implement Starter Issue #21: Add a Bengali Safe-Demo Quick-Start Translation
+
+```text
+Implement public starter issue #21 as a concise Bengali companion to the canonical
+English safe-demo guide. Preserve the exact technical-preview, not-fit-for-live-use,
+fictional-data-only, production NO-GO, provider-disabled, and secret-handling
+meanings. Cover prerequisites, startup, fictional logins, the walkthrough, shutdown,
+and safe reporting without translating commands, routes, email addresses, or
+filenames.
+
+Link the Bengali companion from the English guide while keeping the English guide
+canonical. Do not add application localization, translate unrelated documentation,
+publish generated credentials, change provider or deployment behavior, or weaken any
+safety warning.
+
+Run Markdown formatting, link/reference checks, terminology and secret review, and
+the relevant documentation validation. Update documentation and
+`docs/PROGRESS.md`, commit, reconcile, push main, verify hosted checks, close issue
+#21 if repository authority is available, then stop and request separate
+authorization for any next command.
+```
+
 ---
 
 ## Continuation Command

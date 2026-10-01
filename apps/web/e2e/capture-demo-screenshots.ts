@@ -12,7 +12,17 @@ async function main(): Promise<void> {
 
   const browser = await chromium.launch({ headless: true });
   try {
-    await capturePublicCatalog(browser);
+    await capturePublicCatalog(
+      browser,
+      { width: 1440, height: 960 },
+      'hosting-catalog.png',
+    );
+    await capturePublicCatalog(
+      browser,
+      { width: 390, height: 844 },
+      'hosting-catalog-mobile.png',
+      true,
+    );
     await captureWorkspace(
       browser,
       'admin@example.test',
@@ -36,11 +46,18 @@ async function main(): Promise<void> {
   }
 }
 
-async function capturePublicCatalog(browser: Browser): Promise<void> {
+async function capturePublicCatalog(
+  browser: Browser,
+  viewport: { width: number; height: number },
+  filename: string,
+  mobile = false,
+): Promise<void> {
   const context = await browser.newContext({
     colorScheme: 'light',
     deviceScaleFactor: 1,
-    viewport: { width: 1440, height: 960 },
+    hasTouch: mobile,
+    isMobile: mobile,
+    viewport,
   });
   const page = await context.newPage();
   await page.goto(`${baseUrl}/hosting`, { waitUntil: 'networkidle' });
@@ -48,11 +65,34 @@ async function capturePublicCatalog(browser: Browser): Promise<void> {
     .getByRole('heading', { name: 'Clear hosting plans with room to grow.' })
     .waitFor();
   await page.getByRole('heading', { name: 'Starter Hosting' }).waitFor();
-  await page.getByRole('button', { name: 'Monthly' }).click();
-  await page.screenshot({
-    path: resolve(outputDirectory, 'hosting-catalog.png'),
-    fullPage: true,
+  const monthlyButton = page.getByRole('button', { name: 'Monthly' });
+  await monthlyButton.click();
+  const primaryAction = page.getByRole('link', {
+    name: 'Choose Starter Hosting',
   });
+  await primaryAction.waitFor();
+  if ((await monthlyButton.getAttribute('aria-pressed')) !== 'true') {
+    throw new Error('Monthly catalogue pricing did not become active');
+  }
+  const path = resolve(outputDirectory, filename);
+  if (mobile) {
+    const actionBounds = await primaryAction.boundingBox();
+    if (!actionBounds) {
+      throw new Error('Mobile catalogue action is not visible');
+    }
+    await page.setViewportSize({
+      width: viewport.width,
+      height: Math.ceil(actionBounds.y + actionBounds.height + 32),
+    });
+    await page.screenshot({ path, animations: 'disabled', caret: 'hide' });
+  } else {
+    await page.screenshot({
+      path,
+      animations: 'disabled',
+      caret: 'hide',
+      fullPage: true,
+    });
+  }
   await context.close();
 }
 
@@ -76,6 +116,8 @@ async function captureWorkspace(
   await page.getByText(readyText, { exact: true }).waitFor();
   await page.screenshot({
     path: resolve(outputDirectory, filename),
+    animations: 'disabled',
+    caret: 'hide',
     fullPage: true,
   });
   await context.close();

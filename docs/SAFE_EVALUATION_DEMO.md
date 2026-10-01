@@ -109,14 +109,25 @@ all acceptance gates. Running this demo does not change production `NO-GO`.
 
 ![Fictional hosting catalogue](assets/demo/hosting-catalog.png)
 
+![Mobile fictional hosting catalogue](assets/demo/hosting-catalog-mobile.png)
+
 ![Administrator dashboard](assets/demo/admin-dashboard.png)
 
 ![Customer portal](assets/demo/customer-portal.png)
 
-The screenshots are generated from the safe demo with Playwright. They are examples,
-not proof of production readiness. The customer portal overview and detailed
-services, invoices, orders, profile, and support screens use ownership-bound
-authenticated application APIs with fictional demo records.
+The screenshots are generated from the safe demo with the repository-pinned
+Playwright Chromium. They are examples, not proof of production readiness. The
+mobile catalogue uses a 390-pixel-wide touch viewport and ends immediately below the
+primary **Choose Starter Hosting** action. Capture waits for the catalogue heading,
+fictional Starter Hosting plan, selected monthly period, and checkout action; it does
+not use an arbitrary delay. Animations and carets are disabled only while pixels are
+captured so repeat runs do not stop mid-transition.
+
+The mobile asset was visually reviewed for readable plan text, price, features, and
+primary action. It contains no password, cookie, token, generated secret, private
+host detail, or real identity. The customer portal overview and detailed services,
+invoices, orders, profile, and support screens use ownership-bound authenticated
+application APIs with fictional demo records.
 
 ## Troubleshooting
 

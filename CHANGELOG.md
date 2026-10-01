@@ -10,6 +10,8 @@ and will be called out in release notes.
 
 ### Added
 
+- Added a reviewed 390-pixel-wide mobile safe-demo catalogue screenshot with
+  transition-stable Playwright capture and a visible primary checkout action.
 - Added a cross-platform, read-only `demo:doctor` preflight with redacted Docker,
   Compose, Engine, port, and runtime-file diagnostics plus focused failure tests.
 - Added a one-command, loopback-only fictional evaluation demo with isolated
