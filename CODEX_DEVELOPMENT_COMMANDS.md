@@ -1250,6 +1250,52 @@ if repository authority is available, then stop and request separate authorizati
 for any next command.
 ```
 
+## Command 59 — Implement Starter Issue #19: Replace Customer Portal Overview Fixtures With Authenticated Data
+
+```text
+Implement public starter issue #19 using only the existing authenticated customer
+APIs. Replace every customer portal overview fixture with the signed-in customer's
+name, authoritative account totals, and bounded recent service, invoice, and ticket
+records. Derive the customer identifier from the server-validated session and retain
+the existing API ownership checks.
+
+Keep monetary values as string-safe integer minor units and render them through the
+shared formatter. Add explicit accessible loading, empty, and error states. Remove
+hard-coded customer names, domains, invoice identifiers, amounts, dates, and
+navigation counts from the overview without adding API capabilities, migrations,
+provider behavior, payment behavior, or a general dashboard redesign.
+
+Add component tests for populated, empty, and error states plus server-boundary
+coverage proving the overview customer identifier comes from the authenticated
+customer session. Re-run the existing cross-customer ownership regression. Run
+formatting, lint, strict type checks, complete package tests, the relevant API
+integration test, production build, demo screenshot/smoke validation, and
+source/secret review. Update documentation and `docs/PROGRESS.md`, commit, reconcile,
+push main, verify hosted checks, close issue #19 if repository authority is
+available, then stop and request separate authorization for any next command.
+```
+
+## Command 60 — Implement Starter Issue #20: Add a Mobile Safe-Demo Screenshot
+
+```text
+Implement public starter issue #20 by extending the existing safe-demo Playwright
+capture with one useful mobile viewport screenshot of the public catalogue or the
+authenticated customer service list. Use the repository-pinned Chromium and the
+existing loopback-only fictional demo. Wait for semantic application state rather
+than arbitrary timeouts and keep the capture repeatable.
+
+Do not capture or print any password, cookie, token, generated secret, private host
+detail, or real identity. Keep the primary content and actions legible at the chosen
+viewport and document the new reviewed asset without introducing a hosted visual
+regression service or changing application behavior.
+
+Run the focused capture, visually inspect the result, run formatting, lint, strict
+type checks, relevant tests/builds, demo health and source/secret review. Update
+documentation and `docs/PROGRESS.md`, commit, reconcile, push main, verify hosted
+checks, close issue #20 if repository authority is available, then stop and request
+separate authorization for any next command.
+```
+
 ---
 
 ## Continuation Command

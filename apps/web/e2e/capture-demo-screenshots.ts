@@ -27,8 +27,8 @@ async function main(): Promise<void> {
       'customer@example.test',
       customerPassword,
       '/portal',
-      'Good morning, Amina',
-      'Your services',
+      'Welcome, Fictional',
+      'Recent services',
       'customer-portal.png',
     );
   } finally {

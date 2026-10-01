@@ -20,6 +20,9 @@ and will be called out in release notes.
 
 ### Changed
 
+- Replaced the customer portal overview presentation fixtures with an
+  ownership-bound authenticated summary, bounded recent records, and explicit
+  loading, empty, and error states.
 - Positioned the project explicitly as an AI-assisted technical preview, documented
   its human-directed and human-reviewed Codex work path, and strengthened the warning
   that it is not fit for live use.

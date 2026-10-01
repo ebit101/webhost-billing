@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 58 — Implement starter issue #18: Add a read-only `demo:doctor` preflight
+- **Current command:** Command 59 — Implement starter issue #19: Replace customer portal overview fixtures with authenticated data
 - **Current status:** Completed and delivered to GitHub `main`
 - **Last updated:** 2026-10-01
-- **Next command:** Command 59 — Implement starter issue #19: Replace customer portal overview fixtures with authenticated data
+- **Next command:** Command 60 — Implement starter issue #20: Add a mobile safe-demo screenshot
 - **Next command authorized:** No
 
 ## Command Reports
@@ -3245,6 +3245,108 @@ preflight**. Do not begin it without separate user authorization.
 Authorize **Command 59 — Implement starter issue #19: Replace customer portal overview
 fixtures with authenticated data** only after separate review and authorization. Do
 not start it automatically.
+
+### Command 59 — Implement Starter Issue #19: Replace Customer Portal Overview Fixtures With Authenticated Data
+
+- **Status:** Completed and delivered to GitHub `main`
+- **Date:** 2026-10-01
+
+#### Scope completed
+
+- Replaced the portal overview's hard-coded customer name, domains, service states,
+  invoice number, amount, due date, ticket state, metric values, and preview actions
+  with the signed-in customer's authenticated data.
+- Bound the overview customer identifier to the server-validated `CUSTOMER` session.
+  The browser cannot select another customer, and the existing API ownership guard
+  remains the object-level authorization boundary.
+- Reused the existing customer-detail API's authoritative total counts and at most
+  ten recent services, invoices, and tickets. Added clear copy identifying the
+  recent service list as bounded.
+- Kept all monetary amounts as decimal-string integer minor units and rendered them
+  through the existing shared `BigInt`-based formatter.
+- Added accessible loading, retryable error, and separate empty states for services,
+  invoices, and support tickets.
+- Removed the static service/invoice navigation badges and the Command 6 fictional
+  interaction preview from the overview.
+- Updated the safe-demo screenshot journey and regenerated/reviewed its public
+  catalogue, administrator, and authenticated customer images. The customer image
+  now shows only API-backed fictional account data.
+- Updated the changelog, capability matrix, evaluator guide, starter-issue status,
+  and command catalogue without adding an API, migration, provider behavior,
+  payment behavior, or general dashboard redesign.
+
+#### Files changed
+
+- Authenticated portal overview and navigation:
+  `apps/web/src/app/(portal)/portal/page.tsx`,
+  `apps/web/src/app/(portal)/portal/layout.tsx`,
+  `apps/web/src/components/dashboard/customer-portal-overview.tsx`
+- Component and server-boundary coverage:
+  `apps/web/src/components/dashboard/customer-portal-overview.test.tsx`,
+  `apps/web/src/app/(portal)/portal/page.test.tsx`
+- Safe-demo capture and reviewed images:
+  `apps/web/e2e/capture-demo-screenshots.ts`, `docs/assets/demo/*.png`
+- Public and contributor documentation: `CHANGELOG.md`,
+  `docs/CAPABILITY_MATRIX.md`, `docs/SAFE_EVALUATION_DEMO.md`,
+  `docs/STARTER_ISSUES.md`
+- Authorized/current command records: `CODEX_DEVELOPMENT_COMMANDS.md`,
+  `docs/PROGRESS.md`
+
+#### Validation
+
+- Focused portal component/server suite passed four tests covering authenticated
+  populated data, all three empty states, the accessible error/retry state, and the
+  server-session customer-ID binding.
+- The existing customer API E2E suite passed two PostgreSQL/Redis tests, including
+  the regression that another customer receives `403` for foreign customer detail.
+- Repository Prettier, `git diff --check`, API/worker/web ESLint, and strict
+  TypeScript checks across all seven code workspaces passed.
+- The complete root package gate passed 207 tests: 6 demo doctor, 26 shared, 3 queue,
+  55 web, 88 API, and 29 worker tests.
+- The complete production build passed for config/database/shared/queue/API/worker/web;
+  Next.js generated all 29 routes and kept `/portal` dynamically server-rendered.
+- Development, demo, and production Compose rendering passed. The rebuilt safe demo
+  migrated/seeded idempotently, started all five long-running services healthy, and
+  returned readiness through `127.0.0.1:3100`.
+- The first screenshot attempt correctly failed on the removed fixture heading. The
+  semantic wait was updated to the authenticated seeded customer and recent-services
+  heading; the complete screenshot capture then passed. All three resulting images
+  were visually reviewed for loaded layout and fictional-only content.
+- Source/diff review found no hard-coded overview customer, domain, invoice, amount,
+  or date and no real credential, customer data, provider call, deployment, schema,
+  or production change.
+
+#### Decisions made
+
+- Use the existing ownership-guarded customer-detail endpoint rather than adding a
+  dashboard API. Its database counts are authoritative and its linked records are
+  already capped at ten.
+- Show total service, invoice, and ticket counts instead of fabricating active/open
+  aggregates or summing a bounded recent subset. Show the exact recent invoice
+  balance and recurring service amount only through the shared money formatter.
+- Derive `customerId` from the server-validated session before hydrating the client
+  overview. A changed browser request remains subject to the existing customer-ID
+  ownership guard.
+- Remove inaccurate navigation badges rather than introducing another layout data
+  request outside this bounded issue.
+
+#### Open questions and risks
+
+- The overview intentionally does not claim aggregate outstanding balance, active
+  service count, open ticket count, or next renewal because the existing bounded
+  response does not provide those complete aggregates. Detailed owned pages remain
+  the authoritative operational views.
+- The page performs its owned-detail fetch after the server route/session guard so
+  evaluators see explicit loading and retry states. The API remains authoritative
+  for authentication and ownership.
+- The safe demo remains fictional alpha evaluation software. Production is still
+  `NO-GO`; no provider or operational acceptance gate changed.
+
+#### Recommended next command
+
+Authorize **Command 60 — Implement starter issue #20: Add a mobile safe-demo
+screenshot** only after separate review and authorization. Do not start it
+automatically.
 
 ## Report Template
 

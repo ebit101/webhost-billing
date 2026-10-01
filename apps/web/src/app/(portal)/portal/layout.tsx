@@ -20,9 +20,8 @@ const navigation: WorkspaceNavigationItem[] = [
     href: '/portal/services',
     label: 'My services',
     icon: 'server',
-    badge: '2',
   },
-  { href: '/portal/invoices', label: 'Invoices', icon: 'invoice', badge: '1' },
+  { href: '/portal/invoices', label: 'Invoices', icon: 'invoice' },
   { href: '/portal/support', label: 'Support', icon: 'support' },
   { href: '/portal/profile', label: 'Profile & security', icon: 'user' },
 ];

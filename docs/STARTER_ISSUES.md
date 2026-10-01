@@ -28,6 +28,8 @@ Validation: focused tests, `pnpm format:check`, `pnpm lint`, and `pnpm typecheck
 
 ## 2. [Replace customer portal overview fixtures with authenticated data](https://github.com/ebit101/webhost-billing/issues/19)
 
+**Status:** Completed by Command 59 on 2026-10-01.
+
 **Suggested labels:** `help wanted`, `enhancement`, `javascript`
 
 The portal overview currently labels its values as fictional presentation data. Use

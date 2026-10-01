@@ -114,9 +114,9 @@ all acceptance gates. Running this demo does not change production `NO-GO`.
 ![Customer portal](assets/demo/customer-portal.png)
 
 The screenshots are generated from the safe demo with Playwright. They are examples,
-not proof of production readiness. The customer portal overview still contains
-clearly fictional presentation fixtures; the detailed services, invoices, orders,
-profile, and support screens use authenticated application APIs.
+not proof of production readiness. The customer portal overview and detailed
+services, invoices, orders, profile, and support screens use ownership-bound
+authenticated application APIs with fictional demo records.
 
 ## Troubleshooting
 
