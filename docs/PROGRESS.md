@@ -3804,7 +3804,7 @@ it automatically.
 
 ### Command 65 — Implement Starter Issue #24: Add an Explicitly Guarded Safe-Demo Reset Command
 
-- **Status:** Completed locally; GitHub delivery verification pending
+- **Status:** Completed and delivered to GitHub `main`
 - **Date:** 2026-10-02
 
 #### Scope completed
@@ -3832,6 +3832,8 @@ it automatically.
   exact command, failure behavior, Bengali quick-start note, and safe start-again
   workflow. No generic pruning or development, staging, production, provider,
   schema, or release mutation was added.
+- Closed GitHub issue #24 as completed after the delivered implementation passed
+  both required hosted workflows.
 
 #### Files changed
 
@@ -3867,7 +3869,12 @@ it automatically.
 - The two policy-blocked API suites passed both suites/all eight tests in the
   isolated Linux API builder image using the current spec files. The separately run
   worker package suite passed all ten suites/all 29 tests.
-- Hosted CI and CodeQL verification are pending the delivery commit.
+- Hosted CI run `36918070073` passed the complete package tests, API integration
+  tests, critical invariants, browser lifecycle, dependency/license checks, and
+  production build:
+  `https://github.com/ebit101/webhost-billing/actions/runs/36918070073`.
+- Hosted CodeQL run `36918070063` passed:
+  `https://github.com/ebit101/webhost-billing/actions/runs/36918070063`.
 
 #### Decisions made
 
