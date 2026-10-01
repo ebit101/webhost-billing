@@ -3623,6 +3623,8 @@ automatically.
   the contributor validation path.
 - Marked starter issue #22 complete in the contributor task catalogue. No
   application, schema, provider, financial, production, or release behavior changed.
+- Closed GitHub issue #22 as completed after the delivered implementation passed
+  both required hosted workflows.
 
 #### Files changed
 
@@ -3652,8 +3654,14 @@ automatically.
   tests, and 18 of 19 web files before one existing asynchronous email-delivery UI
   test remained in its loading state. The same 19 web files/all 55 tests passed on
   Windows. No application code was changed by this command.
-- `git diff --check`, added-text secret review, delivery reconciliation, hosted CI,
-  and hosted CodeQL results are recorded at delivery.
+- `git diff --check` passed, the added-text secret scan found zero high-confidence
+  credential markers, and local/remote history was reconciled without rewriting.
+- Hosted CI run `36863246747` passed the Markdown gate, complete package tests, API
+  integration tests, critical invariants, browser lifecycle, dependency/license
+  checks, and production build:
+  `https://github.com/ebit101/webhost-billing/actions/runs/36863246747`.
+- Hosted CodeQL run `36863246742` passed:
+  `https://github.com/ebit101/webhost-billing/actions/runs/36863246742`.
 
 #### Decisions made
 
