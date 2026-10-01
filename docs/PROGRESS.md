@@ -3,7 +3,7 @@
 ## Status Summary
 
 - **Current command:** Command 64 — Implement starter issue #23: Add a safe-demo accessibility smoke audit
-- **Current status:** Completed locally; GitHub delivery verification pending
+- **Current status:** Completed and delivered to GitHub `main`
 - **Last updated:** 2026-10-01
 - **Next command:** Command 65 — Implement starter issue #24: Add an explicitly guarded safe-demo reset command
 - **Next command authorized:** No
@@ -3697,7 +3697,7 @@ automatically.
 
 ### Command 64 — Implement Starter Issue #23: Add a Safe-Demo Accessibility Smoke Audit
 
-- **Status:** Completed locally; GitHub delivery verification pending
+- **Status:** Completed and delivered to GitHub `main`
 - **Date:** 2026-10-01
 
 #### Scope completed
@@ -3724,6 +3724,8 @@ automatically.
 - Marked starter issue #23 complete in the contributor task catalogue. No billing,
   payment, provisioning, support, schema, provider, release, or production behavior
   changed.
+- Closed GitHub issue #23 as completed after the delivered implementation passed
+  both required hosted workflows.
 
 #### Files changed
 
@@ -3762,7 +3764,12 @@ automatically.
 - The two policy-blocked API suites were rerun from the current API source in the
   isolated Linux demo builder image and passed both suites/all eight tests.
 - The separately run worker package suite passed all ten suites/all 29 tests.
-- Hosted CI and CodeQL verification are pending the delivery commit.
+- Hosted CI run `36876110955` passed the complete package tests, API integration
+  tests, critical invariants, browser lifecycle, dependency/license checks, and
+  production build:
+  `https://github.com/ebit101/webhost-billing/actions/runs/36876110955`.
+- Hosted CodeQL run `36876111035` passed:
+  `https://github.com/ebit101/webhost-billing/actions/runs/36876111035`.
 
 #### Decisions made
 
