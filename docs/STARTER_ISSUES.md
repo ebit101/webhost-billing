@@ -9,7 +9,7 @@ customer data or credentials.
 
 ### 5. [Add offline Markdown link validation to CI](https://github.com/ebit101/webhost-billing/issues/22)
 
-**Status:** Opened by Command 62 on 2026-10-01.
+**Status:** Completed by Command 63 on 2026-10-01.
 
 **Suggested labels:** `good first issue`, `help wanted`, `documentation`,
 `javascript`

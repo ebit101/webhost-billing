@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 62 — Review the adoption pack and define the next starter-issue set
+- **Current command:** Command 63 — Implement starter issue #22: Add offline Markdown link validation to CI
 - **Current status:** Completed and delivered to GitHub `main`
 - **Last updated:** 2026-10-01
-- **Next command:** Command 63 — Implement starter issue #22: Add offline Markdown link validation to CI
+- **Next command:** Command 64 — Implement starter issue #23: Add a safe-demo accessibility smoke audit
 - **Next command authorized:** No
 
 ## Command Reports
@@ -3594,6 +3594,97 @@ set** only after separate review and authorization. Do not start it automaticall
 
 Authorize **Command 63 — Implement starter issue #22: Add offline Markdown link
 validation to CI** only after separate review and authorization. Do not start it
+automatically.
+
+### Command 63 — Implement Starter Issue #22: Add Offline Markdown Link Validation to CI
+
+- **Status:** Completed and delivered to GitHub `main`
+- **Date:** 2026-10-01
+
+#### Scope completed
+
+- Added a dependency-free, cross-platform Node.js validator that discovers tracked
+  Markdown files through Git and checks relative inline links, images, and reference
+  definitions without making network requests.
+- Resolved each local target from its source document after removing query strings
+  and fragments and decoding URL-encoded path segments.
+- Allow parent references that remain within the repository while rejecting lexical
+  traversal and existing symbolic-link targets that escape the repository.
+- Ignore absolute URI schemes, protocol-relative web targets, document-only
+  fragments, fenced code, inline code, and HTML comments.
+- Report every invalid local reference with its repository-relative source path,
+  line number, original target, and bounded reason, then return a non-zero status.
+- Added fixture-based coverage for valid file and image targets, encoded paths,
+  query/fragment removal, safe parents, ignored external/mail/fragment/code targets,
+  multiple missing targets, invalid encoding, traversal, report content, and CLI
+  failure status.
+- Exposed `pnpm docs:links` and `pnpm test:docs-links`, included the focused suite in
+  the root package tests, added the validator to ordinary CI, and documented it in
+  the contributor validation path.
+- Marked starter issue #22 complete in the contributor task catalogue. No
+  application, schema, provider, financial, production, or release behavior changed.
+
+#### Files changed
+
+- Validator: `scripts/docs/check-markdown-links.mjs`
+- Fixture tests and inputs: `scripts/docs/check-markdown-links.test.mjs`,
+  `scripts/docs/__fixtures__/*`
+- Root scripts and package-test integration: `package.json`
+- Ordinary hosted validation: `.github/workflows/ci.yml`
+- Contributor and public change documentation: `CONTRIBUTING.md`, `CHANGELOG.md`,
+  `docs/STARTER_ISSUES.md`
+- Command evidence and next authorization: `docs/PROGRESS.md`
+
+#### Validation
+
+- `pnpm test:docs-links` passed all four focused tests, including the explicit
+  non-zero CLI result for two simultaneously reported broken references.
+- `pnpm docs:links` passed: 26 local references across 58 tracked Markdown files.
+- Repository `pnpm format:check`, `pnpm lint`, and strict `pnpm typecheck` passed.
+- The Windows root `pnpm test` run passed the new tests, all 26 shared tests, all
+  three queue tests, all 55 web tests, and 21 API suites/80 tests. Windows Application
+  Control prevented the existing native `argon2` binary from loading in two remaining
+  API suites; it was not a test assertion failure.
+- Those two policy-blocked API suites were rerun in an isolated Linux container and
+  passed both suites/all eight tests with the Linux native `argon2` module.
+- The separately run worker package suite passed all ten suites/all 29 tests.
+- A complete isolated Linux package attempt passed the new tests, shared tests, queue
+  tests, and 18 of 19 web files before one existing asynchronous email-delivery UI
+  test remained in its loading state. The same 19 web files/all 55 tests passed on
+  Windows. No application code was changed by this command.
+- `git diff --check`, added-text secret review, delivery reconciliation, hosted CI,
+  and hosted CodeQL results are recorded at delivery.
+
+#### Decisions made
+
+- Use only Node.js built-ins and Git so the validator adds no runtime dependency and
+  cannot crawl external services.
+- Validate tracked `*.md` files only. Test inputs use `.md.fixture` so intentionally
+  broken examples cannot make the repository check fail.
+- Treat any URI scheme, protocol-relative URL, or document-only fragment as outside
+  the local-file check; heading-anchor correctness remains explicitly excluded.
+- Check both lexical containment and the canonical path of existing targets so a
+  repository symlink cannot silently point outside the checkout.
+- Mask code fences, inline code, and HTML comments before extraction to avoid
+  treating examples or disabled content as active documentation references.
+
+#### Open questions and risks
+
+- The validator intentionally does not fetch external URLs, validate heading
+  anchors, parse raw HTML `href`/`src` attributes, or attempt to implement every
+  extension of the Markdown grammar.
+- Repository-local links that exist but lead to semantically incorrect content still
+  require human review.
+- Windows Application Control continues to block the installed native `argon2`
+  binary; Linux/hosted validation is required for the affected API tests on this
+  machine.
+- Production remains `NO-GO`; the immutable `v0.1.0-alpha.1` release, application
+  behavior, schemas, providers, and live environments were not changed.
+
+#### Recommended next command
+
+Authorize **Command 64 — Implement starter issue #23: Add a safe-demo accessibility
+smoke audit** only after separate review and authorization. Do not start it
 automatically.
 
 ## Report Template

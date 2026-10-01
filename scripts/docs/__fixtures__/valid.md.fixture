@@ -1,0 +1,9 @@
+# Valid references
+
+[Guide](guide.md)
+![Example image](assets/example%20image.png?raw=1#preview)
+[Encoded file](encoded%20name.md)
+[Repository root](../README.md)
+[Reference-style guide][guide]
+
+[guide]: <guide.md#section>

@@ -69,6 +69,7 @@ Run the applicable validation before requesting review:
 
 ```bash
 pnpm format:check
+pnpm docs:links
 pnpm lint
 pnpm typecheck
 pnpm test

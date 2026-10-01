@@ -1,0 +1,13 @@
+# Ignored references
+
+[Web](https://example.com/docs)
+![Remote image](//example.com/image.png)
+[Email](mailto:security@example.com)
+[Section](#local-heading)
+`[Inline code](missing-inline.md)`
+
+```markdown
+[Fenced code](missing-fenced.md)
+```
+
+<!-- [Comment](missing-comment.md) -->

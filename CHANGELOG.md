@@ -10,6 +10,8 @@ and will be called out in release notes.
 
 ### Added
 
+- Added an offline, cross-platform Markdown link validator with fixture coverage,
+  contributor documentation, and an ordinary CI gate.
 - Added the second bounded contributor starter-issue set covering offline Markdown
   link validation, safe-demo accessibility auditing, guarded demo reset, and a
   contributor change-path map.
