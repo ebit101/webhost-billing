@@ -74,6 +74,19 @@ corepack pnpm demo:credentials
 credential রেখে দেয়। পরের `demo:up` একই local demo আবার চালাতে পারে। এটি
 repository-এর সাধারণ development বা production Compose project target করে না।
 
+শুধু ডেমোর কাল্পনিক data, dedicated container/network/volume এবং generated
+credential স্থায়ীভাবে মুছতে exact confirmation-সহ ব্যবহার করুন:
+
+```bash
+corepack pnpm demo:reset -- --confirm-reset-demo
+```
+
+এটি destructive; সাধারণ stop-এর জন্য `demo:down` ব্যবহার করুন। exact flag ছাড়া
+reset refuse করে এবং কিছু পরিবর্তন করে না। Docker cleanup সম্পূর্ণ ও যাচাই না হলে
+`.demo-runtime/demo.env` রাখা হয়। reset-এর পরে নতুন fictional data ও credential
+তৈরি করতে `corepack pnpm demo:up` চালান। এটি development, staging, production,
+provider বা unrelated Docker resource target করে না।
+
 ## নিরাপত্তা সীমা
 
 - gateway শুধু `127.0.0.1:3100`-এ প্রকাশিত হয়;

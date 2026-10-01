@@ -3802,6 +3802,101 @@ Authorize **Command 65 — Implement starter issue #24: Add an explicitly guarde
 safe-demo reset command** only after separate review and authorization. Do not start
 it automatically.
 
+### Command 65 — Implement Starter Issue #24: Add an Explicitly Guarded Safe-Demo Reset Command
+
+- **Status:** Completed locally; GitHub delivery verification pending
+- **Date:** 2026-10-02
+
+#### Scope completed
+
+- Added `pnpm demo:reset` behind the one exact documented
+  `--confirm-reset-demo` flag. Missing, altered, or additional arguments refuse
+  before filesystem inspection or Docker execution.
+- Fixed reset to the built-in local Docker `default` context, the
+  `webhost-billing-demo` project, `demo/compose.demo.yaml`, its labelled
+  containers/networks/volumes, and `.demo-runtime/demo.env`; no arbitrary context,
+  project, path, or Compose-file option is accepted.
+- Added canonical boundary validation that refuses repository, Compose, runtime
+  directory, and runtime file symlinks, non-regular paths, traversal, unreadable
+  targets, and resolved targets outside the dedicated demo boundary.
+- Removed and verified dedicated Docker state before deleting generated fictional
+  credentials. Added a second path validation immediately before unlinking so a
+  post-cleanup path swap cannot redirect deletion.
+- Preserved runtime credentials on Docker failure, uncertain cleanup, path changes,
+  or unlink failure; captured raw process/filesystem errors instead of printing
+  secrets or uncontrolled diagnostics.
+- Kept reset idempotent when Docker state and credentials are already absent,
+  retained cached images, and preserved `demo:down` as the normal nondestructive
+  stop-and-restart workflow.
+- Added injected filesystem/process coverage and documented the destructive warning,
+  exact command, failure behavior, Bengali quick-start note, and safe start-again
+  workflow. No generic pruning or development, staging, production, provider,
+  schema, or release mutation was added.
+
+#### Files changed
+
+- Reset implementation and injected tests: `scripts/demo/demo-reset.mjs`,
+  `scripts/demo/demo-reset.test.mjs`
+- Demo orchestration and root scripts: `scripts/demo/manage-demo.mjs`, `package.json`
+- Evaluator and contributor documentation: `README.md`, `CONTRIBUTING.md`,
+  `docs/SAFE_EVALUATION_DEMO.md`, `docs/SAFE_EVALUATION_DEMO_BN.md`,
+  `docs/STARTER_ISSUES.md`, `CHANGELOG.md`
+- Durable decision and command evidence: `docs/DECISIONS.md`, `docs/PROGRESS.md`
+
+#### Validation
+
+- All 12 injected reset tests passed, covering exact confirmation, pnpm argument
+  forwarding, fixed targeting, override refusal, success, absent state, Docker
+  failure, uncertain cleanup, redaction, invalid paths, post-cleanup path swaps,
+  and unlink failure.
+- A live no-confirmation invocation exited non-zero while preserving the runtime
+  file and both dedicated volumes. A confirmed invocation removed the exact runtime
+  file and left zero labelled containers, networks, or volumes; a second confirmed
+  invocation passed idempotently.
+- A disposable first-run reset/start/restart cycle passed. The fresh stack reached
+  five healthy running services and HTTP 200; `demo:down` retained credentials and
+  both volumes; the restart preserved the credential-file hash and volume identities
+  and returned HTTP 200 again.
+- Demo Compose rendering, `pnpm format:check`, `pnpm docs:links`, `pnpm lint`, strict
+  `pnpm typecheck`, and `git diff --check` passed.
+- The Windows root `pnpm test` run passed all six demo-doctor tests, the then-current
+  reset tests, all four documentation-link tests, all 26 shared tests, all three
+  queue tests, all 55 web tests, and 21 API suites/80 tests. Windows Application
+  Control prevented the existing native `argon2` binary from loading in two
+  remaining API suites; it was not a test assertion failure.
+- The two policy-blocked API suites passed both suites/all eight tests in the
+  isolated Linux API builder image using the current spec files. The separately run
+  worker package suite passed all ten suites/all 29 tests.
+- Hosted CI and CodeQL verification are pending the delivery commit.
+
+#### Decisions made
+
+- Use an exact opt-in phrase instead of a generic `--force` or interactive prompt so
+  scripted and human invocation share one auditable destructive contract.
+- Pin every Docker action to the local built-in `default` context and reject target
+  environment overrides so a selected remote context cannot receive reset calls.
+- Treat Docker cleanup verification and a final canonical filesystem check as
+  prerequisites for credential deletion; uncertainty fails closed and preserves the
+  file.
+- Keep cached images because the command resets fictional state, not Docker storage;
+  generic pruning remains outside this command and project boundary.
+
+#### Open questions and risks
+
+- Reset intentionally and permanently removes only the fictional demo database,
+  Redis state, and generated local credentials. Evaluators must use `demo:down` when
+  they intend to retain state.
+- Windows Application Control continues to block the installed native `argon2`
+  binary; Linux/hosted validation remains required for the affected API suites on
+  this machine.
+- Production remains `NO-GO`; the immutable `v0.1.0-alpha.1` release, schemas,
+  providers, real identities, and live environments were not changed.
+
+#### Recommended next command
+
+Authorize **Command 66 — Implement starter issue #25: Add a contributor change-path
+map** only after separate review and authorization. Do not start it automatically.
+
 ## Report Template
 
 Use this template after every future command:

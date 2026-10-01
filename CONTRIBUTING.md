@@ -31,7 +31,8 @@ The doctor command is a read-only prerequisite check and does not print generate
 runtime values. Use the generated logins only at `http://localhost:3100`, follow
 [`docs/SAFE_EVALUATION_DEMO.md`](docs/SAFE_EVALUATION_DEMO.md), and stop it with
 `corepack pnpm demo:down`. The demo uses separate volumes and does not replace the
-development setup below.
+development setup below. Its separately documented `demo:reset` command is
+destructive, exact-confirmation-gated, and limited to the dedicated demo project.
 
 New contributors can choose a bounded task from
 [`docs/STARTER_ISSUES.md`](docs/STARTER_ISSUES.md).

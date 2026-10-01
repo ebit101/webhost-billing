@@ -71,7 +71,7 @@ changes, or a production-readiness claim.
 
 ### 7. [Add an explicitly guarded safe-demo reset command](https://github.com/ebit101/webhost-billing/issues/24)
 
-**Status:** Opened by Command 62 on 2026-10-01.
+**Status:** Completed by Command 65 on 2026-10-02.
 
 **Suggested labels:** `help wanted`, `docker`, `javascript`
 

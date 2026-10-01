@@ -10,6 +10,9 @@ and will be called out in release notes.
 
 ### Added
 
+- Added an exact-confirmation `demo:reset` command that validates fixed paths,
+  removes and verifies only dedicated fictional demo Docker state, retains runtime
+  credentials on uncertain cleanup, and never performs generic pruning.
 - Added a loopback-only safe-demo accessibility smoke audit for four evaluator
   routes, serious/critical WCAG A/AA findings, the skip link, and responsive keyboard
   navigation with redacted bounded output.

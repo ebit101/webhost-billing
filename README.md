@@ -66,7 +66,9 @@ and customer logins and exposes only
 `http://localhost:3100` on loopback. Application and data services use an internal
 network; only the hardened gateway joins a dedicated ingress bridge. The stack uses
 separate volumes and disabled external providers. Stop it with
-`corepack pnpm demo:down`.
+`corepack pnpm demo:down`. For a destructive return to first-run fictional state,
+follow the exact confirmation-gated reset procedure in the walkthrough; never use a
+generic Docker prune.
 
 ![Webhost Billing safe-demo administrator view](docs/assets/demo/admin-dashboard.png)
 

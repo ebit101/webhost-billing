@@ -384,6 +384,14 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** Evaluators need actionable prerequisite diagnostics before an expensive image build, but support output must not leak generated secrets or turn a diagnostic command into another lifecycle controller. A Node.js entrypoint behaves consistently from PowerShell and Unix-like shells without requiring platform-specific scripts.
 - **Consequence:** Any failed prerequisite exits non-zero with a controlled remediation. A busy port is reported as a failure even when the existing safe demo owns it; `demo:status` remains the correct command for inspecting a running stack. Focused tests inject command and port outcomes, prove sensitive output is discarded, and run in the ordinary repository test gate.
 
+## ADR-047 — Confirmation-Gated Dedicated Demo Reset
+
+- **Status:** Accepted
+- **Date:** 2026-10-01
+- **Decision:** Provide `demo:reset` only behind the exact `--confirm-reset-demo` flag. Validate fixed canonical repository paths before Docker, refuse target overrides, symbolic links, and non-regular runtime paths, pin Docker calls to the built-in local `default` context, then remove and verify only the fixed `webhost-billing-demo` Compose project's containers, networks, and volumes before revalidating and unlinking the exact generated runtime file.
+- **Reason:** Evaluators need a supported route back to first-run fictional state, but reset is destructive and must not become a generic Docker cleanup tool or gain authority over development, staging, production, providers, or arbitrary filesystem targets. Preserving credentials until Docker cleanup is confirmed keeps retained state usable when cleanup fails or is uncertain.
+- **Consequence:** `demo:down` remains the normal non-destructive stop path. Reset captures and redacts Docker/filesystem failures, is idempotent when dedicated state is absent, retains cached images, accepts no path/project/context override, and requires `demo:up` to generate new fictional data and credentials. It does not change production `NO-GO` or the immutable alpha release.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

@@ -11,6 +11,7 @@ import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
 import { runDemoDoctor } from './demo-doctor.mjs';
+import { runDemoReset } from './demo-reset.mjs';
 
 const repositoryRoot = resolve(
   dirname(fileURLToPath(import.meta.url)),
@@ -150,6 +151,10 @@ async function main() {
     process.exitCode = await runDemoDoctor();
     return;
   }
+  if (command === 'reset') {
+    process.exitCode = await runDemoReset({ args: process.argv.slice(3) });
+    return;
+  }
   if (command === 'up') {
     initializeRuntime();
     ensureDocker();
@@ -265,6 +270,9 @@ async function main() {
   );
   process.stdout.write(
     `  pnpm demo:down         Stop containers and retain data\n`,
+  );
+  process.stdout.write(
+    `  pnpm demo:reset        Remove dedicated demo state (confirmation required)\n`,
   );
 }
 

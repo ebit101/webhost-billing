@@ -74,6 +74,40 @@ Do not publish that file, paste its values into an issue, or reuse its passwords
 credentials, so the next `demo:up` is repeatable. It never targets the repository's
 ordinary development or production Compose projects.
 
+## Permanently reset the fictional demo
+
+> [!CAUTION]
+> Reset permanently removes the safe demo's fictional PostgreSQL and Redis volumes,
+> its dedicated containers and networks, and its generated local credentials. Use
+> `demo:down` when you only want to stop the demo and retain its state.
+
+The reset command accepts one exact confirmation flag and no target overrides:
+
+```bash
+corepack pnpm demo:reset -- --confirm-reset-demo
+```
+
+Without that exact flag, the command refuses before inspecting paths or invoking
+Docker. The confirmed reset validates the fixed repository paths, refuses symbolic
+links and non-regular runtime paths, and targets only the fixed
+`webhost-billing-demo` Compose project defined by `demo/compose.demo.yaml`. Docker
+calls are pinned to the built-in local `default` context; selected or environment
+context overrides cannot redirect reset. Docker output and filesystem errors are
+never echoed.
+
+The command removes and verifies the dedicated demo Docker state before deleting the
+exact Git-ignored `.demo-runtime/demo.env` file. If Docker cleanup fails or any
+project-labelled container, network, or volume remains, the generated runtime file
+is preserved. Repeating reset after a successful reset is safe and reports that the
+credentials were already absent. Cached images are not pruned, and development,
+staging, production, provider, and unrelated Docker resources are never targeted.
+
+Create a new fictional database and new generated credentials after reset with:
+
+```bash
+corepack pnpm demo:up
+```
+
 ## Safety boundary
 
 The demo has several independent safeguards:
@@ -98,16 +132,17 @@ all acceptance gates. Running this demo does not change production `NO-GO`.
 
 ## Demo commands
 
-| Command                          | Purpose                                             |
-| -------------------------------- | --------------------------------------------------- |
-| `corepack pnpm demo:doctor`      | Check prerequisites without changing local state    |
-| `corepack pnpm demo:up`          | Build, initialize, start, and health-check the demo |
-| `corepack pnpm demo:credentials` | Reprint the generated fictional logins              |
-| `corepack pnpm demo:status`      | Show container state and health                     |
-| `corepack pnpm demo:logs`        | Follow bounded local demo logs                      |
-| `corepack pnpm demo:screenshots` | Recreate the reviewed evaluator screenshots         |
-| `corepack pnpm demo:a11y`        | Run the bounded accessibility smoke audit           |
-| `corepack pnpm demo:down`        | Stop the demo and retain its fictional state        |
+| Command                                            | Purpose                                             |
+| -------------------------------------------------- | --------------------------------------------------- |
+| `corepack pnpm demo:doctor`                        | Check prerequisites without changing local state    |
+| `corepack pnpm demo:up`                            | Build, initialize, start, and health-check the demo |
+| `corepack pnpm demo:credentials`                   | Reprint the generated fictional logins              |
+| `corepack pnpm demo:status`                        | Show container state and health                     |
+| `corepack pnpm demo:logs`                          | Follow bounded local demo logs                      |
+| `corepack pnpm demo:screenshots`                   | Recreate the reviewed evaluator screenshots         |
+| `corepack pnpm demo:a11y`                          | Run the bounded accessibility smoke audit           |
+| `corepack pnpm demo:down`                          | Stop the demo and retain its fictional state        |
+| `corepack pnpm demo:reset -- --confirm-reset-demo` | Permanently remove only dedicated demo state        |
 
 ## Accessibility smoke audit
 
