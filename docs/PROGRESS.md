@@ -3457,6 +3457,8 @@ it automatically.
   to the canonical guide and private security-reporting policy.
 - Marked starter issue #21 complete in the contributor pack and added the separately
   gated Command 62 to review the completed adoption pack before defining more work.
+- Closed GitHub issue #21 as completed after the delivered implementation passed
+  both required hosted workflows.
 
 #### Files changed
 
@@ -3481,6 +3483,8 @@ it automatically.
 - Manual terminology review confirmed the guide contains no generated credential
   value, real identity, live-system instruction, application-localization claim, or
   weakened safety boundary.
+- Exact implementation commit `bc9bd08` passed hosted CI run `36856315259` and
+  CodeQL run `36856315260`; GitHub issue #21 was then closed as completed.
 
 #### Decisions made
 
