@@ -3560,6 +3560,8 @@ set** only after separate review and authorization. Do not start it automaticall
   fictional-data-only evaluation, avoids live providers and deployments, preserves
   production `NO-GO`, and does not claim accessibility certification or production
   readiness.
+- Exact implementation commit `bebbf66` passed hosted CI run `36859177024` and
+  CodeQL run `36859176923`.
 
 #### Decisions made
 
