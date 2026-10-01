@@ -10,6 +10,9 @@ and will be called out in release notes.
 
 ### Added
 
+- Added the second bounded contributor starter-issue set covering offline Markdown
+  link validation, safe-demo accessibility auditing, guarded demo reset, and a
+  contributor change-path map.
 - Added a concise Bengali safe-demo quick-start companion while retaining the
   English guide as canonical and preserving every evaluation safety boundary.
 - Added a reviewed 390-pixel-wide mobile safe-demo catalogue screenshot with

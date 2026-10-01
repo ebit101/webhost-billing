@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 61 — Implement starter issue #21: Add a Bengali safe-demo quick-start translation
+- **Current command:** Command 62 — Review the adoption pack and define the next starter-issue set
 - **Current status:** Completed and delivered to GitHub `main`
 - **Last updated:** 2026-10-01
-- **Next command:** Command 62 — Review the adoption pack and define the next starter-issue set
+- **Next command:** Command 63 — Implement starter issue #22: Add offline Markdown link validation to CI
 - **Next command authorized:** No
 
 ## Command Reports
@@ -3510,6 +3510,89 @@ it automatically.
 
 Authorize **Command 62 — Review the adoption pack and define the next starter-issue
 set** only after separate review and authorization. Do not start it automatically.
+
+### Command 62 — Review the Adoption Pack and Define the Next Starter-Issue Set
+
+- **Status:** Completed and delivered to GitHub `main`
+- **Date:** 2026-10-01
+
+#### Scope completed
+
+- Reviewed the safe evaluation demo, English and Bengali evaluator guides,
+  capability matrix, contributor workflow, development/E2E documentation, root and
+  web scripts, CI workflow, Commands 58-61, and their completed issue records.
+- Confirmed that public issues #18-#21 were closed and that the public issue backlog
+  was empty before this review.
+- Identified four concrete gaps: local Markdown links had only manual validation;
+  the documented accessibility baseline lacked a page-level safe-demo audit;
+  `demo:down` retained state without a separately guarded first-run reset path; and
+  contributor documentation lacked a concise change-to-source/test map.
+- Defined a second bounded starter set with explicit acceptance, validation, and
+  excluded-scope criteria. The tasks do not change financial rules, schemas,
+  provider authority, production readiness, or the immutable `v0.1.0-alpha.1`
+  release.
+- Created public GitHub issues #22-#25 for offline Markdown link validation,
+  safe-demo accessibility auditing, an explicitly guarded safe-demo reset, and a
+  contributor change-path map.
+- Added separately gated Commands 63-66, one implementation command for each new
+  issue. No proposed issue was implemented by this planning command.
+
+#### Files changed
+
+- Current and completed contributor task catalogue: `docs/STARTER_ISSUES.md`
+- Separately authorized implementation commands: `CODEX_DEVELOPMENT_COMMANDS.md`
+- Public change summary: `CHANGELOG.md`
+- Command review, decisions, validation, and next authorization:
+  `docs/PROGRESS.md`
+
+#### Validation
+
+- Repository Prettier and `git diff --check` passed for the documentation-only
+  change.
+- A repository-wide offline reference check resolved 25 relative Markdown links and
+  images across all 58 tracked Markdown files with no missing or out-of-repository
+  target.
+- GitHub issue search confirmed exactly four open public issues after creation:
+  #22, #23, #24, and #25. The earlier starter set remains closed as #18-#21.
+- A high-confidence added-text secret scan found zero private-key, API-key,
+  GitHub-token, or cloud-key markers.
+- Manual terminology and boundary review confirmed every new issue retains
+  fictional-data-only evaluation, avoids live providers and deployments, preserves
+  production `NO-GO`, and does not claim accessibility certification or production
+  readiness.
+
+#### Decisions made
+
+- Keep the second set at four independent tasks so each contribution has one clear
+  outcome and can be reviewed without coupling documentation, test tooling, Docker
+  lifecycle, and accessibility changes.
+- Put the offline link validator first because the growing multilingual adoption
+  pack currently relies on manual reference checks and every later documentation
+  task benefits from an ordinary CI gate.
+- Treat the accessibility task as a bounded automated smoke audit, not a complete
+  WCAG certification, and keep it on the loopback fictional demo only.
+- Treat demo reset as explicitly destructive: require exact confirmation, fixed
+  resource identity, redacted failures, and Docker cleanup success before generated
+  runtime credentials may be removed.
+- Preserve the first starter set in the contributor pack as completed history while
+  presenting issues #22-#25 as the current contribution choices.
+
+#### Open questions and risks
+
+- The four issues are scoped proposals until separately authorized and implemented;
+  their checks and commands do not exist merely because the issues are published.
+- A page-level accessibility scanner detects only a subset of accessibility defects
+  and still requires keyboard and human review.
+- A reset command is inherently destructive to the dedicated fictional demo state;
+  its exact confirmation and resource-boundary tests are mandatory before delivery.
+- Production remains `NO-GO`. This command contacted no provider, deployed no
+  environment, used no real data or credential, and changed no runtime behavior.
+
+#### Recommended next command
+
+Authorize **Command 63 — Implement starter issue #22: Add offline Markdown link
+validation to CI** only after separate review and authorization. Do not start it
+automatically.
 
 ## Report Template
 

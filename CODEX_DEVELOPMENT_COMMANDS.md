@@ -1339,6 +1339,108 @@ Update `docs/PROGRESS.md`, commit, reconcile, push main, verify hosted checks, t
 stop and request separate authorization for any implementation command.
 ```
 
+## Command 63 — Implement Starter Issue #22: Add Offline Markdown Link Validation to CI
+
+```text
+Implement public starter issue #22 as a cross-platform, offline Node.js validator
+for relative file and image references in tracked Markdown files. Resolve targets
+from each source document, remove query strings and fragments, decode URL-encoded
+path segments, allow parent references that remain inside the repository, and reject
+targets that escape it. Ignore absolute web URLs, mailto links, and document-only
+fragments without making network requests.
+
+Report every broken reference with its source file and line and exit non-zero. Add
+fixture-based tests for valid links/images, encoded paths, missing targets, ignored
+external references, and traversal outside the repository. Expose the validator
+through a root pnpm script, run it in ordinary CI, and document it in the contributor
+validation path.
+
+Do not add a hosted crawler, validate heading anchors, rewrite documentation,
+contact external URLs, change application behavior, alter schemas/providers, mutate
+the immutable v0.1.0-alpha.1 release, or change production NO-GO. Run focused tests,
+the new validator, formatting, lint, strict type checks, and complete package tests.
+Update documentation and `docs/PROGRESS.md`, commit, reconcile, push main, verify
+hosted checks, close issue #22 if repository authority is available, then stop and
+request separate authorization for any next command.
+```
+
+## Command 64 — Implement Starter Issue #23: Add a Safe-Demo Accessibility Smoke Audit
+
+```text
+Implement public starter issue #23 as a `demo:a11y` Playwright command that targets
+only the running loopback safe demo. Audit the public hosting catalogue, login page,
+authenticated customer overview, and authenticated administrator dashboard with the
+repository-pinned Chromium and a pinned accessibility engine. Fail on serious or
+critical WCAG A/AA findings and print only bounded rule IDs and routes.
+
+Use only generated fictional accounts. Runtime credentials may be read internally
+but must never be printed, attached, or included in failure output. Add keyboard
+assertions for the skip link and one responsive navigation path, wait for semantic
+application state rather than arbitrary delays, and leave demo/provider state
+unchanged. Document the audit's coverage and that it is not accessibility
+certification.
+
+Do not target staging/production, use real identities, add a hosted scanner, expand
+the browser matrix, perform a general redesign, change financial/schema/provider
+behavior, mutate the immutable release, or change production NO-GO. Run the focused
+audit against a healthy demo, relevant web tests, formatting, lint, strict type
+checks, complete package tests, and the web production build. Update documentation
+and `docs/PROGRESS.md`, commit, reconcile, push main, verify hosted checks, close
+issue #23 if repository authority is available, then stop and request separate
+authorization for any next command.
+```
+
+## Command 65 — Implement Starter Issue #24: Add an Explicitly Guarded Safe-Demo Reset Command
+
+```text
+Implement public starter issue #24 as a deliberate `demo:reset` command behind one
+exact documented confirmation flag. Without that flag, refuse and change nothing.
+Target only the fixed demo Compose file and project identity, its dedicated
+containers/networks/volumes, and the exact `.demo-runtime/demo.env` file. Refuse
+symlinks, non-regular runtime paths, traversal, overrides, or any resolved target
+outside the dedicated demo boundary.
+
+Remove demo Docker state first and delete generated runtime credentials only after
+confirmed cleanup. Preserve the runtime file when Docker cleanup fails or is
+uncertain. Keep reset idempotent for absent/already-reset state, redact raw command
+errors and runtime values, and preserve `demo:down` as the normal non-destructive
+stop path. Add injected filesystem/process tests for confirmation, success, absent
+state, Docker failure, invalid paths, redaction, and exact targeting. Document the
+destructive warning and safe start-again workflow.
+
+Do not add generic Docker pruning, development-data reset, arbitrary path/project
+options, staging/production mutation, provider calls, schema changes, release
+mutation, or production-NO-GO changes. Run focused tests, a disposable
+first-run/reset/restart smoke cycle, demo Compose rendering, formatting, lint,
+strict type checks, and complete package tests. Update documentation and
+`docs/PROGRESS.md`, commit, reconcile, push main, verify hosted checks, close issue
+#24 if repository authority is available, then stop and request separate
+authorization for any next command.
+```
+
+## Command 66 — Implement Starter Issue #25: Add a Contributor Change-Path Map
+
+```text
+Implement public starter issue #25 by adding `docs/CONTRIBUTOR_PATHS.md`. Map demo
+tooling, Next.js UI, NestJS API modules, worker/scheduler jobs, shared contracts, and
+database migrations to their owning directories, nearest focused tests, relevant
+documentation, minimum validation commands, and safety invariants. Include a short
+first-contribution flow that points to the current starter issues and private
+security reporting.
+
+Keep every command and repository path literal and current. Link the map from
+`CONTRIBUTING.md` and the README documentation index, and add an automated check
+that every mapped repository path and root pnpm script exists.
+
+Do not reorganize code ownership or architecture, create a migration, generate a
+full API reference, rewrite the documentation set, change providers/production
+procedures, mutate the immutable release, or change production NO-GO. Run formatting,
+the repository Markdown link check, the path/script existence check, and terminology
+and secret review. Update documentation and `docs/PROGRESS.md`, commit, reconcile,
+push main, verify hosted checks, close issue #25 if repository authority is
+available, then stop and request separate authorization for any next command.
+```
+
 ---
 
 ## Continuation Command
