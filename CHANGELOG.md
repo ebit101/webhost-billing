@@ -10,6 +10,8 @@ and will be called out in release notes.
 
 ### Added
 
+- Added a concise Bengali safe-demo quick-start companion while retaining the
+  English guide as canonical and preserving every evaluation safety boundary.
 - Added a reviewed 390-pixel-wide mobile safe-demo catalogue screenshot with
   transition-stable Playwright capture and a visible primary checkout action.
 - Added a cross-platform, read-only `demo:doctor` preflight with redacted Docker,

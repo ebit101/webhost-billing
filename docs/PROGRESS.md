@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 60 — Implement starter issue #20: Add a mobile safe-demo screenshot
+- **Current command:** Command 61 — Implement starter issue #21: Add a Bengali safe-demo quick-start translation
 - **Current status:** Completed and delivered to GitHub `main`
 - **Last updated:** 2026-10-01
-- **Next command:** Command 61 — Implement starter issue #21: Add a Bengali safe-demo quick-start translation
+- **Next command:** Command 62 — Review the adoption pack and define the next starter-issue set
 - **Next command authorized:** No
 
 ## Command Reports
@@ -3434,6 +3434,78 @@ automatically.
 Authorize **Command 61 — Implement starter issue #21: Add a Bengali safe-demo
 quick-start translation** only after separate review and authorization. Do not start
 it automatically.
+
+### Command 61 — Implement Starter Issue #21: Add a Bengali Safe-Demo Quick-Start Translation
+
+- **Status:** Completed and delivered to GitHub `main`
+- **Date:** 2026-10-01
+
+#### Scope completed
+
+- Added a concise Bengali quick-start companion for the safe evaluation demo while
+  retaining the existing English guide as the canonical source.
+- Preserved the exact meanings of alpha technical preview, not fit for live use,
+  fictional-data-only evaluation, and production `NO-GO`; the critical English
+  phrases remain parenthetically visible in the Bengali warning.
+- Covered prerequisites, the read-only doctor, startup, generated fictional logins,
+  the customer/administrator walkthrough, shutdown, isolation boundaries,
+  troubleshooting, redaction, and private security reporting.
+- Kept every command, route, URL, email address, filename, environment marker, and
+  product/provider name literal rather than translating executable or identifying
+  text.
+- Linked the Bengali companion from the English guide and linked the companion back
+  to the canonical guide and private security-reporting policy.
+- Marked starter issue #21 complete in the contributor pack and added the separately
+  gated Command 62 to review the completed adoption pack before defining more work.
+
+#### Files changed
+
+- Bengali companion: `docs/SAFE_EVALUATION_DEMO_BN.md`
+- Canonical-guide navigation: `docs/SAFE_EVALUATION_DEMO.md`
+- Public change and contributor tracking: `CHANGELOG.md`,
+  `docs/STARTER_ISSUES.md`
+- Authorized/current command records: `CODEX_DEVELOPMENT_COMMANDS.md`,
+  `docs/PROGRESS.md`
+
+#### Validation
+
+- Repository Prettier and `git diff --check` passed for the documentation-only
+  change.
+- All nine relative Markdown references across the English and Bengali guides resolve
+  to tracked local files, including both reciprocal guide links and `SECURITY.md`.
+- An exact-literal check confirmed the required safety terms, six demo commands, two
+  loopback URLs, both fictional email addresses, the runtime filename, demo-mode
+  marker, canonical guide, and security policy remain present and unmodified.
+- A high-confidence changed-text secret scan found zero credential, private-key,
+  GitHub-token, cloud-key, or API-key markers.
+- Manual terminology review confirmed the guide contains no generated credential
+  value, real identity, live-system instruction, application-localization claim, or
+  weakened safety boundary.
+
+#### Decisions made
+
+- Keep the Bengali document intentionally concise and operationally equivalent to
+  the quick-start portions of the English guide rather than translating the complete
+  documentation set.
+- State explicitly in both languages that the English guide is canonical. If wording
+  differs, evaluators must follow the English safety boundary.
+- Preserve commands and machine-facing values verbatim so translated prose cannot
+  create an invalid or unsafe invocation.
+
+#### Open questions and risks
+
+- This is documentation assistance, not application localization; the web interface
+  and other project documents remain English.
+- Future changes to the canonical quick-start or safety boundary must review the
+  Bengali companion for drift. The English guide remains authoritative until such a
+  review is complete.
+- Production remains `NO-GO`; no runtime, provider, schema, application, deployment,
+  immutable release, or live environment changed.
+
+#### Recommended next command
+
+Authorize **Command 62 — Review the adoption pack and define the next starter-issue
+set** only after separate review and authorization. Do not start it automatically.
 
 ## Report Template
 

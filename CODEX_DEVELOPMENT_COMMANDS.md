@@ -1318,6 +1318,27 @@ the relevant documentation validation. Update documentation and
 authorization for any next command.
 ```
 
+## Command 62 — Review the Adoption Pack and Define the Next Starter-Issue Set
+
+```text
+Review the completed safe evaluation demo, contributor documentation, capability
+matrix, Commands 58-61, closed starter issues #18-#21, and current public issue
+backlog. Identify the next three to five bounded contributor tasks that improve
+evaluation, accessibility, documentation, testability, or onboarding without
+changing financial rules, schemas, provider authority, production readiness, or the
+immutable v0.1.0-alpha.1 release.
+
+Write clear acceptance, validation, and excluded-scope criteria; update the
+contributor starter-issue pack and command catalogue. Create the approved public
+issues only if repository authority remains available. Do not implement any proposed
+issue, contact providers, deploy an environment, use real data, or change production
+NO-GO.
+
+Run Markdown formatting, link/reference checks, terminology and secret review.
+Update `docs/PROGRESS.md`, commit, reconcile, push main, verify hosted checks, then
+stop and request separate authorization for any implementation command.
+```
+
 ---
 
 ## Continuation Command

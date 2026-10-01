@@ -71,6 +71,8 @@ Excluded: adding a visual-regression service or changing application behavior.
 
 ## 4. [Add a Bengali safe-demo quick-start translation](https://github.com/ebit101/webhost-billing/issues/21)
 
+**Status:** Completed by Command 61 on 2026-10-01.
+
 **Suggested labels:** `good first issue`, `help wanted`, `documentation`
 
 Add a concise Bengali companion for the safe-demo warning, prerequisites, startup,

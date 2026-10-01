@@ -4,6 +4,9 @@ The safe evaluation demo is the shortest supported way to inspect Webhost Billin
 It runs a production-built web/API pair with a separate local PostgreSQL database,
 Redis, and same-origin gateway. Every record is fictional.
 
+বাংলা দ্রুত শুরুর সহায়িকা: [`SAFE_EVALUATION_DEMO_BN.md`](SAFE_EVALUATION_DEMO_BN.md)।
+This English guide remains canonical.
+
 > [!WARNING]
 > This remains an alpha technical preview and is not fit for live use. Do not enter
 > real customer data, credentials, payment evidence, email addresses, domains, or
