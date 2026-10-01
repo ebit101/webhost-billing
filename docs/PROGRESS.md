@@ -3374,6 +3374,8 @@ automatically.
   catalogue data and no authentication or private-host material.
 - Marked starter issue #20 complete in the contributor pack and added the separately
   gated Command 61 for starter issue #21.
+- Closed GitHub issue #20 as completed after the delivered implementation passed
+  both required hosted workflows.
 
 #### Files changed
 
@@ -3403,6 +3405,8 @@ automatically.
 - Repository Prettier, `git diff --check`, documentation asset-reference checks, and
   a high-confidence changed-text secret scan passed; no demo runtime or environment
   file is tracked.
+- The exact implementation commit `01dfc5a` passed GitHub CI run `36854310340`
+  and CodeQL run `36854310342`; issue #20 was then closed with reason `completed`.
 
 #### Decisions made
 
