@@ -3274,6 +3274,8 @@ not start it automatically.
 - Updated the changelog, capability matrix, evaluator guide, starter-issue status,
   and command catalogue without adding an API, migration, provider behavior,
   payment behavior, or general dashboard redesign.
+- Closed GitHub issue #19 as completed after the delivered implementation passed
+  both required hosted workflows.
 
 #### Files changed
 
@@ -3315,6 +3317,8 @@ not start it automatically.
 - Source/diff review found no hard-coded overview customer, domain, invoice, amount,
   or date and no real credential, customer data, provider call, deployment, schema,
   or production change.
+- The exact implementation commit `5e0c71d` passed GitHub CI run `36806530539`
+  and CodeQL run `36806530486`; issue #19 was then closed with reason `completed`.
 
 #### Decisions made
 
