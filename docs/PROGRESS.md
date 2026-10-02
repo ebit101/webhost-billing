@@ -3,7 +3,7 @@
 ## Status Summary
 
 - **Current command:** Command 67 — Reopen the contributor on-ramp with a third starter-issue set
-- **Current status:** Completed locally; delivery validation pending
+- **Current status:** Completed and delivered to GitHub `main`
 - **Last updated:** 2026-10-02
 - **Next command:** Command 68 — Implement starter issue #26: Add a read-only `demo:smoke` verification command
 - **Next command authorized:** No
@@ -4088,7 +4088,7 @@ set** only after separate review and authorization. Do not start it automaticall
 
 ### Command 67 — Reopen the Contributor On-Ramp With a Third Starter-Issue Set
 
-- **Status:** Completed locally; delivery validation pending
+- **Status:** Completed and delivered to GitHub `main`
 - **Date:** 2026-10-02
 
 #### Scope completed
@@ -4131,7 +4131,13 @@ set** only after separate review and authorization. Do not start it automaticall
 - `git diff --check`, terminology review, and a high-confidence changed-text secret
   scan passed. The new issue bodies and repository text contain no credential,
   runtime value, customer data, private host, or provider payload.
-- Hosted CI and CodeQL results are recorded after delivery to `main`.
+- Command 67 commit `a79d810` passed hosted CI run `37021368910`, including
+  documentation checks, database verification, lint, strict type checks, complete
+  package and API integration tests, critical invariants, browser lifecycle,
+  dependency/license checks, and the production build:
+  `https://github.com/ebit101/webhost-billing/actions/runs/37021368910`.
+- Hosted CodeQL run `37021368489` passed:
+  `https://github.com/ebit101/webhost-billing/actions/runs/37021368489`.
 
 #### Decisions made
 
