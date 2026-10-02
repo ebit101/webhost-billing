@@ -10,6 +10,8 @@ and will be called out in release notes.
 
 ### Added
 
+- Added an offline GitHub issue-form validator with focused parsing, unique-ID,
+  safe-demo guidance, redaction-confirmation, and link-confinement tests.
 - Added a fixed-origin, read-only `demo:smoke` verifier for the running fictional
   catalogue, customer overview, and administrator dashboard with bounded redacted
   output and focused guard/dispatch tests.
@@ -42,6 +44,8 @@ and will be called out in release notes.
 
 ### Changed
 
+- Added a bounded **Safe evaluation demo** path to the bug-report form with explicit
+  diagnostic, health-stage, troubleshooting, and private-security-reporting guidance.
 - Extended the offline Markdown validator to check same-file and cross-file heading
   anchors with duplicate, punctuation, Unicode, and percent-encoded slug coverage.
 - Corrected contributor discovery after issues #18–#25 closed so the repository no

@@ -8,6 +8,8 @@ body:
     attributes:
       value: |
         Do not include credentials, cookies, customer data, payment evidence, database dumps, or unredacted logs. Security vulnerabilities must use private reporting instead.
+
+        For a **Safe evaluation demo** report, run `corepack pnpm demo:doctor` before startup or `corepack pnpm demo:status` for a running stack. Manually review and redact the output before sharing any part of it. See [safe-demo troubleshooting](../../docs/SAFE_EVALUATION_DEMO.md#troubleshooting) or [report a suspected vulnerability privately](../../SECURITY.md#reporting-a-vulnerability).
   - type: input
     id: version
     attributes:
@@ -23,8 +25,43 @@ body:
       options:
         - Local pnpm development
         - Docker Compose development
+        - Safe evaluation demo
         - Production Compose topology
         - Other
+    validations:
+      required: true
+  - type: input
+    id: operating_system
+    attributes:
+      label: Operating system
+      description: Name and version only, such as Windows 11, macOS 15, or Ubuntu 24.04.
+      placeholder: Windows 11 24H2
+    validations:
+      required: true
+  - type: input
+    id: docker_versions
+    attributes:
+      label: Docker and Compose versions
+      description: Safe evaluation demo only. Copy only the version numbers after manually reviewing the output.
+      placeholder: Docker 29.x; Compose v2.x
+  - type: input
+    id: affected_route
+    attributes:
+      label: Affected route or component
+      description: Give a public loopback route such as /hosting, /portal, or /admin, or name the affected component. Do not include a private host.
+      placeholder: /hosting
+    validations:
+      required: true
+  - type: dropdown
+    id: demo_health_stage
+    attributes:
+      label: Safe-demo health stage
+      description: For safe-demo reports, did the failure happen before or after the stack became healthy?
+      options:
+        - Before the safe-demo stack became healthy
+        - After the safe-demo stack became healthy
+        - Not using the safe evaluation demo
+        - Unsure
     validations:
       required: true
   - type: textarea
@@ -57,15 +94,21 @@ body:
     id: logs
     attributes:
       label: Redacted logs or screenshots
-      description: Remove tokens, cookies, personal data, provider payloads, internal hosts, and payment proof.
+      description: Share only manually reviewed excerpts. Never paste the demo runtime file, tokens, cookies, personal data, provider payloads, private hosts, database contents, payment proof, or unredacted logs.
+  - type: checkboxes
+    id: sensitive_data_confirmation
+    attributes:
+      label: Sensitive-data confirmation
+      description: The report contains no `.demo-runtime/demo.env` file or content, passwords, cookies, tokens, personal or customer data, payment evidence, private hosts, database contents, or unredacted logs.
+      options:
+        - label: I manually reviewed this report and confirm none of the sensitive material listed above is included.
+          required: true
   - type: checkboxes
     id: checks
     attributes:
       label: Submission checks
       options:
         - label: I searched existing issues and pull requests.
-          required: true
-        - label: I removed all secrets and personal or customer information.
           required: true
         - label: This is not a security vulnerability.
           required: true

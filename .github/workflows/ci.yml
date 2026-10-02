@@ -72,6 +72,9 @@ jobs:
       - name: Check contributor paths
         run: pnpm docs:paths
 
+      - name: Check issue forms
+        run: pnpm docs:issue-forms
+
       - name: Lint
         run: pnpm lint
 

@@ -15,6 +15,11 @@ Before opening an issue, search existing reports and include the application ver
 operating system, Node/pnpm versions, deployment method, relevant redacted logs, exact
 steps, expected behavior, and actual behavior.
 
+For the safe evaluation demo, select **Safe evaluation demo** in the bug form. Run
+`corepack pnpm demo:doctor` before startup or `corepack pnpm demo:status` for a
+running stack, then share only manually reviewed, redacted details. Follow the
+[safe-demo troubleshooting guide](docs/SAFE_EVALUATION_DEMO.md#troubleshooting).
+
 Never post passwords, API tokens, cookies, `.env` contents, customer information,
 payment evidence, database dumps, private hostnames, or unredacted logs.
 

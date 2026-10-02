@@ -26,6 +26,7 @@
     "db:verify": "pnpm --filter @webhost-billing/database db:verify",
     "docs:links": "node scripts/docs/check-markdown-links.mjs",
     "docs:paths": "node scripts/docs/check-contributor-paths.mjs",
+    "docs:issue-forms": "node scripts/docs/check-issue-forms.mjs",
     "demo:a11y": "node scripts/demo/manage-demo.mjs a11y",
     "demo:credentials": "node scripts/demo/manage-demo.mjs credentials",
     "demo:doctor": "node scripts/demo/manage-demo.mjs doctor",
@@ -53,12 +54,13 @@
     "infra:logs": "docker compose logs --follow postgres redis",
     "infra:ps": "docker compose ps",
     "infra:up": "docker compose up --detach --wait postgres redis",
-    "test": "pnpm run test:demo-doctor && pnpm run test:demo-reset && pnpm run test:demo-smoke && pnpm run test:docs-paths && pnpm run test:docs-links && pnpm -r --if-present test",
+    "test": "pnpm run test:demo-doctor && pnpm run test:demo-reset && pnpm run test:demo-smoke && pnpm run test:docs-paths && pnpm run test:docs-links && pnpm run test:issue-forms && pnpm -r --if-present test",
     "test:demo-doctor": "node --test scripts/demo/demo-doctor.test.mjs",
     "test:demo-reset": "node --test scripts/demo/demo-reset.test.mjs",
     "test:demo-smoke": "node --test scripts/demo/demo-smoke.test.mjs",
     "test:docs-paths": "node --test scripts/docs/check-contributor-paths.test.mjs",
     "test:docs-links": "node --test scripts/docs/check-markdown-links.test.mjs",
+    "test:issue-forms": "node --test scripts/docs/check-issue-forms.test.mjs",
     "pretest:e2e": "pnpm build:packages",
     "test:e2e": "pnpm --filter @webhost-billing/web test:e2e",
     "pretest:invariants": "pnpm build:packages",
@@ -71,6 +73,7 @@
   },
   "devDependencies": {
     "cross-env": "10.1.0",
+    "js-yaml": "4.3.2",
     "prettier": "^3.6.2",
     "typescript": "^5.9.2"
   }

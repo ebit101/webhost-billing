@@ -7,45 +7,22 @@ customer data or credentials.
 
 ## Current starter set
 
+No starter issue is currently open. Complete a phase review before publishing the
+next bounded set; do not infer new implementation authority from the completed
+examples below.
+
+## Latest completed starter set
+
 ### 11. [Add a safe-demo path to the GitHub bug-report form](https://github.com/ebit101/webhost-billing/issues/28)
 
-**Status:** Open; implementation requires separate Command 70 authorization.
+**Status:** Completed by Command 70 on 2026-10-02.
 
 **Suggested labels:** `good first issue`, `help wanted`, `documentation`
 
-Give safe-demo evaluators an explicit issue-form path that requests useful redacted
-context without encouraging disclosure of runtime credentials, real data, or private
-infrastructure.
-
-Acceptance:
-
-- adds **Safe evaluation demo** as an explicit deployment method in the existing bug
-  report form;
-- directs reporters to `demo:doctor` before startup or `demo:status` for a running
-  stack and asks for only manually reviewed, redacted output;
-- adds safe-demo context for operating system, Docker/Compose versions, version or
-  commit, affected route, and whether failure occurred before or after health;
-- retains required version, reproduction, expected, and actual behavior fields;
-- requires confirmation that runtime files, credentials, cookies, tokens, personal
-  or customer data, payment evidence, private hosts, database contents, and
-  unredacted logs are absent;
-- links troubleshooting and private vulnerability reporting; and
-- adds an offline validator with focused tests for parseable issue-form YAML, the
-  option and safety acknowledgement, unique field IDs, and valid guidance links.
-
-Validation: focused issue-form validator tests, its live offline check,
-`pnpm docs:links`, `pnpm docs:paths`, `pnpm format:check`, and manual GitHub form and
-terminology review.
-
-Security boundary: request only redacted diagnostic context and route suspected
-vulnerabilities privately; never request credentials, runtime-file values, provider
-payloads, real customer data, or production access.
-
-Excluded: runtime behavior, telemetry or automatic uploads, security-policy changes,
-GitHub Discussions, schemas, providers, releases, deployments, or production
-readiness.
-
-## Latest completed starter set
+Added **Safe evaluation demo** to the existing bug form with bounded environment and
+health-stage context, explicit diagnostic commands, a required sensitive-data
+confirmation, troubleshooting and private-reporting links, plus an offline
+self-validating issue-form contract.
 
 ### 9. [Add a read-only `demo:smoke` verification command](https://github.com/ebit101/webhost-billing/issues/26)
 

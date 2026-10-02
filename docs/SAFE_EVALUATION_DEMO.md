@@ -250,5 +250,17 @@ application APIs with fictional demo records.
   a failed health check or connect directly to the database to make the UI appear
   ready.
 
+### Report a safe-demo problem
+
+Use the repository's [bug-report form](https://github.com/ebit101/webhost-billing/issues/new?template=bug_report.yml)
+and select **Safe evaluation demo**. Before startup, run
+`corepack pnpm demo:doctor`; for a running stack, use
+`corepack pnpm demo:status`. Manually review and redact any excerpt before sharing
+it. Never attach `.demo-runtime/demo.env`, credentials, cookies, tokens, personal or
+customer data, payment evidence, private hosts, database contents, or unredacted
+logs. Report a suspected vulnerability through the
+[private security process](../SECURITY.md#reporting-a-vulnerability), not the public
+bug form.
+
 See [`CAPABILITY_MATRIX.md`](CAPABILITY_MATRIX.md) for the exact implemented,
 demo-visible, disabled, and out-of-scope boundaries.

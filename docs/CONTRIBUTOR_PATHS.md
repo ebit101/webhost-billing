@@ -188,7 +188,8 @@ schema work with verified backup and restore procedures.
   [offline documentation tooling](../scripts/docs/), and
   [GitHub issue forms](../.github/ISSUE_TEMPLATE/).
 - **Nearest focused tests:** [Markdown-link validator tests](../scripts/docs/check-markdown-links.test.mjs)
-  and [contributor-map validator tests](../scripts/docs/check-contributor-paths.test.mjs).
+  [contributor-map validator tests](../scripts/docs/check-contributor-paths.test.mjs),
+  and [issue-form validator tests](../scripts/docs/check-issue-forms.test.mjs).
 - **Relevant documentation:** [contribution guide](../CONTRIBUTING.md),
   [support policy](../SUPPORT.md), [security policy](../SECURITY.md), and
   [starter-issue catalogue](STARTER_ISSUES.md).
@@ -197,8 +198,10 @@ schema work with verified backup and restore procedures.
 ```bash
 corepack pnpm test:docs-links
 corepack pnpm test:docs-paths
+corepack pnpm test:issue-forms
 corepack pnpm docs:links
 corepack pnpm docs:paths
+corepack pnpm docs:issue-forms
 corepack pnpm format:check
 ```
 
@@ -206,6 +209,10 @@ The Markdown-link check resolves repository-local files and verifies fragments o
 tracked Markdown targets against ordinary GitHub-style ATX heading anchors. It
 remains offline and does not inspect external URLs or fragments on non-Markdown
 files.
+The issue-form check uses the [offline validator](../scripts/docs/check-issue-forms.mjs)
+to parse every template YAML file and retain required bug fields, unique field IDs,
+safe-demo guidance, redaction confirmation, and confined local or HTTPS guidance
+links.
 
 **Safety invariants:** keep documentation validation offline and repository-bound,
 keep public issue paths free of credentials and real customer/provider data, route

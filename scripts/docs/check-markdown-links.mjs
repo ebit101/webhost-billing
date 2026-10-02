@@ -106,7 +106,7 @@ function githubHeadingSlug(value) {
     .replaceAll(' ', '-');
 }
 
-function extractMarkdownHeadingAnchors(markdown) {
+export function extractMarkdownHeadingAnchors(markdown) {
   const masked = maskMarkdownBlocks(markdown);
   const anchors = new Set();
   const occurrences = new Map();

@@ -22,6 +22,9 @@ importers:
       cross-env:
         specifier: 10.1.0
         version: 10.1.0
+      js-yaml:
+        specifier: 4.3.2
+        version: 4.3.2
       prettier:
         specifier: ^3.6.2
         version: 3.9.6

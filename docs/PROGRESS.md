@@ -4365,6 +4365,105 @@ Authorize **Command 70 — Implement starter issue #28: Add a safe-demo path to 
 GitHub bug-report form** only after separate review and authorization. Do not start
 it automatically.
 
+### Command 70 — Implement Starter Issue #28: Add a Safe-Demo Path to the GitHub Bug-Report Form
+
+- **Status:** Completed locally; GitHub delivery verification pending
+- **Date:** 2026-10-02
+
+#### Scope completed
+
+- Added **Safe evaluation demo** as an explicit deployment method in the existing
+  public bug-report form. The form directs pre-start reports to `demo:doctor`,
+  running-stack reports to `demo:status`, and accepts only manually reviewed,
+  redacted excerpts.
+- Added single-line safe-demo context for the operating system, Docker/Compose
+  versions, affected route or component, plus a required health-stage choice that
+  distinguishes failures before and after the stack became healthy. The existing
+  required version/commit, reproduction, expected, and actual behavior fields remain
+  required.
+- Added a required sensitive-data confirmation covering `.demo-runtime/demo.env`,
+  passwords, cookies, tokens, personal/customer data, payment evidence, private
+  hosts, database contents, and unredacted logs. Public guidance links directly to
+  safe-demo troubleshooting and private vulnerability reporting.
+- Added a dependency-pinned, offline validator that parses every issue-template YAML
+  file, verifies common form structure and unique valid IDs, enforces the complete
+  bug-form contract, and confines local guidance links before checking their target
+  files and Markdown heading anchors. HTTPS links are syntax-checked without network
+  crawling.
+- Added four focused tests for the live forms, malformed YAML redaction, missing
+  safe-demo/core/safety requirements, duplicate IDs, invalid schemes, and missing
+  local heading anchors. Added the live check to ordinary CI and the focused suite
+  to the root test gate.
+- Updated contributor and evaluator guidance and moved completed issue #28 out of
+  the current starter set. No new starter task was inferred.
+
+#### Files changed
+
+- Public issue form: `.github/ISSUE_TEMPLATE/bug_report.yml`
+- Offline validator and tests: `scripts/docs/check-issue-forms.mjs`,
+  `scripts/docs/check-issue-forms.test.mjs`
+- Shared heading extraction: `scripts/docs/check-markdown-links.mjs`
+- Root commands, parser dependency, and CI: `package.json`, `pnpm-lock.yaml`,
+  `.github/workflows/ci.yml`
+- Contributor/support/evaluator documentation: `CONTRIBUTING.md`, `SUPPORT.md`,
+  `docs/CONTRIBUTOR_PATHS.md`, `docs/SAFE_EVALUATION_DEMO.md`,
+  `docs/STARTER_ISSUES.md`, `CHANGELOG.md`
+- Command evidence: `docs/PROGRESS.md`
+
+#### Validation
+
+- All 4 focused issue-form tests passed. The live offline command validated 3 issue
+  forms, parsed all 4 template YAML files, and checked 2 required guidance links.
+- `pnpm docs:links` passed with 111 local references, including 3 heading anchors,
+  across 59 tracked Markdown files. `pnpm docs:paths` passed with 82 contributor-map
+  paths and 22 root scripts.
+- `pnpm format:check`, `git diff --check`, Node syntax checks, and a frozen-lockfile
+  install passed. The explicit `js-yaml` 4.3.2 development dependency reuses the
+  repository's existing resolved package line.
+- Complete `pnpm test` passed: 6 demo-doctor tests, 12 guarded-reset tests, 8
+  demo-smoke tests, 3 contributor-path tests, 6 Markdown-link tests, 4 issue-form
+  tests, 26 shared package tests, 55 web tests, 3 queue tests, 88 API tests, and 29
+  worker tests.
+- Manual terminology and schema review confirmed that fields use supported GitHub
+  input types, every non-Markdown field has a valid unique ID, dropdown options avoid
+  reserved values, the security-sensitive list is descriptive rather than a request
+  for secret values, and no field asks for production access or automatic uploads.
+- Hosted CI and CodeQL verification remain pending until the focused commit is
+  pushed to `origin/main`.
+
+#### Decisions made
+
+- Keep one bug form for all deployment methods instead of creating an overlapping
+  safe-demo form. Non-demo reporters can select the explicit not-safe-demo health
+  option, while safe-demo reporters receive bounded fields that avoid raw diagnostic
+  dumps.
+- Put the prohibited-material list in the required confirmation's description and
+  make the acknowledgement refer to that list. This provides an explicit attestation
+  without making a form label resemble a request for credentials.
+- Use a real pinned YAML parser rather than a partial hand-written parser. Parse
+  `config.yml` as well as every issue form, but apply the field contract only to form
+  files.
+- Reuse Command 69's GitHub-style heading extraction so local issue-form guidance
+  links prove both the file and the named section still exist.
+
+#### Open questions and risks
+
+- GitHub Issue Forms remain a public-preview schema. The offline validator protects
+  the contract implemented here, but future GitHub schema changes may require a
+  reviewed validator update.
+- A required checkbox cannot prevent a reporter from pasting sensitive material.
+  Maintainers must still review public submissions and move suspected vulnerabilities
+  to the private reporting path.
+- Production remains `NO-GO`; runtime behavior, telemetry, uploads, security policy,
+  Discussions, schemas, providers, releases, deployments, and live environments were
+  not changed.
+
+#### Recommended next command
+
+Authorize **Phase Review — Review Commands 67–70 and define the next bounded
+command** only after separate review and authorization. Do not start another
+implementation command automatically.
+
 ## Report Template
 
 Use this template after every future command:
