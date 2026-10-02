@@ -138,11 +138,40 @@ all acceptance gates. Running this demo does not change production `NO-GO`.
 | `corepack pnpm demo:up`                            | Build, initialize, start, and health-check the demo |
 | `corepack pnpm demo:credentials`                   | Reprint the generated fictional logins              |
 | `corepack pnpm demo:status`                        | Show container state and health                     |
+| `corepack pnpm demo:smoke`                         | Verify principal read-only evaluator paths          |
 | `corepack pnpm demo:logs`                          | Follow bounded local demo logs                      |
 | `corepack pnpm demo:screenshots`                   | Recreate the reviewed evaluator screenshots         |
 | `corepack pnpm demo:a11y`                          | Run the bounded accessibility smoke audit           |
 | `corepack pnpm demo:down`                          | Stop the demo and retain its fictional state        |
 | `corepack pnpm demo:reset -- --confirm-reset-demo` | Permanently remove only dedicated demo state        |
+
+## Functional smoke verification
+
+With the healthy safe demo already running and the repository-pinned Playwright
+Chromium installed, execute:
+
+```bash
+corepack pnpm demo:smoke
+```
+
+The command first requires the fixed regular `.demo-runtime/demo.env` file and an
+HTTP-successful `http://localhost:3100/ready` response. It then verifies the public
+hosting catalogue, customer login and ownership-bound overview, and administrator
+login and dashboard. The assertions wait for named headings, fictional seeded
+content, and primary actions rather than arbitrary delays.
+
+`demo:smoke` is read-only with respect to application business records, Docker, and
+providers. It does not start, stop, build, reset, or inspect Docker; submit checkout,
+billing, payment, provisioning, support, or administration mutations; or accept an
+origin override. Browser requests outside the fixed loopback origin are blocked.
+Signing in creates only ephemeral authenticated sessions.
+
+Output is allowlisted to `/ready`, `/hosting`, `/portal`, and `/admin` pass/fail
+lines plus fixed remediation. Generated passwords are read only inside the child
+browser process. Runtime values, cookies, tokens, raw process/browser errors, DOM or
+response bodies, screenshots, traces, and videos are neither printed nor retained.
+The command exits non-zero if a precondition or route fails. It is a functional
+evaluation smoke check, not complete end-to-end or production acceptance.
 
 ## Accessibility smoke audit
 
@@ -206,6 +235,14 @@ application APIs with fictional demo records.
   port is intentional so cookie and origin checks remain deterministic.
 - If startup fails, run `corepack pnpm demo:status` and
   `corepack pnpm demo:logs`. Redact generated credentials before sharing output.
+- If `demo:smoke` reports route failures, confirm `demo:status` is healthy and install
+  the repository-pinned browser with
+  `corepack pnpm --filter @webhost-billing/web exec playwright install chromium`,
+  then retry the fixed command. Do not share `.demo-runtime/demo.env` or raw browser
+  diagnostics.
+- Repeated `demo:smoke` runs use the application's normal per-identity login-rate
+  window. If the healthy demo starts rejecting later role checks, wait for the
+  15-minute window to expire; do not clear Redis or weaken authentication controls.
 - If Chromium is missing, `demo:screenshots` installs the repository-pinned browser
   before capture. `demo:a11y` does the same before auditing. Normal evaluation does
   not require Playwright.

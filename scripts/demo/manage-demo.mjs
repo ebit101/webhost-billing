@@ -12,6 +12,7 @@ import { spawnSync } from 'node:child_process';
 
 import { runDemoDoctor } from './demo-doctor.mjs';
 import { runDemoReset } from './demo-reset.mjs';
+import { runDemoSmoke } from './demo-smoke.mjs';
 
 const repositoryRoot = resolve(
   dirname(fileURLToPath(import.meta.url)),
@@ -155,6 +156,10 @@ async function main() {
     process.exitCode = await runDemoReset({ args: process.argv.slice(3) });
     return;
   }
+  if (command === 'smoke') {
+    process.exitCode = await runDemoSmoke();
+    return;
+  }
   if (command === 'up') {
     initializeRuntime();
     ensureDocker();
@@ -261,6 +266,9 @@ async function main() {
   );
   process.stdout.write(`  pnpm demo:credentials  Show generated demo logins\n`);
   process.stdout.write(`  pnpm demo:status       Show container health\n`);
+  process.stdout.write(
+    `  pnpm demo:smoke        Verify the running fictional demo without changing it\n`,
+  );
   process.stdout.write(`  pnpm demo:logs         Follow demo logs\n`);
   process.stdout.write(
     `  pnpm demo:screenshots  Refresh reviewed screenshots\n`,

@@ -10,6 +10,9 @@ and will be called out in release notes.
 
 ### Added
 
+- Added a fixed-origin, read-only `demo:smoke` verifier for the running fictional
+  catalogue, customer overview, and administrator dashboard with bounded redacted
+  output and focused guard/dispatch tests.
 - Added a self-validating contributor change-path map for demo tooling, web UI, API
   modules, worker/scheduler jobs, shared contracts, and database migrations.
 - Added a third bounded contributor starter-issue set covering read-only safe-demo

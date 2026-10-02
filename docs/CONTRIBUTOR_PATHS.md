@@ -21,6 +21,8 @@ an additional project-maintenance route.
   [safe-demo browser helpers](../apps/web/e2e/).
 - **Nearest focused tests:** [doctor tests](../scripts/demo/demo-doctor.test.mjs),
   [reset tests](../scripts/demo/demo-reset.test.mjs), and
+  [smoke-command tests](../scripts/demo/demo-smoke.test.mjs),
+  [the functional browser verifier](../apps/web/e2e/smoke-safe-demo.ts), and
   [the accessibility runner](../apps/web/e2e/audit-safe-demo-accessibility.ts).
 - **Relevant documentation:** [safe evaluation](SAFE_EVALUATION_DEMO.md),
   [development setup](DEVELOPMENT.md), and
@@ -30,6 +32,7 @@ an additional project-maintenance route.
 ```bash
 corepack pnpm test:demo-doctor
 corepack pnpm test:demo-reset
+corepack pnpm test:demo-smoke
 corepack pnpm docs:paths
 corepack pnpm docs:links
 corepack pnpm format:check
@@ -38,7 +41,8 @@ corepack pnpm format:check
 **Safety invariants:** keep the demo loopback-only, fictional, and isolated from
 development and production. Never print generated credentials, enable real providers,
 turn `demo:down` into a destructive operation, weaken the exact reset confirmation,
-or add generic Docker pruning.
+add generic Docker pruning, or let read-only verification mutate business or Docker
+state.
 
 ### Next.js UI
 

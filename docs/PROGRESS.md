@@ -4173,6 +4173,101 @@ Authorize **Command 68 — Implement starter issue #26: Add a read-only `demo:sm
 verification command** only after separate review and authorization. Do not start it
 automatically.
 
+### Command 68 — Implement Starter Issue #26: Add a Read-Only `demo:smoke` Verification Command
+
+- **Status:** Completed and delivered to GitHub `main`
+- **Date:** 2026-10-02
+
+#### Scope completed
+
+- Added `pnpm demo:smoke` for an already-running safe demo at the fixed
+  `http://localhost:3100` origin. It requires the generated runtime to be a regular,
+  non-symbolic-link file, validates the fixed origin and fictional credentials, and
+  requires an HTTP-successful `/ready` response before launching a browser.
+- Added a repository-pinned, headless Chromium verifier for the public hosting
+  catalogue, authenticated customer overview, and authenticated administrator
+  dashboard. It uses bounded semantic assertions for fictional seeded content and
+  blocks browser requests outside the fixed loopback origin.
+- Kept the command read-only with respect to business records, Docker, and providers.
+  It never starts, stops, builds, inspects, or resets Docker and does not submit
+  checkout, billing, payment, provisioning, support, or administrator mutations.
+  Authentication creates only normal ephemeral sessions and rate-limit counters.
+- Added allowlisted route-level reporting and fixed remediation. Runtime values,
+  credentials, cookies, tokens, raw process/browser errors, DOM and response bodies,
+  screenshots, traces, videos, and authenticated artifacts are not printed or
+  retained.
+- Added eight focused command tests covering missing and non-regular runtime paths,
+  fixed-origin enforcement, ambiguous runtime entries, readiness failure, exact
+  browser dispatch, pass/fail reporting, and rejection/redaction of untrusted child
+  output. Documented prerequisites, coverage, safety, limits, normal login-rate
+  behavior, and the contributor change path.
+
+#### Files changed
+
+- Command and focused tests: `scripts/demo/demo-smoke.mjs`,
+  `scripts/demo/demo-smoke.test.mjs`, `scripts/demo/manage-demo.mjs`, `package.json`
+- Browser verifier: `apps/web/e2e/smoke-safe-demo.ts`
+- Evaluator and contributor documentation: `README.md`,
+  `docs/SAFE_EVALUATION_DEMO.md`, `docs/CONTRIBUTOR_PATHS.md`, `CHANGELOG.md`
+- Command evidence: `docs/PROGRESS.md`
+
+#### Validation
+
+- All 8 focused `demo:smoke` tests passed, including guard, dispatch, redaction, and
+  trusted-output cases. The final live command passed `/ready`, `/hosting`, `/portal`,
+  and `/admin` against the healthy fictional demo and reported that no business or
+  Docker state was changed.
+- All 6 existing demo-doctor tests, 12 guarded-reset tests, 4 Markdown-link tests,
+  and 3 contributor-path tests passed during this command. Live offline checks passed
+  with 107 local Markdown references across 59 tracked files and 80 contributor-map
+  paths plus 20 root scripts.
+- Repository lint, strict type checks, formatting, `git diff --check`, and the web
+  production build passed. The complete web package suite also passed all 19 files
+  and 55 tests earlier in the command, before the final verifier-only portability and
+  catalogue-selection adjustments.
+- Later standard web-suite retries while the Docker demo was active exceeded the
+  Windows host's fixed five-second UI-test budget across unrelated unchanged files;
+  a one-worker extended-timeout retry stopped making progress and was interrupted.
+  No component implementation changed. Fresh strict type checks, the production
+  build, focused command tests, and the live Chromium role journeys passed after the
+  final verifier changes; hosted Linux CI remains the final standard-suite gate.
+- Docker Desktop was separately recovered from the complete installation at
+  `D:\\DockerBackup\\DockerDesktop`; Engine 29.8.1 and all retained demo services
+  returned healthy without deleting images, volumes, or project data.
+
+#### Decisions made
+
+- Invoke the repository-pinned `tsx` entry point directly with Node instead of
+  depending on pnpm's optional `npm_execpath` environment variable. This keeps the
+  dispatch cross-platform and fixed while supporting pnpm 11 on Windows.
+- Use the same reviewed client-side Monthly catalogue selection as the screenshot and
+  accessibility checks before asserting the primary product action.
+- Treat normal authentication sessions and rate-limit counters as the only permitted
+  operational side effects. Repeated runs must wait for the normal 15-minute window;
+  the verifier does not bypass security controls or clear Redis.
+- Accept only an exact versioned child JSON shape and discard all raw child output so
+  a browser or dependency failure cannot leak runtime secrets into terminal output.
+
+#### Open questions and risks
+
+- This is a bounded evaluator smoke check, not complete end-to-end, accessibility,
+  production, payment, provisioning, or lifecycle acceptance. It deliberately does
+  not automate demo startup or recovery.
+- Five repeated login attempts for one fictional identity inside 15 minutes trigger
+  the application's intended rate limit. A later route can therefore fail safely
+  until the window expires; evaluators should wait rather than mutate Redis.
+- The Windows host showed severe UI-test timing contention while Docker was active.
+  Hosted Linux CI must confirm the ordinary five-second package-test configuration.
+- Production remains `NO-GO`; the immutable `v0.1.0-alpha.1` release, schemas,
+  providers, real identities, financial rules, and live environments were not
+  changed.
+
+#### Recommended next command
+
+Authorize **Command 69 — Implement starter issue #27: Validate local Markdown
+heading anchors offline** only after separate review and authorization. Do not start
+it automatically.
+
 ## Report Template
 
 Use this template after every future command:
