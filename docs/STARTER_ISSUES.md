@@ -7,9 +7,110 @@ customer data or credentials.
 
 ## Current starter set
 
-No starter issue is currently open. Command 71 is the separately gated planning step
-for a fourth bounded set; do not infer implementation authority from the completed
-examples below.
+### 12. [Keep safe-demo inspection commands side-effect-free](https://github.com/ebit101/webhost-billing/issues/29)
+
+**Suggested labels:** `good first issue`, `help wanted`, `docker`, `javascript`
+
+The safe-demo dispatcher currently creates `.demo-runtime/demo.env` before
+`demo:credentials`, `demo:status`, `demo:logs`, and `demo:down` when the file is
+missing. Make those inspection/stop paths refuse safely instead, and make logs a
+bounded snapshot rather than an indefinite follow operation.
+
+Acceptance:
+
+- only `demo:up` may create a missing runtime file in the ordinary lifecycle paths;
+- credentials, status, logs, and down refuse missing, unreadable, symbolic-link, or
+  non-regular runtime paths with fixed remediation before Docker runs;
+- `demo:logs` returns a no-color, non-following snapshot capped at the latest 100
+  lines;
+- Docker calls remain fixed to the demo Compose/project inputs with no target
+  override, and `demo:down` continues retaining fictional data and credentials;
+- no runtime value, raw command error, environment content, credential, token,
+  cookie, or unbounded log output is printed;
+- injected filesystem/process tests cover path refusal, exact dispatch, bounded
+  logs, refusal before Docker, and retained down state; and
+- command help plus English/Bengali evaluator guidance match the behavior.
+
+Validation: focused dispatcher tests, a disposable live status/logs/down check,
+offline documentation checks, `pnpm format:check`, `pnpm lint`, `pnpm typecheck`,
+and `pnpm test`.
+
+Security: use fictional demo state only; preserve loopback-only networking, fixed
+targeting, generated-secret redaction, non-destructive down, and guarded reset.
+
+Excluded: automatic start/reset, generic Docker cleanup, arbitrary target options,
+changes to doctor/smoke contracts, product/authentication behavior, schemas,
+providers, releases, deployments, or production `NO-GO`.
+
+### 13. [Validate safe-demo screenshot assets offline](https://github.com/ebit101/webhost-billing/issues/30)
+
+**Suggested labels:** `good first issue`, `help wanted`, `documentation`,
+`javascript`
+
+The four reviewed evaluator screenshots are currently protected only by local-link
+existence checks. Add an offline asset contract so malformed, untracked, oversized,
+wrongly sized, or undocumented replacements fail before review.
+
+Acceptance:
+
+- define one small contract for the four filenames, roles, required widths, bounded
+  heights/file sizes, and canonical-guide references;
+- make the Playwright capture script and validator consume the same filename and
+  dimension contract;
+- require regular non-symbolic-link files confined to the repository, Git tracking,
+  valid PNG signature/IHDR dimensions, conservative byte bounds, unique filenames,
+  and canonical-guide references;
+- decode no pixels and launch no browser, Docker process, or network request;
+- report every failure with a bounded repository-relative asset/reason;
+- cover live assets plus missing, traversal/symlink, malformed, wrong-size,
+  oversized, duplicate, untracked, and undocumented fixtures; and
+- expose focused/live pnpm commands, run the live check in CI, and document it in
+  the contributor path.
+
+Validation: focused fixtures, the live offline asset check, existing documentation
+checks, `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, and manual
+confirmation that the four current images were not regenerated.
+
+Security: treat image/contract inputs as untrusted; never execute metadata, follow
+an escaping symlink, or retain authenticated artifacts.
+
+Excluded: pixel comparison, OCR, visual-regression services, screenshot
+regeneration/redesign/compression, remote assets, application behavior, schemas,
+providers, releases, deployments, or production-readiness claims.
+
+### 14. [Add one offline documentation validation command](https://github.com/ebit101/webhost-billing/issues/31)
+
+**Suggested labels:** `good first issue`, `help wanted`, `documentation`,
+`javascript`, `github_actions`
+
+Contributors currently must remember separate link, path, and issue-form commands;
+the demo-asset validator will join them. Add one discoverable aggregate without
+hiding the focused commands or expanding it into a general task runner.
+
+Acceptance:
+
+- add root `pnpm docs:check` for links/anchors, contributor paths/scripts, issue
+  forms, and the Command 73 demo-asset contract;
+- preserve each focused command and deterministic sequential output;
+- return the first failing child status and dispatch no later validator;
+- use a cross-platform allowlisted Node.js dispatcher without shell chaining or
+  network access;
+- exclude formatting, lint, type checking, package tests, Docker, browsers, and
+  external crawling from the aggregate;
+- add injected tests for ordered success, failure propagation, stopped dispatch,
+  and safe raw-output handling; and
+- use the aggregate in ordinary CI while keeping readable validator evidence and
+  documenting both aggregate and focused paths.
+
+Validation: focused dispatcher tests, every focused validator, `pnpm docs:check`,
+`pnpm format:check`, `pnpm lint`, `pnpm typecheck`, and `pnpm test`.
+
+Security: run allowlisted repository-local scripts only; do not evaluate documents,
+forward secrets, fetch URLs, or accept arbitrary command input.
+
+Excluded: task-runner migration, hosted crawling, auto-fixes, broad CI redesign,
+application behavior, schemas, authentication/financial/provider rules, releases,
+deployments, or production `NO-GO`.
 
 ## Latest completed starter set
 

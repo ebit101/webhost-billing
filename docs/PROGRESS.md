@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Phase Review — Review Commands 67–70 and define the next bounded command
-- **Current status:** Completed and delivered to GitHub `main`
+- **Current command:** Command 71 — Reopen the contributor on-ramp with a fourth starter-issue set
+- **Current status:** Planning complete locally; delivery validation pending
 - **Last updated:** 2026-10-03
-- **Next command:** Command 71 — Reopen the contributor on-ramp with a fourth starter-issue set
+- **Next command:** Command 72 — Implement starter issue #29: Keep safe-demo inspection commands side-effect-free
 - **Next command authorized:** No
 
 ## Command Reports
@@ -4566,6 +4566,99 @@ implementation command automatically.
 Authorize **Command 71 — Reopen the Contributor On-Ramp With a Fourth Starter-Issue
 Set** only after separate review and authorization. Do not begin any fourth-set
 implementation automatically.
+
+### Command 71 — Reopen the Contributor On-Ramp With a Fourth Starter-Issue Set
+
+- **Status:** Planning complete locally; delivery validation pending
+- **Date:** 2026-10-03
+
+#### Scope completed
+
+- Reviewed the completed Commands 67–70 and issues #26–#28, the latest phase-review
+  findings, the contributor change-path map, the safe-demo lifecycle/capture scripts,
+  current offline validators, contributor guidance, and the public backlog.
+- Identified a concrete lifecycle mismatch: `demo:credentials`, `demo:status`,
+  `demo:logs`, and `demo:down` currently initialize a missing runtime file, while the
+  evaluator guidance says `demo:up` creates it. The logs path also uses `--follow`
+  despite being described as bounded. Published issue #29 and separately gated
+  Command 72 to make those paths side-effect-free and logs finite.
+- Identified that the four reviewed evaluator PNGs have only link-existence
+  protection. Published issue #30 and Command 73 for one shared capture/validation
+  contract covering repository confinement, tracking, PNG headers, dimensions, byte
+  bounds, and canonical-guide references without Docker, browsers, pixel decoding,
+  or network access.
+- Identified that first-time contributors must remember multiple independent
+  offline documentation commands. Published issue #31 and Command 74 for one
+  allowlisted, sequential `docs:check` aggregate that retains every focused command
+  and includes the screenshot contract after Command 73.
+- Updated the starter catalogue with exactly three current tasks, each containing
+  acceptance, validation, security, and excluded-scope criteria. Added three
+  separate one-command-at-a-time implementation gates and did not implement any of
+  the proposed work.
+- Reconciled GitHub after publication: issues #29, #30, and #31 are the only three
+  open public issues. All carry `good first issue` and `help wanted` plus their
+  relevant Docker, documentation, JavaScript, or GitHub Actions labels. The 17
+  open Dependabot pull requests remain distinct from the issue backlog.
+
+#### Files changed
+
+- `docs/STARTER_ISSUES.md` — added the fourth current starter set and public links
+- `CODEX_DEVELOPMENT_COMMANDS.md` — added separately gated Commands 72–74
+- `CHANGELOG.md` — recorded the new bounded contributor set
+- `docs/PROGRESS.md` — updated command state and recorded planning evidence
+
+#### Validation
+
+- `pnpm format:check` passed.
+- `pnpm docs:links` passed offline with 111 local references, including 3 heading
+  anchors, across 59 tracked Markdown files.
+- `pnpm docs:paths` passed with 82 contributor-map paths and 22 root scripts.
+- `pnpm docs:issue-forms` validated 3 forms, parsed all 4 template YAML files, and
+  checked 2 guidance links without network access.
+- `git diff --check` passed.
+- Authenticated public-backlog reconciliation confirmed exactly three open issues:
+  #29, #30, and #31, with the intended titles and labels. No issue duplicates a
+  completed starter task.
+- Manual terminology and security review confirmed the set preserves fictional
+  demo data, repository/loopback confinement, bounded output, private vulnerability
+  reporting, immutable release state, and production `NO-GO`.
+
+#### Decisions made
+
+- Put issue #29 first because it resolves an observed mismatch in current lifecycle
+  behavior rather than adding another demo capability. It may change only demo
+  command orchestration and guidance, not application/authentication behavior.
+- Use one shared screenshot contract in issue #30 so validation and capture do not
+  establish competing filename/dimension lists. Keep it header-only and offline;
+  visual quality remains a human review responsibility.
+- Schedule the aggregate documentation command after the asset validator so
+  Command 74 can include the complete then-current offline set without inventing a
+  plugin/task-runner system.
+- Keep all three tasks suitable for one focused pull request and within documented
+  demo tooling or contributor-documentation change paths. None grants schema,
+  provider, financial, production, deployment, release, or external-service
+  authority.
+
+#### Open questions and risks
+
+- Issue #29 requires a small dispatcher refactor to make filesystem/process behavior
+  injectable. The implementation must not broaden accepted arguments or weaken the
+  exact guarded reset contract while doing so.
+- A PNG header/dimension check cannot prove that screenshot content is accurate,
+  legible, fictional, or free of sensitive pixels. Command 73 therefore retains an
+  explicit manual unchanged-asset review and performs no regeneration.
+- Command 74 follows Command 73 so its aggregate can include `docs:demo-assets`.
+  Starting issue #31 early would require rebasing its allowlist after Command 73;
+  the canonical commands remain sequential and separately authorized.
+- Production remains `NO-GO`; no demo was started, stopped, reset, or inspected, and
+  no application behavior, schema, provider, release, deployment, credential, or
+  real data was touched.
+
+#### Recommended next command
+
+Authorize **Command 72 — Implement starter issue #29: Keep safe-demo inspection
+commands side-effect-free** only after separate review and authorization. Do not
+start Command 73 or 74 automatically.
 
 ## Report Template
 

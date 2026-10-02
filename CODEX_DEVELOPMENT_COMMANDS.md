@@ -1578,6 +1578,88 @@ reconcile, push main, verify hosted checks, then stop and request separate
 authorization for the first implementation command.
 ```
 
+## Command 72 — Implement Starter Issue #29: Keep Safe-Demo Inspection Commands Side-Effect-Free
+
+```text
+Implement public starter issue #29 so `demo:credentials`, `demo:status`,
+`demo:logs`, and `demo:down` never create a missing safe-demo runtime file. Refuse a
+missing, unreadable, symbolic-link, or non-regular runtime path with fixed remediation
+before Docker execution. Keep `demo:up` as the only ordinary lifecycle path that may
+initialize the generated runtime.
+
+Change `demo:logs` to a non-following, no-color snapshot capped at the latest 100
+lines. Preserve fixed demo Compose/project targeting, non-destructive `demo:down`,
+and existing reset/doctor/smoke authority. Add injected filesystem/process tests for
+missing and invalid runtime paths, exact dispatch, refusal before Docker, bounded log
+arguments/output handling, and retained down state. Update command help plus the
+English and Bengali evaluator guidance.
+
+Never print runtime values, raw command errors, environment content, credentials,
+cookies, tokens, or unbounded logs. Do not start or reset the demo automatically,
+add target overrides or generic cleanup, change product behavior/authentication,
+touch schemas/providers/releases/deployments, or change production NO-GO. Run the
+focused tests, a disposable live status/logs/down check, offline documentation
+validation, formatting, lint, strict type checks, and complete package tests. Update
+docs/PROGRESS.md, commit, reconcile, push main, verify hosted checks, close issue #29
+if repository authority remains available, then stop and request separate
+authorization for Command 73.
+```
+
+## Command 73 — Implement Starter Issue #30: Validate Safe-Demo Screenshot Assets Offline
+
+```text
+Implement public starter issue #30 by defining one small repository-owned contract
+for the four current safe-demo screenshot filenames, roles, required widths, bounded
+heights/file sizes, and canonical-guide references. Make the Playwright capture
+script and a new offline validator consume the same filename/dimension contract.
+
+The validator must require regular non-symbolic-link assets canonically confined to
+the repository, Git tracking, valid PNG signature/IHDR dimensions, conservative byte
+bounds, unique filenames, and references from docs/SAFE_EVALUATION_DEMO.md. Use
+Node.js and repository dependencies only; decode no pixels, launch no browser or
+Docker process, and access no network. Report every failure with a bounded
+repository-relative asset/reason. Add fixture coverage for live assets, missing,
+traversal/symlink, malformed PNG, wrong dimensions, oversized, duplicate, untracked,
+and undocumented cases. Expose focused/live pnpm commands, add the live check to
+ordinary CI, and document it in the contributor path.
+
+Do not regenerate, redesign, compare, OCR, or compress screenshots; add a visual
+regression service; retain authenticated browser artifacts; change application
+behavior/schemas/providers/releases/deployments; or change production NO-GO. Run
+focused tests, the live offline asset check, existing documentation validators,
+formatting, lint, strict type checks, complete package tests, and a manual unchanged-
+asset review. Update docs/PROGRESS.md, commit, reconcile, push main, verify hosted
+checks, close issue #30 if repository authority remains available, then stop and
+request separate authorization for Command 74.
+```
+
+## Command 74 — Implement Starter Issue #31: Add One Offline Documentation Validation Command
+
+```text
+Implement public starter issue #31 by adding root `pnpm docs:check` as the canonical
+cross-platform aggregate for every registered offline documentation validator:
+Markdown links/anchors, contributor paths/scripts, GitHub issue forms, and the demo-
+asset contract delivered by Command 73. Keep every focused command available.
+
+Use an allowlisted Node.js dispatcher with deterministic sequential output and the
+first failing child status. Stop dispatch after failure, discard raw child errors,
+and add injected tests for full ordered dispatch, failure propagation, no later
+execution, and safe output handling. The aggregate must not run formatting, lint,
+type checks, package tests, Docker, browsers, external crawling, or arbitrary
+commands. Use it in ordinary CI while retaining readable validator evidence, and
+update contributor guidance to make the aggregate discoverable without hiding the
+focused commands in the change-path map.
+
+Do not add a general task runner, auto-fix documentation, redesign CI broadly,
+evaluate document content as code, forward secrets, change application behavior,
+schemas/authentication/financial/provider rules, releases/deployments, or production
+NO-GO. Run focused dispatcher tests, every focused validator, `pnpm docs:check`,
+formatting, lint, strict type checks, and complete package tests. Update
+docs/PROGRESS.md, commit, reconcile, push main, verify hosted checks, close issue #31
+if repository authority remains available, then stop and request a new phase review
+before any additional implementation command.
+```
+
 ---
 
 ## Continuation Command

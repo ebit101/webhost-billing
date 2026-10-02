@@ -10,6 +10,9 @@ and will be called out in release notes.
 
 ### Added
 
+- Added a fourth bounded contributor starter-issue set covering side-effect-free
+  safe-demo inspection, offline screenshot contracts, and one aggregate offline
+  documentation check.
 - Added an offline GitHub issue-form validator with focused parsing, unique-ID,
   safe-demo guidance, redaction-confirmation, and link-confinement tests.
 - Added a fixed-origin, read-only `demo:smoke` verifier for the running fictional
