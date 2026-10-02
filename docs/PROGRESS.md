@@ -4367,7 +4367,7 @@ it automatically.
 
 ### Command 70 — Implement Starter Issue #28: Add a Safe-Demo Path to the GitHub Bug-Report Form
 
-- **Status:** Completed locally; GitHub delivery verification pending
+- **Status:** Completed and delivered to GitHub `main`
 - **Date:** 2026-10-02
 
 #### Scope completed
@@ -4428,8 +4428,14 @@ it automatically.
   input types, every non-Markdown field has a valid unique ID, dropdown options avoid
   reserved values, the security-sensitive list is descriptive rather than a request
   for secret values, and no field asks for production access or automatic uploads.
-- Hosted CI and CodeQL verification remain pending until the focused commit is
-  pushed to `origin/main`.
+- Command 70 commit `6a08d21` passed hosted CI run `37041115983`, including the new
+  issue-form gate, secret scanning, database verification, documentation checks,
+  lint, strict type checks, complete package and API integration tests, critical
+  invariants, browser lifecycle, dependency/license checks, and the production
+  build: `https://github.com/ebit101/webhost-billing/actions/runs/37041115983`.
+- Hosted CodeQL run `37041115509` passed:
+  `https://github.com/ebit101/webhost-billing/actions/runs/37041115509`. Public
+  starter issue #28 was then closed as completed.
 
 #### Decisions made
 
