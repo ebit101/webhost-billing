@@ -37,6 +37,8 @@ and will be called out in release notes.
 
 ### Changed
 
+- Corrected contributor discovery after issues #18–#25 closed so the repository no
+  longer presents completed tasks as currently available work.
 - Replaced the customer portal overview presentation fixtures with an
   ownership-bound authenticated summary, bounded recent records, and explicit
   loading, empty, and error states.

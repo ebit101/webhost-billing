@@ -1441,6 +1441,33 @@ push main, verify hosted checks, close issue #25 if repository authority is
 available, then stop and request separate authorization for any next command.
 ```
 
+## Command 67 — Reopen the Contributor On-Ramp With a Third Starter-Issue Set
+
+```text
+Review the completed adoption work in Commands 57–66, closed starter issues #18–#25,
+the contributor change-path map, current public issue backlog, and the phase-review
+findings. Define exactly three new bounded starter issues that improve safe-demo
+functional verification, documentation, testability, or contributor onboarding.
+The set must include a read-only functional smoke check for an already-running safe
+demo that verifies the principal public, customer, and administrator evaluator paths
+without changing business data or lifecycle state.
+
+Give every issue explicit acceptance, validation, security, and excluded-scope
+criteria. Update the starter-issue catalogue so only genuinely open work appears as
+current, add separately gated implementation commands to this catalogue, and create
+the approved public issues only if repository authority remains available. Keep each
+task suitable for one focused pull request and one change path from
+docs/CONTRIBUTOR_PATHS.md.
+
+Do not implement any proposed issue, start/stop/reset a demo, use real data or
+credentials, contact providers, alter financial rules or schemas, deploy an
+environment, mutate v0.1.0-alpha.1, or change production NO-GO. Run Markdown
+formatting, offline link/path validation, terminology review, public-backlog
+reconciliation, and secret review. Update docs/PROGRESS.md, commit, reconcile, push
+main, verify hosted checks, then stop and request separate authorization for the
+first implementation command.
+```
+
 ---
 
 ## Continuation Command

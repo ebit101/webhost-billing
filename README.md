@@ -73,8 +73,9 @@ generic Docker prune.
 ![Webhost Billing safe-demo administrator view](docs/assets/demo/admin-dashboard.png)
 
 Follow the five-minute [`safe evaluation walkthrough`](docs/SAFE_EVALUATION_DEMO.md),
-check the [`capability and limitation matrix`](docs/CAPABILITY_MATRIX.md), or choose a
-bounded [`contributor starter issue`](docs/STARTER_ISSUES.md). The demo does not
+check the [`capability and limitation matrix`](docs/CAPABILITY_MATRIX.md), or review
+the current availability and completed examples in the
+[`contributor starter-issue catalogue`](docs/STARTER_ISSUES.md). The demo does not
 change the production `NO-GO` decision.
 
 ## Install and validate

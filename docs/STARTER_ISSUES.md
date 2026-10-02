@@ -5,7 +5,15 @@ without changing financial rules, provider authority, migrations, or production
 policy. Search GitHub first and comment on the issue before starting. Never use real
 customer data or credentials.
 
-## Current starter set
+## Current availability
+
+There are currently no open starter issues. Issues #18–#25 were completed by
+Commands 58–66 and are retained below as scoped examples. Do not begin one of those
+closed tasks again. Until a new set is separately reviewed and published, propose a
+small documentation or test change before implementing it and wait for maintainer
+agreement on the boundary.
+
+## Latest completed starter set
 
 ### 5. [Add offline Markdown link validation to CI](https://github.com/ebit101/webhost-billing/issues/22)
 
@@ -133,7 +141,7 @@ Excluded: code ownership changes, architecture/schema changes, generated API
 reference, full documentation rewrite, providers, production procedures, releases,
 or production-readiness changes.
 
-## Completed starter set
+## Earlier completed starter set
 
 ### 1. [Add a read-only demo preflight command](https://github.com/ebit101/webhost-billing/issues/18)
 
