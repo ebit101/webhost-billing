@@ -4278,7 +4278,7 @@ it automatically.
 
 ### Command 69 — Implement Starter Issue #27: Validate Local Markdown Heading Anchors Offline
 
-- **Status:** Completed locally; GitHub delivery verification pending
+- **Status:** Completed and delivered to GitHub `main`
 - **Date:** 2026-10-02
 
 #### Scope completed
@@ -4326,8 +4326,14 @@ it automatically.
 - Complete `pnpm test` passed: 6 demo-doctor tests, 12 guarded-reset tests, 8
   demo-smoke tests, 3 contributor-path tests, 6 Markdown-link tests, 26 shared
   package tests, 55 web tests, 3 queue tests, 88 API tests, and 29 worker tests.
-- Hosted CI and CodeQL verification remain pending until the focused commit is
-  pushed to `origin/main`.
+- Command 69 commit `b641256` passed hosted CI run `37036405352`, including secret
+  scanning, database verification, documentation checks, lint, strict type checks,
+  complete package and API integration tests, critical invariants, browser
+  lifecycle, dependency/license checks, and the production build:
+  `https://github.com/ebit101/webhost-billing/actions/runs/37036405352`.
+- Hosted CodeQL run `37036405476` passed:
+  `https://github.com/ebit101/webhost-billing/actions/runs/37036405476`. Public
+  starter issue #27 was then closed as completed.
 
 #### Decisions made
 
