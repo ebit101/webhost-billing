@@ -36,6 +36,9 @@ destructive, exact-confirmation-gated, and limited to the dedicated demo project
 
 New contributors can choose a bounded task from
 [`docs/STARTER_ISSUES.md`](docs/STARTER_ISSUES.md).
+Use the [`contributor change-path map`](docs/CONTRIBUTOR_PATHS.md) to find the owning
+source, nearest tests, relevant guide, minimum validation, and safety invariants
+before editing.
 
 ```bash
 corepack enable
@@ -71,6 +74,7 @@ Run the applicable validation before requesting review:
 ```bash
 pnpm format:check
 pnpm docs:links
+pnpm docs:paths
 pnpm lint
 pnpm typecheck
 pnpm test

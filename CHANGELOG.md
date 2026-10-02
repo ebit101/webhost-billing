@@ -10,6 +10,8 @@ and will be called out in release notes.
 
 ### Added
 
+- Added a self-validating contributor change-path map for demo tooling, web UI, API
+  modules, worker/scheduler jobs, shared contracts, and database migrations.
 - Added an exact-confirmation `demo:reset` command that validates fixed paths,
   removes and verifies only dedicated fictional demo Docker state, retains runtime
   credentials on uncertain cleanup, and never performs generic pruning.

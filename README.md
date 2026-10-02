@@ -131,6 +131,7 @@ distribution checks, and maintainer procedures.
 - `docs/SAFE_EVALUATION_DEMO.md` — isolated one-command fictional demo, walkthrough, commands, and screenshots
 - `docs/CAPABILITY_MATRIX.md` — evaluator-visible features, disabled integrations, limitations, and non-goals
 - `docs/STARTER_ISSUES.md` — bounded contribution tasks with acceptance and validation criteria
+- `docs/CONTRIBUTOR_PATHS.md` — source, focused-test, documentation, validation, and invariant map for small changes
 - `docs/CUSTOMER_MANAGEMENT.md` — customer API, authorization, account-access rules, and interfaces
 - `docs/PRODUCTS_AND_PRICING.md` — product lifecycle, versioned prices, public catalogue, and selection flow
 - `docs/ORDER_CREATION.md` — authoritative checkout, idempotency, snapshots, numbering, and order states

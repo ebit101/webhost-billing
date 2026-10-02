@@ -3904,6 +3904,91 @@ it automatically.
 Authorize **Command 66 — Implement starter issue #25: Add a contributor change-path
 map** only after separate review and authorization. Do not start it automatically.
 
+### Command 66 — Implement Starter Issue #25: Add a Contributor Change-Path Map
+
+- **Status:** Completed locally; GitHub delivery verification pending
+- **Date:** 2026-10-02
+
+#### Scope completed
+
+- Added `docs/CONTRIBUTOR_PATHS.md` as a first-contributor navigation map for demo
+  tooling, Next.js UI, NestJS API modules, worker/scheduler jobs, shared contracts,
+  and database migrations.
+- Mapped each area to literal owning source paths, nearest focused tests, relevant
+  documentation, root-script validation commands, and the safety invariants that
+  must remain intact.
+- Added a short first-contribution flow that points to the current starter-issue
+  catalogue, fictional/local-only test boundaries, focused pull requests, and the
+  private vulnerability-reporting process.
+- Added an offline `docs:paths` validator that checks every local map link, verifies
+  every fenced or inline `corepack pnpm` command against root `package.json`, requires
+  all six map areas, and rejects unlinked path literals or pnpm-option commands.
+- Added focused validator tests and the `test:docs-paths` root script, included the
+  focused test in the ordinary root test gate, and added an explicit hosted CI step.
+- Linked the map from `CONTRIBUTING.md` and the README documentation index, added it
+  to the contributor validation list, updated the changelog, and marked starter
+  issue #25 complete in the catalogue.
+- Kept the document explicitly advisory: no code ownership, architecture, schema,
+  provider, production procedure, release, or production-readiness behavior changed.
+
+#### Files changed
+
+- Contributor map: `docs/CONTRIBUTOR_PATHS.md`
+- Offline validator and focused tests:
+  `scripts/docs/check-contributor-paths.mjs`,
+  `scripts/docs/check-contributor-paths.test.mjs`
+- Root commands and hosted validation: `package.json`, `.github/workflows/ci.yml`
+- Contributor discovery and status: `README.md`, `CONTRIBUTING.md`,
+  `docs/STARTER_ISSUES.md`, `CHANGELOG.md`
+- Command evidence and next authorization: `docs/PROGRESS.md`
+
+#### Validation
+
+- `pnpm test:docs-paths` passed all three focused tests: valid paths/scripts,
+  simultaneous missing paths/scripts, and missing-area/unlinked-path/invalid-command
+  failures.
+- `pnpm docs:paths` passed, checking 69 local contributor-map paths and 18 distinct
+  root pnpm scripts.
+- `pnpm docs:links` passed, checking 96 local references across 59 tracked Markdown
+  files after the new map was added to Git.
+- `pnpm format:check`, Node syntax checks for both validator files, and
+  `git diff --check` passed.
+- Manual terminology/security review confirmed that multi-tenant, real-data,
+  production, and `prisma db push` references remain prohibitions or non-goals. The
+  changed-file high-confidence secret scan found zero matches.
+- Hosted CI and CodeQL verification are pending the delivery commit.
+
+#### Decisions made
+
+- Use local Markdown links as the map's machine-readable path inventory so entries
+  stay useful to contributors and are also checked canonically by the existing
+  offline link engine.
+- Require minimum validation examples to invoke root pnpm scripts. This keeps
+  commands stable and lets the validator prove every documented script exists.
+- Reject unlinked repository-path literals in the map so a new path cannot silently
+  bypass automated existence checks.
+- Keep the map as navigation guidance rather than introducing CODEOWNERS, ownership
+  reorganization, generated API documentation, or another architectural layer.
+
+#### Open questions and risks
+
+- Automated existence checks cannot prove that a linked test is the best semantic
+  test for a future change. Contributors and reviewers must still apply judgment and
+  update the map when boundaries move.
+- Some database and browser commands need disposable local infrastructure; the map
+  does not authorize production, staging, provider, or public-demo mutation.
+- Windows Application Control continues to block the installed native `argon2`
+  binary; Linux/hosted validation remains required for the affected API suites on
+  this machine.
+- Production remains `NO-GO`; the immutable `v0.1.0-alpha.1` release, schemas,
+  providers, real identities, and live environments were not changed.
+
+#### Recommended next command
+
+No Command 67 is defined. Authorize a separate **phase review of Commands 58–66 and
+definition of the next bounded command** before any additional implementation. Do not
+start it automatically.
+
 ## Report Template
 
 Use this template after every future command:
