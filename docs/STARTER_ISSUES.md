@@ -7,8 +7,8 @@ customer data or credentials.
 
 ## Current starter set
 
-No starter issue is currently open. Complete a phase review before publishing the
-next bounded set; do not infer new implementation authority from the completed
+No starter issue is currently open. Command 71 is the separately gated planning step
+for a fourth bounded set; do not infer implementation authority from the completed
 examples below.
 
 ## Latest completed starter set

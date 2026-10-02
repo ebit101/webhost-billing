@@ -187,7 +187,7 @@ schema work with verified backup and restore procedures.
 - **Owning paths:** [repository documentation](./),
   [offline documentation tooling](../scripts/docs/), and
   [GitHub issue forms](../.github/ISSUE_TEMPLATE/).
-- **Nearest focused tests:** [Markdown-link validator tests](../scripts/docs/check-markdown-links.test.mjs)
+- **Nearest focused tests:** [Markdown-link validator tests](../scripts/docs/check-markdown-links.test.mjs),
   [contributor-map validator tests](../scripts/docs/check-contributor-paths.test.mjs),
   and [issue-form validator tests](../scripts/docs/check-issue-forms.test.mjs).
 - **Relevant documentation:** [contribution guide](../CONTRIBUTING.md),

@@ -1550,6 +1550,34 @@ authority remains available, then stop and request a new phase review before any
 additional implementation command.
 ```
 
+## Command 71 — Reopen the Contributor On-Ramp With a Fourth Starter-Issue Set
+
+```text
+Review the completed third starter-issue set in Commands 67–70, closed public issues
+#26–#28, the contributor change-path map, the current public issue backlog, and the
+latest phase-review findings. Define exactly three new bounded starter issues that
+improve safe-demo evaluator reliability, offline validation or testability, or
+first-time contributor onboarding without expanding the product's authority. At
+least one issue must be implementable and fully testable without Docker or a browser.
+
+Give every issue explicit acceptance, validation, security, and excluded-scope
+criteria. Keep each task suitable for one focused pull request and one documented
+change path. Update the starter-issue catalogue so only genuinely open work appears
+as current, create the approved public issues only if repository authority remains
+available, and add three separately gated implementation commands for the accepted
+set. Reconcile the catalogue with the public backlog before delivery.
+
+Do not implement any proposed issue, start/stop/reset a demo, use real data or
+credentials, contact providers, alter authentication, authorization, financial
+rules or schemas, deploy an environment, mutate v0.1.0-alpha.1, or change production
+NO-GO. Do not create speculative work merely to fill the set; every issue must point
+to a concrete current repository need and must not duplicate completed work. Run
+Markdown formatting, offline link/path/issue-form validation, terminology review,
+public-backlog reconciliation, and secret review. Update docs/PROGRESS.md, commit,
+reconcile, push main, verify hosted checks, then stop and request separate
+authorization for the first implementation command.
+```
+
 ---
 
 ## Continuation Command

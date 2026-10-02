@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 67 — Reopen the contributor on-ramp with a third starter-issue set
-- **Current status:** Completed and delivered to GitHub `main`
-- **Last updated:** 2026-10-02
-- **Next command:** Command 68 — Implement starter issue #26: Add a read-only `demo:smoke` verification command
+- **Current command:** Phase Review — Review Commands 67–70 and define the next bounded command
+- **Current status:** Review complete locally; delivery validation pending
+- **Last updated:** 2026-10-03
+- **Next command:** Command 71 — Reopen the contributor on-ramp with a fourth starter-issue set
 - **Next command authorized:** No
 
 ## Command Reports
@@ -4469,6 +4469,99 @@ it automatically.
 Authorize **Phase Review — Review Commands 67–70 and define the next bounded
 command** only after separate review and authorization. Do not start another
 implementation command automatically.
+
+### Phase Review — Review Commands 67–70 and Define the Next Bounded Command
+
+- **Status:** Review complete locally; delivery validation pending
+- **Date:** 2026-10-03
+
+#### Scope completed
+
+- Reviewed Commands 67–70 against their original command text, `AGENTS.md`, the
+  product plan, the accepted decisions, their implementation diffs and tests, and
+  the current public backlog. The third set remained exactly three bounded issues:
+  read-only demo smoke verification, offline Markdown-anchor validation, and safer
+  demo bug reporting.
+- Confirmed the Command 68 verifier remains fixed to loopback and an existing
+  fictional runtime, checks only the intended public/customer/administrator paths,
+  retains no authenticated artifacts, emits bounded allowlisted output, and neither
+  mutates business records nor manages Docker state.
+- Confirmed Command 69 preserves lexical and canonical repository confinement before
+  target reads, remains offline, and covers the authorized ordinary ATX, duplicate,
+  punctuation, Unicode, percent-encoding, and aggregate-failure cases.
+- Confirmed Command 70 retains the required bug fields, explicit safe-demo context,
+  sensitive-data acknowledgement, private-reporting route, offline parsing and link
+  confinement, focused tests, and ordinary CI integration without collecting or
+  uploading diagnostic data.
+- Reconciled the catalogue with GitHub: public starter issues #26, #27, and #28 are
+  closed and no public issue is open. Open Dependabot pull requests were correctly
+  excluded from the issue count.
+- Corrected the stale status summary that still identified Command 67 and Command 68
+  as current/next, replaced the completed catalogue's obsolete instruction to run
+  this review, and fixed a missing separator in the contributor test list.
+- Defined only the next planning gate, Command 71, which must discover exactly three
+  concrete fourth-set tasks, include at least one no-Docker/no-browser task, and add
+  separate implementation commands without implementing any proposed issue.
+
+#### Files changed
+
+- `CODEX_DEVELOPMENT_COMMANDS.md` — added the separately gated, planning-only
+  Command 71 with bounded acceptance and explicit exclusions
+- `docs/PROGRESS.md` — corrected current command state and recorded this review
+- `docs/STARTER_ISSUES.md` — reconciled the empty current set with Command 71
+- `docs/CONTRIBUTOR_PATHS.md` — corrected the focused-test list punctuation
+- `CHANGELOG.md` — recorded the phase review and contributor-guidance correction
+
+#### Validation
+
+- Focused suites passed: 8 demo-smoke tests, 6 Markdown-link tests, 3
+  contributor-path tests, and 4 issue-form tests.
+- Live offline checks passed: `pnpm docs:links` checked 111 local references,
+  including 3 anchors, across 59 tracked Markdown files; `pnpm docs:paths` checked
+  82 mapped paths and 22 root scripts; and `pnpm docs:issue-forms` validated 3 forms,
+  parsed all 4 template YAML files, and checked 2 guidance links.
+- `pnpm format:check`, `pnpm lint`, strict `pnpm typecheck`, and
+  `git diff --check` passed.
+- Complete `pnpm test` passed: 6 demo-doctor tests, 12 guarded-reset tests, 8
+  demo-smoke tests, 3 contributor-path tests, 6 Markdown-link tests, 4 issue-form
+  tests, 26 shared package tests, 55 web tests, 3 queue tests, 88 API tests, and 29
+  worker tests.
+- Public GitHub API reconciliation confirmed issues #26–#28 closed and zero open
+  public issues. Current `main` commit `f241d6d` has successful hosted CI run
+  `37042237090` and CodeQL run `37042237132`.
+- Manually reviewed all added text for terminology, command boundaries, production
+  claims, and sensitive material; the bounded review changes contain no credentials,
+  runtime files, customer data, provider output, or private hosts.
+
+#### Decisions made
+
+- No application correction is required. The delivered behavior and focused tests
+  satisfy the authorized scopes without weakening data, authentication, provider,
+  financial, or production boundaries.
+- Keep the next step planning-only because the accepted third set is complete and
+  the public issue backlog contains no open contributor task. Command 71 must base
+  each proposed issue on a current repository need rather than inventing work merely
+  to populate a list.
+- Preserve one-command-at-a-time authorization: Command 71 may publish a bounded
+  issue set and future command text, but it may not implement the new tasks.
+
+#### Open questions and risks
+
+- GitHub Issue Forms remain a public-preview feature, and the Markdown anchor checker
+  intentionally implements only the documented ordinary ATX subset. Their existing
+  limitations remain accurately documented and need no expansion in this review.
+- The live Docker demo was not restarted or rerun during this documentation-focused
+  review. Command 68's original live verification and the current hosted gates remain
+  recorded; fresh local unit and repository validation passed without requiring
+  Docker state.
+- No starter issue is open until Command 71 is separately authorized, planned,
+  reviewed, and delivered. Production remains `NO-GO`.
+
+#### Recommended next command
+
+Authorize **Command 71 — Reopen the Contributor On-Ramp With a Fourth Starter-Issue
+Set** only after separate review and authorization. Do not begin any fourth-set
+implementation automatically.
 
 ## Report Template
 

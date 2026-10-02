@@ -44,6 +44,9 @@ and will be called out in release notes.
 
 ### Changed
 
+- Reviewed the completed third starter-issue set, corrected contributor discovery
+  and validation guidance, and defined a separately gated planning command for the
+  next bounded contributor set.
 - Added a bounded **Safe evaluation demo** path to the bug-report form with explicit
   diagnostic, health-stage, troubleshooting, and private-security-reporting guidance.
 - Extended the offline Markdown validator to check same-file and cross-file heading
