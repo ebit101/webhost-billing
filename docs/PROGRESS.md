@@ -3906,7 +3906,7 @@ map** only after separate review and authorization. Do not start it automaticall
 
 ### Command 66 — Implement Starter Issue #25: Add a Contributor Change-Path Map
 
-- **Status:** Completed locally; GitHub delivery verification pending
+- **Status:** Completed and delivered to GitHub `main`
 - **Date:** 2026-10-02
 
 #### Scope completed
@@ -3930,6 +3930,8 @@ map** only after separate review and authorization. Do not start it automaticall
   issue #25 complete in the catalogue.
 - Kept the document explicitly advisory: no code ownership, architecture, schema,
   provider, production procedure, release, or production-readiness behavior changed.
+- Closed GitHub issue #25 as completed after the delivered implementation passed
+  both required hosted workflows.
 
 #### Files changed
 
@@ -3956,7 +3958,12 @@ map** only after separate review and authorization. Do not start it automaticall
 - Manual terminology/security review confirmed that multi-tenant, real-data,
   production, and `prisma db push` references remain prohibitions or non-goals. The
   changed-file high-confidence secret scan found zero matches.
-- Hosted CI and CodeQL verification are pending the delivery commit.
+- Hosted CI run `37015176666` passed the contributor-path check, complete package
+  tests, API integration tests, critical invariants, browser lifecycle,
+  dependency/license checks, and production build:
+  `https://github.com/ebit101/webhost-billing/actions/runs/37015176666`.
+- Hosted CodeQL run `37015176773` passed:
+  `https://github.com/ebit101/webhost-billing/actions/runs/37015176773`.
 
 #### Decisions made
 
