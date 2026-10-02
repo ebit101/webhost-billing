@@ -5,13 +5,121 @@ without changing financial rules, provider authority, migrations, or production
 policy. Search GitHub first and comment on the issue before starting. Never use real
 customer data or credentials.
 
-## Current availability
+## Current starter set
 
-There are currently no open starter issues. Issues #18–#25 were completed by
-Commands 58–66 and are retained below as scoped examples. Do not begin one of those
-closed tasks again. Until a new set is separately reviewed and published, propose a
-small documentation or test change before implementing it and wait for maintainer
-agreement on the boundary.
+### 9. [Add a read-only `demo:smoke` verification command](https://github.com/ebit101/webhost-billing/issues/26)
+
+**Status:** Open; implementation requires separate Command 68 authorization.
+
+**Suggested labels:** `good first issue`, `help wanted`, `docker`, `javascript`
+
+Add a cross-platform `demo:smoke` command for an already-running fictional demo at
+the fixed loopback origin. Verify the principal public, customer, and administrator
+evaluator paths without changing business records or lifecycle state.
+
+Acceptance:
+
+- verifies readiness, the public catalogue, customer login/overview, and
+  administrator login/dashboard using the repository-pinned Chromium;
+- asserts bounded semantic evidence for fictional seeded data without creating,
+  updating, or deleting business records;
+- reads generated credentials only internally and never prints or retains passwords,
+  cookies, tokens, runtime values, browser errors, DOM/response bodies, screenshots,
+  or traces;
+- refuses non-loopback origins, requires an existing healthy demo, and never starts,
+  stops, rebuilds, resets, or changes provider state;
+- emits deterministic route-level pass/fail output with actionable fixed failures;
+- adds focused tests for origin/runtime guards, reporting, redaction, and dispatch;
+  and
+- documents prerequisites, coverage, and limitations in the safe-demo and
+  contributor paths.
+
+Validation: focused tests, the live smoke command against a healthy safe demo,
+relevant web tests, `pnpm format:check`, `pnpm docs:links`, `pnpm docs:paths`,
+`pnpm lint`, `pnpm typecheck`, and the web production build.
+
+Security boundary: use only generated fictional accounts on the fixed loopback demo;
+retain no browser artifacts and add no provider or network authority.
+
+Excluded: Docker lifecycle/reset behavior, staging/production targets, real
+identities, business-data mutation, providers, full lifecycle automation,
+accessibility certification, schemas, financial rules, releases, or production
+readiness.
+
+### 10. [Validate local Markdown heading anchors offline](https://github.com/ebit101/webhost-billing/issues/27)
+
+**Status:** Open; implementation requires separate Command 69 authorization.
+
+**Suggested labels:** `good first issue`, `help wanted`, `documentation`,
+`javascript`
+
+Extend the existing offline Markdown link validator so a renamed heading cannot
+leave repository-local documentation links pointing to missing sections while CI
+remains green.
+
+Acceptance:
+
+- validates heading fragments for tracked Markdown targets, including same-document
+  references;
+- matches the GitHub-style slugs used by ordinary ATX headings, repeated-heading
+  suffixes, punctuation, Unicode text, and percent-encoded repository fragments;
+- preserves repository-boundary and symbolic-link escape checks before reading a
+  target document;
+- reports every missing anchor with source file, line, and bounded target, and exits
+  non-zero without network access;
+- continues ignoring absolute web URLs, `mailto:` links, code examples, and
+  non-Markdown file fragments;
+- adds fixtures for valid same/cross-file anchors, duplicates, Unicode/encoding,
+  missing anchors, ignored targets, and simultaneous failures; and
+- documents the expanded ordinary offline validation path.
+
+Validation: focused validator tests, `pnpm docs:links`, `pnpm docs:paths`,
+`pnpm format:check`, `pnpm lint`, `pnpm typecheck`, and `pnpm test`.
+
+Security boundary: remain offline, read only tracked repository Markdown, never
+execute document content, and preserve path and symlink confinement.
+
+Excluded: external crawling, remote-anchor checks, HTML rendering, automatic
+rewrites, a full parser migration, application behavior, schemas, providers,
+releases, or production-readiness changes.
+
+### 11. [Add a safe-demo path to the GitHub bug-report form](https://github.com/ebit101/webhost-billing/issues/28)
+
+**Status:** Open; implementation requires separate Command 70 authorization.
+
+**Suggested labels:** `good first issue`, `help wanted`, `documentation`
+
+Give safe-demo evaluators an explicit issue-form path that requests useful redacted
+context without encouraging disclosure of runtime credentials, real data, or private
+infrastructure.
+
+Acceptance:
+
+- adds **Safe evaluation demo** as an explicit deployment method in the existing bug
+  report form;
+- directs reporters to `demo:doctor` before startup or `demo:status` for a running
+  stack and asks for only manually reviewed, redacted output;
+- adds safe-demo context for operating system, Docker/Compose versions, version or
+  commit, affected route, and whether failure occurred before or after health;
+- retains required version, reproduction, expected, and actual behavior fields;
+- requires confirmation that runtime files, credentials, cookies, tokens, personal
+  or customer data, payment evidence, private hosts, database contents, and
+  unredacted logs are absent;
+- links troubleshooting and private vulnerability reporting; and
+- adds an offline validator with focused tests for parseable issue-form YAML, the
+  option and safety acknowledgement, unique field IDs, and valid guidance links.
+
+Validation: focused issue-form validator tests, its live offline check,
+`pnpm docs:links`, `pnpm docs:paths`, `pnpm format:check`, and manual GitHub form and
+terminology review.
+
+Security boundary: request only redacted diagnostic context and route suspected
+vulnerabilities privately; never request credentials, runtime-file values, provider
+payloads, real customer data, or production access.
+
+Excluded: runtime behavior, telemetry or automatic uploads, security-policy changes,
+GitHub Discussions, schemas, providers, releases, deployments, or production
+readiness.
 
 ## Latest completed starter set
 

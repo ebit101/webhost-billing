@@ -1468,6 +1468,88 @@ main, verify hosted checks, then stop and request separate authorization for the
 first implementation command.
 ```
 
+## Command 68 — Implement Starter Issue #26: Add a Read-Only `demo:smoke` Verification Command
+
+```text
+Implement public starter issue #26 as a cross-platform `demo:smoke` command for an
+already-running safe demo at the fixed `http://localhost:3100` origin. Verify
+readiness, the public catalogue, customer login/overview, and administrator
+login/dashboard with repository-pinned Chromium and bounded semantic assertions for
+the seeded fictional data. Do not create, update, or delete any business record.
+
+Read the generated fictional credentials only inside the command. Never print or
+retain passwords, cookies, tokens, runtime-file values, raw browser errors, DOM or
+response bodies, screenshots, traces, or authenticated artifacts. Refuse a non-fixed
+origin, require an existing regular runtime file and healthy demo, emit deterministic
+route-level output, and fail with fixed actionable messages. Do not start, stop,
+build, reset, or otherwise mutate Docker or provider state.
+
+Add focused automated tests for origin/runtime guards, pass/fail reporting,
+redaction, and command dispatch without requiring Docker. Document prerequisites,
+coverage, safety, and limits. Do not target staging/production, use real identities,
+mutate data, contact providers, automate the full lifecycle, change accessibility,
+schemas, financial rules, releases, or production NO-GO. Run focused tests, the live
+smoke command against a healthy safe demo, relevant web tests, formatting, offline
+documentation checks, lint, strict type checks, and the web production build. Update
+docs/PROGRESS.md, commit, reconcile, push main, verify hosted checks, close issue #26
+if repository authority remains available, then stop and request separate
+authorization for Command 69.
+```
+
+## Command 69 — Implement Starter Issue #27: Validate Local Markdown Heading Anchors Offline
+
+```text
+Implement public starter issue #27 by extending the existing offline Markdown link
+validator to validate fragments that target headings in tracked Markdown files,
+including same-document references. Match the GitHub-style slugs needed by this
+repository for ordinary ATX headings, repeated-heading numeric suffixes, punctuation,
+Unicode text, and percent-encoded fragments.
+
+Preserve repository-boundary and symbolic-link escape checks before reading a target
+document. Report every missing anchor with source file, line, and bounded target and
+exit non-zero without network access. Continue ignoring absolute web URLs, mailto
+links, code examples, and fragments on non-Markdown targets. Add fixture coverage for
+valid same-file and cross-file anchors, duplicate headings, Unicode/encoding, missing
+anchors, ignored targets, and simultaneous failures. Update contributor documentation
+for the expanded ordinary offline check.
+
+Do not crawl external sites, check remote anchors, render HTML, rewrite links, replace
+the validator with a full parser migration, change application behavior, schemas,
+providers, releases, or production NO-GO. Run focused tests, `pnpm docs:links`,
+`pnpm docs:paths`, formatting, lint, strict type checks, and complete package tests.
+Update docs/PROGRESS.md, commit, reconcile, push main, verify hosted checks, close
+issue #27 if repository authority remains available, then stop and request separate
+authorization for Command 70.
+```
+
+## Command 70 — Implement Starter Issue #28: Add a Safe-Demo Path to the GitHub Bug-Report Form
+
+```text
+Implement public starter issue #28 by adding Safe evaluation demo as an explicit
+deployment method in the existing GitHub bug-report form. Direct evaluators to
+`demo:doctor` before startup or `demo:status` for a running stack and request only
+manually reviewed, redacted output. Add bounded safe-demo context for the operating
+system, Docker/Compose versions, version or commit, affected route, and whether the
+failure occurred before or after the stack became healthy.
+
+Keep version, reproduction steps, expected behavior, and actual behavior required.
+Require confirmation that `.demo-runtime/demo.env`, passwords, cookies, tokens,
+personal/customer data, payment evidence, private hosts, database contents, and
+unredacted logs are absent. Link safe-demo troubleshooting and private vulnerability
+reporting. Add an offline validator and focused tests proving every issue-form YAML
+file parses and that the safe-demo option, required safety acknowledgement, unique
+field IDs, and valid local/HTTPS guidance links remain present.
+
+Do not change runtime behavior, collect telemetry, upload logs automatically, alter
+security-reporting policy, enable GitHub Discussions, change schemas/providers,
+deploy an environment, mutate releases, or change production NO-GO. Run the focused
+validator tests, its live offline check, Markdown links, contributor paths,
+formatting, and a manual GitHub form/terminology review. Update docs/PROGRESS.md,
+commit, reconcile, push main, verify hosted checks, close issue #28 if repository
+authority remains available, then stop and request a new phase review before any
+additional implementation command.
+```
+
 ---
 
 ## Continuation Command

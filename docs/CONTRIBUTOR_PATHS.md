@@ -8,8 +8,9 @@ before changing behavior.
 
 Every repository path below is a local Markdown link. Every command in a `bash` block
 invokes a script from the [root package manifest](../package.json).
-`corepack pnpm docs:paths` checks all of those paths, commands, and the six required
-map areas.
+`corepack pnpm docs:paths` checks all of those paths and commands, plus the six
+required product/architecture map areas. The contributor-documentation path below is
+an additional project-maintenance route.
 
 ## Change paths
 
@@ -176,6 +177,32 @@ test infrastructure.
 `prisma db push`, preserve integer minor-unit money and immutable issued financial or
 audit history, keep timestamps in UTC, use fictional seed data, and pair destructive
 schema work with verified backup and restore procedures.
+
+### Contributor documentation and project metadata
+
+- **Owning paths:** [repository documentation](./),
+  [offline documentation tooling](../scripts/docs/), and
+  [GitHub issue forms](../.github/ISSUE_TEMPLATE/).
+- **Nearest focused tests:** [Markdown-link validator tests](../scripts/docs/check-markdown-links.test.mjs)
+  and [contributor-map validator tests](../scripts/docs/check-contributor-paths.test.mjs).
+- **Relevant documentation:** [contribution guide](../CONTRIBUTING.md),
+  [support policy](../SUPPORT.md), [security policy](../SECURITY.md), and
+  [starter-issue catalogue](STARTER_ISSUES.md).
+- **Minimum validation:**
+
+```bash
+corepack pnpm test:docs-links
+corepack pnpm test:docs-paths
+corepack pnpm docs:links
+corepack pnpm docs:paths
+corepack pnpm format:check
+```
+
+**Safety invariants:** keep documentation validation offline and repository-bound,
+keep public issue paths free of credentials and real customer/provider data, route
+suspected vulnerabilities to private reporting, keep commands and links current, and
+do not turn documentation changes into production, provider, release, or business
+rule authority.
 
 ## First contribution flow
 

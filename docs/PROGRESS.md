@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Phase Review — Review Commands 58–66 and define the next bounded command
-- **Current status:** Completed and delivered to GitHub `main`
+- **Current command:** Command 67 — Reopen the contributor on-ramp with a third starter-issue set
+- **Current status:** Completed locally; delivery validation pending
 - **Last updated:** 2026-10-02
-- **Next command:** Command 67 — Reopen the contributor on-ramp with a third starter-issue set
+- **Next command:** Command 68 — Implement starter issue #26: Add a read-only `demo:smoke` verification command
 - **Next command authorized:** No
 
 ## Command Reports
@@ -4085,6 +4085,87 @@ start it automatically.
 
 Authorize **Command 67 — Reopen the contributor on-ramp with a third starter-issue
 set** only after separate review and authorization. Do not start it automatically.
+
+### Command 67 — Reopen the Contributor On-Ramp With a Third Starter-Issue Set
+
+- **Status:** Completed locally; delivery validation pending
+- **Date:** 2026-10-02
+
+#### Scope completed
+
+- Reconciled Commands 57–66, the phase-review findings, contributor map, public issue
+  backlog, and product/security boundaries. The public repository had zero open
+  issues before this command.
+- Defined exactly three one-pull-request starter tasks across the documented demo
+  tooling and contributor-documentation change paths:
+  - issue #26: a read-only `demo:smoke` command for principal public, customer, and
+    administrator evaluator paths;
+  - issue #27: offline validation of repository-local Markdown heading anchors; and
+  - issue #28: an explicit, redaction-safe safe-demo path in the GitHub bug-report
+    form with offline form validation.
+- Gave every task explicit acceptance, validation, security-boundary, and
+  excluded-scope criteria. Published issues #26–#28 with the repository's existing
+  scoped starter labels.
+- Reopened the current starter-issue catalogue with only the three genuinely open
+  tasks and retained issues #18–#25 as completed examples.
+- Added separately gated Commands 68–70. No proposed issue was implemented, no demo
+  lifecycle command ran, and no provider, environment, schema, financial, release,
+  or production state changed.
+
+#### Files changed
+
+- Starter issue catalogue and owning change path: `docs/STARTER_ISSUES.md`,
+  `docs/CONTRIBUTOR_PATHS.md`
+- Separately gated implementation commands: `CODEX_DEVELOPMENT_COMMANDS.md`
+- Public-project history and command evidence: `CHANGELOG.md`, `docs/PROGRESS.md`
+
+#### Validation
+
+- Authenticated GitHub reconciliation confirmed issues #26, #27, and #28 are open
+  with their intended titles and scoped `good first issue`, `help wanted`, and
+  task-specific labels. The pre-command public backlog contained zero open issues.
+- `pnpm format:check` passed. `pnpm docs:links` checked 105 local references across
+  59 tracked Markdown files, and `pnpm docs:paths` checked 78 contributor-map paths
+  plus 19 root scripts.
+- All 4 focused Markdown-link tests and all 3 contributor-path tests passed.
+- `git diff --check`, terminology review, and a high-confidence changed-text secret
+  scan passed. The new issue bodies and repository text contain no credential,
+  runtime value, customer data, private host, or provider payload.
+- Hosted CI and CodeQL results are recorded after delivery to `main`.
+
+#### Decisions made
+
+- Make functional demo verification the first task because the existing
+  accessibility audit tests WCAG severity and keyboard paths, while prior role
+  journeys are maintainer evidence rather than a reusable read-only evaluator
+  command.
+- Extend the existing link checker for heading anchors instead of adding another
+  hosted documentation dependency.
+- Improve the existing bug-report form instead of adding a second overlapping form;
+  require machine-checked redaction guidance so safe-demo support does not encourage
+  credential or real-data disclosure.
+- Keep each implementation in its own command and pull-request-sized boundary. The
+  planning command does not authorize implementation work.
+
+#### Open questions and risks
+
+- GitHub-style heading slug behavior has edge cases; Command 69 is limited to the
+  slug forms needed by tracked repository documentation and must prove them with
+  fixtures rather than claiming full renderer compatibility.
+- A read-only browser smoke check can still create ephemeral sessions. Command 68
+  must retain no browser artifacts and must not mutate application records or Docker
+  state.
+- Issue-form YAML validation can prove structural guardrails but cannot prevent a
+  reporter from ignoring instructions; maintainers must still review submissions
+  for accidental secrets or sensitive data.
+- Production remains `NO-GO`; the immutable `v0.1.0-alpha.1` release, schemas,
+  providers, real identities, and live environments were not changed.
+
+#### Recommended next command
+
+Authorize **Command 68 — Implement starter issue #26: Add a read-only `demo:smoke`
+verification command** only after separate review and authorization. Do not start it
+automatically.
 
 ## Report Template
 
