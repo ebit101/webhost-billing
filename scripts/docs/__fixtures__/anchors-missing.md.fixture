@@ -1,0 +1,6 @@
+# Existing heading
+
+[Missing same-document heading](#missing-heading)
+[Missing cross-file heading](guide.md#missing-cross-file-heading)
+[Invalid encoded fragment](guide.md#bad%ZZ)
+[Missing file and anchor](missing.md#also-missing)

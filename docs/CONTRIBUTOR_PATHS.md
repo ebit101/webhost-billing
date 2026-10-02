@@ -202,6 +202,11 @@ corepack pnpm docs:paths
 corepack pnpm format:check
 ```
 
+The Markdown-link check resolves repository-local files and verifies fragments on
+tracked Markdown targets against ordinary GitHub-style ATX heading anchors. It
+remains offline and does not inspect external URLs or fragments on non-Markdown
+files.
+
 **Safety invariants:** keep documentation validation offline and repository-bound,
 keep public issue paths free of credentials and real customer/provider data, route
 suspected vulnerabilities to private reporting, keep commands and links current, and

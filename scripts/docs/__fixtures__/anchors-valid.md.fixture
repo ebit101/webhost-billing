@@ -1,0 +1,24 @@
+# Source Overview
+
+## Repeated Heading
+
+## Repeated Heading
+
+## Punctuation: What's new? ###
+
+## বাংলা পরিচিতি
+
+[Same document](#source-overview)
+[Repeated heading](#repeated-heading-1)
+[Punctuation](#punctuation-whats-new)
+[Percent-encoded Unicode](#%E0%A6%AC%E0%A6%BE%E0%A6%82%E0%A6%B2%E0%A6%BE-%E0%A6%AA%E0%A6%B0%E0%A6%BF%E0%A6%9A%E0%A6%BF%E0%A6%A4%E0%A6%BF)
+[Cross-file heading](guide.md#installation)
+[Cross-file repeated heading](guide.md#usage-1)
+[Non-Markdown fragment](assets/example.png#preview)
+[External fragment](https://example.com/guide#missing)
+
+```markdown
+# Not a real heading
+```
+
+<!-- ## Also not a real heading -->

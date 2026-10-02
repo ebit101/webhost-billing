@@ -50,7 +50,7 @@ test('accepts valid links, images, encoded paths, and safe parent references', (
   assert.deepEqual(result.failures, []);
 });
 
-test('ignores external, mailto, document-fragment, and code references', (context) => {
+test('ignores external, mailto, and code references while checking a document fragment', (context) => {
   const repositoryRoot = createRepository(context, 'ignored.md.fixture');
 
   const result = checkMarkdownFiles({
@@ -58,8 +58,92 @@ test('ignores external, mailto, document-fragment, and code references', (contex
     repositoryRoot,
   });
 
-  assert.equal(result.checkedReferenceCount, 0);
+  assert.equal(result.checkedReferenceCount, 1);
+  assert.equal(result.checkedAnchorCount, 1);
   assert.deepEqual(result.failures, []);
+});
+
+test('accepts same-file, cross-file, repeated, punctuation, Unicode, and encoded anchors', (context) => {
+  const repositoryRoot = createRepository(context, 'anchors-valid.md.fixture');
+  writeFileSync(
+    join(repositoryRoot, 'docs', 'guide.md'),
+    '# Installation\n\n## Usage\n\n## Usage\n',
+  );
+  writeFileSync(join(repositoryRoot, 'docs', 'assets', 'example.png'), 'fake');
+
+  const result = checkMarkdownFiles({
+    files: ['docs/source.md', 'docs/guide.md'],
+    repositoryRoot,
+  });
+
+  assert.equal(result.checkedReferenceCount, 7);
+  assert.equal(result.checkedAnchorCount, 6);
+  assert.deepEqual(result.failures, []);
+  assert.match(
+    formatLinkCheckReport(result, 2),
+    /including 6 heading anchors/u,
+  );
+});
+
+test('reports simultaneous missing anchors, invalid encoding, and missing files', (context) => {
+  const repositoryRoot = createRepository(
+    context,
+    'anchors-missing.md.fixture',
+  );
+  const sourcePath = join(repositoryRoot, 'docs', 'source.md');
+  const longTarget = `#${'a'.repeat(180)}UNBOUNDED_TAIL`;
+  writeFileSync(
+    sourcePath,
+    `${readFileSync(sourcePath, 'utf8')}[Bounded target](${longTarget})\n`,
+  );
+  writeFileSync(
+    join(repositoryRoot, 'docs', 'guide.md'),
+    '# Existing cross heading\n',
+  );
+
+  const result = checkMarkdownFiles({
+    files: ['docs/source.md', 'docs/guide.md'],
+    repositoryRoot,
+  });
+
+  assert.equal(result.checkedReferenceCount, 5);
+  assert.equal(result.checkedAnchorCount, 3);
+  assert.deepEqual(
+    result.failures.slice(0, 4).map(({ line, reason, target }) => ({
+      line,
+      reason,
+      target,
+    })),
+    [
+      {
+        line: 3,
+        reason: 'heading anchor does not exist',
+        target: '#missing-heading',
+      },
+      {
+        line: 4,
+        reason: 'heading anchor does not exist',
+        target: 'guide.md#missing-cross-file-heading',
+      },
+      {
+        line: 5,
+        reason: 'contains invalid URL encoding',
+        target: 'guide.md#bad%ZZ',
+      },
+      {
+        line: 6,
+        reason: 'target does not exist',
+        target: 'missing.md#also-missing',
+      },
+    ],
+  );
+  assert.equal(result.failures[4].reason, 'heading anchor does not exist');
+
+  const report = formatLinkCheckReport(result, 2);
+  assert.match(report, /docs\/source\.md:3 "#missing-heading"/u);
+  assert.match(report, /heading anchor does not exist/u);
+  assert.match(report, /"#a+\.\.\."/u);
+  assert.doesNotMatch(report, /UNBOUNDED_TAIL/u);
 });
 
 test('reports every missing file and image with source lines', (context) => {

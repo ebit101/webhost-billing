@@ -3,7 +3,7 @@
 [Web](https://example.com/docs)
 ![Remote image](//example.com/image.png)
 [Email](mailto:security@example.com)
-[Section](#local-heading)
+[Section](#ignored-references)
 `[Inline code](missing-inline.md)`
 
 ```markdown

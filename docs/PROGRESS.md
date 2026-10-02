@@ -4276,6 +4276,89 @@ Authorize **Command 69 — Implement starter issue #27: Validate local Markdown
 heading anchors offline** only after separate review and authorization. Do not start
 it automatically.
 
+### Command 69 — Implement Starter Issue #27: Validate Local Markdown Heading Anchors Offline
+
+- **Status:** Completed locally; GitHub delivery verification pending
+- **Date:** 2026-10-02
+
+#### Scope completed
+
+- Extended the existing offline Markdown-link validator so fragments on tracked
+  Markdown targets are checked against ordinary GitHub-style ATX heading anchors,
+  including same-document references.
+- Added slug handling for repeated-heading numeric suffixes, ASCII punctuation,
+  Unicode text, and percent-decoded fragments. Target path decoding, lexical
+  repository confinement, and canonical symbolic-link confinement still complete
+  before another Markdown document is read.
+- Kept absolute web URLs, `mailto:` links, code examples, and fragments on
+  non-Markdown files outside anchor validation. The checker performs no network
+  requests, rendering, execution, or automatic rewriting.
+- Added bounded one-line target diagnostics and aggregate anchor counts. Every
+  discovered missing anchor remains an independent failure with its source file and
+  line, and the command exits non-zero when any failure exists.
+- Added fixture coverage for valid same-file and cross-file anchors, duplicate
+  headings, punctuation, Bengali Unicode, percent encoding, ignored targets,
+  invalid encoding, missing files/anchors, bounded output, and simultaneous
+  failures. Updated the contributor guidance and reconciled completed issues #26
+  and #27 out of the current starter set.
+
+#### Files changed
+
+- Offline validator and tests: `scripts/docs/check-markdown-links.mjs`,
+  `scripts/docs/check-markdown-links.test.mjs`
+- Test fixtures: `scripts/docs/__fixtures__/anchors-valid.md.fixture`,
+  `scripts/docs/__fixtures__/anchors-missing.md.fixture`,
+  `scripts/docs/__fixtures__/ignored.md.fixture`
+- Contributor and project documentation: `CONTRIBUTING.md`,
+  `docs/CONTRIBUTOR_PATHS.md`, `docs/STARTER_ISSUES.md`, `CHANGELOG.md`
+- Command evidence: `docs/PROGRESS.md`
+
+#### Validation
+
+- All 6 focused Markdown-link tests passed, covering valid and missing anchors,
+  duplicate suffixes, punctuation, Unicode/encoding, ignored references, bounded
+  reporting, traversal, and simultaneous failures.
+- `pnpm docs:links` passed offline with 107 local references, including 1 heading
+  anchor, across 59 tracked Markdown files. `pnpm docs:paths` passed with 80
+  contributor-map paths and 20 root scripts.
+- `pnpm format:check`, `pnpm lint`, strict `pnpm typecheck`, and
+  `git diff --check` passed.
+- Complete `pnpm test` passed: 6 demo-doctor tests, 12 guarded-reset tests, 8
+  demo-smoke tests, 3 contributor-path tests, 6 Markdown-link tests, 26 shared
+  package tests, 55 web tests, 3 queue tests, 88 API tests, and 29 worker tests.
+- Hosted CI and CodeQL verification remain pending until the focused commit is
+  pushed to `origin/main`.
+
+#### Decisions made
+
+- Extend the existing dependency-free checker rather than add a parser or hosted
+  link service. Heading extraction is deliberately bounded to ordinary ATX headings
+  used by repository documentation.
+- Build the tracked Markdown target allowlist from canonical in-repository paths and
+  cache extracted heading sets. This preserves the existing symlink boundary before
+  cross-document reads without crawling untracked files.
+- Decode paths and fragments separately so percent-encoded Unicode anchors work
+  without allowing a decoded fragment to influence path resolution.
+- Bound only diagnostic rendering while retaining the original target internally,
+  so failures remain testable without permitting unbounded terminal output.
+
+#### Open questions and risks
+
+- This is not a complete GitHub Markdown renderer. Setext headings, explicit HTML
+  IDs, generated table-of-contents behavior, and renderer-specific edge cases remain
+  outside the authorized scope.
+- External anchors and fragments on non-Markdown targets remain intentionally
+  unchecked. Repository maintainers must use a separate reviewed process if those
+  targets later require validation.
+- Production remains `NO-GO`; application behavior, schemas, providers, financial
+  rules, releases, and live environments were not changed.
+
+#### Recommended next command
+
+Authorize **Command 70 — Implement starter issue #28: Add a safe-demo path to the
+GitHub bug-report form** only after separate review and authorization. Do not start
+it automatically.
+
 ## Report Template
 
 Use this template after every future command:

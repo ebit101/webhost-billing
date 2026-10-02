@@ -1,6 +1,13 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, realpathSync } from 'node:fs';
-import { dirname, isAbsolute, relative, resolve, sep } from 'node:path';
+import {
+  dirname,
+  extname,
+  isAbsolute,
+  relative,
+  resolve,
+  sep,
+} from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const defaultRepositoryRoot = resolve(
@@ -33,31 +40,7 @@ function maskRange(value, start, end) {
 }
 
 function maskMarkdownCode(markdown) {
-  let masked = markdown;
-  const lines = markdown.match(/.*(?:\r?\n|$)/gu) ?? [];
-  let offset = 0;
-  let fence;
-
-  for (const line of lines) {
-    const opening = line.match(/^ {0,3}(`{3,}|~{3,})/u);
-    if (!fence && opening) {
-      fence = { character: opening[1][0], length: opening[1].length };
-      masked = maskRange(masked, offset, offset + line.length);
-    } else if (fence) {
-      masked = maskRange(masked, offset, offset + line.length);
-      const closingPattern = new RegExp(
-        `^ {0,3}${fence.character}{${fence.length},}[ \\t]*(?:\\r?\\n)?$`,
-        'u',
-      );
-      if (closingPattern.test(line)) fence = undefined;
-    }
-    offset += line.length;
-  }
-
-  masked = masked.replace(/<!--[^]*?-->/gu, (comment) =>
-    comment.replace(/[^\r\n]/gu, ' '),
-  );
-
+  let masked = maskMarkdownBlocks(markdown);
   const characters = masked.split('');
   for (let index = 0; index < characters.length; index += 1) {
     if (characters[index] !== '`') continue;
@@ -82,6 +65,71 @@ function maskMarkdownCode(markdown) {
   }
 
   return characters.join('');
+}
+
+function maskMarkdownBlocks(markdown) {
+  let masked = markdown;
+  const lines = markdown.match(/.*(?:\r?\n|$)/gu) ?? [];
+  let offset = 0;
+  let fence;
+
+  for (const line of lines) {
+    const opening = line.match(/^ {0,3}(`{3,}|~{3,})/u);
+    if (!fence && opening) {
+      fence = { character: opening[1][0], length: opening[1].length };
+      masked = maskRange(masked, offset, offset + line.length);
+    } else if (fence) {
+      masked = maskRange(masked, offset, offset + line.length);
+      const closingPattern = new RegExp(
+        `^ {0,3}${fence.character}{${fence.length},}[ \\t]*(?:\\r?\\n)?$`,
+        'u',
+      );
+      if (closingPattern.test(line)) fence = undefined;
+    }
+    offset += line.length;
+  }
+
+  masked = masked.replace(/<!--[^]*?-->/gu, (comment) =>
+    comment.replace(/[^\r\n]/gu, ' '),
+  );
+  return masked;
+}
+
+const githubSlugPunctuation =
+  /[\u0000-\u001f\u007f!"#$%&'()*+,./:;<=>?@[\\\]^`{|}~]/gu;
+
+function githubHeadingSlug(value) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(githubSlugPunctuation, '')
+    .replaceAll(' ', '-');
+}
+
+function extractMarkdownHeadingAnchors(markdown) {
+  const masked = maskMarkdownBlocks(markdown);
+  const anchors = new Set();
+  const occurrences = new Map();
+  const lines = masked.match(/.*(?:\r?\n|$)/gu) ?? [];
+
+  for (const line of lines) {
+    const contentLine = line.replace(/(?:\r?\n)$/u, '');
+    const heading = contentLine.match(/^ {0,3}#{1,6}(?:[ \t]+(.*)|[ \t]*)$/u);
+    if (!heading) continue;
+    const headingText = (heading[1] ?? '').replace(/[ \t]+#+[ \t]*$/u, '');
+    const baseSlug = githubHeadingSlug(headingText);
+    let occurrence = occurrences.get(baseSlug) ?? 0;
+    let slug = baseSlug;
+
+    while (anchors.has(slug)) {
+      occurrence += 1;
+      slug = `${baseSlug}-${occurrence}`;
+    }
+    occurrences.set(baseSlug, occurrence);
+    anchors.add(slug);
+  }
+
+  return anchors;
 }
 
 function createLineLocator(markdown) {
@@ -172,29 +220,74 @@ function classifyTarget(rawTarget) {
   const target = rawTarget.trim();
   if (
     target === '' ||
-    target.startsWith('#') ||
     target.startsWith('//') ||
     /^[a-z][a-z\d+.-]*:/iu.test(target)
   ) {
     return { ignored: true };
   }
 
-  const pathWithoutSuffix = target.split(/[?#]/u, 1)[0];
+  const queryIndex = target.indexOf('?');
+  const fragmentIndex = target.indexOf('#');
+  const suffixIndexes = [queryIndex, fragmentIndex].filter(
+    (index) => index >= 0,
+  );
+  const pathEnd =
+    suffixIndexes.length > 0 ? Math.min(...suffixIndexes) : target.length;
+  const rawPath = target.slice(0, pathEnd);
+  const rawFragment =
+    fragmentIndex >= 0 ? target.slice(fragmentIndex + 1) : undefined;
+
+  if (rawPath === '' && !rawFragment) return { ignored: true };
+
   try {
-    return { path: decodeURIComponent(pathWithoutSuffix) };
+    return {
+      fragment:
+        rawFragment === undefined ? undefined : decodeURIComponent(rawFragment),
+      path: decodeURIComponent(rawPath),
+    };
   } catch {
     return { error: 'contains invalid URL encoding' };
   }
+}
+
+function boundedTarget(target, maximumLength = 160) {
+  const singleLine = target.replace(/[\r\n]/gu, ' ');
+  const value =
+    singleLine.length <= maximumLength
+      ? singleLine
+      : `${singleLine.slice(0, maximumLength - 3)}...`;
+  return JSON.stringify(value);
 }
 
 export function checkMarkdownFiles({ files, repositoryRoot }) {
   const absoluteRepositoryRoot = resolve(repositoryRoot);
   const canonicalRepositoryRoot = realpathSync(absoluteRepositoryRoot);
   const failures = [];
+  const headingCache = new Map();
+  const trackedMarkdownTargets = new Set();
   let checkedReferenceCount = 0;
+  let checkedAnchorCount = 0;
+
+  for (const trackedFile of files) {
+    const absoluteTrackedPath = resolve(absoluteRepositoryRoot, trackedFile);
+    if (
+      !isInsideRepository(absoluteRepositoryRoot, absoluteTrackedPath) ||
+      !existsSync(absoluteTrackedPath)
+    ) {
+      continue;
+    }
+    const canonicalTrackedPath = realpathSync(absoluteTrackedPath);
+    if (
+      isInsideRepository(canonicalRepositoryRoot, canonicalTrackedPath) &&
+      extname(canonicalTrackedPath).toLowerCase() === '.md'
+    ) {
+      trackedMarkdownTargets.add(canonicalTrackedPath);
+    }
+  }
 
   for (const sourceFile of files) {
     const absoluteSourcePath = resolve(absoluteRepositoryRoot, sourceFile);
+    const canonicalSourcePath = realpathSync(absoluteSourcePath);
     const markdown = readFileSync(absoluteSourcePath, 'utf8');
 
     for (const reference of extractMarkdownReferences(markdown)) {
@@ -212,10 +305,10 @@ export function checkMarkdownFiles({ files, repositoryRoot }) {
         continue;
       }
 
-      const resolvedTarget = resolve(
-        dirname(absoluteSourcePath),
-        classified.path,
-      );
+      const resolvedTarget =
+        classified.path === ''
+          ? absoluteSourcePath
+          : resolve(dirname(absoluteSourcePath), classified.path);
       if (!isInsideRepository(absoluteRepositoryRoot, resolvedTarget)) {
         failures.push({
           line: reference.line,
@@ -244,11 +337,39 @@ export function checkMarkdownFiles({ files, repositoryRoot }) {
           sourceFile: toDisplayPath(sourceFile),
           target: reference.target,
         });
+        continue;
+      }
+
+      if (
+        classified.fragment === undefined ||
+        extname(canonicalTarget).toLowerCase() !== '.md' ||
+        !trackedMarkdownTargets.has(canonicalTarget)
+      ) {
+        continue;
+      }
+
+      checkedAnchorCount += 1;
+      let headings = headingCache.get(canonicalTarget);
+      if (!headings) {
+        headings = extractMarkdownHeadingAnchors(
+          canonicalTarget === canonicalSourcePath
+            ? markdown
+            : readFileSync(canonicalTarget, 'utf8'),
+        );
+        headingCache.set(canonicalTarget, headings);
+      }
+      if (!headings.has(classified.fragment)) {
+        failures.push({
+          line: reference.line,
+          reason: 'heading anchor does not exist',
+          sourceFile: toDisplayPath(sourceFile),
+          target: reference.target,
+        });
       }
     }
   }
 
-  return { checkedReferenceCount, failures };
+  return { checkedAnchorCount, checkedReferenceCount, failures };
 }
 
 export function listTrackedMarkdownFiles(
@@ -270,7 +391,7 @@ export function listTrackedMarkdownFiles(
 
 export function formatLinkCheckReport(result, fileCount) {
   if (result.failures.length === 0) {
-    return `Checked ${result.checkedReferenceCount} local Markdown references across ${fileCount} tracked Markdown files.\n`;
+    return `Checked ${result.checkedReferenceCount} local Markdown references, including ${result.checkedAnchorCount} heading anchors, across ${fileCount} tracked Markdown files.\n`;
   }
 
   const lines = [
@@ -278,7 +399,7 @@ export function formatLinkCheckReport(result, fileCount) {
   ];
   for (const failure of result.failures) {
     lines.push(
-      `- ${failure.sourceFile}:${failure.line} ${JSON.stringify(failure.target)} — ${failure.reason}`,
+      `- ${failure.sourceFile}:${failure.line} ${boundedTarget(failure.target)} — ${failure.reason}`,
     );
   }
   return `${lines.join('\n')}\n`;

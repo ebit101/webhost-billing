@@ -7,82 +7,6 @@ customer data or credentials.
 
 ## Current starter set
 
-### 9. [Add a read-only `demo:smoke` verification command](https://github.com/ebit101/webhost-billing/issues/26)
-
-**Status:** Open; implementation requires separate Command 68 authorization.
-
-**Suggested labels:** `good first issue`, `help wanted`, `docker`, `javascript`
-
-Add a cross-platform `demo:smoke` command for an already-running fictional demo at
-the fixed loopback origin. Verify the principal public, customer, and administrator
-evaluator paths without changing business records or lifecycle state.
-
-Acceptance:
-
-- verifies readiness, the public catalogue, customer login/overview, and
-  administrator login/dashboard using the repository-pinned Chromium;
-- asserts bounded semantic evidence for fictional seeded data without creating,
-  updating, or deleting business records;
-- reads generated credentials only internally and never prints or retains passwords,
-  cookies, tokens, runtime values, browser errors, DOM/response bodies, screenshots,
-  or traces;
-- refuses non-loopback origins, requires an existing healthy demo, and never starts,
-  stops, rebuilds, resets, or changes provider state;
-- emits deterministic route-level pass/fail output with actionable fixed failures;
-- adds focused tests for origin/runtime guards, reporting, redaction, and dispatch;
-  and
-- documents prerequisites, coverage, and limitations in the safe-demo and
-  contributor paths.
-
-Validation: focused tests, the live smoke command against a healthy safe demo,
-relevant web tests, `pnpm format:check`, `pnpm docs:links`, `pnpm docs:paths`,
-`pnpm lint`, `pnpm typecheck`, and the web production build.
-
-Security boundary: use only generated fictional accounts on the fixed loopback demo;
-retain no browser artifacts and add no provider or network authority.
-
-Excluded: Docker lifecycle/reset behavior, staging/production targets, real
-identities, business-data mutation, providers, full lifecycle automation,
-accessibility certification, schemas, financial rules, releases, or production
-readiness.
-
-### 10. [Validate local Markdown heading anchors offline](https://github.com/ebit101/webhost-billing/issues/27)
-
-**Status:** Open; implementation requires separate Command 69 authorization.
-
-**Suggested labels:** `good first issue`, `help wanted`, `documentation`,
-`javascript`
-
-Extend the existing offline Markdown link validator so a renamed heading cannot
-leave repository-local documentation links pointing to missing sections while CI
-remains green.
-
-Acceptance:
-
-- validates heading fragments for tracked Markdown targets, including same-document
-  references;
-- matches the GitHub-style slugs used by ordinary ATX headings, repeated-heading
-  suffixes, punctuation, Unicode text, and percent-encoded repository fragments;
-- preserves repository-boundary and symbolic-link escape checks before reading a
-  target document;
-- reports every missing anchor with source file, line, and bounded target, and exits
-  non-zero without network access;
-- continues ignoring absolute web URLs, `mailto:` links, code examples, and
-  non-Markdown file fragments;
-- adds fixtures for valid same/cross-file anchors, duplicates, Unicode/encoding,
-  missing anchors, ignored targets, and simultaneous failures; and
-- documents the expanded ordinary offline validation path.
-
-Validation: focused validator tests, `pnpm docs:links`, `pnpm docs:paths`,
-`pnpm format:check`, `pnpm lint`, `pnpm typecheck`, and `pnpm test`.
-
-Security boundary: remain offline, read only tracked repository Markdown, never
-execute document content, and preserve path and symlink confinement.
-
-Excluded: external crawling, remote-anchor checks, HTML rendering, automatic
-rewrites, a full parser migration, application behavior, schemas, providers,
-releases, or production-readiness changes.
-
 ### 11. [Add a safe-demo path to the GitHub bug-report form](https://github.com/ebit101/webhost-billing/issues/28)
 
 **Status:** Open; implementation requires separate Command 70 authorization.
@@ -122,6 +46,29 @@ GitHub Discussions, schemas, providers, releases, deployments, or production
 readiness.
 
 ## Latest completed starter set
+
+### 9. [Add a read-only `demo:smoke` verification command](https://github.com/ebit101/webhost-billing/issues/26)
+
+**Status:** Completed by Command 68 on 2026-10-02.
+
+**Suggested labels:** `good first issue`, `help wanted`, `docker`, `javascript`
+
+Added a cross-platform, fixed-loopback `demo:smoke` command that verifies readiness,
+the public catalogue, customer overview, and administrator dashboard against an
+already-running fictional demo. It retains no browser artifacts, changes no
+business or Docker state, and emits only bounded allowlisted results.
+
+### 10. [Validate local Markdown heading anchors offline](https://github.com/ebit101/webhost-billing/issues/27)
+
+**Status:** Completed by Command 69 on 2026-10-02.
+
+**Suggested labels:** `good first issue`, `help wanted`, `documentation`,
+`javascript`
+
+Extended the offline Markdown link validator to check same-document and cross-file
+fragments on tracked Markdown targets. The bounded checker covers ordinary ATX
+headings, repeated suffixes, punctuation, Unicode, and percent-encoded fragments
+while preserving repository and symbolic-link confinement before target reads.
 
 ### 5. [Add offline Markdown link validation to CI](https://github.com/ebit101/webhost-billing/issues/22)
 

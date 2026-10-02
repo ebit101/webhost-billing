@@ -42,6 +42,8 @@ and will be called out in release notes.
 
 ### Changed
 
+- Extended the offline Markdown validator to check same-file and cross-file heading
+  anchors with duplicate, punctuation, Unicode, and percent-encoded slug coverage.
 - Corrected contributor discovery after issues #18–#25 closed so the repository no
   longer presents completed tasks as currently available work.
 - Replaced the customer portal overview presentation fixtures with an

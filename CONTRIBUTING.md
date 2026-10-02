@@ -71,6 +71,10 @@ On PowerShell, use `Copy-Item .env.example .env` instead of `cp`.
 
 Run the applicable validation before requesting review:
 
+`pnpm docs:links` stays offline. It checks local files and images plus fragments
+that target headings in tracked Markdown, including same-document links. External
+URLs and fragments on non-Markdown files are not crawled.
+
 ```bash
 pnpm format:check
 pnpm docs:links
