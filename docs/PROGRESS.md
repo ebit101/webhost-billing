@@ -3,7 +3,7 @@
 ## Status Summary
 
 - **Current command:** Command 71 — Reopen the contributor on-ramp with a fourth starter-issue set
-- **Current status:** Planning complete locally; delivery validation pending
+- **Current status:** Completed and delivered to GitHub `main`
 - **Last updated:** 2026-10-03
 - **Next command:** Command 72 — Implement starter issue #29: Keep safe-demo inspection commands side-effect-free
 - **Next command authorized:** No
@@ -4569,7 +4569,7 @@ implementation automatically.
 
 ### Command 71 — Reopen the Contributor On-Ramp With a Fourth Starter-Issue Set
 
-- **Status:** Planning complete locally; delivery validation pending
+- **Status:** Completed and delivered to GitHub `main`
 - **Date:** 2026-10-03
 
 #### Scope completed
@@ -4622,6 +4622,10 @@ implementation automatically.
 - Manual terminology and security review confirmed the set preserves fictional
   demo data, repository/loopback confinement, bounded output, private vulnerability
   reporting, immutable release state, and production `NO-GO`.
+- Command 71 commit `603702d` passed hosted CI run `37049160202`, including full
+  history secret scanning, database verification, documentation checks, lint,
+  strict type checks, package/API/invariant/browser tests, dependency and license
+  checks, and the production build. Hosted CodeQL run `37049160206` also passed.
 
 #### Decisions made
 
