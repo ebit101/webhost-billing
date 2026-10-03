@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7
-FROM node:24-bookworm-slim AS builder
+FROM node:26-bookworm-slim AS builder
 
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
@@ -23,7 +23,7 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --filter @webhost
 COPY packages/database packages/database
 RUN pnpm --filter @webhost-billing/database deploy --legacy /opt/migration
 
-FROM node:24-bookworm-slim AS migration
+FROM node:26-bookworm-slim AS migration
 
 ENV NODE_ENV=production
 WORKDIR /app
