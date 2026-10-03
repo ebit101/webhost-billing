@@ -215,6 +215,16 @@ or the component checks described in `FRONTEND_DESIGN_SYSTEM.md`.
 
 The screenshots are generated from the safe demo with the repository-pinned
 Playwright Chromium. They are examples, not proof of production readiness. The
+capture runner and offline validator consume one repository-owned filename,
+role, width, height, and byte-bound contract. Validate the checked-in assets without
+starting Docker or a browser:
+
+```bash
+corepack pnpm docs:demo-assets
+```
+
+This command reads only file metadata and the PNG signature/IHDR header; it does not
+decode pixels, compare images, use OCR, or replace human visual review. The
 mobile catalogue uses a 390-pixel-wide touch viewport and ends immediately below the
 primary **Choose Starter Hosting** action. Capture waits for the catalogue heading,
 fictional Starter Hosting plan, selected monthly period, and checkout action; it does

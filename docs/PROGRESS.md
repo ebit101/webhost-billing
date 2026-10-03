@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 72 — Implement starter issue #29: Keep safe-demo inspection commands side-effect-free
-- **Current status:** Completed and delivered to GitHub `main`
+- **Current command:** Command 73 — Implement starter issue #30: Validate safe-demo screenshot assets offline
+- **Current status:** Completed locally; delivery verification pending
 - **Last updated:** 2026-10-03
-- **Next command:** Command 73 — Implement starter issue #30: Validate safe-demo screenshot assets offline
+- **Next command:** Command 74 — Implement starter issue #31: Add one offline documentation validation command
 - **Next command authorized:** No
 
 ## Command Reports
@@ -4777,6 +4777,114 @@ start Command 73 or 74 automatically.
 Authorize **Command 73 — Implement starter issue #30: Validate safe-demo screenshot
 assets offline** only after Command 72 is delivered, hosted checks pass, issue #29 is
 closed, and separate user authorization is given. Do not begin Command 73
+automatically.
+
+### Command 73 — Implement Starter Issue #30: Validate Safe-Demo Screenshot Assets Offline
+
+- **Status:** Completed locally; delivery verification pending
+- **Date:** 2026-10-03
+
+#### Scope completed
+
+- Added one repository-owned JSON contract for the four reviewed safe-demo PNGs. It
+  defines each stable identity, filename, evaluator role, canonical-guide reference,
+  required width, capture viewport height, bounded output height, and conservative
+  minimum/maximum byte size.
+- Refactored the existing Playwright capture runner to consume the shared contract
+  for output directory, filenames, widths, and viewport heights. No screenshot was
+  regenerated, redesigned, compressed, opened, or otherwise modified.
+- Added a fixed offline Node.js validator that treats contract/assets as untrusted,
+  requires the exact four-entry contract, rejects duplicate identities, validates a
+  regular non-symbolic-link asset directory and files, resolves canonical paths
+  inside the repository, and confirms Git tracking and exact canonical-guide
+  references.
+- Limited image reads to the first 24 bytes and validated the PNG signature, first
+  IHDR chunk, required width, bounded height, and file-size bounds without decoding
+  pixels. Failures use fixed bounded repository-relative asset/reason output and
+  discard raw filesystem/Git details.
+- Added six focused fixture/live tests covering the four current assets plus missing,
+  traversal, symbolic-link, malformed PNG, wrong width/height, oversized, duplicate,
+  untracked, undocumented, and bounded-output cases.
+- Added focused `test:demo-assets` and live `docs:demo-assets` commands, included the
+  focused suite in the ordinary package test gate, and added the live offline check
+  to ordinary CI without adding Docker, browser, pixel-decoding, or network work.
+- Updated the contributor path, canonical evaluator guide, completed starter issue,
+  changelog, and durable architecture decision. Product behavior, authentication,
+  schemas, providers, releases, deployments, and production `NO-GO` were unchanged.
+
+#### Files changed
+
+- `scripts/demo/demo-screenshot-contract.json` — defined the shared four-asset
+  capture and validation contract
+- `apps/web/e2e/capture-demo-screenshots.ts` — consumed the shared contract without
+  running or changing capture output
+- `scripts/docs/check-demo-screenshot-assets.mjs` — added the offline metadata,
+  confinement, tracking, PNG-header, dimension, size, uniqueness, and guide validator
+- `scripts/docs/check-demo-screenshot-assets.test.mjs` — added six live/fixture tests
+- `package.json` — exposed focused/live commands and registered the focused suite
+- `.github/workflows/ci.yml` — added the live offline screenshot check
+- `docs/CONTRIBUTOR_PATHS.md` — mapped the contract, validator, tests, and commands
+- `docs/SAFE_EVALUATION_DEMO.md` — documented the offline command and human-review
+  boundary
+- `docs/STARTER_ISSUES.md` — moved issue #30 to the completed starter set
+- `docs/DECISIONS.md` — recorded ADR-049 for the offline asset contract
+- `CHANGELOG.md` — recorded the new objective screenshot gate
+- `docs/PROGRESS.md` — recorded Command 73 scope, evidence, decisions, and next gate
+
+#### Validation
+
+- `pnpm test:demo-assets` passed all 6 focused live/fixture tests.
+- `pnpm docs:demo-assets` validated all 4 current tracked PNG assets offline.
+- `pnpm docs:paths` passed with 87 contributor-map paths and 25 root scripts.
+- `pnpm docs:links` passed with 116 local references, including 3 heading anchors,
+  across 59 tracked Markdown files.
+- `pnpm docs:issue-forms` validated 3 forms, parsed all 4 YAML files, and checked 2
+  guidance links.
+- `pnpm format:check`, `pnpm lint`, strict `pnpm typecheck`, and
+  `git diff --check` passed.
+- `pnpm test` passed: demo/docs contract suites including the 6 new asset tests, 26
+  shared package tests, 3 queue integration tests, 55 web tests, 88 API tests, and 29
+  worker tests all passed.
+- Manual unchanged-asset review compared each working-tree Git blob with `HEAD`:
+  `admin-dashboard.png`, `customer-portal.png`, `hosting-catalog-mobile.png`, and
+  `hosting-catalog.png` were byte-for-byte unchanged. No Docker process, browser,
+  network request, OCR, image decoder, screenshot capture, or authenticated artifact
+  was used or retained by the validator or this review.
+
+#### Decisions made
+
+- Use JSON as the small shared contract so the Node.js validator can read it without
+  a runtime transpiler and the strict TypeScript Playwright runner can import exactly
+  the same values. Capture-specific credentials and page-ready assertions remain
+  outside the asset metadata contract.
+- Require exact widths while allowing narrow role-specific height ranges because
+  full-page content height can change deliberately. Conservative byte ceilings catch
+  accidental oversized replacements without promoting compression as a goal.
+- Read only PNG signature/IHDR bytes. This proves file type and objective dimensions
+  without executing metadata or decoding pixels, but deliberately cannot assert
+  visual correctness or content safety.
+- Keep `docs:demo-assets` focused and standalone. Command 74 remains responsible for
+  creating the separately authorized aggregate documentation command.
+
+#### Open questions and risks
+
+- Header validation cannot prove that pixels are accurate, legible, fictional, or
+  free of sensitive content. Human visual and sensitive-data review remains required
+  for every future screenshot replacement.
+- Intentional layout changes that move a screenshot outside its height/byte bounds
+  require reviewed contract and documentation changes in the same contribution; the
+  validator must not auto-relax bounds or rewrite assets.
+- Production remains `NO-GO`. The four reviewed images and immutable alpha release
+  are unchanged, and no application, financial, authentication, schema, provider,
+  deployment, or production behavior changed.
+- Remote delivery, hosted CI/CodeQL verification, and issue #30 closure remain pending
+  until the focused implementation commit is reconciled and pushed.
+
+#### Recommended next command
+
+Authorize **Command 74 — Implement starter issue #31: Add one offline documentation
+validation command** only after Command 73 is delivered, hosted checks pass, issue
+#30 is closed, and separate user authorization is given. Do not begin Command 74
 automatically.
 
 ## Report Template

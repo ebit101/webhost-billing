@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "expectedAssetCount": 4,
+  "assetDirectory": "docs/assets/demo",
+  "canonicalGuide": "docs/SAFE_EVALUATION_DEMO.md",
+  "assets": [
+    {
+      "id": "hosting-catalog",
+      "filename": "hosting-catalog.png",
+      "role": "Desktop fictional hosting catalogue",
+      "guideReference": "assets/demo/hosting-catalog.png",
+      "width": 1440,
+      "captureViewportHeight": 960,
+      "minHeight": 1500,
+      "maxHeight": 2100,
+      "minBytes": 10000,
+      "maxBytes": 1048576
+    },
+    {
+      "id": "hosting-catalog-mobile",
+      "filename": "hosting-catalog-mobile.png",
+      "role": "Mobile fictional hosting catalogue",
+      "guideReference": "assets/demo/hosting-catalog-mobile.png",
+      "width": 390,
+      "captureViewportHeight": 844,
+      "minHeight": 900,
+      "maxHeight": 1300,
+      "minBytes": 10000,
+      "maxBytes": 524288
+    },
+    {
+      "id": "admin-dashboard",
+      "filename": "admin-dashboard.png",
+      "role": "Authenticated fictional administrator dashboard",
+      "guideReference": "assets/demo/admin-dashboard.png",
+      "width": 1440,
+      "captureViewportHeight": 960,
+      "minHeight": 1900,
+      "maxHeight": 2500,
+      "minBytes": 10000,
+      "maxBytes": 1048576
+    },
+    {
+      "id": "customer-portal",
+      "filename": "customer-portal.png",
+      "role": "Authenticated fictional customer portal",
+      "guideReference": "assets/demo/customer-portal.png",
+      "width": 1440,
+      "captureViewportHeight": 960,
+      "minHeight": 850,
+      "maxHeight": 1300,
+      "minBytes": 10000,
+      "maxBytes": 786432
+    }
+  ]
+}

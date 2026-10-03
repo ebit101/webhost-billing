@@ -2,44 +2,58 @@ import { chromium, type Browser, type Page } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
+import screenshotContractJson from '../../../scripts/demo/demo-screenshot-contract.json' with { type: 'json' };
+
+type ScreenshotAsset = {
+  id: string;
+  filename: string;
+  width: number;
+  captureViewportHeight: number;
+};
+
+type ScreenshotContract = {
+  assetDirectory: string;
+  assets: ScreenshotAsset[];
+};
+
+const screenshotContract = screenshotContractJson as ScreenshotContract;
 const baseUrl = process.env.DEMO_PUBLIC_ORIGIN ?? 'http://localhost:3100';
 const adminPassword = required('DEMO_ADMIN_PASSWORD');
 const customerPassword = required('DEMO_CUSTOMER_PASSWORD');
-const outputDirectory = resolve(process.cwd(), '../../docs/assets/demo');
+const outputDirectory = resolve(
+  process.cwd(),
+  '../..',
+  screenshotContract.assetDirectory,
+);
 
 async function main(): Promise<void> {
   await mkdir(outputDirectory, { recursive: true });
 
   const browser = await chromium.launch({ headless: true });
   try {
+    await capturePublicCatalog(browser, screenshotAsset('hosting-catalog'));
     await capturePublicCatalog(
       browser,
-      { width: 1440, height: 960 },
-      'hosting-catalog.png',
-    );
-    await capturePublicCatalog(
-      browser,
-      { width: 390, height: 844 },
-      'hosting-catalog-mobile.png',
+      screenshotAsset('hosting-catalog-mobile'),
       true,
     );
     await captureWorkspace(
       browser,
+      screenshotAsset('admin-dashboard'),
       'admin@example.test',
       adminPassword,
       '/admin',
       'Business overview',
       'Collected revenue',
-      'admin-dashboard.png',
     );
     await captureWorkspace(
       browser,
+      screenshotAsset('customer-portal'),
       'customer@example.test',
       customerPassword,
       '/portal',
       'Welcome, Fictional',
       'Recent services',
-      'customer-portal.png',
     );
   } finally {
     await browser.close();
@@ -48,10 +62,13 @@ async function main(): Promise<void> {
 
 async function capturePublicCatalog(
   browser: Browser,
-  viewport: { width: number; height: number },
-  filename: string,
+  asset: ScreenshotAsset,
   mobile = false,
 ): Promise<void> {
+  const viewport = {
+    width: asset.width,
+    height: asset.captureViewportHeight,
+  };
   const context = await browser.newContext({
     colorScheme: 'light',
     deviceScaleFactor: 1,
@@ -74,7 +91,7 @@ async function capturePublicCatalog(
   if ((await monthlyButton.getAttribute('aria-pressed')) !== 'true') {
     throw new Error('Monthly catalogue pricing did not become active');
   }
-  const path = resolve(outputDirectory, filename);
+  const path = resolve(outputDirectory, asset.filename);
   if (mobile) {
     const actionBounds = await primaryAction.boundingBox();
     if (!actionBounds) {
@@ -98,29 +115,40 @@ async function capturePublicCatalog(
 
 async function captureWorkspace(
   browser: Browser,
+  asset: ScreenshotAsset,
   email: string,
   password: string,
   destination: string,
   heading: string,
   readyText: string,
-  filename: string,
 ): Promise<void> {
   const context = await browser.newContext({
     colorScheme: 'light',
     deviceScaleFactor: 1,
-    viewport: { width: 1440, height: 960 },
+    viewport: {
+      width: asset.width,
+      height: asset.captureViewportHeight,
+    },
   });
   const page = await context.newPage();
   await signIn(page, email, password, destination);
   await page.getByRole('heading', { name: heading }).waitFor();
   await page.getByText(readyText, { exact: true }).waitFor();
   await page.screenshot({
-    path: resolve(outputDirectory, filename),
+    path: resolve(outputDirectory, asset.filename),
     animations: 'disabled',
     caret: 'hide',
     fullPage: true,
   });
   await context.close();
+}
+
+function screenshotAsset(id: string): ScreenshotAsset {
+  const asset = screenshotContract.assets.find(
+    (candidate) => candidate.id === id,
+  );
+  if (!asset) throw new Error(`Screenshot contract entry ${id} is required`);
+  return asset;
 }
 
 async function signIn(

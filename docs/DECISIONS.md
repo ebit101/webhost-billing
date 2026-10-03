@@ -400,6 +400,14 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** Inspection and ordinary stop commands must not manufacture credentials or state simply because an evaluator asked what exists. Finite captured output is safer to review and report than an indefinite raw log stream, while explicit targeting prevents ambient Compose or Docker variables from broadening authority.
 - **Consequence:** `demo:up` remains the ordinary lifecycle entrypoint that creates missing runtime state. Missing or unsafe runtime paths produce fixed remediation before Docker, `demo:down` retains fictional volumes and credentials, and the guarded reset/doctor/smoke contracts remain unchanged. Successful credentials output remains an explicit local operator action and must never be shared. Production remains `NO-GO`.
 
+## ADR-049 — Offline Safe-Demo Screenshot Asset Contract
+
+- **Status:** Accepted
+- **Date:** 2026-10-03
+- **Decision:** Keep one repository-owned JSON contract for the four reviewed safe-demo screenshot identities, roles, capture widths/viewports, bounded output heights and byte sizes, and canonical-guide references. Require both Playwright capture and a Node.js offline validator to consume that contract. Validate only regular non-symbolic-link files canonically confined to the repository, Git tracking, PNG signature/IHDR dimensions, unique identities, and guide references.
+- **Reason:** Local Markdown link checks prove only that an asset path exists; they cannot detect malformed, untracked, oversized, wrongly sized, duplicated, or undocumented screenshot replacements. A header-only offline gate catches those objective errors without authenticating to the demo or introducing browser, Docker, network, OCR, or visual-regression authority.
+- **Consequence:** Ordinary CI runs the live asset check before application validation, and focused fixtures cover unsafe metadata and replacement cases. The validator reads only metadata and the first 24 PNG bytes and never regenerates or decodes an image. Pixel quality, fictional content, legibility, and sensitive-data review remain explicit human responsibilities; production remains `NO-GO`.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

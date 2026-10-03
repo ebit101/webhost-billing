@@ -16,6 +16,9 @@ and will be called out in release notes.
 
 ### Added
 
+- Added one shared safe-demo screenshot contract plus an offline CI validator for
+  repository confinement, Git tracking, PNG headers/dimensions, conservative byte
+  bounds, unique filenames, and canonical-guide references.
 - Added a fourth bounded contributor starter-issue set covering side-effect-free
   safe-demo inspection, offline screenshot contracts, and one aggregate offline
   documentation check.

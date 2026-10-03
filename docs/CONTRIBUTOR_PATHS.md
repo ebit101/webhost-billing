@@ -18,11 +18,13 @@ an additional project-maintenance route.
 
 - **Owning paths:** [demo lifecycle scripts](../scripts/demo/),
   [the isolated Compose definition](../demo/), and
-  [safe-demo browser helpers](../apps/web/e2e/).
+  [safe-demo browser helpers](../apps/web/e2e/). Screenshot capture and offline
+  validation share the [demo screenshot contract](../scripts/demo/demo-screenshot-contract.json).
 - **Nearest focused tests:** [doctor tests](../scripts/demo/demo-doctor.test.mjs),
   [inspection-command tests](../scripts/demo/demo-inspection.test.mjs),
   [reset tests](../scripts/demo/demo-reset.test.mjs), and
   [smoke-command tests](../scripts/demo/demo-smoke.test.mjs),
+  [screenshot-asset contract tests](../scripts/docs/check-demo-screenshot-assets.test.mjs),
   [the functional browser verifier](../apps/web/e2e/smoke-safe-demo.ts), and
   [the accessibility runner](../apps/web/e2e/audit-safe-demo-accessibility.ts).
 - **Relevant documentation:** [safe evaluation](SAFE_EVALUATION_DEMO.md),
@@ -35,6 +37,8 @@ corepack pnpm test:demo-doctor
 corepack pnpm test:demo-inspection
 corepack pnpm test:demo-reset
 corepack pnpm test:demo-smoke
+corepack pnpm test:demo-assets
+corepack pnpm docs:demo-assets
 corepack pnpm docs:paths
 corepack pnpm docs:links
 corepack pnpm format:check
@@ -192,7 +196,8 @@ schema work with verified backup and restore procedures.
   [GitHub issue forms](../.github/ISSUE_TEMPLATE/).
 - **Nearest focused tests:** [Markdown-link validator tests](../scripts/docs/check-markdown-links.test.mjs),
   [contributor-map validator tests](../scripts/docs/check-contributor-paths.test.mjs),
-  and [issue-form validator tests](../scripts/docs/check-issue-forms.test.mjs).
+  [issue-form validator tests](../scripts/docs/check-issue-forms.test.mjs), and
+  [safe-demo screenshot validator tests](../scripts/docs/check-demo-screenshot-assets.test.mjs).
 - **Relevant documentation:** [contribution guide](../CONTRIBUTING.md),
   [support policy](../SUPPORT.md), [security policy](../SECURITY.md), and
   [starter-issue catalogue](STARTER_ISSUES.md).
@@ -202,9 +207,11 @@ schema work with verified backup and restore procedures.
 corepack pnpm test:docs-links
 corepack pnpm test:docs-paths
 corepack pnpm test:issue-forms
+corepack pnpm test:demo-assets
 corepack pnpm docs:links
 corepack pnpm docs:paths
 corepack pnpm docs:issue-forms
+corepack pnpm docs:demo-assets
 corepack pnpm format:check
 ```
 
@@ -216,6 +223,11 @@ The issue-form check uses the [offline validator](../scripts/docs/check-issue-fo
 to parse every template YAML file and retain required bug fields, unique field IDs,
 safe-demo guidance, redaction confirmation, and confined local or HTTPS guidance
 links.
+The screenshot check uses the [offline asset validator](../scripts/docs/check-demo-screenshot-assets.mjs)
+and the shared contract to verify the four tracked PNG headers, dimensions, byte
+bounds, repository confinement, unique names, and canonical-guide references. It
+does not decode pixels, launch a browser or Docker, or access the network; visual
+review remains a human responsibility.
 
 **Safety invariants:** keep documentation validation offline and repository-bound,
 keep public issue paths free of credentials and real customer/provider data, route

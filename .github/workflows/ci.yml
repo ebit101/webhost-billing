@@ -75,6 +75,9 @@ jobs:
       - name: Check issue forms
         run: pnpm docs:issue-forms
 
+      - name: Check safe-demo screenshot assets
+        run: pnpm docs:demo-assets
+
       - name: Lint
         run: pnpm lint
 

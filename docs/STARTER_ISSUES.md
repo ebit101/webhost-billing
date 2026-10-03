@@ -7,42 +7,6 @@ customer data or credentials.
 
 ## Current starter set
 
-### 13. [Validate safe-demo screenshot assets offline](https://github.com/ebit101/webhost-billing/issues/30)
-
-**Suggested labels:** `good first issue`, `help wanted`, `documentation`,
-`javascript`
-
-The four reviewed evaluator screenshots are currently protected only by local-link
-existence checks. Add an offline asset contract so malformed, untracked, oversized,
-wrongly sized, or undocumented replacements fail before review.
-
-Acceptance:
-
-- define one small contract for the four filenames, roles, required widths, bounded
-  heights/file sizes, and canonical-guide references;
-- make the Playwright capture script and validator consume the same filename and
-  dimension contract;
-- require regular non-symbolic-link files confined to the repository, Git tracking,
-  valid PNG signature/IHDR dimensions, conservative byte bounds, unique filenames,
-  and canonical-guide references;
-- decode no pixels and launch no browser, Docker process, or network request;
-- report every failure with a bounded repository-relative asset/reason;
-- cover live assets plus missing, traversal/symlink, malformed, wrong-size,
-  oversized, duplicate, untracked, and undocumented fixtures; and
-- expose focused/live pnpm commands, run the live check in CI, and document it in
-  the contributor path.
-
-Validation: focused fixtures, the live offline asset check, existing documentation
-checks, `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, and manual
-confirmation that the four current images were not regenerated.
-
-Security: treat image/contract inputs as untrusted; never execute metadata, follow
-an escaping symlink, or retain authenticated artifacts.
-
-Excluded: pixel comparison, OCR, visual-regression services, screenshot
-regeneration/redesign/compression, remote assets, application behavior, schemas,
-providers, releases, deployments, or production-readiness claims.
-
 ### 14. [Add one offline documentation validation command](https://github.com/ebit101/webhost-billing/issues/31)
 
 **Suggested labels:** `good first issue`, `help wanted`, `documentation`,
@@ -78,6 +42,19 @@ application behavior, schemas, authentication/financial/provider rules, releases
 deployments, or production `NO-GO`.
 
 ## Latest completed starter set
+
+### 13. [Validate safe-demo screenshot assets offline](https://github.com/ebit101/webhost-billing/issues/30)
+
+**Status:** Completed by Command 73 on 2026-10-03.
+
+**Suggested labels:** `good first issue`, `help wanted`, `documentation`,
+`javascript`
+
+Added one shared capture/validation contract and an offline validator for the four
+reviewed PNGs. It checks repository confinement, regular-file metadata, Git tracking,
+PNG signature/IHDR dimensions, conservative byte bounds, unique identities, and
+canonical-guide references without decoding pixels or launching Docker, a browser,
+or the network.
 
 ### 12. [Keep safe-demo inspection commands side-effect-free](https://github.com/ebit101/webhost-billing/issues/29)
 
