@@ -12,6 +12,17 @@ export const E2E_CUSTOMER = {
   lastName: 'Customer',
 } as const;
 
+export const E2E_HEALTHY_CUSTOMER = {
+  userId: '26000000-0000-4000-8000-000000000006',
+  customerId: '26000000-0000-4000-8000-000000000007',
+  invoiceId: '26000000-0000-4000-8000-000000000008',
+  email: 'command78-healthy@example.test',
+  password: E2E_ADMIN.password,
+  firstName: 'Healthy',
+  lastName: 'Customer',
+  invoiceNumber: 'INV-HEALTHY-0001',
+} as const;
+
 export const E2E_PRODUCT = {
   id: '26000000-0000-4000-8000-000000000003',
   priceId: '26000000-0000-4000-8000-000000000004',

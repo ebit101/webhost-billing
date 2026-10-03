@@ -10,6 +10,10 @@ and will be called out in release notes.
 
 ### Changed
 
+- Turned the customer portal overview into an ownership-bound next-action home with
+  full-account server-derived billing, service-renewal, and support-responsibility
+  facts; explicit attention, healthy, empty, loading, and failure states; and bounded
+  recent activity that cannot promote a paid zero-balance invoice.
 - Reordered administrator customer detail around operational context, formatted
   bounded history with safe money and business-time-zone dates, and connected it to
   direct invoice detail or validated, visible, clearable customer-filtered ledgers.

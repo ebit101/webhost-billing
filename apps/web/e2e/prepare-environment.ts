@@ -4,6 +4,7 @@ import { dirname, resolve } from 'node:path';
 import { hash } from 'argon2';
 import {
   BillingPeriod,
+  InvoiceStatus,
   ProductStatus,
   ServerStatus,
   SettingCategory,
@@ -12,7 +13,12 @@ import {
   createPrismaClient,
 } from '@webhost-billing/database';
 import { E2E_DATABASE_URL, E2E_SCHEMA, e2eApiEnvironment } from './environment';
-import { E2E_ADMIN, E2E_PRODUCT, E2E_SERVER } from './fixtures';
+import {
+  E2E_ADMIN,
+  E2E_HEALTHY_CUSTOMER,
+  E2E_PRODUCT,
+  E2E_SERVER,
+} from './fixtures';
 
 async function main(): Promise<void> {
   if (E2E_SCHEMA !== 'command26_e2e') {
@@ -77,6 +83,54 @@ async function main(): Promise<void> {
           isSuperAdmin: true,
         },
       },
+    },
+  });
+
+  await prisma.user.create({
+    data: {
+      id: E2E_HEALTHY_CUSTOMER.userId,
+      email: E2E_HEALTHY_CUSTOMER.email,
+      passwordHash,
+      role: UserRole.CUSTOMER,
+      status: UserStatus.ACTIVE,
+      emailVerifiedAt: new Date(),
+      customer: {
+        create: {
+          id: E2E_HEALTHY_CUSTOMER.customerId,
+          customerNumber: 'CUS-HEALTHY-78',
+          firstName: E2E_HEALTHY_CUSTOMER.firstName,
+          lastName: E2E_HEALTHY_CUSTOMER.lastName,
+          addressLine1: '78 Fictional Healthy Road',
+          city: 'Dhaka',
+          countryCode: 'BD',
+        },
+      },
+    },
+  });
+
+  await prisma.invoice.create({
+    data: {
+      id: E2E_HEALTHY_CUSTOMER.invoiceId,
+      invoiceNumber: E2E_HEALTHY_CUSTOMER.invoiceNumber,
+      submissionKey: 'command78-healthy-paid-invoice',
+      customerId: E2E_HEALTHY_CUSTOMER.customerId,
+      status: InvoiceStatus.PAID,
+      currency: 'BDT',
+      subtotal: 120_000n,
+      total: 120_000n,
+      amountPaid: 120_000n,
+      balanceDue: 0n,
+      customerNameSnapshot: `${E2E_HEALTHY_CUSTOMER.firstName} ${E2E_HEALTHY_CUSTOMER.lastName}`,
+      customerEmailSnapshot: E2E_HEALTHY_CUSTOMER.email,
+      customerAddressSnapshot: {
+        addressLine1: '78 Fictional Healthy Road',
+        city: 'Dhaka',
+        countryCode: 'BD',
+      },
+      businessIdentitySnapshot: { name: 'Fictional Webhost Billing' },
+      issuedAt: new Date('2026-10-01T00:00:00.000Z'),
+      dueAt: new Date('2026-10-02T00:00:00.000Z'),
+      paidAt: new Date('2026-10-01T00:00:00.000Z'),
     },
   });
 

@@ -10,6 +10,7 @@ import {
   authenticatedIdentitySchema,
   createApiErrorResponse,
   createPaginationMeta,
+  customerPortalSummarySchema,
   invoiceStatusSchema,
   loginRequestSchema,
   manualPaymentStateSchema,
@@ -70,6 +71,68 @@ describe('money contracts', () => {
   it('rejects invalid currency codes', () => {
     assert.equal(
       moneySchema.safeParse({ amount: '100', currency: 'bdt' }).success,
+      false,
+    );
+  });
+});
+
+describe('customer portal summary contract', () => {
+  const invoice = {
+    id: '72000000-0000-4000-8000-000000000001',
+    invoiceNumber: 'INV-001042',
+    status: 'OVERDUE' as const,
+    balanceDue: { amount: '9007199254740993', currency: 'BDT' },
+    dueAt: '2026-10-01T00:00:00.000Z',
+  };
+  const summary = {
+    customer: {
+      id: '70000000-0000-4000-8000-000000000001',
+      customerNumber: 'CUS-70000000',
+      status: 'ACTIVE' as const,
+      firstName: 'Samira',
+    },
+    counts: { services: 0, invoices: 12, tickets: 0 },
+    billing: {
+      outstandingBalance: {
+        amount: '9007199254740993',
+        currency: 'BDT',
+      },
+      outstandingInvoiceCount: 12,
+      overdueInvoiceCount: 1,
+      nextInvoice: invoice,
+    },
+    service: { nextDue: null },
+    support: {
+      waitingForCustomerCount: 0,
+      waitingForStaffCount: 0,
+      nextWaitingForCustomer: null,
+      nextWaitingForStaff: null,
+    },
+    recent: { services: [], invoices: [invoice], tickets: [] },
+  };
+
+  it('preserves lossless server-derived balances and bounded recent records', () => {
+    const parsed = customerPortalSummarySchema.parse(summary);
+    assert.equal(parsed.billing.outstandingBalance.amount, '9007199254740993');
+    assert.equal(parsed.billing.outstandingInvoiceCount, 12);
+  });
+
+  it('rejects numeric money and recent lists beyond the display bound', () => {
+    assert.equal(
+      customerPortalSummarySchema.safeParse({
+        ...summary,
+        billing: {
+          ...summary.billing,
+          outstandingBalance: { amount: 100, currency: 'BDT' },
+        },
+      }).success,
+      false,
+    );
+    assert.equal(
+      customerPortalSummarySchema.safeParse({
+        ...summary,
+        recent: { ...summary.recent, invoices: Array(11).fill(invoice) },
+      }).success,
       false,
     );
   });

@@ -473,6 +473,27 @@ This document records durable technical and product decisions. New decisions sho
   financial-policy confirmation remain recorded roadmap work, not silently accepted
   limitations. Production remains `NO-GO`.
 
+## ADR-053 — Server-Derived Ownership-Bound Portal Actions
+
+- **Status:** Accepted
+- **Date:** 2026-10-03
+- **Decision:** Give the customer portal a dedicated customer-only, ownership-guarded
+  summary that derives outstanding invoices, the next active or suspended service,
+  and support responsibility from the complete owned account. Keep the ten-record
+  lists as secondary context only. Serialize money losslessly, never combine
+  outstanding currencies, and treat payment, suspended service, and customer reply
+  as actions while active renewal and staff-owned support remain informational.
+- **Reason:** A recent-record list cannot safely answer whether older invoices are
+  unpaid or which customer obligation comes next. Deriving those facts in the API
+  prevents the browser from becoming an accounting authority and prevents a newer
+  paid invoice from hiding a real overdue balance.
+- **Consequence:** `/customers/:customerId/portal-summary` is unavailable to
+  administrators and other customers, and mixed outstanding currencies fail closed
+  as an internal consistency error. The portal has explicit attention, healthy,
+  first-use empty, loading, and failure states with direct permitted links. This is
+  read-only product guidance; it changes no invoice, payment, service, ticket,
+  provider, deployment, or production-readiness rule. Production remains `NO-GO`.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

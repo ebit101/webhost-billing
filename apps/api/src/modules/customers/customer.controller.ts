@@ -84,6 +84,17 @@ export class CustomerController {
     return createApiSuccessResponse(await this.customers.getById(customerId));
   }
 
+  @Get(':customerId/portal-summary')
+  @Roles('CUSTOMER')
+  @RequireCustomerOwnership('customerId')
+  async portalSummary(
+    @Param('customerId', new ParseUUIDPipe()) customerId: string,
+  ) {
+    return createApiSuccessResponse(
+      await this.customers.getPortalSummary(customerId),
+    );
+  }
+
   @Patch(':customerId/profile')
   @Roles('ADMIN', 'CUSTOMER')
   @RequireCustomerOwnership('customerId')

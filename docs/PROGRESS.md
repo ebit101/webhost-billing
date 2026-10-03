@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 77 — Make Administrator Customer Context Actionable
-- **Current status:** Completed and delivered to GitHub `main`
+- **Current command:** Command 78 — Turn the Customer Portal Overview Into a Next-Action Home
+- **Current status:** Completed locally; delivery verification pending
 - **Last updated:** 2026-10-03
-- **Next command:** Command 78 — Turn the Customer Portal Overview Into a Next-Action Home
+- **Next command:** Phase Review — Review Commands 76–78 and define the next bounded command
 - **Next command authorized:** No
 
 ## Command Reports
@@ -5421,6 +5421,116 @@ Do not begin Command 77 automatically.
 After this command is delivered to `origin/main` and hosted CI and CodeQL pass,
 authorize **Command 78 — Turn the Customer Portal Overview Into a Next-Action Home**
 separately. Do not begin Command 78 automatically.
+
+### Command 78 — Turn the Customer Portal Overview Into a Next-Action Home
+
+- **Status:** Completed locally; delivery verification pending
+- **Date:** 2026-10-03
+
+#### Scope completed
+
+- Added a dedicated customer-only, ownership-guarded portal summary endpoint and a
+  strict shared contract. It derives the complete owned account's outstanding
+  balance/count, overdue count and earliest outstanding invoice, earliest due active
+  or suspended service, and separate customer/staff support queues.
+- Kept integer minor units in the database and lossless decimal strings at the API
+  boundary. The API refuses mixed outstanding currencies rather than combining
+  them, and its bounded ten-record lists remain secondary display context only.
+- Rebuilt `/portal` around an explicit priority order: payment, suspended service,
+  and customer reply are primary actions with direct permitted links; active renewal
+  and staff-owned support are informational. Paid zero-balance history cannot become
+  a payment action.
+- Added distinct attention, healthy, first-use empty, loading, and recoverable failure
+  states before account totals and recent activity.
+- Added shared-contract, API service/controller, component, and fictional Chromium
+  evidence for lossless serialization, complete-account aggregates, mixed invoice
+  states, active/suspended service states, customer/staff ticket states, empty state,
+  ownership denial, priority/link rules, an action-needed customer, and a healthy
+  customer with only paid zero-balance history.
+- Updated the safe-demo verifier for the current storefront and next-action portal.
+  No mutation, database schema, real provider, release, deployment, or production
+  scope was added.
+
+#### Files changed
+
+- `packages/shared/src/contracts/customers.ts` and
+  `packages/shared/test/contracts.spec.ts` — added and tested the strict bounded
+  portal-summary contract and safe-money boundary
+- `apps/api/src/modules/customers/customer.service.ts`,
+  `apps/api/src/modules/customers/customer.service.spec.ts`, and
+  `apps/api/src/modules/customers/customer.controller.ts` — derived complete-account
+  action facts and exposed the customer-only owned endpoint
+- `apps/api/test/customers.e2e-spec.ts` — covered the successful owner response and
+  administrator/other-customer denial
+- `apps/web/src/components/dashboard/customer-portal-overview.tsx` and its test —
+  implemented the next-action hierarchy, direct links, healthy/empty/error states,
+  and secondary recent activity
+- `apps/web/e2e/fixtures.ts`, `apps/web/e2e/prepare-environment.ts`, and
+  `apps/web/e2e/specs/hosting-lifecycle.spec.ts` — added healthy paid-history data
+  and action-needed/healthy browser evidence
+- `apps/web/e2e/smoke-safe-demo.ts` — aligned fixed read-only demo assertions with
+  the repaired storefront and portal
+- `docs/CUSTOMER_MANAGEMENT.md`, `docs/PRODUCT_EXPERIENCE_ROADMAP.md`,
+  `docs/DECISIONS.md`, `CHANGELOG.md`, and `docs/PROGRESS.md` — documented the
+  endpoint, delivered roadmap slice, ADR-053, and validation evidence
+
+#### Validation
+
+- Shared contracts passed: 28 tests, including lossless portal balances and the
+  ten-record recent-list bound.
+- Focused API service tests passed: 5 tests covering full-account aggregation,
+  paid/unpaid/overdue history, suspended service, both ticket responsibilities,
+  empty state, lossless bigint serialization, and mixed-currency refusal. Customer
+  API E2E passed: 2 workflows including owner access and role/ownership denial.
+- Focused web component tests passed: 4 tests covering action priority, direct links,
+  paid zero-balance demotion, healthy, first-use empty, and failure behavior.
+- The complete Chromium hosting lifecycle passed: 1 test in 1.8 minutes, including
+  an action-needed customer and a distinct fictional healthy customer.
+- `pnpm demo:doctor` passed. The production-shaped safe-demo images built, and the
+  final `pnpm demo:smoke` passed `/ready`, `/hosting`, `/portal`, and `/admin` without
+  business or Docker mutation. Earlier smoke attempts exposed stale ambiguous UI
+  selectors; they were corrected to role-specific current-product evidence before
+  the passing rerun. `pnpm demo:down` retained fictional data and credentials.
+- `pnpm docs:check`, `pnpm format:check`, repository lint, strict workspace
+  typechecking, and the complete production build passed; Next generated all 29 web
+  pages and both NestJS applications built successfully.
+- The complete shared, queue, web, and API package suites passed with 28, 3, 67, and
+  91 tests respectively. The initial concurrent worker run had three five-second
+  database timeouts after the Docker build; the complete worker package was rerun
+  serially and passed all 10 suites and 29 tests. No failing assertion remains.
+
+#### Decisions made
+
+- Treat the API aggregate as the authority for portal actions. The browser formats
+  and prioritizes returned facts but does not reconstruct account balances from
+  recent records.
+- Select the earliest positive-balance unpaid/overdue invoice and earliest due
+  active/suspended service across the full owned account. Treat `OPEN` and
+  `WAITING_FOR_STAFF` tickets as staff-owned work and
+  `WAITING_FOR_CUSTOMER` as the customer's next action.
+- Fail closed on multiple outstanding currencies because multi-currency accounting
+  remains outside the accepted single-business scope.
+- Keep the endpoint customer-only even though administrators may access general
+  customer detail; the endpoint is specifically a portal presentation boundary.
+
+#### Open questions and risks
+
+- Core ledgers still silently cap at the first 100 records, workspace search and
+  notification chrome remain inactive, and automation freshness and connected
+  order/payment/service review remain recorded P1 gaps for phase review.
+- The worker package's fixed five-second integration limits remain sensitive to
+  concurrent local Docker/disk pressure; the clean serial rerun is the accepted
+  complete-package evidence for this command.
+- The safe demo remains fictional and omits worker/scheduler execution and real
+  provider delivery. Production remains `NO-GO`; provider acceptance, monitoring,
+  recovery rehearsal, policies, operator pilot, deployment, and live data remain
+  separately gated.
+
+#### Recommended next command
+
+After this command is delivered to `origin/main` and hosted CI and CodeQL pass,
+authorize **Phase Review — Review Commands 76–78 and define the next bounded
+command**. Do not begin another implementation command automatically.
 
 ## Report Template
 

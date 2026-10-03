@@ -1,19 +1,26 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import {
   CustomerStatus,
+  InvoiceStatus,
   Prisma,
+  ServiceStatus,
+  TicketStatus,
   UserStatus,
   type PrismaClient,
 } from '@webhost-billing/database';
 import {
   createPaginationMeta,
   customerDetailSchema,
+  customerPortalSummarySchema,
+  DEFAULT_BUSINESS_SETTINGS,
+  businessLocalizationSettingsSchema,
   customerSummarySchema,
   serializeMoney,
   type ChangeCustomerPasswordRequest,
   type CreateCustomerRequest,
   type CustomerDetail,
   type CustomerListQuery,
+  type CustomerPortalSummary,
   type CustomerSummary,
   type PaginationMeta,
   type UpdateCustomerAccessRequest,
@@ -236,6 +243,209 @@ export class CustomerService {
     });
   }
 
+  async getPortalSummary(customerId: string): Promise<CustomerPortalSummary> {
+    const outstandingWhere: Prisma.InvoiceWhereInput = {
+      customerId,
+      status: { in: [InvoiceStatus.UNPAID, InvoiceStatus.OVERDUE] },
+      balanceDue: { gt: 0n },
+    };
+    const staffTicketWhere: Prisma.TicketWhereInput = {
+      customerId,
+      status: { in: [TicketStatus.OPEN, TicketStatus.WAITING_FOR_STAFF] },
+    };
+    const [
+      customer,
+      outstandingByCurrency,
+      overdueInvoiceCount,
+      nextInvoice,
+      nextDueService,
+      waitingForCustomerCount,
+      waitingForStaffCount,
+      nextWaitingForCustomer,
+      nextWaitingForStaff,
+      localizationSetting,
+    ] = await this.prisma.$transaction([
+      this.prisma.customer.findFirst({
+        where: { id: customerId, deletedAt: null },
+        select: {
+          id: true,
+          customerNumber: true,
+          status: true,
+          firstName: true,
+          _count: {
+            select: { services: true, invoices: true, tickets: true },
+          },
+          services: {
+            orderBy: { createdAt: 'desc' },
+            take: RECENT_LINKED_RECORD_LIMIT,
+            select: {
+              id: true,
+              status: true,
+              productNameSnapshot: true,
+              domain: true,
+              recurringAmount: true,
+              currency: true,
+              nextDueAt: true,
+            },
+          },
+          invoices: {
+            orderBy: { createdAt: 'desc' },
+            take: RECENT_LINKED_RECORD_LIMIT,
+            select: {
+              id: true,
+              invoiceNumber: true,
+              status: true,
+              balanceDue: true,
+              currency: true,
+              dueAt: true,
+            },
+          },
+          tickets: {
+            orderBy: { updatedAt: 'desc' },
+            take: RECENT_LINKED_RECORD_LIMIT,
+            select: {
+              id: true,
+              ticketNumber: true,
+              subject: true,
+              status: true,
+              priority: true,
+              updatedAt: true,
+            },
+          },
+        },
+      }),
+      this.prisma.invoice.groupBy({
+        by: ['currency'],
+        where: outstandingWhere,
+        orderBy: { currency: 'asc' },
+        _count: { _all: true },
+        _sum: { balanceDue: true },
+      }),
+      this.prisma.invoice.count({
+        where: { ...outstandingWhere, status: InvoiceStatus.OVERDUE },
+      }),
+      this.prisma.invoice.findFirst({
+        where: outstandingWhere,
+        orderBy: [{ dueAt: 'asc' }, { id: 'asc' }],
+        select: {
+          id: true,
+          invoiceNumber: true,
+          status: true,
+          balanceDue: true,
+          currency: true,
+          dueAt: true,
+        },
+      }),
+      this.prisma.service.findFirst({
+        where: {
+          customerId,
+          status: { in: [ServiceStatus.ACTIVE, ServiceStatus.SUSPENDED] },
+        },
+        orderBy: [{ nextDueAt: 'asc' }, { id: 'asc' }],
+        select: {
+          id: true,
+          status: true,
+          productNameSnapshot: true,
+          domain: true,
+          recurringAmount: true,
+          currency: true,
+          nextDueAt: true,
+        },
+      }),
+      this.prisma.ticket.count({
+        where: { customerId, status: TicketStatus.WAITING_FOR_CUSTOMER },
+      }),
+      this.prisma.ticket.count({ where: staffTicketWhere }),
+      this.prisma.ticket.findFirst({
+        where: {
+          customerId,
+          status: TicketStatus.WAITING_FOR_CUSTOMER,
+        },
+        orderBy: [{ updatedAt: 'desc' }, { id: 'desc' }],
+        select: portalTicketSelect,
+      }),
+      this.prisma.ticket.findFirst({
+        where: staffTicketWhere,
+        orderBy: [{ updatedAt: 'desc' }, { id: 'desc' }],
+        select: portalTicketSelect,
+      }),
+      this.prisma.setting.findUnique({
+        where: { key: 'business.localization' },
+        select: { value: true },
+      }),
+    ]);
+    if (!customer) throw this.notFound();
+    if (outstandingByCurrency.length > 1) {
+      throw new ApplicationException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        code: 'INTERNAL_ERROR',
+        message: 'Outstanding invoice currencies are inconsistent.',
+      });
+    }
+    const localization = businessLocalizationSettingsSchema.safeParse(
+      localizationSetting?.value,
+    );
+    const outstanding = outstandingByCurrency[0];
+    const fallbackCurrency = localization.success
+      ? localization.data.currency
+      : DEFAULT_BUSINESS_SETTINGS.currency;
+
+    return customerPortalSummarySchema.parse({
+      customer: {
+        id: customer.id,
+        customerNumber: customer.customerNumber,
+        status: customer.status,
+        firstName: customer.firstName,
+      },
+      counts: customer._count,
+      billing: {
+        outstandingBalance: serializeMoney(
+          outstanding?._sum?.balanceDue ?? 0n,
+          outstanding?.currency ?? fallbackCurrency,
+        ),
+        outstandingInvoiceCount:
+          outstanding && typeof outstanding._count !== 'boolean'
+            ? (outstanding._count?._all ?? 0)
+            : 0,
+        overdueInvoiceCount,
+        nextInvoice: nextInvoice
+          ? {
+              id: nextInvoice.id,
+              invoiceNumber: nextInvoice.invoiceNumber,
+              status: nextInvoice.status,
+              balanceDue: serializeMoney(
+                nextInvoice.balanceDue,
+                nextInvoice.currency,
+              ),
+              dueAt: nextInvoice.dueAt.toISOString(),
+            }
+          : null,
+      },
+      service: {
+        nextDue: nextDueService ? this.portalService(nextDueService) : null,
+      },
+      support: {
+        waitingForCustomerCount,
+        waitingForStaffCount,
+        nextWaitingForCustomer: this.portalTicket(nextWaitingForCustomer),
+        nextWaitingForStaff: this.portalTicket(nextWaitingForStaff),
+      },
+      recent: {
+        services: customer.services.map((service) =>
+          this.portalService(service),
+        ),
+        invoices: customer.invoices.map((invoice) => ({
+          id: invoice.id,
+          invoiceNumber: invoice.invoiceNumber,
+          status: invoice.status,
+          balanceDue: serializeMoney(invoice.balanceDue, invoice.currency),
+          dueAt: invoice.dueAt.toISOString(),
+        })),
+        tickets: customer.tickets.map((ticket) => this.portalTicket(ticket)),
+      },
+    });
+  }
+
   async updateProfile(
     customerId: string,
     input: UpdateCustomerProfileRequest,
@@ -390,6 +600,43 @@ export class CustomerService {
     if (!customer) throw this.notFound();
   }
 
+  private portalService(service: {
+    id: string;
+    status: ServiceStatus;
+    productNameSnapshot: string;
+    domain: string | null;
+    recurringAmount: bigint;
+    currency: string;
+    nextDueAt: Date;
+  }) {
+    return {
+      id: service.id,
+      status: service.status,
+      productName: service.productNameSnapshot,
+      domain: service.domain,
+      recurringAmount: serializeMoney(
+        service.recurringAmount,
+        service.currency,
+      ),
+      nextDueAt: service.nextDueAt.toISOString(),
+    };
+  }
+
+  private portalTicket(
+    ticket: {
+      id: string;
+      ticketNumber: string;
+      subject: string;
+      status: TicketStatus;
+      priority: 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT';
+      updatedAt: Date;
+    } | null,
+  ) {
+    return ticket
+      ? { ...ticket, updatedAt: ticket.updatedAt.toISOString() }
+      : null;
+  }
+
   private notFound(): ApplicationException {
     return new ApplicationException({
       status: HttpStatus.NOT_FOUND,
@@ -398,3 +645,12 @@ export class CustomerService {
     });
   }
 }
+
+const portalTicketSelect = {
+  id: true,
+  ticketNumber: true,
+  subject: true,
+  status: true,
+  priority: true,
+  updatedAt: true,
+} satisfies Prisma.TicketSelect;

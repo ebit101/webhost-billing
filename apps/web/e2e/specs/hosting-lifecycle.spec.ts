@@ -9,7 +9,12 @@ import {
   suspendOverdueService,
 } from '../database';
 import { E2E_API_ORIGIN, E2E_ENCRYPTION_KEY } from '../environment';
-import { E2E_ADMIN, E2E_CUSTOMER, E2E_PRODUCT } from '../fixtures';
+import {
+  E2E_ADMIN,
+  E2E_CUSTOMER,
+  E2E_HEALTHY_CUSTOMER,
+  E2E_PRODUCT,
+} from '../fixtures';
 
 test('complete hosting customer and administrator lifecycle', async ({
   page,
@@ -260,6 +265,38 @@ test('complete hosting customer and administrator lifecycle', async ({
     await expect(
       page.getByText('The fictional account is active and verified.'),
     ).toBeVisible();
+  });
+
+  await test.step('portal makes the customer reply the next action', async () => {
+    await page.goto('/portal');
+    await expect(
+      page.getByRole('heading', { name: 'Your attention is needed' }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'Your reply is needed' }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('link', { name: /Open support/ }).first(),
+    ).toHaveAttribute('href', '/portal/support');
+  });
+
+  await test.step('paid zero-balance customer receives a healthy home', async () => {
+    await context.clearCookies();
+    await login(
+      page,
+      E2E_HEALTHY_CUSTOMER.email,
+      E2E_HEALTHY_CUSTOMER.password,
+      '/portal',
+    );
+    await expect(
+      page.getByRole('heading', { name: "You're all caught up" }),
+    ).toBeVisible();
+    await expect(
+      page.getByText(E2E_HEALTHY_CUSTOMER.invoiceNumber),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: /Payment due|Overdue payment/ }),
+    ).toHaveCount(0);
   });
 
   await test.step('administrator follows actionable customer context without editing records', async () => {

@@ -285,6 +285,17 @@ remain P1 work for the next phase review.
 - Command 77 added no record-detail routes, schema changes, business mutations, or
   production approval. The broader P1 ledger pagination and cross-record review
   work remains separate.
+- **Command 78 completed the customer next-action home:** the ownership-bound portal
+  summary now derives full-account outstanding balance, overdue invoice, next due
+  active or suspended service, and customer/staff support responsibility on the
+  server. The portal prioritizes payment, suspended-service, and customer-reply work,
+  provides direct permitted links, and distinguishes healthy, first-use empty,
+  loading, and failure states before bounded recent activity.
+- Paid zero-balance history cannot become a primary action, multi-currency
+  outstanding state fails closed, and all monetary values remain lossless strings at
+  the API boundary. Command 78 added no mutations, schema changes, real providers,
+  deployments, or production approval. The next bounded work must be selected by a
+  phase review from the remaining P1 gaps.
 
 ## Readiness boundary
 

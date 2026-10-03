@@ -53,8 +53,12 @@ async function main(): Promise<void> {
         await page
           .getByRole('heading', { name: 'Welcome, Fictional' })
           .waitFor();
-        await page.getByText('Recent services', { exact: true }).waitFor();
-        await page.getByText('Starter Hosting', { exact: true }).waitFor();
+        await page
+          .getByRole('heading', { name: "You're all caught up" })
+          .waitFor();
+        await page
+          .getByRole('heading', { name: 'customer-site.example.test' })
+          .waitFor();
       }),
     );
     checks.push(

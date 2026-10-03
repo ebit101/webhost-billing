@@ -14,6 +14,7 @@ import {
   apiErrorResponseSchema,
   apiSuccessResponseSchema,
   customerDetailSchema,
+  customerPortalSummarySchema,
   customerSummarySchema,
   paginatedApiSuccessResponseSchema,
 } from '@webhost-billing/shared';
@@ -92,6 +93,7 @@ describe('Customer management (e2e)', () => {
     ).data;
     expect(customer.accountStatus).toBe('PENDING_VERIFICATION');
     expect(customer.taxIdentifier).toBe('TEST-TAX-7');
+    await admin.get(`/customers/${customer.id}/portal-summary`).expect(403);
 
     const listResponse = await admin
       .get(
@@ -177,10 +179,22 @@ describe('Customer management (e2e)', () => {
       .expect(200);
 
     await agent.get(`/customers/${customer.id}`).expect(200);
+    const portalSummary = await agent
+      .get(`/customers/${customer.id}/portal-summary`)
+      .expect(200);
+    const summary = apiSuccessResponseSchema(customerPortalSummarySchema).parse(
+      portalSummary.body,
+    ).data;
+    expect(summary.customer.id).toBe(customer.id);
+    expect(summary.billing.outstandingBalance).toEqual({
+      amount: '0',
+      currency: 'BDT',
+    });
     const forbidden = await agent.get(`/customers/${randomUUID()}`).expect(403);
     expect(apiErrorResponseSchema.parse(forbidden.body).error.code).toBe(
       'FORBIDDEN',
     );
+    await agent.get(`/customers/${randomUUID()}/portal-summary`).expect(403);
     await agent.get('/customers').expect(403);
     await agent
       .patch(`/customers/${customer.id}/billing`)

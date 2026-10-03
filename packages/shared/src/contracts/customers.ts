@@ -220,6 +220,86 @@ export const customerDetailSchema = customerSummarySchema
   })
   .strict();
 
+const portalInvoiceActionSchema = z
+  .object({
+    id: z.uuid(),
+    invoiceNumber: z.string().min(1).max(32),
+    status: invoiceStatusSchema,
+    balanceDue: moneySchema,
+    dueAt: z.iso.datetime({ offset: true }),
+  })
+  .strict();
+
+const portalServiceActionSchema = z
+  .object({
+    id: z.uuid(),
+    status: serviceStatusSchema,
+    productName: z.string().min(1).max(160),
+    domain: z.string().max(253).nullable(),
+    recurringAmount: moneySchema,
+    nextDueAt: z.iso.datetime({ offset: true }),
+  })
+  .strict();
+
+const portalTicketActionSchema = z
+  .object({
+    id: z.uuid(),
+    ticketNumber: z.string().min(1).max(32),
+    subject: z.string().min(1).max(200),
+    status: ticketStatusSchema,
+    priority: z.enum(['LOW', 'NORMAL', 'HIGH', 'URGENT']),
+    updatedAt: z.iso.datetime({ offset: true }),
+  })
+  .strict();
+
+export const customerPortalSummarySchema = z
+  .object({
+    customer: z
+      .object({
+        id: z.uuid(),
+        customerNumber: z.string().min(1).max(32),
+        status: customerStatusSchema,
+        firstName: z.string().min(1).max(100),
+      })
+      .strict(),
+    counts: z
+      .object({
+        services: z.number().int().min(0),
+        invoices: z.number().int().min(0),
+        tickets: z.number().int().min(0),
+      })
+      .strict(),
+    billing: z
+      .object({
+        outstandingBalance: moneySchema,
+        outstandingInvoiceCount: z.number().int().min(0),
+        overdueInvoiceCount: z.number().int().min(0),
+        nextInvoice: portalInvoiceActionSchema.nullable(),
+      })
+      .strict(),
+    service: z
+      .object({
+        nextDue: portalServiceActionSchema.nullable(),
+      })
+      .strict(),
+    support: z
+      .object({
+        waitingForCustomerCount: z.number().int().min(0),
+        waitingForStaffCount: z.number().int().min(0),
+        nextWaitingForCustomer: portalTicketActionSchema.nullable(),
+        nextWaitingForStaff: portalTicketActionSchema.nullable(),
+      })
+      .strict(),
+    recent: z
+      .object({
+        services: z.array(portalServiceActionSchema).max(10),
+        invoices: z.array(portalInvoiceActionSchema).max(10),
+        tickets: z.array(portalTicketActionSchema).max(10),
+      })
+      .strict(),
+  })
+  .strict();
+
 export type CreateCustomerRequest = z.infer<typeof createCustomerRequestSchema>;
 export type UpdateCustomerProfileRequest = z.infer<
   typeof updateCustomerProfileRequestSchema
@@ -236,3 +316,4 @@ export type ChangeCustomerPasswordRequest = z.infer<
 export type CustomerListQuery = z.infer<typeof customerListQuerySchema>;
 export type CustomerSummary = z.infer<typeof customerSummarySchema>;
 export type CustomerDetail = z.infer<typeof customerDetailSchema>;
+export type CustomerPortalSummary = z.infer<typeof customerPortalSummarySchema>;
