@@ -3,7 +3,7 @@
 ## Status Summary
 
 - **Current command:** Command 73 — Implement starter issue #30: Validate safe-demo screenshot assets offline
-- **Current status:** Completed locally; delivery verification pending
+- **Current status:** Completed and delivered to GitHub `main`
 - **Last updated:** 2026-10-03
 - **Next command:** Command 74 — Implement starter issue #31: Add one offline documentation validation command
 - **Next command authorized:** No
@@ -4781,7 +4781,7 @@ automatically.
 
 ### Command 73 — Implement Starter Issue #30: Validate Safe-Demo Screenshot Assets Offline
 
-- **Status:** Completed locally; delivery verification pending
+- **Status:** Completed and delivered to GitHub `main`
 - **Date:** 2026-10-03
 
 #### Scope completed
@@ -4850,6 +4850,13 @@ automatically.
   `hosting-catalog.png` were byte-for-byte unchanged. No Docker process, browser,
   network request, OCR, image decoder, screenshot capture, or authenticated artifact
   was used or retained by the validator or this review.
+- Command 73 implementation commit `08b7f70` passed hosted CI run `37102441401`,
+  including the new offline asset check, full history secret scanning, database
+  verification, documentation checks, lint, strict type checks,
+  package/API/invariant/browser tests, dependency and license checks, and the
+  production build. Hosted CodeQL run `37102441354` also passed.
+- GitHub issue #30 received the completion evidence and was closed as completed on
+  2026-10-03.
 
 #### Decisions made
 
@@ -4877,8 +4884,8 @@ automatically.
 - Production remains `NO-GO`. The four reviewed images and immutable alpha release
   are unchanged, and no application, financial, authentication, schema, provider,
   deployment, or production behavior changed.
-- Remote delivery, hosted CI/CodeQL verification, and issue #30 closure remain pending
-  until the focused implementation commit is reconciled and pushed.
+- The implementation is delivered on GitHub `main`, hosted CI and CodeQL are green,
+  and issue #30 is closed. Issue #31 remains separately gated and open.
 
 #### Recommended next command
 
