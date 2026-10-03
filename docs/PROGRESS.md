@@ -3,7 +3,7 @@
 ## Status Summary
 
 - **Current command:** Command 75 — Establish the Real-Hosting Product Experience Roadmap
-- **Current status:** Completed locally; GitHub delivery verification pending
+- **Current status:** Completed and delivered to GitHub `main`
 - **Last updated:** 2026-10-03
 - **Next command:** Command 76 — Repair the Public Storefront Entry and Plan Selection
 - **Next command authorized:** No
@@ -5102,7 +5102,7 @@ application change automatically.
 
 ### Command 75 — Establish the Real-Hosting Product Experience Roadmap
 
-- **Status:** Completed locally; GitHub delivery verification pending
+- **Status:** Completed and delivered to GitHub `main`
 - **Date:** 2026-10-03
 
 #### Scope completed
@@ -5162,6 +5162,11 @@ application change automatically.
 - `pnpm demo:down` stopped the demo non-destructively and retained its dedicated
   fictional database volumes and generated credentials.
 - `pnpm docs:check`, `pnpm format:check`, and `git diff --check` passed.
+- Command 75 implementation commit `5d0f05c` passed hosted CI run `37112708623`,
+  including full-history secret scanning, database verification, offline
+  documentation, formatting, lint, strict type checks, package/API/invariant/browser
+  tests, dependency/license checks, and the production build. Hosted CodeQL run
+  `37112708610` also passed.
 
 #### Decisions made
 
