@@ -5675,6 +5675,9 @@ begin Command 79 automatically.
 - Removed the four local release image tags after verified remote delivery and pruned
   33.85 GB of unused BuildKit cache without removing containers, volumes, databases, or
   the separate Docker backup VHD.
+- Trimmed 34.1 GiB of freed blocks, stopped only the local Docker Desktop engine, and
+  compacted its exact active VHD from 50.67 GB to 17.77 GB. This restored `D:` from
+  1.88 GB to 34.78 GB free while preserving the separate 27.61 GB pre-upgrade backup VHD.
 - Preserved fake-provider posture and left Command 79 separately gated and unauthorized.
 
 #### Files changed
@@ -5718,7 +5721,10 @@ begin Command 79 automatically.
   running.
 - The deterministic rollback Compose configuration and all three prior application image
   aliases were verified without switching away from the healthy release.
-- Local Docker remained healthy after cleanup and reported zero build-cache bytes.
+- Local Docker Engine 29.8.1 restarted successfully after offline VHD compaction, reported
+  zero build-cache bytes, and returned both retained PostgreSQL and Redis containers to a
+  healthy state. PostgreSQL accepted connections, and the active VHD and `D:` free-space
+  measurements confirmed the expected compaction result.
 
 #### Decisions made
 
@@ -5738,11 +5744,10 @@ begin Command 79 automatically.
   approval, infrastructure review, and operator pilot remain required.
 - The verified backup and its passphrase remain on the same staging server; this is not an
   off-site or immutable recovery copy.
-- The local Docker data disk on `D:` remains at roughly 1.9 GB free even after BuildKit
-  reclaimed 33.85 GB internally because the dynamic Docker VHD did not shrink. Offline VHD
-  compaction requires stopping the local Docker engine and was not performed as part of the
-  live staging deployment. No unrelated image, container, volume, database, or backup-VHD
-  cleanup was attempted.
+- Future image builds can grow the dynamic Docker VHD again. BuildKit cleanup, filesystem
+  trim, and an offline compaction should be repeated when free space becomes constrained;
+  the protected 27.61 GB pre-upgrade backup VHD remains intentionally retained. No
+  unrelated image, container, volume, database, or backup-VHD cleanup was attempted.
 - Command 79 remains separately gated and unauthorized.
 
 #### Recommended next command
