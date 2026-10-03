@@ -7,41 +7,22 @@ customer data or credentials.
 
 ## Current starter set
 
+No starter issue is currently open. Run the required phase review before defining or
+implementing another contributor task.
+
+## Latest completed starter set
+
 ### 14. [Add one offline documentation validation command](https://github.com/ebit101/webhost-billing/issues/31)
+
+**Status:** Completed by Command 74 on 2026-10-03.
 
 **Suggested labels:** `good first issue`, `help wanted`, `documentation`,
 `javascript`, `github_actions`
 
-Contributors currently must remember separate link, path, and issue-form commands;
-the demo-asset validator will join them. Add one discoverable aggregate without
-hiding the focused commands or expanding it into a general task runner.
-
-Acceptance:
-
-- add root `pnpm docs:check` for links/anchors, contributor paths/scripts, issue
-  forms, and the Command 73 demo-asset contract;
-- preserve each focused command and deterministic sequential output;
-- return the first failing child status and dispatch no later validator;
-- use a cross-platform allowlisted Node.js dispatcher without shell chaining or
-  network access;
-- exclude formatting, lint, type checking, package tests, Docker, browsers, and
-  external crawling from the aggregate;
-- add injected tests for ordered success, failure propagation, stopped dispatch,
-  and safe raw-output handling; and
-- use the aggregate in ordinary CI while keeping readable validator evidence and
-  documenting both aggregate and focused paths.
-
-Validation: focused dispatcher tests, every focused validator, `pnpm docs:check`,
-`pnpm format:check`, `pnpm lint`, `pnpm typecheck`, and `pnpm test`.
-
-Security: run allowlisted repository-local scripts only; do not evaluate documents,
-forward secrets, fetch URLs, or accept arbitrary command input.
-
-Excluded: task-runner migration, hosted crawling, auto-fixes, broad CI redesign,
-application behavior, schemas, authentication/financial/provider rules, releases,
-deployments, or production `NO-GO`.
-
-## Latest completed starter set
+Added one fixed Node.js aggregate for the four offline documentation validators. It
+runs them sequentially with deterministic per-check evidence, returns the first
+failure, stops later dispatch, and discards raw child output and non-allowlisted
+environment values. Every focused command remains available.
 
 ### 13. [Validate safe-demo screenshot assets offline](https://github.com/ebit101/webhost-billing/issues/30)
 

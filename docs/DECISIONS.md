@@ -408,6 +408,25 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** Local Markdown link checks prove only that an asset path exists; they cannot detect malformed, untracked, oversized, wrongly sized, duplicated, or undocumented screenshot replacements. A header-only offline gate catches those objective errors without authenticating to the demo or introducing browser, Docker, network, OCR, or visual-regression authority.
 - **Consequence:** Ordinary CI runs the live asset check before application validation, and focused fixtures cover unsafe metadata and replacement cases. The validator reads only metadata and the first 24 PNG bytes and never regenerates or decodes an image. Pixel quality, fictional content, legibility, and sensitive-data review remain explicit human responsibilities; production remains `NO-GO`.
 
+## ADR-050 — Fixed Offline Documentation Validation Aggregate
+
+- **Status:** Accepted
+- **Date:** 2026-10-03
+- **Decision:** Make `docs:check` the canonical ordinary documentation gate and
+  dispatch exactly the four repository-owned link/anchor, contributor-path,
+  issue-form, and safe-demo screenshot-asset validators in a fixed sequence. Emit
+  deterministic pass/fail evidence, return the first failing child status, stop
+  later work, and discard raw child output and non-allowlisted environment values.
+- **Reason:** Contributors and CI need one discoverable cross-platform check without
+  duplicating shell chains or hiding which bounded validator failed. Fixed dispatch
+  and safe output handling preserve the offline security boundary while focused
+  commands retain detailed diagnostics.
+- **Consequence:** Ordinary CI and general contributor guidance use `docs:check`;
+  the four focused commands and their tests remain available in the change-path map.
+  The aggregate accepts no command input and cannot run formatting, application
+  tests, Docker, browsers, network crawling, or arbitrary tasks. Production remains
+  `NO-GO`.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

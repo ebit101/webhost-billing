@@ -16,6 +16,9 @@ and will be called out in release notes.
 
 ### Added
 
+- Added one cross-platform `docs:check` command that runs the four allowlisted
+  offline documentation validators sequentially with fixed per-check evidence,
+  first-failure propagation, and no raw child-output or secret forwarding.
 - Added one shared safe-demo screenshot contract plus an offline CI validator for
   repository confinement, Git tracking, PNG headers/dimensions, conservative byte
   bounds, unique filenames, and canonical-guide references.

@@ -74,17 +74,14 @@ On PowerShell, use `Copy-Item .env.example .env` instead of `cp`.
 
 Run the applicable validation before requesting review:
 
-`pnpm docs:links` stays offline. It checks local files and images plus fragments
-that target headings in tracked Markdown, including same-document links. External
-URLs and fragments on non-Markdown files are not crawled.
-`pnpm docs:issue-forms` parses every issue-template YAML file and verifies the
-safe-demo reporting and redaction contract without contacting GitHub.
+`pnpm docs:check` is the canonical offline documentation gate. It runs the focused
+link/anchor, contributor-path, issue-form, and safe-demo screenshot-asset validators
+in a fixed order without contacting external services. Each focused `pnpm docs:*`
+command remains available for diagnostics and path-specific work.
 
 ```bash
 pnpm format:check
-pnpm docs:links
-pnpm docs:paths
-pnpm docs:issue-forms
+pnpm docs:check
 pnpm lint
 pnpm typecheck
 pnpm test

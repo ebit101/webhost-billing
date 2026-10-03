@@ -198,16 +198,20 @@ schema work with verified backup and restore procedures.
   [contributor-map validator tests](../scripts/docs/check-contributor-paths.test.mjs),
   [issue-form validator tests](../scripts/docs/check-issue-forms.test.mjs), and
   [safe-demo screenshot validator tests](../scripts/docs/check-demo-screenshot-assets.test.mjs).
+- **Aggregate validation:** [offline documentation dispatcher](../scripts/docs/check-documentation.mjs)
+  and its [injected dispatcher tests](../scripts/docs/check-documentation.test.mjs).
 - **Relevant documentation:** [contribution guide](../CONTRIBUTING.md),
   [support policy](../SUPPORT.md), [security policy](../SECURITY.md), and
   [starter-issue catalogue](STARTER_ISSUES.md).
 - **Minimum validation:**
 
 ```bash
+corepack pnpm test:docs-check
 corepack pnpm test:docs-links
 corepack pnpm test:docs-paths
 corepack pnpm test:issue-forms
 corepack pnpm test:demo-assets
+corepack pnpm docs:check
 corepack pnpm docs:links
 corepack pnpm docs:paths
 corepack pnpm docs:issue-forms
@@ -228,6 +232,10 @@ and the shared contract to verify the four tracked PNG headers, dimensions, byte
 bounds, repository confinement, unique names, and canonical-guide references. It
 does not decode pixels, launch a browser or Docker, or access the network; visual
 review remains a human responsibility.
+The aggregate runs exactly these four focused validators sequentially, reports a
+fixed pass/fail line for each one, returns the first failure, and dispatches nothing
+after it. It does not forward raw child output or ambient secret values; rerun the
+named focused command when its detailed diagnostics are needed.
 
 **Safety invariants:** keep documentation validation offline and repository-bound,
 keep public issue paths free of credentials and real customer/provider data, route

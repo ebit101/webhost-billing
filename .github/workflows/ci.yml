@@ -66,17 +66,8 @@ jobs:
       - name: Check formatting
         run: pnpm format:check
 
-      - name: Check Markdown links
-        run: pnpm docs:links
-
-      - name: Check contributor paths
-        run: pnpm docs:paths
-
-      - name: Check issue forms
-        run: pnpm docs:issue-forms
-
-      - name: Check safe-demo screenshot assets
-        run: pnpm docs:demo-assets
+      - name: Check offline documentation
+        run: pnpm docs:check
 
       - name: Lint
         run: pnpm lint

@@ -4894,6 +4894,86 @@ validation command** only after Command 73 is delivered, hosted checks pass, iss
 #30 is closed, and separate user authorization is given. Do not begin Command 74
 automatically.
 
+### Command 74 — Implement Starter Issue #31: Add One Offline Documentation Validation Command
+
+- **Status:** Implemented and validated locally; delivery pending
+- **Date:** 2026-10-03
+
+#### Scope completed
+
+- Added root `docs:check` as the canonical cross-platform aggregate for the four
+  current offline validators: Markdown links/anchors, contributor paths/scripts,
+  GitHub issue forms, and the safe-demo screenshot asset contract.
+- Implemented the aggregate as a fixed Node.js allowlist with deterministic
+  sequential run/pass/fail output, exact first-child failure propagation, and an
+  immediate stop before any later validator.
+- Captured and discarded child stdout, stderr, and errors. Child processes receive
+  only the small platform environment allowlist required to launch Node and Git;
+  application/provider/session values are not forwarded.
+- Added four injected tests for complete ordered success, non-default failure-status
+  propagation, stopped dispatch after thrown failure, and raw-output/environment
+  secret suppression.
+- Replaced the four repetitive ordinary CI steps with the aggregate while keeping
+  every focused root command. Updated general contributor guidance, the detailed
+  change-path map, starter catalogue, changelog, and durable decision record.
+- Kept formatting, lint, type checks, package tests, Docker, browsers, network
+  crawling, arbitrary task dispatch, application behavior, and production authority
+  outside the aggregate.
+
+#### Files changed
+
+- `scripts/docs/check-documentation.mjs` — added the fixed offline dispatcher
+- `scripts/docs/check-documentation.test.mjs` — added four injected contract tests
+- `package.json` — exposed `docs:check`/`test:docs-check` and registered the focused
+  suite in the ordinary test gate
+- `.github/workflows/ci.yml` — replaced four documentation steps with the aggregate
+- `CONTRIBUTING.md` — made the aggregate the ordinary contributor entry point
+- `docs/CONTRIBUTOR_PATHS.md` — documented aggregate and focused validation paths
+- `docs/STARTER_ISSUES.md` — moved issue #31 to the completed starter set
+- `docs/DECISIONS.md` — recorded ADR-050 for the aggregate boundary
+- `CHANGELOG.md` — recorded the new canonical offline documentation command
+- `docs/PROGRESS.md` — recorded Command 74 scope and evidence
+
+#### Validation
+
+- `pnpm test:docs-check` passed all 4 injected dispatcher tests.
+- `pnpm docs:check` passed all 4 allowlisted validators in the documented order.
+- Focused `pnpm docs:links`, `pnpm docs:paths`, `pnpm docs:issue-forms`, and
+  `pnpm docs:demo-assets` all passed independently: 118 local references including
+  3 anchors across 59 Markdown files, 89 contributor-map paths and 27 root scripts,
+  3 forms/4 YAML files/2 guidance links, and 4 tracked PNG assets.
+- `pnpm format:check`, `pnpm lint`, strict `pnpm typecheck`, and
+  `git diff --check` passed.
+- `pnpm test` passed the demo/documentation contract suites, including the 4 new
+  dispatcher tests, plus 26 shared, 3 queue, 55 web, 88 API, and 29 worker tests.
+
+#### Decisions made
+
+- Launch the fixed validator source files directly with the current Node executable
+  instead of shell-chaining pnpm commands. This stays cross-platform and prevents
+  command-name or argument injection while the public focused commands remain
+  familiar diagnostic entry points.
+- Emit fixed validator labels rather than relaying child streams. The aggregate
+  shows exactly which validator passed or failed without turning document-derived or
+  process output into a cross-process secret channel.
+- Forward only PATH and required Windows process-discovery/locale values. Repository
+  validators require no application, database, provider, GitHub, or demo secrets.
+
+#### Open questions and risks
+
+- Fixed aggregate output intentionally omits detailed validator counts and failures;
+  the named focused command provides those diagnostics without exposing unrelated
+  child output through the dispatcher.
+- Production remains `NO-GO`; no application, financial, authentication, database,
+  provider, release, deployment, Docker, browser, or screenshot behavior changed.
+- Delivery, hosted checks, and issue closure remain pending; every required local
+  validation has passed.
+
+#### Recommended next command
+
+After Command 74 is delivered, hosted checks pass, and issue #31 is closed, run a
+new **Phase Review**. Do not define or implement another command automatically.
+
 ## Report Template
 
 Use this template after every future command:
