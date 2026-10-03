@@ -6,7 +6,7 @@ import {
   activeProviderSettingsSchema,
   businessIdentitySchema,
   businessLocalizationSettingsSchema,
-  businessSettingsSchema,
+  updateBusinessSettingsRequestSchema,
   emailBrandingSettingsSchema,
   invoiceNumberingSettingsSchema,
   manualPaymentInstructionsSchema,
@@ -15,6 +15,7 @@ import {
   settingsOverviewSchema,
   terminationPolicySchema,
   type BusinessSettings,
+  type UpdateBusinessSettingsRequest,
   type SettingsOverview,
 } from '@webhost-billing/shared';
 import { ApplicationException } from '../../common/errors/application.exception';
@@ -23,6 +24,7 @@ import { PRISMA_CLIENT } from '../../infrastructure/database/database.module';
 import { API_ENVIRONMENT } from '../../infrastructure/environment/environment.module';
 import type { AuthRequestContext } from '../auth/auth.types';
 import { IntegrationCredentialService } from './integration-credential.service';
+import { updatePartialPaymentPolicy } from '../payments/partial-payment-policy';
 
 const KEYS = {
   businessIdentity: 'business.identity',
@@ -168,13 +170,20 @@ export class SettingsService {
   }
 
   async update(
-    input: BusinessSettings,
+    input: UpdateBusinessSettingsRequest,
     actor: AuthRequestContext,
     context: SecurityRequestContext,
   ): Promise<SettingsOverview> {
-    const settings = businessSettingsSchema.parse(input);
+    const settings = updateBusinessSettingsRequestSchema.parse(input);
     await this.validateActiveGateway(settings.activeGateway);
     await this.prisma.$transaction(async (transaction) => {
+      await updatePartialPaymentPolicy(
+        transaction,
+        settings.manualPayments.partialPaymentsEnabled,
+        settings.partialPaymentPolicyConfirmation,
+        actor,
+        context,
+      );
       const writes = [
         this.setting(
           KEYS.businessIdentity,
@@ -205,15 +214,6 @@ export class SettingsService {
           SettingCategory.AUTOMATION,
           settings.terminationPolicy,
           'Permanent hosting termination policy.',
-        ),
-        this.setting(
-          KEYS.manualPayment,
-          SettingCategory.BILLING,
-          {
-            partialPaymentsEnabled:
-              settings.manualPayments.partialPaymentsEnabled,
-          },
-          'Manual payment policy.',
         ),
         this.setting(
           KEYS.manualPaymentInstructions,

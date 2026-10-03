@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Staging Deployment — Deploy Current Main
-- **Current status:** Completed and delivered to GitHub `main`
+- **Current command:** Command 79 — Guard Partial-Payment Policy Changes
+- **Current status:** Completed; local validation passed, hosted delivery verification pending
 - **Last updated:** 2026-10-03
-- **Next command:** Command 79 — Guard Partial-Payment Policy Changes
+- **Next command:** Phase Review — Review Command 79 and define the next bounded command
 - **Next command authorized:** No
 
 ## Command Reports
@@ -5755,6 +5755,107 @@ begin Command 79 automatically.
 After this deployment report is delivered and hosted CI and CodeQL pass, authorize
 **Command 79 — Guard Partial-Payment Policy Changes** separately. Do not begin Command 79
 automatically.
+
+### Command 79 — Guard Partial-Payment Policy Changes
+
+- **Status:** Completed; local validation passed, hosted delivery verification pending
+- **Date:** 2026-10-03
+
+#### Scope completed
+
+- Replaced the payment ledger's enable/disable button with effective read-only policy
+  context and a protected link to `/admin/settings#billing-policy`.
+- Kept the persisted partial-payment value separate from the editable settings draft.
+  Save now reviews current/proposed values and the exact consequences for future
+  manual submissions, administrator recording, and pending-reference verification.
+- Cancellation restores the saved policy without losing unrelated draft edits. A
+  failed save retains the review and draft for retry, and an unavailable persisted
+  baseline cannot be saved as guessed defaults.
+- Added strict request-only confirmation contracts; response and stored settings
+  remain ordinary policy data. Both existing API write routes use one transactional
+  guard requiring `CHANGE_PARTIAL_PAYMENT_POLICY` for an actual value transition.
+- Serialized cross-route writes with the same PostgreSQL advisory lock, including
+  the initially absent default policy. Unchanged saves require no confirmation and
+  create no transition audit; actual changes retain one safe old/new boolean audit.
+- Extended the fictional browser lifecycle to navigate from payments to settings,
+  review and cancel, and prove zero write requests, unchanged policy, and no new
+  transition audit. Confirmed mutations are exercised only in API/component fixtures.
+
+#### Files changed
+
+- Contracts: `packages/shared/src/contracts/payments.ts`,
+  `packages/shared/src/contracts/settings.ts`, `packages/shared/test/settings.spec.ts`
+- API: `apps/api/src/modules/payments/partial-payment-policy.ts`,
+  `apps/api/src/modules/payments/partial-payment-policy.spec.ts`,
+  `apps/api/src/modules/payments/payment.service.ts`,
+  `apps/api/src/modules/payments/payment.controller.ts`,
+  `apps/api/src/modules/settings/settings.service.ts`,
+  `apps/api/src/modules/settings/settings.controller.ts`
+- API fixtures: `apps/api/test/settings.e2e-spec.ts`,
+  `apps/api/test/payments.e2e-spec.ts`
+- UI: `apps/web/src/components/settings/settings-manager.tsx`,
+  `apps/web/src/components/settings/settings-manager.test.tsx`,
+  `apps/web/src/components/payments/admin-payment-manager.tsx`,
+  `apps/web/src/components/payments/payment-management.test.tsx`,
+  `apps/web/src/components/ui/confirmation-dialog.tsx` (scrollable small-screen review)
+- Browser: `apps/web/e2e/specs/hosting-lifecycle.spec.ts`
+- Evidence: `CHANGELOG.md`, `docs/PRODUCT_EXPERIENCE_ROADMAP.md`,
+  `docs/CRITICAL_BUSINESS_INVARIANTS.md`, `docs/PROGRESS.md`
+
+#### Validation
+
+- Shared contract tests passed all 29 tests, including strict confirmation values,
+  unchanged request compatibility, and response exclusion of the request-only field.
+- API transition unit tests passed all 7 cases; the complete API unit suite passed
+  all 24 suites and 98 tests. Both payment/settings API E2E suites passed together
+  (9 tests), including administrator-only access, missing/incorrect confirmation,
+  enable/disable persistence, unchanged saves, exact safe audit metadata, concurrent
+  cross-route transitions, and preservation of pending payment/invoice records.
+- The root test run passed all 57 demo/documentation tests plus 29 shared and 3 queue
+  tests, then failed on concurrent web timeouts and a subsequent ticket-text mismatch.
+  A clean complete web rerun with one worker passed all 21 files and 73 tests;
+  complete serial API and worker reruns passed 98 and 29 tests respectively. No test
+  timeout was increased or assertion weakened.
+- An added payment fixture initially caused a sixth administrator login to exceed
+  the real five-login limit; reuse of the already authenticated session corrected
+  the fixture. The subsequent combined API run passed without its initial 429 and
+  follow-on CSRF failures.
+- `pnpm docs:check`, `pnpm format:check`, repository lint, strict workspace type
+  checking, and `git diff --check` passed. Strict checks caught and resolved untyped
+  test mocks and the second settings-save button's old handler.
+- The complete production build passed: Next generated all 29 pages and both NestJS
+  applications built successfully.
+- The complete Chromium lifecycle passed in 2.0 minutes on the final code, including
+  desktop/header and 375-pixel mobile/footer policy review/cancellation, zero settings
+  write requests, unchanged seeded policy, and no transition audit. The initial
+  browser run also passed. An intermediate overlapping build removed worker output
+  used by the automation fixture; the accepted final rerun executed alone after the
+  completed production build.
+
+#### Decisions made
+
+- Implement ADR-054 with one canonical administrator review using the existing
+  accessible confirmation dialog and a request-only literal shared by both routes.
+- Compare against the stored value inside the transaction, rather than trusting a
+  client baseline; serialize both writers to preserve accurate old/new audit evidence.
+- Keep the general business-settings save atomic. The review explicitly states that
+  other draft settings are saved too; cancellation changes only the policy draft.
+
+#### Open questions and risks
+
+- Other administrators can change a policy after this page loads. The API compares
+  the latest stored value and rejects an unconfirmed transition; reload settings to
+  obtain the current baseline if another administrator has changed it.
+- Production remains `NO-GO`. Existing provider, SMTP, monitoring, off-site recovery,
+  policy, infrastructure, and operator-pilot gates remain separately required.
+- The previously recorded lint-only `braces` advisory remains separate dependency
+  maintenance. Broader P1 product work remains outside this command.
+
+#### Recommended next command
+
+After delivery and successful hosted CI and CodeQL, authorize **Phase Review — Review
+Command 79 and define the next bounded command** separately. Do not begin another
+implementation automatically.
 
 ## Report Template
 

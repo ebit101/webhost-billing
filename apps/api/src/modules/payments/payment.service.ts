@@ -6,7 +6,6 @@ import {
   PaymentKind,
   PaymentStatus,
   Prisma,
-  SettingCategory,
   type PrismaClient,
 } from '@webhost-billing/database';
 import {
@@ -15,6 +14,7 @@ import {
   manualPaymentMethodSchema,
   manualPaymentSchema,
   paymentSettingsSchema,
+  updatePaymentSettingsRequestSchema,
   manualPaymentInstructionsSchema,
   serializeMoney,
   type CreatePaymentAdjustmentRequest,
@@ -25,6 +25,7 @@ import {
   type PaginationMeta,
   type PaymentListQuery,
   type PaymentSettings,
+  type UpdatePaymentSettingsRequest,
   type ManualPaymentInstructions,
   type RecordManualPaymentRequest,
   type ReviewManualPaymentRequest,
@@ -34,6 +35,7 @@ import { ApplicationException } from '../../common/errors/application.exception'
 import type { SecurityRequestContext } from '../../common/http/request-context';
 import { PRISMA_CLIENT } from '../../infrastructure/database/database.module';
 import type { AuthRequestContext } from '../auth/auth.types';
+import { updatePartialPaymentPolicy } from './partial-payment-policy';
 
 const PAYMENT_SETTINGS_KEY = 'billing.manual-payments';
 const PAYMENT_INSTRUCTIONS_KEY = 'billing.manual-payment-instructions';
@@ -95,38 +97,21 @@ export class PaymentService {
   }
 
   async updateSettings(
-    input: PaymentSettings,
+    input: UpdatePaymentSettingsRequest,
     actor: AuthRequestContext,
     context: SecurityRequestContext,
   ): Promise<PaymentSettings> {
-    const settings = paymentSettingsSchema.parse(input);
-    await this.prisma.$transaction([
-      this.prisma.setting.upsert({
-        where: { key: PAYMENT_SETTINGS_KEY },
-        update: {
-          value: settings,
-          category: SettingCategory.BILLING,
-          updatedByUserId: actor.identity.userId,
-        },
-        create: {
-          key: PAYMENT_SETTINGS_KEY,
-          category: SettingCategory.BILLING,
-          value: settings,
-          description: 'Manual payment policy.',
-          updatedByUserId: actor.identity.userId,
-        },
-      }),
-      this.prisma.activityLog.create({
-        data: {
-          actorUserId: actor.identity.userId,
-          action: 'MANUAL_PAYMENT_SETTINGS_UPDATED_BY_ADMIN',
-          entityType: 'SETTING',
-          ipAddressHash: context.ipAddressHash,
-          metadata: settings,
-        },
-      }),
-    ]);
-    return settings;
+    const settings = updatePaymentSettingsRequestSchema.parse(input);
+    await this.prisma.$transaction(async (transaction) => {
+      await updatePartialPaymentPolicy(
+        transaction,
+        settings.partialPaymentsEnabled,
+        settings.partialPaymentPolicyConfirmation,
+        actor,
+        context,
+      );
+    });
+    return { partialPaymentsEnabled: settings.partialPaymentsEnabled };
   }
 
   async submitManual(

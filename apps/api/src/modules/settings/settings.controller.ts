@@ -1,10 +1,10 @@
 import { Body, Controller, Get, Inject, Put, Req } from '@nestjs/common';
 import type { ApiEnvironment } from '@webhost-billing/config';
 import {
-  businessSettingsSchema,
+  updateBusinessSettingsRequestSchema,
   createApiSuccessResponse,
   integrationCredentialUpdateSchema,
-  type BusinessSettings,
+  type UpdateBusinessSettingsRequest,
   type IntegrationCredentialUpdate,
 } from '@webhost-billing/shared';
 import type { Request } from 'express';
@@ -37,8 +37,8 @@ export class SettingsController {
 
   @Put()
   async update(
-    @Body(new ZodValidationPipe(businessSettingsSchema))
-    input: BusinessSettings,
+    @Body(new ZodValidationPipe(updateBusinessSettingsRequestSchema))
+    input: UpdateBusinessSettingsRequest,
     @CurrentAuth() auth: AuthRequestContext,
     @Req() request: Request,
   ) {

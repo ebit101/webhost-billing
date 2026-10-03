@@ -5,9 +5,54 @@ import {
   businessSettingsSchema,
   formatInvoiceNumber,
   integrationCredentialUpdateSchema,
+  updateBusinessSettingsRequestSchema,
+  updatePaymentSettingsRequestSchema,
+  PARTIAL_PAYMENT_POLICY_CONFIRMATION,
+  settingsOverviewSchema,
 } from '../src';
 
 describe('settings contracts', () => {
+  it('accepts unchanged requests without confirmation and strict confirmed transition requests', () => {
+    for (const [schema, body] of [
+      [updateBusinessSettingsRequestSchema, DEFAULT_BUSINESS_SETTINGS],
+      [updatePaymentSettingsRequestSchema, { partialPaymentsEnabled: true }],
+    ] as const) {
+      assert.equal(schema.safeParse(body).success, true);
+      assert.equal(
+        schema.safeParse({
+          ...body,
+          partialPaymentPolicyConfirmation: PARTIAL_PAYMENT_POLICY_CONFIRMATION,
+        }).success,
+        true,
+      );
+      for (const confirmation of [
+        'yes',
+        ' CHANGE_PARTIAL_PAYMENT_POLICY ',
+        true,
+        null,
+      ]) {
+        assert.equal(
+          schema.safeParse({
+            ...body,
+            partialPaymentPolicyConfirmation: confirmation,
+          }).success,
+          false,
+        );
+      }
+      assert.equal(
+        schema.safeParse({ ...body, approved: true }).success,
+        false,
+      );
+    }
+    assert.equal(
+      settingsOverviewSchema.safeParse({
+        ...DEFAULT_BUSINESS_SETTINGS,
+        credentialStatuses: [],
+        partialPaymentPolicyConfirmation: PARTIAL_PAYMENT_POLICY_CONFIRMATION,
+      }).success,
+      false,
+    );
+  });
   it('validates the complete safe settings document', () => {
     assert.deepEqual(
       businessSettingsSchema.parse(DEFAULT_BUSINESS_SETTINGS),

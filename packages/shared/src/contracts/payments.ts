@@ -70,6 +70,18 @@ export const paymentSettingsSchema = z
   .object({ partialPaymentsEnabled: z.boolean() })
   .strict();
 
+export const PARTIAL_PAYMENT_POLICY_CONFIRMATION =
+  'CHANGE_PARTIAL_PAYMENT_POLICY';
+export const partialPaymentPolicyConfirmationSchema = z
+  .literal(PARTIAL_PAYMENT_POLICY_CONFIRMATION)
+  .optional();
+
+export const updatePaymentSettingsRequestSchema = paymentSettingsSchema
+  .extend({
+    partialPaymentPolicyConfirmation: partialPaymentPolicyConfirmationSchema,
+  })
+  .strict();
+
 export const paymentListQuerySchema = paginationQuerySchema.extend({
   search: z.string().trim().max(200).optional(),
   state: manualPaymentStateSchema.optional(),
@@ -128,6 +140,9 @@ export type CreatePaymentAdjustmentRequest = z.infer<
   typeof createPaymentAdjustmentRequestSchema
 >;
 export type PaymentSettings = z.infer<typeof paymentSettingsSchema>;
+export type UpdatePaymentSettingsRequest = z.infer<
+  typeof updatePaymentSettingsRequestSchema
+>;
 export type PaymentListQuery = z.infer<typeof paymentListQuerySchema>;
 export type ManualPayment = z.infer<typeof manualPaymentSchema>;
 export type ManualPaymentCreationResult = z.infer<

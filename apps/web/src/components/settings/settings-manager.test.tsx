@@ -1,5 +1,6 @@
 import {
   DEFAULT_BUSINESS_SETTINGS,
+  PARTIAL_PAYMENT_POLICY_CONFIRMATION,
   type SettingsOverview,
 } from '@webhost-billing/shared';
 import { render, screen, waitFor, within } from '@testing-library/react';
@@ -39,6 +40,176 @@ const overview: SettingsOverview = {
 
 describe('settings manager', () => {
   afterEach(() => vi.unstubAllGlobals());
+
+  it('saves an unchanged policy without requiring a review or confirmation', async () => {
+    const user = userEvent.setup();
+    const mock = settingsFetch();
+    render(<SettingsManager />);
+    await screen.findByRole('checkbox', {
+      name: 'Allow partial manual payments',
+    });
+    await user.click(screen.getByRole('button', { name: 'Save settings' }));
+    await screen.findByRole('status');
+    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(writes(mock)).toHaveLength(1);
+    expect(JSON.parse(String(writes(mock)[0]?.[1]?.body))).not.toHaveProperty(
+      'partialPaymentPolicyConfirmation',
+    );
+  });
+
+  it.each([false, true])(
+    'reviews and confirms a change from saved %s before updating the baseline',
+    async (previous) => {
+      const user = userEvent.setup();
+      const initial = {
+        ...overview,
+        manualPayments: {
+          ...overview.manualPayments,
+          partialPaymentsEnabled: previous,
+        },
+      };
+      const mock = settingsFetch(initial);
+      render(<SettingsManager />);
+      await user.click(
+        await screen.findByRole('checkbox', {
+          name: 'Allow partial manual payments',
+        }),
+      );
+      expect(
+        screen.getByText(
+          `Current saved partial-payment policy: ${previous ? 'Enabled' : 'Disabled'}.`,
+          { exact: false },
+        ),
+      ).toBeTruthy();
+      await user.click(
+        screen.getByRole('button', {
+          name: previous ? 'Save all settings' : 'Save settings',
+        }),
+      );
+      const review = screen.getByRole('alertdialog');
+      expect(review.textContent).toContain(
+        `Current policy: ${previous ? 'Enabled' : 'Disabled'}. Proposed policy: ${previous ? 'Disabled' : 'Enabled'}.`,
+      );
+      expect(review.textContent).toContain('pending-reference verifications');
+      expect(review.textContent).toContain(
+        previous ? 'full current balance' : 'positive amount up to',
+      );
+      expect(review.textContent).toContain(
+        'Existing invoices, payments, balances, and pending references are unchanged',
+      );
+      expect(writes(mock)).toHaveLength(0);
+      await user.click(
+        within(review).getByRole('button', {
+          name: 'Confirm policy change and save settings',
+        }),
+      );
+      await screen.findByRole('status');
+      expect(screen.queryByRole('alertdialog')).toBeNull();
+      expect(JSON.parse(String(writes(mock)[0]?.[1]?.body))).toMatchObject({
+        partialPaymentPolicyConfirmation: PARTIAL_PAYMENT_POLICY_CONFIRMATION,
+        manualPayments: { partialPaymentsEnabled: !previous },
+      });
+      expect(
+        screen.getByText(
+          `Current saved partial-payment policy: ${previous ? 'Disabled' : 'Enabled'}.`,
+          { exact: false },
+        ),
+      ).toBeTruthy();
+      await user.click(screen.getByRole('button', { name: 'Save settings' }));
+      await waitFor(() => expect(writes(mock)).toHaveLength(2));
+      expect(JSON.parse(String(writes(mock)[1]?.[1]?.body))).not.toHaveProperty(
+        'partialPaymentPolicyConfirmation',
+      );
+    },
+  );
+
+  it('cancels the policy change while retaining unrelated draft edits', async () => {
+    const user = userEvent.setup();
+    const mock = settingsFetch();
+    render(<SettingsManager />);
+    const name = await screen.findByRole('textbox', { name: 'Business name' });
+    await user.clear(name);
+    await user.type(name, 'Fictional draft business');
+    await user.click(
+      screen.getByRole('checkbox', { name: 'Allow partial manual payments' }),
+    );
+    await user.click(screen.getByRole('button', { name: 'Save settings' }));
+    await user.click(
+      within(screen.getByRole('alertdialog')).getByRole('button', {
+        name: 'Cancel',
+      }),
+    );
+    expect(writes(mock)).toHaveLength(0);
+    expect(
+      (
+        screen.getByRole('checkbox', {
+          name: 'Allow partial manual payments',
+        }) as HTMLInputElement
+      ).checked,
+    ).toBe(false);
+    expect((name as HTMLInputElement).value).toBe('Fictional draft business');
+    await user.click(screen.getByRole('button', { name: 'Save settings' }));
+    await screen.findByRole('status');
+    expect(JSON.parse(String(writes(mock)[0]?.[1]?.body))).toMatchObject({
+      businessIdentity: { name: 'Fictional draft business' },
+      manualPayments: { partialPaymentsEnabled: false },
+    });
+  });
+
+  it('retains the draft and persisted baseline on failure, then allows a successful retry', async () => {
+    const user = userEvent.setup();
+    const mock = settingsFetch(overview, true);
+    render(<SettingsManager />);
+    await user.click(
+      await screen.findByRole('checkbox', {
+        name: 'Allow partial manual payments',
+      }),
+    );
+    await user.click(screen.getByRole('button', { name: 'Save settings' }));
+    await user.click(
+      within(screen.getByRole('alertdialog')).getByRole('button', {
+        name: 'Confirm policy change and save settings',
+      }),
+    );
+    await waitFor(() =>
+      expect(screen.getByRole('alertdialog').textContent).toContain(
+        'Save failed: Fictional retryable failure',
+      ),
+    );
+    expect(
+      screen.getByText(/Current saved partial-payment policy: Disabled/),
+    ).toBeTruthy();
+    await user.click(
+      within(screen.getByRole('alertdialog')).getByRole('button', {
+        name: 'Confirm policy change and save settings',
+      }),
+    );
+    await screen.findByRole('status');
+    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(writes(mock)).toHaveLength(2);
+    expect(
+      screen.getByText(/Current saved partial-payment policy: Enabled/),
+    ).toBeTruthy();
+  });
+
+  it('does not save guessed defaults when the persisted settings fail to load', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockRejectedValue(new Error('Fictional load failure')),
+    );
+    render(<SettingsManager />);
+    await screen.findByRole('alert');
+    expect(
+      (
+        screen.getByRole('button', {
+          name: 'Save settings',
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
+    expect(
+      screen.getByText(/Current saved partial-payment policy: Unavailable/),
+    ).toBeTruthy();
+  });
 
   it('edits ordinary settings and treats provider secrets as write-only', async () => {
     const user = userEvent.setup();
@@ -108,4 +279,41 @@ function success(data: unknown) {
     status: 200,
     headers: { 'Content-Type': 'application/json' },
   });
+}
+
+function settingsFetch(initial = overview, failFirst = false) {
+  let saved = initial;
+  let failed = false;
+  const mock = vi.fn((request: RequestInfo | URL, init?: RequestInit) => {
+    if (String(request).endsWith('/auth/csrf'))
+      return Promise.resolve(success({ csrfToken: 'x'.repeat(32) }));
+    if (init?.method === 'PUT') {
+      if (failFirst && !failed) {
+        failed = true;
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({
+              success: false,
+              error: { message: 'Fictional retryable failure' },
+            }),
+            { status: 422 },
+          ),
+        );
+      }
+      const body = JSON.parse(String(init.body)) as Record<string, unknown>;
+      const { partialPaymentPolicyConfirmation, ...ordinary } = body;
+      void partialPaymentPolicyConfirmation;
+      saved = {
+        ...ordinary,
+        credentialStatuses: initial.credentialStatuses,
+      } as SettingsOverview;
+    }
+    return Promise.resolve(success(saved));
+  });
+  vi.stubGlobal('fetch', mock);
+  return mock;
+}
+
+function writes(mock: ReturnType<typeof settingsFetch>) {
+  return mock.mock.calls.filter(([, init]) => init?.method === 'PUT');
 }

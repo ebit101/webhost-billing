@@ -2,6 +2,7 @@
 
 import {
   DEFAULT_BUSINESS_SETTINGS,
+  PARTIAL_PAYMENT_POLICY_CONFIRMATION,
   type BusinessSettings,
   type CredentialStatus,
   type SettingsOverview,
@@ -10,6 +11,7 @@ import Link from 'next/link';
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { authenticatedGet, authMutation } from '../../lib/auth-api';
 import { Button } from '../ui/button';
+import { ConfirmationDialog } from '../ui/confirmation-dialog';
 import { LoadingState } from '../ui/feedback-state';
 import { PageHeader } from '../ui/page-header';
 import { StatusBadge } from '../ui/status-badge';
@@ -29,12 +31,20 @@ export function SettingsManager() {
   const [saving, setSaving] = useState('');
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const [persistedPartialPayments, setPersistedPartialPayments] =
+    useState<boolean>();
+  const [policyReview, setPolicyReview] = useState<BusinessSettings>();
 
   useEffect(() => {
     let active = true;
     void authenticatedGet<SettingsOverview>('/settings')
       .then((settings) => {
-        if (active) setOverview(settings);
+        if (active) {
+          setOverview(settings);
+          setPersistedPartialPayments(
+            settings.manualPayments.partialPaymentsEnabled,
+          );
+        }
       })
       .catch((caught: unknown) => {
         if (active) setError(message(caught));
@@ -54,18 +64,49 @@ export function SettingsManager() {
     setOverview((current) => ({ ...current, [key]: value }));
   }
 
-  async function saveSettings() {
+  function requestSave() {
+    if (persistedPartialPayments === undefined) return;
+    clearMessages();
+    const { credentialStatuses, ...settings } = overview;
+    void credentialStatuses;
+    if (
+      settings.manualPayments.partialPaymentsEnabled !==
+      persistedPartialPayments
+    ) {
+      setPolicyReview(settings);
+    } else {
+      void saveSettings(settings);
+    }
+  }
+
+  function cancelPolicyReview() {
+    setPolicyReview(undefined);
+    setOverview((current) => ({
+      ...current,
+      manualPayments: {
+        ...current.manualPayments,
+        partialPaymentsEnabled: persistedPartialPayments ?? false,
+      },
+    }));
+    clearMessages();
+  }
+
+  async function saveSettings(settings: BusinessSettings, confirmed = false) {
     setSaving('settings');
     clearMessages();
     try {
-      const { credentialStatuses, ...settings } = overview;
-      void credentialStatuses;
-      const saved = await authMutation<SettingsOverview>(
-        '/settings',
-        'PUT',
-        settings,
-      );
+      const saved = await authMutation<SettingsOverview>('/settings', 'PUT', {
+        ...settings,
+        ...(confirmed
+          ? {
+              partialPaymentPolicyConfirmation:
+                PARTIAL_PAYMENT_POLICY_CONFIRMATION,
+            }
+          : {}),
+      });
       setOverview(saved);
+      setPersistedPartialPayments(saved.manualPayments.partialPaymentsEnabled);
+      setPolicyReview(undefined);
       setNotice('Business settings were saved and audited.');
     } catch (caught) {
       setError(message(caught));
@@ -138,7 +179,10 @@ export function SettingsManager() {
         title="Business settings and secrets"
         description="Control billing policy and active adapters. Credentials are encrypted at rest and are never returned to this page."
         actions={
-          <Button disabled={saving !== ''} onClick={() => void saveSettings()}>
+          <Button
+            disabled={saving !== '' || persistedPartialPayments === undefined}
+            onClick={requestSave}
+          >
             {saving === 'settings' ? 'Saving…' : 'Save settings'}
           </Button>
         }
@@ -154,6 +198,26 @@ export function SettingsManager() {
           {notice}
         </Alert>
       ) : null}
+
+      <ConfirmationDialog
+        open={Boolean(policyReview)}
+        title="Review partial-payment policy change"
+        description={
+          policyReview
+            ? `Current policy: ${persistedPartialPayments ? 'Enabled' : 'Disabled'}. Proposed policy: ${policyReview.manualPayments.partialPaymentsEnabled ? 'Enabled' : 'Disabled'}. ${
+                policyReview.manualPayments.partialPaymentsEnabled
+                  ? 'Future manual-payment submissions, administrator recordings, and pending-reference verifications may accept a positive amount up to the invoice’s current balance.'
+                  : 'Future manual-payment submissions, administrator recordings, and pending-reference verifications must equal the invoice’s full current balance. Pending references for a smaller amount cannot be verified while this policy is disabled.'
+              } Existing invoices, payments, balances, and pending references are unchanged by this save. This saves all other draft settings too.${error ? ` Save failed: ${error} Your draft is retained; retry or cancel.` : ''}`
+            : ''
+        }
+        confirmLabel="Confirm policy change and save settings"
+        busy={saving === 'settings'}
+        onConfirm={() => {
+          if (policyReview) void saveSettings(policyReview, true);
+        }}
+        onClose={cancelPolicyReview}
+      />
 
       <SettingsCard
         title="Business and invoice identity"
@@ -378,71 +442,85 @@ export function SettingsManager() {
         </label>
       </SettingsCard>
 
-      <SettingsCard
-        title="Payments and hosting adapters"
-        description="Only the active online gateway is offered for new checkouts. Manual payment remains available for private operations."
-      >
-        <div className="grid gap-4 md:grid-cols-2">
-          <Field label="Active payment gateway">
-            <select
-              className={inputStyles}
-              value={overview.activeGateway}
+      <div id="billing-policy" className="scroll-mt-6">
+        <SettingsCard
+          title="Payments and hosting adapters"
+          description="Only the active online gateway is offered for new checkouts. Manual payment remains available for private operations."
+        >
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label="Active payment gateway">
+              <select
+                className={inputStyles}
+                value={overview.activeGateway}
+                onChange={(event) =>
+                  update(
+                    'activeGateway',
+                    event.target.value as BusinessSettings['activeGateway'],
+                  )
+                }
+              >
+                <option value="manual">Manual payments</option>
+                <option value="bkash">bKash sandbox</option>
+                <option value="sslcommerz">SSLCOMMERZ sandbox</option>
+                <option value="fake">Fake gateway (development only)</option>
+              </select>
+            </Field>
+            <Field label="Active hosting-panel adapter">
+              <select
+                className={inputStyles}
+                value={overview.activeHostingPanelAdapter}
+                onChange={(event) =>
+                  update(
+                    'activeHostingPanelAdapter',
+                    event.target
+                      .value as BusinessSettings['activeHostingPanelAdapter'],
+                  )
+                }
+              >
+                <option value="cpanel-whm">cPanel / WHM</option>
+                <option value="fake-panel">
+                  Fake panel (development only)
+                </option>
+              </select>
+            </Field>
+          </div>
+          <Field label="Customer manual-payment instructions" className="mt-4">
+            <textarea
+              className={`${inputStyles} min-h-28`}
+              value={overview.manualPayments.instructions}
               onChange={(event) =>
-                update(
-                  'activeGateway',
-                  event.target.value as BusinessSettings['activeGateway'],
-                )
+                update('manualPayments', {
+                  ...overview.manualPayments,
+                  instructions: event.target.value,
+                })
               }
-            >
-              <option value="manual">Manual payments</option>
-              <option value="bkash">bKash sandbox</option>
-              <option value="sslcommerz">SSLCOMMERZ sandbox</option>
-              <option value="fake">Fake gateway (development only)</option>
-            </select>
+            />
           </Field>
-          <Field label="Active hosting-panel adapter">
-            <select
-              className={inputStyles}
-              value={overview.activeHostingPanelAdapter}
+          <label className="mt-4 flex items-center gap-2 text-sm font-semibold text-slate-700">
+            <input
+              type="checkbox"
+              checked={overview.manualPayments.partialPaymentsEnabled}
               onChange={(event) =>
-                update(
-                  'activeHostingPanelAdapter',
-                  event.target
-                    .value as BusinessSettings['activeHostingPanelAdapter'],
-                )
+                update('manualPayments', {
+                  ...overview.manualPayments,
+                  partialPaymentsEnabled: event.target.checked,
+                })
               }
-            >
-              <option value="cpanel-whm">cPanel / WHM</option>
-              <option value="fake-panel">Fake panel (development only)</option>
-            </select>
-          </Field>
-        </div>
-        <Field label="Customer manual-payment instructions" className="mt-4">
-          <textarea
-            className={`${inputStyles} min-h-28`}
-            value={overview.manualPayments.instructions}
-            onChange={(event) =>
-              update('manualPayments', {
-                ...overview.manualPayments,
-                instructions: event.target.value,
-              })
-            }
-          />
-        </Field>
-        <label className="mt-4 flex items-center gap-2 text-sm font-semibold text-slate-700">
-          <input
-            type="checkbox"
-            checked={overview.manualPayments.partialPaymentsEnabled}
-            onChange={(event) =>
-              update('manualPayments', {
-                ...overview.manualPayments,
-                partialPaymentsEnabled: event.target.checked,
-              })
-            }
-          />
-          Allow partial manual payments
-        </label>
-      </SettingsCard>
+            />
+            Allow partial manual payments
+          </label>
+          <p className="mt-3 text-sm text-slate-600">
+            Current saved partial-payment policy:{' '}
+            {persistedPartialPayments === undefined
+              ? 'Unavailable'
+              : persistedPartialPayments
+                ? 'Enabled'
+                : 'Disabled'}
+            . Changing the checkbox edits a draft. Save settings to review the
+            consequence before confirming a change.
+          </p>
+        </SettingsCard>
+      </div>
 
       <SettingsCard
         title="Email branding"
@@ -561,7 +639,10 @@ export function SettingsManager() {
       </SettingsCard>
 
       <div className="flex justify-end">
-        <Button disabled={saving !== ''} onClick={() => void saveSettings()}>
+        <Button
+          disabled={saving !== '' || persistedPartialPayments === undefined}
+          onClick={requestSave}
+        >
           {saving === 'settings' ? 'Saving…' : 'Save all settings'}
         </Button>
       </div>

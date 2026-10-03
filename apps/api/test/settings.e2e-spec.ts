@@ -15,6 +15,7 @@ import {
   apiSuccessResponseSchema,
   credentialStatusSchema,
   settingsOverviewSchema,
+  PARTIAL_PAYMENT_POLICY_CONFIRMATION,
 } from '@webhost-billing/shared';
 import request from 'supertest';
 import type { App } from 'supertest/types';
@@ -150,6 +151,7 @@ describe('Settings and encrypted credentials (e2e)', () => {
     void credentialStatuses;
     const updatedBody = {
       ...ordinary,
+      partialPaymentPolicyConfirmation: PARTIAL_PAYMENT_POLICY_CONFIRMATION,
       businessIdentity: {
         ...ordinary.businessIdentity,
         name: 'Fictional Command 21 Hosting',
@@ -195,6 +197,113 @@ describe('Settings and encrypted credentials (e2e)', () => {
         },
       })
       .expect(400);
+  });
+
+  it('guards both policy write routes, keeps unchanged saves idempotent, and audits only real transitions', async () => {
+    const customer = request.agent(app.getHttpServer());
+    const customerCsrf = await authenticate(customer, CUSTOMER_EMAIL);
+    const admin = request.agent(app.getHttpServer());
+    const csrf = await authenticate(admin, ADMIN_EMAIL);
+    const initial = await admin.get('/settings').expect(200);
+    const { credentialStatuses, ...ordinary } = apiSuccessResponseSchema(
+      settingsOverviewSchema,
+    ).parse(initial.body).data;
+    void credentialStatuses;
+    const actor = await prisma.user.findUniqueOrThrow({
+      where: { email: ADMIN_EMAIL },
+    });
+    const auditCount = () =>
+      prisma.activityLog.count({
+        where: {
+          actorUserId: actor.id,
+          action: 'MANUAL_PAYMENT_POLICY_CHANGED_BY_ADMIN',
+        },
+      });
+    const policy = async () =>
+      (await admin.get('/payments/settings').expect(200)).body as {
+        data: { partialPaymentsEnabled: boolean };
+      };
+    const send = (
+      route: 'general' | 'payment',
+      enabled: boolean,
+      confirmation?: unknown,
+      agent = admin,
+      token = csrf,
+    ) => {
+      const body =
+        route === 'general'
+          ? {
+              ...ordinary,
+              manualPayments: {
+                ...ordinary.manualPayments,
+                partialPaymentsEnabled: enabled,
+              },
+            }
+          : { partialPaymentsEnabled: enabled };
+      return (
+        route === 'general'
+          ? agent.put('/settings')
+          : agent.patch('/payments/settings')
+      )
+        .set('X-CSRF-Token', token)
+        .send({
+          ...body,
+          ...(confirmation === undefined
+            ? {}
+            : { partialPaymentPolicyConfirmation: confirmation }),
+        });
+    };
+    for (const route of ['general', 'payment'] as const) {
+      const current = (await policy()).data.partialPaymentsEnabled;
+      const before = await auditCount();
+      await send(
+        route,
+        !current,
+        PARTIAL_PAYMENT_POLICY_CONFIRMATION,
+        customer,
+        customerCsrf,
+      ).expect(403);
+      await send(route, !current).expect(422);
+      await send(route, !current, 'YES').expect(400);
+      expect((await policy()).data.partialPaymentsEnabled).toBe(current);
+      expect(await auditCount()).toBe(before);
+      await send(route, current).expect(200);
+      expect(await auditCount()).toBe(before);
+      await send(route, !current, PARTIAL_PAYMENT_POLICY_CONFIRMATION).expect(
+        200,
+      );
+      expect((await policy()).data.partialPaymentsEnabled).toBe(!current);
+      expect(
+        (
+          await prisma.setting.findUniqueOrThrow({
+            where: { key: 'billing.manual-payments' },
+          })
+        ).value,
+      ).toEqual({ partialPaymentsEnabled: !current });
+      expect(await auditCount()).toBe(before + 1);
+      const audit = await prisma.activityLog.findFirstOrThrow({
+        where: {
+          actorUserId: actor.id,
+          action: 'MANUAL_PAYMENT_POLICY_CHANGED_BY_ADMIN',
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+      expect(audit.metadata).toEqual({
+        previousPartialPaymentsEnabled: current,
+        partialPaymentsEnabled: !current,
+      });
+      await send(route, !current).expect(200);
+      expect(await auditCount()).toBe(before + 1);
+    }
+    const current = (await policy()).data.partialPaymentsEnabled;
+    const before = await auditCount();
+    const replies = await Promise.all([
+      send('general', !current, PARTIAL_PAYMENT_POLICY_CONFIRMATION),
+      send('payment', !current, PARTIAL_PAYMENT_POLICY_CONFIRMATION),
+    ]);
+    expect(replies.map((reply) => reply.status)).toEqual([200, 200]);
+    expect(await auditCount()).toBe(before + 1);
+    expect((await policy()).data.partialPaymentsEnabled).toBe(!current);
   });
 
   it('encrypts credential rotation and returns only masked status', async () => {

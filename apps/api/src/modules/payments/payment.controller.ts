@@ -18,13 +18,13 @@ import {
   createPaginatedApiSuccessResponse,
   createPaymentAdjustmentRequestSchema,
   paymentListQuerySchema,
-  paymentSettingsSchema,
+  updatePaymentSettingsRequestSchema,
   recordManualPaymentRequestSchema,
   reviewManualPaymentRequestSchema,
   submitManualPaymentRequestSchema,
   type CreatePaymentAdjustmentRequest,
   type PaymentListQuery,
-  type PaymentSettings,
+  type UpdatePaymentSettingsRequest,
   type RecordManualPaymentRequest,
   type ReviewManualPaymentRequest,
   type SubmitManualPaymentRequest,
@@ -58,7 +58,8 @@ export class PaymentController {
   @Patch('settings')
   @Roles('ADMIN')
   async updateSettings(
-    @Body(new ZodValidationPipe(paymentSettingsSchema)) input: PaymentSettings,
+    @Body(new ZodValidationPipe(updatePaymentSettingsRequestSchema))
+    input: UpdatePaymentSettingsRequest,
     @CurrentAuth() auth: AuthRequestContext,
     @Req() request: Request,
   ) {

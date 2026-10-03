@@ -19,6 +19,7 @@ import {
   manualPaymentSchema,
   paginatedApiSuccessResponseSchema,
   paymentSettingsSchema,
+  PARTIAL_PAYMENT_POLICY_CONFIRMATION,
 } from '@webhost-billing/shared';
 import request from 'supertest';
 import type { App } from 'supertest/types';
@@ -275,14 +276,17 @@ describe('Manual payments (e2e)', () => {
     ).toMatchObject({ amountPaid: 0n, balanceDue: 8_000n });
   });
 
-  it('enables partial payments explicitly and prevents concurrent overpayment', async () => {
+  it('guards policy transitions, prevents overpayment, and rechecks pending partial references after disabling', async () => {
     const admin = request.agent(app.getHttpServer());
     const csrf = await csrfToken(admin);
     await login(admin, csrf, ADMIN_EMAIL);
     const settings = await admin
       .patch('/payments/settings')
       .set('X-CSRF-Token', csrf)
-      .send({ partialPaymentsEnabled: true })
+      .send({
+        partialPaymentsEnabled: true,
+        partialPaymentPolicyConfirmation: PARTIAL_PAYMENT_POLICY_CONFIRMATION,
+      })
       .expect(200);
     expect(
       apiSuccessResponseSchema(paymentSettingsSchema).parse(settings.body).data,
@@ -308,6 +312,56 @@ describe('Manual payments (e2e)', () => {
     expect(
       await prisma.invoice.findUniqueOrThrow({ where: { id: invoiceId } }),
     ).toMatchObject({ amountPaid: 7_000n, balanceDue: 3_000n });
+    {
+      const invoiceId = await createInvoice(10_000n);
+      const customer = request.agent(app.getHttpServer());
+      const customerCsrf = await csrfToken(customer);
+      await login(customer, customerCsrf, CUSTOMER_EMAIL);
+      const submitted = await customer
+        .post('/payments/manual/customer')
+        .set('X-CSRF-Token', customerCsrf)
+        .send(paymentBody(invoiceId, '5000', 'POLICY-PENDING-PARTIAL'))
+        .expect(201);
+      const paymentId = apiSuccessResponseSchema(
+        manualPaymentCreationResultSchema,
+      ).parse(submitted.body).data.payment.id;
+      const paymentBefore = await prisma.payment.findUniqueOrThrow({
+        where: { id: paymentId },
+      });
+      const invoiceBefore = await prisma.invoice.findUniqueOrThrow({
+        where: { id: invoiceId },
+      });
+      await admin
+        .patch('/payments/settings')
+        .set('X-CSRF-Token', csrf)
+        .send({
+          partialPaymentsEnabled: false,
+          partialPaymentPolicyConfirmation: PARTIAL_PAYMENT_POLICY_CONFIRMATION,
+        })
+        .expect(200);
+      await admin
+        .patch(`/payments/${paymentId}/review`)
+        .set('X-CSRF-Token', csrf)
+        .send({ action: 'VERIFY' })
+        .expect(422);
+      await admin
+        .post('/payments/manual/admin')
+        .set('X-CSRF-Token', csrf)
+        .send(paymentBody(invoiceId, '5000', 'POLICY-RECORD-PARTIAL'))
+        .expect(422);
+      await customer
+        .post('/payments/manual/customer')
+        .set('X-CSRF-Token', customerCsrf)
+        .send(paymentBody(invoiceId, '5000', 'POLICY-SUBMIT-PARTIAL'))
+        .expect(422);
+      expect(
+        await prisma.payment.findUniqueOrThrow({ where: { id: paymentId } }),
+      ).toEqual(paymentBefore);
+      expect(
+        await prisma.invoice.findUniqueOrThrow({ where: { id: invoiceId } }),
+      ).toEqual(invoiceBefore);
+      expect(await prisma.payment.count({ where: { invoiceId } })).toBe(1);
+    }
   });
 
   it('appends refunds and reversals while preserving the original charge', async () => {

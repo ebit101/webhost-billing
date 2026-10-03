@@ -115,7 +115,19 @@ describe('manual payment interfaces', () => {
     expect(screen.getByText('CUSTOMER-REFERENCE-UI')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Verify' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Reject' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Enable' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Enable' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Disable' })).toBeNull();
+    expect(
+      screen
+        .getByRole('link', { name: 'Review billing policy in settings' })
+        .getAttribute('href'),
+    ).toBe('/admin/settings#billing-policy');
+    expect(screen.getByText('Disabled', { exact: true })).toBeTruthy();
+    expect(
+      fetchMock.mock.calls.every(
+        ([url]) => !String(url).includes('/auth/csrf'),
+      ),
+    ).toBe(true);
     expect(
       screen.getByRole('button', { name: 'Record verified payment' }),
     ).toBeTruthy();

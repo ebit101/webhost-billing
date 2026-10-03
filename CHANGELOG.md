@@ -10,6 +10,10 @@ and will be called out in release notes.
 
 ### Changed
 
+- Partial-payment policy changes now require an administrator consequence review in
+  settings and explicit confirmation at both API write routes. The payment ledger
+  links to settings, unchanged saves remain compatible, and real transitions retain
+  one safe old-to-new audit entry.
 - Normalized the shared production shell entrypoint inside migration and worker
   images so Windows CRLF checkouts remain runnable on Linux deployment hosts.
 - Reviewed the first product-experience set, confirmed Commands 76–78 retain their

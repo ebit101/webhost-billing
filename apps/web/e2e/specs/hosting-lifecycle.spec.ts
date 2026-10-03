@@ -340,6 +340,74 @@ test('complete hosting customer and administrator lifecycle', async ({
     ).toHaveAttribute('href', '/admin/orders');
   });
 
+  await test.step('administrator reviews and cancels a partial-payment policy change without mutating the seed', async () => {
+    const before = await e2ePrisma.setting.findUnique({
+      where: { key: 'billing.manual-payments' },
+    });
+    const auditsBefore = await e2ePrisma.activityLog.count({
+      where: { action: 'MANUAL_PAYMENT_POLICY_CHANGED_BY_ADMIN' },
+    });
+    let writes = 0;
+    const observeWrite = (request: import('@playwright/test').Request) => {
+      if (
+        ['PUT', 'PATCH'].includes(request.method()) &&
+        /\/(settings|payments\/settings)$/.test(new URL(request.url()).pathname)
+      )
+        writes += 1;
+    };
+    page.on('request', observeWrite);
+    await page.goto('/admin/payments');
+    await expect(
+      page.getByRole('button', { name: 'Enable', exact: true }),
+    ).toHaveCount(0);
+    await expect(
+      page.getByRole('button', { name: 'Disable', exact: true }),
+    ).toHaveCount(0);
+    await page
+      .getByRole('link', { name: 'Review billing policy in settings' })
+      .click();
+    await expect(page).toHaveURL(/\/admin\/settings#billing-policy$/);
+    const checkbox = page.getByRole('checkbox', {
+      name: 'Allow partial manual payments',
+    });
+    const original = await checkbox.isChecked();
+    await checkbox.click();
+    await page
+      .getByRole('button', { name: 'Save settings', exact: true })
+      .click();
+    const review = page.getByRole('alertdialog');
+    await expect(review).toContainText(
+      `Current policy: ${original ? 'Enabled' : 'Disabled'}. Proposed policy: ${original ? 'Disabled' : 'Enabled'}.`,
+    );
+    await expect(review).toContainText('pending-reference verifications');
+    await review.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await expect(review).toHaveCount(0);
+    expect(await checkbox.isChecked()).toBe(original);
+    const viewport = page.viewportSize();
+    await page.setViewportSize({ width: 375, height: 740 });
+    await checkbox.click();
+    await page
+      .getByRole('button', { name: 'Save all settings', exact: true })
+      .click();
+    await expect(review).toContainText('pending-reference verifications');
+    await review.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await expect(review).toHaveCount(0);
+    expect(await checkbox.isChecked()).toBe(original);
+    if (viewport) await page.setViewportSize(viewport);
+    expect(writes).toBe(0);
+    page.off('request', observeWrite);
+    expect(
+      await e2ePrisma.setting.findUnique({
+        where: { key: 'billing.manual-payments' },
+      }),
+    ).toEqual(before);
+    expect(
+      await e2ePrisma.activityLog.count({
+        where: { action: 'MANUAL_PAYMENT_POLICY_CHANGED_BY_ADMIN' },
+      }),
+    ).toBe(auditsBefore);
+  });
+
   await test.step('administrator termination requires the exact confirmation', async () => {
     await context.clearCookies();
     await login(page, E2E_ADMIN.email, E2E_ADMIN.password, '/admin');

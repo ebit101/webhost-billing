@@ -8,6 +8,7 @@ import type {
   PaymentSettings,
 } from '@webhost-billing/shared';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
+import Link from 'next/link';
 import {
   authMutation,
   authenticatedGet,
@@ -259,26 +260,6 @@ export function AdminPaymentManager({
     }
   }
 
-  async function saveSettings(enabled: boolean) {
-    setSaving(true);
-    clearMessages();
-    try {
-      const updated = await authMutation<PaymentSettings>(
-        '/payments/settings',
-        'PATCH',
-        { partialPaymentsEnabled: enabled },
-      );
-      setSettings(updated);
-      setNotice(
-        `Partial payments are now ${enabled ? 'enabled' : 'disabled'}.`,
-      );
-    } catch (caught) {
-      setError(paymentError(caught));
-    } finally {
-      setSaving(false);
-    }
-  }
-
   async function createAdjustment(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!adjustment) return;
@@ -431,8 +412,11 @@ export function AdminPaymentManager({
           </p>
           <h2 className="mt-2 text-lg font-bold">Partial payments</h2>
           <p className="mt-2 text-sm leading-6 text-slate-300">
-            Disabled by default. When disabled, every submitted or recorded
-            payment must equal the invoice&apos;s full current balance.
+            {settings.partialPaymentsEnabled
+              ? 'Manual payments may be less than the invoice’s current balance.'
+              : 'Manual payments must equal the invoice’s full current balance.'}{' '}
+            The effective policy is checked on submission, recording, and
+            pending-reference verification.
           </p>
           <div className="mt-6 flex items-center justify-between gap-4 rounded-xl bg-white/10 p-4">
             <div>
@@ -443,15 +427,12 @@ export function AdminPaymentManager({
                 Applies again when a pending reference is verified.
               </p>
             </div>
-            <Button
-              variant="secondary"
-              disabled={saving}
-              onClick={() =>
-                void saveSettings(!settings.partialPaymentsEnabled)
-              }
+            <Link
+              href="/admin/settings#billing-policy"
+              className="rounded-lg px-3 py-2 text-sm font-bold text-brand-300 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-300"
             >
-              {settings.partialPaymentsEnabled ? 'Disable' : 'Enable'}
-            </Button>
+              Review billing policy in settings
+            </Link>
           </div>
         </section>
       </div>

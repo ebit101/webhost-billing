@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { businessIdentitySchema } from './invoices';
 import { currencyCodeSchema } from './money';
 import { renewalAutomationPolicySchema } from './renewal-automation';
+import { partialPaymentPolicyConfirmationSchema } from './payments';
 
 export const businessTimeZoneSchema = z
   .string()
@@ -144,6 +145,16 @@ export const businessSettingsSchema = z
 export const settingsOverviewSchema = businessSettingsSchema
   .safeExtend({ credentialStatuses: z.array(credentialStatusSchema) })
   .strict();
+
+export const updateBusinessSettingsRequestSchema = businessSettingsSchema
+  .safeExtend({
+    partialPaymentPolicyConfirmation: partialPaymentPolicyConfirmationSchema,
+  })
+  .strict();
+
+export type UpdateBusinessSettingsRequest = z.infer<
+  typeof updateBusinessSettingsRequestSchema
+>;
 
 const bkashCredentialsSchema = z
   .object({

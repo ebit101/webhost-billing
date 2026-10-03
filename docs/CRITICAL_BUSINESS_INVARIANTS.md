@@ -39,6 +39,15 @@ The suite uses fictional `.test` identities and fake providers. It does not cont
 
 ## Failure interpretation
 
+Command 79 adds a bounded manual-payment policy safeguard. The shared settings
+contracts reject incorrect confirmations; `partial-payment-policy.spec.ts` proves
+transition/no-op behavior; `settings.e2e-spec.ts` exercises both protected write
+routes, persistence, safe audit metadata, and concurrent cross-route saves.
+`payments.e2e-spec.ts` proves disabling the policy rejects partial submission,
+recording, and pending-reference verification while retaining existing records.
+The browser lifecycle reviews and cancels the change with no settings write or
+seeded-policy change; component fixtures prove the confirmed save and retry paths.
+
 A failed invariant test blocks delivery. Do not solve a failure by weakening an assertion, deleting concurrency, increasing arbitrary delays, bypassing ownership, or changing a fake provider to report success unconditionally.
 
 Investigate the owning boundary:
