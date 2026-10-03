@@ -5672,6 +5672,9 @@ begin Command 79 automatically.
   remained running.
 - Created deterministic `rollback-pre-a0a7354` image aliases and a protected executable
   rollback environment because the prior deployment used mixed historical image tags.
+- Removed the four local release image tags after verified remote delivery and pruned
+  33.85 GB of unused BuildKit cache without removing containers, volumes, databases, or
+  the separate Docker backup VHD.
 - Preserved fake-provider posture and left Command 79 separately gated and unauthorized.
 
 #### Files changed
@@ -5715,6 +5718,7 @@ begin Command 79 automatically.
   running.
 - The deterministic rollback Compose configuration and all three prior application image
   aliases were verified without switching away from the healthy release.
+- Local Docker remained healthy after cleanup and reported zero build-cache bytes.
 
 #### Decisions made
 
@@ -5734,9 +5738,11 @@ begin Command 79 automatically.
   approval, infrastructure review, and operator pilot remain required.
 - The verified backup and its passphrase remain on the same staging server; this is not an
   off-site or immutable recovery copy.
-- The local Docker data disk on `D:` fell to roughly 2.7 GB free during image construction.
-  Release-scoped local image cleanup is required after delivery; broader Docker cache or
-  unrelated image pruning remains outside this deployment.
+- The local Docker data disk on `D:` remains at roughly 1.9 GB free even after BuildKit
+  reclaimed 33.85 GB internally because the dynamic Docker VHD did not shrink. Offline VHD
+  compaction requires stopping the local Docker engine and was not performed as part of the
+  live staging deployment. No unrelated image, container, volume, database, or backup-VHD
+  cleanup was attempted.
 - Command 79 remains separately gated and unauthorized.
 
 #### Recommended next command
