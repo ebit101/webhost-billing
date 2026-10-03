@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 71 — Reopen the contributor on-ramp with a fourth starter-issue set
-- **Current status:** Completed and delivered to GitHub `main`
+- **Current command:** Command 72 — Implement starter issue #29: Keep safe-demo inspection commands side-effect-free
+- **Current status:** Completed locally; delivery verification pending
 - **Last updated:** 2026-10-03
-- **Next command:** Command 72 — Implement starter issue #29: Keep safe-demo inspection commands side-effect-free
+- **Next command:** Command 73 — Implement starter issue #30: Validate safe-demo screenshot assets offline
 - **Next command authorized:** No
 
 ## Command Reports
@@ -4663,6 +4663,114 @@ implementation automatically.
 Authorize **Command 72 — Implement starter issue #29: Keep safe-demo inspection
 commands side-effect-free** only after separate review and authorization. Do not
 start Command 73 or 74 automatically.
+
+### Command 72 — Implement Starter Issue #29: Keep Safe-Demo Inspection Commands Side-Effect-Free
+
+- **Status:** Completed locally; delivery verification pending
+- **Date:** 2026-10-03
+
+#### Scope completed
+
+- Added one injected safe-demo inspection boundary for `demo:credentials`,
+  `demo:status`, `demo:logs`, and `demo:down`. Every command now validates an
+  existing readable, regular, non-symbolic-link runtime file and refuses with fixed
+  remediation before Docker when it is missing or unsafe.
+- Kept runtime creation in the ordinary lifecycle limited to `demo:up`; none of the
+  four inspection/stop commands creates directories, files, credentials, or Docker
+  state.
+- Pinned successful Docker dispatch to the local `default` context, dedicated
+  `webhost-billing-demo` project, fixed project directory, fixed environment file,
+  and fixed Compose file while discarding ambient Docker/Compose target overrides.
+- Changed `demo:logs` from indefinite follow mode to a captured, no-color snapshot
+  requesting and emitting at most the latest 100 lines. Generated runtime secrets,
+  bearer values, common authentication headers, ANSI color, and oversized lines are
+  redacted or bounded before output; failed Docker calls expose no raw output.
+- Preserved `demo:down` as a non-destructive stop that omits volume and orphan
+  removal, retains the exact runtime file, and reports a fixed retained-state result.
+  Existing doctor, smoke, reset, screenshot, accessibility, product, authentication,
+  schema, provider, release, deployment, and production `NO-GO` behavior was not
+  broadened.
+- Added focused injected filesystem/process tests for missing, unreadable,
+  symbolic-link, and non-regular paths; refusal before Docker; exact fixed dispatch;
+  environment-target stripping; credential reads; bounded/redacted log handling;
+  raw-failure redaction; and retained down state.
+- Updated command help, contributor navigation, English and Bengali evaluator
+  guidance, the starter catalogue, changelog, and the durable inspection decision.
+
+#### Files changed
+
+- `scripts/demo/demo-inspection.mjs` — added the injected validation, dispatch,
+  redaction, bounded-output, and non-destructive stop boundary
+- `scripts/demo/demo-inspection.test.mjs` — added eight focused contract tests
+- `scripts/demo/manage-demo.mjs` — routed the four commands through the safe boundary
+  and updated finite-log help
+- `package.json` — exposed the focused test and included it in the ordinary test gate
+- `CONTRIBUTING.md` — documented side-effect-free lifecycle behavior
+- `docs/CONTRIBUTOR_PATHS.md` — linked the focused test and validation command
+- `docs/SAFE_EVALUATION_DEMO.md` — documented runtime refusal and finite redacted logs
+- `docs/SAFE_EVALUATION_DEMO_BN.md` — added equivalent Bengali evaluator guidance
+- `docs/STARTER_ISSUES.md` — moved issue #29 to the completed starter set
+- `docs/DECISIONS.md` — recorded ADR-048 for the inspection boundary
+- `CHANGELOG.md` — recorded the safe-demo lifecycle correction
+- `docs/PROGRESS.md` — recorded Command 72 scope, evidence, decisions, and next gate
+
+#### Validation
+
+- `pnpm test:demo-inspection` passed all 8 focused tests.
+- Disposable live `pnpm demo:status`, `pnpm demo:logs`, and `pnpm demo:down` checks
+  passed against Docker Desktop 4.93.0 / Engine 29.8.1. Status found the dedicated
+  services; logs exited without follow, emitted 100 Docker log lines plus the pnpm
+  banner, and contained zero generated runtime values; down returned success,
+  preserved the runtime SHA-256 and every dedicated volume, and left zero dedicated
+  containers.
+- `pnpm docs:paths` passed with 83 contributor-map paths and 23 root scripts.
+- `pnpm docs:links` passed with 112 local references, including 3 heading anchors,
+  across 59 tracked Markdown files.
+- `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, and `git diff --check` passed.
+- `pnpm test` passed after the local development PostgreSQL and Redis services were
+  restored: demo/docs contract tests, 26 shared tests, 3 queue integration tests,
+  55 web tests, 88 API tests, and 29 worker tests all passed.
+- The first complete-test attempt correctly failed only because Docker Desktop and
+  Redis were unavailable. The Docker installation was repaired outside the
+  repository, the same suite was rerun from the start, and it passed completely.
+
+#### Decisions made
+
+- Use a small separately testable inspection module rather than adding more implicit
+  side effects to the lifecycle dispatcher. Its repository root, filesystem, process
+  runner, environment, and writer are injectable only from code/tests; the public CLI
+  accepts no target override.
+- Treat credentials as an explicit local operator display while redacting generated
+  secret values from logs and all failure paths. A successful credentials invocation
+  remains documented as sensitive and must not be shared.
+- Capture Docker output before publishing it. Status emits successful Compose state,
+  logs apply redaction and hard line/character bounds, down discards lifecycle
+  chatter, and every process error receives fixed remediation.
+- Strip ambient Docker/Compose routing variables and pass all target inputs
+  explicitly so an evaluator's shell cannot redirect these commands to another
+  project, context, environment file, or Compose file.
+
+#### Open questions and risks
+
+- Successful `demo:credentials` intentionally prints the locally generated fictional
+  logins requested by that command. Evaluators must continue treating them as secrets
+  and must not paste the output into public reports.
+- Application log content remains operational diagnostic material. The command
+  removes generated runtime secrets and common authentication headers and imposes
+  strict bounds, but contributors must still manually review any excerpt before
+  sharing it.
+- Production remains `NO-GO`. No financial, authentication, provider, database,
+  release, deployment, or production behavior changed, and the immutable alpha
+  release was not modified.
+- Remote delivery, hosted CI/CodeQL verification, and issue #29 closure remain pending
+  until the focused implementation commit is reconciled and pushed.
+
+#### Recommended next command
+
+Authorize **Command 73 — Implement starter issue #30: Validate safe-demo screenshot
+assets offline** only after Command 72 is delivered, hosted checks pass, issue #29 is
+closed, and separate user authorization is given. Do not begin Command 73
+automatically.
 
 ## Report Template
 

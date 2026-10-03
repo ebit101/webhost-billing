@@ -7,41 +7,6 @@ customer data or credentials.
 
 ## Current starter set
 
-### 12. [Keep safe-demo inspection commands side-effect-free](https://github.com/ebit101/webhost-billing/issues/29)
-
-**Suggested labels:** `good first issue`, `help wanted`, `docker`, `javascript`
-
-The safe-demo dispatcher currently creates `.demo-runtime/demo.env` before
-`demo:credentials`, `demo:status`, `demo:logs`, and `demo:down` when the file is
-missing. Make those inspection/stop paths refuse safely instead, and make logs a
-bounded snapshot rather than an indefinite follow operation.
-
-Acceptance:
-
-- only `demo:up` may create a missing runtime file in the ordinary lifecycle paths;
-- credentials, status, logs, and down refuse missing, unreadable, symbolic-link, or
-  non-regular runtime paths with fixed remediation before Docker runs;
-- `demo:logs` returns a no-color, non-following snapshot capped at the latest 100
-  lines;
-- Docker calls remain fixed to the demo Compose/project inputs with no target
-  override, and `demo:down` continues retaining fictional data and credentials;
-- no runtime value, raw command error, environment content, credential, token,
-  cookie, or unbounded log output is printed;
-- injected filesystem/process tests cover path refusal, exact dispatch, bounded
-  logs, refusal before Docker, and retained down state; and
-- command help plus English/Bengali evaluator guidance match the behavior.
-
-Validation: focused dispatcher tests, a disposable live status/logs/down check,
-offline documentation checks, `pnpm format:check`, `pnpm lint`, `pnpm typecheck`,
-and `pnpm test`.
-
-Security: use fictional demo state only; preserve loopback-only networking, fixed
-targeting, generated-secret redaction, non-destructive down, and guarded reset.
-
-Excluded: automatic start/reset, generic Docker cleanup, arbitrary target options,
-changes to doctor/smoke contracts, product/authentication behavior, schemas,
-providers, releases, deployments, or production `NO-GO`.
-
 ### 13. [Validate safe-demo screenshot assets offline](https://github.com/ebit101/webhost-billing/issues/30)
 
 **Suggested labels:** `good first issue`, `help wanted`, `documentation`,
@@ -113,6 +78,17 @@ application behavior, schemas, authentication/financial/provider rules, releases
 deployments, or production `NO-GO`.
 
 ## Latest completed starter set
+
+### 12. [Keep safe-demo inspection commands side-effect-free](https://github.com/ebit101/webhost-billing/issues/29)
+
+**Status:** Completed by Command 72 on 2026-10-03.
+
+**Suggested labels:** `good first issue`, `help wanted`, `docker`, `javascript`
+
+Made credentials, status, logs, and down require an existing safe regular runtime
+file before Docker can run. Docker dispatch is fixed and captured, log output is a
+redacted no-color snapshot capped at the latest 100 lines, and down retains the
+fictional volumes and generated runtime.
 
 ### 11. [Add a safe-demo path to the GitHub bug-report form](https://github.com/ebit101/webhost-billing/issues/28)
 

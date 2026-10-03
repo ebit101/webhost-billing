@@ -8,6 +8,12 @@ and will be called out in release notes.
 
 ## [Unreleased]
 
+### Changed
+
+- Safe-demo credentials, status, logs, and down now refuse missing or unsafe runtime
+  paths before Docker; logs return a redacted, no-color, non-following 100-line
+  snapshot and down remains non-destructive.
+
 ### Added
 
 - Added a fourth bounded contributor starter-issue set covering side-effect-free

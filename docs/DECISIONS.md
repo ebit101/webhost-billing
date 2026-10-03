@@ -392,6 +392,14 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** Evaluators need a supported route back to first-run fictional state, but reset is destructive and must not become a generic Docker cleanup tool or gain authority over development, staging, production, providers, or arbitrary filesystem targets. Preserving credentials until Docker cleanup is confirmed keeps retained state usable when cleanup fails or is uncertain.
 - **Consequence:** `demo:down` remains the normal non-destructive stop path. Reset captures and redacts Docker/filesystem failures, is idempotent when dedicated state is absent, retains cached images, accepts no path/project/context override, and requires `demo:up` to generate new fictional data and credentials. It does not change production `NO-GO` or the immutable alpha release.
 
+## ADR-048 — Side-Effect-Free Safe-Demo Inspection Boundary
+
+- **Status:** Accepted
+- **Date:** 2026-10-03
+- **Decision:** Require `demo:credentials`, `demo:status`, `demo:logs`, and `demo:down` to validate an existing readable, regular, non-symbolic-link runtime file before Docker dispatch. Pin Docker to the dedicated local context, project, project directory, environment file, and Compose file; capture failures without raw output; and make logs a redacted, no-color, non-following snapshot capped at the latest 100 lines.
+- **Reason:** Inspection and ordinary stop commands must not manufacture credentials or state simply because an evaluator asked what exists. Finite captured output is safer to review and report than an indefinite raw log stream, while explicit targeting prevents ambient Compose or Docker variables from broadening authority.
+- **Consequence:** `demo:up` remains the ordinary lifecycle entrypoint that creates missing runtime state. Missing or unsafe runtime paths produce fixed remediation before Docker, `demo:down` retains fictional volumes and credentials, and the guarded reset/doctor/smoke contracts remain unchanged. Successful credentials output remains an explicit local operator action and must never be shared. Production remains `NO-GO`.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

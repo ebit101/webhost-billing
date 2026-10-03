@@ -33,6 +33,9 @@ runtime values. Use the generated logins only at `http://localhost:3100`, follow
 `corepack pnpm demo:down`. The demo uses separate volumes and does not replace the
 development setup below. Its separately documented `demo:reset` command is
 destructive, exact-confirmation-gated, and limited to the dedicated demo project.
+Only `demo:up` creates a missing demo runtime during the ordinary lifecycle;
+credentials, status, bounded logs, and down refuse an absent or unsafe runtime
+before Docker runs.
 
 New contributors can choose a bounded task from
 [`docs/STARTER_ISSUES.md`](docs/STARTER_ISSUES.md).

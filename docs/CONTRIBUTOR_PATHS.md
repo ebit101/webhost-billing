@@ -20,6 +20,7 @@ an additional project-maintenance route.
   [the isolated Compose definition](../demo/), and
   [safe-demo browser helpers](../apps/web/e2e/).
 - **Nearest focused tests:** [doctor tests](../scripts/demo/demo-doctor.test.mjs),
+  [inspection-command tests](../scripts/demo/demo-inspection.test.mjs),
   [reset tests](../scripts/demo/demo-reset.test.mjs), and
   [smoke-command tests](../scripts/demo/demo-smoke.test.mjs),
   [the functional browser verifier](../apps/web/e2e/smoke-safe-demo.ts), and
@@ -31,6 +32,7 @@ an additional project-maintenance route.
 
 ```bash
 corepack pnpm test:demo-doctor
+corepack pnpm test:demo-inspection
 corepack pnpm test:demo-reset
 corepack pnpm test:demo-smoke
 corepack pnpm docs:paths
@@ -41,8 +43,9 @@ corepack pnpm format:check
 **Safety invariants:** keep the demo loopback-only, fictional, and isolated from
 development and production. Never print generated credentials, enable real providers,
 turn `demo:down` into a destructive operation, weaken the exact reset confirmation,
-add generic Docker pruning, or let read-only verification mutate business or Docker
-state.
+add generic Docker pruning, let inspection commands create missing runtime state, or
+let read-only verification mutate business or Docker state. Keep `demo:logs` finite
+and manually review its redacted snapshot before sharing it.
 
 ### Next.js UI
 

@@ -51,6 +51,9 @@ corepack pnpm demo:credentials
 ```
 
 Do not publish that file, paste its values into an issue, or reuse its passwords.
+Only `demo:up` creates the file in the ordinary demo lifecycle. `demo:credentials`,
+`demo:status`, `demo:logs`, and `demo:down` require an existing readable regular
+file and refuse before Docker if it is missing or unsafe.
 
 ## Five-minute walkthrough
 
@@ -139,7 +142,7 @@ all acceptance gates. Running this demo does not change production `NO-GO`.
 | `corepack pnpm demo:credentials`                   | Reprint the generated fictional logins              |
 | `corepack pnpm demo:status`                        | Show container state and health                     |
 | `corepack pnpm demo:smoke`                         | Verify principal read-only evaluator paths          |
-| `corepack pnpm demo:logs`                          | Follow bounded local demo logs                      |
+| `corepack pnpm demo:logs`                          | Show the latest 100 redacted log lines and exit     |
 | `corepack pnpm demo:screenshots`                   | Recreate the reviewed evaluator screenshots         |
 | `corepack pnpm demo:a11y`                          | Run the bounded accessibility smoke audit           |
 | `corepack pnpm demo:down`                          | Stop the demo and retain its fictional state        |
@@ -233,8 +236,14 @@ application APIs with fictional demo records.
 - If Docker is unavailable, start Docker Engine/Desktop and rerun `demo:up`.
 - If port `3100` is already in use, stop the conflicting local process. The fixed
   port is intentional so cookie and origin checks remain deterministic.
-- If startup fails, run `corepack pnpm demo:status` and
-  `corepack pnpm demo:logs`. Redact generated credentials before sharing output.
+- If startup fails after a runtime was created, run `corepack pnpm demo:status` and
+  `corepack pnpm demo:logs`. The log command requests no color, never follows, caps
+  output at the latest 100 lines, and redacts generated secret values and common
+  authentication headers. Manually review any excerpt before sharing it.
+- If credentials, status, logs, or down reports a missing or unsafe runtime, restore
+  `.demo-runtime/demo.env` as a readable regular file or remove the unsafe path and
+  run `corepack pnpm demo:up`. Those commands never create the file themselves and
+  never invoke Docker after this refusal.
 - If `demo:smoke` reports route failures, confirm `demo:status` is healthy and install
   the repository-pinned browser with
   `corepack pnpm --filter @webhost-billing/web exec playwright install chromium`,

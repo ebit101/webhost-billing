@@ -11,6 +11,7 @@ import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
 import { runDemoDoctor } from './demo-doctor.mjs';
+import { runDemoInspection } from './demo-inspection.mjs';
 import { runDemoReset } from './demo-reset.mjs';
 import { runDemoSmoke } from './demo-smoke.mjs';
 
@@ -105,18 +106,6 @@ function readEnvironment(options = {}) {
   );
 }
 
-function printCredentials() {
-  const environment = readEnvironment();
-  process.stdout.write(`\nSafe fictional demo\n`);
-  process.stdout.write(`URL:      ${environment.DEMO_PUBLIC_ORIGIN}\n`);
-  process.stdout.write(
-    `Admin:    admin@example.test / ${environment.DEMO_ADMIN_PASSWORD}\n`,
-  );
-  process.stdout.write(
-    `Customer: customer@example.test / ${environment.DEMO_CUSTOMER_PASSWORD}\n\n`,
-  );
-}
-
 function ensureDocker() {
   run('docker', ['info'], { capture: true });
   run('docker', ['compose', 'version'], { capture: true });
@@ -174,32 +163,14 @@ async function main() {
       }
       throw error;
     }
-    printCredentials();
+    process.exitCode = await runDemoInspection({ command: 'credentials' });
     process.stdout.write(
       'All data and credentials are local, fictional, and ignored by Git. Application and data services stay on an internal network.\n',
     );
     return;
   }
-  if (command === 'credentials') {
-    printCredentials();
-    return;
-  }
-  if (command === 'status') {
-    initializeRuntime();
-    dockerCompose('ps');
-    return;
-  }
-  if (command === 'logs') {
-    initializeRuntime();
-    dockerCompose('logs', '--follow', '--tail', '100');
-    return;
-  }
-  if (command === 'down') {
-    initializeRuntime();
-    dockerCompose('down');
-    process.stdout.write(
-      'Demo containers stopped. Fictional database volumes and generated credentials were retained.\n',
-    );
+  if (['credentials', 'status', 'logs', 'down'].includes(command)) {
+    process.exitCode = runDemoInspection({ command });
     return;
   }
   if (command === 'screenshots') {
@@ -269,7 +240,9 @@ async function main() {
   process.stdout.write(
     `  pnpm demo:smoke        Verify the running fictional demo without changing it\n`,
   );
-  process.stdout.write(`  pnpm demo:logs         Follow demo logs\n`);
+  process.stdout.write(
+    `  pnpm demo:logs         Show the latest 100 demo log lines and exit\n`,
+  );
   process.stdout.write(
     `  pnpm demo:screenshots  Refresh reviewed screenshots\n`,
   );

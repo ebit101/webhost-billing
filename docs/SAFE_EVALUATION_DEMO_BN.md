@@ -51,6 +51,9 @@ corepack pnpm demo:credentials
 তৈরি করা password ও অন্য random secret শুধু Git-ignored
 `.demo-runtime/demo.env`-এ থাকে। fileটি প্রকাশ করবেন না, public issue-তে paste
 করবেন না এবং password অন্য কোথাও reuse করবেন না।
+সাধারণ demo lifecycle-এ শুধু `demo:up` fileটি তৈরি করে। `demo:credentials`,
+`demo:status`, `demo:logs` ও `demo:down` চালাতে আগে থেকে থাকা readable regular
+file দরকার; file missing বা unsafe হলে Docker চালানোর আগেই command refuse করে।
 
 ## পাঁচ মিনিটের walkthrough
 
@@ -102,8 +105,14 @@ provider বা unrelated Docker resource target করে না।
 ## নিরাপদ troubleshooting ও report
 
 - অবস্থা দেখতে `corepack pnpm demo:status` ব্যবহার করুন।
-- সীমিত local log দেখতে `corepack pnpm demo:logs` ব্যবহার করুন। share করার আগে
-  generated credential ও অন্য sensitive value redact করুন।
+- সর্বশেষ ১০০টি no-color local log line-এর finite snapshot দেখতে
+  `corepack pnpm demo:logs` ব্যবহার করুন। commandটি follow করে না এবং generated
+  secret value ও common authentication header redact করে; share করার আগে excerpt
+  নিজে review করুন।
+- credentials, status, logs বা down যদি missing/unsafe runtime জানায়, তাহলে
+  `.demo-runtime/demo.env`-কে readable regular file হিসেবে restore করুন অথবা unsafe
+  path সরিয়ে `corepack pnpm demo:up` চালান। এই চার command নিজেরা file তৈরি করে না
+  এবং refusal-এর পরে Docker চালায় না।
 - `.demo-runtime/demo.env`, password, cookie, token, private host detail বা real
   customer data কখনো issue, chat, screenshot বা log excerpt-এ প্রকাশ করবেন না।
 - secret ভুল করে প্রকাশ হলে সেটি public issue-তে আলোচনা না করে
