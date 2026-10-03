@@ -3,7 +3,7 @@
 ## Status Summary
 
 - **Current command:** Command 78 — Turn the Customer Portal Overview Into a Next-Action Home
-- **Current status:** Completed locally; delivery verification pending
+- **Current status:** Completed and delivered to GitHub `main`
 - **Last updated:** 2026-10-03
 - **Next command:** Phase Review — Review Commands 76–78 and define the next bounded command
 - **Next command authorized:** No
@@ -5424,7 +5424,7 @@ separately. Do not begin Command 78 automatically.
 
 ### Command 78 — Turn the Customer Portal Overview Into a Next-Action Home
 
-- **Status:** Completed locally; delivery verification pending
+- **Status:** Completed and delivered to GitHub `main`
 - **Date:** 2026-10-03
 
 #### Scope completed
@@ -5498,6 +5498,11 @@ separately. Do not begin Command 78 automatically.
   91 tests respectively. The initial concurrent worker run had three five-second
   database timeouts after the Docker build; the complete worker package was rerun
   serially and passed all 10 suites and 29 tests. No failing assertion remains.
+- Command 78 implementation commit `c54bb14` passed hosted CI run `37125002385`,
+  including full-history secret scanning, database verification, offline
+  documentation, formatting, lint, strict type checks, package/API/invariant/browser
+  tests, dependency/license checks, and the production build. Hosted CodeQL run
+  `37125002373` also passed.
 
 #### Decisions made
 
