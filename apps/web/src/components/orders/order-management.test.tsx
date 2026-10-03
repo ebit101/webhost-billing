@@ -5,7 +5,7 @@ import type {
   Product,
   PublicProduct,
 } from '@webhost-billing/shared';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AdminOrderManager } from './admin-order-manager';
@@ -145,6 +145,131 @@ const customerDetail: CustomerDetail = {
 afterEach(() => vi.unstubAllGlobals());
 
 describe('order interfaces', () => {
+  it.each([
+    'retired product',
+    'retired price',
+    'mismatched price',
+    'empty catalogue',
+  ])(
+    'never substitutes a plan for a carried %s and requires deliberate replacement',
+    async (scenario) => {
+      const mock = vi.fn(async () =>
+        jsonResponse({
+          success: true,
+          data:
+            scenario === 'empty catalogue'
+              ? []
+              : scenario === 'mismatched price'
+                ? [
+                    publicProduct,
+                    {
+                      ...publicProduct,
+                      id: customerId,
+                      name: 'Other Hosting',
+                      prices: [{ ...publicProduct.prices[0]!, id: orderId }],
+                    },
+                  ]
+                : [publicProduct],
+        }),
+      );
+      vi.stubGlobal('fetch', mock);
+      render(
+        <CustomerCheckout
+          initialProductId={
+            scenario === 'retired product' ? orderId : productId
+          }
+          initialPriceId={
+            scenario === 'retired price' || scenario === 'mismatched price'
+              ? orderId
+              : priceId
+          }
+        />,
+      );
+      await screen.findByText(
+        'Your selected hosting plan or billing period is no longer available.',
+      );
+      expect(
+        (screen.getByLabelText('Product') as HTMLSelectElement).value,
+      ).toBe('');
+      expect(
+        (screen.getByLabelText('Billing period') as HTMLSelectElement).value,
+      ).toBe('');
+      expect(
+        (
+          screen.getByRole('button', {
+            name: 'Place order',
+          }) as HTMLButtonElement
+        ).disabled,
+      ).toBe(true);
+      expect(mock).toHaveBeenCalledTimes(1);
+      expect(
+        screen
+          .getByRole('link', { name: 'Choose another hosting plan' })
+          .getAttribute('href'),
+      ).toBe('/hosting');
+      if (scenario !== 'empty catalogue') {
+        await userEvent
+          .setup()
+          .selectOptions(screen.getByLabelText('Product'), productId);
+        expect(
+          screen.queryByText(
+            'Your selected hosting plan or billing period is no longer available.',
+          ),
+        ).toBeNull();
+        expect(
+          (screen.getByLabelText('Billing period') as HTMLSelectElement).value,
+        ).toBe(priceId);
+        expect(mock).toHaveBeenCalledTimes(1);
+      }
+    },
+  );
+
+  it('retains an exact non-first catalogue selection without placing an order', async () => {
+    const nextPriceId = '90000000-0000-4000-8000-000000000080';
+    const nextProductId = '90000000-0000-4000-8000-000000000081';
+    const second = {
+      ...publicProduct,
+      id: nextProductId,
+      name: 'Selected Plan',
+      prices: [{ ...publicProduct.prices[0]!, id: nextPriceId }],
+    };
+    const mock = vi.fn(async () =>
+      jsonResponse({ success: true, data: [publicProduct, second] }),
+    );
+    vi.stubGlobal('fetch', mock);
+    render(
+      <CustomerCheckout
+        initialProductId={nextProductId}
+        initialPriceId={nextPriceId}
+      />,
+    );
+    await waitFor(() =>
+      expect(
+        (screen.getByLabelText('Product') as HTMLSelectElement).value,
+      ).toBe(nextProductId),
+    );
+    expect(
+      (screen.getByLabelText('Billing period') as HTMLSelectElement).value,
+    ).toBe(nextPriceId);
+    expect(mock).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps no-intent checkout usable with a currently available plan', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => jsonResponse({ success: true, data: [publicProduct] })),
+    );
+    render(<CustomerCheckout />);
+    await waitFor(() =>
+      expect(
+        (screen.getByLabelText('Product') as HTMLSelectElement).value,
+      ).toBe(productId),
+    );
+    expect(
+      (screen.getByLabelText('Billing period') as HTMLSelectElement).value,
+    ).toBe(priceId);
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
   it('submits only product, price, domain, and an idempotency key at checkout', async () => {
     const user = userEvent.setup();
     let submittedBody: Record<string, unknown> | undefined;

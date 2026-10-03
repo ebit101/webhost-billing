@@ -3,8 +3,13 @@ import {
   authenticatedIdentitySchema,
   type AuthenticatedIdentity,
 } from '@webhost-billing/shared';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
+import {
+  CHECKOUT_INTENT_HEADER,
+  checkoutEntryHref,
+  readCheckoutIntent,
+} from './checkout-intent';
 
 const API_URL =
   process.env.INTERNAL_API_URL ??
@@ -63,7 +68,15 @@ export async function requireWorkspaceRole(
   const identity = await getAuthenticatedIdentity();
 
   if (!identity) {
-    redirect('/login');
+    const context =
+      requiredRole === 'CUSTOMER'
+        ? (await headers()).get(CHECKOUT_INTENT_HEADER)
+        : null;
+    const intent =
+      context && context.length <= 128
+        ? readCheckoutIntent(new URLSearchParams(context))
+        : undefined;
+    redirect(checkoutEntryHref('/login', intent));
   }
 
   if (identity.role !== requiredRole) {

@@ -48,6 +48,15 @@ recording, and pending-reference verification while retaining existing records.
 The browser lifecycle reviews and cancels the change with no settings write or
 seeded-policy change; component fixtures prove the confirmed save and retry paths.
 
+Command 80 carries only validated checkout identifiers through account entry; it
+does not grant ownership or pricing authority. `checkout-intent.test.ts`, proxy and
+server-guard tests reject malformed/duplicate identifiers and hostile return context;
+login tests retain role/MFA landings. Checkout component tests require current
+product/price membership and explicit replacement of unavailable intent. The browser
+lifecycle proves registration and sign-in leave the new customer's order/invoice
+counts at zero; existing `orders.e2e-spec.ts` retains authoritative pricing,
+ineligible-price rejection, ownership, and idempotent explicit order creation.
+
 A failed invariant test blocks delivery. Do not solve a failure by weakening an assertion, deleting concurrency, increasing arbitrary delays, bypassing ownership, or changing a fake provider to report success unconditionally.
 
 Investigate the owning boundary:

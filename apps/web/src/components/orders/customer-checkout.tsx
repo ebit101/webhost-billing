@@ -7,6 +7,10 @@ import type {
 import Link from 'next/link';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { authMutation, publicGet } from '../../lib/auth-api';
+import {
+  checkoutEntryHref,
+  readCheckoutIntent,
+} from '../../lib/checkout-intent';
 import { Card, Field, fieldClass } from '../customers/customer-fields';
 import { Button, buttonStyles } from '../ui/button';
 import { LoadingState } from '../ui/feedback-state';
@@ -23,12 +27,13 @@ export function CustomerCheckout({
   initialPriceId?: string;
 }) {
   const [products, setProducts] = useState<PublicProduct[]>([]);
-  const [productId, setProductId] = useState(initialProductId ?? '');
-  const [priceId, setPriceId] = useState(initialPriceId ?? '');
+  const [productId, setProductId] = useState('');
+  const [priceId, setPriceId] = useState('');
   const [result, setResult] = useState<OrderCreationResult>();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [unavailable, setUnavailable] = useState(false);
   const submissionKey = useRef('');
 
   useEffect(() => {
@@ -37,15 +42,22 @@ export function CustomerCheckout({
       .then((catalog) => {
         if (!active) return;
         setProducts(catalog);
-        const selected =
-          catalog.find((product) => product.id === initialProductId) ??
-          catalog[0];
+        const intent = readCheckoutIntent({
+          productId: initialProductId,
+          priceId: initialPriceId,
+        });
+        const selected = intent
+          ? catalog.find((product) => product.id === intent.productId)
+          : catalog.find((product) => product.prices.length > 0);
+        const selectedPrice = intent
+          ? selected?.prices.find((price) => price.id === intent.priceId)
+          : selected?.prices[0];
+        if (intent && (!selected || !selectedPrice)) {
+          setUnavailable(true);
+          return;
+        }
         setProductId(selected?.id ?? '');
-        setPriceId(
-          selected?.prices.find((price) => price.id === initialPriceId)?.id ??
-            selected?.prices[0]?.id ??
-            '',
-        );
+        setPriceId(selectedPrice?.id ?? '');
       })
       .catch((caught: unknown) => {
         if (active) setError(errorMessage(caught));
@@ -63,6 +75,7 @@ export function CustomerCheckout({
 
   async function checkout(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (loading || unavailable || !price || saving) return;
     const values = new FormData(event.currentTarget);
     if (!submissionKey.current) submissionKey.current = crypto.randomUUID();
     setSaving(true);
@@ -143,10 +156,33 @@ export function CustomerCheckout({
         >
           {error}{' '}
           {error.toLowerCase().includes('authentication') ? (
-            <Link href="/login" className="underline">
+            <Link
+              href={checkoutEntryHref(
+                '/login',
+                readCheckoutIntent({ productId, priceId }),
+              )}
+              className="underline"
+            >
               Sign in to continue.
             </Link>
           ) : null}
+        </div>
+      ) : null}
+      {unavailable ? (
+        <div
+          role="alert"
+          className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-950"
+        >
+          <p className="font-semibold">
+            Your selected hosting plan or billing period is no longer available.
+          </p>
+          <p className="mt-2">
+            No other plan has been selected and no order has been placed. Choose
+            an available plan to continue.
+          </p>
+          <Link href="/hosting" className={buttonStyles('secondary')}>
+            Choose another hosting plan
+          </Link>
         </div>
       ) : null}
       <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
@@ -162,10 +198,14 @@ export function CustomerCheckout({
                   );
                   setProductId(event.target.value);
                   setPriceId(next?.prices[0]?.id ?? '');
+                  setUnavailable(false);
                 }}
                 className={fieldClass}
                 required
               >
+                <option value="" disabled>
+                  Select a product
+                </option>
                 {products.map((item) => (
                   <option key={item.id} value={item.id}>
                     {item.name}
@@ -181,6 +221,9 @@ export function CustomerCheckout({
                 className={fieldClass}
                 required
               >
+                <option value="" disabled>
+                  Select a billing period
+                </option>
                 {product?.prices.map((item) => (
                   <option key={item.id} value={item.id}>
                     {item.billingPeriod.toLowerCase()} —{' '}

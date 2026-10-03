@@ -5,6 +5,11 @@ import { RegisterForm } from './register-form';
 
 describe('customer registration', () => {
   it('omits empty optional fields from the strict registration request', async () => {
+    const intent = {
+      productId: '10000000-0000-4000-8000-000000000080',
+      priceId: '10000000-0000-4000-8000-000000000081',
+    };
+    const loginHref = `/login?productId=${intent.productId}&priceId=${intent.priceId}`;
     const user = userEvent.setup();
     const fetchMock = vi.fn(
       (request: RequestInfo | URL, init?: RequestInit) => {
@@ -22,7 +27,10 @@ describe('customer registration', () => {
     );
     vi.stubGlobal('fetch', fetchMock);
 
-    render(<RegisterForm />);
+    render(<RegisterForm checkoutIntent={intent} />);
+    expect(
+      screen.getByRole('link', { name: /^Sign in$/ }).getAttribute('href'),
+    ).toBe(loginHref);
     await user.type(screen.getByLabelText('First name'), 'Browser');
     await user.type(screen.getByLabelText('Last name'), 'Customer');
     await user.type(
@@ -44,6 +52,11 @@ describe('customer registration', () => {
     );
 
     await screen.findByText(/verification instructions/i);
+    expect(
+      screen
+        .getByRole('link', { name: 'sign in to continue your selected plan' })
+        .getAttribute('href'),
+    ).toBe(loginHref);
     const registrationCall = fetchMock.mock.calls.find(([url]) =>
       String(url).endsWith('/auth/register'),
     );
@@ -52,6 +65,8 @@ describe('customer registration', () => {
       String((registrationCall?.[1] as RequestInit).body),
     ) as Record<string, unknown>;
     expect(payload).not.toHaveProperty('companyName');
+    expect(payload).not.toHaveProperty('productId');
+    expect(payload).not.toHaveProperty('priceId');
     expect(payload).toMatchObject({
       email: 'browser@example.test',
       countryCode: 'BD',

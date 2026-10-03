@@ -10,6 +10,10 @@ and will be called out in release notes.
 
 ### Changed
 
+- Preserved validated hosting product/price selection through customer sign-in and
+  same-browser registration links, including expired-session handoffs. Return URLs
+  are never accepted; administrator/MFA landings remain separate, stale or mismatched
+  selections require deliberate replacement, and sign-in creates no order.
 - Reviewed Command 79's server-enforced partial-payment safeguard and defined a
   separately gated checkout-continuity slice using validated product/price intent,
   a fixed local sign-in return, and explicit unavailable-selection handling.

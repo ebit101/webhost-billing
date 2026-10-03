@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Phase Review — Review Command 79 and define the next bounded command
-- **Current status:** Review completed; next implementation defined but not authorized
+- **Current command:** Command 80 — Preserve Hosting Plan Selection Through Customer Sign-In
+- **Current status:** Implementation and local validation complete; hosted delivery verification in progress
 - **Last updated:** 2026-10-03
-- **Next command:** Command 80 — Preserve Hosting Plan Selection Through Customer Sign-In
+- **Next command:** Phase Review — Review Command 80 and define the next bounded command
 - **Next command authorized:** No
 
 ## Command Reports
@@ -5968,6 +5968,127 @@ implementation automatically.
 
 Authorize **Command 80 — Preserve Hosting Plan Selection Through Customer Sign-In**
 separately after this review's delivery. Do not begin it automatically.
+
+### Command 80 — Preserve Hosting Plan Selection Through Customer Sign-In
+
+- **Status:** Implementation and local validation complete; hosted delivery verification in progress
+- **Date:** 2026-10-03
+
+#### Scope completed
+
+- Added one browser/server-compatible intent validator derived from the existing
+  strict order contract. It accepts exactly one product UUID and price UUID, drops
+  incomplete/malformed/duplicate identifiers, ignores all unrelated payload, and
+  reconstructs only fixed local login, registration, or customer-checkout routes.
+- Preserved anonymous checkout selection in the proxy redirect. For requests with
+  a session cookie, the proxy replaces any forged intent header with a bounded
+  validated pair from the exact checkout path, or deletes it on all other matched
+  paths. The authoritative server guard uses that pair only to direct unauthenticated
+  customers back to sign-in; cookie presence alone does not authorize checkout.
+- Added a customer-role check to the checkout page itself, retaining authorization
+  on navigation when a parent layout may be reused. Login and registration pages
+  narrow async query parameters before passing selection to their client forms.
+- Login/register links and the post-registration sign-in link retain only the
+  selected pair. Failed login and retry retain it; password reset and verification
+  emails are unchanged. Administrator and MFA completions always use the returned
+  role and land at `/admin`, never a customer checkout hint.
+- Checkout reloads the current public catalogue and accepts only the exact product's
+  current price. Unavailable, retired, and cross-product selections leave both
+  fields empty, block submission, explain that no replacement/order exists, and
+  offer catalogue navigation or deliberate selection. No-intent checkout still
+  selects an available priced plan. A changed route selection remounts its checkout
+  instance so prior draft/results do not leak into the new intent.
+- Extended the local fictional lifecycle from an anonymous catalogue CTA through
+  cookie-invalid sign-in, login/register round trips, verification in a second tab,
+  and the retained registration-tab sign-in link. It asserts exact checkout and zero
+  new-customer orders/invoices before the existing explicit Place order step.
+- Added no authentication API, database schema, provider, billing rule, automatic
+  order/payment/provisioning, cart, durable intent, release, or deployment change.
+
+#### Files changed
+
+- Intent and guard: `apps/web/src/lib/checkout-intent.ts`,
+  `apps/web/src/lib/checkout-intent.test.ts`, `apps/web/src/proxy.ts`,
+  `apps/web/src/proxy.test.ts`, `apps/web/src/lib/server-auth.ts`,
+  `apps/web/src/lib/server-auth.test.ts`
+- Entry routes: `apps/web/src/app/login/page.tsx`,
+  `apps/web/src/app/register/page.tsx`,
+  `apps/web/src/app/(portal)/portal/checkout/page.tsx`,
+  `apps/web/src/app/checkout-entry.test.tsx`
+- Forms: `apps/web/src/components/auth/login-form.tsx`,
+  `apps/web/src/components/auth/login-form.test.tsx`,
+  `apps/web/src/components/auth/register-form.tsx`,
+  `apps/web/src/components/auth/register-form.test.tsx`,
+  `apps/web/src/components/orders/customer-checkout.tsx`,
+  `apps/web/src/components/orders/order-management.test.tsx`
+- Browser: `apps/web/e2e/specs/hosting-lifecycle.spec.ts`
+- Evidence: `CODEX_DEVELOPMENT_COMMANDS.md`, `CHANGELOG.md`,
+  `docs/PRODUCT_EXPERIENCE_ROADMAP.md`, `docs/CRITICAL_BUSINESS_INVARIANTS.md`,
+  `docs/PROGRESS.md`
+
+#### Validation
+
+- Focused final web rerun passed all 70 tests in 7 files, covering strict intent,
+  hostile destinations, duplicates, forged header replacement, absent/expired
+  sessions, default/administrator/MFA landings, failed login/retry, registration
+  payload exclusion, server pages, current selection, and deliberate replacement.
+- The complete package gate passed all 336 tests: 57 demo/documentation, 29 shared,
+  3 queue, 120 web, 98 API, and 29 worker tests. The cross-product-price fixture was
+  subsequently strengthened to include that price on another available product;
+  its owning order-interface suite passed all 11 tests and the final focused rerun
+  passed without changing assertions, limits, or authentication behavior.
+- The existing order API integration suite passed all 5 tests, including authoritative
+  totals, rejected ineligible prices/browser totals, ownership, idempotency, and
+  stable historical pricing. No order/API implementation changed.
+- The full local fictional browser lifecycle passed (1 test, 1.7 minutes), including
+  exact anonymous and invalid-session handoffs, registration link continuity,
+  verification in a second tab, exact post-login selection, zero automatic orders
+  or invoices, and the existing explicit order/payment/hosting/support lifecycle.
+  The first run caught a test navigation race: credentials were entered before the
+  registration-to-login navigation completed, so no login request was sent. Waiting
+  for the exact login URL and visible sign-in heading corrected the fixture; no
+  application assertion, timeout, authentication, or business rule was weakened.
+  Final web and browser TypeScript checking passed after that fixture correction.
+- Repository lint, strict workspace type checking, full production build, formatting,
+  and four offline documentation validators passed. Lint first rejected synchronous
+  effect resets; keyed checkout instances resolved that without a rule suppression.
+  Type checking first rejected a Testing Library query's Playwright-only `exact`
+  option; an exact name regex corrected the test and the complete rerun passed.
+- Consulted the installed Next.js page/search-parameter, layout-caching, async
+  headers, redirect, and proxy request-header documentation before implementation.
+  Only the upstream request-header API is used; no intent header is deliberately
+  emitted as a client response header.
+
+#### Decisions made
+
+- Reuse the existing UUID boundary schema without a new shared/auth API contract.
+  Treat carried selection as navigation context, never authorization or money.
+- Support expired-session handoff through a proxy-overwritten, revalidated request
+  header rather than a general return URL or persistent browser/server store.
+- Add a checkout page guard because cached layouts do not re-run on every navigation.
+  Keep API authorization and pricing as the authoritative business boundaries.
+- Require deliberate replacement of unavailable intent; do not turn a stale price
+  into silent acceptance of a different plan or billing period.
+
+#### Open questions and risks
+
+- Availability may change again after catalogue load. The existing order API still
+  revalidates the eligible product/price and calculates its own amount at submission.
+- Verification in another tab is supported by returning to the retained registration
+  tab. Email links, password reset, cross-device resume, closed-tab recovery, and
+  general return navigation deliberately do not persist or carry checkout context.
+- Previously recorded VM-module/PostgreSQL-driver warnings and the lint-only
+  `braces` advisory remain separate maintenance; no dependency change was made.
+- Production remains `NO-GO`. Provider acceptance, SMTP, monitoring, off-site
+  recovery, policies, infrastructure, and operator-pilot gates remain outstanding.
+- Other P1 operator connectivity, pagination, dashboard attention, automation
+  freshness, service context, and inactive workspace chrome remain separately gated.
+
+#### Recommended next command
+
+After successful delivery, authorize **Phase Review — Review Command 80 and define
+the next bounded command** separately. Do not define or implement another command
+automatically.
 
 ## Report Template
 

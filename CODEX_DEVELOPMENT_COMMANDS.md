@@ -1914,8 +1914,8 @@ rewriting, push origin/main, verify hosted CI and CodeQL, then stop and request 
 phase review before defining or implementing another command.
 ```
 
-**Authorization:** Defined only. Requires separate user authorization; this phase
-review does not implement Command 80.
+**Authorization:** Separately authorized by the user on 2026-10-03. Implementation
+and delivery evidence are tracked in `docs/PROGRESS.md`; no later command is authorized.
 
 ---
 

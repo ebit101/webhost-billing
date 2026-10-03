@@ -3,9 +3,17 @@
 import Link from 'next/link';
 import { useState, type FormEvent } from 'react';
 import { authMutation } from '../../lib/auth-api';
+import {
+  checkoutEntryHref,
+  type CheckoutIntent,
+} from '../../lib/checkout-intent';
 import { Field, FormNotice, SubmitButton } from './form-controls';
 
-export function RegisterForm() {
+export function RegisterForm({
+  checkoutIntent,
+}: {
+  checkoutIntent?: CheckoutIntent;
+}) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
   const [message, setMessage] = useState<string>();
@@ -41,6 +49,18 @@ export function RegisterForm() {
   return (
     <form onSubmit={submit} className="grid gap-5">
       <FormNotice error={error} message={message} />
+      {message && checkoutIntent ? (
+        <p className="text-sm text-slate-600">
+          After verifying your email, return here and{' '}
+          <Link
+            href={checkoutEntryHref('/login', checkoutIntent)}
+            className="font-medium text-cyan-700 underline"
+          >
+            sign in to continue your selected plan
+          </Link>
+          .
+        </p>
+      ) : null}
       <div className="grid gap-5 sm:grid-cols-2">
         <Field
           label="First name"
@@ -103,7 +123,7 @@ export function RegisterForm() {
       <p className="text-center text-sm text-slate-600">
         Already registered?{' '}
         <Link
-          href="/login"
+          href={checkoutEntryHref('/login', checkoutIntent)}
           className="font-medium text-cyan-700 hover:underline"
         >
           Sign in

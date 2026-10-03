@@ -3,12 +3,16 @@ import { getAuthenticatedIdentity, requireWorkspaceRole } from './server-auth';
 
 const nextServer = vi.hoisted(() => ({
   cookies: vi.fn(),
+  headers: vi.fn(),
   redirect: vi.fn((path: string): never => {
     throw new Error(`NEXT_REDIRECT:${path}`);
   }),
 }));
 
-vi.mock('next/headers', () => ({ cookies: nextServer.cookies }));
+vi.mock('next/headers', () => ({
+  cookies: nextServer.cookies,
+  headers: nextServer.headers,
+}));
 vi.mock('next/navigation', () => ({ redirect: nextServer.redirect }));
 
 describe('server workspace authorization', () => {
@@ -18,6 +22,7 @@ describe('server workspace authorization', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    nextServer.headers.mockResolvedValue(new Headers());
     nextServer.cookies.mockResolvedValue({
       get: (name: string) =>
         name === 'webhost_session'
@@ -64,6 +69,40 @@ describe('server workspace authorization', () => {
     );
 
     await expect(getAuthenticatedIdentity()).resolves.toBeNull();
+  });
+
+  it.each(['missing', 'expired'])(
+    'retains only checkout intent for a %s customer session',
+    async (state) => {
+      const query =
+        'productId=10000000-0000-4000-8000-000000000080&priceId=10000000-0000-4000-8000-000000000081';
+      nextServer.headers.mockResolvedValue(
+        new Headers({ 'x-webhost-checkout-intent': query }),
+      );
+      if (state === 'missing')
+        nextServer.cookies.mockResolvedValue({ get: () => undefined });
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue(new Response(null, { status: 401 })),
+      );
+      await expect(requireWorkspaceRole('CUSTOMER')).rejects.toThrow(
+        `NEXT_REDIRECT:/login?${query}`,
+      );
+    },
+  );
+
+  it.each([
+    'https://evil.example/checkout',
+    'productId=invalid&priceId=invalid',
+    'x'.repeat(129),
+  ])('drops invalid server context %s', async (context) => {
+    nextServer.cookies.mockResolvedValue({ get: () => undefined });
+    nextServer.headers.mockResolvedValue(
+      new Headers({ 'x-webhost-checkout-intent': context }),
+    );
+    await expect(requireWorkspaceRole('CUSTOMER')).rejects.toThrow(
+      'NEXT_REDIRECT:/login',
+    );
   });
 
   it('allows an administrator into the administrator workspace', async () => {

@@ -24,6 +24,7 @@ test('complete hosting customer and administrator lifecycle', async ({
   let renewalInvoiceId = '';
   let serviceId = '';
   let customerId = '';
+  const selectionQuery = `productId=${E2E_PRODUCT.id}&priceId=${E2E_PRODUCT.priceId}`;
 
   await test.step('public entry has truthful local navigation and protected workspaces', async () => {
     await page.goto('/');
@@ -83,10 +84,34 @@ test('complete hosting customer and administrator lifecycle', async ({
       'href',
       `/portal/checkout?productId=${E2E_PRODUCT.id}&priceId=${E2E_PRODUCT.priceId}`,
     );
+    await page
+      .getByRole('link', { name: `Choose ${E2E_PRODUCT.name}` })
+      .click();
+    await expect(page).toHaveURL(new RegExp(`/login\\?${selectionQuery}$`));
+    await expect(
+      page.getByRole('link', { name: 'Create an account' }),
+    ).toHaveAttribute('href', `/register?${selectionQuery}`);
   });
 
-  await test.step('customer registers, verifies, and signs in', async () => {
-    await page.goto('/register');
+  await test.step('invalid session cookie retains the same safe checkout sign-in context', async () => {
+    await context.addCookies([
+      {
+        name: 'webhost_session',
+        value: 'fictional-invalid-session-command80',
+        url: 'http://127.0.0.1:3200',
+      },
+    ]);
+    await page.goto(`/portal/checkout?${selectionQuery}`);
+    await expect(page).toHaveURL(new RegExp(`/login\\?${selectionQuery}$`));
+    await context.clearCookies();
+  });
+
+  await test.step('customer retains plan through registration, verification, and sign-in without ordering', async () => {
+    await page.getByRole('link', { name: 'Create an account' }).click();
+    await expect(page).toHaveURL(new RegExp(`/register\\?${selectionQuery}$`));
+    await page.getByRole('link', { name: 'Sign in', exact: true }).click();
+    await expect(page).toHaveURL(new RegExp(`/login\\?${selectionQuery}$`));
+    await page.getByRole('link', { name: 'Create an account' }).click();
     await page.getByLabel('First name').fill(E2E_CUSTOMER.firstName);
     await page.getByLabel('Last name').fill(E2E_CUSTOMER.lastName);
     await page.getByLabel('Email address').fill(E2E_CUSTOMER.email);
@@ -102,9 +127,41 @@ test('complete hosting customer and administrator lifecycle', async ({
     await expect(page.getByRole('status')).toContainText(/verify your email/i);
 
     const token = await customerVerificationToken();
-    await page.goto(`/verify-email?token=${encodeURIComponent(token)}`);
-    await expect(page.getByRole('status')).toContainText(/verified/i);
-    await login(page, E2E_CUSTOMER.email, E2E_CUSTOMER.password, '/portal');
+    const verificationPage = await context.newPage();
+    await verificationPage.goto(
+      `/verify-email?token=${encodeURIComponent(token)}`,
+    );
+    await expect(verificationPage.getByRole('status')).toContainText(
+      /verified/i,
+    );
+    await verificationPage.close();
+    await page
+      .getByRole('link', { name: 'sign in to continue your selected plan' })
+      .click();
+    await expect(page).toHaveURL(new RegExp(`/login\\?${selectionQuery}$`));
+    await expect(
+      page.getByRole('heading', { name: 'Customer sign in' }),
+    ).toBeVisible();
+    await page.getByLabel('Email address').fill(E2E_CUSTOMER.email);
+    await page.getByLabel('Password').fill(E2E_CUSTOMER.password);
+    await page.getByRole('button', { name: 'Sign in' }).click();
+    await expect(page).toHaveURL(
+      new RegExp(`/portal/checkout\\?${selectionQuery}$`),
+    );
+    await expect(page.getByLabel('Product')).toHaveValue(E2E_PRODUCT.id);
+    await expect(page.getByLabel('Billing period')).toHaveValue(
+      E2E_PRODUCT.priceId,
+    );
+    const customer = await e2ePrisma.customer.findFirstOrThrow({
+      where: { user: { email: E2E_CUSTOMER.email } },
+      select: { id: true },
+    });
+    expect(
+      await e2ePrisma.order.count({ where: { customerId: customer.id } }),
+    ).toBe(0);
+    expect(
+      await e2ePrisma.invoice.count({ where: { customerId: customer.id } }),
+    ).toBe(0);
   });
 
   await test.step('authenticated catalogue selection opens checkout without placing an order', async () => {

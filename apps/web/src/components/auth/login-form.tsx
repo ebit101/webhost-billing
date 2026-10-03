@@ -8,12 +8,19 @@ import type {
   TwoFactorRequiredResponse,
 } from '@webhost-billing/shared';
 import { authMutation } from '../../lib/auth-api';
+import {
+  checkoutEntryHref,
+  customerLandingHref,
+  type CheckoutIntent,
+} from '../../lib/checkout-intent';
 import { Field, FormNotice, SubmitButton } from './form-controls';
 
 export function LoginForm({
   audience = 'customer',
+  checkoutIntent,
 }: {
   audience?: 'admin' | 'customer';
+  checkoutIntent?: CheckoutIntent;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -38,7 +45,11 @@ export function LoginForm({
         setBusy(false);
         return;
       }
-      router.push(result.identity.role === 'ADMIN' ? '/admin' : '/portal');
+      router.push(
+        result.identity.role === 'ADMIN'
+          ? '/admin'
+          : customerLandingHref(checkoutIntent),
+      );
       router.refresh();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Sign-in failed.');
@@ -61,7 +72,11 @@ export function LoginForm({
           code: String(form.get('code') ?? '').trim(),
         },
       );
-      router.push(result.identity.role === 'ADMIN' ? '/admin' : '/portal');
+      router.push(
+        result.identity.role === 'ADMIN'
+          ? '/admin'
+          : customerLandingHref(checkoutIntent),
+      );
       router.refresh();
     } catch (caught) {
       setError(
@@ -104,6 +119,12 @@ export function LoginForm({
   return (
     <form onSubmit={submit} className="grid gap-5">
       <FormNotice error={error} />
+      {checkoutIntent ? (
+        <p className="text-sm text-slate-600">
+          Sign in to continue with your selected hosting plan. Availability and
+          pricing will be checked again; no order is placed by signing in.
+        </p>
+      ) : null}
       <Field
         label="Email address"
         name="email"
@@ -128,7 +149,7 @@ export function LoginForm({
         </Link>
         {audience === 'customer' ? (
           <Link
-            href="/register"
+            href={checkoutEntryHref('/register', checkoutIntent)}
             className="font-medium text-cyan-700 hover:underline"
           >
             Create an account

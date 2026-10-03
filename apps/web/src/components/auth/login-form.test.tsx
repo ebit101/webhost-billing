@@ -1,11 +1,18 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { LoginForm } from './login-form';
 
 const navigation = vi.hoisted(() => ({ push: vi.fn(), refresh: vi.fn() }));
 
 vi.mock('next/navigation', () => ({ useRouter: () => navigation }));
+const intent = {
+  productId: '10000000-0000-4000-8000-000000000080',
+  priceId: '10000000-0000-4000-8000-000000000081',
+};
+const query = `productId=${intent.productId}&priceId=${intent.priceId}`;
+beforeEach(() => vi.clearAllMocks());
+afterEach(() => vi.unstubAllGlobals());
 
 describe('administrator login security', () => {
   it('shows the administrator entry without customer registration', () => {
@@ -61,7 +68,7 @@ describe('administrator login security', () => {
     );
     vi.stubGlobal('fetch', fetchMock);
 
-    render(<LoginForm />);
+    render(<LoginForm checkoutIntent={intent} />);
     await user.type(
       screen.getByLabelText('Email address'),
       'admin@example.test',
@@ -80,6 +87,90 @@ describe('administrator login security', () => {
     );
     expect(String(loginCall?.[0])).not.toContain('password=');
     expect((loginCall?.[1] as RequestInit).method).toBe('POST');
+  });
+});
+
+describe('customer checkout sign-in', () => {
+  it.each([
+    ['CUSTOMER', intent, `/portal/checkout?${query}`],
+    ['CUSTOMER', undefined, '/portal'],
+    ['CUSTOMER', { ...intent, priceId: '//evil.example' }, '/portal'],
+    ['ADMIN', intent, '/admin'],
+  ] as const)(
+    'lands role %s with validated selection only',
+    async (role, selection, destination) => {
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(async (input: RequestInfo | URL) =>
+          String(input).endsWith('/auth/csrf')
+            ? success({ csrfToken: 'x'.repeat(96) })
+            : success({ identity: { role } }),
+        ),
+      );
+      render(<LoginForm checkoutIntent={selection} />);
+      const user = userEvent.setup();
+      await user.type(
+        screen.getByLabelText('Email address'),
+        'customer@example.test',
+      );
+      await user.type(screen.getByLabelText('Password'), 'fictional-password');
+      await user.click(screen.getByRole('button', { name: 'Sign in' }));
+      await waitFor(() =>
+        expect(navigation.push).toHaveBeenCalledWith(destination),
+      );
+      expect(navigation.refresh).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it('retains selection and registration link across a failed login and retry without ordering', async () => {
+    let attempts = 0;
+    const mock = vi.fn(async (input: RequestInfo | URL) => {
+      if (String(input).endsWith('/auth/csrf'))
+        return success({ csrfToken: 'x'.repeat(96) });
+      attempts++;
+      return attempts === 1
+        ? new Response(
+            JSON.stringify({
+              success: false,
+              error: {
+                code: 'UNAUTHORIZED',
+                message: 'Fictional invalid credentials',
+              },
+            }),
+            { status: 401 },
+          )
+        : success({ identity: { role: 'CUSTOMER' } });
+    });
+    vi.stubGlobal('fetch', mock);
+    render(<LoginForm checkoutIntent={intent} />);
+    expect(
+      screen
+        .getByRole('link', { name: 'Create an account' })
+        .getAttribute('href'),
+    ).toBe(`/register?${query}`);
+    expect(
+      screen
+        .getByRole('link', { name: 'Forgot password?' })
+        .getAttribute('href'),
+    ).toBe('/forgot-password');
+    const user = userEvent.setup();
+    await user.type(
+      screen.getByLabelText('Email address'),
+      'customer@example.test',
+    );
+    await user.type(screen.getByLabelText('Password'), 'fictional-password');
+    await user.click(screen.getByRole('button', { name: 'Sign in' }));
+    await screen.findByText('Fictional invalid credentials');
+    expect(navigation.push).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: 'Sign in' }));
+    await waitFor(() =>
+      expect(navigation.push).toHaveBeenCalledWith(`/portal/checkout?${query}`),
+    );
+    expect(
+      mock.mock.calls.every(([url]) =>
+        /\/auth\/(csrf|login)$/.test(String(url)),
+      ),
+    ).toBe(true);
   });
 });
 
