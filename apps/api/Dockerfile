@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7
-FROM node:24-bookworm-slim AS builder
+FROM node:26-bookworm-slim AS builder
 
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
@@ -25,7 +25,7 @@ RUN pnpm build:packages \
   && pnpm --filter @webhost-billing/api build \
   && pnpm --filter @webhost-billing/api deploy --legacy --prod /opt/api
 
-FROM node:24-bookworm-slim AS api
+FROM node:26-bookworm-slim AS api
 
 ENV NODE_ENV=production
 WORKDIR /app
