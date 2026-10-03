@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7
-FROM node:24-bookworm-slim AS builder
+FROM node:26-bookworm-slim AS builder
 
 ARG NEXT_PUBLIC_API_URL
 ENV NODE_ENV=production
@@ -25,7 +25,7 @@ RUN pnpm --filter @webhost-billing/config build \
   && pnpm --filter @webhost-billing/shared build \
   && pnpm --filter @webhost-billing/web build
 
-FROM node:24-bookworm-slim AS web
+FROM node:26-bookworm-slim AS web
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
