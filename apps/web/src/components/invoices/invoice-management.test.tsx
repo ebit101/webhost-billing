@@ -10,6 +10,8 @@ import { AdminInvoiceManager } from './admin-invoice-manager';
 import { CustomerInvoiceList } from './customer-invoice-list';
 import { InvoiceDetail } from './invoice-detail';
 
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
+
 const customerId = 'a0000000-0000-4000-8000-000000000001';
 const invoiceId = 'a0000000-0000-4000-8000-000000000002';
 
@@ -104,7 +106,7 @@ describe('invoice interfaces', () => {
   it('lists customer invoices with status, due date, and balance links', async () => {
     vi.stubGlobal(
       'fetch',
-      vi.fn().mockResolvedValue(paginatedResponse([invoice])),
+      vi.fn().mockResolvedValue(paginatedResponse([invoice], 20)),
     );
     render(<CustomerInvoiceList />);
     const link = await screen.findByRole('link', {
@@ -112,7 +114,7 @@ describe('invoice interfaces', () => {
     });
     expect(link.getAttribute('href')).toBe(`/portal/invoices/${invoice.id}`);
     expect(screen.getByText('BDT 256.00')).toBeTruthy();
-    expect(screen.getByText('UNPAID')).toBeTruthy();
+    expect(screen.getByRole('cell', { name: 'UNPAID' })).toBeTruthy();
   });
 
   it('renders historical snapshots and a working printable view', async () => {
@@ -212,13 +214,13 @@ function jsonResponse(body: unknown) {
   });
 }
 
-function paginatedResponse(data: unknown[]) {
+function paginatedResponse(data: unknown[], pageSize = 100) {
   return jsonResponse({
     success: true,
     data,
     pagination: {
       page: 1,
-      pageSize: 100,
+      pageSize,
       totalItems: data.length,
       totalPages: data.length ? 1 : 0,
     },

@@ -71,18 +71,18 @@ evidence recorded in `docs/PROGRESS.md`.
 
 ### Customer portal
 
-| Route                          | Observed capability                                                   | Supporting boundary                             | Product-experience finding                                                                                               |
-| ------------------------------ | --------------------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `/portal`                      | Server-derived billing, service-renewal and support next actions      | Ownership-bound full-account portal summary     | Command 78 distinguishes attention, healthy, empty, loading and failure states before bounded recent history.            |
-| `/portal/orders`               | Order, invoice, and fulfilment states in one table                    | Paginated ownership-bound order API             | Related order, invoice, and service identifiers are not navigable; the UI fetches only the first 100 records.            |
-| `/portal/checkout`             | Product, price, domain, server-authoritative total and order creation | Idempotent checkout; product/price revalidation | Command 80 restores exact account-entry selection and requires deliberate replacement of unavailable intent.             |
-| `/portal/services`             | Service cards with state, server, account, and renewal data           | Ownership-bound service API                     | Useful overview; first-100 loading and inactive workspace search limit growth.                                           |
-| `/portal/services/[serviceId]` | Service detail and short-lived fake-panel login action                | Ownership check and provider-neutral operation  | Clear detail; the panel action has no nearby invoice/order context.                                                      |
-| `/portal/invoices`             | Invoice status, due date, total, balance                              | Ownership-bound invoice API                     | First-100 fetch discards metadata; Command 81 defines customer-only URL-bound search/filter/paging, not yet implemented. |
-| `/portal/invoices/[invoiceId]` | Immutable invoice, PDF/print, payment instructions/references         | Snapshot and payment-state rules                | Strong invoice view; customer payment action appears only when invoice state allows it.                                  |
-| `/invoices/[invoiceId]/print`  | Ownership-bound printable invoice                                     | Server-fetched invoice detail                   | Useful dedicated output; browser print is the only mutation-like action and remains user initiated.                      |
-| `/portal/profile`              | Contact/address update and password change                            | Ownership, audit, session revocation            | Functional and appropriately separates password change.                                                                  |
-| `/portal/support`              | Open, select, read, and reply to plain-text tickets                   | Ownership-bound tickets and service association | Functional; list is first-100 and has no visible search/filter/pagination despite API support.                           |
+| Route                          | Observed capability                                                   | Supporting boundary                             | Product-experience finding                                                                                              |
+| ------------------------------ | --------------------------------------------------------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `/portal`                      | Server-derived billing, service-renewal and support next actions      | Ownership-bound full-account portal summary     | Command 78 distinguishes attention, healthy, empty, loading and failure states before bounded recent history.           |
+| `/portal/orders`               | Order, invoice, and fulfilment states in one table                    | Paginated ownership-bound order API             | Related order, invoice, and service identifiers are not navigable; the UI fetches only the first 100 records.           |
+| `/portal/checkout`             | Product, price, domain, server-authoritative total and order creation | Idempotent checkout; product/price revalidation | Command 80 restores exact account-entry selection and requires deliberate replacement of unavailable intent.            |
+| `/portal/services`             | Service cards with state, server, account, and renewal data           | Ownership-bound service API                     | Useful overview; first-100 loading and inactive workspace search limit growth.                                          |
+| `/portal/services/[serviceId]` | Service detail and short-lived fake-panel login action                | Ownership check and provider-neutral operation  | Clear detail; the panel action has no nearby invoice/order context.                                                     |
+| `/portal/invoices`             | Invoice status, due date, total, balance                              | Ownership-bound invoice API                     | Command 81 adds URL-bound search/status/paging and authoritative matching counts; broader ledger work remains separate. |
+| `/portal/invoices/[invoiceId]` | Immutable invoice, PDF/print, payment instructions/references         | Snapshot and payment-state rules                | Strong invoice view; customer payment action appears only when invoice state allows it.                                 |
+| `/invoices/[invoiceId]/print`  | Ownership-bound printable invoice                                     | Server-fetched invoice detail                   | Useful dedicated output; browser print is the only mutation-like action and remains user initiated.                     |
+| `/portal/profile`              | Contact/address update and password change                            | Ownership, audit, session revocation            | Functional and appropriately separates password change.                                                                 |
+| `/portal/support`              | Open, select, read, and reply to plain-text tickets                   | Ownership-bound tickets and service association | Functional; list is first-100 and has no visible search/filter/pagination despite API support.                          |
 
 ### Administrator workspace
 
@@ -210,13 +210,13 @@ Priorities are:
 ### Scale, search, and pagination limits
 
 - The API already exposes bounded query contracts for all core ledgers.
-- Only the administrator customer directory exposes complete page controls.
+- The administrator customer directory and customer invoice history expose page controls.
 - Administrator support exposes filters but requests a fixed first page of 100.
-- Core admin and customer record lists silently request the first 100 and discard
-  pagination metadata.
-- Command 81 is defined for the customer invoice ledger only; the API already
-  supports ownership-bound search/status and deterministic pages. Other ledgers
-  remain separately gated and no paging implementation is included in this review.
+- Other core admin and customer record lists still request the first 100 and
+  discard pagination metadata.
+- Command 81 implements the customer invoice ledger only, using the existing
+  ownership-bound search/status and deterministic pages. Other ledgers remain
+  separately gated.
 - Email delivery, panel operations, renewal runs, and audit activity are latest-only
   views with no user-controlled time/status query.
 
@@ -338,16 +338,16 @@ remain P1 work for the next phase review.
   selection, and zero orders before deliberate submission match the authorized
   scope. Fresh focused web and order API tests passed; the delivered head's hosted
   CI and CodeQL also passed. No corrective application change was identified.
-- **Next defined: Command 81 — Make Customer Invoice History Searchable and
-  Paginated.** Customer invoice history is a repeated billing/support task with a
-  concrete first-100 visibility limit and ready ownership-safe API dependencies.
-  Implement only four allowlisted URL fields, current response metadata, bounded
-  page requests and honest recovery states, with histories larger than 100 and
-  cross-customer isolation evidence. Browsing creates no invoice/payment mutation
-  and computes no account-wide financial aggregate. This review defines but does
-  not authorize or implement the command. Order/payment connectivity, other ledger
+- **Command 81 implements customer invoice history search and pagination:** four
+  validated URL fields preserve committed search/status/page/size across reload and
+  history navigation. Bounded requests retain authoritative matching counts and
+  distinguish empty history, filter-empty results, out-of-range pages, loading and
+  retryable failure. Stale responses cannot overwrite a newer query. Fictional
+  histories larger than 100 and API cross-customer checks cover the ownership
+  boundary. Browsing creates no invoice/payment mutation and computes no
+  account-wide financial aggregate. Order/payment connectivity, other ledger
   pagination, dashboard attention, automation freshness, service context and inactive
-  chrome remain P1 work; broadening this slice is excluded.
+  chrome remain P1 work for the next separately authorized phase review.
 
 ## Readiness boundary
 

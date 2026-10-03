@@ -1986,8 +1986,8 @@ reconcile without history rewriting, push origin/main, verify hosted CI and Code
 then stop and request a phase review before defining or implementing more work.
 ```
 
-**Authorization:** Defined by the separately authorized Command 80 phase review on
-2026-10-04. Command 81 is not authorized; wait for explicit user authorization.
+**Authorization:** Separately authorized by the user on 2026-10-04. Implementation
+and delivery evidence are tracked in `docs/PROGRESS.md`; no later command is authorized.
 
 ---
 

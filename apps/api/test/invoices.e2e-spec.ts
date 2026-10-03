@@ -515,6 +515,152 @@ describe('Invoice management (e2e)', () => {
     ).toBe(true);
   });
 
+  it('pages and filters more than 100 owned invoices without leaking another account or mutating history', async () => {
+    const otherAccount = await prisma.customer.findFirstOrThrow({
+      where: { user: { email: OTHER_EMAIL } },
+    });
+    const ownIds = Array.from({ length: 105 }, () => randomUUID());
+    const foreignIds = Array.from({ length: 3 }, () => randomUUID());
+    const rows: Prisma.InvoiceCreateManyInput[] = [
+      ...ownIds,
+      ...foreignIds,
+    ].map((id, index) => {
+      const own = index < ownIds.length;
+      const position = own ? index : index - ownIds.length;
+      const paid = position % 2 === 1;
+      const instant = new Date(Date.UTC(2026, 8, 1, 0, 0, position));
+      return {
+        id,
+        invoiceNumber: `CMD81-HISTORY-${own ? 'OWN' : 'OTHER'}-${String(position).padStart(4, '0')}`,
+        submissionKey: `command81:${id}`,
+        customerId: own ? customerId : otherAccount.id,
+        status: paid ? InvoiceStatus.PAID : InvoiceStatus.UNPAID,
+        currency: 'BDT',
+        subtotal: 100n,
+        total: 100n,
+        amountPaid: paid ? 100n : 0n,
+        balanceDue: paid ? 0n : 100n,
+        customerNameSnapshot: own
+          ? 'History Customer'
+          : 'Other History Customer',
+        customerEmailSnapshot: own ? CUSTOMER_EMAIL : OTHER_EMAIL,
+        customerAddressSnapshot: {
+          line1: '81 Fictional Road',
+          line2: null,
+          city: 'Dhaka',
+          region: null,
+          postalCode: null,
+          countryCode: 'BD',
+        },
+        businessIdentitySnapshot: { name: 'Fictional Hosting' },
+        issuedAt: instant,
+        dueAt: new Date('2026-10-01T00:00:00.000Z'),
+        paidAt: paid ? instant : null,
+        createdAt: instant,
+        updatedAt: instant,
+      };
+    });
+    await prisma.invoice.createMany({ data: rows });
+    await prisma.invoiceItem.createMany({
+      data: rows.map((row) => ({
+        invoiceId: row.id!,
+        linePosition: 1,
+        descriptionSnapshot: `Historical hosting ${row.invoiceNumber}`,
+        currency: 'BDT',
+        quantity: 1,
+        unitAmount: 100n,
+        lineTotal: 100n,
+      })),
+    });
+    const customer = request.agent(app.getHttpServer());
+    await login(customer, await csrfToken(customer), CUSTOMER_EMAIL);
+    const before = await prisma.invoice.findMany({
+      where: { id: { in: [...ownIds, ...foreignIds] } },
+      orderBy: { id: 'asc' },
+    });
+    const get = async (query: string) =>
+      paginatedApiSuccessResponseSchema(invoiceSchema).parse(
+        (await customer.get(`/invoices/my?${query}`).expect(200)).body,
+      );
+    const first = await get('search=CMD81-HISTORY&page=1&pageSize=100');
+    const second = await get('search=CMD81-HISTORY&page=2&pageSize=100');
+    expect(first.pagination).toEqual({
+      page: 1,
+      pageSize: 100,
+      totalItems: 105,
+      totalPages: 2,
+    });
+    expect(second.pagination).toEqual({
+      page: 2,
+      pageSize: 100,
+      totalItems: 105,
+      totalPages: 2,
+    });
+    expect(first.data.map((row) => row.id)).toEqual(
+      [...ownIds].reverse().slice(0, 100),
+    );
+    expect(second.data.map((row) => row.id)).toEqual(
+      [...ownIds].reverse().slice(100),
+    );
+    expect(
+      (await get('search=CMD81-HISTORY&page=1&pageSize=100')).data.map(
+        (row) => row.id,
+      ),
+    ).toEqual(first.data.map((row) => row.id));
+    expect(
+      new Set([...first.data, ...second.data].map((row) => row.id)).size,
+    ).toBe(105);
+    expect(
+      [...first.data, ...second.data].every(
+        (row) => row.customerId === customerId,
+      ),
+    ).toBe(true);
+    const unpaid = await get(
+      'search=CMD81-HISTORY&status=UNPAID&page=1&pageSize=20',
+    );
+    expect(unpaid.pagination.totalItems).toBe(53);
+    expect(unpaid.pagination.totalPages).toBe(3);
+    expect(unpaid.data.every((row) => row.status === 'UNPAID')).toBe(true);
+    expect(
+      (await get('search=CMD81-HISTORY&status=PAID')).pagination.totalItems,
+    ).toBe(52);
+    const searched = await get('search=history-own-0007');
+    expect(searched.pagination.totalItems).toBe(1);
+    expect(searched.data[0]?.id).toBe(ownIds[7]);
+    expect(
+      (await get('search=CMD81-HISTORY&page=9&pageSize=20')).data,
+    ).toHaveLength(0);
+    expect(
+      (await get('search=CMD81-HISTORY-OTHER')).pagination.totalItems,
+    ).toBe(0);
+    await customer
+      .get(`/invoices/my?customerId=${otherAccount.id}`)
+      .expect(400);
+    await customer.get('/invoices/my?pageSize=101').expect(400);
+    await customer.get('/invoices/my?status=UNKNOWN').expect(400);
+    await customer.get('/invoices').expect(403);
+    await request(app.getHttpServer()).get('/invoices/my').expect(401);
+    const other = request.agent(app.getHttpServer());
+    await login(other, await csrfToken(other), OTHER_EMAIL);
+    const otherList = paginatedApiSuccessResponseSchema(invoiceSchema).parse(
+      (
+        await other
+          .get('/invoices/my?search=CMD81-HISTORY&pageSize=100')
+          .expect(200)
+      ).body,
+    );
+    expect(otherList.pagination.totalItems).toBe(3);
+    expect(
+      otherList.data.every((row) => row.customerId === otherAccount.id),
+    ).toBe(true);
+    expect(
+      await prisma.invoice.findMany({
+        where: { id: { in: [...ownIds, ...foreignIds] } },
+        orderBy: { id: 'asc' },
+      }),
+    ).toEqual(before);
+  });
+
   afterAll(async () => {
     if (prisma) await cleanup(true);
     if (app) await app.close();

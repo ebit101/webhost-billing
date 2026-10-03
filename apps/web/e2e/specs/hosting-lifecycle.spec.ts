@@ -13,6 +13,7 @@ import {
   E2E_ADMIN,
   E2E_CUSTOMER,
   E2E_HEALTHY_CUSTOMER,
+  E2E_HISTORY_CUSTOMER,
   E2E_PRODUCT,
 } from '../fixtures';
 
@@ -354,6 +355,104 @@ test('complete hosting customer and administrator lifecycle', async ({
     await expect(
       page.getByRole('heading', { name: /Payment due|Overdue payment/ }),
     ).toHaveCount(0);
+  });
+
+  await test.step('customer searches and pages owned invoice history beyond 100 without mutations', async () => {
+    await context.clearCookies();
+    await login(
+      page,
+      E2E_HISTORY_CUSTOMER.email,
+      E2E_HISTORY_CUSTOMER.password,
+      '/portal',
+    );
+    const before = await e2ePrisma.invoice.findMany({
+      where: { customerId: E2E_HISTORY_CUSTOMER.customerId },
+      orderBy: { id: 'asc' },
+    });
+    const beforePayments = await e2ePrisma.payment.count();
+    const businessWrites: string[] = [];
+    const observe = (request: import('@playwright/test').Request) => {
+      if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method()))
+        businessWrites.push(new URL(request.url()).pathname);
+    };
+    page.on('request', observe);
+    try {
+      await page.goto('/portal/invoices');
+      await expect(page.getByText(/105 matching invoices/)).toBeVisible();
+      await expect(
+        page.getByRole('link', {
+          name: E2E_HISTORY_CUSTOMER.oldestInvoiceNumber,
+        }),
+      ).toHaveCount(0);
+      await page.getByLabel('Invoices per page').selectOption('100');
+      await expect(page).toHaveURL(/\/portal\/invoices\?page=1&pageSize=100$/);
+      await expect(page.getByText(/Page 1 of 2/)).toBeVisible();
+      await page.getByRole('button', { name: 'Next page' }).click();
+      await expect(page).toHaveURL(/page=2&pageSize=100$/);
+      const oldest = page.getByRole('link', {
+        name: E2E_HISTORY_CUSTOMER.oldestInvoiceNumber,
+      });
+      await expect(oldest).toBeVisible();
+      await expect(page.getByText(/101–105/)).toBeVisible();
+      await page
+        .getByLabel('Search invoices')
+        .fill(E2E_HISTORY_CUSTOMER.oldestInvoiceNumber);
+      await page.getByRole('button', { name: 'Search', exact: true }).click();
+      await expect(page).toHaveURL(
+        /page=1&pageSize=100&search=INV-HISTORY-0000$/,
+      );
+      await expect(page.getByText(/1 matching invoices/)).toBeVisible();
+      await page.getByLabel('Invoice status').selectOption('PAID');
+      await expect(
+        page.getByRole('heading', { name: 'No matching invoices' }),
+      ).toBeVisible();
+      await page.getByLabel('Invoice status').selectOption('UNPAID');
+      await expect(oldest).toBeVisible();
+      await page.reload();
+      await expect(page.getByLabel('Search invoices')).toHaveValue(
+        E2E_HISTORY_CUSTOMER.oldestInvoiceNumber,
+      );
+      await expect(page.getByLabel('Invoice status')).toHaveValue('UNPAID');
+      await expect(oldest).toHaveAttribute(
+        'href',
+        `/portal/invoices/${E2E_HISTORY_CUSTOMER.oldestInvoiceId}`,
+      );
+      await oldest.click();
+      await expect(page).toHaveURL(
+        new RegExp(`/portal/invoices/${E2E_HISTORY_CUSTOMER.oldestInvoiceId}$`),
+      );
+      await page.goBack();
+      await expect(page).toHaveURL(
+        /page=1&pageSize=100&search=INV-HISTORY-0000&status=UNPAID$/,
+      );
+      await expect(oldest).toBeVisible();
+      await page.goForward();
+      await expect(page).toHaveURL(
+        new RegExp(`/portal/invoices/${E2E_HISTORY_CUSTOMER.oldestInvoiceId}$`),
+      );
+      await page.goBack();
+      await expect(oldest).toBeVisible();
+      await page.setViewportSize({ width: 375, height: 812 });
+      await page.getByRole('link', { name: 'Clear filters' }).click();
+      await expect(page).toHaveURL(/\/portal\/invoices$/);
+      await expect(page.getByText(/105 matching invoices/)).toBeVisible();
+      await expect(page.getByLabel('Invoices per page')).toHaveValue('20');
+      await expect(page.getByLabel('Invoice status')).toHaveValue('');
+      await expect(
+        page.getByRole('link', { name: E2E_HEALTHY_CUSTOMER.invoiceNumber }),
+      ).toHaveCount(0);
+      expect(
+        await e2ePrisma.invoice.findMany({
+          where: { customerId: E2E_HISTORY_CUSTOMER.customerId },
+          orderBy: { id: 'asc' },
+        }),
+      ).toEqual(before);
+      expect(await e2ePrisma.payment.count()).toBe(beforePayments);
+      expect(businessWrites).toEqual([]);
+    } finally {
+      page.off('request', observe);
+      await page.setViewportSize({ width: 1440, height: 1000 });
+    }
   });
 
   await test.step('administrator follows actionable customer context without editing records', async () => {

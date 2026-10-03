@@ -16,6 +16,7 @@ import { E2E_DATABASE_URL, E2E_SCHEMA, e2eApiEnvironment } from './environment';
 import {
   E2E_ADMIN,
   E2E_HEALTHY_CUSTOMER,
+  E2E_HISTORY_CUSTOMER,
   E2E_PRODUCT,
   E2E_SERVER,
 } from './fixtures';
@@ -133,6 +134,73 @@ async function main(): Promise<void> {
       paidAt: new Date('2026-10-01T00:00:00.000Z'),
     },
   });
+
+  // Dedicated owned history; never changes the main lifecycle or healthy-home fixtures.
+  await prisma.user.create({
+    data: {
+      id: E2E_HISTORY_CUSTOMER.userId,
+      email: E2E_HISTORY_CUSTOMER.email,
+      passwordHash,
+      role: UserRole.CUSTOMER,
+      status: UserStatus.ACTIVE,
+      emailVerifiedAt: new Date(),
+      customer: {
+        create: {
+          id: E2E_HISTORY_CUSTOMER.customerId,
+          customerNumber: 'CUS-HISTORY-81',
+          firstName: 'History',
+          lastName: 'Customer',
+          addressLine1: '81 Fictional Road',
+          city: 'Dhaka',
+          countryCode: 'BD',
+        },
+      },
+    },
+  });
+  for (let index = 0; index < 105; index++) {
+    const instant = new Date(Date.UTC(2026, 8, 1, 0, 0, index));
+    const paid = index % 2 === 1;
+    await prisma.invoice.create({
+      data: {
+        id: `81000000-0000-4000-8000-${String(index).padStart(12, '0')}`,
+        invoiceNumber: `INV-HISTORY-${String(index).padStart(4, '0')}`,
+        submissionKey: `command81-browser-history-${index}`,
+        customerId: E2E_HISTORY_CUSTOMER.customerId,
+        status: paid ? InvoiceStatus.PAID : InvoiceStatus.UNPAID,
+        currency: 'BDT',
+        subtotal: 100n,
+        total: 100n,
+        amountPaid: paid ? 100n : 0n,
+        balanceDue: paid ? 0n : 100n,
+        customerNameSnapshot: 'History Customer',
+        customerEmailSnapshot: E2E_HISTORY_CUSTOMER.email,
+        customerAddressSnapshot: {
+          line1: '81 Fictional Road',
+          line2: null,
+          city: 'Dhaka',
+          region: null,
+          postalCode: null,
+          countryCode: 'BD',
+        },
+        businessIdentitySnapshot: { name: 'Fictional Webhost Billing' },
+        issuedAt: instant,
+        dueAt: new Date('2026-10-01T00:00:00.000Z'),
+        paidAt: paid ? instant : null,
+        createdAt: instant,
+        updatedAt: instant,
+        items: {
+          create: {
+            linePosition: 1,
+            descriptionSnapshot: `Historical hosting ${index}`,
+            currency: 'BDT',
+            quantity: 1,
+            unitAmount: 100n,
+            lineTotal: 100n,
+          },
+        },
+      },
+    });
+  }
 
   await prisma.product.create({
     data: {

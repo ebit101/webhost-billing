@@ -10,6 +10,10 @@ and will be called out in release notes.
 
 ### Changed
 
+- Made customer invoice history searchable and paginated through four validated
+  URL fields and the existing ownership-bound API. Matching counts, explicit empty
+  and out-of-range states, read-only browsing, recoverable failures and stale-response
+  protection replace the fixed first-100 fetch without changing billing rules.
 - Reviewed Command 80's allowlisted checkout handoff and regression evidence,
   corrected stale roadmap descriptions, and defined a separately gated customer
   invoice-history slice for ownership-safe URL-bound search, filters, and pagination.

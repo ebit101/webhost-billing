@@ -23,6 +23,15 @@ export const E2E_HEALTHY_CUSTOMER = {
   invoiceNumber: 'INV-HEALTHY-0001',
 } as const;
 
+export const E2E_HISTORY_CUSTOMER = {
+  userId: '81000000-0000-4000-8000-000000000010',
+  customerId: '81000000-0000-4000-8000-000000000011',
+  email: 'command81-history@example.test',
+  password: E2E_ADMIN.password,
+  oldestInvoiceId: '81000000-0000-4000-8000-000000000000',
+  oldestInvoiceNumber: 'INV-HISTORY-0000',
+} as const;
+
 export const E2E_PRODUCT = {
   id: '26000000-0000-4000-8000-000000000003',
   priceId: '26000000-0000-4000-8000-000000000004',

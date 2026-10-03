@@ -57,6 +57,15 @@ lifecycle proves registration and sign-in leave the new customer's order/invoice
 counts at zero; existing `orders.e2e-spec.ts` retains authoritative pricing,
 ineligible-price rejection, ownership, and idempotent explicit order creation.
 
+Command 81 changes only read-only customer invoice presentation. The invoice API
+E2E suite verifies 105 owned records, deterministic non-overlapping pages, filtered
+counts, foreign-row/count isolation, and rejection of supplied customer identity.
+`invoice-ledger-query.test.ts` rejects malformed and duplicate URL fields;
+`customer-invoice-ledger.test.tsx` covers current metadata, stale requests and
+recovery states. The browser lifecycle pages beyond 100, retains filters through
+reload/detail/history navigation, and verifies no non-read request or invoice/payment
+record change during browsing. API ownership and financial rules remain unchanged.
+
 A failed invariant test blocks delivery. Do not solve a failure by weakening an assertion, deleting concurrency, increasing arbitrary delays, bypassing ownership, or changing a fake provider to report success unconditionally.
 
 Investigate the owning boundary:

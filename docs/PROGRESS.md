@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Phase Review — Review Command 80 and Define Command 81
-- **Current status:** Review completed; next implementation defined but not authorized
+- **Current command:** Command 81 — Make Customer Invoice History Searchable and Paginated
+- **Current status:** Local validation passed; GitHub delivery and hosted checks in progress
 - **Last updated:** 2026-10-04
-- **Next command:** Command 81 — Make Customer Invoice History Searchable and Paginated
+- **Next command:** Phase Review — Review Command 81 and define the next bounded command
 - **Next command authorized:** No
 
 ## Command Reports
@@ -6212,6 +6212,105 @@ automatically.
 
 Authorize **Command 81 — Make Customer Invoice History Searchable and Paginated**
 separately after this review's delivery. Do not begin it automatically.
+
+### Command 81 — Make Customer Invoice History Searchable and Paginated
+
+- **Status:** Implemented and locally validated; hosted delivery in progress
+- **Date:** 2026-10-04
+- **Authorization:** Explicit user authorization for Command 81 only.
+
+#### Scope completed
+
+- Replaced the customer invoice ledger's first-100 request with one bounded page
+  from the unchanged, authenticated `/invoices/my` endpoint (default page 1/size 20).
+- Added a runtime-validated URL allowlist for search, status, page and page size.
+  Duplicate, malformed, unsupported or unsafe-offset values use visible recoverable
+  defaults. Customer identity, redirects, amounts and unrelated inputs never reach
+  the request or fixed local navigation route.
+- Added labelled search/status/size controls, clear filters, authoritative matching
+  counts/ranges and previous/next controls. Search/status/size changes reset page 1
+  while retaining other committed filters. Existing safe money/date formatting and
+  invoice detail links remain unchanged; no page-derived financial totals are added.
+- Distinguished first-use empty, filtered-empty, out-of-range, loading and retryable
+  errors. Cancelled query outcomes cannot overwrite newer results; loading/failure
+  never presents old rows or metadata as a refreshed result.
+- Added fictional 105-record API and browser histories, deterministic/non-overlapping
+  page evidence, filtered counts, foreign-row/count isolation and read-only browsing
+  checks. Retained the original payment/provisioning/ownership lifecycle assertions,
+  authentication limits and test timeouts.
+- Changed no API implementation, endpoint, schema, invoice/payment business rule,
+  provider, authentication policy, other ledger, release or deployment.
+
+#### Files changed
+
+- `apps/web/src/lib/invoice-ledger-query.ts` and its test — bounded allowlist,
+  canonical fixed-route query construction and unsafe/duplicate rejection.
+- `apps/web/src/app/(portal)/portal/invoices/page.tsx` and
+  `apps/web/src/app/invoice-ledger-entry.test.tsx` — validated server-page query entry.
+- `apps/web/src/components/invoices/customer-invoice-list.tsx`,
+  `customer-invoice-ledger.test.tsx` and `invoice-management.test.tsx` — customer
+  controls, request lifecycle, metadata/recovery and preserved existing regression.
+- `apps/api/test/invoices.e2e-spec.ts` — 105 owned plus three foreign records,
+  read-only deterministic paging/filter/isolation and unchanged role guards.
+- `apps/web/e2e/fixtures.ts`, `prepare-environment.ts` and
+  `specs/hosting-lifecycle.spec.ts` — isolated fictional history and browser continuity.
+- `CHANGELOG.md`, `CODEX_DEVELOPMENT_COMMANDS.md`,
+  `docs/PRODUCT_EXPERIENCE_ROADMAP.md`, `docs/CRITICAL_BUSINESS_INVARIANTS.md` and
+  `docs/PROGRESS.md` — scope, authorization, evidence and remaining boundaries.
+
+#### Validation
+
+- Focused query, server entry and invoice component tests: 37 passed.
+- Relevant invoice API E2E: all six tests passed, including the 105-record history
+  and existing ownership, immutable-history and invoice-state regressions.
+- Full package tests: 369 passed (57 demo/docs, 29 shared, three queue, 153 web,
+  98 API and 29 worker). An initial run overlapping production/type builds timed
+  out in the existing 5-second worker renewal lifecycle test and then failed its
+  teardown with a hosting-operation foreign key. The complete serial rerun passed
+  all 10 worker suites without changing assertions, timeouts or worker code.
+- Full lint and strict type checks: passed. Final web lint: passed without warnings.
+- Production build: passed, including the dynamic customer invoice route and all
+  Next.js, API, worker and package artifacts.
+- `pnpm docs:check`: all four offline validators passed.
+- Full fictional Chromium lifecycle: passed (one complete journey, 2.8 minutes),
+  including the original hosting/payment/support/ownership regressions and the new
+  105-record read-only search/filter/paging, reload/detail/back-forward and mobile
+  filter recovery assertions.
+- `pnpm format:check` and `git diff --check`: passed.
+- Git remote/branch reconciliation: canonical `origin`, `main`, fetched remote
+  with zero ahead/behind before delivery; no history rewrite or force push.
+- GitHub CI/CodeQL delivery checks: pending; no unexecuted hosted gate is claimed
+  as passed.
+
+#### Decisions made
+
+- Applied ADR-056 without expanding its customer-only, read-only scope.
+- Used existing query/response contracts and session-derived API identity; bounded
+  offsets also respect Prisma's signed 32-bit `skip` limit.
+- Kept committed URL filters separate from an unsent search draft and reset request
+  state on query changes. Validated current response metadata rather than estimating
+  history or account balances from a page.
+- Extra history exists only in guarded fictional test fixtures. No production data
+  or provider connection was used.
+
+#### Open questions and risks
+
+- Counts and rows are separate API reads, not a transaction-wide immutable snapshot;
+  an empty page offers safe recovery, and inconsistent metadata fails closed.
+- The initial worker timeout is recorded above; the full serial rerun passed. The
+  failed run may have left a fictional renewal fixture in the local development
+  database. No broad cleanup or production data deletion was performed.
+- Existing experimental VM warnings and the previously recorded development-only
+  `braces` advisory remain separate maintenance work.
+- Order/payment connectivity, other ledger scale, dashboard attention, automation
+  freshness, service context and inactive workspace chrome remain separately gated.
+- Production remains **NO-GO**. Real providers, SMTP, monitoring, off-site recovery,
+  final policies, infrastructure and operator-pilot evidence remain open.
+
+#### Recommended next command
+
+Authorize **Phase Review — Review Command 81 and define the next bounded command**
+separately. Do not define or begin Command 82 automatically.
 
 ## Report Template
 
