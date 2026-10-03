@@ -494,6 +494,28 @@ This document records durable technical and product decisions. New decisions sho
   read-only product guidance; it changes no invoice, payment, service, ticket,
   provider, deployment, or production-readiness rule. Production remains `NO-GO`.
 
+## ADR-054 — Financial Policy Confirmation Before Workflow Expansion
+
+- **Status:** Accepted
+- **Date:** 2026-10-03
+- **Decision:** Make the partial-payment rule the next bounded product-experience
+  change. Remove its duplicate one-click mutation from the payment ledger, keep one
+  canonical settings workflow, and require an explicit current-to-proposed
+  consequence review plus fixed confirmation at every API route that can change the
+  persisted value. Do not require confirmation when the stored policy is unchanged.
+- **Reason:** Commands 76–78 repaired three high-frequency journeys without changing
+  business state. The remaining roadmap contains several useful workflow and scale
+  improvements, but the partial-payment toggle is the only identified one-click
+  financial-policy shortcut. Its current API paths are already role-protected and
+  audited, so a server-enforced transition guard is high-risk reduction with ready
+  dependencies and a bounded test surface.
+- **Consequence:** Command 79 must prove both settings write paths cannot bypass the
+  confirmation, preserve safe old/new audit evidence, and leave existing invoices,
+  payments, pending references, balances, and gateway behavior unchanged. Connected
+  order/payment review, ledger pagination, dashboard attention, automation freshness,
+  service context, checkout continuity, and inactive workspace chrome remain
+  separately gated P1 work. Production remains `NO-GO`.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

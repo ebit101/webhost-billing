@@ -10,6 +10,9 @@ and will be called out in release notes.
 
 ### Changed
 
+- Reviewed the first product-experience set, confirmed Commands 76–78 retain their
+  workflow and safety boundaries, and selected a separately gated partial-payment
+  policy safeguard as the next bounded product command.
 - Turned the customer portal overview into an ownership-bound next-action home with
   full-account server-derived billing, service-renewal, and support-responsibility
   facts; explicit attention, healthy, empty, loading, and failure states; and bounded

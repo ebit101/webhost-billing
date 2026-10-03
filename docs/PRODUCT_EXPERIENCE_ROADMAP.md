@@ -296,6 +296,17 @@ remain P1 work for the next phase review.
   the API boundary. Command 78 added no mutations, schema changes, real providers,
   deployments, or production approval. The next bounded work must be selected by a
   phase review from the remaining P1 gaps.
+- **Commands 76–78 phase review completed:** the three delivered slices satisfy
+  their acceptance and safety boundaries with component, API, and fictional browser
+  evidence. No corrective application change was required.
+- **Command 79 is the next separately gated slice:** guard actual partial-payment
+  policy transitions with one canonical administrator review flow and confirmation
+  at both API write boundaries. This is selected ahead of broader workflow work
+  because it is the roadmap's only one-click financial-policy shortcut and has ready,
+  bounded implementation dependencies.
+- Order/payment connectivity, URL-bound ledger pagination, dashboard attention,
+  automation freshness, service-focused context, checkout continuity, and inactive
+  workspace chrome remain P1 gaps. Command 79 must not absorb them.
 
 ## Readiness boundary
 

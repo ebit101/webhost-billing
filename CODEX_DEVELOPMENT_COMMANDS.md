@@ -1815,6 +1815,49 @@ docs/PROGRESS.md, commit, reconcile, push main, verify hosted checks, then stop 
 request a phase review before defining further implementation work.
 ```
 
+## Command 79 — Guard Partial-Payment Policy Changes
+
+```text
+Implement the next bounded product-experience slice by making the partial-payment
+policy a deliberate, server-enforced administrator decision. Remove the direct
+one-click mutation from `/admin/payments`; show the current policy there as
+read-only operational context with a protected link to the canonical billing-policy
+section in `/admin/settings`.
+
+In settings, retain a persisted baseline separately from the editable draft. When
+the partial-payment value changes, require an explicit review step that states the
+current value, proposed value, and the exact consequence for future manual-payment
+submission, recording, and pending-reference verification. Require a fixed
+confirmation value at the API boundary for an actual policy transition, including
+the existing payment-settings endpoint, so a client cannot bypass the review by
+calling either write route directly. An unchanged policy must not require the
+confirmation. Keep the existing administrator role boundary and record one audited
+old-to-new transition without sensitive data.
+
+Add strict shared request contracts plus service/controller coverage for missing or
+incorrect confirmation, unchanged/idempotent saves, valid enable and disable
+transitions, administrator-only access, persisted policy, and safe audit metadata.
+Add component tests for read-only payment-page context, the canonical settings link,
+draft-versus-persisted state, consequence review, cancellation, successful save, and
+recoverable failures. Extend the fictional administrator browser journey through
+review and cancellation without changing the seeded policy; prove the authorized
+mutation only in isolated API/component fixtures.
+
+Do not change invoice balances, existing payments, refunds, reversals, pending
+references, payment arithmetic, gateway behavior, provider configuration, database
+schema, roles, releases, deployments, or production readiness. Do not add a general
+approval framework or combine this work with ledger pagination, dashboard attention,
+order/payment detail, checkout continuity, automation freshness, or service actions.
+Preserve integer minor units, immutable financial history, idempotent payment rules,
+and the separation of payment, invoice, order, provisioning, and service states.
+
+Run focused shared/API/web tests, the relevant API E2E and fictional browser
+journey, docs:check, formatting, lint, strict type checks, complete package tests,
+and the production build. Update docs/PROGRESS.md, commit, reconcile, push main,
+verify hosted CI and CodeQL, then stop and request a new phase review before defining
+or implementing another command.
+```
+
 ---
 
 ## Continuation Command

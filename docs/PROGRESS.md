@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 78 — Turn the Customer Portal Overview Into a Next-Action Home
-- **Current status:** Completed and delivered to GitHub `main`
+- **Current command:** Phase Review — Review Commands 76–78 and Define Command 79
+- **Current status:** Completed locally; delivery validation pending
 - **Last updated:** 2026-10-03
-- **Next command:** Phase Review — Review Commands 76–78 and define the next bounded command
+- **Next command:** Command 79 — Guard Partial-Payment Policy Changes
 - **Next command authorized:** No
 
 ## Command Reports
@@ -5536,6 +5536,101 @@ separately. Do not begin Command 78 automatically.
 After this command is delivered to `origin/main` and hosted CI and CodeQL pass,
 authorize **Phase Review — Review Commands 76–78 and define the next bounded
 command**. Do not begin another implementation command automatically.
+
+### Phase Review — Review Commands 76–78 and Define Command 79
+
+- **Status:** Completed locally; delivery validation pending
+- **Date:** 2026-10-03
+
+#### Scope completed
+
+- Reviewed Commands 76–78 against their exact command text, `AGENTS.md`, the product
+  plan, ADRs 051–053, implementation diffs, shared/API/web contracts, component and
+  browser tests, command reports, and final hosted evidence.
+- Confirmed Command 76 provides an honest public entry, valid local navigation,
+  deterministic active-price selection, unavailable-price handling, and exact
+  server-revalidated checkout identifiers without adding post-login return scope.
+- Confirmed Command 77 puts administrator customer context before editing, uses safe
+  money and configured-time-zone presentation, and connects existing protected
+  detail/list routes through validated, visible, clearable server-side customer
+  filters without creating broad new detail surfaces.
+- Confirmed Command 78 derives customer actions from the complete ownership-bound
+  account on the server, preserves lossless monetary serialization, separates
+  payment/service/support responsibility, and keeps bounded recent records secondary.
+- Found no missing acceptance requirement, regression, authorization weakness, or
+  corrective application change within the three delivered commands.
+- Reassessed the remaining P1 gaps by operator/customer frequency, financial or
+  service risk, manual effort, dependency readiness, and bounded testability. The
+  partial-payment toggle is the only documented one-click financial-policy shortcut;
+  both current API write routes are already administrator-only and audited, making a
+  server-enforced transition review the highest-risk, most bounded next slice.
+- Added ADR-054 and defined exactly one separately gated **Command 79 — Guard
+  Partial-Payment Policy Changes**. No application behavior, business record,
+  schema, provider, deployment, release, or production-readiness state changed.
+
+#### Files changed
+
+- `CODEX_DEVELOPMENT_COMMANDS.md` — added the bounded, separately gated Command 79
+- `docs/DECISIONS.md` — recorded the risk-led sequencing and server-enforced policy
+  confirmation boundary in ADR-054
+- `docs/PRODUCT_EXPERIENCE_ROADMAP.md` — recorded the completed first-set review,
+  selected next slice, and retained P1 gaps
+- `CHANGELOG.md` — recorded the product-phase review and next-command selection
+- `docs/PROGRESS.md` — updated current state and recorded review evidence
+
+#### Validation
+
+- Reconciled clean synchronized `main` before edits and reviewed the focused commits
+  and delivery reports for Commands 76–78. Their final implementation commits had
+  successful hosted CI and CodeQL evidence recorded before this review.
+- `pnpm docs:check` passed all four offline documentation validators.
+- `pnpm format:check`, repository lint, strict workspace typechecking, and
+  `git diff --check` passed.
+- Complete `pnpm test` passed every demo/documentation suite plus 28 shared, 3 queue,
+  67 web, and 91 API tests. The concurrent worker stage hit two existing five-second
+  database timeouts after the other packages completed; a complete serial worker
+  rerun passed all 10 suites and 29 tests, leaving no failing assertion.
+- The complete workspace production build passed; Next generated all 29 web pages
+  and both NestJS applications built successfully.
+
+#### Decisions made
+
+- Prioritize the explicitly unsafe financial-policy shortcut before adding broader
+  workflow convenience. Frequency alone does not outweigh the consequence of an
+  accidental change to future payment acceptance.
+- Keep one canonical editable partial-payment policy in administrator settings. The
+  payment ledger should show the effective value as operational context and link to
+  settings, not provide a duplicate mutation.
+- Enforce confirmation on an actual stored-value transition at both API write paths,
+  not only in React. An unchanged save remains idempotent and does not demand a false
+  confirmation ceremony.
+- Keep audit metadata to the safe old/new policy values. Command 79 is not authority
+  to mutate balances or historical records, build a general approval system, or
+  absorb adjacent P1 work.
+
+#### Open questions and risks
+
+- General settings currently saves one complete business-settings document. Command
+  79 must retain a trusted persisted baseline so an administrator can cancel the
+  policy review without discarding unrelated draft edits or misreporting current
+  state.
+- The existing payment-specific and general-settings APIs can both persist the same
+  value. Command 79 must apply one shared strict transition contract and prove that
+  neither route bypasses confirmation while preserving compatibility for unchanged
+  saves.
+- Connected order/payment review, URL-bound pagination for core ledgers, dashboard
+  attention, automation freshness, service-focused context, checkout continuity,
+  and inactive workspace search/notification chrome remain P1 gaps. Their sequence
+  requires a later review; none is implicitly authorized by Command 79.
+- Production remains `NO-GO`; fictional evaluation and green local/hosted checks do
+  not satisfy provider, SMTP, monitoring, recovery, policy, infrastructure, or
+  operator-pilot gates.
+
+#### Recommended next command
+
+After this phase review is delivered to `origin/main` and hosted CI and CodeQL pass,
+authorize **Command 79 — Guard Partial-Payment Policy Changes** separately. Do not
+begin Command 79 automatically.
 
 ## Report Template
 
