@@ -3,7 +3,7 @@
 ## Status Summary
 
 - **Current command:** Command 81 — Make Customer Invoice History Searchable and Paginated
-- **Current status:** Local validation passed; GitHub delivery and hosted checks in progress
+- **Current status:** Completed and delivered to GitHub main; source CI and CodeQL verified
 - **Last updated:** 2026-10-04
 - **Next command:** Phase Review — Review Command 81 and define the next bounded command
 - **Next command authorized:** No
@@ -6215,7 +6215,7 @@ separately after this review's delivery. Do not begin it automatically.
 
 ### Command 81 — Make Customer Invoice History Searchable and Paginated
 
-- **Status:** Implemented and locally validated; hosted delivery in progress
+- **Status:** Completed and delivered to GitHub `main`; source CI and CodeQL passed
 - **Date:** 2026-10-04
 - **Authorization:** Explicit user authorization for Command 81 only.
 
@@ -6279,8 +6279,18 @@ separately after this review's delivery. Do not begin it automatically.
 - `pnpm format:check` and `git diff --check`: passed.
 - Git remote/branch reconciliation: canonical `origin`, `main`, fetched remote
   with zero ahead/behind before delivery; no history rewrite or force push.
-- GitHub CI/CodeQL delivery checks: pending; no unexecuted hosted gate is claimed
-  as passed.
+- Source commit `152301d28abccbf6066400be3ad3a52dbddc62ca` was pushed to
+  `origin/main` without force or published-history rewriting.
+- Hosted [CI run 37145485190](https://github.com/ebit101/webhost-billing/actions/runs/37145485190)
+  passed on that exact source commit. All Validate steps passed, including complete
+  history secret scanning, database preparation, formatting, documentation, lint,
+  types, package tests, full API E2E, critical invariants, full browser lifecycle,
+  production dependency audit, license inventory and production build. The PR-only
+  dependency-review job was correctly skipped for this direct `main` push.
+- Hosted [CodeQL run 37145485149](https://github.com/ebit101/webhost-billing/actions/runs/37145485149)
+  passed on the same exact source commit.
+- This completion report is a separate documentation-only delivery; it adds no
+  application behavior or authorization for a later command.
 
 #### Decisions made
 
@@ -6302,6 +6312,9 @@ separately after this review's delivery. Do not begin it automatically.
   database. No broad cleanup or production data deletion was performed.
 - Existing experimental VM warnings and the previously recorded development-only
   `braces` advisory remain separate maintenance work.
+- GitHub reported the existing direct-main branch-rule bypass during the authorized
+  delivery and the existing Dependabot alert 15. No repository protection setting,
+  dependency or lockfile was changed; the production dependency audit passed in CI.
 - Order/payment connectivity, other ledger scale, dashboard attention, automation
   freshness, service context and inactive workspace chrome remain separately gated.
 - Production remains **NO-GO**. Real providers, SMTP, monitoring, off-site recovery,
