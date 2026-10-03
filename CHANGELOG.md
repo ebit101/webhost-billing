@@ -10,6 +10,10 @@ and will be called out in release notes.
 
 ### Changed
 
+- Reviewed Command 81's customer invoice-history boundaries and passing regression
+  evidence, clarified transactional count/row wording, and defined a separately
+  gated read-only administrator order review linked to existing customer and invoice
+  context. No Command 82 application behavior is implemented by this review.
 - Made customer invoice history searchable and paginated through four validated
   URL fields and the existing ownership-bound API. Matching counts, explicit empty
   and out-of-range states, read-only browsing, recoverable failures and stale-response

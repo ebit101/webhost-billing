@@ -1991,6 +1991,86 @@ and delivery evidence are tracked in `docs/PROGRESS.md`; no later command is aut
 
 ---
 
+## Command 82 — Connect Administrator Order Review to Customer and Invoice Context
+
+```text
+Improve only the existing administrator order workspace at /admin/orders. Add an
+explicit, read-only Review order action for a listed order and a labelled review
+panel using the existing GET /orders/:orderId endpoint. Do not add an order-detail
+route, API endpoint, read model, schema change or a general record-review framework.
+
+Use the existing shared order runtime contract, not a TypeScript assertion, before
+using response identifiers, snapshots or money in the review. Reconstruct only
+fixed local /admin/customers/:customerId and /admin/invoices/:invoiceId links from
+validated returned identifiers. Never accept a return URL or infer invoice, customer
+or service identity from a domain, display number, page filter or browser amount.
+API role/ownership enforcement remains authoritative; navigation is not permission.
+
+Present the order number, customer name/email and customer-context link, historical
+plan/domain/billing-period/quantity and price snapshots for every returned item,
+order totals and dates, optional plain-text order notes, and the linked invoice
+number, status, due date, total and current balance with its invoice-detail link.
+Keep order and invoice states visibly separate and explain that payment is not proof
+of hosting provisioning. The order contract contains no service-state evidence:
+do not invent a service link/status or treat COMPLETED/PAID as current hosting state.
+Use the existing lossless money formatter and configured business timezone; do not
+recalculate totals or read mutable catalogue prices to reconstruct historical value.
+
+Keep review selection explicit, with no automatic first-row selection or mutation.
+Fetch one selected order at a time; do not fetch complete account history. Provide
+labelled keyboard/mobile controls for review, close and retry, plus distinct loading,
+unavailable/not-found and retryable error states. Verify the detail response matches
+the requested order and, when present, the current valid customer filter; the filter
+is display context, not permission. Validate the selected UUID before requesting it.
+Clear or invalidate review context on close or customer-filter
+change, discard delayed responses after close/selection/filter changes, and never
+present a previous order or failed refresh as the current successful review.
+Preserve the existing validated customerId filter and clear-filter journey; arbitrary
+query fields must not become new selection, identity or navigation authority.
+
+This panel is informational, not a confirmation or authorization gate. Retain the
+existing Create/Approve/Reject/Cancel requests, eligibility and server rules without
+new mutation controls inside review. After an existing successful mutation, either
+revalidate or invalidate an open affected review so it cannot silently show obsolete
+order/invoice state. Review, close, retry and navigation alone must create no order,
+invoice, payment, audit business event, service or hosting operation.
+
+Add focused component coverage for exact customer/invoice links, all-item historical
+snapshots and safe large monetary values, independent order/invoice states, optional
+plain-text notes, invalid/mismatched responses, missing records, failed load/retry,
+selection switching/close/filter changes with delayed responses, current state after
+an existing mutation, and unchanged create/status-action regressions. Assert review
+interactions make only read requests and cannot trigger approval or payment actions.
+Retain relevant order/invoice API role/ownership, server pricing, historical-value,
+idempotency and payment/provisioning-separation regressions without changing rules.
+
+Extend the existing isolated fictional browser lifecycle with paid-order review,
+exact customer and invoice navigation, return to the existing order workspace and
+mobile/keyboard review/close. Snapshot business records and observe requests to prove
+review/navigation causes no mutation before the existing deliberate approval step.
+Keep fake providers, fixture isolation, authentication limits, timeouts and all
+existing lifecycle assertions unchanged. Browser Back may restore the existing list
+and its customer filter; durable review selection is not part of this command.
+
+Do not implement order/payment/service cross-record workflows beyond the two stated
+links, customer-portal changes, ledger pagination/search, exports, bulk actions,
+service details, provider operations, financial or approval-policy changes, new
+authentication behavior, notifications, dashboard attention, automation freshness,
+dependencies, releases, deployments or production approval. Production remains NO-GO.
+
+Consult the installed Next.js navigation documentation before implementation. Run
+focused shared/web tests, relevant order and invoice API E2E, the full fictional
+browser lifecycle, docs:check, formatting, lint, strict type checks, complete package
+tests and the production build. Update docs/PROGRESS.md, commit, reconcile without
+rewriting history, push origin/main, verify hosted CI and CodeQL, then stop and request
+a phase review before defining or implementing further work.
+```
+
+**Authorization:** Defined by the Command 81 phase review on 2026-10-04; not yet
+authorized or implemented. Requires separate explicit user authorization.
+
+---
+
 ## Continuation Command
 
 If a phase encounters errors or remains incomplete, use this prompt in the same Codex task:

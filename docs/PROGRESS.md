@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 81 — Make Customer Invoice History Searchable and Paginated
-- **Current status:** Completed and delivered to GitHub main; source CI and CodeQL verified
+- **Current command:** Phase Review — Review Command 81 and define the next bounded command
+- **Current status:** Review completed; Command 82 defined but not authorized
 - **Last updated:** 2026-10-04
-- **Next command:** Phase Review — Review Command 81 and define the next bounded command
+- **Next command:** Command 82 — Connect Administrator Order Review to Customer and Invoice Context
 - **Next command authorized:** No
 
 ## Command Reports
@@ -6305,8 +6305,10 @@ separately after this review's delivery. Do not begin it automatically.
 
 #### Open questions and risks
 
-- Counts and rows are separate API reads, not a transaction-wide immutable snapshot;
-  an empty page offers safe recovery, and inconsistent metadata fails closed.
+- Counts and rows are separate queries within one API transaction; neither that
+  transaction's default isolation nor subsequent page requests promise a frozen
+  history snapshot. An empty page offers safe recovery, and inconsistent metadata
+  fails closed. This wording was clarified by the Command 81 phase review.
 - The initial worker timeout is recorded above; the full serial rerun passed. The
   failed run may have left a fictional renewal fixture in the local development
   database. No broad cleanup or production data deletion was performed.
@@ -6324,6 +6326,106 @@ separately after this review's delivery. Do not begin it automatically.
 
 Authorize **Phase Review — Review Command 81 and define the next bounded command**
 separately. Do not define or begin Command 82 automatically.
+
+### Phase Review — Review Command 81 and Define Command 82
+
+- **Status:** Review completed; next implementation defined but not authorized
+- **Date:** 2026-10-04
+- **Authorization:** User authorized this phase review only, not Command 82.
+
+#### Scope completed
+
+- Reviewed Command 81 against the command playbook, permanent rules, product plan,
+  ADR-056, source/report commits, shared invoice/pagination contracts, server-page
+  entry, customer component, invoice controller/service, API fixtures and the full
+  fictional browser assertions.
+- Confirmed only search/status/page/pageSize enter the customer request; defaults,
+  duplicate/malformed rejection, safe offsets and fixed local links preserve the
+  authenticated customer boundary. Customer identity remains exclusively API-derived.
+- Confirmed matching metadata is validated against the current request, requests
+  remain one bounded page, and query changes key a new request instance. Delayed
+  outcomes cannot replace current results. Empty/filter-empty/out-of-range/loading/
+  failure/retry states retain controls and recovery without page-derived balances.
+- Reviewed the 105-owned/three-foreign API fixture, deterministic non-overlapping
+  pages and filtered counts, identity-override rejection, anonymous/admin-role
+  protections, unchanged record snapshots, and browser search/status/size/reload/
+  detail/back-forward/mobile assertions with zero non-read browsing requests.
+- Identified no in-scope corrective application change. Clarified the earlier
+  report: list/count queries share a Prisma transaction, but default isolation and
+  later page requests do not guarantee a frozen history. Corrected the roadmap's
+  remaining first-100 finding and unsupported customer-order service-state wording.
+- Selected one remaining P1 administrator lookup gap. `AdminOrderManager` shows
+  unlinked customer text, only the first plan/domain and no invoice context beside
+  state actions; existing `GET /orders/:orderId` and `orderSchema` already supply
+  customer IDs, all item snapshots and invoice state/total/balance/due date.
+- Defined exactly one **Command 82 — Connect Administrator Order Review to Customer
+  and Invoice Context**. It is a read-only panel plus two existing local detail
+  links, not a new route, general framework, approval gate, payment/service workflow
+  or new API/schema. No Command 82 implementation was performed.
+
+#### Files changed
+
+- `CODEX_DEVELOPMENT_COMMANDS.md` — bounded Command 82, evidence, exclusions and
+  explicit separate-authorization requirement.
+- `docs/DECISIONS.md` — ADR-057 for explicit read-only administrator order context.
+- `docs/PRODUCT_EXPERIENCE_ROADMAP.md` — corrected current ledger/service evidence,
+  Command 81 review outcome and selected administrator-only next slice.
+- `CHANGELOG.md` — review/definition, without claiming Command 82 implementation.
+- `docs/PROGRESS.md` — corrected transaction wording and this review/evidence report.
+
+#### Validation
+
+- Started from clean `main` at `a04063d253175a643932e0fc215ebd9060416d5e`, containing
+  Command 81 source `152301d` and its completion report. Fetched remote reconciliation
+  found zero ahead/behind.
+- Rechecked that exact delivered head's
+  [CI run 37145934196](https://github.com/ebit101/webhost-billing/actions/runs/37145934196)
+  and [CodeQL run 37145934169](https://github.com/ebit101/webhost-billing/actions/runs/37145934169):
+  both completed successfully. Full package/API/invariant/browser/audit/license/build
+  gates are verified hosted evidence, not claimed as fresh complete local reruns.
+- Fresh focused web tests: all 37 tests passed in four files (query, server entry,
+  customer ledger and invoice management), using one worker and unchanged assertions.
+- Fresh shared tests: all 29 passed, including money, pagination and response contracts.
+- Fresh invoice API E2E: all six tests passed, including larger history, filtered
+  count/row isolation, role/ownership, immutable history and invoice state behavior.
+  The existing experimental VM warning remained non-failing.
+- `pnpm docs:check`: all four offline validators passed. Repository-wide
+  `pnpm format:check` and `git diff --check` passed. The final review commit's hosted
+  CI/CodeQL are checked after pushing and before handoff. Diff review confines this
+  phase to the five declared documentation files; no application correction or
+  Command 82 implementation required a broader local application rerun.
+
+#### Decisions made
+
+- Close a repeated administrator order-to-customer/invoice lookup gap using ready
+  contracts before expanding another ledger or high-impact service/payment workflow.
+- Require an explicit one-order read, runtime validation and exact response identity,
+  independent states and historical snapshots. Use only returned validated identifiers
+  for fixed local links; page context or display/domain text grants no authority.
+- Treat the review as informational. Existing creation and state actions retain their
+  eligibility/API rules; review itself performs no mutation and an affected open view
+  must be invalidated or revalidated after an existing successful mutation.
+- Do not fabricate service/provisioning evidence absent from the order contract.
+  Delayed results after selection/close/filter changes must be discarded.
+
+#### Open questions and risks
+
+- Invoice and order state can change after a review read. The API remains authoritative
+  for explicit actions; Command 82 must not imply a frozen snapshot or approval proof.
+- Command 81's initial worker timeout and possible retained local fictional fixture
+  remain recorded in its report. Fresh invoice checks and both full hosted delivery
+  runs passed; no cleanup, timeout increase or unrelated worker fix was authorized.
+- The existing development-only `braces` advisory, VM/driver upgrade warnings and
+  direct-main delivery-rule bypass remain separate maintenance/process concerns.
+- Other ledger scale, customer order navigation, payment/service context, dashboard
+  attention, automation freshness and inactive chrome remain separately gated.
+- Production remains **NO-GO**. No live app, external provider, dependency, release,
+  schema, production record or deployment was changed by this review.
+
+#### Recommended next command
+
+Authorize **Command 82 — Connect Administrator Order Review to Customer and Invoice
+Context** separately. Do not begin it automatically.
 
 ## Report Template
 

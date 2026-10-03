@@ -565,6 +565,29 @@ This document records durable technical and product decisions. New decisions sho
   mutations, schema/authentication changes, providers, releases and deployments
   remain excluded. Production remains `NO-GO`.
 
+## ADR-057 — Read-Only Administrator Order Review With Existing Record Context
+
+- **Status:** Accepted
+- **Date:** 2026-10-04
+- **Decision:** After reviewing Command 81, define one administrator order-workspace
+  slice: an explicitly selected read-only review using the existing order-detail
+  endpoint and runtime contract, with validated fixed local links to the returned
+  customer and invoice. Show historical item/price snapshots and independent order
+  and invoice facts; retain the existing creation and status-action rules.
+- **Reason:** Customer invoice history now exposes older billing records safely,
+  while administrator order rows still show unlinked customer text, only the first
+  item's plan/domain, and no invoice review context beside approval. The existing
+  protected order detail already supplies every order item, snapshot totals, customer
+  identity and invoice number/state/balance. Connecting these facts closes a frequent
+  operator lookup gap without a new detail route, read model or business mutation.
+- **Consequence:** Command 82 is defined but not authorized or implemented. Selection,
+  close, retry and navigation must remain read-only; delayed/mismatched responses and
+  old context after filter or mutation changes cannot appear current. The order
+  contract supplies no current service state, so payment/order state must never be
+  presented as provisioning evidence. Other ledgers, general review frameworks,
+  payment/service workflows, schema/authentication changes, providers, deployments
+  and releases remain excluded. Production remains `NO-GO`.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:
