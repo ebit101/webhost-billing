@@ -3,7 +3,7 @@
 ## Status Summary
 
 - **Current command:** Command 76 — Repair the Public Storefront Entry and Plan Selection
-- **Current status:** Completed locally; delivery verification pending
+- **Current status:** Completed and delivered to GitHub `main`
 - **Last updated:** 2026-10-03
 - **Next command:** Command 77 — Make Administrator Customer Context Actionable
 - **Next command authorized:** No
@@ -5207,7 +5207,7 @@ Selection** separately. Do not begin Commands 77–78 automatically.
 
 ### Command 76 — Repair the Public Storefront Entry and Plan Selection
 
-- **Status:** Completed locally; delivery verification pending
+- **Status:** Completed and delivered to GitHub `main`
 - **Date:** 2026-10-03
 
 #### Scope completed
@@ -5275,7 +5275,11 @@ Selection** separately. Do not begin Commands 77–78 automatically.
 - The Next.js production build passed and generated all 29 application pages.
 - Repository lint, strict workspace typechecking, `pnpm docs:check`,
   `pnpm format:check`, and `git diff --check` passed.
-- Hosted CI and CodeQL evidence will be recorded after delivery to `origin/main`.
+- Command 76 implementation commit `2abd595` passed hosted CI run `37118867714`,
+  including full-history secret scanning, database verification, offline
+  documentation, formatting, lint, strict type checks, package/API/invariant/browser
+  tests, dependency/license checks, and the production build. Hosted CodeQL run
+  `37118867662` also passed.
 
 #### Decisions made
 
