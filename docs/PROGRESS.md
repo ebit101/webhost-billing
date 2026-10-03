@@ -3,7 +3,7 @@
 ## Status Summary
 
 - **Current command:** Command 77 — Make Administrator Customer Context Actionable
-- **Current status:** Completed locally; delivery verification pending
+- **Current status:** Completed and delivered to GitHub `main`
 - **Last updated:** 2026-10-03
 - **Next command:** Command 78 — Turn the Customer Portal Overview Into a Next-Action Home
 - **Next command authorized:** No
@@ -5314,7 +5314,7 @@ Do not begin Command 77 automatically.
 
 ### Command 77 — Make Administrator Customer Context Actionable
 
-- **Status:** Completed locally; delivery verification pending
+- **Status:** Completed and delivered to GitHub `main`
 - **Date:** 2026-10-03
 
 #### Scope completed
@@ -5386,7 +5386,11 @@ Do not begin Command 77 automatically.
   and both NestJS applications built successfully.
 - `pnpm docs:check`, `pnpm format:check`, repository lint, strict workspace
   typechecking, and `git diff --check` passed.
-- Hosted CI and CodeQL evidence will be recorded after delivery to `origin/main`.
+- Command 77 implementation commit `4405000` passed hosted CI run `37121397104`,
+  including full-history secret scanning, database verification, offline
+  documentation, formatting, lint, strict type checks, package/API/invariant/browser
+  tests, dependency/license checks, and the production build. Hosted CodeQL run
+  `37121397133` also passed.
 
 #### Decisions made
 
