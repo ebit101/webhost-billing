@@ -4896,7 +4896,7 @@ automatically.
 
 ### Command 74 — Implement Starter Issue #31: Add One Offline Documentation Validation Command
 
-- **Status:** Implemented and validated locally; delivery pending
+- **Status:** Completed and delivered to GitHub `main`
 - **Date:** 2026-10-03
 
 #### Scope completed
@@ -4946,6 +4946,13 @@ automatically.
   `git diff --check` passed.
 - `pnpm test` passed the demo/documentation contract suites, including the 4 new
   dispatcher tests, plus 26 shared, 3 queue, 55 web, 88 API, and 29 worker tests.
+- Command 74 implementation commit `8c7a8a6` passed hosted CI run `37104008847`,
+  including the new aggregate documentation step, full-history secret scanning,
+  database verification, lint, strict type checks, package/API/invariant/browser
+  tests, dependency/license checks, and the production build. Hosted CodeQL run
+  `37104008812` also passed.
+- GitHub issue #31 received the completion evidence and was closed as completed on
+  2026-10-03.
 
 #### Decisions made
 
@@ -4966,8 +4973,9 @@ automatically.
   child output through the dispatcher.
 - Production remains `NO-GO`; no application, financial, authentication, database,
   provider, release, deployment, Docker, browser, or screenshot behavior changed.
-- Delivery, hosted checks, and issue closure remain pending; every required local
-  validation has passed.
+- The implementation is delivered on GitHub `main`, hosted CI and CodeQL are green,
+  and issue #31 is closed. The public starter-issue set is now empty pending a new
+  phase review.
 
 #### Recommended next command
 
