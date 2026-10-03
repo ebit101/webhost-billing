@@ -33,7 +33,7 @@
     "@types/react-dom": "^19",
     "@webhost-billing/database": "workspace:*",
     "argon2": "0.45.1",
-    "eslint": "^9",
+    "eslint": "^10",
     "eslint-config-next": "16.3.7",
     "jsdom": "^26.1.0",
     "tailwindcss": "^4",
