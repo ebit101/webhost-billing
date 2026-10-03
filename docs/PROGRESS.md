@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Phase Review — Review Command 81 and define the next bounded command
-- **Current status:** Review completed; Command 82 defined but not authorized
+- **Current command:** Command 82 — Connect Administrator Order Review to Customer and Invoice Context
+- **Current status:** Implemented and locally validated; GitHub delivery verification pending
 - **Last updated:** 2026-10-04
-- **Next command:** Command 82 — Connect Administrator Order Review to Customer and Invoice Context
+- **Next command:** Phase Review — Review Command 82 and define the next bounded command
 - **Next command authorized:** No
 
 ## Command Reports
@@ -6426,6 +6426,115 @@ separately. Do not define or begin Command 82 automatically.
 
 Authorize **Command 82 — Connect Administrator Order Review to Customer and Invoice
 Context** separately. Do not begin it automatically.
+
+### Command 82 — Connect Administrator Order Review to Customer and Invoice Context
+
+- **Status:** Implemented and locally validated; GitHub delivery verification pending
+- **Date:** 2026-10-04
+
+#### Scope completed
+
+- Added explicit one-order read-only review to `/admin/orders`, using the existing
+  protected detail endpoint and complete shared runtime response contract. Selected
+  UUIDs, returned order identity and the active valid customer filter are checked;
+  only validated returned customer/invoice IDs create fixed local detail links.
+- Presented every historical item with description, requested domain, billing
+  period, quantity and unit/setup/line snapshots, order totals/dates, optional
+  plain-text notes, and linked invoice status/due/total/balance. Existing lossless
+  formatting and configured business timezone are used without repricing or totals
+  reconstruction. Order/invoice states remain distinct; no service state is invented.
+- Added labelled loading/unavailable/error/retry/close controls, keyboard focus and
+  mobile layout. Selection is never automatic; keyed request scopes and cancellation
+  discard delayed outcomes after selection, close or customer-filter changes.
+- Preserved existing creation and Approve/Reject/Cancel eligibility and request
+  bodies. Successful existing mutations invalidate review. Review contains no
+  mutation controls, approval gate, new route, API, schema or provider operation.
+- Extended the existing fictional browser lifecycle with exact customer/invoice
+  navigation, return to orders and mobile/keyboard review/close before deliberate
+  approval, comparing business records and observing requests for no write.
+
+#### Files changed
+
+- `apps/web/src/components/orders/admin-order-review.tsx` — isolated read-only panel.
+- `apps/web/src/components/orders/admin-order-review.test.tsx` — 14 focused tests.
+- `apps/web/src/components/orders/admin-order-manager.tsx` — explicit selection,
+  focus return, scoped filter reset and successful-mutation invalidation.
+- `apps/web/src/components/orders/order-management.test.tsx` — 16 manager tests,
+  including unchanged create/status requests and read-only context regression.
+- `apps/web/e2e/specs/hosting-lifecycle.spec.ts` — fictional browsing evidence.
+- `CODEX_DEVELOPMENT_COMMANDS.md` — user authorization record.
+- `CHANGELOG.md`, `docs/PRODUCT_EXPERIENCE_ROADMAP.md`,
+  `docs/CRITICAL_BUSINESS_INVARIANTS.md` — bounded delivery/safety documentation.
+- `docs/PROGRESS.md` — this report and required phase-review stop.
+
+#### Validation
+
+- Started from clean `main` at `8b089df944dda45edecccfe647b9bee7bbfda72c`.
+  Consulted installed Next.js navigation documentation before implementation.
+- Focused web tests: 30 passed in two files (14 review and 16 manager).
+- Relevant order/invoice API E2E: 11 passed in two suites. Existing VM/driver
+  warnings remained non-failing; no API or financial rule was changed.
+- Web lint and strict application/E2E type checks passed. Initial checks caught an
+  invalid test billing-period enum, a duplicate-text query and a Testing Library
+  unsupported query option. Corrected test-only mistakes; assertions and timeouts
+  were not weakened or increased.
+- The initial full package run passed 57 demo/documentation, 29 shared, three queue,
+  172 web and 98 API tests. Its worker renewal-lifecycle test exceeded the existing
+  five-second deadline during overlapping validation, followed by a teardown foreign
+  key failure; the other 28 worker tests passed. This repeats a previously recorded
+  environment-sensitive failure, but is not accepted as a passing run. The complete
+  isolated `pnpm test` rerun passed all 388 tests, including all 29 worker tests in
+  ten suites, with original assertions and deadlines unchanged. This supports
+  contention as the timeout trigger, not a proven deterministic root cause.
+- Full workspace lint, strict type checks (including browser tests) and production
+  build passed. All four offline documentation validators, repository-wide
+  formatting and `git diff --check` passed.
+- The first browser run failed at the unchanged customer-registration assertion,
+  before reaching order review. The trace shows native form GET navigation on the
+  cold development route rather than the expected authenticated POST, consistent
+  with a pre-hydration race. No authentication behavior, assertion, delay, provider
+  or deadline was changed. The unchanged full fictional Chromium lifecycle rerun
+  passed (3.1 minutes including startup), including all original assertions and
+  added read-only order/customer/invoice and keyboard/mobile checks. Snapshot
+  comparisons and request observation passed before deliberate approval.
+- Existing VM, driver and color warnings, and expected API errors from deliberately
+  unavailable automation evidence, were non-failing. No timeout/assertion adjustment,
+  production connection or authentication workaround was used.
+- Hosted CI and CodeQL on the delivered source commit remain pending and will be
+  verified before completion handoff.
+
+#### Decisions made
+
+- Applied ADR-057 using existing contracts, navigation, formatter and settings read.
+  Nothing in browser navigation changes API role/ownership authority.
+- Close review after any successful existing mutation instead of implying stale
+  data is refreshed. A customer-filter change resets the workspace/request scope,
+  including unsent creation form state; review selection is not durable URL state.
+- Disable detail-link prefetch; fetch only one deliberate order and the existing
+  settings needed for timezone. A failed or mismatched response never retains the
+  previous successful view or exposes raw schema/provider errors.
+
+#### Open questions and risks
+
+- Review is context as of its request, not a frozen snapshot or current hosting
+  state. Explicit actions remain server-authoritative and independently eligible.
+- The first-100 order list, other ledger scale, payment/service context, dashboard
+  attention, automation freshness and inactive chrome remain separately gated.
+- Existing development-only dependency advisory and direct-main rule bypass remain
+  separate maintenance/process concerns. No dependency or security policy changed.
+- The interrupted worker test may have retained its random fictional fixture in the
+  local development database after failed cleanup. No broad cleanup is authorized;
+  the browser lifecycle uses its own separately guarded loopback schema.
+- Registration's initial native GET exposed only the fixed fictional test fields in
+  its local trace. The inferred hydration/fallback risk remains separate auth work;
+  a passing rerun does not establish that cold-route behavior is fixed.
+- Production remains **NO-GO**. No live app, credentialed provider, release,
+  production data, deployment or financial/approval policy was changed.
+
+#### Recommended next command
+
+Authorize **Phase Review — Review Command 82 and define the next bounded command**.
+Do not define or implement another command automatically.
 
 ## Report Template
 

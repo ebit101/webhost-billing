@@ -223,6 +223,111 @@ test('complete hosting customer and administrator lifecycle', async ({
     const orderRow = page.getByRole('row').filter({
       hasText: E2E_PRODUCT.domain,
     });
+    await test.step('administrator reviews customer and invoice context without changing business records', async () => {
+      const snapshot = async () => ({
+        order: await lifecycleRecord(),
+        invoices: await e2ePrisma.invoice.findMany({
+          where: { customerId },
+          orderBy: { id: 'asc' },
+          include: { items: true },
+        }),
+        payments: await e2ePrisma.payment.findMany({
+          where: { invoiceId },
+          orderBy: { id: 'asc' },
+        }),
+        services: await e2ePrisma.service.count(),
+        operations: await e2ePrisma.hostingPanelOperation.count(),
+        audit: await e2ePrisma.activityLog.count({
+          where: {
+            entityType: { in: ['ORDER', 'INVOICE', 'PAYMENT', 'SERVICE'] },
+          },
+        }),
+      });
+      const before = await snapshot();
+      const writes: string[] = [];
+      const observe = (request: import('@playwright/test').Request) => {
+        if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method()))
+          writes.push(new URL(request.url()).pathname);
+      };
+      page.on('request', observe);
+      const review = page.getByRole('region', { name: 'Order review' });
+      const openReview = async () => {
+        await orderRow
+          .getByRole('button', {
+            name: `Review order ${before.order.orderNumber}`,
+          })
+          .click();
+        await expect(
+          review.getByRole('heading', { name: before.order.orderNumber }),
+        ).toBeVisible();
+      };
+      try {
+        await expect(review).toHaveCount(0);
+        await openReview();
+        await expect(review).toContainText(
+          'Payment is not proof of hosting provisioning',
+        );
+        await expect(
+          review.getByRole('article', { name: 'Order item 1' }),
+        ).toContainText(E2E_PRODUCT.domain);
+        await expect(
+          review.getByRole('link', { name: 'View customer' }),
+        ).toHaveAttribute('href', `/admin/customers/${customerId}`);
+        await expect(
+          review.getByRole('link', { name: 'View invoice' }),
+        ).toHaveAttribute('href', `/admin/invoices/${invoiceId}`);
+        await expect(
+          review.getByRole('button', { name: 'Approve' }),
+        ).toHaveCount(0);
+        await review.getByRole('link', { name: 'View customer' }).click();
+        await expect(page).toHaveURL(
+          new RegExp(`/admin/customers/${customerId}$`),
+        );
+        await expect(
+          page.getByRole('heading', {
+            name: `${E2E_CUSTOMER.firstName} ${E2E_CUSTOMER.lastName}`,
+          }),
+        ).toBeVisible();
+        await page.goBack();
+        await expect(page).toHaveURL(/\/admin\/orders$/);
+        // Back may retain the existing panel or restore the list; both are supported.
+        if (!(await review.isVisible())) await openReview();
+        await review.getByRole('link', { name: 'View invoice' }).click();
+        await expect(page).toHaveURL(
+          new RegExp(`/admin/invoices/${invoiceId}$`),
+        );
+        await expect(
+          page.getByRole('heading', {
+            name: before.order.invoices[0]!.invoiceNumber,
+          }),
+        ).toBeVisible();
+        await page.goBack();
+        await expect(page).toHaveURL(/\/admin\/orders$/);
+        if (!(await review.isVisible())) await openReview();
+        await page.setViewportSize({ width: 375, height: 812 });
+        const close = review.getByRole('button', {
+          name: 'Close order review',
+        });
+        await close.focus();
+        await page.keyboard.press('Enter');
+        await expect(review).toHaveCount(0);
+        const trigger = orderRow.getByRole('button', {
+          name: `Review order ${before.order.orderNumber}`,
+        });
+        await expect(trigger).toBeFocused();
+        await page.keyboard.press('Enter');
+        await expect(
+          review.getByRole('heading', { name: before.order.orderNumber }),
+        ).toBeVisible();
+        await close.focus();
+        await page.keyboard.press('Enter');
+        expect(await snapshot()).toEqual(before);
+        expect(writes).toEqual([]);
+      } finally {
+        page.off('request', observe);
+        await page.setViewportSize({ width: 1440, height: 1000 });
+      }
+    });
     await orderRow.getByRole('button', { name: 'Approve' }).click();
     await expect(page.getByRole('status')).toContainText(/processing/i);
     await expect(orderRow).toContainText('PROCESSING');

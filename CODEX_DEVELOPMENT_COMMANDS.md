@@ -2066,8 +2066,8 @@ rewriting history, push origin/main, verify hosted CI and CodeQL, then stop and 
 a phase review before defining or implementing further work.
 ```
 
-**Authorization:** Defined by the Command 81 phase review on 2026-10-04; not yet
-authorized or implemented. Requires separate explicit user authorization.
+**Authorization:** Defined by the Command 81 phase review and explicitly authorized
+by the user on 2026-10-04. Delivery evidence is recorded in `docs/PROGRESS.md`.
 
 ---
 

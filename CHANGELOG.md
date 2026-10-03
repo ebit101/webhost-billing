@@ -10,6 +10,10 @@ and will be called out in release notes.
 
 ### Changed
 
+- Connected administrator order review to protected customer and invoice detail
+  through an explicit read-only panel. All historical items, lossless money and
+  business-time-zone dates retain independent order/invoice states; validated
+  identities, recovery states and stale-response protection preserve existing actions.
 - Reviewed Command 81's customer invoice-history boundaries and passing regression
   evidence, clarified transactional count/row wording, and defined a separately
   gated read-only administrator order review linked to existing customer and invoice

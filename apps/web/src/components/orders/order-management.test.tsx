@@ -5,7 +5,7 @@ import type {
   Product,
   PublicProduct,
 } from '@webhost-billing/shared';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AdminOrderManager } from './admin-order-manager';
@@ -437,6 +437,13 @@ describe('order interfaces', () => {
         if (url.endsWith('/products')) {
           return jsonResponse({ success: true, data: [product] });
         }
+        if (url.endsWith(`/orders/${orderId}`))
+          return jsonResponse({ success: true, data: paidOrder });
+        if (url.endsWith('/settings'))
+          return jsonResponse({
+            success: true,
+            data: { timeZone: 'Asia/Dhaka' },
+          });
         if (url.endsWith('/auth/csrf')) {
           return jsonResponse({
             success: true,
@@ -455,10 +462,220 @@ describe('order interfaces', () => {
     );
 
     render(<AdminOrderManager />);
+    await user.click(
+      await screen.findByRole('button', {
+        name: `Review order ${order.orderNumber}`,
+      }),
+    );
+    const review = await screen.findByRole('region', { name: 'Order review' });
+    await within(review).findByText(paidOrder.orderNumber);
+    expect(
+      within(review).queryByRole('button', { name: 'Approve' }),
+    ).toBeNull();
+    expect(approved).toBe(false);
     await user.click(await screen.findByRole('button', { name: 'Approve' }));
 
     expect(approved).toBe(true);
     expect(await screen.findByText(/moved to processing/i)).toBeTruthy();
+    expect(screen.queryByRole('region', { name: 'Order review' })).toBeNull();
+  });
+
+  it('opens review only deliberately, re-reads on selection and restores focus on close', async () => {
+    const reads: string[] = [];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+        expect(init?.method).toBeUndefined();
+        const url = String(input);
+        reads.push(url);
+        if (url.includes('/orders?')) return paginatedResponse([order]);
+        if (url.includes('/customers?')) return paginatedResponse([customer]);
+        if (url.endsWith('/products'))
+          return jsonResponse({ success: true, data: [product] });
+        if (url.endsWith(`/orders/${orderId}`))
+          return jsonResponse({ success: true, data: order });
+        if (url.endsWith('/settings'))
+          return jsonResponse({
+            success: true,
+            data: { timeZone: 'Asia/Dhaka' },
+          });
+        throw new Error('Unexpected read');
+      }),
+    );
+    render(<AdminOrderManager />);
+    const trigger = await screen.findByRole('button', {
+      name: `Review order ${order.orderNumber}`,
+    });
+    expect(reads.some((url) => url.endsWith(`/orders/${orderId}`))).toBe(false);
+    trigger.focus();
+    await userEvent.setup().keyboard('{Enter}');
+    await within(
+      screen.getByRole('region', { name: 'Order review' }),
+    ).findByText(order.orderNumber);
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: 'Close order review' }));
+    expect(document.activeElement).toBe(trigger);
+    expect(screen.queryByRole('region', { name: 'Order review' })).toBeNull();
+    await userEvent.setup().click(trigger);
+    await within(
+      screen.getByRole('region', { name: 'Order review' }),
+    ).findByText(order.orderNumber);
+    expect(
+      reads.filter((url) => url.endsWith(`/orders/${orderId}`)),
+    ).toHaveLength(2);
+  });
+
+  it('clears selected context and discards a delayed read after the customer filter changes', async () => {
+    let finish!: (value: Response) => void;
+    const detail = new Promise<Response>((resolve) => {
+      finish = resolve;
+    });
+    const mock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes('/orders?')) return paginatedResponse([order]);
+      if (url.includes('/customers?')) return paginatedResponse([customer]);
+      if (url.endsWith('/products'))
+        return jsonResponse({ success: true, data: [product] });
+      if (url.endsWith(`/customers/${customerId}`))
+        return jsonResponse({ success: true, data: customerDetail });
+      if (url.endsWith(`/orders/${orderId}`)) return detail;
+      throw new Error('Unexpected read');
+    });
+    vi.stubGlobal('fetch', mock);
+    const view = render(<AdminOrderManager />);
+    await userEvent.setup().click(
+      await screen.findByRole('button', {
+        name: `Review order ${order.orderNumber}`,
+      }),
+    );
+    view.rerender(
+      <AdminOrderManager customerFilter={{ customerId, invalid: false }} />,
+    );
+    await screen.findByLabelText('Customer filter');
+    await act(async () => finish(jsonResponse({ success: true, data: order })));
+    expect(screen.queryByRole('region', { name: 'Order review' })).toBeNull();
+    expect(
+      mock.mock.calls.some(([input]) => String(input).endsWith('/settings')),
+    ).toBe(false);
+  });
+
+  it.each([
+    ['Reject', 'REJECTED'],
+    ['Cancel', 'CANCELLED'],
+  ] as const)(
+    'retains the deliberate %s request and invalidates affected review',
+    async (action, status) => {
+      let body: unknown;
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+          const url = String(input);
+          if (url.includes('/orders?')) return paginatedResponse([order]);
+          if (url.includes('/customers?')) return paginatedResponse([customer]);
+          if (url.endsWith('/products'))
+            return jsonResponse({ success: true, data: [product] });
+          if (url.endsWith(`/orders/${orderId}`))
+            return jsonResponse({ success: true, data: order });
+          if (url.endsWith('/settings'))
+            return jsonResponse({
+              success: true,
+              data: { timeZone: 'Asia/Dhaka' },
+            });
+          if (url.endsWith('/auth/csrf'))
+            return jsonResponse({
+              success: true,
+              data: { csrfToken: 'a'.repeat(32) },
+            });
+          if (url.endsWith(`/orders/${orderId}/status`)) {
+            expect(init?.method).toBe('PATCH');
+            body = JSON.parse(String(init?.body)) as unknown;
+            return jsonResponse({ success: true, data: { ...order, status } });
+          }
+          throw new Error('Unexpected request');
+        }),
+      );
+      render(<AdminOrderManager />);
+      await userEvent.setup().click(
+        await screen.findByRole('button', {
+          name: `Review order ${order.orderNumber}`,
+        }),
+      );
+      await within(
+        screen.getByRole('region', { name: 'Order review' }),
+      ).findByText(order.orderNumber);
+      expect(body).toBeUndefined();
+      await userEvent
+        .setup()
+        .click(screen.getByRole('button', { name: new RegExp(`^${action}$`) }));
+      await screen.findByText(new RegExp(`moved to ${status.toLowerCase()}`));
+      expect(body).toEqual({ status });
+      expect(screen.queryByRole('region', { name: 'Order review' })).toBeNull();
+    },
+  );
+
+  it('preserves administrator creation payload and invalidates an open review after success', async () => {
+    let body: Record<string, unknown> | undefined;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input);
+        if (url.includes('/orders?')) return paginatedResponse([order]);
+        if (url.includes('/customers?')) return paginatedResponse([customer]);
+        if (url.endsWith('/products'))
+          return jsonResponse({ success: true, data: [product] });
+        if (url.endsWith(`/orders/${orderId}`))
+          return jsonResponse({ success: true, data: order });
+        if (url.endsWith('/settings'))
+          return jsonResponse({
+            success: true,
+            data: { timeZone: 'Asia/Dhaka' },
+          });
+        if (url.endsWith('/auth/csrf'))
+          return jsonResponse({
+            success: true,
+            data: { csrfToken: 'a'.repeat(32) },
+          });
+        if (url.endsWith('/orders/admin')) {
+          expect(init?.method).toBe('POST');
+          body = JSON.parse(String(init?.body)) as Record<string, unknown>;
+          return jsonResponse({
+            success: true,
+            data: { order, duplicate: false },
+          });
+        }
+        throw new Error('Unexpected request');
+      }),
+    );
+    const user = userEvent.setup();
+    render(<AdminOrderManager />);
+    await user.click(
+      await screen.findByRole('button', {
+        name: `Review order ${order.orderNumber}`,
+      }),
+    );
+    await within(
+      screen.getByRole('region', { name: 'Order review' }),
+    ).findByText(order.orderNumber);
+    await user.selectOptions(screen.getByLabelText('Customer'), customerId);
+    await user.selectOptions(screen.getByLabelText('Price'), priceId);
+    await user.type(
+      screen.getByLabelText('Requested domain'),
+      'new.example.test',
+    );
+    expect(body).toBeUndefined();
+    await user.click(
+      screen.getByRole('button', { name: 'Create order and invoice' }),
+    );
+    await screen.findByText(/created with unpaid invoice/);
+    expect(body).toEqual({
+      customerId,
+      productId,
+      priceId,
+      requestedDomain: 'new.example.test',
+      submissionKey: expect.any(String),
+    });
+    expect(screen.queryByRole('region', { name: 'Order review' })).toBeNull();
   });
 });
 

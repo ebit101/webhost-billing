@@ -30,12 +30,26 @@ import { Icon } from '../ui/icon';
 import { PageHeader } from '../ui/page-header';
 import { StatusBadge } from '../ui/status-badge';
 import { errorMessage, formatMinor, orderTone } from './order-ui';
+import { AdminOrderReview } from './admin-order-review';
 
 export function AdminOrderManager({
   customerFilter = emptyAdminCustomerFilter,
 }: {
   customerFilter?: AdminCustomerFilter;
 } = {}) {
+  return (
+    <OrderWorkspace
+      key={`${customerFilter.customerId ?? ''}:${customerFilter.invalid}`}
+      customerFilter={customerFilter}
+    />
+  );
+}
+
+function OrderWorkspace({
+  customerFilter,
+}: {
+  customerFilter: AdminCustomerFilter;
+}) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [customers, setCustomers] = useState<CustomerSummary[]>([]);
   const [filteredCustomer, setFilteredCustomer] = useState<CustomerDetail>();
@@ -46,6 +60,9 @@ export function AdminOrderManager({
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const submissionKey = useRef('');
+  const [review, setReview] = useState<{ id: string; sequence: number }>();
+  const reviewSequence = useRef(0);
+  const reviewTrigger = useRef<HTMLButtonElement | null>(null);
   const ordersPath = withAdminCustomerFilter(
     '/orders?pageSize=100',
     customerFilter,
@@ -145,6 +162,27 @@ export function AdminOrderManager({
         ),
       },
       {
+        key: 'review',
+        header: 'Review',
+        render: (order) => (
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            disabled={saving}
+            aria-controls="admin-order-review"
+            aria-expanded={review?.id === order.id}
+            aria-label={`Review order ${order.orderNumber}`}
+            onClick={(event) => {
+              reviewTrigger.current = event.currentTarget;
+              setReview({ id: order.id, sequence: ++reviewSequence.current });
+            }}
+          >
+            Review order
+          </Button>
+        ),
+      },
+      {
         key: 'actions',
         header: 'Actions',
         align: 'right',
@@ -181,7 +219,7 @@ export function AdminOrderManager({
           ),
       },
     ],
-    [saving],
+    [saving, review?.id],
   );
 
   async function createOrder(event: FormEvent<HTMLFormElement>) {
@@ -211,6 +249,7 @@ export function AdminOrderManager({
         result.order,
         ...current.filter((order) => order.id !== result.order.id),
       ]);
+      setReview(undefined);
       submissionKey.current = '';
       form.reset();
       setNotice(
@@ -238,6 +277,7 @@ export function AdminOrderManager({
       setOrders((current) =>
         current.map((order) => (order.id === updated.id ? updated : order)),
       );
+      setReview(undefined);
       setNotice(`${updated.orderNumber} moved to ${status.toLowerCase()}.`);
     } catch (caught) {
       setError(errorMessage(caught));
@@ -351,6 +391,17 @@ export function AdminOrderManager({
           />
         )}
       </section>
+      {review ? (
+        <AdminOrderReview
+          key={`${review.id}:${review.sequence}`}
+          orderId={review.id}
+          customerId={filteredCustomerId}
+          onClose={() => {
+            setReview(undefined);
+            reviewTrigger.current?.focus();
+          }}
+        />
+      ) : null}
     </div>
   );
 }

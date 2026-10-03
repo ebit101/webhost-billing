@@ -66,6 +66,16 @@ recovery states. The browser lifecycle pages beyond 100, retains filters through
 reload/detail/history navigation, and verifies no non-read request or invoice/payment
 record change during browsing. API ownership and financial rules remain unchanged.
 
+Command 82 adds explicit read-only administrator order review, not an approval
+gate. `admin-order-review.test.tsx` validates returned identities, historical items,
+large money values, independent states, recovery and delayed responses;
+`order-management.test.tsx` retains the original create/status requests and
+invalidates review after a successful mutation. Existing order/invoice API E2E
+retains role/ownership, server pricing, immutable history and idempotency checks.
+The fictional browser lifecycle compares business records and observes requests
+through customer/invoice navigation and keyboard/mobile review before deliberate
+approval. Payment is not provisioning evidence; no service state is invented.
+
 A failed invariant test blocks delivery. Do not solve a failure by weakening an assertion, deleting concurrency, increasing arbitrary delays, bypassing ownership, or changing a fake provider to report success unconditionally.
 
 Investigate the owning boundary:
