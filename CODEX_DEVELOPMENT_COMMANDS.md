@@ -1710,6 +1710,111 @@ scope. Update docs/PROGRESS.md, commit, reconcile, push main, verify hosted chec
 then stop and request separate authorization for Command 76.
 ```
 
+## Command 76 — Repair the Public Storefront Entry and Plan Selection
+
+```text
+Implement the first product-experience roadmap slice by making the anonymous public
+entry and hosting catalogue truthful, navigable and immediately useful. Replace the
+root-to-login contradiction with a small independent Webhost Billing public entry
+that uses the existing public shell, contains real local targets for every displayed
+header/footer link, and offers clear routes to the hosting catalogue, registration
+and sign-in. Do not copy competitor structure, text, styling or trade dress.
+
+Make the catalogue choose the first currently active price period deterministically
+instead of initially selecting an unavailable hard-coded period. When at least one
+active price exists, the first rendered product state must expose its price and a
+valid checkout CTA without an exploratory period click. Keep unavailable periods
+honest, preserve the selected product/price identifiers in the checkout link, and
+continue revalidating every price and total on the server. Define and test a clear
+all-prices-unavailable state.
+
+Add component tests for public navigation targets, available/unavailable period
+selection, empty pricing and exact checkout URLs. Extend browser evidence across
+anonymous `/`, `/hosting`, valid fragment targets, registration/sign-in links and
+an authenticated catalogue-to-checkout selection without placing an order. Update
+product documentation and the safe-demo walkthrough only where the evaluator path
+changes.
+
+Do not add promotions, cross-selling, marketing telemetry, a CMS, payment capture,
+domain registration, open redirects, real products/providers/data, schema or
+financial-rule changes, deployments, release mutation, or production approval. Do
+not implement general post-login return navigation beyond what is strictly needed
+for the tested local storefront paths. Run focused web tests, the safe-demo read-only
+smoke check, the relevant browser journey, docs:check, formatting, lint, strict type
+checks and complete package tests. Update docs/PROGRESS.md, commit, reconcile, push
+main, verify hosted checks, then stop and request separate authorization for Command
+77.
+```
+
+## Command 77 — Make Administrator Customer Context Actionable
+
+```text
+Implement the administrator slice from the product-experience roadmap. Reorder the
+administrator customer page so operational identity, status, linked counts and
+recent business context are available before optional edit forms. Render money with
+the shared safe BDT formatter rather than raw minor-unit wording and render dates in
+the configured business presentation conventions.
+
+Turn recent orders, services, invoices, payments and tickets into role-protected
+navigation. Link directly to an existing administrator detail route when one exists;
+otherwise link to the corresponding administrator list with an explicit URL-bound
+customer filter. Teach those target list pages to validate, display, clear and send
+that customer filter through their existing server query contracts. A filtered
+empty state must identify the customer context without leaking or inventing data.
+Keep the customer detail aggregate bounded and do not create multiple new record-
+detail pages in this command.
+
+Add component tests for ordering of operational/edit sections, safe money/date
+presentation, link targets, filter apply/clear behavior, malformed filter handling,
+empty/error states and administrator-only access. Add API coverage only where an
+existing customer filter is not already proved. Extend the fictional browser journey
+from customer search to the customer page, then into at least one direct detail and
+one customer-filtered ledger, without editing a record.
+
+Preserve role authorization, customer ownership, immutable financial history,
+separate order/payment/provisioning/service states, exact termination confirmation,
+and secret redaction. Do not add global search, new order/service/payment/ticket
+detail routes, bulk actions, real providers/data, schema changes, record mutations,
+deployment, release mutation, or production approval. Run focused component/API/E2E
+tests, docs:check, formatting, lint, strict type checks and complete package tests.
+Update docs/PROGRESS.md, commit, reconcile, push main, verify hosted checks, then
+stop and request separate authorization for Command 78.
+```
+
+## Command 78 — Turn the Customer Portal Overview Into a Next-Action Home
+
+```text
+Implement the customer-facing self-service slice from the product-experience
+roadmap. Extend the ownership-bound portal summary contract with bounded,
+server-derived action facts needed to answer: what balance is outstanding, whether
+an invoice is overdue, which active or suspended service is due next, and whether a
+support ticket is waiting for the customer or staff. Use integer minor units and
+safe string serialization; do not calculate authoritative balances in the browser.
+
+Update `/portal` to prioritize due/overdue payment, service-renewal and support
+attention with direct links to the permitted invoice, service or support route.
+Provide explicit healthy/no-action, loading, empty and failure states. Keep recent
+activity as secondary context and do not present a paid zero-balance invoice as the
+primary billing action. The summary must remain correct when more records exist than
+the bounded recent lists.
+
+Add shared-schema and API service/controller tests for aggregate correctness,
+ownership, mixed paid/unpaid/overdue invoices, suspended/active services, ticket
+states, empty accounts and safe monetary serialization. Add component tests for
+priority and links, then extend browser evidence for one action-needed customer and
+one healthy customer using fictional data only.
+
+Do not submit a payment, order, ticket reply or hosting operation; change invoice,
+payment, renewal or service state; add notifications, global search, predictive
+recommendations, promotions, multi-currency or tax scope; contact providers; use
+real data; change deployments/releases; or approve production. Preserve all role,
+ownership, payment/provisioning separation, financial immutability and permanent-
+termination invariants. Run focused shared/API/web/E2E tests, demo:smoke,
+docs:check, formatting, lint, strict type checks and complete package tests. Update
+docs/PROGRESS.md, commit, reconcile, push main, verify hosted checks, then stop and
+request a phase review before defining further implementation work.
+```
+
 ---
 
 ## Continuation Command

@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Phase Review — Review Commands 71–74 and define Command 75
-- **Current status:** Completed and delivered to GitHub `main`
+- **Current command:** Command 75 — Establish the Real-Hosting Product Experience Roadmap
+- **Current status:** Completed locally; GitHub delivery verification pending
 - **Last updated:** 2026-10-03
-- **Next command:** Command 75 — Establish the real-hosting product experience roadmap
+- **Next command:** Command 76 — Repair the Public Storefront Entry and Plan Selection
 - **Next command authorized:** No
 
 ## Command Reports
@@ -5099,6 +5099,106 @@ new **Phase Review**. Do not define or implement another command automatically.
 Authorize **Command 75 — Establish the Real-Hosting Product Experience Roadmap**
 only after separate review and authorization. Do not begin Command 76–78 or any
 application change automatically.
+
+### Command 75 — Establish the Real-Hosting Product Experience Roadmap
+
+- **Status:** Completed locally; GitHub delivery verification pending
+- **Date:** 2026-10-03
+
+#### Scope completed
+
+- Ran the fictional safe demo and inspected every App Router page as its intended
+  anonymous, customer, or administrator role, including seeded customer, service,
+  invoice, and printable-invoice detail routes. Reviewed representative public,
+  portal, and administrator screens visually in the live application.
+- Reconciled the live behavior with API controllers, shared query contracts,
+  worker/scheduler responsibilities, capability/release documentation, and the
+  primary Playwright lifecycle. No order, payment, ticket, service, provider,
+  settings, or other business record was changed; inspection created only normal
+  authenticated-session audit evidence.
+- Created `docs/PRODUCT_EXPERIENCE_ROADMAP.md` with the required complete route and
+  capability inventory, safety invariants, independent public benchmark, workflow
+  gap matrix, explicit affordance/navigation/scale/shortcut findings, deliberate
+  non-goals, prioritization, and production readiness boundary.
+- Verified current official public WHMCS documentation only for workflow concepts
+  around client/service context, order review, billing stages, automation evidence,
+  and support queues. No licensed system, private material, code, copy, screenshot,
+  styling, or trade dress was accessed or used.
+- Defined exactly three separately gated, pull-request-sized commands: Command 76
+  repairs public entry and plan selection; Command 77 makes administrator customer
+  context actionable; Command 78 turns the portal overview into an ownership-bound
+  next-action home. None was implemented and no starter issue was published.
+
+#### Files changed
+
+- `docs/PRODUCT_EXPERIENCE_ROADMAP.md` — added the evidence-led product roadmap
+- `CODEX_DEVELOPMENT_COMMANDS.md` — added exactly Commands 76–78
+- `docs/DECISIONS.md` — recorded journey-first sequencing in ADR-052
+- `CHANGELOG.md` — recorded the product-experience roadmap
+- `docs/PROGRESS.md` — recorded Command 75 scope, evidence, decisions, and handoff
+
+#### Validation
+
+- `pnpm demo:doctor` passed Docker CLI, Compose, Engine, fixed-loopback-port, and
+  redacted runtime-file checks before startup.
+- The first cold `pnpm demo:up` build did not complete because concurrent API/web
+  package retrieval repeatedly encountered registry latency/errors. The API image
+  then built successfully by itself. Repository history confirmed no application
+  source affecting the existing web/initializer images had changed since their
+  build, so the stack was started from those current local images without rebuilding
+  them. This recovery did not reset Docker or business data.
+- Initial fictional seeding encountered one transient PostgreSQL transaction-start
+  timeout. A non-destructive retry succeeded and PostgreSQL, Redis, API, web, and
+  fake gateway became healthy; the initializer completed successfully.
+- `pnpm demo:smoke` passed the fixed `/ready`, `/hosting`, `/portal`, and `/admin`
+  read-only evaluator path with fictional identities and fixed loopback targeting.
+- Manual live inspection covered all public/account, customer, and administrator
+  pages in `apps/web/src/app`, including valid seeded dynamic routes. DOM review was
+  used for the complete inventory, with additional visual review of the catalogue,
+  customer portal, and administrator customer page; stored screenshots were not
+  substituted for live evidence.
+- All seven official public comparison links in the roadmap were opened and
+  verified on 2026-10-03.
+- `pnpm demo:down` stopped the demo non-destructively and retained its dedicated
+  fictional database volumes and generated credentials.
+- `pnpm docs:check`, `pnpm format:check`, and `git diff --check` passed.
+
+#### Decisions made
+
+- Repair journey trust before adding breadth: public storefront truthfulness,
+  administrator customer context, and customer next-action clarity are the first
+  three bounded slices.
+- Keep search/pagination, inactive workspace chrome, order/payment review,
+  service-focused operations, automation freshness, and financial-policy review as
+  explicit P1 roadmap work rather than expanding Commands 76–78.
+- Treat public WHMCS material only as a source of workflow questions. Webhost Billing
+  remains an independent, smaller, single-business product with no parity promise.
+- Preserve role/ownership enforcement, server-authoritative integer money,
+  immutable financial history, separate payment/provisioning/service states, fake
+  provider evidence, and exact permanent-termination confirmation in every slice.
+
+#### Open questions and risks
+
+- Cold concurrent Docker builds remain sensitive to npm registry throughput. At the
+  end of the audit, Docker data remained on `D:`; approximately 15.4 GB was free on
+  `C:` and 10.9 GB on `D:`. This is an environment capacity risk, not evidence of a
+  product defect.
+- The safe demo omits worker/scheduler execution and real provider delivery by
+  design. Its route audit cannot replace credentialed sandbox acceptance, monitoring,
+  recovery rehearsal, or a real operator pilot.
+- The roadmap records P1 trust/scale gaps still outside Commands 76–78: fixed
+  first-100 ledgers, inactive search/notification chrome, disconnected
+  order/payment/service context, automation freshness, and a one-click global
+  partial-payment policy change.
+- Production remains `NO-GO`; no application code, schema, authentication,
+  financial/provider rule, release, deployment, hosted installation, or real data
+  changed in Command 75.
+
+#### Recommended next command
+
+After this documentation-only command is delivered to `origin/main` and hosted CI
+and CodeQL pass, authorize **Command 76 — Repair the Public Storefront Entry and Plan
+Selection** separately. Do not begin Commands 77–78 automatically.
 
 ## Report Template
 

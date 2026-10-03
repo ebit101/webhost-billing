@@ -10,6 +10,10 @@ and will be called out in release notes.
 
 ### Changed
 
+- Established a live-demo-backed product-experience roadmap with complete route and
+  capability inventory, workflow gap evidence, independent public WHMCS workflow
+  benchmarking, and separately gated Commands 76–78 for the public storefront,
+  administrator customer context, and customer next-action overview.
 - Reviewed the completed fourth starter set and defined a workflow-led product phase
   that benchmarks public WHMCS concepts without copying or pursuing feature parity.
 - Safe-demo credentials, status, logs, and down now refuse missing or unsafe runtime

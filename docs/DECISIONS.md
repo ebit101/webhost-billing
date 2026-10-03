@@ -447,6 +447,32 @@ This document records durable technical and product decisions. New decisions sho
   invariant and test route. WHMCS parity, copying and speculative breadth remain
   explicit non-goals; production remains `NO-GO`.
 
+## ADR-052 — Journey Repair Before Product Breadth
+
+- **Status:** Accepted
+- **Date:** 2026-10-03
+- **Decision:** Start the first product-experience implementation set with an honest
+  public storefront and available-price default, actionable administrator customer
+  context, and an ownership-bound customer next-action overview. Keep core-ledger
+  scale/search, workspace chrome, order/payment review, service-focused operations,
+  and automation freshness as explicit P1 follow-on work rather than expanding any
+  one of Commands 76–78.
+- **Reason:** Live fictional review found complete business primitives behind several
+  disconnected or misleading journeys: the public header targets a root route that
+  redirects to login, the catalogue initially selects an unavailable price period,
+  administrator customer history is unlinked and uses raw minor-unit wording, and
+  the portal makes customers infer billing and renewal urgency from counts and recent
+  records. These high-frequency problems have ready dependencies and bounded test
+  paths, while combining all navigation/search/attention work would create an
+  oversized and weakly reviewable change.
+- **Consequence:** Command 75 changes no product behavior. Commands 76–78 remain
+  separately authorized and must preserve role/ownership checks, server-authoritative
+  money, immutable financial history, separate payment/provisioning states, fake
+  provider evidence, and exact permanent-termination confirmation. Inactive workspace
+  search/notification chrome, fixed first-100 ledgers, automation freshness, and
+  financial-policy confirmation remain recorded roadmap work, not silently accepted
+  limitations. Production remains `NO-GO`.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:
