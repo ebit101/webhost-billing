@@ -37,6 +37,7 @@ RUN apt-get update \
   && useradd --uid 10001 --gid app --create-home --home-dir /home/app app
 COPY --from=builder --chown=app:app /opt/worker/ ./
 COPY --chown=app:app deploy/production/app-entrypoint.sh /usr/local/bin/app-entrypoint
+RUN sed -i 's/\r$//' /usr/local/bin/app-entrypoint
 
 USER 10001:10001
 ENTRYPOINT ["/usr/local/bin/app-entrypoint"]
