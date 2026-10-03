@@ -3,7 +3,7 @@
 ## Status Summary
 
 - **Current command:** Command 79 — Guard Partial-Payment Policy Changes
-- **Current status:** Completed; local validation passed, hosted delivery verification pending
+- **Current status:** Completed and delivered; local validation, hosted CI, and CodeQL passed
 - **Last updated:** 2026-10-03
 - **Next command:** Phase Review — Review Command 79 and define the next bounded command
 - **Next command authorized:** No
@@ -5758,7 +5758,7 @@ automatically.
 
 ### Command 79 — Guard Partial-Payment Policy Changes
 
-- **Status:** Completed; local validation passed, hosted delivery verification pending
+- **Status:** Completed and delivered; local validation, hosted CI, and CodeQL passed
 - **Date:** 2026-10-03
 
 #### Scope completed
@@ -5831,6 +5831,15 @@ automatically.
   browser run also passed. An intermediate overlapping build removed worker output
   used by the automation fixture; the accepted final rerun executed alone after the
   completed production build.
+- Implementation commit `200abd4b4adb50853313b993d35b34e829376090` was reconciled
+  without history rewriting and pushed to `origin/main`. Hosted
+  [CI run 37138081618](https://github.com/ebit101/webhost-billing/actions/runs/37138081618)
+  and
+  [CodeQL run 37138081568](https://github.com/ebit101/webhost-billing/actions/runs/37138081568)
+  both completed successfully for that commit. CI also passed the full API integration
+  and critical-invariant suites, complete browser lifecycle, production dependency
+  audit, license inventory, and production build. Dependency review was skipped as
+  expected for a push event. No deployment or release was performed.
 
 #### Decisions made
 
@@ -5853,8 +5862,8 @@ automatically.
 
 #### Recommended next command
 
-After delivery and successful hosted CI and CodeQL, authorize **Phase Review — Review
-Command 79 and define the next bounded command** separately. Do not begin another
+Authorize **Phase Review — Review Command 79 and define the next bounded command**
+separately. Do not begin another
 implementation automatically.
 
 ## Report Template
