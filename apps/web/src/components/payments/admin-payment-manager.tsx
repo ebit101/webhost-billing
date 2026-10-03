@@ -1,6 +1,7 @@
 'use client';
 
 import type {
+  CustomerDetail,
   Invoice,
   ManualPayment,
   ManualPaymentCreationResult,
@@ -12,6 +13,15 @@ import {
   authenticatedGet,
   authenticatedPaginatedGet,
 } from '../../lib/auth-api';
+import {
+  emptyAdminCustomerFilter,
+  type AdminCustomerFilter,
+  withAdminCustomerFilter,
+} from '../../lib/admin-customer-filter';
+import {
+  AdminCustomerFilterNotice,
+  filteredEmptyTitle,
+} from '../customers/admin-customer-filter-notice';
 import { fieldClass } from '../customers/customer-fields';
 import { formatMinor } from '../invoices/invoice-ui';
 import { Button } from '../ui/button';
@@ -22,9 +32,14 @@ import { StatusBadge } from '../ui/status-badge';
 import { paymentDate, paymentError, paymentTone } from './payment-ui';
 import { GatewayFailurePanel } from './gateway-failure-panel';
 
-export function AdminPaymentManager() {
+export function AdminPaymentManager({
+  customerFilter = emptyAdminCustomerFilter,
+}: {
+  customerFilter?: AdminCustomerFilter;
+} = {}) {
   const [payments, setPayments] = useState<ManualPayment[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [filteredCustomer, setFilteredCustomer] = useState<CustomerDetail>();
   const [settings, setSettings] = useState<PaymentSettings>({
     partialPaymentsEnabled: false,
   });
@@ -38,19 +53,32 @@ export function AdminPaymentManager() {
   const [notice, setNotice] = useState('');
   const recordKey = useRef('');
   const adjustmentKey = useRef('');
+  const paymentsPath = withAdminCustomerFilter(
+    '/payments?pageSize=100',
+    customerFilter,
+  );
+  const invoicesPath = withAdminCustomerFilter(
+    '/invoices?pageSize=100',
+    customerFilter,
+  );
+  const filteredCustomerId = customerFilter.customerId;
 
   useEffect(() => {
     let active = true;
     void Promise.all([
-      authenticatedPaginatedGet<ManualPayment>('/payments?pageSize=100'),
-      authenticatedPaginatedGet<Invoice>('/invoices?pageSize=100'),
+      authenticatedPaginatedGet<ManualPayment>(paymentsPath),
+      authenticatedPaginatedGet<Invoice>(invoicesPath),
       authenticatedGet<PaymentSettings>('/payments/settings'),
+      filteredCustomerId
+        ? authenticatedGet<CustomerDetail>(`/customers/${filteredCustomerId}`)
+        : Promise.resolve(undefined),
     ])
-      .then(([paymentResult, invoiceResult, policy]) => {
+      .then(([paymentResult, invoiceResult, policy, customerContext]) => {
         if (!active) return;
         setPayments(paymentResult.data);
         setInvoices(invoiceResult.data);
         setSettings(policy);
+        setFilteredCustomer(customerContext);
       })
       .catch((caught: unknown) => {
         if (active) setError(paymentError(caught));
@@ -61,7 +89,7 @@ export function AdminPaymentManager() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [filteredCustomerId, invoicesPath, paymentsPath]);
 
   const payableInvoices = invoices.filter(
     (invoice) => invoice.status === 'UNPAID' || invoice.status === 'OVERDUE',
@@ -323,6 +351,12 @@ export function AdminPaymentManager() {
         title="Payments"
         description="Review gateway exceptions and manual references, record verified receipts, and append refunds or reversals without rewriting financial history."
       />
+      <AdminCustomerFilterNotice
+        customer={filteredCustomer}
+        invalid={customerFilter.invalid}
+        clearHref="/admin/payments"
+        resourceLabel="payments"
+      />
       {error ? <Message error>{error}</Message> : null}
       {notice ? <Message>{notice}</Message> : null}
 
@@ -489,8 +523,15 @@ export function AdminPaymentManager() {
         ) : (
           <div className="p-5">
             <EmptyState
-              title="No manual payments"
-              description="Customer references and administrator entries will appear here."
+              title={
+                filteredEmptyTitle('payments', filteredCustomer) ??
+                'No manual payments'
+              }
+              description={
+                filteredCustomer
+                  ? 'This customer has no payments in the current bounded result.'
+                  : 'Customer references and administrator entries will appear here.'
+              }
             />
           </div>
         )}

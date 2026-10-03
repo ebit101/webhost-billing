@@ -1,9 +1,11 @@
 'use client';
 
-import type { CustomerDetail } from '@webhost-billing/shared';
+import type { CustomerDetail, SettingsOverview } from '@webhost-billing/shared';
 import Link from 'next/link';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { authMutation, authenticatedGet } from '../../lib/auth-api';
+import { adminCustomerFilterHref } from '../../lib/admin-customer-filter';
+import { formatMinor } from '../invoices/invoice-ui';
 import { Button, buttonStyles } from '../ui/button';
 import { ConfirmationDialog } from '../ui/confirmation-dialog';
 import { ErrorState, LoadingState } from '../ui/feedback-state';
@@ -20,6 +22,7 @@ export function AdminCustomerDetail({ customerId }: { customerId: string }) {
   const [customer, setCustomer] = useState<CustomerDetail>();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [timeZone, setTimeZone] = useState('Asia/Dhaka');
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [confirmAccess, setConfirmAccess] = useState(false);
@@ -29,9 +32,12 @@ export function AdminCustomerDetail({ customerId }: { customerId: string }) {
     setLoading(true);
     setError('');
     try {
-      setCustomer(
-        await authenticatedGet<CustomerDetail>(`/customers/${customerId}`),
-      );
+      const [customerResult, settings] = await Promise.all([
+        authenticatedGet<CustomerDetail>(`/customers/${customerId}`),
+        authenticatedGet<SettingsOverview>('/settings'),
+      ]);
+      setCustomer(customerResult);
+      setTimeZone(settings.timeZone);
     } catch (caught) {
       setError(
         caught instanceof Error
@@ -45,9 +51,14 @@ export function AdminCustomerDetail({ customerId }: { customerId: string }) {
 
   useEffect(() => {
     let active = true;
-    void authenticatedGet<CustomerDetail>(`/customers/${customerId}`)
-      .then((result) => {
-        if (active) setCustomer(result);
+    void Promise.all([
+      authenticatedGet<CustomerDetail>(`/customers/${customerId}`),
+      authenticatedGet<SettingsOverview>('/settings'),
+    ])
+      .then(([customerResult, settings]) => {
+        if (!active) return;
+        setCustomer(customerResult);
+        setTimeZone(settings.timeZone);
       })
       .catch((caught: unknown) => {
         if (!active) return;
@@ -128,6 +139,33 @@ export function AdminCustomerDetail({ customerId }: { customerId: string }) {
     );
 
   const active = customer.status === 'ACTIVE';
+  const linkedCounts = [
+    {
+      label: 'Orders',
+      count: customer.linked.counts.orders,
+      href: adminCustomerFilterHref('/admin/orders', customer.id),
+    },
+    {
+      label: 'Services',
+      count: customer.linked.counts.services,
+      href: adminCustomerFilterHref('/admin/services', customer.id),
+    },
+    {
+      label: 'Invoices',
+      count: customer.linked.counts.invoices,
+      href: adminCustomerFilterHref('/admin/invoices', customer.id),
+    },
+    {
+      label: 'Payments',
+      count: customer.linked.counts.payments,
+      href: adminCustomerFilterHref('/admin/payments', customer.id),
+    },
+    {
+      label: 'Tickets',
+      count: customer.linked.counts.tickets,
+      href: adminCustomerFilterHref('/admin/support', customer.id),
+    },
+  ];
   return (
     <div className="grid gap-7">
       <PageHeader
@@ -178,25 +216,140 @@ export function AdminCustomerDetail({ customerId }: { customerId: string }) {
         </p>
       ) : null}
 
-      <div className="grid gap-6 xl:grid-cols-[1.5fr_1fr]">
-        <Card
-          title="Profile and contact"
-          description="Administrator changes are recorded without storing sensitive field values in the activity log."
-        >
-          <form
-            key={customer.updatedAt}
-            className="grid gap-4 sm:grid-cols-2"
-            onSubmit={updateProfile}
+      <section aria-labelledby="operational-context" className="grid gap-4">
+        <div>
+          <h2
+            id="operational-context"
+            className="text-xl font-bold text-slate-950"
           >
-            <ProfileFields customer={customer} />
-            <div className="flex justify-end sm:col-span-2">
-              <Button type="submit" disabled={saving}>
-                {saving ? 'Saving…' : 'Save profile'}
-              </Button>
-            </div>
-          </form>
-        </Card>
-        <div className="grid content-start gap-6">
+            Operational context
+          </h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Identity, linked totals, and the latest bounded business records for
+            this customer.
+          </p>
+        </div>
+        <div className="grid gap-6 xl:grid-cols-[0.75fr_1.25fr]">
+          <Card title="Account identity">
+            <dl className="grid gap-3 text-sm">
+              <Detail label="Email" value={customer.email} />
+              <Detail
+                label="Company"
+                value={customer.companyName ?? 'Individual account'}
+              />
+              <Detail label="Country" value={customer.countryCode} />
+              <Detail
+                label="Customer since"
+                value={businessDate(customer.createdAt, timeZone)}
+              />
+              <Detail
+                label="Last updated"
+                value={businessDate(customer.updatedAt, timeZone)}
+              />
+            </dl>
+          </Card>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-5">
+            {linkedCounts.map((record) => (
+              <Link
+                key={record.label}
+                href={record.href}
+                className="rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-brand-300 hover:shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-600"
+              >
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                  {record.label}
+                </p>
+                <p className="mt-2 text-3xl font-bold text-slate-950">
+                  {record.count}
+                </p>
+              </Link>
+            ))}
+          </div>
+        </div>
+        <div className="grid gap-6 xl:grid-cols-2">
+          <LinkedList
+            title="Recent orders"
+            empty="No orders"
+            rows={customer.linked.orders.map((item) => ({
+              id: item.id,
+              primary: item.status,
+              secondary: `${formatMinor(item.total.amount, item.total.currency)} · ${businessDate(item.createdAt, timeZone)}`,
+              href: adminCustomerFilterHref('/admin/orders', customer.id),
+            }))}
+          />
+          <LinkedList
+            title="Recent services"
+            empty="No services"
+            rows={customer.linked.services.map((item) => ({
+              id: item.id,
+              primary: item.productName,
+              secondary: `${item.status}${item.domain ? ` · ${item.domain}` : ''} · ${formatMinor(item.recurringAmount.amount, item.recurringAmount.currency)} · ${businessDate(item.createdAt, timeZone)}`,
+              href: adminCustomerFilterHref('/admin/services', customer.id),
+            }))}
+          />
+          <LinkedList
+            title="Recent invoices"
+            empty="No invoices"
+            rows={customer.linked.invoices.map((item) => ({
+              id: item.id,
+              primary: `${item.invoiceNumber} · ${item.status}`,
+              secondary: `${formatMinor(item.total.amount, item.total.currency)} · due ${businessDate(item.dueAt, timeZone)}`,
+              href: `/admin/invoices/${item.id}`,
+            }))}
+          />
+          <LinkedList
+            title="Recent payments"
+            empty="No payments"
+            rows={customer.linked.payments.map((item) => ({
+              id: item.id,
+              primary: `${item.kind} · ${item.status}`,
+              secondary: `${formatMinor(item.amount.amount, item.amount.currency)} · ${item.invoiceNumber} · ${item.provider} · ${businessDate(item.createdAt, timeZone)}`,
+              href: adminCustomerFilterHref('/admin/payments', customer.id),
+            }))}
+          />
+          <LinkedList
+            title="Recent tickets"
+            empty="No tickets"
+            rows={customer.linked.tickets.map((item) => ({
+              id: item.id,
+              primary: `${item.ticketNumber} · ${item.subject}`,
+              secondary: `${item.status} · ${item.priority} · ${businessDate(item.updatedAt, timeZone)}`,
+              href: adminCustomerFilterHref('/admin/support', customer.id),
+            }))}
+          />
+        </div>
+      </section>
+
+      <section aria-labelledby="customer-administration" className="grid gap-4">
+        <div>
+          <h2
+            id="customer-administration"
+            className="text-xl font-bold text-slate-950"
+          >
+            Customer administration
+          </h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Optional profile and billing changes are kept below the operational
+            record context.
+          </p>
+        </div>
+        <div className="grid gap-6 xl:grid-cols-[1.5fr_1fr]">
+          <Card
+            title="Profile and contact"
+            description="Administrator changes are recorded without storing sensitive field values in the activity log."
+          >
+            <form
+              key={customer.updatedAt}
+              className="grid gap-4 sm:grid-cols-2"
+              onSubmit={updateProfile}
+            >
+              <ProfileFields customer={customer} />
+              <div className="flex justify-end sm:col-span-2">
+                <Button type="submit" disabled={saving}>
+                  {saving ? 'Saving…' : 'Save profile'}
+                </Button>
+              </div>
+            </form>
+          </Card>
           <Card title="Billing identity">
             <form
               key={`billing-${customer.updatedAt}`}
@@ -212,79 +365,6 @@ export function AdminCustomerDetail({ customerId }: { customerId: string }) {
               </Button>
             </form>
           </Card>
-          <Card title="Record details">
-            <dl className="grid gap-3 text-sm">
-              <Detail label="Customer since" value={date(customer.createdAt)} />
-              <Detail label="Last updated" value={date(customer.updatedAt)} />
-              <Detail label="Country" value={customer.countryCode} />
-            </dl>
-          </Card>
-        </div>
-      </div>
-
-      <section className="grid gap-4">
-        <h2 className="text-xl font-bold text-slate-950">
-          Linked business records
-        </h2>
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-          {Object.entries(customer.linked.counts).map(([label, count]) => (
-            <div
-              key={label}
-              className="rounded-2xl border border-slate-200 bg-white p-5"
-            >
-              <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                {label}
-              </p>
-              <p className="mt-2 text-3xl font-bold text-slate-950">{count}</p>
-            </div>
-          ))}
-        </div>
-        <div className="grid gap-6 xl:grid-cols-2">
-          <LinkedList
-            title="Recent orders"
-            empty="No orders"
-            rows={customer.linked.orders.map((item) => ({
-              id: item.id,
-              primary: item.status,
-              secondary: `${minor(item.total)} · ${date(item.createdAt)}`,
-            }))}
-          />
-          <LinkedList
-            title="Recent services"
-            empty="No services"
-            rows={customer.linked.services.map((item) => ({
-              id: item.id,
-              primary: item.productName,
-              secondary: `${item.status}${item.domain ? ` · ${item.domain}` : ''}`,
-            }))}
-          />
-          <LinkedList
-            title="Recent invoices"
-            empty="No invoices"
-            rows={customer.linked.invoices.map((item) => ({
-              id: item.id,
-              primary: `${item.invoiceNumber} · ${item.status}`,
-              secondary: `${minor(item.total)} · due ${date(item.dueAt)}`,
-            }))}
-          />
-          <LinkedList
-            title="Recent payments"
-            empty="No payments"
-            rows={customer.linked.payments.map((item) => ({
-              id: item.id,
-              primary: `${item.kind} · ${item.status}`,
-              secondary: `${minor(item.amount)} · ${item.invoiceNumber} · ${item.provider}`,
-            }))}
-          />
-          <LinkedList
-            title="Recent tickets"
-            empty="No tickets"
-            rows={customer.linked.tickets.map((item) => ({
-              id: item.id,
-              primary: `${item.ticketNumber} · ${item.subject}`,
-              secondary: `${item.status} · ${item.priority}`,
-            }))}
-          />
         </div>
       </section>
       <ConfirmationDialog
@@ -317,6 +397,7 @@ function Detail({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+
 function LinkedList({
   title,
   empty,
@@ -324,7 +405,7 @@ function LinkedList({
 }: {
   title: string;
   empty: string;
-  rows: { id: string; primary: string; secondary: string }[];
+  rows: { id: string; primary: string; secondary: string; href: string }[];
 }) {
   return (
     <Card title={title}>
@@ -332,7 +413,12 @@ function LinkedList({
         <ul className="divide-y divide-slate-100">
           {rows.map((row) => (
             <li className="py-3 first:pt-0 last:pb-0" key={row.id}>
-              <p className="text-sm font-bold text-slate-900">{row.primary}</p>
+              <Link
+                className="text-sm font-bold text-brand-700 hover:underline"
+                href={row.href}
+              >
+                {row.primary}
+              </Link>
               <p className="mt-1 text-xs text-slate-500">{row.secondary}</p>
             </li>
           ))}
@@ -343,11 +429,10 @@ function LinkedList({
     </Card>
   );
 }
-function date(value: string) {
-  return new Intl.DateTimeFormat('en', { dateStyle: 'medium' }).format(
-    new Date(value),
-  );
-}
-function minor(value: { amount: string; currency: string }) {
-  return `${value.amount} ${value.currency} minor units`;
+
+function businessDate(value: string, timeZone: string) {
+  return new Intl.DateTimeFormat('en-BD', {
+    dateStyle: 'medium',
+    timeZone,
+  }).format(new Date(value));
 }

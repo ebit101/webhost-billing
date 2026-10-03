@@ -18,6 +18,7 @@ test('complete hosting customer and administrator lifecycle', async ({
   let invoiceId = '';
   let renewalInvoiceId = '';
   let serviceId = '';
+  let customerId = '';
 
   await test.step('public entry has truthful local navigation and protected workspaces', async () => {
     await page.goto('/');
@@ -123,6 +124,8 @@ test('complete hosting customer and administrator lifecycle', async ({
   await test.step('customer role cannot open the administrator workspace', async () => {
     await page.goto('/admin');
     await expect(page).toHaveURL(/\/portal$/);
+    await page.goto(`/admin/customers/${E2E_ADMIN.userId}`);
+    await expect(page).toHaveURL(/\/portal$/);
   });
 
   await test.step('customer places an order with server-authoritative pricing', async () => {
@@ -133,7 +136,9 @@ test('complete hosting customer and administrator lifecycle', async ({
     await page.getByRole('button', { name: 'Place order' }).click();
     await expect(page.getByRole('heading', { name: /^ORD-/ })).toBeVisible();
     const lifecycle = await lifecycleRecord();
+    customerId = lifecycle.customerId;
     invoiceId = lifecycle.invoices[0]?.id ?? '';
+    expect(customerId).not.toBe('');
     expect(invoiceId).not.toBe('');
   });
 
@@ -255,6 +260,47 @@ test('complete hosting customer and administrator lifecycle', async ({
     await expect(
       page.getByText('The fictional account is active and verified.'),
     ).toBeVisible();
+  });
+
+  await test.step('administrator follows actionable customer context without editing records', async () => {
+    await context.clearCookies();
+    await login(page, E2E_ADMIN.email, E2E_ADMIN.password, '/admin');
+    await page.goto('/admin/customers');
+    await page.getByLabel('Search customers').fill(E2E_CUSTOMER.email);
+    await page.getByRole('button', { name: 'Search' }).click();
+    await page
+      .getByRole('link', {
+        name: `${E2E_CUSTOMER.firstName} ${E2E_CUSTOMER.lastName}`,
+      })
+      .click();
+    await expect(page).toHaveURL(new RegExp(`/admin/customers/${customerId}$`));
+    await expect(
+      page.getByRole('heading', { name: 'Operational context' }),
+    ).toBeVisible();
+
+    const invoiceLink = page.getByRole('link', { name: /^INV-/ }).first();
+    const invoiceHref = await invoiceLink.getAttribute('href');
+    expect(invoiceHref).toMatch(/^\/admin\/invoices\/[0-9a-f-]+$/i);
+    await invoiceLink.click();
+    await expect(page).toHaveURL(new RegExp(`${invoiceHref}$`));
+    await expect(
+      page.getByRole('button', { name: 'Download PDF' }),
+    ).toBeVisible();
+
+    await page.goto(`/admin/customers/${customerId}`);
+    await page.getByRole('link', { name: /Orders\s+1/ }).click();
+    await expect(page).toHaveURL(
+      new RegExp(`/admin/orders\\?customerId=${customerId}$`),
+    );
+    await expect(page.getByLabel('Customer filter')).toContainText(
+      `${E2E_CUSTOMER.firstName} ${E2E_CUSTOMER.lastName}`,
+    );
+    await expect(
+      page.getByRole('row').filter({ hasText: E2E_PRODUCT.domain }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('link', { name: 'Clear customer filter' }),
+    ).toHaveAttribute('href', '/admin/orders');
   });
 
   await test.step('administrator termination requires the exact confirmation', async () => {

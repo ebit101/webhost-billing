@@ -1,6 +1,7 @@
 'use client';
 
 import type {
+  CustomerDetail,
   HostingPanelOperationResult,
   Service,
   ServiceCreationResult,
@@ -13,6 +14,15 @@ import {
   authenticatedGet,
   authenticatedPaginatedGet,
 } from '../../lib/auth-api';
+import {
+  emptyAdminCustomerFilter,
+  type AdminCustomerFilter,
+  withAdminCustomerFilter,
+} from '../../lib/admin-customer-filter';
+import {
+  AdminCustomerFilterNotice,
+  filteredEmptyTitle,
+} from '../customers/admin-customer-filter-notice';
 import { fieldClass } from '../customers/customer-fields';
 import { formatMinor } from '../invoices/invoice-ui';
 import { Button } from '../ui/button';
@@ -32,8 +42,13 @@ interface ActionState {
   status: EvidenceStatus;
 }
 
-export function AdminServiceManager() {
+export function AdminServiceManager({
+  customerFilter = emptyAdminCustomerFilter,
+}: {
+  customerFilter?: AdminCustomerFilter;
+} = {}) {
   const [services, setServices] = useState<Service[]>([]);
+  const [filteredCustomer, setFilteredCustomer] = useState<CustomerDetail>();
   const [options, setOptions] = useState<ServiceSetupOptions>({
     servers: [],
     orderItems: [],
@@ -43,17 +58,26 @@ export function AdminServiceManager() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const servicesPath = withAdminCustomerFilter(
+    '/services?pageSize=100',
+    customerFilter,
+  );
+  const filteredCustomerId = customerFilter.customerId;
 
   useEffect(() => {
     let active = true;
     void Promise.all([
-      authenticatedPaginatedGet<Service>('/services?pageSize=100'),
+      authenticatedPaginatedGet<Service>(servicesPath),
       authenticatedGet<ServiceSetupOptions>('/services/setup-options'),
+      filteredCustomerId
+        ? authenticatedGet<CustomerDetail>(`/customers/${filteredCustomerId}`)
+        : Promise.resolve(undefined),
     ])
-      .then(([serviceResult, setup]) => {
+      .then(([serviceResult, setup, customerContext]) => {
         if (!active) return;
         setServices(serviceResult.data);
         setOptions(setup);
+        setFilteredCustomer(customerContext);
       })
       .catch((caught: unknown) => {
         if (active) setError(serviceError(caught));
@@ -64,7 +88,7 @@ export function AdminServiceManager() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [filteredCustomerId, servicesPath]);
 
   const columns: DataColumn<Service>[] = [
     {
@@ -368,6 +392,12 @@ export function AdminServiceManager() {
         title="Hosting services"
         description="Fulfil paid orders and manage provisioning, active, suspended, failed, cancelled, and terminated states independently from billing."
       />
+      <AdminCustomerFilterNotice
+        customer={filteredCustomer}
+        invalid={customerFilter.invalid}
+        clearHref="/admin/services"
+        resourceLabel="services"
+      />
       {error ? <Message error>{error}</Message> : null}
       {notice ? <Message>{notice}</Message> : null}
 
@@ -448,8 +478,15 @@ export function AdminServiceManager() {
         ) : (
           <div className="p-5">
             <EmptyState
-              title="No services"
-              description="Create the first service from an eligible paid order."
+              title={
+                filteredEmptyTitle('services', filteredCustomer) ??
+                'No services'
+              }
+              description={
+                filteredCustomer
+                  ? 'This customer has no services in the current bounded result.'
+                  : 'Create the first service from an eligible paid order.'
+              }
             />
           </div>
         )}

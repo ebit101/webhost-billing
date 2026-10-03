@@ -1,4 +1,5 @@
 import type {
+  CustomerDetail,
   CustomerSummary,
   Order,
   Product,
@@ -120,6 +121,27 @@ const customer: CustomerSummary = {
   linkedCounts: { orders: 1, services: 0, invoices: 1, tickets: 0 },
 };
 
+const customerDetail: CustomerDetail = {
+  ...customer,
+  phone: null,
+  addressLine1: '7 Test Avenue',
+  addressLine2: null,
+  city: 'Dhaka',
+  region: null,
+  postalCode: '1200',
+  countryCode: 'BD',
+  taxIdentifier: null,
+  updatedAt: customer.createdAt,
+  linked: {
+    orders: [],
+    services: [],
+    invoices: [],
+    payments: [],
+    tickets: [],
+    counts: { orders: 0, services: 0, invoices: 0, payments: 0, tickets: 0 },
+  },
+};
+
 afterEach(() => vi.unstubAllGlobals());
 
 describe('order interfaces', () => {
@@ -196,6 +218,77 @@ describe('order interfaces', () => {
     expect(screen.getByText(order.orderNumber)).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Reject' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeTruthy();
+  });
+
+  it('applies, explains, and clears URL-bound customer context', async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes('/orders?')) return paginatedResponse([]);
+      if (url.includes('/customers?pageSize=')) {
+        return paginatedResponse([customer]);
+      }
+      if (url.endsWith(`/customers/${customerId}`)) {
+        return jsonResponse({ success: true, data: customerDetail });
+      }
+      if (url.endsWith('/products')) {
+        return jsonResponse({ success: true, data: [product] });
+      }
+      throw new Error(`Unexpected request: ${url}`);
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    render(
+      <AdminOrderManager customerFilter={{ customerId, invalid: false }} />,
+    );
+
+    const filterNotice = await screen.findByLabelText('Customer filter');
+    expect(filterNotice.textContent).toContain(
+      'Showing orders for Amina Rahman · CUST-0001',
+    );
+    expect(screen.getByText('No orders for Amina Rahman')).toBeTruthy();
+    expect(
+      screen
+        .getByRole('link', { name: 'Clear customer filter' })
+        .getAttribute('href'),
+    ).toBe('/admin/orders');
+    expect(
+      fetchMock.mock.calls.some(([request]) =>
+        String(request).endsWith(
+          `/orders?pageSize=100&customerId=${customerId}`,
+        ),
+      ),
+    ).toBe(true);
+  });
+
+  it('ignores malformed customer context and offers a safe clear action', async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes('/orders?')) return paginatedResponse([]);
+      if (url.includes('/customers?')) return paginatedResponse([customer]);
+      if (url.endsWith('/products')) {
+        return jsonResponse({ success: true, data: [product] });
+      }
+      throw new Error(`Unexpected request: ${url}`);
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    render(<AdminOrderManager customerFilter={{ invalid: true }} />);
+
+    expect(
+      await screen.findByText(
+        'The customer filter is invalid and was not applied. No customer context was inferred.',
+      ),
+    ).toBeTruthy();
+    expect(
+      screen
+        .getByRole('link', { name: 'Clear invalid filter' })
+        .getAttribute('href'),
+    ).toBe('/admin/orders');
+    expect(
+      fetchMock.mock.calls.some(([request]) =>
+        String(request).includes('customerId='),
+      ),
+    ).toBe(false);
   });
 
   it('lets an administrator approve a paid order for fulfilment', async () => {

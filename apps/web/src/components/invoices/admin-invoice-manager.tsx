@@ -2,6 +2,7 @@
 
 import type {
   BusinessIdentity,
+  CustomerDetail,
   CustomerSummary,
   Invoice,
   InvoiceCreationResult,
@@ -13,7 +14,16 @@ import {
   authenticatedGet,
   authenticatedPaginatedGet,
 } from '../../lib/auth-api';
+import {
+  emptyAdminCustomerFilter,
+  type AdminCustomerFilter,
+  withAdminCustomerFilter,
+} from '../../lib/admin-customer-filter';
 import { Card, Field, fieldClass } from '../customers/customer-fields';
+import {
+  AdminCustomerFilterNotice,
+  filteredEmptyTitle,
+} from '../customers/admin-customer-filter-notice';
 import { Button } from '../ui/button';
 import { DataTable, type DataColumn } from '../ui/data-table';
 import { EmptyState, LoadingState } from '../ui/feedback-state';
@@ -45,9 +55,14 @@ const blankLine = (): DraftLine => ({
   taxAmount: '0',
 });
 
-export function AdminInvoiceManager() {
+export function AdminInvoiceManager({
+  customerFilter = emptyAdminCustomerFilter,
+}: {
+  customerFilter?: AdminCustomerFilter;
+} = {}) {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [customers, setCustomers] = useState<CustomerSummary[]>([]);
+  const [filteredCustomer, setFilteredCustomer] = useState<CustomerDetail>();
   const [identity, setIdentity] = useState<BusinessIdentity>({
     name: 'Webhost Billing',
   });
@@ -57,22 +72,38 @@ export function AdminInvoiceManager() {
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const submissionKey = useRef('');
+  const invoicesPath = withAdminCustomerFilter(
+    '/invoices?pageSize=100',
+    customerFilter,
+  );
+  const filteredCustomerId = customerFilter.customerId;
 
   useEffect(() => {
     let active = true;
     void Promise.all([
-      authenticatedPaginatedGet<Invoice>('/invoices?pageSize=100'),
+      authenticatedPaginatedGet<Invoice>(invoicesPath),
       authenticatedPaginatedGet<CustomerSummary>('/customers?pageSize=100'),
       authenticatedGet<BusinessIdentity>(
         '/invoices/settings/business-identity',
       ),
+      filteredCustomerId
+        ? authenticatedGet<CustomerDetail>(`/customers/${filteredCustomerId}`)
+        : Promise.resolve(undefined),
     ])
-      .then(([invoiceResult, customerResult, businessIdentity]) => {
-        if (!active) return;
-        setInvoices(invoiceResult.data);
-        setCustomers(customerResult.data);
-        setIdentity(businessIdentity);
-      })
+      .then(
+        ([
+          invoiceResult,
+          customerResult,
+          businessIdentity,
+          customerContext,
+        ]) => {
+          if (!active) return;
+          setInvoices(invoiceResult.data);
+          setCustomers(customerResult.data);
+          setIdentity(businessIdentity);
+          setFilteredCustomer(customerContext);
+        },
+      )
       .catch((caught: unknown) => {
         if (active) setError(invoiceError(caught));
       })
@@ -82,7 +113,7 @@ export function AdminInvoiceManager() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [filteredCustomerId, invoicesPath]);
 
   const columns = useMemo<DataColumn<Invoice>[]>(
     () => [
@@ -235,6 +266,12 @@ export function AdminInvoiceManager() {
         eyebrow="Administrator"
         title="Invoices"
         description="Create editable drafts, issue immutable billing documents, and manage balances without rewriting financial history."
+      />
+      <AdminCustomerFilterNotice
+        customer={filteredCustomer}
+        invalid={customerFilter.invalid}
+        clearHref="/admin/invoices"
+        resourceLabel="invoices"
       />
       {error ? <Message error>{error}</Message> : null}
       {notice ? <Message>{notice}</Message> : null}
@@ -411,8 +448,15 @@ export function AdminInvoiceManager() {
           />
         ) : (
           <EmptyState
-            title="No invoices yet"
-            description="Create the first administrator invoice draft."
+            title={
+              filteredEmptyTitle('invoices', filteredCustomer) ??
+              'No invoices yet'
+            }
+            description={
+              filteredCustomer
+                ? 'This customer has no invoices in the current bounded result.'
+                : 'Create the first administrator invoice draft.'
+            }
           />
         )}
       </section>

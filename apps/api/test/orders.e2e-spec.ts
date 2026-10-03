@@ -357,11 +357,16 @@ describe('Order creation (e2e)', () => {
       .set('X-CSRF-Token', adminCsrf)
       .send({ status: 'PAID' })
       .expect(422);
-    const list = await admin.get('/orders?pageSize=100').expect(200);
+    const list = await admin
+      .get(`/orders?pageSize=100&customerId=${customerId}`)
+      .expect(200);
+    const filteredOrders = paginatedApiSuccessResponseSchema(orderSchema).parse(
+      list.body,
+    ).data;
+    expect(filteredOrders.length).toBeGreaterThanOrEqual(3);
     expect(
-      paginatedApiSuccessResponseSchema(orderSchema).parse(list.body).data
-        .length,
-    ).toBeGreaterThanOrEqual(3);
+      filteredOrders.every((order) => order.customerId === customerId),
+    ).toBe(true);
     const audit = await prisma.activityLog.findMany({
       where: {
         action: {

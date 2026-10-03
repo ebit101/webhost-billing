@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 76 — Repair the Public Storefront Entry and Plan Selection
-- **Current status:** Completed and delivered to GitHub `main`
+- **Current command:** Command 77 — Make Administrator Customer Context Actionable
+- **Current status:** Completed locally; delivery verification pending
 - **Last updated:** 2026-10-03
-- **Next command:** Command 77 — Make Administrator Customer Context Actionable
+- **Next command:** Command 78 — Turn the Customer Portal Overview Into a Next-Action Home
 - **Next command authorized:** No
 
 ## Command Reports
@@ -5311,6 +5311,112 @@ Selection** separately. Do not begin Commands 77–78 automatically.
 After this command is delivered to `origin/main` and hosted CI and CodeQL pass,
 authorize **Command 77 — Make Administrator Customer Context Actionable** separately.
 Do not begin Command 77 automatically.
+
+### Command 77 — Make Administrator Customer Context Actionable
+
+- **Status:** Completed locally; delivery verification pending
+- **Date:** 2026-10-03
+
+#### Scope completed
+
+- Reordered administrator customer detail so account identity, access and
+  verification status, linked totals, and bounded recent business records precede
+  optional profile and billing edit forms.
+- Replaced raw minor-unit wording with the existing bigint-safe currency formatter
+  and rendered customer and linked-record dates in the configured business time
+  zone obtained from the administrator settings boundary.
+- Made linked totals navigable. Recent invoices open the existing administrator
+  invoice detail; orders, services, payments, and tickets open their corresponding
+  ledgers with an explicit URL-bound `customerId` filter.
+- Added strict single-UUID parsing for administrator customer context. Each target
+  ledger displays the resolved customer name/number, provides a clear action,
+  identifies customer-specific empty results, and sends the filter through the
+  existing API contract. Repeated or malformed values are ignored and explicitly
+  reported without inferring a customer.
+- Preserved the bounded customer aggregate, role/ownership authorization,
+  immutable financial records, separate lifecycle states, and existing exact
+  permanent-termination gate. No new record-detail route, schema, provider,
+  mutation, deployment, release, or production-approval scope was added.
+- Extended component, API integration, and fictional Chromium lifecycle evidence
+  from customer search through customer context, direct invoice detail, and a
+  customer-filtered order ledger without editing a record.
+
+#### Files changed
+
+- `apps/web/src/components/customers/admin-customer-detail.tsx` — reordered the
+  screen, applied safe money/business-time presentation, and added protected record
+  navigation
+- `apps/web/src/lib/admin-customer-filter.ts` and
+  `apps/web/src/components/customers/admin-customer-filter-notice.tsx` — added the
+  shared strict URL-filter and visible resolved/invalid context presentation
+- `apps/web/src/app/(admin)/admin/{orders,services,invoices,payments,support}/page.tsx`
+  — parsed the asynchronous App Router query and passed validated customer context
+- `apps/web/src/components/{orders,services,invoices,payments,support}/admin-*-manager.tsx`
+  — applied the existing API filter, resolved actual customer identity, preserved
+  support filters, and added clear/customer-specific empty states
+- `apps/web/src/lib/admin-customer-filter.test.ts`,
+  `apps/web/src/components/customers/customer-management.test.tsx`, and
+  `apps/web/src/components/orders/order-management.test.tsx` — covered strict
+  parsing, ordering, safe display, link targets, apply/clear behavior, malformed
+  context, and empty/recoverable failure states
+- `apps/api/test/{orders,services,invoices,payments,tickets}.e2e-spec.ts` — proved
+  the existing administrator `customerId` filters return only the requested
+  customer's records
+- `apps/web/e2e/specs/hosting-lifecycle.spec.ts` — added administrator-only customer
+  route evidence and the read-only cross-record browser journey
+- `docs/CUSTOMER_MANAGEMENT.md`, `docs/PRODUCT_EXPERIENCE_ROADMAP.md`,
+  `CHANGELOG.md`, and `docs/PROGRESS.md` — documented the delivered behavior and
+  retained product boundaries
+
+#### Validation
+
+- Focused Vitest coverage passed: 3 files and 13 tests.
+- Focused API integration coverage passed in one clean run: 5 suites and 26 tests
+  across orders, services, invoices, payments, and tickets. An earlier combined run
+  exposed an extra-login rate-limit interaction in the invoice suite; the new
+  assertion was folded into its existing authenticated flow and the clean rerun
+  passed.
+- The complete Chromium hosting lifecycle passed: 1 test in 2.2 minutes, including
+  customer-role denial, administrator customer search, direct invoice detail, and
+  customer-filtered order navigation without record edits.
+- The root package-test orchestration passed, including all demo/documentation
+  tests, 26 shared tests, 3 queue tests, 66 web tests, 88 API tests, and 29 worker
+  tests.
+- The complete workspace production build passed; Next generated all 29 web pages
+  and both NestJS applications built successfully.
+- `pnpm docs:check`, `pnpm format:check`, repository lint, strict workspace
+  typechecking, and `git diff --check` passed.
+- Hosted CI and CodeQL evidence will be recorded after delivery to `origin/main`.
+
+#### Decisions made
+
+- Treat URL customer context as untrusted input: accept exactly one valid UUID,
+  resolve the real customer server-side, and never derive identity from URL text.
+- Reuse existing protected list contracts rather than creating four new
+  administrator record-detail routes. The one existing invoice detail remains the
+  direct destination.
+- Keep the filtered ledger's bounded creation/control surfaces intact while making
+  the list and relevant invoice selection customer-specific; broader ledger
+  pagination and connected review remain P1 roadmap work.
+- Use the existing safe currency formatter and administrator settings time zone;
+  no monetary arithmetic or authoritative state is moved into the browser.
+
+#### Open questions and risks
+
+- Core ledgers still request a bounded first page of 100 records. URL-bound
+  pagination/search across all ledgers remains separate P1 work.
+- Orders, services, payments, and tickets still lack dedicated administrator detail
+  routes by design; Command 77 provides a filtered workspace rather than expanding
+  route breadth.
+- The safe demo still uses fictional providers and omits worker/scheduler execution.
+  Production remains `NO-GO`; provider acceptance, monitoring, recovery rehearsal,
+  operator pilot evidence, deployment, and live data remain outside this command.
+
+#### Recommended next command
+
+After this command is delivered to `origin/main` and hosted CI and CodeQL pass,
+authorize **Command 78 — Turn the Customer Portal Overview Into a Next-Action Home**
+separately. Do not begin Command 78 automatically.
 
 ## Report Template
 

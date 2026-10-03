@@ -409,11 +409,16 @@ describe('Manual payments (e2e)', () => {
     const admin = request.agent(app.getHttpServer());
     const csrf = await csrfToken(admin);
     await login(admin, csrf, ADMIN_EMAIL);
-    const response = await admin.get('/payments?state=VERIFIED').expect(200);
+    const response = await admin
+      .get(`/payments?state=VERIFIED&customerId=${customerId}`)
+      .expect(200);
     const payments = paginatedApiSuccessResponseSchema(
       manualPaymentSchema,
     ).parse(response.body).data;
     expect(payments.length).toBeGreaterThan(0);
+    expect(payments.every((payment) => payment.customerId === customerId)).toBe(
+      true,
+    );
     expect(payments[0]).not.toHaveProperty('providerTransactionId');
     expect(payments[0]).not.toHaveProperty('proof.file');
     expect(

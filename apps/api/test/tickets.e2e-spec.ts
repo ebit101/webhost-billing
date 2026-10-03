@@ -305,13 +305,14 @@ describe('Support tickets (e2e)', () => {
 
     const list = await admin
       .get(
-        '/tickets?status=WAITING_FOR_STAFF&priority=NORMAL&unassigned=true&search=fictional&pageSize=10',
+        `/tickets?status=WAITING_FOR_STAFF&priority=NORMAL&unassigned=true&search=fictional&pageSize=10&customerId=${customerId}`,
       )
       .expect(200);
-    expect(
-      paginatedApiSuccessResponseSchema(ticketSummarySchema).parse(list.body)
-        .data,
-    ).toHaveLength(1);
+    const filteredTickets = paginatedApiSuccessResponseSchema(
+      ticketSummarySchema,
+    ).parse(list.body).data;
+    expect(filteredTickets).toHaveLength(1);
+    expect(filteredTickets[0]?.customer.id).toBe(customerId);
 
     const updated = await admin
       .patch(`/tickets/${ticketId}`)

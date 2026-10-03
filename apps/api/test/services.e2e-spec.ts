@@ -421,6 +421,23 @@ describe('Hosting services (e2e)', () => {
     ).toBe(0);
   });
 
+  it('lets administrators bind the service ledger to one customer', async () => {
+    const admin = request.agent(app.getHttpServer());
+    const csrf = await csrfToken(admin);
+    await login(admin, csrf, ADMIN_EMAIL);
+
+    const response = await admin
+      .get(`/services?pageSize=100&customerId=${customerId}`)
+      .expect(200);
+    const services = paginatedApiSuccessResponseSchema(serviceSchema).parse(
+      response.body,
+    ).data;
+    expect(services.length).toBeGreaterThan(0);
+    expect(services.every((service) => service.customerId === customerId)).toBe(
+      true,
+    );
+  });
+
   afterAll(async () => {
     if (prisma) await cleanup();
     if (app) await app.close();

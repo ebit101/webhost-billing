@@ -1,6 +1,7 @@
 'use client';
 
 import type {
+  CustomerDetail,
   CustomerSummary,
   Order,
   OrderCreationResult,
@@ -12,6 +13,15 @@ import {
   authenticatedGet,
   authenticatedPaginatedGet,
 } from '../../lib/auth-api';
+import {
+  emptyAdminCustomerFilter,
+  type AdminCustomerFilter,
+  withAdminCustomerFilter,
+} from '../../lib/admin-customer-filter';
+import {
+  AdminCustomerFilterNotice,
+  filteredEmptyTitle,
+} from '../customers/admin-customer-filter-notice';
 import { Card, Field, fieldClass } from '../customers/customer-fields';
 import { Button } from '../ui/button';
 import { DataTable, type DataColumn } from '../ui/data-table';
@@ -21,9 +31,14 @@ import { PageHeader } from '../ui/page-header';
 import { StatusBadge } from '../ui/status-badge';
 import { errorMessage, formatMinor, orderTone } from './order-ui';
 
-export function AdminOrderManager() {
+export function AdminOrderManager({
+  customerFilter = emptyAdminCustomerFilter,
+}: {
+  customerFilter?: AdminCustomerFilter;
+} = {}) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [customers, setCustomers] = useState<CustomerSummary[]>([]);
+  const [filteredCustomer, setFilteredCustomer] = useState<CustomerDetail>();
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedProductId, setSelectedProductId] = useState('');
   const [loading, setLoading] = useState(true);
@@ -31,19 +46,28 @@ export function AdminOrderManager() {
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const submissionKey = useRef('');
+  const ordersPath = withAdminCustomerFilter(
+    '/orders?pageSize=100',
+    customerFilter,
+  );
+  const filteredCustomerId = customerFilter.customerId;
 
   useEffect(() => {
     let active = true;
     void Promise.all([
-      authenticatedPaginatedGet<Order>('/orders?pageSize=100'),
+      authenticatedPaginatedGet<Order>(ordersPath),
       authenticatedPaginatedGet<CustomerSummary>('/customers?pageSize=100'),
       authenticatedGet<Product[]>('/products'),
+      filteredCustomerId
+        ? authenticatedGet<CustomerDetail>(`/customers/${filteredCustomerId}`)
+        : Promise.resolve(undefined),
     ])
-      .then(([orderResult, customerResult, productResult]) => {
+      .then(([orderResult, customerResult, productResult, customerContext]) => {
         if (!active) return;
         setOrders(orderResult.data);
         setCustomers(customerResult.data);
         setProducts(productResult);
+        setFilteredCustomer(customerContext);
         setSelectedProductId(
           productResult.find((product) => product.status === 'ACTIVE')?.id ??
             '',
@@ -58,7 +82,7 @@ export function AdminOrderManager() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [filteredCustomerId, ordersPath]);
 
   const selectedProduct = products.find(
     (product) => product.id === selectedProductId,
@@ -231,6 +255,12 @@ export function AdminOrderManager() {
         title="Orders"
         description="Create customer orders with server-authoritative prices, then track payment and fulfilment states independently."
       />
+      <AdminCustomerFilterNotice
+        customer={filteredCustomer}
+        invalid={customerFilter.invalid}
+        clearHref="/admin/orders"
+        resourceLabel="orders"
+      />
       {error ? <Message tone="error">{error}</Message> : null}
       {notice ? <Message tone="success">{notice}</Message> : null}
       <Card
@@ -310,8 +340,14 @@ export function AdminOrderManager() {
           />
         ) : (
           <EmptyState
-            title="No orders yet"
-            description="Create an order for an active customer and hosting plan."
+            title={
+              filteredEmptyTitle('orders', filteredCustomer) ?? 'No orders yet'
+            }
+            description={
+              filteredCustomer
+                ? 'This customer has no orders in the current bounded result.'
+                : 'Create an order for an active customer and hosting plan.'
+            }
           />
         )}
       </section>

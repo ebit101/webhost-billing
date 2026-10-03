@@ -352,6 +352,16 @@ describe('Invoice management (e2e)', () => {
     const admin = request.agent(app.getHttpServer());
     const csrf = await csrfToken(admin);
     await login(admin, csrf, ADMIN_EMAIL);
+    const filteredResponse = await admin
+      .get(`/invoices?pageSize=100&customerId=${customerId}`)
+      .expect(200);
+    const filteredInvoices = paginatedApiSuccessResponseSchema(
+      invoiceSchema,
+    ).parse(filteredResponse.body).data;
+    expect(filteredInvoices.length).toBeGreaterThan(0);
+    expect(
+      filteredInvoices.every((invoice) => invoice.customerId === customerId),
+    ).toBe(true);
     const cancelled = await admin
       .patch(`/invoices/${invoiceId}/action`)
       .set('X-CSRF-Token', csrf)

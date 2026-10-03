@@ -1,6 +1,7 @@
 'use client';
 
 import type {
+  CustomerDetail,
   TicketDetail,
   TicketSetupOptions,
   TicketSummary,
@@ -11,11 +12,20 @@ import {
   authenticatedPaginatedGet,
   authMutation,
 } from '../../lib/auth-api';
+import {
+  emptyAdminCustomerFilter,
+  type AdminCustomerFilter,
+  withAdminCustomerFilter,
+} from '../../lib/admin-customer-filter';
 import { Button } from '../ui/button';
 import { DataTable, type DataColumn } from '../ui/data-table';
 import { EmptyState, LoadingState } from '../ui/feedback-state';
 import { PageHeader } from '../ui/page-header';
 import { StatusBadge } from '../ui/status-badge';
+import {
+  AdminCustomerFilterNotice,
+  filteredEmptyTitle,
+} from '../customers/admin-customer-filter-notice';
 import {
   fieldStyles,
   formatTicketDate,
@@ -30,25 +40,39 @@ import {
 
 const emptyOptions: TicketSetupOptions = { admins: [] };
 
-export function AdminTicketManager() {
+export function AdminTicketManager({
+  customerFilter = emptyAdminCustomerFilter,
+}: {
+  customerFilter?: AdminCustomerFilter;
+} = {}) {
   const [tickets, setTickets] = useState<TicketSummary[]>([]);
   const [options, setOptions] = useState(emptyOptions);
   const [selected, setSelected] = useState<TicketDetail>();
+  const [filteredCustomer, setFilteredCustomer] = useState<CustomerDetail>();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const ticketsPath = withAdminCustomerFilter(
+    '/tickets?pageSize=100',
+    customerFilter,
+  );
+  const filteredCustomerId = customerFilter.customerId;
 
   useEffect(() => {
     let active = true;
     void Promise.all([
-      authenticatedPaginatedGet<TicketSummary>('/tickets?pageSize=100'),
+      authenticatedPaginatedGet<TicketSummary>(ticketsPath),
       authenticatedGet<TicketSetupOptions>('/tickets/setup-options'),
+      filteredCustomerId
+        ? authenticatedGet<CustomerDetail>(`/customers/${filteredCustomerId}`)
+        : Promise.resolve(undefined),
     ])
-      .then(async ([ticketResult, setup]) => {
+      .then(async ([ticketResult, setup, customerContext]) => {
         if (!active) return;
         setTickets(ticketResult.data);
         setOptions(setup);
+        setFilteredCustomer(customerContext);
         const first = ticketResult.data[0];
         if (first) {
           const detail = await authenticatedGet<TicketDetail>(
@@ -66,7 +90,7 @@ export function AdminTicketManager() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [filteredCustomerId, ticketsPath]);
 
   const columns: DataColumn<TicketSummary>[] = [
     {
@@ -138,6 +162,7 @@ export function AdminTicketManager() {
       const value = String(values.get(key) ?? '');
       if (value) query.set(key, value);
     }
+    if (filteredCustomerId) query.set('customerId', filteredCustomerId);
     if (values.get('unassigned') === 'on') query.set('unassigned', 'true');
     setLoading(true);
     clearMessages();
@@ -240,6 +265,12 @@ export function AdminTicketManager() {
         title="Support queue"
         description="Filter customer requests, assign ownership, set priority, and keep every status change auditable."
       />
+      <AdminCustomerFilterNotice
+        customer={filteredCustomer}
+        invalid={customerFilter.invalid}
+        clearHref="/admin/support"
+        resourceLabel="support tickets"
+      />
       {error ? (
         <p
           role="alert"
@@ -307,8 +338,15 @@ export function AdminTicketManager() {
         ) : (
           <div className="p-6">
             <EmptyState
-              title="No matching tickets"
-              description="Change the filters to inspect another part of the support queue."
+              title={
+                filteredEmptyTitle('support tickets', filteredCustomer) ??
+                'No matching tickets'
+              }
+              description={
+                filteredCustomer
+                  ? 'This customer has no support tickets matching the current filters.'
+                  : 'Change the filters to inspect another part of the support queue.'
+              }
             />
           </div>
         )}

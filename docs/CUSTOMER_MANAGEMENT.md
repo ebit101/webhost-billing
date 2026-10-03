@@ -1,6 +1,6 @@
 # Customer Management
 
-Command 7 implements customer administration and customer self-service through the NestJS `CustomerModule`, shared Zod contracts, and the existing cookie-session security boundary.
+Command 7 implements customer administration and customer self-service through the NestJS `CustomerModule`, shared Zod contracts, and the existing cookie-session security boundary. Command 77 makes the bounded administrator context navigable without changing those business rules.
 
 ## API surface
 
@@ -27,10 +27,12 @@ Unsafe requests require the signed CSRF header/cookie pair. Administrator-only r
 
 ## Detail and history loading
 
-Customer detail returns totals for orders, services, invoices, payments, and tickets plus the ten most recent records in each category. Monetary values use the shared lossless `{ amount: string, currency: string }` JSON contract. Full module-specific histories remain the responsibility of their later development commands.
+Customer detail returns totals for orders, services, invoices, payments, and tickets plus the ten most recent records in each category. Monetary values use the shared lossless `{ amount: string, currency: string }` JSON contract. The administrator presentation uses the safe currency formatter and configured business time zone; it does not calculate authoritative money in the browser.
+
+Recent invoices link to the existing administrator invoice detail. Orders, services, payments, and tickets link to their administrator ledgers with a validated `customerId` query. Each ledger displays the resolved customer identity, sends the filter through the existing API contract, identifies customer-specific empty results, and provides a clear action. Repeated or malformed values are ignored and shown as invalid rather than being used to infer customer context.
 
 ## Interface routes
 
 - `/admin/customers` provides search, status filtering, pagination, and customer creation.
-- `/admin/customers/[customerId]` provides profile/billing edits, access confirmation, and linked-record summaries.
+- `/admin/customers/[customerId]` puts identity, status, linked counts, and bounded recent records before optional profile/billing edits and access controls.
 - `/portal/profile` loads the authenticated customer's owned profile and supports permitted edits and password changes.

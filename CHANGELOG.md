@@ -10,6 +10,9 @@ and will be called out in release notes.
 
 ### Changed
 
+- Reordered administrator customer detail around operational context, formatted
+  bounded history with safe money and business-time-zone dates, and connected it to
+  direct invoice detail or validated, visible, clearable customer-filtered ledgers.
 - Replaced the public root-to-login redirect with a focused storefront entry whose
   navigation resolves locally, and made the hosting catalogue select its first
   supported active price period while preserving explicit unavailable states and
