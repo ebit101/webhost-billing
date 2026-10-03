@@ -3,7 +3,7 @@
 ## Status Summary
 
 - **Current command:** Command 72 — Implement starter issue #29: Keep safe-demo inspection commands side-effect-free
-- **Current status:** Completed locally; delivery verification pending
+- **Current status:** Completed and delivered to GitHub `main`
 - **Last updated:** 2026-10-03
 - **Next command:** Command 73 — Implement starter issue #30: Validate safe-demo screenshot assets offline
 - **Next command authorized:** No
@@ -4666,7 +4666,7 @@ start Command 73 or 74 automatically.
 
 ### Command 72 — Implement Starter Issue #29: Keep Safe-Demo Inspection Commands Side-Effect-Free
 
-- **Status:** Completed locally; delivery verification pending
+- **Status:** Completed and delivered to GitHub `main`
 - **Date:** 2026-10-03
 
 #### Scope completed
@@ -4733,6 +4733,13 @@ start Command 73 or 74 automatically.
 - The first complete-test attempt correctly failed only because Docker Desktop and
   Redis were unavailable. The Docker installation was repaired outside the
   repository, the same suite was rerun from the start, and it passed completely.
+- Command 72 implementation commit `2d64549` passed hosted CI run `37100293508`,
+  including full history secret scanning, database verification, documentation
+  checks, lint, strict type checks, package/API/invariant/browser tests, dependency
+  and license checks, and the production build. Hosted CodeQL run `37100293479` also
+  passed.
+- GitHub issue #29 received the completion evidence and was closed as completed on
+  2026-10-03.
 
 #### Decisions made
 
@@ -4762,8 +4769,8 @@ start Command 73 or 74 automatically.
 - Production remains `NO-GO`. No financial, authentication, provider, database,
   release, deployment, or production behavior changed, and the immutable alpha
   release was not modified.
-- Remote delivery, hosted CI/CodeQL verification, and issue #29 closure remain pending
-  until the focused implementation commit is reconciled and pushed.
+- The implementation is delivered on GitHub `main`, hosted CI and CodeQL are green,
+  and issue #29 is closed. Issues #30 and #31 remain separately gated and open.
 
 #### Recommended next command
 
