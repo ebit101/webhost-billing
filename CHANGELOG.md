@@ -10,6 +10,9 @@ and will be called out in release notes.
 
 ### Changed
 
+- Reviewed Command 80's allowlisted checkout handoff and regression evidence,
+  corrected stale roadmap descriptions, and defined a separately gated customer
+  invoice-history slice for ownership-safe URL-bound search, filters, and pagination.
 - Preserved validated hosting product/price selection through customer sign-in and
   same-browser registration links, including expired-session handoffs. Return URLs
   are never accepted; administrator/MFA landings remain separate, stale or mismatched

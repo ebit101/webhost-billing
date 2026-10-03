@@ -541,6 +541,30 @@ This document records durable technical and product decisions. New decisions sho
   guest checkout, schema changes, providers, deployments, and other P1 gaps are
   excluded. Production remains `NO-GO`.
 
+## ADR-056 — URL-Bound Ownership-Safe Customer Invoice History
+
+- **Status:** Accepted
+- **Date:** 2026-10-04
+- **Decision:** After reviewing Command 80, select one customer invoice-ledger
+  slice: URL-bound search, status, page and bounded page size using the existing
+  customer-only `/invoices/my` endpoint and its authoritative pagination metadata.
+  Keep customer identity exclusively session-derived. Validate only those four
+  query fields and reconstruct only fixed local ledger links; provide honest empty,
+  invalid, out-of-range, loading and recoverable failure states.
+- **Reason:** The customer can now reach the intended checkout safely and has a
+  server-derived next-action home, but `CustomerInvoiceList` still requests a fixed
+  first 100 invoices and discards response pagination. Older order and renewal
+  invoices become unreachable from that ledger despite an existing searchable,
+  status-filtered, deterministically ordered, ownership-bound API. A single read-only
+  ledger repairs a recurring hosting-business task without broadening billing rules.
+- **Consequence:** Command 81 is defined, not authorized or implemented by this
+  review. It must prove histories larger than 100, isolated pagination metadata,
+  safe URL restoration and stale-response handling, and zero browsing mutations.
+  Counts refer to matching records, not account-wide balances. Other ledgers,
+  general search/list frameworks, aggregates, cross-record workflows, financial
+  mutations, schema/authentication changes, providers, releases and deployments
+  remain excluded. Production remains `NO-GO`.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

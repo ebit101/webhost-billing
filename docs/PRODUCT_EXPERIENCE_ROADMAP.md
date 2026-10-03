@@ -63,7 +63,7 @@ evidence recorded in `docs/PROGRESS.md`.
 | `/`                | Public entry, product explanation, account routes, and local Why us/Support sections | Static App Router page in the existing public shell             | Command 76 replaced the login redirect; every displayed public navigation target now resolves locally.                             |
 | `/hosting`         | Public product comparison and period selection                                       | Public product API and append-only price versions               | Command 76 selects the first supported period with an active price and exposes a valid checkout action on the first priced render. |
 | `/login`           | Secure cookie sign-in; administrator challenge when configured                       | CSRF, rate limiting, sessions, role routing, administrator TOTP | Command 80 preserves only validated customer checkout IDs and retains normal role/MFA landings; no arbitrary return URL is used.   |
-| `/register`        | Customer registration                                                                | Runtime validation, password hashing, verification token        | Functional; product/price intent is not carried into registration.                                                                 |
+| `/register`        | Customer registration and bounded same-browser checkout continuity                   | Runtime validation, password hashing, verification token        | Command 80 retains validated IDs in login/register and post-registration sign-in links; verification emails remain unchanged.      |
 | `/forgot-password` | Enumeration-resistant reset request                                                  | Single-use expiring token and safe response                     | Functional and appropriately cautious.                                                                                             |
 | `/reset-password`  | Token-bound password replacement                                                     | Session revocation and password policy                          | Incomplete-link state is clear.                                                                                                    |
 | `/verify-email`    | Token-bound customer verification                                                    | Single-use verification token                                   | Incomplete-link state is clear.                                                                                                    |
@@ -71,18 +71,18 @@ evidence recorded in `docs/PROGRESS.md`.
 
 ### Customer portal
 
-| Route                          | Observed capability                                                   | Supporting boundary                             | Product-experience finding                                                                                       |
-| ------------------------------ | --------------------------------------------------------------------- | ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `/portal`                      | Authenticated account counts, recent service, invoice, and ticket     | Ownership-bound customer detail                 | Real data replaced fixtures, but totals and “recent” items do not clearly answer what the customer must do next. |
-| `/portal/orders`               | Order, invoice, and fulfilment states in one table                    | Paginated ownership-bound order API             | Related order, invoice, and service identifiers are not navigable; the UI fetches only the first 100 records.    |
-| `/portal/checkout`             | Product, price, domain, server-authoritative total and order creation | Idempotent checkout; product/price revalidation | Command 80 restores exact account-entry selection and requires deliberate replacement of unavailable intent.     |
-| `/portal/services`             | Service cards with state, server, account, and renewal data           | Ownership-bound service API                     | Useful overview; first-100 loading and inactive workspace search limit growth.                                   |
-| `/portal/services/[serviceId]` | Service detail and short-lived fake-panel login action                | Ownership check and provider-neutral operation  | Clear detail; the panel action has no nearby invoice/order context.                                              |
-| `/portal/invoices`             | Invoice status, due date, total, balance                              | Ownership-bound invoice API                     | Clear ledger; first-100 loading and no search/filter/pagination controls.                                        |
-| `/portal/invoices/[invoiceId]` | Immutable invoice, PDF/print, payment instructions/references         | Snapshot and payment-state rules                | Strong invoice view; customer payment action appears only when invoice state allows it.                          |
-| `/invoices/[invoiceId]/print`  | Ownership-bound printable invoice                                     | Server-fetched invoice detail                   | Useful dedicated output; browser print is the only mutation-like action and remains user initiated.              |
-| `/portal/profile`              | Contact/address update and password change                            | Ownership, audit, session revocation            | Functional and appropriately separates password change.                                                          |
-| `/portal/support`              | Open, select, read, and reply to plain-text tickets                   | Ownership-bound tickets and service association | Functional; list is first-100 and has no visible search/filter/pagination despite API support.                   |
+| Route                          | Observed capability                                                   | Supporting boundary                             | Product-experience finding                                                                                               |
+| ------------------------------ | --------------------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `/portal`                      | Server-derived billing, service-renewal and support next actions      | Ownership-bound full-account portal summary     | Command 78 distinguishes attention, healthy, empty, loading and failure states before bounded recent history.            |
+| `/portal/orders`               | Order, invoice, and fulfilment states in one table                    | Paginated ownership-bound order API             | Related order, invoice, and service identifiers are not navigable; the UI fetches only the first 100 records.            |
+| `/portal/checkout`             | Product, price, domain, server-authoritative total and order creation | Idempotent checkout; product/price revalidation | Command 80 restores exact account-entry selection and requires deliberate replacement of unavailable intent.             |
+| `/portal/services`             | Service cards with state, server, account, and renewal data           | Ownership-bound service API                     | Useful overview; first-100 loading and inactive workspace search limit growth.                                           |
+| `/portal/services/[serviceId]` | Service detail and short-lived fake-panel login action                | Ownership check and provider-neutral operation  | Clear detail; the panel action has no nearby invoice/order context.                                                      |
+| `/portal/invoices`             | Invoice status, due date, total, balance                              | Ownership-bound invoice API                     | First-100 fetch discards metadata; Command 81 defines customer-only URL-bound search/filter/paging, not yet implemented. |
+| `/portal/invoices/[invoiceId]` | Immutable invoice, PDF/print, payment instructions/references         | Snapshot and payment-state rules                | Strong invoice view; customer payment action appears only when invoice state allows it.                                  |
+| `/invoices/[invoiceId]/print`  | Ownership-bound printable invoice                                     | Server-fetched invoice detail                   | Useful dedicated output; browser print is the only mutation-like action and remains user initiated.                      |
+| `/portal/profile`              | Contact/address update and password change                            | Ownership, audit, session revocation            | Functional and appropriately separates password change.                                                                  |
+| `/portal/support`              | Open, select, read, and reply to plain-text tickets                   | Ownership-bound tickets and service association | Functional; list is first-100 and has no visible search/filter/pagination despite API support.                           |
 
 ### Administrator workspace
 
@@ -119,8 +119,9 @@ The repository already has more backend support than several screens expose:
 - The primary Playwright lifecycle proves registration, verification, login,
   checkout, fake payment callback, administrator approval, provisioning, renewal,
   overdue suspension, payment-triggered reactivation, support, and exact-confirmed
-  termination. It does not prove navigation, pagination, search, empty/large data
-  sets, or the operator’s normal cross-record investigation path.
+  termination, plus the bounded storefront, customer-context and checkout-navigation
+  additions in Commands 76–80. It does not yet prove invoice-ledger pagination,
+  search or large histories, or every operator cross-record investigation path.
 
 ## Public workflow benchmark
 
@@ -189,7 +190,8 @@ Priorities are:
 
 ### Misleading or inactive affordances
 
-- Public Home, Why us, and Support links target a root route that redirects to login.
+- Command 76 resolved the public root redirect and dead Home, Why us, and Support
+  navigation; the local storefront and anchor targets now resolve.
 - Workspace search accepts text but has no event, query, or results behavior.
 - The notification bell has a red indicator but no action or notification model.
 - Navigation badges show fixed aggregate counts, not necessarily the operator's
@@ -212,6 +214,9 @@ Priorities are:
 - Administrator support exposes filters but requests a fixed first page of 100.
 - Core admin and customer record lists silently request the first 100 and discard
   pagination metadata.
+- Command 81 is defined for the customer invoice ledger only; the API already
+  supports ownership-bound search/status and deterministic pages. Other ledgers
+  remain separately gated and no paging implementation is included in this review.
 - Email delivery, panel operations, renewal runs, and audit activity are latest-only
   views with no user-controlled time/status query.
 
@@ -306,9 +311,10 @@ remain P1 work for the next phase review.
   without losing unrelated edits. Both API write routes require the same exact
   confirmation for a real stored transition and serialize concurrent saves so one
   old-to-new audit entry is retained. Unchanged saves require no confirmation.
-- Order/payment connectivity, URL-bound ledger pagination, dashboard attention,
-  automation freshness, service-focused context, checkout continuity, and inactive
-  workspace chrome remain P1 gaps for the next separately authorized phase review.
+- At Command 79 delivery, order/payment connectivity, URL-bound ledger pagination,
+  dashboard attention, automation freshness, service-focused context, checkout continuity, and inactive
+  workspace chrome remained P1 gaps. Command 80 subsequently closed the bounded
+  checkout-continuity gap; the other items remain separately gated.
 - **Command 79 phase review completed:** source and regression review confirmed the
   canonical settings review, both strict guarded API write paths, serialized safe
   transition audits, unchanged-save compatibility, and preserved financial records.
@@ -326,6 +332,22 @@ remain P1 work for the next phase review.
   created by navigation, registration, or sign-in. General return navigation and
   durable, cross-device, verification-email or reset-link resume remain excluded.
   Other P1 gaps require the next separately authorized phase review.
+- **Command 80 phase review completed:** fixed-route intent, duplicate/malformed
+  rejection, forged-header replacement, authoritative page/session/role checks,
+  registration/retry continuity, current-catalogue membership, explicit unavailable
+  selection, and zero orders before deliberate submission match the authorized
+  scope. Fresh focused web and order API tests passed; the delivered head's hosted
+  CI and CodeQL also passed. No corrective application change was identified.
+- **Next defined: Command 81 — Make Customer Invoice History Searchable and
+  Paginated.** Customer invoice history is a repeated billing/support task with a
+  concrete first-100 visibility limit and ready ownership-safe API dependencies.
+  Implement only four allowlisted URL fields, current response metadata, bounded
+  page requests and honest recovery states, with histories larger than 100 and
+  cross-customer isolation evidence. Browsing creates no invoice/payment mutation
+  and computes no account-wide financial aggregate. This review defines but does
+  not authorize or implement the command. Order/payment connectivity, other ledger
+  pagination, dashboard attention, automation freshness, service context and inactive
+  chrome remain P1 work; broadening this slice is excluded.
 
 ## Readiness boundary
 

@@ -1919,6 +1919,78 @@ and delivery evidence are tracked in `docs/PROGRESS.md`; no later command is aut
 
 ---
 
+## Command 81 — Make Customer Invoice History Searchable and Paginated
+
+```text
+Improve only the customer invoice ledger at /portal/invoices. Replace its fixed
+first-100 fetch with URL-bound search, invoice-status filtering, page size, and
+pagination using the existing /invoices/my contract. Keep the existing invoice
+detail, print/PDF, payment eligibility, formatting, visibility, and ownership rules.
+Do not implement administrator-ledger pagination or a general list framework.
+
+Use a small runtime-validated allowlist containing only search, status, page, and
+pageSize, derived from the existing customer invoice query contract. Accept at most
+one value per field. Keep search bounded to the existing 200-character limit,
+statuses to the existing enum, page/pageSize to safe positive integers, and page
+size at most 100 (default 20, page 1). Reject unsafe pagination offsets. Malformed,
+duplicate, or out-of-range allowed values must use safe defaults with a visible,
+recoverable invalid-filter notice. Ignore unrelated parameters and never forward
+customerId, account identity, return destinations, amounts, or mutation inputs.
+Reconstruct links only to the fixed local invoice-ledger route. Customer scope must
+continue to come exclusively from the authenticated API identity, never the URL.
+
+Keep the committed query in the URL so reload, browser back/forward, and returning
+from invoice detail via browser Back retain it. Submitting search, changing status,
+or changing page size must reset page to 1 while preserving the other valid filters. Provide a clear
+filters action. Consume authoritative response pagination metadata for matching
+record count, page/range information, and previous/next controls; never infer
+complete history or account-wide balance from the returned page. Preserve safe
+money rendering and existing invoice-detail links.
+
+Provide distinct first-use empty, filtered no-results, out-of-range-page, loading,
+and retryable error states. Keep filter controls and a safe recovery path usable,
+including when the requested page becomes empty. Bound requests to one page rather
+than fetching every invoice in the browser. Prevent stale responses from replacing
+newer query results. Label controls for keyboard and small-screen use, and do not
+show failed or stale data as a successfully refreshed result.
+
+Add query/server-page and component coverage for valid defaults, exact filter
+requests, malformed/duplicate values, ignored customer/redirect payloads, filter
+reset, metadata/controls, page changes, reload/back-forward state, no results,
+out-of-range recovery, errors/retry, stale responses, and preserved detail links.
+Extend the existing invoice API integration suite with isolated fictional histories
+larger than 100 records, deterministic non-overlapping pages, matching counts and
+search/status results, and another customer's records excluded from both data and
+metadata. Prove supplied customerId cannot bypass /invoices/my, anonymous access
+fails, and the administrator ledger remains role-protected. Use existing API
+ordering and contracts; change no invoice business rule or production record.
+
+Extend the fictional browser journey with read-only customer search/filter/paging
+and navigation continuity, including an invoice beyond the old first-100 boundary.
+Create any extra fictional history only in the isolated test fixture, without
+provider calls, altered authentication limits, or weakened lifecycle assertions.
+Prove ledger browsing sends no business mutation. Retain the existing payment,
+ownership, immutable-history, and payment/provisioning separation regressions.
+
+Do not add bulk actions, exports, new payment or invoice mutations, all-account
+aggregates, sorting/date filters, a persisted search model, new API endpoints,
+database schema, authentication changes, admin/customer cross-record workflows,
+other ledgers, workspace search/notifications, providers, releases, deployments,
+or production approval. Production remains NO-GO.
+
+Consult the installed Next.js query/navigation documentation before implementation.
+Run focused shared/web query and component tests, the relevant invoice API E2E and
+full fictional browser lifecycle, docs:check, formatting, lint, strict type checks,
+complete package tests, and the production build. Update docs/PROGRESS.md, commit,
+reconcile without history rewriting, push origin/main, verify hosted CI and CodeQL,
+then stop and request a phase review before defining or implementing more work.
+```
+
+**Authorization:** Defined by the separately authorized Command 80 phase review on
+2026-10-04. Command 81 is not authorized; wait for explicit user authorization.
+
+---
+
 ## Continuation Command
 
 If a phase encounters errors or remains incomplete, use this prompt in the same Codex task:

@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 80 — Preserve Hosting Plan Selection Through Customer Sign-In
-- **Current status:** Completed and delivered; local validation, hosted CI, and CodeQL passed
-- **Last updated:** 2026-10-03
-- **Next command:** Phase Review — Review Command 80 and define the next bounded command
+- **Current command:** Phase Review — Review Command 80 and Define Command 81
+- **Current status:** Review completed; next implementation defined but not authorized
+- **Last updated:** 2026-10-04
+- **Next command:** Command 81 — Make Customer Invoice History Searchable and Paginated
 - **Next command authorized:** No
 
 ## Command Reports
@@ -6100,6 +6100,118 @@ separately after this review's delivery. Do not begin it automatically.
 After successful delivery, authorize **Phase Review — Review Command 80 and define
 the next bounded command** separately. Do not define or implement another command
 automatically.
+
+### Phase Review — Review Command 80 and Define Command 81
+
+- **Status:** Review completed; next implementation defined but not authorized
+- **Date:** 2026-10-04
+
+#### Scope completed
+
+- Reviewed Command 80 against its exact command, permanent rules, product plan,
+  ADR-055, source and delivery-report commits, shared UUID contract, proxy/server
+  session guards, account-entry pages/forms, checkout, catalogue/order API authority,
+  component/unit tests and the fictional browser lifecycle.
+- Confirmed one validated product/price pair is the only carried context. Duplicate,
+  incomplete and malformed identifiers are dropped, unrelated destinations/money/
+  customer/domain inputs are ignored, and only fixed local entry/checkout routes
+  are reconstructed. Both supported cookie names still require API identity proof.
+- Confirmed proxy context replaces forged headers and is absent on other matched
+  routes; the server revalidates the bounded header. Checkout has its own customer
+  page guard in addition to the layout guard. Returned role, including administrator
+  MFA, controls landing; authentication and verification APIs remain unchanged.
+- Confirmed registration link continuity and failed-login retry preserve selection
+  without adding intent to registration payloads or verification/reset emails.
+  Current catalogue membership is checked before selection; retired, empty and
+  cross-product data leave selection empty until deliberate replacement. A route
+  selection change keys a new checkout instance rather than carrying old drafts.
+- Reviewed the browser assertions for anonymous and invalid-session redirects,
+  login/register round trips, second-tab verification, exact post-login selection,
+  and zero new-customer orders/invoices before explicit Place order. The existing
+  API remains authoritative for price, ownership, historical snapshots and retries.
+- Identified no in-scope corrective application change. Corrected stale roadmap
+  registration, portal-home, public-navigation and browser-coverage descriptions,
+  and distinguished the historic Command 79 gap list from current delivery status.
+- Reassessed remaining P1 gaps. Selected customer invoice history: its component
+  requests `/invoices/my?pageSize=100`, retains only `result.data`, and supplies no
+  search/status/page controls, even though the existing strict customer query and
+  session-derived API scope support deterministic search/filter/paging with counts.
+- Defined exactly one separately gated **Command 81 — Make Customer Invoice
+  History Searchable and Paginated**, without implementing it. Scope is one
+  read-only customer ledger and its evidence, not a general list framework,
+  administrator ledger, new financial behavior or product breadth.
+
+#### Files changed
+
+- `CODEX_DEVELOPMENT_COMMANDS.md` — bounded Command 81, acceptance evidence,
+  exclusions and explicit not-authorized boundary
+- `docs/DECISIONS.md` — ADR-056 for URL-bound, ownership-safe invoice history
+- `docs/PRODUCT_EXPERIENCE_ROADMAP.md` — corrected current capability descriptions,
+  Command 80 review outcome and selected customer-only invoice-ledger slice
+- `CHANGELOG.md` — review and next-command definition, not an implementation claim
+- `docs/PROGRESS.md` — current state, review evidence, risks and exact next command
+
+#### Validation
+
+- Started from clean `main` at `164389f917a104ac5bf5ed25c97921862d9884ac`, containing
+  implementation `619c899` and its delivery report. Rechecked that exact head's
+  [CI run 37142196982](https://github.com/ebit101/webhost-billing/actions/runs/37142196982)
+  and
+  [CodeQL run 37142196979](https://github.com/ebit101/webhost-billing/actions/runs/37142196979)
+  both completed successfully. Remote reconciliation found 0 ahead/0 behind.
+- Fresh focused web tests passed all 70 cases in 7 files with one worker: intent,
+  proxy, server authorization, server pages, login, registration and order/checkout
+  components. No timeout, assertion or authentication limit was changed.
+- Fresh order API integration tests passed all 5 cases in one suite, including
+  server-priced atomic creation, duplicate submission, ineligible-price/browser-
+  total rejection, ownership and historical values after repricing. Existing
+  VM-module and PostgreSQL-driver deprecation warnings remained non-failing.
+- The verified delivered head's hosted CI proves the full package, API integration,
+  invariant, fictional browser, audit, license and production-build gates. Those
+  are existing hosted evidence, not claimed as fresh complete local reruns in this
+  documentation-only review. No application change required broader local reruns.
+- `pnpm docs:check` passed all four offline validators; repository-wide
+  `pnpm format:check` and `git diff --check` passed. Final hosted CI/CodeQL are checked
+  after pushing the review commit. Diff review confirmed changes are confined to
+  the five declared documentation files, with no Command 81 implementation,
+  schema/provider action, release or deployment.
+
+#### Decisions made
+
+- Close one concrete customer billing-history visibility limit before broader
+  operator connectivity, attention, service or automation work. Use the existing
+  endpoint and strict query contract, not a new read model or search subsystem.
+- Carry only four validated ledger query fields. Customer identity stays exclusively
+  session-derived; query payload cannot choose another account or a return target.
+- Use matching-record metadata, not page length as proof of complete history and
+  never page sums as an account-wide financial balance. Keep current money,
+  invoice visibility/detail/payment rules and independent business states unchanged.
+- Bound each request to one page; make stale/failed/out-of-range states honest and
+  recoverable. Require greater-than-100 and cross-customer evidence without changing
+  production history, authentication limits or existing lifecycle assertions.
+
+#### Open questions and risks
+
+- Catalogue availability can still change after load; the existing order API
+  revalidates current eligibility and pricing at explicit submission. Command 80
+  does not promise durable, cross-device, closed-tab or email/reset-link recovery.
+- Invoice lists can change while paging; deterministic ordering is not a frozen
+  snapshot. Command 81 must handle empty/out-of-range pages and stale responses
+  without fabricating counts or silently presenting old data as fresh.
+- The existing API query schema and ownership boundary are ready, but larger
+  history, filter combinations, URL restoration and pagination metadata isolation
+  are acceptance work for Command 81, not behavior proven by this review.
+- Order/payment connectivity, other ledger scale, dashboard attention, automation
+  freshness, service context and inactive workspace chrome remain separate P1 work.
+- The previously recorded lint-only `braces` advisory remains separate dependency
+  maintenance. No dependency, provider, deployment, release or schema changed.
+- Production remains `NO-GO`; credentialed providers, SMTP, monitoring, off-site
+  recovery, final policies, infrastructure and operator-pilot gates remain open.
+
+#### Recommended next command
+
+Authorize **Command 81 — Make Customer Invoice History Searchable and Paginated**
+separately after this review's delivery. Do not begin it automatically.
 
 ## Report Template
 
