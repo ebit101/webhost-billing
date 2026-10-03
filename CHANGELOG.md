@@ -10,6 +10,8 @@ and will be called out in release notes.
 
 ### Changed
 
+- Reviewed the completed fourth starter set and defined a workflow-led product phase
+  that benchmarks public WHMCS concepts without copying or pursuing feature parity.
 - Safe-demo credentials, status, logs, and down now refuse missing or unsafe runtime
   paths before Docker; logs return a redacted, no-color, non-following 100-line
   snapshot and down remains non-destructive.

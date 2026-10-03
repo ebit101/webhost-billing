@@ -1660,6 +1660,56 @@ if repository authority remains available, then stop and request a new phase rev
 before any additional implementation command.
 ```
 
+## Command 75 — Establish the Real-Hosting Product Experience Roadmap
+
+```text
+Establish the next product-development phase from the application that actually
+exists. Inspect the complete fictional safe demo as both administrator and customer,
+the current store, portal and administrator routes, their API/module support, the
+release-checklist gaps, and the primary end-to-end lifecycle. Use current official
+public WHMCS documentation only as a workflow-concept benchmark for client context,
+orders, billing, services, automation and support; use no licensed account, private
+material, copied code, text, screenshots, styling or trade dress.
+
+Create docs/PRODUCT_EXPERIENCE_ROADMAP.md with a route/capability inventory and a
+workflow-led gap matrix for: product discovery and checkout; customer account and
+self-service; administrator customer context; order/payment review; provisioning
+and service lifecycle; invoices/renewals; support; and automation/operational
+attention. For every gap record the observed local evidence, affected role, real
+hosting-business job, current friction or risk, desired outcome, safety invariant,
+test/evidence route, dependencies and priority. Explicitly identify misleading or
+inactive affordances, missing cross-record navigation, scale/pagination/search
+limits, unsafe shortcuts, and functions that are deliberately out of scope.
+
+Prioritize work by operator/customer frequency, error or financial/service risk,
+manual effort, dependency readiness and bounded testability—not by competitor
+feature count. Define exactly three separately gated, pull-request-sized Commands
+76–78 for the first product-experience set. Each must improve an existing end-to-end
+journey using fictional data/fake providers, have explicit acceptance and excluded
+scope, preserve role/ownership and financial/provisioning separation, and include
+component/API/E2E evidence proportional to its risk. At least one command must
+improve the administrator's daily operational workflow and at least one must improve
+the customer-facing journey. Do not implement those commands or publish starter
+issues during Command 75.
+
+Run demo:doctor, use the supported safe-demo lifecycle without reset or business
+mutations, run demo:smoke, and manually inspect every in-scope route with generated
+fictional identities. Stop the demo non-destructively afterward, retaining its
+dedicated local state. Run docs:check, formatting and git diff checks, verify every
+external comparison link manually, and review the roadmap for product terminology,
+copyright/trademark independence, secrets and production claims. If Docker or the
+safe demo cannot run, record that as a blocker rather than substituting screenshots
+for the required live route review.
+
+Do not change application code, schemas, authentication, financial/provider rules,
+business records, releases, deployments or production NO-GO; contact real providers
+or customers; use real data or credentials; probe any hosted installation; access a
+licensed WHMCS instance; promise feature parity; or add reseller, marketplace,
+affiliate, multi-currency, worldwide-tax, domain-registrar or automatic-termination
+scope. Update docs/PROGRESS.md, commit, reconcile, push main, verify hosted checks,
+then stop and request separate authorization for Command 76.
+```
+
 ---
 
 ## Continuation Command

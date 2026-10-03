@@ -427,6 +427,26 @@ This document records durable technical and product decisions. New decisions sho
   tests, Docker, browsers, network crawling, or arbitrary tasks. Production remains
   `NO-GO`.
 
+## ADR-051 — Workflow-Led Product Benchmarking Without WHMCS Parity
+
+- **Status:** Accepted
+- **Date:** 2026-10-03
+- **Decision:** Improve Webhost Billing from observed single-business operator and
+  customer jobs. Current official public WHMCS documentation may be used as a
+  workflow-concept benchmark, but competitor feature count, screen structure, code,
+  copy, assets, styling, trade dress and proprietary behavior are not requirements
+  or source material.
+- **Reason:** The repository already implements the core billing and hosting
+  boundaries; the next quality risk is fragmented or misleading product experience,
+  not absence of a large feature list. Workflow evidence keeps improvements tied to
+  common hosting-business work while protecting the project's smaller scope and
+  independent identity.
+- **Consequence:** Command 75 must inspect the live fictional product and produce a
+  prioritized, evidence-backed roadmap plus three separately gated implementation
+  commands. Each adopted idea must map to a Webhost Billing user job, safety
+  invariant and test route. WHMCS parity, copying and speculative breadth remain
+  explicit non-goals; production remains `NO-GO`.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

@@ -7,8 +7,8 @@ customer data or credentials.
 
 ## Current starter set
 
-No starter issue is currently open. Run the required phase review before defining or
-implementing another contributor task.
+No starter issue is currently open. The next separately authorized work is Command
+75's maintainer-led product-experience roadmap, not another starter-issue set.
 
 ## Latest completed starter set
 

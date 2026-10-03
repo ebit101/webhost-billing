@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 73 — Implement starter issue #30: Validate safe-demo screenshot assets offline
-- **Current status:** Completed and delivered to GitHub `main`
+- **Current command:** Phase Review — Review Commands 71–74 and define Command 75
+- **Current status:** Completed and validated locally; delivery pending
 - **Last updated:** 2026-10-03
-- **Next command:** Command 74 — Implement starter issue #31: Add one offline documentation validation command
+- **Next command:** Command 75 — Establish the real-hosting product experience roadmap
 - **Next command authorized:** No
 
 ## Command Reports
@@ -4981,6 +4981,119 @@ automatically.
 
 After Command 74 is delivered, hosted checks pass, and issue #31 is closed, run a
 new **Phase Review**. Do not define or implement another command automatically.
+
+### Phase Review — Review Commands 71–74 and Define Command 75
+
+- **Status:** Completed and validated locally; delivery pending
+- **Date:** 2026-10-03
+
+#### Scope completed
+
+- Reviewed the fourth contributor set against Commands 71–74, `AGENTS.md`, the
+  product plan, ADRs 045–050, implementation/tests, delivery reports, the current
+  public backlog, and the final hosted checks. Issues #29–#31 are closed as completed
+  and no public issue remains open.
+- Confirmed Command 72 keeps credentials/status/logs/down side-effect-free, fixes
+  Docker targeting, bounds and redacts log output, and retains non-destructive down
+  state. Confirmed Command 73 shares one capture/validation contract, performs only
+  header/metadata checks, and leaves pixels plus visual safety to human review.
+  Confirmed Command 74 dispatches only four fixed local validators, stops on the
+  first failure, returns its status, and suppresses raw child output and ambient
+  secrets while preserving focused diagnostic commands.
+- Found no missing requirement, regression, or security correction in the delivered
+  fourth-set implementation. Corrected the stale progress summary that still named
+  Command 73/74 and the starter catalogue instruction that still requested this
+  already-completed phase review.
+- Inspected the current safe-demo screenshots, route/component inventory, primary
+  browser lifecycle, capability matrix and release gaps. The foundation already
+  covers the intended customer, product, order, invoice, payment, service, ticket,
+  renewal, report and provider boundaries, but the product experience needs a
+  deliberate operator/customer phase rather than more adoption tooling.
+- Identified concrete roadmap inputs without implementing them: workspace search and
+  notification controls currently look active without behavior; several operational
+  lists fetch a fixed first 100 records without full scale navigation; administrator
+  customer-linked records are not drill-down links and show raw minor-unit wording;
+  dashboard attention views lack a dedicated recent-payment surface and a complete
+  searchable activity log; and configuration/policy gaps remain documented.
+- Reviewed current official public WHMCS documentation as a concept benchmark. Its
+  client summary emphasizes consolidated billing/service context and common actions;
+  order management keeps a review gate; service views connect lifecycle operations
+  to customer/order/invoice context; and automation status emphasizes actionable
+  failures. These are workflow ideas to evaluate independently, not UI or feature
+  parity requirements.
+- Added ADR-051 and defined Command 75 as a planning-only, live fictional-product
+  audit. It must create a route/capability and hosting-workflow roadmap, prioritize by
+  frequency/risk/manual effort/readiness, and define exactly three separately gated
+  Commands 76–78. No product feature was implemented during this review.
+
+#### Files changed
+
+- `CODEX_DEVELOPMENT_COMMANDS.md` — added separately gated planning Command 75
+- `docs/DECISIONS.md` — recorded workflow-led benchmarking in ADR-051
+- `docs/STARTER_ISSUES.md` — replaced the completed phase-review handoff
+- `CHANGELOG.md` — recorded the transition to the product-experience phase
+- `docs/PROGRESS.md` — corrected current state and recorded review evidence
+
+#### Validation
+
+- Repository and public-backlog reconciliation confirmed clean synchronized `main`,
+  closed-completed issues #29–#31, and zero open public issues before review edits.
+- Manually reviewed the four safe-demo images, current store/portal/admin route and
+  module inventories, administrator customer/order/service/invoice surfaces, the
+  full browser lifecycle, capability matrix, and release-checklist gaps.
+- Official public comparison sources reviewed on 2026-10-03 were WHMCS's current
+  [client Summary](https://docs.whmcs.com/9-1/clients/client-profile/summary-tab/),
+  [Products/Services](https://docs.whmcs.com/9-0/clients/client-profile/products-services-tab/),
+  [Order Management](https://docs.whmcs.com/9-0/orders/order-management/),
+  [Automation Settings](https://docs.whmcs.com/9-0/system/automation/automation-settings/),
+  [Automation Status](https://docs.whmcs.com/9-1/system/automation/automation-status/)
+  and [Billing Logic](https://docs.whmcs.com/9-1/billing-and-invoicing/billing-logic/)
+  documentation. Only workflow concepts and public facts were used; no licensed
+  product, code, copy or assets were accessed.
+- Focused verification passed all 8 demo-inspection tests, 6 screenshot-contract
+  tests and 4 aggregate-documentation dispatcher tests.
+- `pnpm docs:check` and every focused validator passed: 118 local references
+  including 3 anchors across 59 Markdown files, 89 contributor-map paths and 27 root
+  scripts, 3 forms/4 YAML files/2 guidance links, and 4 tracked PNG assets.
+- `pnpm format:check`, `pnpm lint`, strict `pnpm typecheck`, and
+  `git diff --check` passed.
+- Complete `pnpm test` passed the demo/documentation suites plus 26 shared, 3 queue,
+  55 web, 88 API and 29 worker tests.
+- The pre-review final-state commit `48ff22e` had successful hosted CI run
+  `37104414802` and CodeQL run `37104414810`.
+
+#### Decisions made
+
+- End the repeated safe-demo/contributor-adoption issue cycle. The public on-ramp is
+  functional and currently empty by design; the next phase returns to product work.
+- Make Command 75 planning-only but require a live route-by-route safe-demo review.
+  Choosing implementation slices before observing the actual product would favor
+  visible feature count over real operator/customer friction.
+- Benchmark workflows, not screens. Webhost Billing remains an independent,
+  single-business product and intentionally excludes reseller/marketplace/affiliate,
+  multi-currency, worldwide-tax and automatic-termination scope.
+- Require three bounded follow-on commands with at least one administrator workflow
+  and one customer journey. Every slice must preserve authorization, ownership,
+  immutable financial history, and separate payment/provisioning states.
+
+#### Open questions and risks
+
+- Command 75 must distinguish a genuinely inactive affordance from a deliberately
+  informational control before recommending removal or implementation.
+- Public competitor documentation describes a much broader commercial system. Its
+  presence does not prove that a feature belongs in this product; local workflow
+  evidence and the one-business plan remain authoritative.
+- A safe-demo audit uses fictional records and cannot substitute for credentialed
+  provider acceptance or a real operator pilot. Product improvements remain
+  evaluation-only until production gates separately pass.
+- Production remains `NO-GO`; this review changes no application, schema, provider,
+  release, deployment, hosted environment or real business data.
+
+#### Recommended next command
+
+Authorize **Command 75 — Establish the Real-Hosting Product Experience Roadmap**
+only after separate review and authorization. Do not begin Command 76–78 or any
+application change automatically.
 
 ## Report Template
 
