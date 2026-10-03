@@ -10,6 +10,9 @@ and will be called out in release notes.
 
 ### Changed
 
+- Reviewed Command 79's server-enforced partial-payment safeguard and defined a
+  separately gated checkout-continuity slice using validated product/price intent,
+  a fixed local sign-in return, and explicit unavailable-selection handling.
 - Partial-payment policy changes now require an administrator consequence review in
   settings and explicit confirmation at both API write routes. The payment ledger
   links to settings, unchanged saves remain compatible, and real transitions retain

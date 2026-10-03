@@ -516,6 +516,31 @@ This document records durable technical and product decisions. New decisions sho
   service context, checkout continuity, and inactive workspace chrome remain
   separately gated P1 work. Production remains `NO-GO`.
 
+## ADR-055 — Allowlisted Checkout Intent Without General Return Navigation
+
+- **Status:** Accepted
+- **Date:** 2026-10-03
+- **Decision:** After reviewing the delivered partial-payment safeguard, make one
+  bounded anonymous catalogue-to-customer-sign-in handoff the next product slice.
+  Carry only a validated product/price UUID pair and reconstruct the fixed local
+  checkout route. Keep same-browser login/register links connected, but retain
+  normal role-derived landings when intent is absent or invalid and always send
+  administrators to their own workspace. Treat missing and expired sessions alike.
+- **Reason:** The catalogue already emits exact selection identifiers, but the
+  proxy and authoritative session guard discard them at sign-in and the login form
+  always sends customers to the portal home. Checkout also silently falls back to
+  the first product/price when an explicit selection no longer matches. This breaks
+  the core purchase journey for prospective customers and can replace their intended
+  plan. Existing catalogue and order boundaries make it a focused, testable repair.
+- **Consequence:** Command 80 remains separately gated. It must reject arbitrary
+  return destinations, validate the current catalogue, show explicit unavailability
+  rather than silently substituting a plan, and place no order until deliberate
+  submission. Authentication, account verification, MFA, role/ownership enforcement,
+  pricing, idempotency, and payment/provisioning separation remain unchanged. A
+  general redirect framework, durable/cross-device intent, email/reset-link resume,
+  guest checkout, schema changes, providers, deployments, and other P1 gaps are
+  excluded. Production remains `NO-GO`.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

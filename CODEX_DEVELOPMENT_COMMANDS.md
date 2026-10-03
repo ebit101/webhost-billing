@@ -1860,6 +1860,65 @@ or implementing another command.
 
 ---
 
+## Command 80 — Preserve Hosting Plan Selection Through Customer Sign-In
+
+```text
+Repair only the anonymous catalogue-to-customer-checkout handoff. Preserve the
+selected productId and priceId through customer sign-in and the same-browser
+login/register navigation, including a sign-in link after successful registration.
+An authenticated customer must arrive at the selected checkout without placing an
+order automatically. Missing or expired sessions must reach the same safe sign-in
+handoff; cookie presence alone is never proof of authentication.
+
+Use one small, tested allowlist for checkout intent: exactly one runtime-validated
+product UUID and price UUID, reconstructed into the fixed local /portal/checkout
+route. Do not accept arbitrary next/returnTo URLs, external or protocol-relative
+destinations, encoded redirect chains, paths, fragments, customer identifiers,
+amounts, domains, or other payloads as return authority. Drop malformed, incomplete,
+or duplicate selection parameters and retain the existing default /portal landing
+when there is no valid intent. Use the role returned by authoritative authentication;
+administrators, including two-factor sign-in, must still land at /admin and must
+never consume customer checkout intent. Preserve role checks, cookie sessions,
+CSRF, account verification, MFA, and rate limits unchanged.
+
+Treat carried identifiers only as an untrusted selection hint. Reload the current
+public catalogue before selecting a product/price; ensure the price belongs to the
+selected active public product. If a syntactically valid carried selection is
+unavailable, retired, mismatched, or no longer eligible, show a recoverable unavailable
+state and require a deliberate new selection. Never silently substitute the first
+plan or billing period. Keep the no-intent checkout path usable. Preserve the API's
+current authoritative price calculation, ownership, and idempotent order creation.
+
+Add validator, proxy/server-guard, login/register, and checkout coverage for exact
+selection retention, missing/expired sessions, failed sign-in and retry, default
+landings, administrator/MFA behavior, login/register round trips, malformed and
+duplicate identifiers, hostile return targets, and stale/mismatched catalogue data.
+Extend the fictional browser lifecycle to begin with an anonymous catalogue choice,
+pass through account entry, and reach that exact checkout without creating an order
+until the existing explicit Place order step. Prove the existing order API still
+rejects ineligible product/price input and calculates its own amount. Keep all
+fixtures local and fictional; do not weaken assertions or authentication limits.
+
+Do not build a general return-navigation framework, shopping cart, persisted intent
+model, cross-device/email-link resume, password-reset resume, guest checkout, or
+automatic order/payment/provisioning behavior. Do not change authentication APIs,
+verification emails, database schema, billing rules, provider configuration,
+financial history, roles, releases, deployments, or production readiness. Do not
+combine this with ledger pagination, dashboard attention, automation freshness,
+service actions, or inactive workspace chrome. Production remains NO-GO.
+
+Run focused web and relevant order API tests, the complete fictional browser
+lifecycle, docs:check, formatting, lint, strict type checks, complete package tests,
+and the production build. Update docs/PROGRESS.md, commit, reconcile without history
+rewriting, push origin/main, verify hosted CI and CodeQL, then stop and request a
+phase review before defining or implementing another command.
+```
+
+**Authorization:** Defined only. Requires separate user authorization; this phase
+review does not implement Command 80.
+
+---
+
 ## Continuation Command
 
 If a phase encounters errors or remains incomplete, use this prompt in the same Codex task:

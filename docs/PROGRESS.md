@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 79 — Guard Partial-Payment Policy Changes
-- **Current status:** Completed and delivered; local validation, hosted CI, and CodeQL passed
+- **Current command:** Phase Review — Review Command 79 and define the next bounded command
+- **Current status:** Review completed; next implementation defined but not authorized
 - **Last updated:** 2026-10-03
-- **Next command:** Phase Review — Review Command 79 and define the next bounded command
+- **Next command:** Command 80 — Preserve Hosting Plan Selection Through Customer Sign-In
 - **Next command authorized:** No
 
 ## Command Reports
@@ -5865,6 +5865,109 @@ automatically.
 Authorize **Phase Review — Review Command 79 and define the next bounded command**
 separately. Do not begin another
 implementation automatically.
+
+### Phase Review — Review Command 79 and Define Command 80
+
+- **Status:** Review completed; next implementation defined but not authorized
+- **Date:** 2026-10-03
+
+#### Scope completed
+
+- Reviewed Command 79 against its exact command, permanent rules, product plan,
+  ADR-054, implementation and report commits, strict shared contracts, both API
+  controllers/services, transaction helper, settings/payment UI, and unit,
+  integration, component, and browser assertions.
+- Confirmed the payment ledger is read-only for policy; settings separates saved
+  and draft values, reviews both transition directions, preserves unrelated edits
+  on cancellation, retains failures for retry, and disables saving unknown defaults.
+- Confirmed both administrator-only API writers use the same stored-value guard
+  and transaction advisory lock. Missing/wrong confirmation cannot change policy;
+  unchanged saves create no transition audit; concurrent same-target changes retain
+  one audit containing only the safe old/new boolean values. Request confirmation
+  is not stored or returned. Existing payment/invoice records remain unchanged.
+- Reviewed desktop/header and mobile/footer browser cancellation assertions proving
+  zero policy writes, an unchanged seeded setting, and no transition audit.
+- Identified no in-scope corrective application change. This review changes only
+  documentation and sequencing, not business behavior or records.
+- Reassessed remaining P1 work. Selected the core anonymous purchase handoff over
+  broader operator detail, pagination, dashboard, service, and automation work:
+  `proxy.ts` and `requireWorkspaceRole` currently discard checkout selection at
+  sign-in, `LoginForm` always sends customers to `/portal`, registration links do
+  not carry selection, and `CustomerCheckout` silently substitutes the first
+  product/price when the explicit pair is unavailable or mismatched.
+- Defined exactly one separately gated **Command 80 — Preserve Hosting Plan
+  Selection Through Customer Sign-In**, with strict allowlisted intent, current
+  catalogue revalidation, explicit unavailable states, and no automatic order.
+
+#### Files changed
+
+- `CODEX_DEVELOPMENT_COMMANDS.md` — bounded Command 80, acceptance, regression
+  evidence, exclusions, and separate authorization boundary
+- `docs/DECISIONS.md` — ADR-055 for fixed-route, untrusted checkout-selection intent
+- `docs/PRODUCT_EXPERIENCE_ROADMAP.md` — Command 79 review outcome and selected slice
+- `CHANGELOG.md` — documented review and next-command definition
+- `docs/PROGRESS.md` — current state, evidence, limitations, and exact next command
+
+#### Validation
+
+- Started from clean `main` at `f9e21aa76f0349af797ebde8034d5cd063828756`, containing
+  implementation `200abd4` and its delivery report. Rechecked that exact head's
+  [CI run 37138594466](https://github.com/ebit101/webhost-billing/actions/runs/37138594466)
+  and
+  [CodeQL run 37138594465](https://github.com/ebit101/webhost-billing/actions/runs/37138594465)
+  both completed successfully.
+- Fresh shared tests passed all 29 cases, including strict confirmation contracts
+  and response exclusion. Fresh policy unit tests passed all 7 cases. Fresh payment
+  and settings component tests passed all 10 cases across 2 files with one worker.
+- Fresh combined payment/settings API integration rerun passed all 9 tests in
+  2 suites, including role guards, both write routes, exact transition audits,
+  cross-route concurrency, and unchanged pending-payment/invoice evidence. Expected
+  existing VM-module and PostgreSQL-driver deprecation warnings remained non-failing.
+- Full build, package, invariant, and browser success for Command 79 is hosted
+  evidence from the verified head, not claimed as a fresh full local rerun in this
+  documentation-only review. No application correction required broader reruns.
+- `pnpm docs:check` passed all four offline validators; repository-wide
+  `pnpm format:check` and `git diff --check` passed. Diff review confirmed only the
+  five declared documentation files changed, with no next-command implementation,
+  business mutation, runtime artifact, provider action, or deployment. Remote
+  reconciliation found the starting head synchronized with `origin/main` (0/0).
+
+#### Decisions made
+
+- Close the identified policy shortcut before expanding purchase or operator
+  workflows; retain one canonical editable policy and server-side enforcement.
+- Prioritize completing the exact catalogue-to-checkout journey next. A validated
+  UUID pair is a hint, not pricing or authorization proof; reconstruct only the
+  fixed local checkout path, retain default role-derived landings, and reject
+  hostile or ambiguous return intent.
+- An unavailable explicit selection must be visible, not replaced by a different
+  plan. The server remains the order/pricing authority, and login never submits one.
+- Include same-browser login/register navigation only. Cross-device/email/reset
+  resume and a general return-navigation framework would expand the bounded slice.
+
+#### Open questions and risks
+
+- Another administrator can change policy after settings loads. Command 79 compares
+  the latest stored value and rejects unconfirmed changes; it is not optimistic
+  versioning for all business settings and does not claim to prevent every stale
+  confirmed save. Broader section-level settings work remains P2.
+- The catalogue can change during sign-in. Command 80 must revalidate availability,
+  membership, and server-authoritative pricing instead of trusting carried IDs.
+- The Next.js layout/session/proxy boundaries require a checkout-specific design
+  that preserves expired-session intent without weakening authoritative guards;
+  Command 80 must consult the bundled Next.js documentation and test both paths.
+- Remaining operator connectivity, pagination, attention, automation freshness,
+  service context, and inactive workspace chrome remain separate P1 gaps.
+- The previously recorded lint-only `braces` advisory remains separate dependency
+  maintenance. No dependency, provider, deployment, release, or schema changed.
+- Production remains `NO-GO`; this review does not close credentialed providers,
+  SMTP, monitoring, off-site recovery, policies, infrastructure, or operator-pilot
+  gates and does not authorize live or staging changes.
+
+#### Recommended next command
+
+Authorize **Command 80 — Preserve Hosting Plan Selection Through Customer Sign-In**
+separately after this review's delivery. Do not begin it automatically.
 
 ## Report Template
 

@@ -309,6 +309,21 @@ remain P1 work for the next phase review.
 - Order/payment connectivity, URL-bound ledger pagination, dashboard attention,
   automation freshness, service-focused context, checkout continuity, and inactive
   workspace chrome remain P1 gaps for the next separately authorized phase review.
+- **Command 79 phase review completed:** source and regression review confirmed the
+  canonical settings review, both strict guarded API write paths, serialized safe
+  transition audits, unchanged-save compatibility, and preserved financial records.
+  No corrective application change was identified. The delivered head's hosted CI
+  and CodeQL passed; focused shared, API, and component tests also passed again.
+- **Next defined slice: Command 80 — Preserve Hosting Plan Selection Through Customer
+  Sign-In.** The catalogue carries an exact product/price pair, but both anonymous
+  and expired-session handoffs lose it and login lands at the portal home. Checkout
+  then silently falls back when an explicit selection no longer matches. Restore
+  this core acquisition journey with only validated identifiers and a fixed local
+  checkout destination, current catalogue validation, and an explicit unavailable
+  state instead of plan substitution. This command is defined, not implemented or
+  authorized. Same-browser login/register continuity is included; general return
+  navigation and durable, cross-device, verification-email or reset-link resume are
+  not. All remaining P1 gaps stay separately gated.
 
 ## Readiness boundary
 
