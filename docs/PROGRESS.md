@@ -2,7 +2,7 @@
 
 ## Status Summary
 
-- **Current command:** Phase Review — Review Commands 76–78 and Define Command 79
+- **Current command:** Staging Deployment — Deploy Current Main
 - **Current status:** Completed and delivered to GitHub `main`
 - **Last updated:** 2026-10-03
 - **Next command:** Command 79 — Guard Partial-Payment Policy Changes
@@ -5644,6 +5644,106 @@ command**. Do not begin another implementation command automatically.
 After this phase review is delivered to `origin/main` and hosted CI and CodeQL pass,
 authorize **Command 79 — Guard Partial-Payment Policy Changes** separately. Do not
 begin Command 79 automatically.
+
+### Staging Deployment — Deploy Current Main
+
+- **Status:** Completed and delivered to GitHub `main`
+- **Date:** 2026-10-03
+
+#### Scope completed
+
+- Deployed all application changes through the Commands 76–78 phase review to the existing
+  isolated staging environment at `https://my.speedhost.bd`; production was not touched.
+- Confirmed the pinned shared host, isolated release root, current service inventory,
+  protected file permissions, 88 GB of host free space, healthy seven-service staging
+  stack, 21 completed migrations, and successful Nginx configuration before mutation.
+- Created and fully verified an encrypted pre-deployment PostgreSQL backup before the
+  application switch.
+- Built Linux/amd64 non-root migration, API, web, and worker images, transferred them
+  directly without a temporary Windows archive, and verified matching local/remote image
+  digests.
+- Corrected the migration and worker image builds to normalize the shared shell entrypoint
+  from Windows CRLF to Linux LF. The first migration candidate failed before database
+  access; the rebuilt entrypoint passed in-container content and shell-syntax checks.
+- Ran the corrected one-shot migration image twice during release alignment; both successful
+  runs found 21 migrations and no pending migration.
+- Atomically selected release `71558a8`, set all application images to that exact tag, and
+  recreated only `api`, `web`, `worker`, and `scheduler`. PostgreSQL, Redis, and Mailpit
+  remained running.
+- Created deterministic `rollback-pre-a0a7354` image aliases and a protected executable
+  rollback environment because the prior deployment used mixed historical image tags.
+- Preserved fake-provider posture and left Command 79 separately gated and unauthorized.
+
+#### Files changed
+
+- `apps/worker/Dockerfile` — normalizes the shared runtime entrypoint before dropping to the
+  non-root user
+- `deploy/production/migration/Dockerfile` — normalizes the migration entrypoint before
+  dropping to the non-root user
+- `CHANGELOG.md` — records the cross-platform deployment-image correction
+- `docs/STAGING_DEPLOYMENT.md` — records the current release, backup, image evidence,
+  validation, isolation, and executable rollback procedure
+- `docs/PROGRESS.md` — records this operational deployment report
+
+#### Validation
+
+- Local and remote image inspection passed for Linux/amd64, UID/GID `10001:10001`, and
+  matching digests. The web production build generated all 29 routes successfully.
+- In-container CRLF absence and `bash -n` checks passed for the migration and worker
+  entrypoints. `git diff --check` passed.
+- The encrypted backup passed SHA-256, OpenPGP integrity, archive-structure, required-table,
+  PostgreSQL-version, and migration-history verification. Its SHA-256 is
+  `bfaa3c4e897812c2d6eca3361bafbbadea9b5388b6c8eb03531f9bb78ba668ba`.
+- Final Compose configuration validation and one-shot migration passed with 21 migrations
+  and no pending migration.
+- Final `api`, `web`, `worker`, and `scheduler` containers are healthy on tag `71558a8` with
+  zero restarts; exactly one scheduler is running. PostgreSQL, Redis, and Mailpit retained
+  their prior healthy containers.
+- `/health` returned `OK`; `/ready` returned `READY` with PostgreSQL and Redis `UP`.
+  `/`, `/hosting`, `/login`, and `/admin` returned 200; anonymous `/portal` returned the
+  expected 307.
+- Browser API-origin inspection passed. Clean Chromium passed the administrator settings
+  route and the public storefront with one live selectable plan.
+- Credentialed staging smoke passed administrator and customer login, protected pages and
+  APIs, customer denial from administrator data, invoice detail/PDF, support detail,
+  password-reset queueing, logout, and logged-out rejection.
+- Credentialed payment gateways remained disabled. Fake payment and hosting-panel adapter
+  contracts passed. Mailpit contained the generated staging messages.
+- Application logs contained zero error-level entries. Nginx configuration validation
+  passed without a reload. NodeWatch and RemotePilot public endpoints returned valid 307s,
+  and unrelated MessageDock, NodeWatch, RemotePilot, and Travel Mate containers remained
+  running.
+- The deterministic rollback Compose configuration and all three prior application image
+  aliases were verified without switching away from the healthy release.
+
+#### Decisions made
+
+- Treat deployment as staging-only operational work, not authorization for Command 79,
+  production, real providers, data import, or broad shared-host maintenance.
+- Preserve the host reverse proxy and stateful containers; switch only release-scoped
+  application processes and use the existing loopback listeners.
+- Normalize shell entrypoints inside every image that consumes the shared script so builds
+  remain reliable from Windows worktrees without depending on checkout line endings.
+- Use exact commit-tagged images for the final release and explicit rollback aliases for the
+  older mixed-tag state.
+
+#### Open questions and risks
+
+- Production remains `NO-GO`; real payment, hosting-panel, registrar, and public SMTP
+  acceptance, monitoring, off-site immutable backup, timed restore rehearsal, policy
+  approval, infrastructure review, and operator pilot remain required.
+- The verified backup and its passphrase remain on the same staging server; this is not an
+  off-site or immutable recovery copy.
+- The local Docker data disk on `D:` fell to roughly 2.7 GB free during image construction.
+  Release-scoped local image cleanup is required after delivery; broader Docker cache or
+  unrelated image pruning remains outside this deployment.
+- Command 79 remains separately gated and unauthorized.
+
+#### Recommended next command
+
+After this deployment report is delivered and hosted CI and CodeQL pass, authorize
+**Command 79 — Guard Partial-Payment Policy Changes** separately. Do not begin Command 79
+automatically.
 
 ## Report Template
 

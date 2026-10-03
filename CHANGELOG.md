@@ -10,6 +10,8 @@ and will be called out in release notes.
 
 ### Changed
 
+- Normalized the shared production shell entrypoint inside migration and worker
+  images so Windows CRLF checkouts remain runnable on Linux deployment hosts.
 - Reviewed the first product-experience set, confirmed Commands 76–78 retain their
   workflow and safety boundaries, and selected a separately gated partial-payment
   policy safeguard as the next bounded product command.

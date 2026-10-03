@@ -4,11 +4,14 @@
 
 - Environment: staging only
 - URL: `https://my.speedhost.bd`
-- Deployed application version: `b2b2d61`
+- Deployed application version: `71558a8`
 - Compose project: `webhost-billing-staging`
 - Host root: `/srv/webhost-billing-staging`
-- Current release: `/srv/webhost-billing-staging/releases/b2b2d61`
-- Current web overlay: `webhost-billing-web:3bedc40-settings-hotfix1`
+- Current release: `/srv/webhost-billing-staging/releases/71558a8`
+- API image: `webhost-billing-api:71558a8`
+- Web image: `webhost-billing-web:71558a8`
+- Worker and scheduler image: `webhost-billing-worker:71558a8`
+- Migration image: `webhost-billing-migration:71558a8`
 - Web listener: `127.0.0.1:19500`
 - API listener: `127.0.0.1:19600`
 - Edge: the host Nginx instance, after a successful `nginx -t` and graceful reload
@@ -139,6 +142,61 @@ If Nginx rollback is required, inspect the timestamped archive in
 `/srv/webhost-billing-staging/rollback`, restore only the files added or changed for
 `my.speedhost.bd`, run `nginx -t`, and use a graceful reload. Do not replace the complete
 Nginx configuration without a separate shared-host review.
+
+### 2026-10-03 current-main staging deployment
+
+Commit `71558a8` is the current isolated staging release. It contains all application work
+through the Commands 76–78 phase review plus a deployment correction that normalizes the
+shared shell entrypoint inside both the migration and worker images. The correction was
+required because a Windows checkout supplied CRLF line endings and the first one-shot
+migration candidate stopped at `bash\r` before connecting to PostgreSQL. The corrected
+image passed an in-container line-ending and shell-syntax check before migration was retried.
+
+The deployed images and verified image IDs are:
+
+- `webhost-billing-migration:71558a8` — `sha256:9b2975396a5b...`
+- `webhost-billing-api:71558a8` — `sha256:a663d5d16a7a...`
+- `webhost-billing-web:71558a8` — `sha256:45cb210ab321...`
+- `webhost-billing-worker:71558a8` — `sha256:4d82c8ffab7c...`; used by exactly one
+  worker and one scheduler
+
+Before the switch, the deployment created and fully verified this encrypted PostgreSQL
+backup:
+
+`/srv/webhost-billing-staging/backups/webhost-billing-webhost_billing_staging-20261003T143421Z.dump.gpg`
+
+Its SHA-256 is
+`bfaa3c4e897812c2d6eca3361bafbbadea9b5388b6c8eb03531f9bb78ba668ba`.
+Checksum, OpenPGP integrity, archive structure, required tables, PostgreSQL 18.6, and all
+21 completed non-rolled-back migrations passed. The final one-shot migration reported
+21 migrations and no pending migration.
+
+The protected final-switch environment backup is
+`/srv/webhost-billing-staging/rollback/.env.staging-pre-71558a8-20261003T154242Z`.
+Because the prior state used mixed historical image tags, the executable rollback
+environment is
+`/srv/webhost-billing-staging/rollback/.env.staging-rollback-pre-a0a7354`; it is mode
+`0600` and resolves the prior API, web, worker, and scheduler images through the verified
+`rollback-pre-a0a7354` aliases. Roll back only after confirming schema compatibility:
+
+1. Atomically repoint `current` to `/srv/webhost-billing-staging/releases/b2b2d61`.
+2. Install the executable rollback environment as `.env.staging`, preserving mode `0600`.
+3. Recreate only `api`, `web`, `worker`, and `scheduler` with `--no-deps --wait`.
+4. Rerun health, origin, both-role, authorization, provider-safety, email, browser, and
+   single-scheduler checks.
+
+Post-deployment verification passed `/health`, `/ready`, public storefront and live plan
+selection in clean Chromium, staging API-origin bundle inspection, administrator settings
+in clean Chromium, both credentialed roles, ownership and administrator authorization,
+invoice detail/PDF, support detail, password-reset queue and Mailpit delivery, fake payment
+and hosting-panel contracts, all four application health checks with zero restarts, exactly
+one scheduler, 21 applied migrations, and zero error-level application logs. Host Nginx
+configuration validation passed; Nginx was not changed or reloaded. The unrelated
+NodeWatch, RemotePilot, MessageDock, and Travel Mate containers remained running, and the
+NodeWatch and RemotePilot public endpoints returned valid redirects.
+
+No production environment or real payment, hosting-panel, registrar, or public SMTP
+provider was contacted or enabled. Production remains `NO-GO`.
 
 ### 2026-08-26 login-origin hotfix
 
