@@ -84,7 +84,6 @@ async function auditPublicCatalogue(browser: Browser): Promise<RouteResult> {
       .waitFor();
     await page.getByRole('heading', { name: 'Starter Hosting' }).waitFor();
     const monthlyButton = page.getByRole('button', { name: 'Monthly' });
-    await monthlyButton.click();
     await page.getByRole('link', { name: 'Choose Starter Hosting' }).waitFor();
     if ((await monthlyButton.getAttribute('aria-pressed')) !== 'true') {
       throw new SafeAuditError('/hosting', 'page did not become ready');

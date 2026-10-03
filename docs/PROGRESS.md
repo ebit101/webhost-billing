@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 75 — Establish the Real-Hosting Product Experience Roadmap
-- **Current status:** Completed and delivered to GitHub `main`
+- **Current command:** Command 76 — Repair the Public Storefront Entry and Plan Selection
+- **Current status:** Completed locally; delivery verification pending
 - **Last updated:** 2026-10-03
-- **Next command:** Command 76 — Repair the Public Storefront Entry and Plan Selection
+- **Next command:** Command 77 — Make Administrator Customer Context Actionable
 - **Next command authorized:** No
 
 ## Command Reports
@@ -5204,6 +5204,109 @@ application change automatically.
 After this documentation-only command is delivered to `origin/main` and hosted CI
 and CodeQL pass, authorize **Command 76 — Repair the Public Storefront Entry and Plan
 Selection** separately. Do not begin Commands 77–78 automatically.
+
+### Command 76 — Repair the Public Storefront Entry and Plan Selection
+
+- **Status:** Completed locally; delivery verification pending
+- **Date:** 2026-10-03
+
+#### Scope completed
+
+- Replaced the anonymous root redirect with a small independent public entry page in
+  the existing storefront shell. It now provides real local navigation targets for
+  the displayed home, plan, why-us, support, registration, and sign-in links.
+- Made public plan selection deterministic from currently active prices. Monthly is
+  preferred when available, followed by quarterly and annual periods, with stable
+  currency ordering and an honest fallback to the first available combination.
+- Kept unavailable periods disabled, preserved the selected product and price IDs in
+  the exact checkout URL, and retained server-side price and total revalidation.
+- Added an explicit all-prices-unavailable state with no checkout action and a local
+  support route rather than presenting a false purchasable state.
+- Extended component and Chromium lifecycle evidence across the public root,
+  fragment navigation, registration/sign-in routes, first-render plan selection,
+  exact checkout identifiers, and authenticated catalogue-to-checkout continuity
+  without placing an order during that new assertion.
+- Updated the product and bilingual safe-demo guidance for the repaired evaluator
+  path. No promotion, telemetry, CMS, schema, provider, payment, financial-rule,
+  release, deployment, or production-readiness scope was added.
+
+#### Files changed
+
+- `apps/web/src/app/(store)/page.tsx` — added the public entry page and metadata
+- `apps/web/src/app/layout.tsx` — declared the existing smooth-scroll behavior for
+  framework-managed fragment navigation
+- `apps/web/next.config.ts` — removed the contradictory root-to-login redirect
+- `apps/web/src/components/layout/public-storefront.test.tsx` — added public shell,
+  landmark, fragment-target, and route coverage
+- `apps/web/src/components/products/public-product-catalog.tsx` — added deterministic
+  active-price selection and the unavailable-pricing state
+- `apps/web/src/components/products/product-management.test.tsx` — covered initial,
+  fallback, unavailable-period, empty-pricing, and exact-checkout behavior
+- `apps/web/e2e/specs/hosting-lifecycle.spec.ts` — extended the complete lifecycle
+  through anonymous entry and authenticated checkout selection
+- `apps/web/e2e/smoke-safe-demo.ts`,
+  `apps/web/e2e/capture-demo-screenshots.ts`, and
+  `apps/web/e2e/audit-safe-demo-accessibility.ts` — verified the first-render monthly
+  state without an exploratory click
+- `docs/PRODUCTS_AND_PRICING.md`, `docs/PRODUCT_EXPERIENCE_ROADMAP.md`,
+  `docs/SAFE_EVALUATION_DEMO.md`, and `docs/SAFE_EVALUATION_DEMO_BN.md` — documented
+  the public path, deterministic selection, and remaining boundaries
+- `CHANGELOG.md` and `docs/PROGRESS.md` — recorded the bounded delivery
+
+#### Validation
+
+- Focused Vitest coverage passed: 2 files and 5 tests.
+- The complete web Vitest suite passed serially: 20 files and 58 tests.
+- API Jest passed: 23 suites and 88 tests. Worker Jest passed: 10 suites and 29
+  tests. Shared and queue package tests passed: 26 and 3 tests respectively.
+- The root package-test orchestration also passed all demo-command, documentation,
+  shared, and queue suites. Its initially parallel web run encountered host-memory
+  timing pressure; the complete web suite was rerun serially and passed. No failing
+  product assertion remains.
+- The focused Chromium hosting lifecycle passed: 1 test, including the anonymous
+  root-to-catalogue path and authenticated catalogue-to-checkout continuation.
+- `pnpm demo:doctor` passed all read-only Docker, Compose, Engine, loopback-port, and
+  redacted-runtime checks. A fresh safe-demo image build completed successfully and
+  generated `/` as a static route. The first smoke attempt passed `/ready`,
+  `/hosting`, and `/portal` while the just-built admin path was still settling; an
+  immediate stable retry passed `/ready`, `/hosting`, `/portal`, and `/admin` with no
+  business or Docker state mutation. `pnpm demo:down` then stopped the demo while
+  retaining fictional data and credentials.
+- The Next.js production build passed and generated all 29 application pages.
+- Repository lint, strict workspace typechecking, `pnpm docs:check`,
+  `pnpm format:check`, and `git diff --check` passed.
+- Hosted CI and CodeQL evidence will be recorded after delivery to `origin/main`.
+
+#### Decisions made
+
+- Prefer a currently available monthly price, then quarterly and annual, while
+  keeping deterministic currency ordering. This makes the common plan visible on
+  first render without misrepresenting unavailable periods.
+- Keep all public entry links local and backed by real routes or in-page targets.
+  The page is an independent Webhost Billing entry, not a competitor-derived clone.
+- Preserve checkout authority on the server. Query parameters carry selection only;
+  they do not establish an authoritative price or total.
+- Leave general post-login return navigation as a documented P1 gap outside this
+  bounded command.
+
+#### Open questions and risks
+
+- Anonymous selection does not yet survive a separately completed sign-in flow;
+  general return navigation remains intentionally deferred.
+- Docker startup initially failed on a stale local secrets-engine socket after the
+  interrupted session. The stale state was isolated in a recoverable local backup,
+  Docker restarted against its existing `D:` data, and both development services
+  and the safe demo recovered without a reset. Docker image unpacking remains slow
+  on the constrained local disks.
+- The safe demo still uses fictional providers and omits worker/scheduler execution
+  by design. Production remains `NO-GO`; this command does not establish provider,
+  monitoring, recovery, or live-business acceptance evidence.
+
+#### Recommended next command
+
+After this command is delivered to `origin/main` and hosted CI and CodeQL pass,
+authorize **Command 77 — Make Administrator Customer Context Actionable** separately.
+Do not begin Command 77 automatically.
 
 ## Report Template
 

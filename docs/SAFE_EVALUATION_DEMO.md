@@ -57,8 +57,10 @@ file and refuse before Docker if it is missing or unsafe.
 
 ## Five-minute walkthrough
 
-1. Open `http://localhost:3100/hosting` and select **Monthly**. Inspect the public
-   catalogue and its fictional Starter Hosting plan.
+1. Open `http://localhost:3100`, follow the local **Why us** and **Support** sections,
+   then choose **Explore hosting plans**. The public catalogue selects the available
+   **Monthly** price on first render and shows the fictional Starter Hosting checkout
+   action without an exploratory period click.
 2. Sign in as `customer@example.test`. Open **Services**, **Invoices**, **Orders**,
    and **Support** to inspect the ownership-bound customer workflows and seeded
    records.
@@ -159,9 +161,10 @@ corepack pnpm demo:smoke
 
 The command first requires the fixed regular `.demo-runtime/demo.env` file and an
 HTTP-successful `http://localhost:3100/ready` response. It then verifies the public
-hosting catalogue, customer login and ownership-bound overview, and administrator
-login and dashboard. The assertions wait for named headings, fictional seeded
-content, and primary actions rather than arbitrary delays.
+hosting catalogue, including its initially selected available period and checkout
+action, customer login and ownership-bound overview, and administrator login and
+dashboard. The assertions wait for named headings, fictional seeded content, and
+primary actions rather than arbitrary delays.
 
 `demo:smoke` is read-only with respect to application business records, Docker, and
 providers. It does not start, stop, build, reset, or inspect Docker; submit checkout,
@@ -227,8 +230,8 @@ This command reads only file metadata and the PNG signature/IHDR header; it does
 decode pixels, compare images, use OCR, or replace human visual review. The
 mobile catalogue uses a 390-pixel-wide touch viewport and ends immediately below the
 primary **Choose Starter Hosting** action. Capture waits for the catalogue heading,
-fictional Starter Hosting plan, selected monthly period, and checkout action; it does
-not use an arbitrary delay. Animations and carets are disabled only while pixels are
+fictional Starter Hosting plan, initially selected monthly period, and checkout
+action; it does not use an arbitrary delay. Animations and carets are disabled only while pixels are
 captured so repeat runs do not stop mid-transition.
 
 The mobile asset was visually reviewed for readable plan text, price, features, and

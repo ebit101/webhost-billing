@@ -24,7 +24,7 @@ const periods: {
 
 export function PublicProductCatalog() {
   const [products, setProducts] = useState<PublicProduct[]>([]);
-  const [period, setPeriod] = useState<HostingBillingPeriod>('ANNUAL');
+  const [period, setPeriod] = useState<HostingBillingPeriod>('MONTHLY');
   const [currency, setCurrency] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -35,9 +35,9 @@ export function PublicProductCatalog() {
       .then((result) => {
         if (!active) return;
         setProducts(result);
-        setCurrency(
-          result.flatMap((item) => item.prices)[0]?.amount.currency ?? '',
-        );
+        const selection = defaultCatalogueSelection(result);
+        setPeriod(selection?.period ?? 'MONTHLY');
+        setCurrency(selection?.currency ?? '');
       })
       .catch((caught: unknown) => {
         if (active) {
@@ -57,13 +57,14 @@ export function PublicProductCatalog() {
   }, []);
 
   const currencies = useMemo(
-    () => [
-      ...new Set(
-        products.flatMap((product) =>
-          product.prices.map((price) => price.amount.currency),
+    () =>
+      [
+        ...new Set(
+          products.flatMap((product) =>
+            product.prices.map((price) => price.amount.currency),
+          ),
         ),
-      ),
-    ],
+      ].sort(),
     [products],
   );
   const comparisonColumns = useMemo<DataColumn<ComparisonRow>[]>(
@@ -113,6 +114,21 @@ export function PublicProductCatalog() {
       </div>
     );
   }
+  if (!products.some((product) => product.prices.length > 0)) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+        <EmptyState
+          title="Hosting plans are temporarily unavailable"
+          description="The current products do not have an active price. Please check back later or sign in for support."
+          action={
+            <Link href="/login" className={buttonStyles('secondary')}>
+              Sign in for support
+            </Link>
+          }
+        />
+      </div>
+    );
+  }
 
   const rows: ComparisonRow[] = [
     comparisonRow(products, 'Storage', 'storage'),
@@ -147,7 +163,11 @@ export function PublicProductCatalog() {
             Currency
             <select
               value={currency}
-              onChange={(event) => setCurrency(event.target.value)}
+              onChange={(event) => {
+                const nextCurrency = event.target.value;
+                setCurrency(nextCurrency);
+                setPeriod(firstAvailablePeriod(products, nextCurrency));
+              }}
               className="ml-3 rounded-xl border border-slate-300 bg-white px-3 py-2"
             >
               {currencies.map((item) => (
@@ -258,6 +278,42 @@ export function PublicProductCatalog() {
         />
       </div>
     </section>
+  );
+}
+
+function defaultCatalogueSelection(
+  products: PublicProduct[],
+): { currency: string; period: HostingBillingPeriod } | undefined {
+  for (const period of periods) {
+    const currencies = [
+      ...new Set(
+        products.flatMap((product) =>
+          product.prices
+            .filter((price) => price.billingPeriod === period.value)
+            .map((price) => price.amount.currency),
+        ),
+      ),
+    ].sort();
+    const currency = currencies[0];
+    if (currency) return { currency, period: period.value };
+  }
+  return undefined;
+}
+
+function firstAvailablePeriod(
+  products: PublicProduct[],
+  currency: string,
+): HostingBillingPeriod {
+  return (
+    periods.find((period) =>
+      products.some((product) =>
+        product.prices.some(
+          (price) =>
+            price.billingPeriod === period.value &&
+            price.amount.currency === currency,
+        ),
+      ),
+    )?.value ?? 'MONTHLY'
   );
 }
 

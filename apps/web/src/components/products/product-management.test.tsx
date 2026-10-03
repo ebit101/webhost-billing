@@ -104,20 +104,89 @@ describe('product and pricing interfaces', () => {
       name: 'Choose Business Hosting',
     });
     expect(choose.getAttribute('href')).toBe(
-      `/portal/checkout?productId=${productId}&priceId=${annualPriceId}`,
+      `/portal/checkout?productId=${productId}&priceId=${monthlyPriceId}`,
     );
-    expect(screen.getByText('BDT 2,400.00')).toBeTruthy();
-
-    await user.click(screen.getByRole('button', { name: 'Monthly' }));
     expect(screen.getByText('BDT 240.00')).toBeTruthy();
+    expect(
+      screen
+        .getByRole('button', { name: 'Monthly' })
+        .getAttribute('aria-pressed'),
+    ).toBe('true');
+
+    await user.click(screen.getByRole('button', { name: 'Quarterly' }));
+    expect(screen.getByText('Not available')).toBeTruthy();
+    expect(
+      screen.getByRole('button', { name: 'Unavailable for this period' }),
+    ).toHaveProperty('disabled', true);
+
+    await user.click(screen.getByRole('button', { name: 'Yearly' }));
+    expect(screen.getByText('BDT 2,400.00')).toBeTruthy();
     expect(
       screen
         .getByRole('link', { name: 'Choose Business Hosting' })
         .getAttribute('href'),
-    ).toBe(`/portal/checkout?productId=${productId}&priceId=${monthlyPriceId}`);
+    ).toBe(`/portal/checkout?productId=${productId}&priceId=${annualPriceId}`);
     expect(
       screen.getByRole('table', { name: 'Comparison of active hosting plans' }),
     ).toBeTruthy();
+  });
+
+  it('falls back deterministically to the first period that has an active price', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        jsonResponse({
+          success: true,
+          data: [
+            {
+              ...publicProduct,
+              prices: [publicProduct.prices[0]],
+            },
+          ],
+        }),
+      ),
+    );
+
+    render(<PublicProductCatalog />);
+
+    expect(
+      (
+        await screen.findByRole('link', { name: 'Choose Business Hosting' })
+      ).getAttribute('href'),
+    ).toBe(`/portal/checkout?productId=${productId}&priceId=${annualPriceId}`);
+    expect(
+      screen
+        .getByRole('button', { name: 'Yearly' })
+        .getAttribute('aria-pressed'),
+    ).toBe('true');
+  });
+
+  it('shows an explicit unavailable state when products have no active prices', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        jsonResponse({
+          success: true,
+          data: [{ ...publicProduct, prices: [] }],
+        }),
+      ),
+    );
+
+    render(<PublicProductCatalog />);
+
+    expect(
+      await screen.findByRole('heading', {
+        name: 'Hosting plans are temporarily unavailable',
+      }),
+    ).toBeTruthy();
+    expect(
+      screen
+        .getByRole('link', { name: 'Sign in for support' })
+        .getAttribute('href'),
+    ).toBe('/login');
+    expect(
+      screen.queryByRole('link', { name: 'Choose Business Hosting' }),
+    ).toBeNull();
   });
 });
 

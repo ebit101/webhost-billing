@@ -57,8 +57,10 @@ file দরকার; file missing বা unsafe হলে Docker চালা�
 
 ## পাঁচ মিনিটের walkthrough
 
-1. `http://localhost:3100/hosting` খুলে **Monthly** নির্বাচন করুন। public catalogue
-   এবং কাল্পনিক Starter Hosting plan দেখুন।
+1. `http://localhost:3100` খুলে local **Why us** ও **Support** section দেখুন, তারপর
+   **Explore hosting plans** নির্বাচন করুন। public catalogue প্রথম render-এই উপলভ্য
+   **Monthly** price ও কাল্পনিক Starter Hosting checkout action দেখাবে; period খুঁজে
+   click করতে হবে না।
 2. `customer@example.test` দিয়ে sign in করুন। **Services**, **Invoices**,
    **Orders** এবং **Support** খুলে ownership-bound customer workflow ও seeded
    record দেখুন।

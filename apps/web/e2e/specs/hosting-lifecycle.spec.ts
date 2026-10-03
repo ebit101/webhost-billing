@@ -19,9 +19,38 @@ test('complete hosting customer and administrator lifecycle', async ({
   let renewalInvoiceId = '';
   let serviceId = '';
 
-  await test.step('root and anonymous workspaces use their dedicated login entries', async () => {
+  await test.step('public entry has truthful local navigation and protected workspaces', async () => {
     await page.goto('/');
-    await expect(page).toHaveURL(/\/login$/);
+    await expect(page).toHaveURL(/\/$/);
+    await expect(
+      page.getByRole('heading', {
+        name: 'Hosting that keeps service and billing in view.',
+      }),
+    ).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Why us' })).toHaveAttribute(
+      'href',
+      '/#why-us',
+    );
+    await page.getByRole('link', { name: 'Why us' }).click();
+    await expect(page).toHaveURL(/\/#why-us$/);
+    await expect(
+      page.getByRole('heading', {
+        name: 'The essential hosting journey, without hidden steps.',
+      }),
+    ).toBeVisible();
+    await page.getByRole('link', { name: 'Support', exact: true }).click();
+    await expect(page).toHaveURL(/\/#support$/);
+    await expect(
+      page.getByRole('heading', {
+        name: 'Support starts with your account context.',
+      }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('link', { name: 'Create customer account' }),
+    ).toHaveAttribute('href', '/register');
+    await expect(
+      page.getByRole('link', { name: 'Sign in to your portal' }),
+    ).toHaveAttribute('href', '/login');
     await page.goto('/admin');
     await expect(page).toHaveURL(/\/admin$/);
     await expect(
@@ -38,7 +67,10 @@ test('complete hosting customer and administrator lifecycle', async ({
     await expect(
       page.getByRole('heading', { name: E2E_PRODUCT.name }),
     ).toBeVisible();
-    await page.getByRole('button', { name: 'Monthly' }).click();
+    await expect(page.getByRole('button', { name: 'Monthly' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
     await expect(
       page.getByRole('link', { name: `Choose ${E2E_PRODUCT.name}` }),
     ).toHaveAttribute(
@@ -67,6 +99,25 @@ test('complete hosting customer and administrator lifecycle', async ({
     await page.goto(`/verify-email?token=${encodeURIComponent(token)}`);
     await expect(page.getByRole('status')).toContainText(/verified/i);
     await login(page, E2E_CUSTOMER.email, E2E_CUSTOMER.password, '/portal');
+  });
+
+  await test.step('authenticated catalogue selection opens checkout without placing an order', async () => {
+    await page.goto('/hosting');
+    await page
+      .getByRole('link', { name: `Choose ${E2E_PRODUCT.name}` })
+      .click();
+    await expect(page).toHaveURL(
+      new RegExp(
+        `/portal/checkout\\?productId=${E2E_PRODUCT.id}&priceId=${E2E_PRODUCT.priceId}$`,
+      ),
+    );
+    await expect(page.getByLabel('Product')).toHaveValue(E2E_PRODUCT.id);
+    await expect(page.getByLabel('Billing period')).toHaveValue(
+      E2E_PRODUCT.priceId,
+    );
+    await expect(
+      page.getByRole('button', { name: 'Place order' }),
+    ).toBeVisible();
   });
 
   await test.step('customer role cannot open the administrator workspace', async () => {

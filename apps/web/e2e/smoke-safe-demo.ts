@@ -32,12 +32,13 @@ async function main(): Promise<void> {
           .waitFor();
         await page.getByRole('heading', { name: 'Starter Hosting' }).waitFor();
         const monthlyButton = page.getByRole('button', { name: 'Monthly' });
-        await monthlyButton.click();
         await page
           .getByRole('link', { name: 'Choose Starter Hosting' })
           .waitFor();
         if ((await monthlyButton.getAttribute('aria-pressed')) !== 'true') {
-          throw new Error('The monthly catalogue view did not become active.');
+          throw new Error(
+            'The available monthly catalogue view was not active.',
+          );
         }
       }),
     );

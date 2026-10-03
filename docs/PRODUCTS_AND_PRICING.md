@@ -49,5 +49,17 @@ The package identifier is non-secret configuration. Actual cPanel credentials re
 ## Interfaces and checkout selection
 
 - `/admin/products` provides creation, editing, ordering, visibility, lifecycle, price definition, and price-history controls.
-- `/` and `/hosting` load active public products from the API, compare supported periods and currencies, and display configured limits.
-- Choosing a plan links to `/register?productId=...&priceId=...`. Command 9 will validate and consume that exact server-side product/price selection when it implements order creation.
+- `/` is a public entry with real local routes to the hosting catalogue, account
+  creation, sign-in, product explanation, and authenticated support.
+- `/hosting` loads active public products from the API, compares supported periods
+  and currencies, and displays configured limits. The first render selects the
+  earliest supported period that has any active price (`MONTHLY`, then `QUARTERLY`,
+  then `ANNUAL`) and a deterministic currency, so at least one valid checkout action
+  is visible whenever an active price exists.
+- Periods without a price remain visible and explicitly unavailable. Products with
+  no active prices produce one catalogue-level unavailable state and no checkout
+  action.
+- Choosing a priced plan links to the protected
+  `/portal/checkout?productId=...&priceId=...` route. The authenticated checkout
+  revalidates the selected product and price through the public catalogue, and the
+  API remains authoritative for the order total.

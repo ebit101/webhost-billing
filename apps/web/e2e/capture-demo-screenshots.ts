@@ -83,13 +83,12 @@ async function capturePublicCatalog(
     .waitFor();
   await page.getByRole('heading', { name: 'Starter Hosting' }).waitFor();
   const monthlyButton = page.getByRole('button', { name: 'Monthly' });
-  await monthlyButton.click();
   const primaryAction = page.getByRole('link', {
     name: 'Choose Starter Hosting',
   });
   await primaryAction.waitFor();
   if ((await monthlyButton.getAttribute('aria-pressed')) !== 'true') {
-    throw new Error('Monthly catalogue pricing did not become active');
+    throw new Error('Available monthly catalogue pricing was not active');
   }
   const path = resolve(outputDirectory, asset.filename);
   if (mobile) {

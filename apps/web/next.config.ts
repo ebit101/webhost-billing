@@ -31,15 +31,6 @@ const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_API_URL: environment.NEXT_PUBLIC_API_URL,
   },
-  async redirects() {
-    return [
-      {
-        source: '/',
-        destination: '/login',
-        permanent: false,
-      },
-    ];
-  },
   async headers() {
     return [
       {

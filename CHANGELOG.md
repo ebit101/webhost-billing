@@ -10,6 +10,10 @@ and will be called out in release notes.
 
 ### Changed
 
+- Replaced the public root-to-login redirect with a focused storefront entry whose
+  navigation resolves locally, and made the hosting catalogue select its first
+  supported active price period while preserving explicit unavailable states and
+  server-authoritative checkout validation.
 - Established a live-demo-backed product-experience roadmap with complete route and
   capability inventory, workflow gap evidence, independent public WHMCS workflow
   benchmarking, and separately gated Commands 76–78 for the public storefront,
