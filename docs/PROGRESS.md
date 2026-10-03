@@ -3,7 +3,7 @@
 ## Status Summary
 
 - **Current command:** Command 80 — Preserve Hosting Plan Selection Through Customer Sign-In
-- **Current status:** Implementation and local validation complete; hosted delivery verification in progress
+- **Current status:** Completed and delivered; local validation, hosted CI, and CodeQL passed
 - **Last updated:** 2026-10-03
 - **Next command:** Phase Review — Review Command 80 and define the next bounded command
 - **Next command authorized:** No
@@ -5971,7 +5971,7 @@ separately after this review's delivery. Do not begin it automatically.
 
 ### Command 80 — Preserve Hosting Plan Selection Through Customer Sign-In
 
-- **Status:** Implementation and local validation complete; hosted delivery verification in progress
+- **Status:** Completed and delivered; local validation, hosted CI, and CodeQL passed
 - **Date:** 2026-10-03
 
 #### Scope completed
@@ -6058,6 +6058,17 @@ separately after this review's delivery. Do not begin it automatically.
   headers, redirect, and proxy request-header documentation before implementation.
   Only the upstream request-header API is used; no intent header is deliberately
   emitted as a client response header.
+- Implementation commit `619c899121b83b5b0af1903df8ccb0fdc1893128` was reconciled
+  without history rewriting and pushed to `origin/main`.
+  [CI run 37141700352](https://github.com/ebit101/webhost-billing/actions/runs/37141700352)
+  passed the full-history secret scan, database preparation, formatting,
+  documentation, lint, type checks, package tests, API integration and critical
+  invariant tests, fictional browser lifecycle, production dependency audit,
+  license inventory, and production build.
+  [CodeQL run 37141700415](https://github.com/ebit101/webhost-billing/actions/runs/37141700415)
+  also passed. The pull-request-only dependency review job was skipped as expected
+  for this direct delivery push. This follow-up report changes documentation only;
+  the final pushed head is checked separately before handing the command back.
 
 #### Decisions made
 
