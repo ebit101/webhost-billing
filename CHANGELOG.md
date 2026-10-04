@@ -10,6 +10,11 @@ and will be called out in release notes.
 
 ### Changed
 
+- Made the administrator invoice ledger searchable and paginated with validated
+  URL/customer scope, authoritative record counts, abortable reads and honest
+  recovery states. Draft and business-identity forms retain unsaved input during
+  browsing; successful creation refreshes current filters without inserting a
+  nonmatching draft or treating a failed refresh as a failed financial write.
 - Added explicit read-only administrator manual-payment review with validated
   customer/invoice links, plain-text submitted proof, lossless adjustment capacity
   and business-zone dates. Stale selection/filter/mutation responses cannot revive

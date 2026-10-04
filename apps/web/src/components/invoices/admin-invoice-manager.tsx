@@ -4,38 +4,27 @@ import type {
   BusinessIdentity,
   CustomerDetail,
   CustomerSummary,
-  Invoice,
   InvoiceCreationResult,
 } from '@webhost-billing/shared';
-import Link from 'next/link';
-import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import {
   authMutation,
   authenticatedGet,
   authenticatedPaginatedGet,
 } from '../../lib/auth-api';
 import {
-  emptyAdminCustomerFilter,
-  type AdminCustomerFilter,
-  withAdminCustomerFilter,
-} from '../../lib/admin-customer-filter';
+  adminInvoiceHref,
+  readAdminInvoiceQuery,
+  type AdminInvoiceSelection,
+} from '../../lib/admin-invoice-ledger-query';
 import { Card, Field, fieldClass } from '../customers/customer-fields';
-import {
-  AdminCustomerFilterNotice,
-  filteredEmptyTitle,
-} from '../customers/admin-customer-filter-notice';
+import { AdminCustomerFilterNotice } from '../customers/admin-customer-filter-notice';
 import { Button } from '../ui/button';
-import { DataTable, type DataColumn } from '../ui/data-table';
-import { EmptyState, LoadingState } from '../ui/feedback-state';
+import { LoadingState } from '../ui/feedback-state';
 import { Icon } from '../ui/icon';
 import { PageHeader } from '../ui/page-header';
-import { StatusBadge } from '../ui/status-badge';
-import {
-  formatMinor,
-  invoiceDate,
-  invoiceError,
-  invoiceTone,
-} from './invoice-ui';
+import { invoiceError } from './invoice-ui';
+import { AdminInvoiceLedger } from './admin-invoice-ledger';
 
 interface DraftLine {
   key: string;
@@ -56,13 +45,14 @@ const blankLine = (): DraftLine => ({
 });
 
 export function AdminInvoiceManager({
-  customerFilter = emptyAdminCustomerFilter,
+  selection = readAdminInvoiceQuery({}),
 }: {
-  customerFilter?: AdminCustomerFilter;
+  selection?: AdminInvoiceSelection;
 } = {}) {
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const customerFilter = selection.customerFilter;
+  const [ledgerRevision, setLedgerRevision] = useState(0);
   const [customers, setCustomers] = useState<CustomerSummary[]>([]);
-  const [filteredCustomer, setFilteredCustomer] = useState<CustomerDetail>();
+  const [customerContext, setCustomerContext] = useState<CustomerDetail>();
   const [identity, setIdentity] = useState<BusinessIdentity>({
     name: 'Webhost Billing',
   });
@@ -72,38 +62,23 @@ export function AdminInvoiceManager({
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const submissionKey = useRef('');
-  const invoicesPath = withAdminCustomerFilter(
-    '/invoices?pageSize=100',
-    customerFilter,
-  );
   const filteredCustomerId = customerFilter.customerId;
+  const filteredCustomer =
+    customerContext?.id === filteredCustomerId ? customerContext : undefined;
 
   useEffect(() => {
     let active = true;
     void Promise.all([
-      authenticatedPaginatedGet<Invoice>(invoicesPath),
       authenticatedPaginatedGet<CustomerSummary>('/customers?pageSize=100'),
       authenticatedGet<BusinessIdentity>(
         '/invoices/settings/business-identity',
       ),
-      filteredCustomerId
-        ? authenticatedGet<CustomerDetail>(`/customers/${filteredCustomerId}`)
-        : Promise.resolve(undefined),
     ])
-      .then(
-        ([
-          invoiceResult,
-          customerResult,
-          businessIdentity,
-          customerContext,
-        ]) => {
-          if (!active) return;
-          setInvoices(invoiceResult.data);
-          setCustomers(customerResult.data);
-          setIdentity(businessIdentity);
-          setFilteredCustomer(customerContext);
-        },
-      )
+      .then(([customerResult, businessIdentity]) => {
+        if (!active) return;
+        setCustomers(customerResult.data);
+        setIdentity(businessIdentity);
+      })
       .catch((caught: unknown) => {
         if (active) setError(invoiceError(caught));
       })
@@ -113,76 +88,23 @@ export function AdminInvoiceManager({
     return () => {
       active = false;
     };
-  }, [filteredCustomerId, invoicesPath]);
+  }, []);
 
-  const columns = useMemo<DataColumn<Invoice>[]>(
-    () => [
-      {
-        key: 'number',
-        header: 'Invoice',
-        render: (invoice) => (
-          <div>
-            <Link
-              href={`/admin/invoices/${invoice.id}`}
-              className="font-bold text-brand-700 hover:underline"
-            >
-              {invoice.invoiceNumber}
-            </Link>
-            <p className="mt-1 text-xs text-slate-500">
-              {invoice.orderNumber ?? 'Administrator invoice'}
-            </p>
-          </div>
-        ),
-      },
-      {
-        key: 'customer',
-        header: 'Customer',
-        render: (invoice) => (
-          <div>
-            <p className="font-semibold text-slate-900">
-              {invoice.customerName}
-            </p>
-            <p className="text-xs text-slate-500">{invoice.customerEmail}</p>
-          </div>
-        ),
-      },
-      {
-        key: 'status',
-        header: 'Status',
-        render: (invoice) => (
-          <StatusBadge tone={invoiceTone(invoice.status)}>
-            {invoice.status.replaceAll('_', ' ')}
-          </StatusBadge>
-        ),
-      },
-      {
-        key: 'due',
-        header: 'Due',
-        render: (invoice) => invoiceDate(invoice.dueAt),
-      },
-      {
-        key: 'total',
-        header: 'Total',
-        align: 'right',
-        render: (invoice) =>
-          formatMinor(invoice.total.amount, invoice.total.currency),
-      },
-      {
-        key: 'balance',
-        header: 'Balance',
-        align: 'right',
-        render: (invoice) => (
-          <span className="font-bold text-slate-950">
-            {formatMinor(
-              invoice.balanceDue.amount,
-              invoice.balanceDue.currency,
-            )}
-          </span>
-        ),
-      },
-    ],
-    [],
-  );
+  useEffect(() => {
+    let active = true;
+    if (filteredCustomerId)
+      void authenticatedGet<CustomerDetail>(`/customers/${filteredCustomerId}`)
+        .then((customer) => {
+          if (active && customer.id === filteredCustomerId)
+            setCustomerContext(customer);
+        })
+        .catch(() => {
+          /* The ledger still labels the validated customer ID, never all customers. */
+        });
+    return () => {
+      active = false;
+    };
+  }, [filteredCustomerId]);
 
   async function createInvoice(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -211,14 +133,13 @@ export function AdminInvoiceManager({
           })),
         },
       );
-      setInvoices((current) => [
-        result.invoice,
-        ...current.filter((invoice) => invoice.id !== result.invoice.id),
-      ]);
       submissionKey.current = '';
       setLines([blankLine()]);
       form.reset();
       setNotice(`${result.invoice.invoiceNumber} saved as a draft.`);
+      // Write succeeded. Any subsequent ledger failure is read-only and retries
+      // only the current selection; never repeat creation or prepend a draft.
+      setLedgerRevision((revision) => revision + 1);
     } catch (caught) {
       setError(invoiceError(caught));
     } finally {
@@ -270,7 +191,11 @@ export function AdminInvoiceManager({
       <AdminCustomerFilterNotice
         customer={filteredCustomer}
         invalid={customerFilter.invalid}
-        clearHref="/admin/invoices"
+        clearHref={adminInvoiceHref({
+          ...selection.query,
+          customerId: undefined,
+          page: 1,
+        })}
         resourceLabel="invoices"
       />
       {error ? <Message error>{error}</Message> : null}
@@ -438,28 +363,7 @@ export function AdminInvoiceManager({
         </Card>
       </div>
 
-      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        {invoices.length ? (
-          <DataTable
-            caption="All invoices"
-            columns={columns}
-            rows={invoices}
-            rowKey={(invoice) => invoice.id}
-          />
-        ) : (
-          <EmptyState
-            title={
-              filteredEmptyTitle('invoices', filteredCustomer) ??
-              'No invoices yet'
-            }
-            description={
-              filteredCustomer
-                ? 'This customer has no invoices in the current bounded result.'
-                : 'Create the first administrator invoice draft.'
-            }
-          />
-        )}
-      </section>
+      <AdminInvoiceLedger selection={selection} revision={ledgerRevision} />
     </div>
   );
 }

@@ -41,6 +41,7 @@ describe('Invoice management (e2e)', () => {
   let passwords: PasswordHasherService;
   let customerId = '';
   let invoiceId = '';
+  let ledgerAdmin: ReturnType<typeof request.agent>;
   let previousBusinessSetting: {
     value: Prisma.InputJsonValue;
     updatedByUserId: string | null;
@@ -352,6 +353,7 @@ describe('Invoice management (e2e)', () => {
     const admin = request.agent(app.getHttpServer());
     const csrf = await csrfToken(admin);
     await login(admin, csrf, ADMIN_EMAIL);
+    ledgerAdmin = admin;
     const filteredResponse = await admin
       .get(`/invoices?pageSize=100&customerId=${customerId}`)
       .expect(200);
@@ -653,6 +655,67 @@ describe('Invoice management (e2e)', () => {
     expect(
       otherList.data.every((row) => row.customerId === otherAccount.id),
     ).toBe(true);
+    // Reuse the existing authenticated admin session; ledger reads must not
+    // increase sign-in attempts or weaken the unchanged authentication limits.
+    const countsBefore = await Promise.all([
+      prisma.payment.count(),
+      prisma.service.count(),
+      prisma.order.count(),
+      prisma.activityLog.count(),
+      prisma.outboxEvent.count(),
+    ]);
+    const adminGet = async (query: string) =>
+      paginatedApiSuccessResponseSchema(invoiceSchema).parse(
+        (await ledgerAdmin.get(`/invoices?${query}`).expect(200)).body,
+      );
+    const adminFirst = await adminGet(
+      `search=CMD81-HISTORY&customerId=${customerId}&pageSize=100`,
+    );
+    const adminSecond = await adminGet(
+      `search=CMD81-HISTORY&customerId=${customerId}&page=2&pageSize=100`,
+    );
+    expect(adminFirst.pagination).toEqual(first.pagination);
+    expect(adminFirst.data.map((row) => row.id)).toEqual(
+      first.data.map((row) => row.id),
+    );
+    expect(adminSecond.data.map((row) => row.id)).toEqual(
+      second.data.map((row) => row.id),
+    );
+    const adminUnpaid = await adminGet(
+      `search=Historical%20hosting%20CMD81-HISTORY&customerId=${customerId}&status=UNPAID&pageSize=20`,
+    );
+    expect(adminUnpaid.pagination.totalItems).toBe(53);
+    expect(
+      adminUnpaid.data.every(
+        (row) => row.customerId === customerId && row.status === 'UNPAID',
+      ),
+    ).toBe(true);
+    expect(
+      (await adminGet('search=CMD81-HISTORY&pageSize=100')).pagination
+        .totalItems,
+    ).toBe(108);
+    expect(
+      (await adminGet(`search=CMD81-HISTORY&customerId=${otherAccount.id}`))
+        .pagination.totalItems,
+    ).toBe(3);
+    expect(
+      (await adminGet(`search=CMD81-HISTORY&customerId=${customerId}&page=9`))
+        .data,
+    ).toHaveLength(0);
+    await ledgerAdmin.get('/invoices?status=UNKNOWN').expect(400);
+    await ledgerAdmin.get('/invoices?pageSize=101').expect(400);
+    await ledgerAdmin.get('/invoices?page=1&page=2').expect(400);
+    await ledgerAdmin.get('/invoices?customerId=bad').expect(400);
+    await request(app.getHttpServer()).get('/invoices').expect(401);
+    expect(
+      await Promise.all([
+        prisma.payment.count(),
+        prisma.service.count(),
+        prisma.order.count(),
+        prisma.activityLog.count(),
+        prisma.outboxEvent.count(),
+      ]),
+    ).toEqual(countsBefore);
     expect(
       await prisma.invoice.findMany({
         where: { id: { in: [...ownIds, ...foreignIds] } },

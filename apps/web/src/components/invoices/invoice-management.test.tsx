@@ -182,8 +182,8 @@ describe('invoice interfaces', () => {
       'fetch',
       vi.fn(async (input: RequestInfo | URL) => {
         const url = String(input);
-        if (url.includes('/invoices?pageSize=')) {
-          return paginatedResponse([invoice]);
+        if (new URL(url).pathname === '/invoices') {
+          return paginatedResponse([invoice], 20);
         }
         if (url.includes('/customers?pageSize=')) {
           return paginatedResponse([customer]);
@@ -202,7 +202,7 @@ describe('invoice interfaces', () => {
       screen.getByRole('button', { name: 'Save business identity' }),
     ).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Add line' })).toBeTruthy();
-    expect(screen.getByText(invoice.invoiceNumber)).toBeTruthy();
+    expect(await screen.findByText(invoice.invoiceNumber)).toBeTruthy();
     expect(screen.getByDisplayValue('Fictional Hosting Ltd')).toBeTruthy();
   });
 });

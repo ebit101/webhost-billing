@@ -2324,9 +2324,9 @@ service/provider/automation work, authentication policy, schema/dependency/worke
 changes, cleanup, release, deployment and production approval. Production remains NO-GO.
 ```
 
-**Authorization:** Defined by the Command 84 phase review on 2026-10-04. Not
-authorized or implemented. The user's "continue" authorizes that review and this
-next-command definition only; explicit Command 85 authorization is required.
+**Authorization:** Defined by the Command 84 phase review and explicitly authorized
+by the user's "commaand 85" on 2026-10-04. Implementation and validation are recorded
+in `docs/PROGRESS.md`. Further work requires a separately authorized phase review.
 
 ---
 

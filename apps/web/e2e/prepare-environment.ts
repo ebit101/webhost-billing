@@ -124,14 +124,27 @@ async function main(): Promise<void> {
       customerNameSnapshot: `${E2E_HEALTHY_CUSTOMER.firstName} ${E2E_HEALTHY_CUSTOMER.lastName}`,
       customerEmailSnapshot: E2E_HEALTHY_CUSTOMER.email,
       customerAddressSnapshot: {
-        addressLine1: '78 Fictional Healthy Road',
+        line1: '78 Fictional Healthy Road',
+        line2: null,
         city: 'Dhaka',
+        region: null,
+        postalCode: null,
         countryCode: 'BD',
       },
       businessIdentitySnapshot: { name: 'Fictional Webhost Billing' },
       issuedAt: new Date('2026-10-01T00:00:00.000Z'),
       dueAt: new Date('2026-10-02T00:00:00.000Z'),
       paidAt: new Date('2026-10-01T00:00:00.000Z'),
+      items: {
+        create: {
+          linePosition: 1,
+          descriptionSnapshot: 'Fictional healthy hosting',
+          currency: 'BDT',
+          quantity: 1,
+          unitAmount: 120_000n,
+          lineTotal: 120_000n,
+        },
+      },
     },
   });
 

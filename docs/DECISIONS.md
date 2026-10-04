@@ -724,6 +724,26 @@ This document records durable technical and product decisions. New decisions sho
   remain separately gated. Local worker/isolation and dependency/branch-policy risks
   are not repaired by a read-only ledger. Production remains `NO-GO`.
 
+## ADR-063 — Independent Read-Only Administrator Invoice Ledger
+
+- **Status:** Accepted
+- **Date:** 2026-10-04
+- **Decision:** Implement Command 85 using the existing protected invoice list.
+  Parse URL ledger fields and customer scope separately, block reads for invalid
+  ledger filters, validate complete response rows and authoritative pagination,
+  and key only the abortable read-only ledger subtree. Keep financial forms mounted.
+- **Reason:** URL changes must not discard an unfinished draft or business identity,
+  and a successful draft is not necessarily part of the current search/status/page.
+  A separate read revision refreshes the latest applied query after creation without
+  injecting a row or converting a read failure into a duplicate write.
+- **Consequence:** Invalid customer context retains its warning and explicit all-
+  customer wording, never inferred ownership. Clearing ledger filters retains valid
+  customer context; clearing customer scope is separate and returns to page one.
+  Counts are records, not financial aggregates; historical identity and lossless
+  money remain unchanged. No per-row/detail/PDF preloads, new endpoints, billing
+  rules or global list framework. First-100 customer options and other workflows
+  remain separately gated. Production remains `NO-GO`.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

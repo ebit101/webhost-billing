@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Phase Review — Review Command 84 and Define the Next Bounded Command
-- **Current status:** Review completed; Command 85 defined but not authorized
+- **Current command:** Command 85 — Make the Administrator Invoice Ledger Searchable and Paginated
+- **Current status:** Local validation passed; hosted delivery checks pending
 - **Last updated:** 2026-10-04
-- **Next command:** Command 85 — Make the Administrator Invoice Ledger Searchable and Paginated
+- **Next command:** Phase Review — Review Command 85 and define the next bounded command
 - **Next command authorized:** No
 
 ## Command Reports
@@ -7182,6 +7182,157 @@ next. Do not define or implement Command 85 automatically.
 
 Authorize **Command 85 — Make the Administrator Invoice Ledger Searchable and
 Paginated**. Do not begin it or define Command 86 automatically.
+
+### Command 85 — Make the Administrator Invoice Ledger Searchable and Paginated
+
+- **Status:** Local validation passed; hosted delivery checks pending
+- **Date:** 2026-10-04
+- **Authorization:** Explicit user's "commaand 85"; no later command authorized.
+
+#### Scope implemented
+
+- Added administrator-only query parsing for search/status/page/pageSize and the
+  existing independent customer-filter boundary. Fixed local URLs encode values
+  as data and reject duplicates, malformed values and overflowing offsets.
+- Added an independent invoice ledger with labelled search/status/size/pagination,
+  explicit applied-versus-draft search, matching-record metadata and distinct empty,
+  no-match, invalid, out-of-range and retry states. Invalid ledger URLs do not read;
+  invalid customer scope retains its notice and explicit all-customer wording.
+- Runtime-validate unknown invoice envelopes, identifiers, exact expected page
+  length, counts, duplicate rows and selected customer/status scope. Preserve
+  historical identities, BigInt-safe money and existing protected detail links;
+  disable detail prefetch and issue no per-row or PDF reads while browsing.
+- Only the ledger subtree is keyed. Query changes preserve unfinished invoice
+  lines and identity fields. Abort and discard obsolete reads on query/retry/
+  revision/unmount. Successful creation refreshes the latest selection, never
+  prepends a nonmatching draft, and exposes read retry separately from write success.
+- Preserve original creation/identity endpoints, bodies, CSRF, submission-key retry,
+  optional-field omission and form success behavior. Customer chooser remains first
+  100; no financial, provider, schema, worker, dependency, deployment or cleanup work.
+- Add query/server-entry/component regressions and guarded fictional administrator
+  browser evidence; extend existing invoice API history tests using an already
+  authenticated administrator, not extra sign-ins or relaxed authentication limits.
+
+#### Files changed
+
+- `apps/web/src/lib/admin-invoice-ledger-query.ts` and its test — URL/read boundary.
+- `apps/web/src/components/invoices/admin-invoice-ledger.tsx` and its test — read-only
+  ledger and unchanged form/mutation regressions.
+- `apps/web/src/components/invoices/admin-invoice-manager.tsx` — separate forms/context
+  loading and current-query post-create refresh; `invoice-management.test.tsx` —
+  existing list fixture and independent-read readiness assertion.
+- `apps/web/src/app/(admin)/admin/invoices/page.tsx` and
+  `apps/web/src/app/admin-invoice-ledger-entry.test.tsx` — async URL entry.
+- `apps/web/e2e/specs/admin-invoice-ledger.spec.ts` — real protected fictional journey.
+- `apps/web/e2e/prepare-environment.ts` — correct the existing healthy invoice's
+  fictional address snapshot and supply its matching line item for valid read evidence.
+- `apps/api/test/invoices.e2e-spec.ts` — admin list/role/read-only regressions.
+- `CODEX_DEVELOPMENT_COMMANDS.md`, `CHANGELOG.md`, `docs/DECISIONS.md`,
+  `docs/PRODUCT_EXPERIENCE_ROADMAP.md`, `docs/PROGRESS.md` — authority and evidence.
+
+#### Validation
+
+- Started clean on `main` at `8319a63b55f1a02ba00fc35ab1fa2e7fd29cb9d1`.
+  Read project instructions, plan, decisions/progress, command and installed Next.js
+  client/server, router and Link guidance. No dependency changes.
+- First focused run: **47 passed, four failed** from new fixtures including query
+  fields in strict pagination metadata, reusing an already-consumed Response, and
+  an existing synchronous ledger assertion. Corrected fixtures and independently
+  awaited ledger readiness without relaxing schema or assertions. Rerun: **53 passed**.
+- First web type check rejected missing `params` in two new typed server-entry test
+  invocations. Added the required empty async params; final rerun remains required.
+- PostgreSQL/Redis inspected healthy on loopback. Existing guarded preparation
+  successfully recreated only `command26_e2e`, applied 21 migrations and fictional
+  fixtures. A private child-process override verified Prisma model access and raw
+  SQL `current_schema()` target that same fixed schema via connection search_path.
+  No connection details printed, environment files edited or development data cleaned.
+- Broader focused, API, full package/browser/build and delivery checks are pending.
+  No unexecuted validation or hosted result is claimed.
+- Final ten-file administrator/customer invoice, payment/order/customer-filter and
+  new query/server-entry run: **138 passed** with `--maxWorkers=1`.
+- Relevant invoice/customer API E2E: **eight passed**, retaining existing financial
+  and ownership tests while proving deterministic administrator pages beyond 100,
+  combined description/status/customer queries, strict invalid queries, role and
+  anonymous denial and unchanged invoice/financial/business records. Existing VM-
+  module/pg warnings were non-failing. Complete suites and delivery remain pending.
+- Workspace strict types and lint passed; all four offline documentation validators,
+  repository formatting and diff whitespace checks passed. The full browser run
+  has passed the new administrator history journey (page six of 105 invoices,
+  combined filters, unchanged records, unsaved forms, browser history/refresh and
+  mobile keyboard controls); its remaining existing regressions are still running.
+- First full browser run: **12 passed, one failed** at the original lifecycle's
+  final administrator sign-in. Source inspection confirms the existing account's
+  four lifecycle sign-ins plus payment review consume its five-attempt login limit;
+  the new ledger sign-in was a sixth. Isolate only the new journey with a dedicated
+  fictional administrator created behind the same fixed loopback-schema guard.
+  Original lifecycle/payment/auth specs, auth limits/namespaces, deadlines and assertions remain
+  unchanged. No raw trace/credential contents were inspected or reported; another
+  complete browser run is required.
+- Read-boundary inspection found the existing healthy invoice fixture used an
+  address shape rejected by `invoiceAddressSchema` and omitted a required line item.
+  Corrected only that guarded fictional fixture to the existing read contract,
+  retaining its customer, status, amounts, dates and all lifecycle assertions.
+  Added all-customer clearing/return evidence to the new ledger browser test.
+  The already-running second browser run uses the earlier loaded fixture/spec;
+  final full-suite evidence must follow these changes, not be inferred from it.
+- Second full browser run: **13 passed** after isolating the new administrator's
+  account. All ten auth-readiness checks, payment review and original hosting
+  lifecycle passed unchanged. This run used the earlier loaded fixture/spec and
+  does not establish the subsequently added all-customer clearing evidence.
+- Final lint rerun passed. All **57 tooling tests passed** sequentially. Complete
+  package tests now run serially after fresh guarded fictional-schema preparation;
+  final expanded browser checks and production build remain required.
+- The first serial package invocation stopped before running tests because shared
+  contracts use Node/tsx, not Vitest. Corrected the child invocation to each package's
+  installed runner (shared tsx, queue/API/worker Jest, web Vitest). No package script,
+  dependency or test changed to hide this invocation error; rerun is required.
+- Added a fixed malformed-JSON error and focused regression so raw unexpected
+  response contents cannot be displayed. Final complete web and browser validation
+  must include this last read-boundary refinement.
+- Complete package/tooling validation passed sequentially under verified fictional
+  model/raw-SQL isolation: **484 tests** (57 tooling, 29 shared, three queue,
+  268 web, 98 API unit and 29 worker). Node/tsx, Vitest `--maxWorkers=1` and Jest
+  `--runInBand` preserve the original business/concurrency assertions and deadlines.
+  This does not claim that default local parallel-worker execution is repaired.
+  Existing experimental-VM and intentional outbox failure-path logs were non-failing.
+- Final expanded full Chromium browser suite: **13 passed**, including page-six
+  older history, combined filters, all-customer clearing/return, browser history/
+  refresh, unsaved forms, 375px keyboard controls, no preloads/browsing writes and
+  unchanged financial/business snapshots. All ten original auth-readiness checks,
+  manual-payment review and complete hosting lifecycle passed unchanged.
+- Final strict workspace/browser types, lint and documentation/format checks passed.
+  The first production build inherited a non-production NODE_ENV from the private
+  test runner and failed static prerendering after Next's environment warning.
+  Rerun the build with child-only `NODE_ENV=production`, matching hosted CI.
+  No source, environment file, framework configuration or dependency was changed
+  to hide this invocation error; build and hosted delivery remain pending.
+- Production build rerun with child-only `NODE_ENV=production`: **passed** for all
+  workspace packages, optimized Next.js output and NestJS API/worker artifacts.
+  Final source has positive local evidence: 484 complete package/tooling tests,
+  eight relevant API tests, 13 full browser checks, lint, strict types, docs and
+  formatting. Historical failed runs above remain part of the report.
+- Fetch confirmed canonical `origin/main` has no intervening changes. Delivery
+  uses a focused commit, fast-forward-only reconciliation and non-force push.
+  Its exact-source hosted CI and CodeQL must pass before handoff; those results
+  are not asserted in advance. No generated/environment files are included.
+
+#### Decisions and unresolved risks
+
+- Apply ADR-062 through ADR-063. Invoice matching counts are not account balances,
+  and invoice state is not payment, order, service or provisioning evidence.
+- Separate customer-scope clearing remains available even if optional customer
+  display-name lookup fails; ledger scope still names the validated ID honestly.
+- Local default parallel-worker timeout/possible retained fictional fixture and
+  unqualified-SQL isolation risk remain unresolved. Heavy tests will run sequentially
+  with verified fictional isolation, without worker/deadline/assertion changes.
+- Dependency advisory 15 and direct-main rule bypass remain existing risks. Missing
+  credentialed providers, SMTP, monitoring, off-site recovery, business policies,
+  infrastructure and operator-pilot evidence keep production **NO-GO**.
+
+#### Exact recommended next command
+
+After completion, authorize **Phase Review — Review Command 85 and define the next
+bounded command**. Do not implement or define Command 86 automatically.
 
 ## Report Template
 

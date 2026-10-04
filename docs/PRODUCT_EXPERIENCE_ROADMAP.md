@@ -86,21 +86,21 @@ evidence recorded in `docs/PROGRESS.md`.
 
 ### Administrator workspace
 
-| Route                           | Observed capability                                                                   | Supporting boundary                                                     | Product-experience finding                                                                                                        |
-| ------------------------------- | ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `/admin`                        | Period metrics, revenue graph, CSV exports, recent audit events                       | Transaction-sourced reports and audited bounded exports                 | Summary cards are not links to work queues; login events dominate recent activity; there is no recent-payment/attention list.     |
-| `/admin/customers`              | Search, status filter, add customer, pagination                                       | Server-side query and pagination                                        | This is the strongest scalable directory pattern and should be reused elsewhere.                                                  |
-| `/admin/customers/[customerId]` | Operational identity, linked navigation, profile/billing/access and bounded history   | Role guard, bounded customer aggregate, and validated ledger filters    | Command 77 puts actionable context first, formats money/dates safely, and links direct invoice or customer-filtered ledgers.      |
-| `/admin/products`               | Product lifecycle, public visibility, cPanel mapping, price versions                  | Append-only price definitions                                           | Capable but dense; amounts are entered and described as raw minor units, increasing operator error risk.                          |
-| `/admin/orders`                 | Create order/invoice, approve states and explicit read-only order review              | Server pricing, validated historical snapshots, separate states         | Command 82 links all-item review to customer/invoice detail; the list still requests the first 100 and supplies no service state. |
-| `/admin/services`               | Create/provision/suspend/reactivate/terminate; panel configuration and operation log  | Fake provider, evidence-led transitions, exact termination confirmation | Core lifecycle exists, but service, customer, order, invoice, and panel evidence are fragmented on a very dense page.             |
-| `/admin/invoices`               | Draft creation, business identity, invoice list/detail                                | Immutable issued invoices and snapshots                                 | Fixed first-100 list; customer/order links and URL-bound filters are missing.                                                     |
-| `/admin/invoices/[invoiceId]`   | Invoice detail and PDF                                                                | Role guard and immutable financial model                                | Clear document, but customer/order/payment context is not navigable.                                                              |
-| `/admin/payments`               | Gateway attention, manual receipts, review, refund/reversal, read-only policy context | Append-only adjustments and reconciliation                              | Command 79 replaces the direct policy toggle with effective context and a protected link to the canonical settings review.        |
-| `/admin/support`                | Search/filter, assignment, priority/status and replies                                | Paginated ticket API and audit                                          | Filters exist, but the fetched page is fixed at 100 and the selected ticket has no direct customer/service navigation.            |
-| `/admin/automation`             | Queue/outbox/provider health, renewal policy, run/failure evidence                    | Retained job/outbox evidence and scheduler records                      | No “last healthy scheduler run” freshness statement; zero failures can look healthy even when no renewal run has ever occurred.   |
-| `/admin/email`                  | Safe delivery and attempt metadata                                                    | Redacted append-only delivery evidence                                  | Useful but fixed latest set with no recipient/status/time filter.                                                                 |
-| `/admin/settings`               | Billing, renewal, adapter, branding and encrypted credential configuration            | Role guard, encrypted write-only secrets                                | High-impact settings share one long page; save boundaries and consequences require careful operator reading.                      |
+| Route                           | Observed capability                                                                   | Supporting boundary                                                     | Product-experience finding                                                                                                                                           |
+| ------------------------------- | ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/admin`                        | Period metrics, revenue graph, CSV exports, recent audit events                       | Transaction-sourced reports and audited bounded exports                 | Summary cards are not links to work queues; login events dominate recent activity; there is no recent-payment/attention list.                                        |
+| `/admin/customers`              | Search, status filter, add customer, pagination                                       | Server-side query and pagination                                        | This is the strongest scalable directory pattern and should be reused elsewhere.                                                                                     |
+| `/admin/customers/[customerId]` | Operational identity, linked navigation, profile/billing/access and bounded history   | Role guard, bounded customer aggregate, and validated ledger filters    | Command 77 puts actionable context first, formats money/dates safely, and links direct invoice or customer-filtered ledgers.                                         |
+| `/admin/products`               | Product lifecycle, public visibility, cPanel mapping, price versions                  | Append-only price definitions                                           | Capable but dense; amounts are entered and described as raw minor units, increasing operator error risk.                                                             |
+| `/admin/orders`                 | Create order/invoice, approve states and explicit read-only order review              | Server pricing, validated historical snapshots, separate states         | Command 82 links all-item review to customer/invoice detail; the list still requests the first 100 and supplies no service state.                                    |
+| `/admin/services`               | Create/provision/suspend/reactivate/terminate; panel configuration and operation log  | Fake provider, evidence-led transitions, exact termination confirmation | Core lifecycle exists, but service, customer, order, invoice, and panel evidence are fragmented on a very dense page.                                                |
+| `/admin/invoices`               | Draft creation, business identity, searchable paginated ledger/detail                 | Protected query contract, immutable invoices and historical snapshots   | Command 85 adds URL-bound search/status/pages/customer scope without resetting financial forms; customer chooser and richer relationship navigation remain separate. |
+| `/admin/invoices/[invoiceId]`   | Invoice detail and PDF                                                                | Role guard and immutable financial model                                | Clear document, but customer/order/payment context is not navigable.                                                                                                 |
+| `/admin/payments`               | Gateway attention, manual receipts, review, refund/reversal, read-only policy context | Append-only adjustments and reconciliation                              | Command 79 replaces the direct policy toggle with effective context and a protected link to the canonical settings review.                                           |
+| `/admin/support`                | Search/filter, assignment, priority/status and replies                                | Paginated ticket API and audit                                          | Filters exist, but the fetched page is fixed at 100 and the selected ticket has no direct customer/service navigation.                                               |
+| `/admin/automation`             | Queue/outbox/provider health, renewal policy, run/failure evidence                    | Retained job/outbox evidence and scheduler records                      | No “last healthy scheduler run” freshness statement; zero failures can look healthy even when no renewal run has ever occurred.                                      |
+| `/admin/email`                  | Safe delivery and attempt metadata                                                    | Redacted append-only delivery evidence                                  | Useful but fixed latest set with no recipient/status/time filter.                                                                                                    |
+| `/admin/settings`               | Billing, renewal, adapter, branding and encrypted credential configuration            | Role guard, encrypted write-only secrets                                | High-impact settings share one long page; save boundaries and consequences require careful operator reading.                                                         |
 
 ### API, jobs, and test support
 
@@ -219,9 +219,10 @@ Priorities are:
 - Command 81 implements the customer invoice ledger only, using the existing
   ownership-bound search/status and deterministic pages. Other ledgers remain
   separately gated.
-- Command 85 is defined, not authorized: administrator invoice search/pagination
-  with preserved customer context and unchanged draft/identity forms. Customer
-  chooser scale and all other ledgers remain separate.
+- Command 85 implements administrator invoice search/pagination with preserved
+  customer context and unchanged draft/identity forms. Validation/delivery evidence
+  is recorded in `docs/PROGRESS.md`; customer chooser scale and all other ledgers
+  remain separate.
 - Email delivery, panel operations, renewal runs, and audit activity are latest-only
   views with no user-controlled time/status query.
 
@@ -449,6 +450,24 @@ remain P1 work for the next phase review.
   picker scale, attention, automation freshness and inactive chrome remain separate.
   No worker cleanup, dependency/policy repair, release or deployment is authorized
   by this review. A new implementation requires explicit Command 85 authorization.
+
+### Command 85 bounded implementation
+
+- Exposes the protected administrator invoice list through validated URL search,
+  status and pagination while retaining optional customer context. Invalid ledger
+  filters block reads; malformed customer context is never inferred or labelled
+  as an account filter. Matching counts are invoice records, not money aggregates.
+- Runtime-validated pages use independent abortable reads and honest recovery
+  states. Historical identities, lossless amounts and fixed invoice destinations
+  remain intact; browsing adds no financial actions or detail/PDF preloads.
+- Only the read-only ledger resets on URL changes. Unsaved creation/identity forms
+  stay mounted and retain original bodies/CSRF/retry keys. Successful draft creation
+  refreshes the latest selected query without injecting a mismatching draft or
+  reclassifying a subsequent read failure as a failed write.
+- Query/component/API/browser validation and delivery status are recorded in
+  `docs/PROGRESS.md`. Other ledgers, first-100 customer chooser, service/attention/
+  freshness work and production gates remain separate. A phase review must be
+  authorized before defining later work.
 
 ### Remaining production gates
 
