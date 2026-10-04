@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState, type FormEvent } from 'react';
 import { authMutation } from '../../lib/auth-api';
-import { Field, FormNotice, SubmitButton } from './form-controls';
+import { AuthForm, Field, FormNotice, SubmitButton } from './form-controls';
 
 export function ForgotPasswordForm() {
   const [busy, setBusy] = useState(false);
@@ -31,7 +31,7 @@ export function ForgotPasswordForm() {
   }
 
   return (
-    <form onSubmit={submit} className="grid gap-5">
+    <AuthForm onSubmit={submit}>
       <FormNotice error={error} message={message} />
       <Field
         label="Email address"
@@ -47,6 +47,6 @@ export function ForgotPasswordForm() {
       >
         Return to sign in
       </Link>
-    </form>
+    </AuthForm>
   );
 }

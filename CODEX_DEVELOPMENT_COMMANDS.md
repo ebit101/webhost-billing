@@ -2144,8 +2144,9 @@ approval. Production remains NO-GO. This command closes a bounded UI credential
 submission risk, not all security or operational readiness gates.
 ```
 
-**Authorization:** Defined by the Command 82 phase review on 2026-10-04; not yet
-authorized or implemented. Requires separate explicit user authorization.
+**Authorization:** Defined by the Command 82 phase review and explicitly authorized
+by the user's "command 83" on 2026-10-04. Implementation and validation are recorded
+in `docs/PROGRESS.md`. Further work requires a separately authorized phase review.
 
 ---
 

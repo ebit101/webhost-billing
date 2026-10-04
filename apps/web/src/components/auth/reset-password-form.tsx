@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState, type FormEvent } from 'react';
 import { authMutation } from '../../lib/auth-api';
-import { Field, FormNotice, SubmitButton } from './form-controls';
+import { AuthForm, Field, FormNotice, SubmitButton } from './form-controls';
 
 export function ResetPasswordForm({ token }: { token?: string }) {
   const [busy, setBusy] = useState(false);
@@ -49,7 +49,7 @@ export function ResetPasswordForm({ token }: { token?: string }) {
   }
 
   return (
-    <form onSubmit={submit} className="grid gap-5">
+    <AuthForm onSubmit={submit}>
       <FormNotice error={error} message={message} />
       <Field
         label="New password (at least 12 characters)"
@@ -69,6 +69,6 @@ export function ResetPasswordForm({ token }: { token?: string }) {
           Sign in with the new password
         </Link>
       ) : null}
-    </form>
+    </AuthForm>
   );
 }

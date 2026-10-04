@@ -7,7 +7,7 @@ import {
   checkoutEntryHref,
   type CheckoutIntent,
 } from '../../lib/checkout-intent';
-import { Field, FormNotice, SubmitButton } from './form-controls';
+import { AuthForm, Field, FormNotice, SubmitButton } from './form-controls';
 
 export function RegisterForm({
   checkoutIntent,
@@ -47,7 +47,7 @@ export function RegisterForm({
   }
 
   return (
-    <form onSubmit={submit} className="grid gap-5">
+    <AuthForm onSubmit={submit}>
       <FormNotice error={error} message={message} />
       {message && checkoutIntent ? (
         <p className="text-sm text-slate-600">
@@ -129,6 +129,6 @@ export function RegisterForm({
           Sign in
         </Link>
       </p>
-    </form>
+    </AuthForm>
   );
 }

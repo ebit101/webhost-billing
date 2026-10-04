@@ -615,6 +615,42 @@ This document records durable technical and product decisions. New decisions sho
   boundary does not remove legitimately tokenized reset/verification links, nor
   claim to close all security gates. Production remains `NO-GO`.
 
+## ADR-059 — Auth-Only Hydration Guard With Disabled Successful Controls
+
+- **Status:** Accepted and implemented by authorized Command 83
+- **Date:** 2026-10-04
+- **Decision:** Use one `AuthForm` in the existing auth controls module. A stable
+  `useSyncExternalStore` server snapshot is false both on the server and in the
+  first hydration render; its client snapshot enables the fieldset after commit.
+  All named controls, not only the button, remain disabled before readiness. The
+  form always declares POST as defense in depth, cancels handled submissions and
+  invokes the unchanged caller only when ready. No native POST route is added.
+- **Reason:** Disabled fieldset descendants are not successful submission controls,
+  including autofilled values and implicit Enter. Consistent initial markup avoids
+  hydration mismatch; no credential storage, effect lint exemption, timing
+  wait or global form framework is required. Accessible status and noscript copy
+  explain preparation and the JavaScript requirement. Consulted the installed
+  Next.js server/client boundary guide, [React server snapshots](https://react.dev/reference/react/useSyncExternalStore#adding-support-for-server-rendering),
+  [disabled fieldsets](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/fieldset#disabled)
+  and [Playwright hydration](https://playwright.dev/docs/navigations#hydration).
+- **Streaming feedback:** A real no-JavaScript browser initially exposed only the
+  shared loading shell, because streamed form segments require an inline script to
+  reveal them. Add the same noscript explanation to that existing fallback; no
+  route, rendering configuration or server-auth behavior changes. Tests inspect
+  disabled controls even in hidden streamed HTML through public DOM APIs, rather
+  than changing user agents or waiting for unavailable scripts.
+- **Consequence:** Only the four requested entry components use the wrapper; the
+  MFA settings panel retains its effect-loaded workflow and original shared controls.
+  Password and challenge branches have distinct React keys: strengthened body
+  assertions exposed uncontrolled email input reuse as the code field. Remounting
+  clears that value without changing MFA policy or API bodies. Browser tests mock
+  only isolated-page auth POSTs, compare auth/business record counts and record
+  booleans rather than observed credentials; their traces/video/screenshots are off.
+  The complete existing real-API fictional lifecycle remains unchanged. This does
+  not provide no-JavaScript authentication, change allowed token/intent links,
+  close unrelated security/operations gates or authorize further work. Production
+  remains `NO-GO`.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

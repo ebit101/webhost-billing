@@ -13,7 +13,7 @@ import {
   customerLandingHref,
   type CheckoutIntent,
 } from '../../lib/checkout-intent';
-import { Field, FormNotice, SubmitButton } from './form-controls';
+import { AuthForm, Field, FormNotice, SubmitButton } from './form-controls';
 
 export function LoginForm({
   audience = 'customer',
@@ -88,7 +88,7 @@ export function LoginForm({
 
   if (challenge) {
     return (
-      <form onSubmit={submitTwoFactor} className="grid gap-5">
+      <AuthForm key="two-factor" onSubmit={submitTwoFactor}>
         <FormNotice error={error} />
         <p className="text-sm leading-6 text-slate-600">
           Enter the code from your authenticator app, or one unused recovery
@@ -112,12 +112,12 @@ export function LoginForm({
         >
           Use a different account
         </button>
-      </form>
+      </AuthForm>
     );
   }
 
   return (
-    <form onSubmit={submit} className="grid gap-5">
+    <AuthForm key="password" onSubmit={submit}>
       <FormNotice error={error} />
       {checkoutIntent ? (
         <p className="text-sm text-slate-600">
@@ -163,6 +163,6 @@ export function LoginForm({
           </Link>
         )}
       </div>
-    </form>
+    </AuthForm>
   );
 }

@@ -87,6 +87,27 @@ describe('administrator login security', () => {
     );
     expect(String(loginCall?.[0])).not.toContain('password=');
     expect((loginCall?.[1] as RequestInit).method).toBe('POST');
+    expect(
+      loginCall?.[1]?.body ===
+        JSON.stringify({
+          email: 'admin@example.test',
+          password: 'a-private-password',
+        }),
+    ).toBe(true);
+    const mfaCall = fetchMock.mock.calls.find(([url]) =>
+      String(url).endsWith('/auth/login/two-factor'),
+    );
+    expect(mfaCall?.[1]?.method).toBe('POST');
+    expect(mfaCall?.[1]?.headers).toMatchObject({
+      'X-CSRF-Token': 'x'.repeat(96),
+    });
+    expect(
+      mfaCall?.[1]?.body ===
+        JSON.stringify({
+          challengeToken: 'challenge-token-that-is-long-enough-for-validation',
+          code: '123456',
+        }),
+    ).toBe(true);
   });
 });
 

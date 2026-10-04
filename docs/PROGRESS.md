@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Phase Review — Review Command 82 and define the next bounded command
-- **Current status:** Review completed; Command 83 defined but not authorized
+- **Current command:** Command 83 — Prevent Native Credential Submission From Authentication Forms
+- **Current status:** Local validation passed; commit/push and hosted verification in progress
 - **Last updated:** 2026-10-04
-- **Next command:** Command 83 — Prevent Native Credential Submission From Authentication Forms
+- **Next command:** Phase Review — Review Command 83 and define the next bounded command
 - **Next command authorized:** No
 
 ## Command Reports
@@ -6647,6 +6647,173 @@ Do not define or implement another command automatically.
 
 Authorize **Command 83 — Prevent Native Credential Submission From Authentication
 Forms** separately. Do not begin it automatically.
+
+### Command 83 — Prevent Native Credential Submission From Authentication Forms
+
+- **Status:** Local validation passed; commit/push and hosted verification in progress
+- **Date:** 2026-10-04
+- **Authorization:** Explicit user's "command 83"; no further implementation authorized.
+
+#### Scope completed
+
+- Added one auth-only readiness boundary for customer/admin password login, its MFA
+  challenge, registration, reset request and reset confirmation. SSR and initial
+  hydration disable the entire fieldset, excluding named/autofilled fields from
+  native payloads; after commit, original handlers remain CSRF protected. POST is
+  explicit defense in depth, not a page-route fallback. Accessible preparation and
+  JavaScript-required feedback preserve labels, autocomplete and keyboard behavior.
+  The existing loading shell also explains JavaScript requirements when no-script
+  streaming keeps the form segment hidden; no route/rendering configuration changes.
+- Retained original API paths/bodies, strict optional-field omission, token handling,
+  verification, role-derived landing, exact allowlisted plan intent, busy/error/retry
+  behavior and unchanged shared controls/MFA settings workflows.
+- Distinct password/challenge keys clear reused uncontrolled input. Strengthened
+  MFA body assertions exposed an email value being reused as the code; no MFA
+  policy, recovery, authentication or financial behavior was redesigned.
+- Added SSR/first-hydration, reset busy/retry, shared MFA settings and stronger MFA
+  body regressions. Added ten isolated browser checks (five entries in each of
+  no-JavaScript and controlled script withholding/release), successful-control and
+  click/Enter checks, URL/request observation, CSRF POST bodies after release and
+  unchanged auth/business record counts. New checks use only fictional values,
+  page-local mock auth and disabled trace/video/screenshots, not real auth attempts.
+- Existing full fictional lifecycle, limits, assertions, deadlines, provider fakes,
+  backend, workers and policies remain unchanged. No production probe/deployment,
+  cleanup, dependency update or new release performed.
+
+#### Files changed
+
+- `apps/web/src/components/auth/form-controls.tsx` — auth-only readiness boundary;
+  Field, SubmitButton and FormNotice behavior unchanged.
+- `apps/web/src/components/auth/{login,register,forgot-password,reset-password}-form.tsx`
+  — boundary adoption; separate login branch identities.
+- `apps/web/src/components/auth/form-controls.test.tsx`,
+  `password-reset-forms.test.tsx`, `admin-two-factor-panel.test.tsx` and
+  `login-form.test.tsx` — readiness, request and shared-consumer regressions.
+- `apps/web/e2e/specs/auth-readiness.spec.ts` — deterministic fictional browser guard.
+- `apps/web/src/app/loading.tsx` — noscript feedback before streamed auth appears.
+- `CODEX_DEVELOPMENT_COMMANDS.md`, `docs/DECISIONS.md`,
+  `docs/PRODUCT_EXPERIENCE_ROADMAP.md`, `CHANGELOG.md`, `docs/PROGRESS.md` —
+  authorization, ADR-059, scope and evidence tracking.
+
+#### Validation
+
+- Started from clean `main` at `bbe2060827fc95a8d2f5045c61e5aaa5013b3a3b`.
+  Read project rules, product plan, relevant decisions/progress, installed Next.js
+  rendering/hydration guides and official React/HTML/Playwright documentation.
+- Final focused auth/shared-controls/order component tests: seven files, all 51 passed.
+  Authentication API E2E: all eight passed, including registration/verification,
+  session, reset, MFA/recovery, CSRF and role enforcement; VM warning non-failing.
+- Initial new-test lint failed on JSX array keys; fixed keys without exemptions.
+  Initial strengthened tests found the input reuse and a missing new test response
+  helper; fixed the branch identity and helper. The early type check identified
+  that same missing helper. Subsequent focused rerun passed all 50 tests.
+- First browser run exposed missing visible no-script feedback behind Next's loading
+  shell and a test alert selector colliding with Next's route announcer. Added the
+  shell's noscript explanation, scoped the assertion to the form and exercised
+  native disabled click through the public DOM API (also covering hidden streamed
+  controls). No timeout, delay, lifecycle assertion or app rendering policy changed.
+- First browser run: seven new checks failed as described above; three new checks
+  and the unchanged lifecycle passed. After corrections, `pnpm test:e2e` passed
+  all ten new readiness checks plus the complete existing lifecycle (11 total,
+  2.2 minutes). No auth limit, deadline, test isolation or assertion was weakened.
+- Hosted CI/CodeQL are pending delivery; no unexecuted check is claimed passed.
+- Final docs:check (all four), repository format:check and lint passed. The full
+  strict type check caught an optional-property inference in the new browser
+  expected-body fixture; narrowed it to an explicit string record without changing
+  requests/assertions. The subsequent full strict type check passed across all
+  workspaces, including the browser test project.
+- Full strict types then passed across all workspaces. The first full `pnpm test`
+  passed 57 tooling, 29 shared, three queue, 185 web and 98 API tests, but the
+  unchanged worker renewal lifecycle exceeded its five-second deadline and its
+  asynchronous cleanup hit `payments_invoice_id_fkey` (28/29 worker tests passed).
+  This repeats the pre-existing recorded failure despite no competing heavy check.
+  No worker, assertion, timeout or cleanup change was made; serial worker verification
+  and full-suite reruns followed below. Build did not run in the failed test pipeline;
+  it was executed separately and passed.
+- Serial worker verification against the same default development database also
+  failed (28/29): the renewal cycle reported temporary unavailability rather than
+  the earlier test timeout. Read-only inspection confirms the lifecycle scans all
+  eligible services/open renewals, not just its new random fixture. Retained records
+  are a possible interference source, not an established sole cause. Reuse the
+  existing guarded loopback `command26_e2e` preparation for fresh fictional-schema
+  verification; leave the default development schema and failed fixtures untouched.
+- Fresh-schema serial worker execution also failed: 26/29 passed, with the same
+  five-second renewal timeout and two outbox dispatch-count assertions (expected
+  one, got zero). Isolation did not establish a fix or a sole cause. The existing
+  test preparation recreated only the dedicated fictional schema; it did not clean
+  the default development database. Worker source, deadlines and assertions remain
+  unchanged. These failures blocked initial delivery; further sequencing/isolation
+  checks and build/browser verification remained within Command 83's permitted scope.
+- Read-only adapter/dispatcher inspection explains the isolated outbox limitation:
+  Prisma's model queries use the supplied schema, but worker raw SQL references
+  unqualified tables. A schema parameter alone therefore does not isolate every
+  query. A further fresh fictional-schema check uses a connection-level PostgreSQL
+  `search_path` restricted to `command26_e2e`; this is a child-process test invocation,
+  not a worker/database source change or development-record cleanup. Do not treat
+  the earlier schema-only run as a validated independent worker test environment.
+- With that connection option, a read-only `current_schema()` check confirmed raw
+  SQL targets the fixed loopback test schema. All 29 unchanged worker tests passed
+  across ten suites with `--runInBand`, retaining their deadlines and assertions.
+  The complete root `pnpm test` is now rerunning under the same private child-process
+  database override (no URL/credentials printed and no persisted environment change).
+- `pnpm build`: passed for all packages, Next.js production output and API/worker
+  builds. No release, deployment or live provider operation was performed.
+- The root rerun under verified schema isolation again passed 400/401 tests, but
+  parallel Jest worker execution reproduced the unchanged five-second lifecycle
+  timeout (28/29 worker tests). Successful serial execution does not establish a
+  parallel-run repair. Follow Command 83's execution-sequencing requirement: verify
+  the full identical package/tooling suite with explicit single-worker/serial test
+  invocation on freshly prepared, properly isolated fictional state. No suite,
+  business-concurrency assertion, deadline or worker source is altered or skipped.
+- Final complete serial package validation: all **401** passed — 57 demo/docs
+  tooling, 29 shared contracts, three queue, 185 web, 98 API and 29 worker tests.
+  Executed the same nine tooling scripts and all five package suites sequentially,
+  with Vitest `--maxWorkers=1` and Jest `--runInBand`, against the guarded fictional
+  schema with verified connection-level search path. Worker pretest/package build
+  steps also ran. This is a successful full-suite serial execution, not a claim
+  that the default local parallel `pnpm test` passed or was repaired.
+- Final source-version browser rerun: all **11** passed (3.1 minutes), including
+  ten readiness checks and the unchanged complete hosting lifecycle. Used the
+  existing guarded preparation/schema, fictional fixtures, original ports, limits,
+  assertions and deadlines. The private local connection option also restricted
+  raw SQL to the intended test schema; no checked-in test environment changed.
+- All required local validation has positive evidence with the recorded execution
+  constraints. Final documentation checks/diff review run before committing; hosted
+  source-commit CI and CodeQL are verified after pushing and before handoff. No
+  unexecuted hosted result is claimed here.
+
+#### Decisions made
+
+- Implement ADR-058 through ADR-059; do not transmit and then scrub credentials.
+- Disable all named controls through hydration, not just submit buttons. Native POST
+  is backup only; no generic form framework or no-JavaScript sign-in endpoint.
+- Observe only known submitted-field query keys; allowed reset token and validated
+  product/price URLs are preserved. Held scripts release through observable readiness,
+  without sleeps, network-idle, private React state or test deadline changes.
+- Mock new browser auth POSTs per page to avoid real auth writes/rate-limit pressure;
+  unchanged complete lifecycle independently proves real-API end-to-end behavior.
+
+#### Open questions and risks
+
+- This closes one browser submission boundary, not all security/operational gates.
+  No real credential exposure or production incidence is established by prior
+  fictional failure evidence. Direct DOM tampering or compromised scripts are not
+  repaired by UI readiness; backend authorization remains mandatory.
+- Prior worker timeout/cleanup risk, possible retained fictional fixture, development
+  dependency advisory and direct-main rule bypass remain separate. No broad cleanup,
+  worker/time-limit, dependency or delivery-policy change is authorized here.
+- Local default/parallel worker verification remains environment-sensitive as
+  recorded above; the complete unchanged suite passed serially with properly
+  isolated model and raw-SQL state. Schema URL parameters alone do not isolate
+  unqualified worker SQL. No default development records were cleaned up and no
+  new worker isolation/runtime source behavior is claimed by this auth command.
+- Other P1 workflows and operator/provider/SMTP/monitoring/off-site recovery/policy
+  and infrastructure evidence remain open. Production remains **NO-GO**.
+
+#### Recommended next command
+
+Authorize **Phase Review — Review Command 83 and define the next bounded command**.
+Do not define Command 84 or begin another command automatically.
 
 ## Report Template
 

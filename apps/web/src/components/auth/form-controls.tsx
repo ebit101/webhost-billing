@@ -1,4 +1,57 @@
-import type { InputHTMLAttributes, ReactNode } from 'react';
+import {
+  useSyncExternalStore,
+  type FormEventHandler,
+  type InputHTMLAttributes,
+  type ReactNode,
+} from 'react';
+
+const subscribeToReadiness = () => () => {};
+const clientReady = () => true;
+const serverNotReady = () => false;
+
+// The server snapshot also runs during initial hydration. Controls become
+// successful only after React has committed the form's submission handler.
+export function AuthForm({
+  children,
+  onSubmit,
+}: {
+  children: ReactNode;
+  onSubmit: FormEventHandler<HTMLFormElement>;
+}) {
+  const ready = useSyncExternalStore(
+    subscribeToReadiness,
+    clientReady,
+    serverNotReady,
+  );
+
+  return (
+    <form
+      method="post"
+      className="grid gap-5"
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (ready) onSubmit(event);
+      }}
+    >
+      {!ready ? (
+        <p role="status" className="text-sm text-slate-600">
+          Preparing secure form. JavaScript is required to continue.
+        </p>
+      ) : null}
+      <noscript>
+        <p className="text-sm text-slate-600">
+          Enable JavaScript and reload this page to use this secure form.
+        </p>
+      </noscript>
+      <fieldset
+        disabled={!ready}
+        className="m-0 grid min-w-0 gap-5 border-0 p-0"
+      >
+        {children}
+      </fieldset>
+    </form>
+  );
+}
 
 export function Field({
   label,

@@ -375,19 +375,22 @@ remain P1 work for the next phase review.
   focused web/shared and order/invoice API checks passed; delivered-head hosted CI
   and CodeQL also passed. No corrective order implementation was identified.
 - Command 82 also recorded an earlier native registration GET with fictional form
-  fields on a cold development route. Source confirms auth forms omit a native
-  method and render named fields/submit controls before client handlers are ready.
+  fields on a cold development route. At that review, auth forms omitted a native
+  method and rendered named fields/submit controls before client handlers were ready.
   [HTML's default GET behavior](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/form#method)
   puts submitted fields in URLs. Hydration is the inferred trigger, not a confirmed
   sole cause; a successful rerun is not a security fix.
-- **Next defined: Command 83 — Prevent Native Credential Submission From
-  Authentication Forms.** Prioritize this bounded safety repair before additional
-  P1 business workflows. Block submission when JavaScript is unavailable or handlers
-  are not ready, prove it deterministically, then preserve the existing protected
-  POSTs, MFA/reset/verification and checkout-intent behavior. The review does not
-  authorize or implement it; backend policy, deployments and other workflows remain
-  excluded. [Playwright's guidance](https://playwright.dev/docs/navigations#hydration)
-  supports disabling interactive controls until handlers are functional.
+- **Command 83 implemented and locally validated; hosted delivery pending:** an
+  auth-only disabled fieldset keeps all named controls out of native submissions
+  through server rendering and initial hydration. An explicit native POST is backup,
+  not a fallback sign-in route. Preparation/no-JavaScript feedback explains the
+  boundary; the existing protected POSTs, MFA/reset/verification and checkout intent
+  remain unchanged. Separate password/challenge form identities clear reused input.
+  Fictional no-JavaScript and controlled withheld/released-script checks cover all
+  five entries. [Playwright's guidance](https://playwright.dev/docs/navigations#hydration)
+  supports disabling controls until handlers are functional. See `docs/PROGRESS.md`
+  for executed evidence. Backend policy, deployments and other workflows remain
+  excluded; a separate phase review is required before defining further work.
 
 ### Remaining production gates
 

@@ -10,6 +10,11 @@ and will be called out in release notes.
 
 ### Changed
 
+- Guarded authentication forms with disabled named controls until hydration, an
+  explicit POST native method and accessible JavaScript-required feedback. Existing
+  CSRF requests, password reset, checkout intent and MFA remain intact; separate
+  password/challenge form identities prevent stale email values entering MFA input.
+  Fictional no-JavaScript and withheld-script browser checks cover the boundary.
 - Reviewed Command 82's read-only administrator context and passing regressions,
   and defined a separately gated auth-form readiness safeguard for the recorded
   native registration GET risk. No Command 83 behavior is implemented by this review.
