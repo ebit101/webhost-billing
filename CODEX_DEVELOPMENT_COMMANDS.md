@@ -2232,8 +2232,9 @@ schema/dependency/worker changes, cleanup, release, deployment and production ap
 Production remains NO-GO.
 ```
 
-**Authorization:** Defined by the Command 83 phase review on 2026-10-04; not yet
-authorized or implemented. Request explicit authorization for Command 84.
+**Authorization:** Defined by the Command 83 phase review and explicitly authorized
+by the user's "command 84" on 2026-10-04. Implementation and executed validation are
+recorded in `docs/PROGRESS.md`; further work requires a separately authorized phase review.
 
 ---
 

@@ -10,6 +10,10 @@ and will be called out in release notes.
 
 ### Changed
 
+- Added explicit read-only administrator manual-payment review with validated
+  customer/invoice links, plain-text submitted proof, lossless adjustment capacity
+  and business-zone dates. Stale selection/filter/mutation responses cannot revive
+  old context; existing financial actions and their rules remain unchanged.
 - Guarded authentication forms with disabled named controls until hydration, an
   explicit POST native method and accessible JavaScript-required feedback. Existing
   CSRF requests, password reset, checkout intent and MFA remain intact; separate

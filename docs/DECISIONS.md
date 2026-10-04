@@ -676,6 +676,31 @@ This document records durable technical and product decisions. New decisions sho
   83's local parallel-worker limitation/raw-SQL isolation risk remains unresolved;
   successful hosted checks do not establish its local repair. Production stays `NO-GO`.
 
+## ADR-061 — Selected Manual Payment Facts Without Financial Mutation
+
+- **Status:** Accepted and implemented by authorized Command 84
+- **Date:** 2026-10-04
+- **Decision:** Add one selection-keyed review to the existing administrator manual-
+  payment workspace, with a runtime-validated payment envelope and the existing
+  settings endpoint narrowed to business time zone. Validate requested and returned
+  UUID/context, use abortable cookie/no-store GETs, and expose only fixed customer
+  and invoice destinations after validation. A filter-keyed workspace clears stale
+  customer selection; a successful existing mutation immediately clears the review.
+- **Reason:** The existing manual detail is already ownership-protected and supplies
+  safe proof, independent transaction state and server-derived adjustment capacity.
+  There is no need for a new route, financial read model, global review framework or
+  new approval gate. Immediate invalidation also prevents successful financial
+  mutation followed by failed invoice refresh from leaving old review context visible.
+- **Consequence:** Review focuses its heading and restores the originating trigger
+  on explicit close. Nullable facts remain explicit; proof is escaped plain text,
+  capacity is not invoice balance, names are historical invoice snapshots and payment
+  does not establish provisioning. Adjustment rows explain the returned original ID
+  without fetching a history chain. Existing mutation bodies, keys, policy, gateway
+  attention and financial/service rules remain unchanged. Browser evidence uses one
+  pending fictional reference in the guarded test schema, not a new settlement.
+  Worker/schema/dependency/cleanup/deployment and production gates remain outside
+  this command. Production remains `NO-GO`.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

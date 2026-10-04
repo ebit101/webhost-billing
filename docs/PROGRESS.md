@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Phase Review — Review Command 83 and define the next bounded command
-- **Current status:** Review completed; Command 84 defined but not authorized
+- **Current command:** Command 84 — Connect Administrator Manual Payment Review to Customer and Invoice Context
+- **Current status:** Local validation passed; GitHub delivery and hosted checks pending
 - **Last updated:** 2026-10-04
-- **Next command:** Command 84 — Connect Administrator Manual Payment Review to Customer and Invoice Context
+- **Next command:** Phase Review — Review Command 84 and define the next bounded command
 - **Next command authorized:** No
 
 ## Command Reports
@@ -6928,6 +6928,147 @@ Do not define Command 84 or begin another command automatically.
 
 Authorize **Command 84 — Connect Administrator Manual Payment Review to Customer
 and Invoice Context**. Do not begin it or define Command 85 automatically.
+
+### Command 84 — Connect Administrator Manual Payment Review to Customer and Invoice Context
+
+- **Status:** Local validation passed; GitHub delivery and hosted checks pending
+- **Date:** 2026-10-04
+- **Authorization:** Explicit user's "command 84"; no later command authorized.
+
+#### Scope implemented
+
+- Added one explicit read-only manual-payment review in the existing administrator
+  workspace. No new route, endpoint, backend model or general review framework.
+  The requested UUID and optional customer context are checked before dispatch;
+  detail/settings envelopes are parsed at runtime and returned context must match.
+  Only selected detail and business-zone GETs use cookies/no-store/abort signals.
+- Showed separate transaction kind/state, method, role, submitted payer/note/failure
+  text, original amount, adjusted amount, remaining refundable capacity and all five
+  recorded dates, with explicit absent facts. Money uses the existing BigInt-safe
+  formatter; dates use validated business time zone. Proof is escaped plain text.
+- Added fixed customer/invoice links from returned IDs, historical-name wording,
+  capacity-versus-balance and payment-versus-provisioning explanations. Adjustments
+  explain their separate original-payment relationship without new routes/history reads.
+- Selection/retry is keyed; close/unmount/changed customer/changed selection aborts
+  and discards delayed reads. The customer-filter workspace remount clears stale
+  context. Successful financial mutations clear the review before subsequent refresh,
+  including refresh failure. Explicit close restores trigger focus (ledger fallback).
+- Preserved existing mutation endpoints/bodies, CSRF, submission-key retry, partial-
+  payment policy link, rejection reason, adjustment and ledger/invoice refresh logic.
+  No mutation controls moved into the review; first-100 behavior remains unchanged.
+- Added component/read API/browser regression evidence. The new browser test creates
+  one pending fictional reference only in the existing guarded loopback schema, logs
+  in with the fictional administrator and checks links, keyboard/mobile, safe proof
+  and unchanged financial/business records. Traces/video/screenshots are disabled
+  for that spec. Existing hosting lifecycle and auth-readiness specs/config are unchanged.
+
+#### Files changed
+
+- `apps/web/src/components/payments/admin-payment-review.tsx` — selected read boundary.
+- `apps/web/src/components/payments/admin-payment-manager.tsx` — selection, invalidation,
+  filter identity and close focus; original financial actions retained.
+- `apps/web/src/components/payments/admin-payment-review.test.tsx` — component and
+  original mutation-body/idempotency regressions.
+- `apps/web/e2e/specs/manual-payment-review.spec.ts` — real-API fictional navigation.
+- `apps/api/test/payments.e2e-spec.ts` — owned/admin detail, malformed/not-found and
+  anonymous/role read regressions with unchanged financial state; foreign-owner test retained.
+- `CODEX_DEVELOPMENT_COMMANDS.md`, `CHANGELOG.md`, `docs/DECISIONS.md`,
+  `docs/PRODUCT_EXPERIENCE_ROADMAP.md`, `docs/PROGRESS.md` — authority, ADR-061 and evidence.
+
+#### Validation
+
+- Started clean at `8fae3a87c73e656975f8bb22af5d36e43c383b46`. Read project rules,
+  product plan, current command/decisions/progress, installed Next.js server/client
+  and data-fetching guidance and the existing payment/order boundaries.
+- First focused payment run: 29 passed, four failed because new unscoped payer-name
+  selectors matched the recording label and review fact. Scoped to `dt`; no assertion
+  weakening, deadline change or financial behavior correction was needed.
+- Subsequent payment/auth/order/customer-filter component run: all **88 passed**.
+  Three further malformed-JSON/settings/retry regressions were added after that run;
+  the final focused ten-file rerun passed all **91 tests**, including all 33 new
+  review tests. Required browser/full-suite/build checks remain pending.
+- Docker development PostgreSQL and Redis were inspected healthy, with loopback-only
+  ports. No Docker lifecycle, cleanup or disk operation performed.
+- Lint passed. First strict type check rejected four new Testing Library role-selector
+  options copied from Playwright (`exact`). Removed the unsupported options, retaining
+  Testing Library's default exact accessible-name matching; final strict type check passed.
+- Existing guarded browser preparation successfully recreated only `command26_e2e`
+  on loopback and applied all 21 migrations and fictional fixtures. Private child
+  invocations verified both Prisma's schema target and raw SQL `current_schema()`;
+  connection details were not printed and no environment/config files changed.
+- First relevant API E2E run: 11 passed, one failed when the new additional admin
+  login hit the unchanged existing rate limit. Moved the admin detail assertion into
+  the existing authenticated admin test, preserving auth attempts, limits, deadlines
+  and all financial/concurrency assertions. Rerun: **12 passed** across payment and
+  invoice suites, including owned/admin detail, rejected reads and unchanged records.
+- Remaining required checks are in progress; no unexecuted result is claimed.
+  Heavy checks are sequenced under verified fictional-schema/raw-SQL isolation as
+  documented under Command 83. Existing VM-module and pg concurrent-query warnings
+  were non-failing; no dependency or infrastructure repair is claimed.
+- Complete package coverage passed sequentially under verified isolation: **434
+  tests** (57 tooling, 29 shared contracts, three queue, 218 web, 98 API unit and
+  29 worker). Ran the same package/tooling suites using Vitest `--maxWorkers=1`
+  and Jest `--runInBand`, preserving business concurrency assertions and deadlines.
+  This is not a claim that the unresolved default local parallel run is repaired.
+- `pnpm docs:check` passed all four offline validators; repository-wide
+  `pnpm format:check` and `git diff --check` passed. Full browser and production
+  build checks are next; hosted delivery is not yet claimed.
+- First full browser run: **11 passed, one failed**. All ten existing auth-readiness
+  checks and the complete hosting lifecycle passed. The new test navigated before
+  asynchronous login completed: its URL-only assertion already matched the shared
+  sign-in/dashboard `/admin` address. Require the authenticated Business overview
+  heading and the sign-in button's absence before browsing/snapshot; a busy button
+  changing its accessible name alone cannot satisfy authenticated readiness.
+  No fixed sleep, deadline, auth setting or existing browser assertion changed;
+  the full browser rerun remains pending.
+- Second browser run reached validated review but its new assertion counted the
+  development Strict Mode effect replay as a second read (11 existing tests still
+  passed). Track request completion/cancellation separately: exactly one selected
+  read must complete, at most one replay may occur and every replay must explicitly
+  fail with Chromium's aborted-request outcome. Zero preloads and browsing mutations
+  remain mandatory. No application effect, existing tests or framework config changed;
+  another full rerun is required to establish this evidence.
+- Final full Chromium browser rerun: **12 passed** (the complete original hosting
+  lifecycle, all ten auth-readiness tests and the new manual-payment review). The
+  review proves no preload, one completed selected read plus only aborted development
+  replay, escaped proof, validated fixed destinations, return navigation, 375px layout,
+  keyboard close/reopen/focus and unchanged financial/business snapshots with no
+  browsing writes. No screenshots/video/traces were recorded by the new spec.
+  Existing color/pg warnings and lifecycle failure-path API logs were non-failing;
+  no auth, provider, existing test, deadline or framework config correction is claimed.
+- Production build passed for all workspace artifacts. The final lint rerun found
+  one unnecessary non-null assertion in the rearranged API read test; removed it
+  without changing emitted JavaScript or assertions. Final lint/types and the
+  affected API rerun are required before delivery.
+- Final lint and strict workspace/browser type checks passed after the test-only
+  correction. The production build and all component/browser behavior evidence
+  remain unchanged; the final relevant API rerun is in progress.
+- Final relevant payment/invoice API rerun passed all **12 tests**. Required local
+  validation is now positive: 91 focused web checks, 29 shared contracts (also in
+  the 434 complete serial package tests), 12 relevant API E2E and 12 browser tests,
+  full production build, lint, strict types and offline docs/format/diff checks.
+  Initial failed runs and test-only corrections are retained above, not concealed.
+- Fetch confirmed canonical `origin/main` has no intervening commits. Delivery will
+  use a focused commit, fast-forward-only reconciliation and non-force push. Hosted
+  CI and CodeQL must be verified for that exact source commit before handoff; their
+  results are not yet claimed. No generated artifacts or environment files are included.
+
+#### Decisions and unresolved risks
+
+- Implement ADR-060 through ADR-061. The review is supplementary read-only context,
+  not a required financial approval gate or provider-proof claim.
+- Validate timezone separately from the full high-impact settings document; do not
+  silently fall back to browser time or preload related records.
+- Prior local parallel-worker timeout/retained fictional fixture and unqualified SQL
+  isolation risk remain unresolved. No worker, schema, dependency, default development
+  data, provider, release or deployment changes are authorized. Production is **NO-GO**.
+- Existing dependency advisory and direct-main rule bypass remain tracked risks;
+  this UI command makes no general security assurance or branch-policy repair.
+
+#### Exact recommended next command
+
+Authorize **Phase Review — Review Command 84 and define the next bounded command**
+after this command's validation and delivery. Do not define or implement Command 85 automatically.
 
 ## Report Template
 

@@ -180,6 +180,35 @@ describe('Manual payments (e2e)', () => {
       ]),
     );
 
+    const readSnapshot = async () => ({
+      invoice: await prisma.invoice.findUniqueOrThrow({
+        where: { id: invoiceId },
+      }),
+      payment: await prisma.payment.findUniqueOrThrow({
+        where: { id: firstResult.payment.id },
+      }),
+      outbox: await prisma.outboxEvent.count(),
+      financialAudit: await prisma.activityLog.count({
+        where: {
+          entityType: { in: ['INVOICE', 'PAYMENT', 'ORDER', 'SERVICE'] },
+        },
+      }),
+    });
+    const beforeRead = await readSnapshot();
+    const detail = await customer
+      .get(`/payments/${firstResult.payment.id}`)
+      .expect(200);
+    expect(
+      apiSuccessResponseSchema(manualPaymentSchema).parse(detail.body).data,
+    ).toEqual(firstResult.payment);
+    await customer.get('/payments').expect(403);
+    await request(app.getHttpServer())
+      .get(`/payments/${firstResult.payment.id}`)
+      .expect(401);
+    await customer.get('/payments/not-a-uuid').expect(400);
+    await customer.get(`/payments/${randomUUID()}`).expect(404);
+    expect(await readSnapshot()).toEqual(beforeRead);
+
     const other = request.agent(app.getHttpServer());
     const otherCsrf = await csrfToken(other);
     await login(other, otherCsrf, OTHER_EMAIL);
@@ -475,6 +504,27 @@ describe('Manual payments (e2e)', () => {
     );
     expect(payments[0]).not.toHaveProperty('providerTransactionId');
     expect(payments[0]).not.toHaveProperty('proof.file');
+    const selected = payments[0];
+    const readSnapshot = async () => ({
+      invoice: await prisma.invoice.findUniqueOrThrow({
+        where: { id: selected.invoiceId },
+      }),
+      payment: await prisma.payment.findUniqueOrThrow({
+        where: { id: selected.id },
+      }),
+      outbox: await prisma.outboxEvent.count(),
+      financialAudit: await prisma.activityLog.count({
+        where: {
+          entityType: { in: ['INVOICE', 'PAYMENT', 'ORDER', 'SERVICE'] },
+        },
+      }),
+    });
+    const beforeRead = await readSnapshot();
+    const detail = await admin.get(`/payments/${selected.id}`).expect(200);
+    expect(
+      apiSuccessResponseSchema(manualPaymentSchema).parse(detail.body).data,
+    ).toEqual(selected);
+    expect(await readSnapshot()).toEqual(beforeRead);
     expect(
       await prisma.activityLog.count({
         where: {

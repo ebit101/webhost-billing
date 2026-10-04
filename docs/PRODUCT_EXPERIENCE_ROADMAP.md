@@ -414,6 +414,15 @@ remain P1 work for the next phase review.
   silently repaired or approved. No cleanup or later-command implementation is
   authorized by this review; production stays **NO-GO**.
 
+- **Command 84 implements the bounded manual-payment review:** explicit selection
+  fetches a protected, runtime-validated payment plus the configured business time
+  zone. Customer and invoice destinations are fixed local links; payer proof remains
+  plain text and independent transaction/adjustment facts cannot imply invoice balance
+  or hosting state. Filter changes, close and successful mutations invalidate old
+  context. Existing financial actions, first-100 limits and gateway attention remain
+  unchanged. Executed validation and delivery status are in `docs/PROGRESS.md`; a
+  separate phase review is required before defining further work.
+
 ### Remaining production gates
 
 This roadmap improves evaluation and product coherence only. It does not close the

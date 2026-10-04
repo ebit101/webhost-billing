@@ -32,12 +32,26 @@ import { PageHeader } from '../ui/page-header';
 import { StatusBadge } from '../ui/status-badge';
 import { paymentDate, paymentError, paymentTone } from './payment-ui';
 import { GatewayFailurePanel } from './gateway-failure-panel';
+import { AdminPaymentReview } from './admin-payment-review';
 
 export function AdminPaymentManager({
   customerFilter = emptyAdminCustomerFilter,
 }: {
   customerFilter?: AdminCustomerFilter;
 } = {}) {
+  return (
+    <PaymentWorkspace
+      key={`${customerFilter.customerId ?? ''}:${customerFilter.invalid}`}
+      customerFilter={customerFilter}
+    />
+  );
+}
+
+function PaymentWorkspace({
+  customerFilter,
+}: {
+  customerFilter: AdminCustomerFilter;
+}) {
   const [payments, setPayments] = useState<ManualPayment[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [filteredCustomer, setFilteredCustomer] = useState<CustomerDetail>();
@@ -54,6 +68,13 @@ export function AdminPaymentManager({
   const [notice, setNotice] = useState('');
   const recordKey = useRef('');
   const adjustmentKey = useRef('');
+  const [selectedReview, setSelectedReview] = useState<{
+    id: string;
+    sequence: number;
+  }>();
+  const reviewSequence = useRef(0);
+  const reviewTrigger = useRef<HTMLButtonElement | null>(null);
+  const ledgerHeading = useRef<HTMLHeadingElement>(null);
   const paymentsPath = withAdminCustomerFilter(
     '/payments?pageSize=100',
     customerFilter,
@@ -142,6 +163,30 @@ export function AdminPaymentManager({
       ),
     },
     {
+      key: 'review',
+      header: 'Review',
+      render: (payment) => (
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          disabled={saving}
+          aria-controls="admin-payment-review"
+          aria-expanded={selectedReview?.id === payment.id}
+          aria-label={`Review payment ${payment.reference}`}
+          onClick={(event) => {
+            reviewTrigger.current = event.currentTarget;
+            setSelectedReview({
+              id: payment.id,
+              sequence: ++reviewSequence.current,
+            });
+          }}
+        >
+          Review payment
+        </Button>
+      ),
+    },
+    {
       key: 'actions',
       header: 'Actions',
       align: 'right',
@@ -223,6 +268,7 @@ export function AdminPaymentManager({
           },
         },
       );
+      setSelectedReview(undefined);
       replacePayment(result.payment);
       await refreshInvoice(result.payment.invoiceId);
       recordKey.current = '';
@@ -246,6 +292,7 @@ export function AdminPaymentManager({
           ? { action }
           : { action, reason: 'Reference rejected by administrator.' },
       );
+      setSelectedReview(undefined);
       replacePayment(payment);
       await refreshInvoice(payment.invoiceId);
       setNotice(
@@ -282,6 +329,7 @@ export function AdminPaymentManager({
             : {}),
         },
       );
+      setSelectedReview(undefined);
       const updatedOriginal = await authenticatedGet<ManualPayment>(
         `/payments/${adjustment.payment.id}`,
       );
@@ -487,9 +535,29 @@ export function AdminPaymentManager({
         </section>
       ) : null}
 
+      {selectedReview ? (
+        <AdminPaymentReview
+          key={selectedReview.sequence}
+          paymentId={selectedReview.id}
+          customerId={filteredCustomerId}
+          onClose={() => {
+            setSelectedReview(undefined);
+            const trigger = reviewTrigger.current;
+            if (trigger?.isConnected && !trigger.disabled) trigger.focus();
+            else ledgerHeading.current?.focus();
+          }}
+        />
+      ) : null}
+
       <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div className="border-b border-slate-200 px-5 py-4">
-          <h2 className="font-bold text-slate-950">Payment ledger</h2>
+          <h2
+            ref={ledgerHeading}
+            tabIndex={-1}
+            className="font-bold text-slate-950"
+          >
+            Payment ledger
+          </h2>
           <p className="mt-1 text-sm text-slate-600">
             Pending, verified, rejected, refunded, and reversed transactions.
           </p>
