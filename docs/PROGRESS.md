@@ -3,7 +3,7 @@
 ## Status Summary
 
 - **Current command:** Command 86 — Add Read-Only Administrator Service Inspection
-- **Current status:** Implementation and local validation complete; hosted delivery pending
+- **Current status:** Completed; source delivered with passing CI and CodeQL
 - **Last updated:** 2026-10-04
 - **Next command:** Phase Review — Review Command 86 and define the next bounded command
 - **Next command authorized:** No
@@ -7431,11 +7431,11 @@ start its implementation or any later command automatically.
 
 ### Command 86 — Add Read-Only Administrator Service Inspection
 
-- **Status:** Implementation and local validation complete; hosted delivery pending
+- **Status:** Completed; source delivered with passing CI and CodeQL
 - **Date:** 2026-10-04
 - **Authorization:** User's "command 86"; no later command authorized.
 
-#### Scope implemented
+#### Scope completed
 
 - Add explicit service review through the existing protected detail and validated
   business-zone settings read; no new endpoint, route, relationship or provider call.
@@ -7523,10 +7523,23 @@ start its implementation or any later command automatically.
 - Delivery gate: commit the ten scoped files, reconcile without force/history
   rewrite and push `origin/main`; verify CI and CodeQL for that exact source head
   before completing the report. Previous command results are not a substitute.
+- Delivery completed: focused implementation commit
+  `2b7cc3acc4370d9ae7dd6648cf663c688e38d9ed` was reconciled and non-force pushed
+  to canonical `origin/main`. Exact-head
+  [CI 37204856354](https://github.com/ebit101/webhost-billing/actions/runs/37204856354)
+  and [CodeQL 37204856364](https://github.com/ebit101/webhost-billing/actions/runs/37204856364)
+  both completed successfully. Hosted package/API/critical-invariant/browser tests,
+  production dependency audit, license inventory and production build passed.
+  Dependency review was skipped as expected for the authorized direct-main push,
+  not a claimed pull-request check. The existing rule bypass remains tracked below.
+- Final repository-wide formatting and offline documentation checks passed locally;
+  no generated/dependency/private environment artifact was committed. Record these
+  verified source results in a documentation-only completion commit, then verify
+  its exact-head CI/CodeQL before final handoff; application code is unchanged.
 
 #### Decisions and unresolved risks
 
-- Apply ADR-064. Current customer identity is not an invoice snapshot; a service
+- Apply ADR-064 and ADR-065. Current customer identity is not an invoice snapshot; a service
   read is not provider verification. Review is read-only, never an approval gate.
 - First-100/service setup limitations, other relationships/workflows, worker/isolation,
   dependency/governance and production gates remain outside this authorization.
@@ -7538,7 +7551,7 @@ start its implementation or any later command automatically.
 
 #### Exact recommended next command
 
-After completion, authorize **Phase Review — Review Command 86 and define the next
+Authorize **Phase Review — Review Command 86 and define the next
 bounded command**. Do not define or implement Command 87 automatically.
 
 ## Report Template
