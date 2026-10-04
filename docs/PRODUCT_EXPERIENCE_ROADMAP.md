@@ -380,7 +380,7 @@ remain P1 work for the next phase review.
   [HTML's default GET behavior](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/form#method)
   puts submitted fields in URLs. Hydration is the inferred trigger, not a confirmed
   sole cause; a successful rerun is not a security fix.
-- **Command 83 implemented and locally validated; hosted delivery pending:** an
+- **Command 83 completed with local and hosted validation:** an
   auth-only disabled fieldset keeps all named controls out of native submissions
   through server rendering and initial hydration. An explicit native POST is backup,
   not a fallback sign-in route. Preparation/no-JavaScript feedback explains the
