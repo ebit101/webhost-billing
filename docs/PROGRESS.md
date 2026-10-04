@@ -3,7 +3,7 @@
 ## Status Summary
 
 - **Current command:** Command 84 — Connect Administrator Manual Payment Review to Customer and Invoice Context
-- **Current status:** Local validation passed; GitHub delivery and hosted checks pending
+- **Current status:** Completed; source delivered with passing hosted CI and CodeQL
 - **Last updated:** 2026-10-04
 - **Next command:** Phase Review — Review Command 84 and define the next bounded command
 - **Next command authorized:** No
@@ -6931,7 +6931,7 @@ and Invoice Context**. Do not begin it or define Command 85 automatically.
 
 ### Command 84 — Connect Administrator Manual Payment Review to Customer and Invoice Context
 
-- **Status:** Local validation passed; GitHub delivery and hosted checks pending
+- **Status:** Completed; source delivered with passing hosted CI and CodeQL
 - **Date:** 2026-10-04
 - **Authorization:** Explicit user's "command 84"; no later command authorized.
 
@@ -7052,6 +7052,20 @@ and Invoice Context**. Do not begin it or define Command 85 automatically.
   use a focused commit, fast-forward-only reconciliation and non-force push. Hosted
   CI and CodeQL must be verified for that exact source commit before handoff; their
   results are not yet claimed. No generated artifacts or environment files are included.
+- Delivered source commit `165241e38f6fe0c7026b1efe9c7085acd049bbfc` to canonical
+  `origin/main` after fetch/fast-forward-only reconciliation and non-force push.
+  [CI 37176915696](https://github.com/ebit101/webhost-billing/actions/runs/37176915696)
+  and [CodeQL 37176915686](https://github.com/ebit101/webhost-billing/actions/runs/37176915686)
+  both completed successfully for that exact commit. Hosted CI passed the full
+  history secret scan, formatting/docs/lint/types, normal parallel package tests,
+  complete API integration and critical invariants, full browser suite, production
+  dependency audit/license inventory and optimized build. The PR-only dependency-
+  review job was skipped on push, not claimed as executed.
+- The source push reported the existing direct-main rule bypass and Dependabot
+  high advisory 15; a passing production audit does not establish that the tracked
+  advisory or branch policy was repaired. Worktree was clean after delivery. This
+  completion-evidence update is documentation-only; its own hosted checks must be
+  verified before final handoff and are not asserted in advance here.
 
 #### Decisions and unresolved risks
 
@@ -7068,7 +7082,7 @@ and Invoice Context**. Do not begin it or define Command 85 automatically.
 #### Exact recommended next command
 
 Authorize **Phase Review — Review Command 84 and define the next bounded command**
-after this command's validation and delivery. Do not define or implement Command 85 automatically.
+next. Do not define or implement Command 85 automatically.
 
 ## Report Template
 
