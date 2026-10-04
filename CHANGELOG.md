@@ -10,6 +10,9 @@ and will be called out in release notes.
 
 ### Changed
 
+- Reviewed Command 82's read-only administrator context and passing regressions,
+  and defined a separately gated auth-form readiness safeguard for the recorded
+  native registration GET risk. No Command 83 behavior is implemented by this review.
 - Connected administrator order review to protected customer and invoice detail
   through an explicit read-only panel. All historical items, lossless money and
   business-time-zone dates retain independent order/invoice states; validated

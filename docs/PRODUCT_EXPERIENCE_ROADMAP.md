@@ -368,6 +368,29 @@ remain P1 work for the next phase review.
 
 ## Readiness boundary
 
+### Security sequencing after the Command 82 review
+
+- The read-only order panel, all-item snapshots, fixed customer/invoice links,
+  independent states and unchanged deliberate mutations meet Command 82. Fresh
+  focused web/shared and order/invoice API checks passed; delivered-head hosted CI
+  and CodeQL also passed. No corrective order implementation was identified.
+- Command 82 also recorded an earlier native registration GET with fictional form
+  fields on a cold development route. Source confirms auth forms omit a native
+  method and render named fields/submit controls before client handlers are ready.
+  [HTML's default GET behavior](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/form#method)
+  puts submitted fields in URLs. Hydration is the inferred trigger, not a confirmed
+  sole cause; a successful rerun is not a security fix.
+- **Next defined: Command 83 — Prevent Native Credential Submission From
+  Authentication Forms.** Prioritize this bounded safety repair before additional
+  P1 business workflows. Block submission when JavaScript is unavailable or handlers
+  are not ready, prove it deterministically, then preserve the existing protected
+  POSTs, MFA/reset/verification and checkout-intent behavior. The review does not
+  authorize or implement it; backend policy, deployments and other workflows remain
+  excluded. [Playwright's guidance](https://playwright.dev/docs/navigations#hydration)
+  supports disabling interactive controls until handlers are functional.
+
+### Remaining production gates
+
 This roadmap improves evaluation and product coherence only. It does not close the
 credentialed provider, SMTP, monitoring, off-site recovery, policy, infrastructure,
 or operator-pilot gates in `docs/RELEASE_CHECKLIST.md`. Production remains

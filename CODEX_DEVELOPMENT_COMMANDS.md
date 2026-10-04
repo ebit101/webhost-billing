@@ -2071,6 +2071,84 @@ by the user on 2026-10-04. Delivery evidence is recorded in `docs/PROGRESS.md`.
 
 ---
 
+## Command 83 — Prevent Native Credential Submission From Authentication Forms
+
+```text
+Repair only the browser submission boundary of the existing customer/admin login
+(including its MFA challenge), customer registration, forgot-password and
+reset-password forms. Command 82 recorded a cold registration native GET containing
+fictional form fields before the expected POST; current forms rely on client-side
+preventDefault, omit a native method, and initially render usable credential inputs
+and submit controls. Treat this as a credential-exposure risk, not merely test flake.
+Do not implement another business workflow while this boundary is unresolved.
+
+Make server-rendered and first-client-render auth controls non-submittable until
+their client handlers are ready. Prevent both button and Enter-key native submission
+with JavaScript disabled or application chunks withheld; disabled submit buttons
+alone are insufficient if active named fields can still submit implicitly. Keep
+passwords, email/profile form fields and MFA/recovery codes out of native navigation
+and request URLs. Add an explicit non-GET native form method as defense in depth,
+but do not treat method=POST alone as a readiness guard or create a native auth POST
+fallback to a page route. No form payload may be transmitted before readiness.
+
+Use a small auth-only readiness mechanism, preferably within the existing form
+controls boundary, with consistent server/initial-client markup and no general
+form framework. Once ready, retain the original CSRF-protected authMutation POSTs,
+request bodies, validation, optional-field omission, busy/error/retry behavior,
+password-reset token handling, verification, customer/admin/MFA landings and
+allowlisted checkout intent. No credentials enter storage, hidden URL handoffs,
+logs or error messages. Preserve labels, autocomplete, keyboard/mobile usability,
+and explicit accessible preparation/JavaScript-required feedback instead of an
+unexplained permanently disabled form. Shared-control consumers, including the
+administrator two-factor settings panel, must retain their existing workflow.
+
+This is not authentication-policy redesign or a no-JavaScript sign-in feature.
+Do not change API/auth endpoints, server actions, routes, session cookies, CSRF,
+rate limits, ownership/roles, MFA setup/recovery semantics, password policy, token
+lifetime or email/reset link formats. Existing authorized reset/verification token
+URLs and product/price intent are not credential form submissions; preserve them
+without adding arbitrary return destinations. Do not attempt to scrub a secret
+after transmitting it, hide the race with test waits or weaken server enforcement.
+
+Add focused tests for server-rendered/initial readiness, disabled successful
+controls, safe native method, no-JavaScript feedback, ready/busy/error recovery,
+unchanged login/register/reset/MFA request bodies and landings, and auth shared
+control regressions. Add deterministic isolated fictional browser coverage using
+JavaScript-disabled contexts and controlled application-script withholding/release:
+assert click/Enter cannot cause a native document request, URL field leakage or
+auth/business mutation before readiness, then prove normal CSRF-protected behavior
+after release. Bound tests by observable conditions, not sleeps, networkidle,
+private React internals, increased timeouts or additional production probes. Use
+fake credentials/providers only; never print observed credential values or commit
+raw trace/request data. Scope request observation to known auth form fields; do not
+misclassify existing allowed reset tokens or checkout intent as a new submission.
+
+Keep the complete existing fictional lifecycle and its assertions, isolation,
+authentication limits and deadlines unchanged. Prove registration/sign-in still
+preserve exact plan selection without ordering, admin MFA remains required when
+configured, and order/invoice/payment/provisioning state rules are unaffected.
+Retain relevant API auth/verification/reset/MFA/CSRF/role regressions unchanged.
+
+Consult installed Next.js rendering/hydration and official browser/Playwright
+documentation before implementing. Run focused auth/shared/order web tests,
+relevant authentication API E2E, new deterministic readiness browser checks and the
+full fictional lifecycle, docs:check, formatting, lint, strict types, full package
+tests and the production build. Sequence heavy local checks to avoid the recorded
+worker timeout; record any failure without weakening it. Update docs/PROGRESS.md,
+commit, reconcile without history rewriting, push origin/main, verify hosted CI
+and CodeQL, then stop for a phase review before defining further work.
+
+Do not implement ledger/search, order/payment/service context, financial or provider
+changes, worker fixes/cleanup, dependency updates, release/deployment, or production
+approval. Production remains NO-GO. This command closes a bounded UI credential
+submission risk, not all security or operational readiness gates.
+```
+
+**Authorization:** Defined by the Command 82 phase review on 2026-10-04; not yet
+authorized or implemented. Requires separate explicit user authorization.
+
+---
+
 ## Continuation Command
 
 If a phase encounters errors or remains incomplete, use this prompt in the same Codex task:

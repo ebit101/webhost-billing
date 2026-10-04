@@ -588,6 +588,33 @@ This document records durable technical and product decisions. New decisions sho
   payment/service workflows, schema/authentication changes, providers, deployments
   and releases remain excluded. Production remains `NO-GO`.
 
+## ADR-058 — Credential-Form Readiness Before Further Workflow Expansion
+
+- **Status:** Accepted for next-command definition; implementation separately gated
+- **Date:** 2026-10-04
+- **Decision:** After reviewing Command 82, prioritize the four existing auth form
+  components (login including its MFA challenge, registration, forgot password and
+  reset password). Define an auth-only readiness boundary that blocks native
+  credential submission before handlers are attached or when JavaScript cannot
+  load, retains an explicit non-GET native method as defense in depth, and preserves
+  all existing CSRF-protected API requests and server authentication policy.
+- **Reason:** Command 82's first cold browser run recorded native registration GET
+  navigation containing fictional form fields. Source confirms omitted native
+  method attributes and initially enabled named inputs/submit buttons that depend
+  on client `preventDefault`. HTML defaults to GET with fields in the URL; hydration
+  is the inferred trigger, not a proven sole cause. A passing rerun does not repair
+  the fallback boundary. This credential risk takes precedence over further P1
+  lookup/scale features. See [HTML form submission](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/form#method)
+  and [Playwright hydration guidance](https://playwright.dev/docs/navigations#hydration).
+- **Consequence:** Command 83 is defined, not authorized or implemented here.
+  Deterministic blocked-script and JavaScript-disabled tests must prove no native
+  payload or navigation before readiness; normal ready, busy, retry, MFA, reset and
+  exact checkout-intent journeys must remain intact. A native POST alone or a test
+  delay is not a fix. No auth backend/policy, general form framework, provider,
+  worker cleanup, dependency, release or deployment expansion is permitted. This
+  boundary does not remove legitimately tokenized reset/verification links, nor
+  claim to close all security gates. Production remains `NO-GO`.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

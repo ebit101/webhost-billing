@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 82 — Connect Administrator Order Review to Customer and Invoice Context
-- **Current status:** Completed and delivered to GitHub `main`; required phase review not authorized
+- **Current command:** Phase Review — Review Command 82 and define the next bounded command
+- **Current status:** Review completed; Command 83 defined but not authorized
 - **Last updated:** 2026-10-04
-- **Next command:** Phase Review — Review Command 82 and define the next bounded command
+- **Next command:** Command 83 — Prevent Native Credential Submission From Authentication Forms
 - **Next command authorized:** No
 
 ## Command Reports
@@ -6552,6 +6552,101 @@ Context** separately. Do not begin it automatically.
 
 Authorize **Phase Review — Review Command 82 and define the next bounded command**.
 Do not define or implement another command automatically.
+
+### Phase Review — Review Command 82 and Define Command 83
+
+- **Status:** Review completed; next implementation defined but not authorized
+- **Date:** 2026-10-04
+- **Authorization:** User's "next" accepted the offered phase review, not Command 83.
+
+#### Scope completed
+
+- Reviewed Command 82, permanent rules, product plan, ADR-057, source/report commits,
+  order response/runtime money/date contracts, the administrator manager/review,
+  filter boundary, order controller/service and focused/browser/API regressions.
+- Confirmed one explicitly selected order read, runtime UUID/response validation,
+  exact current order/customer matching, fixed returned-identifier links, all-item
+  historical snapshots, independent state wording, plain-text notes and configured
+  timezone/lossless money. Review never reads mutable catalogue prices for value,
+  invents service evidence or becomes an approval/permission gate.
+- Confirmed scope keys and active/abort guards discard obsolete outcomes after
+  selection/close/filter changes; successful existing create/status actions close
+  review. Existing request bodies and eligibility remain unchanged. Browser tests
+  compare records and observe no non-read request before deliberate approval.
+- Identified no in-scope corrective order change. Rechecked the earlier registration
+  failure against auth source: four auth form components omit native method and
+  initially expose named inputs/submit controls, relying on client preventDefault.
+  The recorded native GET is actual fictional browser evidence; pre-hydration is
+  the inferred trigger, not a proven exhaustive diagnosis. Administrator MFA
+  settings forms render only after an effect-loaded status and are not a new
+  workflow target; shared-control regressions remain required.
+- Defined exactly one **Command 83 — Prevent Native Credential Submission From
+  Authentication Forms**, prioritizing credential safety over additional P1 lookup
+  features. It requires deterministic no-JavaScript/withheld-script evidence and
+  preserved normal CSRF/MFA/reset/checkout journeys, not a new auth API, policy,
+  general framework, native sign-in fallback or test-wait workaround.
+- Defined only; no Command 83 implementation, credential submission/probing, live
+  application access, deployment, provider operation or database cleanup performed.
+
+#### Files changed
+
+- `CODEX_DEVELOPMENT_COMMANDS.md` — bounded Command 83 and separate authorization.
+- `docs/DECISIONS.md` — ADR-058 and primary-source form/hydration evidence.
+- `docs/PRODUCT_EXPERIENCE_ROADMAP.md` — review outcome and security-first sequence.
+- `CHANGELOG.md` — review/definition without claiming implementation.
+- `docs/PROGRESS.md` — current boundary and this evidence report.
+
+#### Validation
+
+- Started from clean `main` at `9d7bd63f5c67d35dad10081df1318a4c30f37807`, containing
+  Command 82 source `9796d98` and its completion report. Fetched canonical remote
+  reconciliation found zero ahead/behind without rewriting history.
+- Rechecked exact delivered-head hosted
+  [CI run 37163595855](https://github.com/ebit101/webhost-billing/actions/runs/37163595855)
+  and [CodeQL run 37163595863](https://github.com/ebit101/webhost-billing/actions/runs/37163595863):
+  both succeeded. Full package/API/invariant/browser/audit/license/build evidence is
+  hosted, not claimed as a fresh full local rerun for this documentation review.
+- Fresh focused web tests: all 30 passed (14 review and 16 manager), one worker and
+  unchanged assertions. Fresh shared tests: all 29 passed.
+- Fresh order/invoice API E2E: all 11 passed in two suites, retaining ownership,
+  server pricing, historical values, idempotency and state rules. Existing VM/driver
+  warnings remained non-failing.
+- `pnpm docs:check`: all four offline validators passed. Repository-wide
+  `pnpm format:check` and `git diff --check` passed. Diff review confines this phase
+  to the five declared documentation files; no application correction or Command 83
+  implementation required a broader local application rerun. Final review-commit
+  hosted CI/CodeQL are checked after pushing and before completion handoff.
+
+#### Decisions made
+
+- Preserve ADR-057 without expanding review into a mutation confirmation framework.
+- Accept ADR-058 for defining, not implementing, the next bounded safety command.
+  HTML GET fallback and Playwright hydration guidance are primary-source support:
+  [HTML form](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/form#method),
+  [hydration guidance](https://playwright.dev/docs/navigations#hydration).
+- Require server/first-client disabled controls, explicit non-GET defense and
+  accessible unready feedback; native POST alone is insufficient. Existing API
+  authority, allowed token links and plan-intent handoffs remain unchanged.
+
+#### Open questions and risks
+
+- The credential-submission risk remains unfixed until Command 83 is separately
+  authorized, implemented and proven. No real credential exposure or production
+  incidence is established by the fictional test; passing CI does not close it.
+- The recorded worker timeout/cleanup failure and possible local fictional fixture
+  remain separate. No cleanup or timeout/worker change is part of this review.
+- Order context is as-of-request, not frozen state or provisioning proof. First-100
+  order lists, payment/service context, other ledger scale, dashboard attention,
+  automation freshness and inactive chrome remain separately gated.
+- Existing development-only advisory, direct-main delivery-rule bypass and driver
+  warnings remain recorded maintenance/process work. No dependencies/policies changed.
+- Production remains **NO-GO**; provider/SMTP/monitoring/off-site recovery/policy,
+  infrastructure and operator-pilot evidence remain open. No new release or deployment.
+
+#### Recommended next command
+
+Authorize **Command 83 — Prevent Native Credential Submission From Authentication
+Forms** separately. Do not begin it automatically.
 
 ## Report Template
 
