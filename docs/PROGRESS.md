@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Phase Review — Review Command 86 and define the next bounded command
-- **Current status:** Review completed; correction delivered; Command 87 definition only
-- **Last updated:** 2026-10-04
-- **Next command:** Command 87 — Make Administrator Service Inventory Searchable and Paginated
+- **Current command:** Command 87 — Make Administrator Service Inventory Searchable and Paginated
+- **Current status:** Locally validated; source delivery and hosted checks pending
+- **Last updated:** 2026-10-05
+- **Next command:** Phase Review — Review Command 87 and define the next bounded command
 - **Next command authorized:** No
 
 ## Command Reports
@@ -7671,6 +7671,143 @@ bounded command**. Do not define or implement Command 87 automatically.
 
 Authorize **Command 87 — Make Administrator Service Inventory Searchable and
 Paginated**. Do not start it or any later command automatically.
+
+### Command 87 — Make Administrator Service Inventory Searchable and Paginated
+
+- **Status:** Locally validated; source delivery and hosted checks pending
+- **Date:** 2026-10-04
+- **Authorization:** User explicitly authorized Command 87 by its full title.
+- **Validation/delivery:** Continued on 2026-10-05 (Asia/Dhaka).
+
+#### Scope completed
+
+- Replaced only fixed first-100 administrator inventory with existing protected
+  `GET /services` and service/pagination runtime schemas. Server entry narrows URL
+  search/status/page/page-size and independent optional customer scope. Duplicate,
+  malformed, overlong, unsupported server-filter and overflowing-offset inputs
+  block inventory reads; no arbitrary navigation destination is retained.
+- Search/status/page-size reset page deliberately. Clearing inventory filters
+  retains valid customer scope; clearing customer scope is separate. Applied scope,
+  invalid-customer warning, all-customer wording, matching-record counts and current
+  versus historical identities are explicit. Existing search semantics and server
+  createdAt/ID descending order remain intact; reads are not a frozen history.
+- Abortable cookie/no-store reads validate every row, scope, unique IDs, count/page
+  metadata and expected page length. Superseded requests, retry and unmount cannot
+  restore old rows/counts. Loading, invalid, malformed/inconsistent, failed, empty
+  and out-of-range states have honest recovery; network errors are sanitized.
+- Only the read-only inventory remounts. Query/retry invalidates selected review,
+  preserving unfinished creation, evidence/confirmation and panel inputs. A retained
+  action explicitly identifies its original service and never retargets a new row.
+  Keyboard navigation restores inventory-heading focus; mobile filters stay bounded.
+- Existing creation/status/panel bodies, keys, CSRF, eligibility, classification and
+  exact TERMINATE confirmation remain intact. Sibling dispatch clears/blocks review
+  as before; completion refreshes the latest applied query without injecting a
+  nonmatching service, restoring inspection or repeating writes on failed reads.
+  Setup/options, account tools and stored history retain their independent surfaces.
+- Added fictional >100-record query/component, API and browser evidence; no new
+  endpoint, route, schema, financial rule, service relationship or provider authority.
+
+#### Files changed
+
+- `apps/web/src/lib/admin-service-ledger-query.ts` and its test — URL/runtime boundary.
+- `apps/web/src/components/services/admin-service-ledger.tsx` and its test — independent
+  inventory, query navigation, cancellation and recovery.
+- `apps/web/src/app/(admin)/admin/services/page.tsx` and
+  `apps/web/src/app/admin-service-ledger-entry.test.tsx` — server-entry narrowing.
+- `apps/web/src/components/services/admin-service-manager.tsx`,
+  `apps/web/src/components/services/admin-services-workspace.tsx` — retained forms,
+  original targets, selected-review invalidation and latest-query reconciliation.
+- `apps/web/src/components/services/admin-service-review.test.tsx`,
+  `apps/web/src/components/services/service-management.test.tsx` — retain assertions,
+  adapt response metadata and asynchronous inventory waits to the independent read.
+- `apps/api/test/services.e2e-spec.ts` — existing search/status/customer/ordering/count
+  evidence, including a 140-record history and read-only record comparisons.
+- `apps/web/e2e/specs/admin-service-ledger.spec.ts` — isolated fictional administrator,
+  guarded connection/schema/search_path, dedicated disabled fake history server and
+  older-service search/page/review/customer journey; private artifacts disabled.
+- `CODEX_DEVELOPMENT_COMMANDS.md`, `CHANGELOG.md`, `docs/DECISIONS.md`,
+  `docs/PRODUCT_EXPERIENCE_ROADMAP.md`, `docs/PROGRESS.md` — authorization and outcome.
+
+#### Validation
+
+- Started clean on `main` at `69f5355aabd1e983fef1e5def06cb9687c3a8238` with the
+  canonical remote. Read project instructions, plan, decisions/progress, Command 87,
+  installed Next.js server/client, Link/prefetch and router guidance before edits.
+  C: approximately 16.46 GiB and D: 32.41 GiB free; no Docker cleanup or relocation.
+- Fresh focused eleven-file service/panel, query/server-entry, invoice/order/payment
+  and customer-filter regression: **203 passed**. Tests prove >100 history, combined
+  filters/restoration/clearing, malformed/duplicate/unsafe URL blocking, bad rows/scope/
+  metadata, delayed discard, safe errors/GET retry, retained forms/original targets,
+  review abort, latest-query reconciliation and unchanged original operation bodies.
+- Verified both fictional Prisma model and raw-SQL search_path before and after
+  guarded preparation of the fixed loopback `command26_e2e` schema. Fresh six-file
+  relevant API/financial/hosting invariant E2E: **39 passed**, including all original
+  role/ownership, evidence, state-separation and operation regressions.
+- Initial focused failures were asynchronous fixture assumptions (2), an exposed
+  network error (1, corrected), and a copied server-entry expected status (1). Initial
+  lint/types found a focus-ref naming issue, stale removed-helper call and RTL option;
+  these were corrected without weakening assertions, rules or deadlines.
+- First full browser run: **13 passed, 2 failed**. New fixture used an unsupported
+  server enum; corrected to the existing DISABLED value on a dedicated fictional
+  server, avoiding original active-server capacity. Pagination's added status role
+  collided with the original operation-status assertion; use polite live inventory
+  announcements while preserving original action status and lifecycle assertions.
+  Full rerun and complete package/workspace/build/hosted evidence remain pending.
+- Second full browser run: **14 passed, 1 failed** (3.1 minutes). All original
+  lifecycle/auth/review journeys passed. New journey reached older records and
+  combined filters, then encountered an ambiguous searchbox locator from existing
+  workspace chrome; scope the locator to the inventory search field. No original
+  assertion or timeout was relaxed; final focused/full browser reruns are pending.
+- Corrected focused browser journey: **1 passed** (51.6 seconds), including older
+  page/search, combined scope/status, history/refresh, keyboard, 375px filters,
+  selected review/customer link, separate clearing, out-of-range/invalid recovery,
+  zero browsing writes and unchanged service/operation/financial/audit/outbox facts.
+- Full fresh Chromium suite: **15 passed** (3.0 minutes), preserving all original
+  lifecycle, auth-readiness, service/panel, invoice and payment journeys. Strengthened
+  new API/browser comparisons to retain complete audit/outbox records, not merely
+  counts; revalidate these final assertions before delivery. No product behavior,
+  fixture ownership, worker/source dependency or original assertion was broadened.
+- Final strengthened-record revalidation: **39 relevant API tests passed** again
+  (35.1 seconds), followed by a guarded fresh-schema **15/15 full Chromium pass**
+  (2.9 minutes). Complete audit/outbox comparisons passed alongside unchanged
+  service/operation/invoice/payment records. All original journey assertions,
+  fixture rate limits and deadlines remain unchanged.
+- Complete fresh package/tooling coverage passed sequentially under the verified
+  fictional connection: all nine tooling test commands, **29 shared**, **3 queue**,
+  **363 web tests across 38 files**, **98 API unit tests across 24 suites**, and
+  **29 worker tests across 10 suites**. Original tests/timeouts were not changed;
+  local Nest/queue package execution used `--runInBand` to avoid the recorded
+  parallel timing risk. This is not a claim that default local scheduling/isolation
+  has been repaired; hosted CI still exercises its ordinary complete command.
+- Final workspace lint initially identified three unnecessary non-null assertions
+  in the new API fixture. Removed only the erased type assertions; runtime data,
+  expectations and business behavior are unchanged. Re-run service E2E and the full
+  lint/type/docs/format/production-build sequence before delivery.
+- Final quality sequence passed after the type-only fixture correction: **6 service
+  API E2E tests**, full workspace lint, full strict workspace type checking (including
+  generated Next.js routes and browser tests), all **four offline documentation
+  validators**, repository formatting and the complete production build with explicit
+  `NODE_ENV=production`. All package, Next.js, API and worker build steps succeeded.
+  Source delivery and exact-head hosted CI/CodeQL remain pending.
+
+#### Decisions and unresolved risks
+
+- Apply ADR-068. Inventory is read-only application evidence, never balance,
+  remote verification, financial-state inference or a service-action approval gate.
+- Known default parallel-worker timing/retained fictional fixture and unqualified
+  raw-SQL isolation risks remain unresolved. Private local validation uses explicit
+  connection search_path with model/raw verification; worker/dependency/deadline and
+  default-development records remain untouched. Hosted gates must validate exact head.
+- Setup/tool/history scale, customer service history, other ledgers, richer relations,
+  action redesign, attention/freshness/chrome, advisory 15 and direct-main governance
+  remain separate. No release, deployment, cleanup or next implementation authorized.
+- Production remains **NO-GO**: credentialed providers, SMTP, monitoring, off-site
+  recovery, final policy/infrastructure and operator-pilot evidence remain gates.
+
+#### Exact recommended next command
+
+Authorize **Phase Review — Review Command 87 and define the next bounded command**.
+Stop after Command 87 delivery; do not define or implement Command 88 automatically.
 
 ## Report Template
 

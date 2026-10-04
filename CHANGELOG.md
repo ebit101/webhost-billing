@@ -10,6 +10,11 @@ and will be called out in release notes.
 
 ### Changed
 
+- Made administrator service inventory searchable and paginated through validated
+  URL filters, independent customer scope and authoritative runtime-checked counts.
+  Browsing discards stale reads/reviews without resetting operational forms or
+  changing their original action targets. Completed deliberate operations refresh
+  the latest query without inserting nonmatching services or repeating writes.
 - Extended service-inspection invalidation to sibling panel configuration, tests,
   tools and manual retry. Pending dispatches pause inspection; success/failure never
   restores old context, and unfinished operational forms remain mounted.

@@ -10,6 +10,7 @@ import { AdminServiceManager } from './admin-service-manager';
 import { AdminHostingOperationManager } from './admin-hosting-operation-manager';
 import { CustomerServiceDetail } from './customer-service-detail';
 import { CustomerServiceList } from './customer-service-list';
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
 
 const serviceId = '30000000-0000-4000-8000-000000000001';
 const orderItemId = '30000000-0000-4000-8000-000000000002';
@@ -130,7 +131,7 @@ describe('service management interfaces', () => {
         if (url.includes(`/services/${serviceId}`)) {
           return Promise.resolve(success(activeService));
         }
-        return Promise.resolve(paginated([service]));
+        return Promise.resolve(paginated([service], 20));
       },
     );
     vi.stubGlobal('fetch', fetchMock);
@@ -139,7 +140,9 @@ describe('service management interfaces', () => {
       await screen.findByRole('heading', { name: 'Hosting services' }),
     ).toBeTruthy();
     expect(screen.getByText('Create service from paid order')).toBeTruthy();
-    await user.click(screen.getByRole('button', { name: 'Provision account' }));
+    await user.click(
+      await screen.findByRole('button', { name: 'Provision account' }),
+    );
     expect(
       await screen.findByText(
         'create account completed for customer-site.example.test.',
@@ -309,14 +312,14 @@ function success(data: unknown) {
   });
 }
 
-function paginated(data: unknown[]) {
+function paginated(data: unknown[], pageSize = 100) {
   return new Response(
     JSON.stringify({
       success: true,
       data,
       pagination: {
         page: 1,
-        pageSize: 100,
+        pageSize,
         totalItems: data.length,
         totalPages: data.length ? 1 : 0,
       },

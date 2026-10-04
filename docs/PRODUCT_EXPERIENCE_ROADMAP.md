@@ -533,6 +533,24 @@ remain P1 work for the next phase review.
   worker/isolation and dependency/governance risks remain separately gated.
   Validation and delivery evidence is in `docs/PROGRESS.md`; production is `NO-GO`.
 
+### Command 87 bounded implementation
+
+- Replaces only the administrator inventory's fixed first-100 read with validated
+  URL search/status/page/page-size and independently validated customer context.
+  Existing service contracts and deterministic API ordering supply older records
+  and authoritative matching counts without new routes or business rules.
+- Abortable cookie/no-store reads discard stale rows/counts; invalid, empty,
+  out-of-range, malformed/context-mismatched and recoverable failures stay explicit.
+  Query/retry clears selected inspection without resetting creation, action or
+  panel forms. An open action retains its original target, reason and confirmation.
+- Existing service/status/panel requests, keys, CSRF, eligibility and termination
+  safeguards remain unchanged. Deliberate operation completion refreshes the latest
+  query without injecting wrong-scope rows or retrying a write after read failure.
+- Validation/delivery are recorded in `docs/PROGRESS.md`. Setup/tool/history scale,
+  customer service history, other ledgers, richer relationships and production gates
+  remain separate. Next: separately authorize **Phase Review — Review Command 87
+  and define the next bounded command**; no Command 88 is defined here.
+
 ### Remaining production gates
 
 This roadmap improves evaluation and product coherence only. It does not close the

@@ -486,6 +486,122 @@ describe('Hosting services (e2e)', () => {
     ).toEqual(before);
   });
 
+  it('searches older inventory with combined status/customer filters and deterministic count/order without writes', async () => {
+    const other = await prisma.customer.findFirstOrThrow({
+      where: { user: { email: OTHER_EMAIL } },
+    });
+    const data = Array.from({ length: 140 }, (_, index) => ({
+      id: `87000000-0000-4000-8000-${String(index).padStart(12, '0')}`,
+      customerId,
+      productId,
+      productPriceId,
+      serverId,
+      status:
+        index % 2 ? ('CANCELLED' as const) : ('PROVISION_FAILED' as const),
+      domain: `command87-ledger-${index}.example.test`,
+      productNameSnapshot: 'Command87 Historical Plan',
+      productDescriptionSnapshot: 'Fictional service inventory fixture',
+      externalAccountId: `command87-account-${index}`,
+      provisioningFailureReason:
+        index % 2 ? null : 'Fictional inventory failure',
+      cancelledAt: index % 2 ? new Date('2026-01-02T00:00:00.000Z') : null,
+      cancellationReason: index % 2 ? 'Fictional inventory cancellation' : null,
+      billingPeriod: BillingPeriod.MONTHLY,
+      recurringAmount: 14000n,
+      currency: 'BDT',
+      startedAt: new Date('2026-01-01T00:00:00.000Z'),
+      nextDueAt: new Date('2026-02-01T00:00:00.000Z'),
+      createdAt: new Date(Date.UTC(2026, 0, 1, 0, 0, Math.floor(index / 2))),
+    }));
+    await prisma.service.createMany({
+      data: [
+        ...data,
+        {
+          ...data[0],
+          id: '87000000-0000-4000-8000-000000000140',
+          customerId: other.id,
+          domain: 'command87-other.example.test',
+          externalAccountId: 'command87-other-account',
+        },
+      ],
+    });
+    const admin = request.agent(app.getHttpServer());
+    const csrf = await csrfToken(admin);
+    await login(admin, csrf, ADMIN_EMAIL);
+    const snapshot = () =>
+      Promise.all([
+        prisma.service.findMany({ orderBy: { id: 'asc' } }),
+        prisma.hostingPanelOperation.findMany({ orderBy: { id: 'asc' } }),
+        prisma.invoice.findMany({ orderBy: { id: 'asc' } }),
+        prisma.payment.findMany({ orderBy: { id: 'asc' } }),
+        prisma.activityLog.findMany({ orderBy: { id: 'asc' } }),
+        prisma.outboxEvent.findMany({ orderBy: { id: 'asc' } }),
+      ]);
+    const before = await snapshot();
+    const list = async (query: string) =>
+      paginatedApiSuccessResponseSchema(serviceSchema).parse(
+        (await admin.get('/services?' + query).expect(200)).body,
+      );
+    const base = `customerId=${customerId}&search=command87&pageSize=20`;
+    const oldest = await list(base + '&page=7');
+    expect(oldest.pagination).toEqual({
+      page: 7,
+      pageSize: 20,
+      totalItems: 140,
+      totalPages: 7,
+    });
+    expect(oldest.data.map((row) => row.id)).toEqual(
+      data
+        .slice(0, 20)
+        .reverse()
+        .map((row) => row.id),
+    );
+    const failed = await list(base + '&status=PROVISION_FAILED&page=4');
+    expect(failed.pagination).toEqual({
+      page: 4,
+      pageSize: 20,
+      totalItems: 70,
+      totalPages: 4,
+    });
+    expect(failed.data.map((row) => row.id)).toEqual(
+      data
+        .filter((row) => row.status === 'PROVISION_FAILED')
+        .slice(0, 10)
+        .reverse()
+        .map((row) => row.id),
+    );
+    expect(
+      failed.data.every(
+        (row) =>
+          row.customerId === customerId && row.status === 'PROVISION_FAILED',
+      ),
+    ).toBe(true);
+    const historical = await list(
+      `customerId=${customerId}&search=COMMAND87%20HISTORICAL&pageSize=100`,
+    );
+    expect(historical.pagination.totalItems).toBe(140);
+    const email = await list(
+      `customerId=${customerId}&search=${CUSTOMER_EMAIL}&pageSize=100`,
+    );
+    expect(email.pagination.totalItems).toBe(142);
+    const account = await list(
+      `customerId=${customerId}&search=command87-account-139`,
+    );
+    expect(account.data.map((row) => row.id)).toEqual([data[139].id]);
+    const domain = await list(
+      `customerId=${customerId}&search=COMMAND87-LEDGER-139.EXAMPLE.TEST`,
+    );
+    expect(domain.data.map((row) => row.id)).toEqual([data[139].id]);
+    const all = await list('search=Command87%20Historical&pageSize=100');
+    expect(all.pagination.totalItems).toBe(141);
+    const beyond = await list(base + '&page=8');
+    expect(beyond.data).toEqual([]);
+    expect(beyond.pagination.page).toBe(8);
+    await admin.get('/services?pageSize=101').expect(400);
+    await admin.get('/services?status=PAID').expect(400);
+    expect(await snapshot()).toEqual(before);
+  });
+
   afterAll(async () => {
     if (prisma) await cleanup();
     if (app) await app.close();

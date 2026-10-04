@@ -1,14 +1,10 @@
 import type { Metadata } from 'next';
 import { AdminServicesWorkspace } from '../../../../components/services/admin-services-workspace';
-import { parseAdminCustomerFilter } from '../../../../lib/admin-customer-filter';
+import { readAdminServiceQuery } from '../../../../lib/admin-service-ledger-query';
 export const metadata: Metadata = { title: 'Services' };
 export default async function Page({
   searchParams,
 }: PageProps<'/admin/services'>) {
-  const { customerId } = await searchParams;
-  return (
-    <AdminServicesWorkspace
-      customerFilter={parseAdminCustomerFilter(customerId)}
-    />
-  );
+  const selection = readAdminServiceQuery(await searchParams);
+  return <AdminServicesWorkspace selection={selection} />;
 }

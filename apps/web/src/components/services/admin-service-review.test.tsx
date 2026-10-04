@@ -9,6 +9,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AdminServiceReview } from './admin-service-review';
 import { AdminServiceManager } from './admin-service-manager';
 import { AdminServicesWorkspace } from './admin-services-workspace';
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
 
 const id = '86000000-0000-4000-8000-000000000001';
 const customerId = '86000000-0000-4000-8000-000000000002';
@@ -360,7 +361,14 @@ describe('service review integration preserves deliberate operations', () => {
         return json({
           success: true,
           data: [row],
-          pagination: { page: 1, pageSize: 100, totalItems: 1, totalPages: 1 },
+          pagination: {
+            page: 1,
+            pageSize: new URL(String(input)).searchParams.has('page')
+              ? 20
+              : 100,
+            totalItems: 1,
+            totalPages: 1,
+          },
         });
       },
     );
@@ -516,7 +524,13 @@ describe('service review integration preserves deliberate operations', () => {
         ),
       );
       await screen.findByText('Fictional panel failure');
-      expect((trigger as HTMLButtonElement).disabled).toBe(false);
+      expect(
+        (
+          (await screen.findByRole('button', {
+            name: `Review ${service.domain}`,
+          })) as HTMLButtonElement
+        ).disabled,
+      ).toBe(false);
       expect(
         screen.queryByRole('heading', { name: 'Service review' }),
       ).toBeNull();
@@ -559,7 +573,7 @@ describe('service review integration preserves deliberate operations', () => {
     render(<AdminServicesWorkspace customerFilter={{ invalid: false }} />);
     await screen.findByRole('heading', { name: 'Account tools' });
     await user.click(
-      screen.getByRole('button', { name: `Review ${service.domain}` }),
+      await screen.findByRole('button', { name: `Review ${service.domain}` }),
     );
     const signal = fetchMock.mock.calls.find(([url]) =>
       String(url).endsWith(`/services/${id}`),

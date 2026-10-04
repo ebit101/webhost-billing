@@ -15,29 +15,28 @@ import {
   type FormEvent,
   type ReactNode,
 } from 'react';
-import {
-  authMutation,
-  authenticatedGet,
-  authenticatedPaginatedGet,
-} from '../../lib/auth-api';
+import { authMutation, authenticatedGet } from '../../lib/auth-api';
 import {
   emptyAdminCustomerFilter,
   type AdminCustomerFilter,
-  withAdminCustomerFilter,
 } from '../../lib/admin-customer-filter';
-import {
-  AdminCustomerFilterNotice,
-  filteredEmptyTitle,
-} from '../customers/admin-customer-filter-notice';
+import { AdminCustomerFilterNotice } from '../customers/admin-customer-filter-notice';
 import { fieldClass } from '../customers/customer-fields';
 import { formatMinor } from '../invoices/invoice-ui';
 import { Button } from '../ui/button';
-import { DataTable, type DataColumn } from '../ui/data-table';
+import { type DataColumn } from '../ui/data-table';
 import { EmptyState, LoadingState } from '../ui/feedback-state';
 import { PageHeader } from '../ui/page-header';
 import { StatusBadge } from '../ui/status-badge';
 import { serviceDate, serviceError, serviceTone } from './service-ui';
 import { AdminServiceReview } from './admin-service-review';
+import { AdminServiceLedger } from './admin-service-ledger';
+import {
+  adminServiceHref,
+  adminServiceQueryString,
+  readAdminServiceQuery,
+  type AdminServiceSelection,
+} from '../../lib/admin-service-ledger-query';
 
 type EvidenceStatus = Extract<
   ServiceStatus,
@@ -53,12 +52,21 @@ export function AdminServiceManager({
   customerFilter = emptyAdminCustomerFilter,
   reviewRevision = 0,
   inspectionBlocked = false,
+  selection,
+  inventoryRevision = 0,
 }: {
   customerFilter?: AdminCustomerFilter;
   reviewRevision?: number;
   inspectionBlocked?: boolean;
+  selection?: AdminServiceSelection;
+  inventoryRevision?: number;
 } = {}) {
-  const [services, setServices] = useState<Service[]>([]);
+  const applied = selection ?? {
+    ...readAdminServiceQuery({ customerId: customerFilter.customerId }),
+    customerFilter,
+  };
+  customerFilter = applied.customerFilter;
+  const [readRevision, setReadRevision] = useState(0);
   const [filteredCustomer, setFilteredCustomer] = useState<CustomerDetail>();
   const [options, setOptions] = useState<ServiceSetupOptions>({
     servers: [],
@@ -69,12 +77,9 @@ export function AdminServiceManager({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
-  const servicesPath = withAdminCustomerFilter(
-    '/services?pageSize=100',
-    customerFilter,
-  );
+
   const filteredCustomerId = customerFilter.customerId;
-  const scope = `${filteredCustomerId ?? ''}:${customerFilter.invalid}:${reviewRevision}`;
+  const scope = `${adminServiceQueryString(applied.query)}:${applied.invalid}:${customerFilter.invalid}:${reviewRevision}`;
   const [reviewScope, setReviewScope] = useState(scope);
   const [review, setReview] = useState<{ id: string; sequence: number }>();
   const reviewSequence = useRef(0);
@@ -88,15 +93,13 @@ export function AdminServiceManager({
   useEffect(() => {
     let active = true;
     void Promise.all([
-      authenticatedPaginatedGet<Service>(servicesPath),
       authenticatedGet<ServiceSetupOptions>('/services/setup-options'),
       filteredCustomerId
         ? authenticatedGet<CustomerDetail>(`/customers/${filteredCustomerId}`)
         : Promise.resolve(undefined),
     ])
-      .then(([serviceResult, setup, customerContext]) => {
+      .then(([setup, customerContext]) => {
         if (!active) return;
-        setServices(serviceResult.data);
         setOptions(setup);
         setFilteredCustomer(customerContext);
       })
@@ -109,7 +112,7 @@ export function AdminServiceManager({
     return () => {
       active = false;
     };
-  }, [filteredCustomerId, servicesPath]);
+  }, [filteredCustomerId]);
 
   const columns: DataColumn<Service>[] = [
     {
@@ -217,7 +220,6 @@ export function AdminServiceManager({
           serverId: String(values.get('serverId')),
         },
       );
-      replaceService(result.service);
       setOptions((current) => ({
         ...current,
         orderItems: current.orderItems.filter(
@@ -234,6 +236,7 @@ export function AdminServiceManager({
       setError(serviceError(caught));
     } finally {
       setSaving(false);
+      setReadRevision((current) => current + 1);
     }
   }
 
@@ -253,7 +256,6 @@ export function AdminServiceManager({
       const updated = await authenticatedGet<Service>(
         `/services/${service.id}`,
       );
-      replaceService(updated);
       if (result.operation.status === 'SUCCEEDED') {
         setNotice(
           `${result.operation.type.toLowerCase().replaceAll('_', ' ')} completed for ${updated.domain}.`,
@@ -268,6 +270,7 @@ export function AdminServiceManager({
       setError(serviceError(caught));
     } finally {
       setSaving(false);
+      setReadRevision((current) => current + 1);
     }
   }
 
@@ -312,7 +315,6 @@ export function AdminServiceManager({
       const updated = await authenticatedGet<Service>(
         `/services/${action.service.id}`,
       );
-      replaceService(updated);
       setAction(undefined);
       setNotice(
         `${updated.domain} moved to ${updated.status.toLowerCase().replaceAll('_', ' ')}.`,
@@ -321,6 +323,7 @@ export function AdminServiceManager({
       setError(serviceError(caught));
     } finally {
       setSaving(false);
+      setReadRevision((current) => current + 1);
     }
   }
 
@@ -416,13 +419,6 @@ export function AdminServiceManager({
     return <span className="text-xs text-slate-400">Final state</span>;
   }
 
-  function replaceService(service: Service) {
-    setServices((current) => [
-      service,
-      ...current.filter((item) => item.id !== service.id),
-    ]);
-  }
-
   function clearMessages() {
     setError('');
     setNotice('');
@@ -438,9 +434,18 @@ export function AdminServiceManager({
         description="Fulfil paid orders and manage provisioning, active, suspended, failed, cancelled, and terminated states independently from billing."
       />
       <AdminCustomerFilterNotice
-        customer={filteredCustomer}
+        customer={
+          filteredCustomer?.id.toLowerCase() ===
+          filteredCustomerId?.toLowerCase()
+            ? filteredCustomer
+            : undefined
+        }
         invalid={customerFilter.invalid}
-        clearHref="/admin/services"
+        clearHref={adminServiceHref({
+          ...applied.query,
+          customerId: undefined,
+          page: 1,
+        })}
         resourceLabel="services"
       />
       {error ? <Message error>{error}</Message> : null}
@@ -523,37 +528,12 @@ export function AdminServiceManager({
         />
       ) : null}
 
-      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-200 px-5 py-4">
-          <h2 className="font-bold text-slate-950">Service inventory</h2>
-          <p className="mt-1 text-sm text-slate-600">
-            Hosting lifecycle calls use the configured adapter. This command
-            enables only the development/test fake panel.
-          </p>
-        </div>
-        {services.length ? (
-          <DataTable
-            caption="Hosting service inventory"
-            columns={columns}
-            rows={services}
-            rowKey={(service) => service.id}
-          />
-        ) : (
-          <div className="p-5">
-            <EmptyState
-              title={
-                filteredEmptyTitle('services', filteredCustomer) ??
-                'No services'
-              }
-              description={
-                filteredCustomer
-                  ? 'This customer has no services in the current bounded result.'
-                  : 'Create the first service from an eligible paid order.'
-              }
-            />
-          </div>
-        )}
-      </section>
+      <AdminServiceLedger
+        selection={applied}
+        revision={readRevision + inventoryRevision}
+        columns={columns}
+        onNavigate={() => setReview(undefined)}
+      />
     </div>
   );
 }
@@ -577,6 +557,10 @@ function ActionForm({
       <h2 className="text-lg font-bold text-slate-950">
         {action.status.replaceAll('_', ' ')} · {action.service.domain}
       </h2>
+      <p className="mt-1 break-words text-sm text-slate-700">
+        Original action target: {action.service.id}. Inventory filters do not
+        change this target.
+      </p>
       <p className="mt-1 text-sm text-slate-700">
         {destructive
           ? 'Termination is permanent in application state and requires an explicit confirmation phrase.'

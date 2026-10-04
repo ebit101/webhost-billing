@@ -826,6 +826,26 @@ This document records durable technical and product decisions. New decisions sho
   relationships, action redesign, freshness/chrome and production gates remain
   separate; production remains `NO-GO`.
 
+## ADR-068 — Independent Read-Only Administrator Service Inventory
+
+- **Status:** Accepted and implemented by authorized Command 87
+- **Date:** 2026-10-04
+- **Decision:** Use the existing protected service list with independently parsed
+  customer scope and bounded URL search/status/page/page-size inputs. Runtime-check
+  every row, applied scope and authoritative pagination; key only the abortable
+  inventory subtree, keeping operational forms and original action targets mounted.
+- **Reason:** Older service lookup must not lose unfinished operational evidence,
+  mislabel stale results or change which service an existing confirmation targets.
+  List reconciliation after a deliberate write is a new read of the latest query,
+  not insertion of a potentially nonmatching service or a retry of that write.
+- **Consequence:** Query navigation and retry clear/abort selected review. Page-local
+  sibling dispatch invalidation and pending inspection blocks remain intact. Search
+  retains domain, historical product name, current customer email and external
+  account ID semantics; ordering is createdAt descending then ID descending, not a
+  frozen history across requests. Counts are records, not financial or remote-state
+  evidence. No new API, policy, relationship, provider call, schema or worker change.
+  Setup/tool/history scale remains separate and production remains `NO-GO`.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

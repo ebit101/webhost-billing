@@ -2492,8 +2492,10 @@ automation freshness, dashboard/chrome, schema/auth/worker/dependency changes,
 providers, cleanup, releases, deployment and production approval. Production NO-GO.
 ```
 
-**Authorization:** Defined by the Command 86 phase review only; not authorized or
-implemented. Require the user's explicit Command 87 authorization before starting.
+**Authorization:** Defined by the Command 86 phase review and explicitly authorized
+by the user's "Command 87 — Make Administrator Service Inventory Searchable and
+Paginated" on 2026-10-04. Implementation and validation are recorded in
+`docs/PROGRESS.md`. Later work requires a separately authorized phase review.
 
 ---
 
