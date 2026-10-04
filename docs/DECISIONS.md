@@ -701,6 +701,29 @@ This document records durable technical and product decisions. New decisions sho
   Worker/schema/dependency/cleanup/deployment and production gates remain outside
   this command. Production remains `NO-GO`.
 
+## ADR-062 — Administrator Invoice Lookup Before Broader Workflow Expansion
+
+- **Status:** Accepted for next-command definition; implementation separately gated
+- **Date:** 2026-10-04
+- **Decision:** After reviewing Command 84, define one URL-bound administrator
+  invoice-ledger slice with search, status, bounded pagination and preserved optional
+  customer context. Use the existing protected invoice list and runtime envelope,
+  fixed local destinations, deterministic server ordering and matching-record metadata.
+- **Reason:** The manual-payment review now exposes validated invoice/customer
+  context without changing financial behavior. Operators still cannot browse older
+  invoices through the first-100 administrator ledger, although its existing API
+  supports the required search/filter/page boundary. This frequent billing lookup
+  is ready without new service relationships, financial policy or provider authority.
+- **Consequence:** Command 85 is defined, not authorized or implemented. Queries
+  must not silently mislabel customer scope or display stale rows/metadata; counts
+  are not balances. Existing draft/identity forms, bodies and retry keys remain intact,
+  and query changes must preserve unrelated unsaved form input. Successful creation
+  must reconcile the selected ledger without injecting a nonmatching draft or turning
+  a refresh failure into a duplicate write. Customer-picker scale, other ledgers,
+  service context, attention/freshness, global search and financial/provider work
+  remain separately gated. Local worker/isolation and dependency/branch-policy risks
+  are not repaired by a read-only ledger. Production remains `NO-GO`.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

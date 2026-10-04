@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 84 — Connect Administrator Manual Payment Review to Customer and Invoice Context
-- **Current status:** Completed; source delivered with passing hosted CI and CodeQL
+- **Current command:** Phase Review — Review Command 84 and Define the Next Bounded Command
+- **Current status:** Review completed; Command 85 defined but not authorized
 - **Last updated:** 2026-10-04
-- **Next command:** Phase Review — Review Command 84 and define the next bounded command
+- **Next command:** Command 85 — Make the Administrator Invoice Ledger Searchable and Paginated
 - **Next command authorized:** No
 
 ## Command Reports
@@ -7064,8 +7064,12 @@ and Invoice Context**. Do not begin it or define Command 85 automatically.
 - The source push reported the existing direct-main rule bypass and Dependabot
   high advisory 15; a passing production audit does not establish that the tracked
   advisory or branch policy was repaired. Worktree was clean after delivery. This
-  completion-evidence update is documentation-only; its own hosted checks must be
-  verified before final handoff and are not asserted in advance here.
+  completion-evidence update `12242ba5670b471d4c26bec290f31391755fb11e` is
+  documentation-only. Its [CI 37177322802](https://github.com/ebit101/webhost-billing/actions/runs/37177322802)
+  and [CodeQL 37177322856](https://github.com/ebit101/webhost-billing/actions/runs/37177322856)
+  subsequently passed for that exact head, and were reverified during the Command
+  84 phase review. Earlier pending-check lines above are historical checkpoints,
+  not the command's final unresolved status.
 
 #### Decisions and unresolved risks
 
@@ -7083,6 +7087,101 @@ and Invoice Context**. Do not begin it or define Command 85 automatically.
 
 Authorize **Phase Review — Review Command 84 and define the next bounded command**
 next. Do not define or implement Command 85 automatically.
+
+### Phase Review — Review Command 84 and Define the Next Bounded Command
+
+- **Status:** Review completed; Command 85 defined but not authorized
+- **Date:** 2026-10-04
+- **Authorization:** User's "continue" after the explicit recommended Command 84
+  phase review. Authorizes this review and next-command definition only, not Command 85.
+
+#### Scope completed
+
+- Reviewed project rules, product plan, current command, ADR-060/061, delivered
+  manual-payment review/manager diff, contracts, protected controller/service,
+  component/read API/browser tests and completion evidence. No corrective application
+  change was identified. Selected UUID/context and unknown envelopes are validated;
+  only selected detail and required time-zone GETs are dispatched. Aborted/inactive
+  requests cannot revive closed, changed, retried or successfully mutated context.
+- Confirmed kind/state, original/adjusted/refundable amounts and all recorded dates
+  remain separate facts. BigInt formatting and business-zone validation preserve
+  lossless presentation; proof/reference/failure text is escaped. Snapshot identity
+  is labelled historical, capacity is not invoice balance, and payment is not
+  provisioning evidence. Fixed customer/invoice links use parsed IDs only; no
+  original-payment chain, general review route or mandatory approval gate was added.
+- Confirmed existing deliberate recording, verification/rejection and append-only
+  adjustment request bodies, CSRF and retry keys remain unchanged. Successful
+  mutations clear context before refresh, including refresh failure. API tests reuse
+  an existing admin login rather than relax limits. Browser evidence requires an
+  authenticated dashboard before browsing and one completed selected read with only
+  an explicitly aborted development replay; no sleeps hide readiness failures.
+- Inspected remaining roadmap candidates and current administrator invoice UI/API.
+  The UI discards metadata and caps its ledger at 100. The protected list already
+  supplies bounded search/status/customer pages, stable createdAt/id ordering and
+  matching-record counts. Defined Command 85 to expose that existing lookup path
+  without financial aggregates or changing draft/identity form behavior. Other
+  ledger, customer-picker, service, attention and freshness work stays separately gated.
+- Reconciled manual-payment completion in the roadmap and clarified the historical
+  pending delivery-check paragraph in Command 84's report, retaining its failed runs.
+
+#### Files changed
+
+- `CODEX_DEVELOPMENT_COMMANDS.md` — bounded Command 85, validation/acceptance and
+  explicit not-authorized status.
+- `docs/DECISIONS.md` — ADR-062, administrator invoice lookup sequencing.
+- `docs/PRODUCT_EXPERIENCE_ROADMAP.md` — payment review completion and next slice.
+- `docs/PROGRESS.md` — this review, prior final-head evidence and exact next command.
+- No application, test, dependency, schema, environment or generated files changed.
+
+#### Validation
+
+- Started with clean `main` at `12242ba5670b471d4c26bec290f31391755fb11e`.
+- Fresh four-file payment review/management, order review and customer-filter run:
+  **54 passed**, using Vitest `--maxWorkers=1`. Fresh shared contracts: **29 passed**.
+  No test changes, skips, deadline/rate-limit changes or database preparation.
+- Reverified delivered-head [CI 37177322802](https://github.com/ebit101/webhost-billing/actions/runs/37177322802)
+  and [CodeQL 37177322856](https://github.com/ebit101/webhost-billing/actions/runs/37177322856)
+  completed successfully for exact `12242ba5670b471d4c26bec290f31391755fb11e`.
+  CI covers normal parallel packages, complete API/invariants, browser, production
+  dependency/license and optimized-build gates. Command 84's 434 local serial package,
+  12 relevant API and 12 browser tests/build are prior evidence, not fresh executions
+  in this documentation-only review. No local Docker/database lifecycle, default-
+  data cleanup, live application probe, deployment or provider request performed.
+- `pnpm docs:check` passed all four offline validators. Repository-wide
+  `pnpm format:check` and `git diff --check` passed. Final review diff contains only
+  the four documentation files listed above; no application correction was needed.
+- Fetch confirmed no intervening `origin/main` changes. Delivery uses a focused
+  documentation commit, fetch/fast-forward-only reconciliation and non-force push
+  to canonical `origin/main`. Its exact-head hosted CI/CodeQL must pass before final
+  handoff; those results are not asserted in advance.
+
+#### Decisions made
+
+- Close Command 84's bounded read-only implementation review without changing
+  application behavior. Backend authorization and every production gate remain mandatory.
+- Prioritize operator invoice lookup because it is a frequent billing task with a
+  ready protected query contract. Do not expand this into all-ledger pagination,
+  customer-picker redesign, service fulfilment or accounting policy.
+- Keep ledger queries separate from unsaved financial forms. A future successful
+  draft creation must reconcile current filters/order/metadata and distinguish a
+  later read failure from write failure, preserving retry idempotency.
+
+#### Open questions, risks and blockers
+
+- No blocker found for defining the next invoice-ledger slice. Implementation and
+  its browser/API evidence are not established by this review and require authorization.
+- First-100 customer options, other ledgers, original-payment history, service context,
+  attention/freshness and inactive chrome remain open; Command 85 closes none of them.
+- Local parallel-worker timeout/possible retained fictional fixture, Prisma versus
+  unqualified-SQL isolation risk, dependency advisory 15 and direct-main rule bypass
+  remain unresolved. Successful hosted tests are not a local worker or policy repair.
+- Credentialed providers, SMTP, monitoring, off-site recovery, final business policies,
+  infrastructure and operator-pilot evidence remain missing. Production is **NO-GO**.
+
+#### Exact recommended next command
+
+Authorize **Command 85 — Make the Administrator Invoice Ledger Searchable and
+Paginated**. Do not begin it or define Command 86 automatically.
 
 ## Report Template
 

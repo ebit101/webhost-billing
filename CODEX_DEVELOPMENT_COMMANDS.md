@@ -2238,6 +2238,98 @@ recorded in `docs/PROGRESS.md`; further work requires a separately authorized ph
 
 ---
 
+## Command 85 — Make the Administrator Invoice Ledger Searchable and Paginated
+
+```text
+Repair only the invoice ledger in /admin/invoices. Administrators currently receive
+the first 100 invoices and discard pagination metadata, despite an existing
+administrator-only GET /invoices with search, status, customerId and deterministic
+createdAt/id ordering. Expose older invoices using that existing protected contract;
+do not add an endpoint, database model, accounting aggregate or general list framework.
+
+Use URL-bound search, invoice status, page and bounded page size, together with the
+existing optional customerId context. Validate against invoiceListQuerySchema and
+the existing customer-filter boundary. Reject duplicate, malformed, unsupported
+status and overflowing page/offset input before constructing an API request. Keep
+query values as data through URLSearchParams and build only fixed /admin/invoices
+destinations, never arbitrary return URLs. Preserve the existing invalid-customer
+notice/no-inferred-context semantics; any unfiltered scope must be explicit, not
+presented as a selected customer's records. Invalid new ledger filters must have
+an honest recoverable state rather than a silently substituted normal result.
+
+Provide labelled keyboard-operable search, status, page-size, previous/next and
+clear controls. Search/status/page-size changes reset page to one and retain a
+valid customerId. Clearing ledger filters retains valid customer context; clearing
+customer context is a separate explicit action that resets pagination. Restore
+applied state on direct loads, refresh and browser back/forward. Reflect only the
+applied query as current; an unsent search draft is not an applied filter. Keep
+controls and result feedback usable on small screens.
+
+Parse unknown list responses with paginatedApiSuccessResponseSchema(invoiceSchema).
+Use authoritative matching-record metadata, validate its relationship to the applied
+page/pageSize and rows, and reject rows outside an applied valid customer/status
+scope. Do not compute account balances or full-history totals from visible rows;
+matching invoice counts are not outstanding money. Keep historical snapshot names,
+lossless minor-unit formatting, independent invoice/payment/service states and the
+existing protected invoice-detail/print/PDF destinations unchanged.
+
+Show loading, first-use empty, no-match, invalid-query, out-of-range, malformed-response
+and recoverable read-failure states distinctly, with deliberate retry or safe page-one
+recovery. Abort/discard delayed, closed/unmounted and superseded query responses;
+rows and pagination from an old query must never appear current under a new label.
+Browsing, changing filters, retry, reset, pagination and detail navigation must be
+read-only. Do not preload invoice detail/PDF or issue a read for every visible row.
+
+Preserve the existing invoice draft-creation and business-identity forms, endpoints,
+bodies, CSRF, idempotent submission keys, validation, line calculations and success/
+failure semantics. Do not remount/reset unrelated unsaved forms merely to change a
+ledger query. After successful existing draft creation, reconcile/refetch the current
+applied ledger instead of blindly prepending a draft that may violate its customer,
+status, search, page order or metadata. Distinguish successful creation from a later
+read-refresh failure so retry cannot create a duplicate. A delayed creation/read
+response must not overwrite a newer ledger selection. The first-100 customer chooser
+and broader creation/identity UX remain explicit separate limitations, not repaired
+by this ledger command. Do not add or redesign financial actions or confirmations.
+
+Add focused query/component tests for default and valid inputs, duplicate/invalid
+values, safe URL encoding and offset bounds, applied/draft filters, customer context,
+more than 100 records, server metadata, distinct empty/out-of-range/error/retry states,
+malformed/mismatched rows, stale/back-forward responses, keyboard/mobile and zero
+browsing mutations. Retain customer invoice-history and manual-payment/order-context
+regressions. Strengthen existing draft/identity request-body, key-retry and post-create
+refresh tests without changing financial behavior or discarding unsaved input.
+
+Reuse relevant invoice/customer API authorization, ownership, deterministic query and
+financial-invariant tests; add missing administrator list/read assertions only as needed.
+Add guarded fictional browser evidence that reaches an invoice beyond the first 100,
+combines search/status/customer context, restores URL state and opens authorized detail
+without changing financial/business records. Preserve the complete hosting lifecycle,
+all ten auth-readiness checks and manual-payment review evidence. Keep fake providers,
+existing rate limits, deadlines and assertions; no sleeps or weakened assertions may
+hide auth readiness or financial failures. Do not record credentials or raw traces.
+
+Read installed Next.js guidance before implementation. Run focused new/admin/customer
+invoice, payment/order/customer-filter and shared tests, relevant invoice/customer API
+E2E, the full browser suite, docs:check, format, lint, strict types, complete package
+tests and production build. Sequence heavy checks and verify both model schema and
+raw-SQL search_path for isolated fictional database runs. Keep the known local parallel-
+worker/isolation risk explicit; do not change worker source/deadlines or clean default
+development records within this UI authorization. Required checks need positive
+executed evidence; hosted CI and CodeQL must pass before handoff.
+
+Update docs/PROGRESS.md, commit, reconcile without rewriting history and push
+origin/main, verify hosted checks, then stop for a separately authorized phase review.
+Exclude other ledgers, global search, customer-picker redesign, financial aggregates,
+service/provider/automation work, authentication policy, schema/dependency/worker
+changes, cleanup, release, deployment and production approval. Production remains NO-GO.
+```
+
+**Authorization:** Defined by the Command 84 phase review on 2026-10-04. Not
+authorized or implemented. The user's "continue" authorizes that review and this
+next-command definition only; explicit Command 85 authorization is required.
+
+---
+
 ## Continuation Command
 
 If a phase encounters errors or remains incomplete, use this prompt in the same Codex task:

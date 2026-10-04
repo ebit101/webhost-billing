@@ -174,7 +174,7 @@ Priorities are:
 | Customer self-service: overview reports counts and recency, not next action          | `/portal` shows totals, one paid invoice with `BDT 0.00`, one service, and latest ticket                                                       | Customer checks whether anything needs payment, renewal, or support attention | Customer must open multiple pages to infer urgency                                               | Ownership-bound balance, overdue, next-renewal, and support-attention summary with direct links | S1–S4            | API aggregate tests, portal component states, customer E2E with paid/unpaid fixtures  | Existing invoice/service/ticket queries; bounded aggregate contract          | P0 / Command 78                                        |
 | Customer records: orders and lists are not connected                                 | `/portal/orders` displays invoice/order/domain text without links; service detail lacks invoice/order context                                  | Customer traces purchase, payment, and service                                | Manual cross-page matching by identifiers                                                        | Links between permitted order, invoice, and service records without exposing other customers    | S1, S3           | Ownership tests and customer navigation E2E                                           | Existing detail endpoints; route design                                      | P1                                                     |
 | Administrator customer context is read-only text after long edit forms               | Command 77 reordered the bounded customer aggregate, removed raw minor-unit presentation, and added validated navigation                       | Administrator answers a customer or investigates account history              | Resolved: identity, status, counts, and recent records precede edits and open protected context  | Retain bounded context, safe money/time display, and explicit customer filters                  | S1–S4            | Customer-detail component tests, API filter tests, and admin customer-to-record E2E   | Existing customer aggregate and list `customerId` filters                    | Completed / Command 77                                 |
-| Order/payment review lacks a connected detail path                                   | Command 82 links explicit order review to validated customer/invoice detail; payment context and first-100 lists remain separate gaps          | Administrator reviews paid order, receipt, and fulfilment readiness           | Order lookup repaired; broader receipt/service relationships still require separate navigation   | Retain independent states and bounded links; gate other review and search work separately       | S2–S5            | Component/API query tests and read-only paid-order navigation E2E                     | Existing detail/list endpoints                                               | Order review completed / Command 82; P1 remainder      |
+| Order/payment review lacks a connected detail path                                   | Commands 82 and 84 link explicit order/manual-payment review to validated customer/invoice detail; first-100 lists remain separate gaps        | Administrator reviews paid order, receipt, and fulfilment readiness           | Order/manual-receipt lookup repaired; broader service relationships remain separate              | Retain independent states and bounded links; gate other review and search work separately       | S2–S5            | Component/API query tests and read-only order/manual-payment navigation E2E           | Existing detail/list endpoints                                               | Order/payment review completed / Commands 82, 84       |
 | Financial policy transition requires explicit review                                 | Command 79 replaces the ledger toggle with settings review and guards both API write routes                                                    | Administrator changes settlement rules                                        | Resolved: draft edits require consequence review and fixed server confirmation                   | Preserve unchanged saves and one safe old/new transition audit                                  | S2, S4           | Component confirmation/retry tests and cross-route API audit/concurrency assertions   | Existing settings endpoint and audit                                         | Completed / Command 79                                 |
 | Provisioning/service work is concentrated on one dense page                          | `/admin/services` combines fulfilment, inventory, server credentials, tools, operation log, suspend and terminate                              | Administrator provisions and troubleshoots an account                         | Context fragmentation and dense inline actions raise wrong-record risk                           | Service-focused context with related order/invoice/customer and evidence-led actions            | S1, S3, S5–S7    | Fake-provider service E2E and role tests                                              | Existing service/panel detail endpoints                                      | P1                                                     |
 | Destructive service controls need consistent context, although the core gate is safe | Live inventory exposes Suspend/Terminate inline; source and E2E confirm reason plus exact `TERMINATE` gate                                     | Administrator stops a service                                                 | Dense rows can initiate the wrong intent even though confirmation prevents immediate termination | Retain exact confirmation and show customer/domain/state/impact in every action review          | S3, S5, S6       | Existing termination E2E plus contextual dialog assertions                            | No backend dependency                                                        | P1                                                     |
@@ -202,9 +202,10 @@ Priorities are:
 
 - Command 77 connected administrator customer history to direct invoice detail and
   explicit customer-filtered order, service, invoice, payment, and ticket ledgers.
-- Command 82 connects administrator order review to customer/invoice detail using
-  validated returned IDs. Payment, service and fulfilment context remain separate
-  gaps; no current service state is inferred from an order or paid invoice.
+- Commands 82 and 84 connect administrator order/manual-payment review to
+  customer/invoice detail using validated returned IDs. Broader service and
+  fulfilment context remain separate gaps; no current service state is inferred
+  from an order, payment or paid invoice.
 - Service and ticket views show related identities as text rather than safe links.
 - Customer order rows do not link the order to its permitted invoice or service.
 
@@ -218,6 +219,9 @@ Priorities are:
 - Command 81 implements the customer invoice ledger only, using the existing
   ownership-bound search/status and deterministic pages. Other ledgers remain
   separately gated.
+- Command 85 is defined, not authorized: administrator invoice search/pagination
+  with preserved customer context and unchanged draft/identity forms. Customer
+  chooser scale and all other ledgers remain separate.
 - Email delivery, panel operations, renewal runs, and audit activity are latest-only
   views with no user-controlled time/status query.
 
@@ -422,6 +426,29 @@ remain P1 work for the next phase review.
   context. Existing financial actions, first-100 limits and gateway attention remain
   unchanged. Executed validation and delivery status are in `docs/PROGRESS.md`; a
   separate phase review is required before defining further work.
+
+### Command 84 phase-review outcome and next bounded slice
+
+- The selected manual-payment read boundary matches Command 84: requested/returned
+  identifiers and settings are validated, proof is plain text, amounts are lossless,
+  dates use business time zone, and only fixed customer/invoice destinations are
+  exposed. Kind/state, adjustment capacity, invoice balance and provisioning are
+  explicitly separate. Filter/selection/close/mutation invalidation and original
+  financial request bodies/keys are covered. No corrective application change was found.
+- Fresh focused payment/order/filter components passed **54 tests** and shared
+  contracts passed **29 tests**. Delivered-head CI and CodeQL were reverified
+  successful; recorded complete package/API/browser/build evidence is not a fresh
+  local rerun in this documentation-only review. Production is still **NO-GO**.
+- **Command 85 defined, not authorized:** Make the Administrator Invoice Ledger
+  Searchable and Paginated. The existing administrator-only list already searches
+  invoice numbers, snapshot customer identity and line descriptions, supports status/
+  customer filters and returns deterministic pages. Expose that bounded capability
+  while preserving draft/identity forms and retry semantics; successful creation
+  must reconcile current filters and metadata rather than prepend an unmatched row.
+- Service inspection/fulfilment, original-payment history, other ledgers, customer-
+  picker scale, attention, automation freshness and inactive chrome remain separate.
+  No worker cleanup, dependency/policy repair, release or deployment is authorized
+  by this review. A new implementation requires explicit Command 85 authorization.
 
 ### Remaining production gates
 
