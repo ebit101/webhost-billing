@@ -3,7 +3,7 @@
 ## Status Summary
 
 - **Current command:** Command 85 — Make the Administrator Invoice Ledger Searchable and Paginated
-- **Current status:** Local validation passed; hosted delivery checks pending
+- **Current status:** Completed; source delivered with passing hosted CI and CodeQL
 - **Last updated:** 2026-10-04
 - **Next command:** Phase Review — Review Command 85 and define the next bounded command
 - **Next command authorized:** No
@@ -7185,7 +7185,7 @@ Paginated**. Do not begin it or define Command 86 automatically.
 
 ### Command 85 — Make the Administrator Invoice Ledger Searchable and Paginated
 
-- **Status:** Local validation passed; hosted delivery checks pending
+- **Status:** Completed; source delivered with passing hosted CI and CodeQL
 - **Date:** 2026-10-04
 - **Authorization:** Explicit user's "commaand 85"; no later command authorized.
 
@@ -7315,6 +7315,21 @@ Paginated**. Do not begin it or define Command 86 automatically.
   uses a focused commit, fast-forward-only reconciliation and non-force push.
   Its exact-source hosted CI and CodeQL must pass before handoff; those results
   are not asserted in advance. No generated/environment files are included.
+- Delivered source commit `d2cd50c08208d64f52305c7cd490304b60b99327` to canonical
+  `origin/main` after fetch/fast-forward-only reconciliation and non-force push.
+  [CI 37198689039](https://github.com/ebit101/webhost-billing/actions/runs/37198689039)
+  and [CodeQL 37198689021](https://github.com/ebit101/webhost-billing/actions/runs/37198689021)
+  both completed successfully for that exact commit. Hosted CI passed full-history
+  secret scanning, formatting/docs/lint/types, normal parallel package tests,
+  complete API integration and critical invariants, the full browser suite,
+  production dependency audit/license inventory and optimized build. The PR-only
+  dependency-review job was skipped on push, not claimed as executed.
+- Push retained the existing direct-main rule bypass and high Dependabot advisory
+  15; neither governance nor the tracked advisory was repaired. Worktree was clean
+  and `HEAD` synchronized with `origin/main` after source delivery. This final
+  completion-evidence update is documentation-only; its hosted checks are
+  independently required before handoff. Earlier pending-check lines are historical
+  checkpoints, not unresolved source validation failures.
 
 #### Decisions and unresolved risks
 
