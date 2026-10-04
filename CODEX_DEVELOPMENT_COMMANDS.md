@@ -2150,6 +2150,93 @@ in `docs/PROGRESS.md`. Further work requires a separately authorized phase revie
 
 ---
 
+## Command 84 — Connect Administrator Manual Payment Review to Customer and Invoice Context
+
+```text
+Add one explicitly selected, read-only manual-payment review to the existing
+administrator payment workspace. Use the existing protected GET /payments/:paymentId
+and manualPaymentSchema; do not build a new route, endpoint, read model or general
+review framework. The ledger currently shows unlinked invoice/customer text and
+inline actions, while its detail contract already supplies proof, timestamps,
+transaction kind/state, adjustment totals and related IDs. Repair that bounded
+operator lookup path only.
+
+Provide an accessible, keyboard-operable Review payment action, loading, unavailable,
+malformed-response, recoverable failure, retry and close states. Validate the requested
+UUID and parse unknown returned data at runtime; a returned payment ID must match
+the selected ID. Never use unvalidated row data to build a request or link. Selection
+must not automatically verify, reject, refund, reverse, record or reconcile anything.
+Keep read requests bounded to the selected record and required business-time-zone
+configuration; do not fetch a detail for every row or preload entire related histories.
+
+Show reference, manual method, transaction kind and state, submitted-by role, payer
+name/note and rejection/failure reason where present, original amount, adjusted and
+remaining refundable amounts, and received/reviewed/verified/created/updated dates.
+Keep absent facts explicit. Render submitted proof/reference/note/reason as escaped
+plain text, never HTML or provider evidence. Format lossless integer minor units
+without Number/float conversion and show dates using the configured business time
+zone, not the browser default. Label refundable capacity separately from invoice
+balance; zero capacity on a pending/rejected transaction is not proof of settlement.
+
+Build fixed local links to /admin/customers/:customerId and
+/admin/invoices/:invoiceId only from the parsed returned identifiers. Show the invoice
+number and customer name as the supplied historical invoice context, not current
+customer profile evidence. A payment state is not an invoice/order/service state and
+does not prove hosting provisioning. Do not infer an invoice balance/status, order
+or service association from a payment. For an adjustment, clearly explain its link
+to the original payment using the returned originalPaymentId, without inventing a
+payment detail route, adjustment-history query or automatically following a chain.
+Original-payment navigation and richer financial-history review remain separately
+gated; customer and invoice details already provide the permitted fixed destinations.
+
+Clear or revalidate selected context on customer-filter change and after successful
+existing payment recording, verification/rejection or adjustment. Discard delayed,
+closed, unmounted and mismatched selection responses; retry must not revive an old
+selection. Restore focus appropriately on close and keep the review usable on small
+screens. Opening, switching, retrying, closing and following context links must be
+read-only. This review is supplementary context, not a new required approval gate.
+
+Preserve existing financial mutation endpoints/bodies, CSRF, authorization/ownership,
+idempotency keys, partial-payment confirmation, rejection policy, append-only refunds
+and reversals, successful ledger/invoice refresh and gateway attention/reconciliation.
+Do not move mutation controls into the review, add confirmations or redesign their
+forms. Keep existing customerId filter parsing/notice and the current first-100
+ledger behavior unchanged; search/pagination is a later bounded command.
+
+Add component coverage for charge/adjustment, pending/verified/rejected states,
+nullable evidence, proof escaping, large lossless money, business-zone dates,
+validated customer/invoice links, malformed/mismatched IDs, stale selection/filter/
+close/mutation responses, retry, keyboard/focus/mobile behavior and zero browsing
+mutations. Retain and strengthen existing recording/review/adjustment regression
+assertions without changing business behavior. Reuse the protected payment and
+invoice API role/ownership tests; add only missing read-boundary assertions if needed.
+Extend isolated fictional browser evidence with deliberate admin manual-payment
+review, fixed customer/invoice navigation and unchanged relevant database records.
+Preserve the complete lifecycle and all ten auth-readiness checks, rate limits,
+deadlines, isolation and fake providers. No waits or weakened assertions may hide
+credential submission or timing failures; no observed secrets/raw traces in reports.
+
+Read installed Next.js guidance before implementation. Run focused payment/customer-
+filter/order/auth web and shared tests, relevant payment/invoice API E2E, full browser
+suite, docs:check, formatting, lint, strict types, complete package tests and production
+build. Sequence heavy local checks; where fictional schema overrides are used,
+verify both Prisma model schema and raw SQL search_path as documented in Command 83.
+Record any local parallel-worker failure honestly; do not alter deadlines/assertions,
+repair worker source or clean development records within this UI command. Required
+validation must have positive evidence, and hosted CI/CodeQL must pass before handoff.
+
+Update docs/PROGRESS.md, commit, reconcile without rewriting history, push origin/main,
+verify hosted checks, then stop for a separately authorized phase review. Exclude all
+other ledgers, gateway/provider features, service automation, authentication policy,
+schema/dependency/worker changes, cleanup, release, deployment and production approval.
+Production remains NO-GO.
+```
+
+**Authorization:** Defined by the Command 83 phase review on 2026-10-04; not yet
+authorized or implemented. Request explicit authorization for Command 84.
+
+---
+
 ## Continuation Command
 
 If a phase encounters errors or remains incomplete, use this prompt in the same Codex task:

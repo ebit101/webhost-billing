@@ -390,7 +390,29 @@ remain P1 work for the next phase review.
   five entries. [Playwright's guidance](https://playwright.dev/docs/navigations#hydration)
   supports disabling controls until handlers are functional. See `docs/PROGRESS.md`
   for executed evidence. Backend policy, deployments and other workflows remain
-  excluded; a separate phase review is required before defining further work.
+  excluded; a separate phase review was required before defining further work.
+
+### Command 83 phase-review outcome and next bounded slice
+
+- The auth-only fieldset and stable SSR/initial-client snapshot, explicit POST,
+  streaming/no-script feedback and separate password/MFA identities match the
+  authorized command. Fresh auth/order component checks (51), shared contracts (29)
+  and baseline payment components (3) passed. The delivered head's CI and CodeQL
+  were reverified successful; no corrective application change was found. Prior
+  browser/API/full-suite/build results are retained evidence, not claimed reruns.
+- **Command 84 defined, not authorized:** Connect Administrator Manual Payment
+  Review to Customer and Invoice Context. Existing `GET /payments/:paymentId` and
+  `manualPaymentSchema` already support a bounded read-only review; customer/invoice
+  text is unlinked and payer proof/details are not exposed for inspection in the
+  ledger. Add explicit selection and validated fixed local links, separate
+  transaction/adjustment facts, safe money/time presentation and stale-response
+  protection without changing recording, verification, rejection or adjustment rules.
+- This closes neither first-100 ledger limits nor broader financial/service context.
+  Original-payment navigation, histories, dashboard attention, automation freshness,
+  inactive workspace chrome and other P1 gaps remain separate. The local worker
+  timeout and model/raw-SQL schema-isolation limitation also remain tracked, not
+  silently repaired or approved. No cleanup or later-command implementation is
+  authorized by this review; production stays **NO-GO**.
 
 ### Remaining production gates
 

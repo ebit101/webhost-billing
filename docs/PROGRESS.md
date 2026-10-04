@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 83 — Prevent Native Credential Submission From Authentication Forms
-- **Current status:** Completed; source delivered with passing hosted CI and CodeQL
+- **Current command:** Phase Review — Review Command 83 and define the next bounded command
+- **Current status:** Review completed; Command 84 defined but not authorized
 - **Last updated:** 2026-10-04
-- **Next command:** Phase Review — Review Command 83 and define the next bounded command
+- **Next command:** Command 84 — Connect Administrator Manual Payment Review to Customer and Invoice Context
 - **Next command authorized:** No
 
 ## Command Reports
@@ -6716,7 +6716,8 @@ Forms** separately. Do not begin it automatically.
   and the unchanged lifecycle passed. After corrections, `pnpm test:e2e` passed
   all ten new readiness checks plus the complete existing lifecycle (11 total,
   2.2 minutes). No auth limit, deadline, test isolation or assertion was weakened.
-- Hosted CI/CodeQL are pending delivery; no unexecuted check is claimed passed.
+- At the initial local-validation checkpoint, hosted CI/CodeQL were pending;
+  subsequent exact-commit results are recorded below, not claimed as earlier evidence.
 - Final docs:check (all four), repository format:check and lint passed. The full
   strict type check caught an optional-property inference in the new browser
   expected-body fixture; narrowed it to an explicit string record without changing
@@ -6832,6 +6833,101 @@ Forms** separately. Do not begin it automatically.
 
 Authorize **Phase Review — Review Command 83 and define the next bounded command**.
 Do not define Command 84 or begin another command automatically.
+
+### Phase Review — Review Command 83 and Define the Next Bounded Command
+
+- **Status:** Review completed; Command 84 defined but not authorized
+- **Date:** 2026-10-04
+- **Authorization:** User's "continue" after the explicit proposed Command 83 phase
+  review. Authorizes this review and next-command definition only, not Command 84.
+
+#### Scope completed
+
+- Reviewed Command 83 against project rules, the product plan, ADR-058/059, its
+  delivered diff, component/hydration tests, deterministic browser specification and
+  completion evidence. The guard covers all five entry routes and the login MFA
+  branch, disables all named controls, declares native POST only as defense in
+  depth, and retains the existing CSRF requests, token/intent links and shared
+  two-factor workflow. No corrective application change was identified.
+- Confirmed the first hydration commit is tested through public React/DOM APIs;
+  browser checks cover disabled successful controls, fictional autofill, native
+  click/Enter attempts, unchanged auth/business counts and restored protected POST
+  behavior after script release. Their page-local mocks do not independently prove
+  backend policy; unchanged real-API lifecycle and recorded auth E2E provide that
+  separate evidence. The existing lifecycle/configuration/backend/worker files were
+  not changed by Command 83. This is a bounded safeguard, not a security certification.
+- Reviewed remaining roadmap gaps and the current manual-payment UI, contract,
+  controller and service. The manual ledger's invoice/customer text is unlinked;
+  payer proof/details are returned but not presented for explicit inspection.
+  Existing protected detail supplies IDs, kind/state, safe proof, timestamps and
+  lossless adjustment/refundable amounts. It deliberately restricts records to
+  provider `manual` and enforces customer ownership at the service layer.
+- Defined Command 84 for one explicit read-only administrator manual-payment review
+  and fixed customer/invoice links. Preserve existing financial rules and state
+  separation. Broader payment/original-payment history, search/pagination, service
+  context, automation and dashboard work remain separate. Command 84 is not implemented.
+- Clarified one historical pending-hosted-check line in Command 83's report, retaining
+  its chronological failures, serial evidence and later exact-commit results.
+
+#### Files changed
+
+- `CODEX_DEVELOPMENT_COMMANDS.md` — Command 84 scope, safety boundaries, acceptance
+  coverage, validation and explicit not-authorized status.
+- `docs/DECISIONS.md` — ADR-060, bounded read-only manual-payment context selection.
+- `docs/PRODUCT_EXPERIENCE_ROADMAP.md` — phase-review outcome and remaining boundaries.
+- `docs/PROGRESS.md` — this report, chronology clarification and exact next command.
+- No application, test, dependency, schema, environment or generated files changed.
+
+#### Validation
+
+- Started with clean `main` at `cc88af94735bfda50583983caad1d1a8c794fdca`.
+- Fresh seven-file auth/shared-controls/order component run: **51 passed** using
+  Vitest `--maxWorkers=1`; shared package contracts: **29 passed**; existing manual/
+  gateway payment component baseline: **3 passed**. No test changes or skips.
+- Reverified delivered-head [CI 37171092418](https://github.com/ebit101/webhost-billing/actions/runs/37171092418)
+  and [CodeQL 37171092361](https://github.com/ebit101/webhost-billing/actions/runs/37171092361)
+  completed successfully for exact `cc88af94735bfda50583983caad1d1a8c794fdca`.
+  CI includes normal parallel packages, full API/invariants, browser, audit/license
+  and production build gates. Command 83's local 401 serial tests, eight auth API
+  E2E and 11 browser checks/build are prior delivery evidence, not fresh local
+  executions in this documentation-only review. No local database preparation,
+  cleanup, deployment, live probe or provider request was performed here.
+- `pnpm docs:check`: all four offline validators passed. Repository
+  `pnpm format:check` and `git diff --check` passed. Final diff contains only the
+  four documentation files listed above.
+- Delivery uses a focused documentation commit, fetch/fast-forward-only remote
+  reconciliation and non-force push to canonical `origin/main`. Final review-commit
+  CI/CodeQL must be verified successful after pushing and before handoff; those
+  exact-head results are reported only after execution, not asserted in advance.
+
+#### Decisions made
+
+- Close the bounded auth implementation review with no corrective code change;
+  keep backend enforcement and all production gates mandatory.
+- Choose manual-payment investigation over broader ledger/framework or provider work:
+  it is a frequent adjacent operator task with a ready protected runtime contract.
+  Read-only review is not a new mandatory verification gate or financial-policy change.
+- Do not repurpose refundable capacity as invoice balance, snapshot names as current
+  customer identity or payment/order status as successful hosting provisioning.
+- Keep local parallel-worker failure and unqualified raw-SQL isolation risk explicit;
+  a future implementation must sequence checks and verify test isolation, not weaken
+  deadlines or clean default development records under this UI authorization.
+
+#### Open questions, risks and blockers
+
+- No implementation blocker found for the bounded review slice. The broader manual-
+  payment mutation UX, original-payment navigation and first-100 ledger limit remain
+  unchanged; this next command does not imply their completion.
+- Prior worker timeout/possible retained fictional fixture, schema/search-path
+  mismatch risk, existing dependency advisory and direct-main rule bypass remain
+  open. This review repairs none of them and makes no general security assurance.
+- Credentialed providers, SMTP, monitoring, off-site recovery, business policy,
+  infrastructure and operator-pilot evidence remain missing. Production is **NO-GO**.
+
+#### Exact recommended next command
+
+Authorize **Command 84 — Connect Administrator Manual Payment Review to Customer
+and Invoice Context**. Do not begin it or define Command 85 automatically.
 
 ## Report Template
 

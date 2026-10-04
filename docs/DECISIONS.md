@@ -651,6 +651,31 @@ This document records durable technical and product decisions. New decisions sho
   close unrelated security/operations gates or authorize further work. Production
   remains `NO-GO`.
 
+## ADR-060 — Bounded Read-Only Administrator Manual Payment Context
+
+- **Status:** Accepted for next-command definition; implementation separately gated
+- **Date:** 2026-10-04
+- **Decision:** After reviewing Command 83, define one explicit read-only review in
+  the administrator manual-payment ledger using its existing protected detail and
+  runtime schema. Present proof, independent transaction state, server-derived
+  adjustment capacity and business-zone dates, with fixed validated customer and
+  invoice links. Preserve every existing deliberate financial mutation.
+- **Reason:** The credential readiness boundary now has SSR/first-hydration,
+  no-JavaScript and delayed-script evidence plus preserved real-API lifecycle
+  coverage. No corrective auth change was found. Operator payment investigation
+  still starts from unlinked invoice/customer text; existing detail already exposes
+  the required facts without a new backend dependency. This complements Command
+  82's order context while keeping financial-policy changes out of a lookup repair.
+- **Consequence:** Command 84 is defined, not authorized or implemented. Review,
+  retry, close and navigation must not mutate records; malformed, mismatched or stale
+  responses cannot become current context. Proof remains plain text, snapshot names
+  do not claim current profile identity, refundable capacity is not invoice balance,
+  and payment is not provisioning evidence. Original-payment navigation, financial
+  histories, pagination/search, gateway work, service operations, workers, schema,
+  dependencies, cleanup, releases and deployments remain separately gated. Command
+  83's local parallel-worker limitation/raw-SQL isolation risk remains unresolved;
+  successful hosted checks do not establish its local repair. Production stays `NO-GO`.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:
