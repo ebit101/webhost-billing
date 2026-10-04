@@ -1,9 +1,14 @@
-import { serviceStatusSchema, type Service } from '@webhost-billing/shared';
+import {
+  serviceStatusSchema,
+  type HostingPanelOperation,
+  type Service,
+} from '@webhost-billing/shared';
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AdminServiceReview } from './admin-service-review';
 import { AdminServiceManager } from './admin-service-manager';
+import { AdminServicesWorkspace } from './admin-services-workspace';
 
 const id = '86000000-0000-4000-8000-000000000001';
 const customerId = '86000000-0000-4000-8000-000000000002';
@@ -292,6 +297,26 @@ describe('selected administrator service read', () => {
 });
 
 describe('service review integration preserves deliberate operations', () => {
+  const panelOperation: HostingPanelOperation = {
+    id: otherId,
+    serviceId: id,
+    server: service.server,
+    requestedByUserId: otherId,
+    automationRunId: null,
+    retryOfOperationId: null,
+    type: 'CREATE_ACCOUNT',
+    status: 'FAILED',
+    adapterKey: 'fake-panel',
+    attemptNumber: 1,
+    retryable: true,
+    errorKind: 'TEMPORARY',
+    errorCode: 'FICTIONAL',
+    errorMessage: 'Fictional temporary failure',
+    account: null,
+    startedAt: service.startedAt,
+    completedAt: service.startedAt,
+    createdAt: service.startedAt,
+  };
   function fixture(
     row = service,
     handler?: (
@@ -348,6 +373,232 @@ describe('service review integration preserves deliberate operations', () => {
     );
     await screen.findByRole('link', { name: 'View customer' });
   }
+  it.each([
+    'test',
+    'configure',
+    'retry',
+    'GET_ACCOUNT',
+    'CHANGE_PACKAGE',
+    'CHANGE_PASSWORD',
+    'GENERATE_LOGIN_URL',
+  ] as const)(
+    'clears review at sibling %s dispatch and preserves forms and the original request on failure',
+    async (tool) => {
+      const user = userEvent.setup();
+      const mutation = deferred<Response>();
+      const row = { ...service, status: 'ACTIVE' as const };
+      const fetchMock = fixture(row, (path, options) => {
+        if (options?.method === 'POST') return mutation.promise;
+        if (path === '/hosting-panel/operations')
+          return json({
+            success: true,
+            data: [panelOperation],
+            pagination: {
+              page: 1,
+              pageSize: 100,
+              totalItems: 1,
+              totalPages: 1,
+            },
+          });
+      });
+      render(
+        <AdminServicesWorkspace
+          customerFilter={{ customerId, invalid: false }}
+        />,
+      );
+      await screen.findByRole('heading', { name: 'Account tools' });
+      await user.selectOptions(
+        screen.getByLabelText('Paid order item'),
+        otherId,
+      );
+      await user.selectOptions(
+        screen.getByLabelText('Active server'),
+        service.server.id,
+      );
+      await user.click(screen.getByRole('button', { name: 'Suspend' }));
+      await user.type(
+        screen.getByLabelText('Reason'),
+        'Unfinished service reason',
+      );
+      await open(user);
+      const readsBefore = fetchMock.mock.calls.filter(([url]) =>
+        String(url).endsWith(`/services/${id}`),
+      ).length;
+      if (tool === 'test')
+        await user.click(
+          screen.getByRole('button', { name: `Test ${service.server.name}` }),
+        );
+      else if (tool === 'retry')
+        await user.click(
+          screen.getByRole('button', { name: 'Retry manually' }),
+        );
+      else if (tool === 'configure') {
+        await user.type(
+          screen.getByLabelText('WHM username'),
+          'fictional-admin',
+        );
+        await user.type(
+          screen.getByLabelText('New API token'),
+          'FictionalTokenValue1234567890',
+        );
+        await user.click(
+          screen.getByRole('button', { name: 'Encrypt and save cPanel' }),
+        );
+      } else {
+        await user.selectOptions(screen.getByLabelText('Action'), tool);
+        if (tool === 'CHANGE_PACKAGE')
+          await user.type(
+            screen.getByLabelText('Panel package'),
+            'fictional_package',
+          );
+        if (tool === 'CHANGE_PASSWORD')
+          await user.type(
+            screen.getByLabelText('New password'),
+            'FictionalPassword123456',
+          );
+        await user.click(
+          screen.getByRole('button', { name: 'Run account tool' }),
+        );
+      }
+      expect(
+        screen.queryByRole('heading', { name: 'Service review' }),
+      ).toBeNull();
+      const trigger = screen.getByRole('button', {
+        name: `Review ${service.domain}`,
+      });
+      expect((trigger as HTMLButtonElement).disabled).toBe(true);
+      expect(
+        screen.getByText(/inspection is paused while a panel operation/),
+      ).toBeTruthy();
+      const write = fetchMock.mock.calls.find(
+        ([, options]) => options?.method === 'POST',
+      );
+      const path =
+        tool === 'test'
+          ? `/hosting-panel/servers/${service.server.id}/test`
+          : tool === 'configure'
+            ? `/hosting-panel/servers/${service.server.id}/cpanel-configuration`
+            : tool === 'retry'
+              ? `/hosting-panel/operations/${otherId}/retry`
+              : `/hosting-panel/services/${id}/operations`;
+      expect(new URL(String(write?.[0])).pathname).toBe(path);
+      expect(write?.[1]?.credentials).toBe('include');
+      expect(write?.[1]?.headers).toEqual({
+        'X-CSRF-Token': 'fictional-csrf',
+        'Content-Type': 'application/json',
+      });
+      expect(JSON.parse(String(write?.[1]?.body))).toEqual(
+        tool === 'configure'
+          ? {
+              hostname: service.server.hostname,
+              port: 2087,
+              apiUsername: 'fictional-admin',
+              apiToken: 'FictionalTokenValue1234567890',
+              confirmation: 'CONFIGURE_CPANEL',
+            }
+          : {
+              submissionKey: expect.stringMatching(/^[0-9a-f-]{36}$/),
+              ...(['test', 'retry'].includes(tool) ? {} : { type: tool }),
+              ...(tool === 'CHANGE_PACKAGE'
+                ? { packageIdentifier: 'fictional_package' }
+                : {}),
+              ...(tool === 'CHANGE_PASSWORD'
+                ? { newPassword: 'FictionalPassword123456' }
+                : {}),
+            },
+      );
+      await act(async () =>
+        mutation.resolve(
+          json(
+            { success: false, error: { message: 'Fictional panel failure' } },
+            503,
+          ),
+        ),
+      );
+      await screen.findByText('Fictional panel failure');
+      expect((trigger as HTMLButtonElement).disabled).toBe(false);
+      expect(
+        screen.queryByRole('heading', { name: 'Service review' }),
+      ).toBeNull();
+      expect(
+        (screen.getByLabelText('Reason') as HTMLTextAreaElement).value,
+      ).toBe('Unfinished service reason');
+      expect(
+        (screen.getByLabelText('Paid order item') as HTMLSelectElement).value,
+      ).toBe(otherId);
+      expect(
+        (screen.getByLabelText('Active server') as HTMLSelectElement).value,
+      ).toBe(service.server.id);
+      expect(
+        fetchMock.mock.calls.filter(([url]) =>
+          String(url).endsWith(`/services/${id}`),
+        ),
+      ).toHaveLength(readsBefore);
+      expect(
+        fetchMock.mock.calls.filter(
+          ([, options]) => options?.method === 'POST',
+        ),
+      ).toHaveLength(1);
+      await open(user);
+    },
+  );
+  it('aborts a pending review at sibling dispatch and never restores it after successful completion', async () => {
+    const user = userEvent.setup();
+    const slow = deferred<Response>();
+    const mutation = deferred<Response>();
+    const fetchMock = fixture(service, (path, options) => {
+      if (options?.method === 'POST') return mutation.promise;
+      if (path === '/hosting-panel/operations')
+        return json({
+          success: true,
+          data: [panelOperation],
+          pagination: { page: 1, pageSize: 100, totalItems: 1, totalPages: 1 },
+        });
+      if (path === `/services/${id}`) return slow.promise;
+    });
+    render(<AdminServicesWorkspace customerFilter={{ invalid: false }} />);
+    await screen.findByRole('heading', { name: 'Account tools' });
+    await user.click(
+      screen.getByRole('button', { name: `Review ${service.domain}` }),
+    );
+    const signal = fetchMock.mock.calls.find(([url]) =>
+      String(url).endsWith(`/services/${id}`),
+    )?.[1]?.signal;
+    await user.click(
+      screen.getByRole('button', { name: `Test ${service.server.name}` }),
+    );
+    expect(signal?.aborted).toBe(true);
+    await act(async () => slow.resolve(success(service)));
+    expect(
+      screen.queryByRole('heading', { name: 'Service review' }),
+    ).toBeNull();
+    await act(async () =>
+      mutation.resolve(
+        success({
+          operation: {
+            ...panelOperation,
+            type: 'TEST_CONNECTION',
+            status: 'SUCCEEDED',
+            retryable: false,
+          },
+          duplicate: false,
+          loginUrl: null,
+        }),
+      ),
+    );
+    await screen.findByText('Connection test finished.');
+    expect(
+      screen.queryByRole('heading', { name: 'Service review' }),
+    ).toBeNull();
+    expect(
+      (
+        screen.getByRole('button', {
+          name: `Review ${service.domain}`,
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(false);
+    await open(user);
+  });
   it('reads only after selection, preserves unfinished creation/action input and restores focus on close', async () => {
     const user = userEvent.setup();
     const fetchMock = fixture();

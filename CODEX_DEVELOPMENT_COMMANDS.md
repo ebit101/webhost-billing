@@ -2419,6 +2419,84 @@ in `docs/PROGRESS.md`. Later work requires a separately authorized phase review.
 
 ---
 
+## Command 87 — Make Administrator Service Inventory Searchable and Paginated
+
+```text
+Replace only the fixed first-100 administrator service inventory with an explicit
+URL-bound read-only ledger inside the existing /admin/services workspace. Use the
+existing protected GET /services, serviceListQuerySchema, serviceSchema and
+paginated envelope. Add no endpoint, route, schema or business rule.
+
+Support search, application service status, bounded page and page size, preserving
+the existing independently validated optional customerId scope. Validate duplicate,
+malformed, overlong, unsafe-offset and unsupported owned query inputs before reads;
+reconstruct only the fixed local inventory destination. Preserve the invalid-
+customer warning and explicit all-customer semantics, never inferred ownership.
+Reset page on a deliberate search/status/page-size change. Clearing inventory
+filters retains valid customer scope; clearing customer scope is separate. Preserve
+refresh, back/forward and deep-link behavior without a general search framework.
+
+Use cookie/no-store abortable GETs and runtime-validate every row, authoritative
+pagination and applied status/customer scope. Discard superseded responses on
+query changes, retry and unmount. Show loading, invalid-query, malformed/context-
+mismatched, empty, out-of-range and recoverable read-failure states; never silently
+clamp the page or label old rows/counts as current. Counts are matching records,
+not account balances or provisioning success. Search semantics remain the existing
+API's domain, historical product name, current customer email and external account
+ID matching; deterministic ordering stays createdAt desc then id desc. Do not
+invent domain-only search, server filtering or a frozen history across requests.
+
+Keep creation, action and panel forms outside any query-keyed inventory subtree.
+Query/selection changes must invalidate the selected service review and its pending
+reads without resetting unrelated unfinished creation/reason/confirmation/panel
+input. If an action form remains open, keep its original target explicit rather
+than retargeting it to a new row. Existing review stays deliberately selected,
+runtime validated and GET-only, with fixed customer links and business-zone facts.
+No per-row detail preload, chain fetch, provider check, new approval gate or write
+on search/page/retry/close/navigation. Keep 375px controls and keyboard focus usable.
+
+Preserve exact creation/status/panel endpoints, bodies, CSRF, submission keys,
+eligible-order/server rules, failure classification, reasons and TERMINATE phrase.
+Retain page-local panel-dispatch invalidation from the Command 86 phase review,
+including configuration, server test, tools and manual retry. Inspection remains
+blocked for a pending mutation and cannot resurrect on completion or read failure.
+Reconcile only after an existing deliberate mutation finishes: refresh the latest
+applied inventory query without injecting a nonmatching service or making a failed
+follow-up read trigger another write. Account tools, setup options and stored panel
+history remain their existing independent surfaces; their scale is not this ledger.
+
+Add focused query/component evidence for histories above 100, combined filters,
+query restoration/clearing, invalid/out-of-range inputs, row/metadata mismatch,
+delayed-response discard, failed reads, preserved forms/action targets, selected
+review invalidation and unchanged request bodies. Retain all service/panel and
+invoice/order/payment/customer-filter regressions. Reuse API role/ownership and
+state-separation tests; add deterministic search/status/customer ordering/count
+assertions where absent. Add a guarded fictional browser journey proving an older
+service can be found, reviewed and linked to its customer without inventory-browsing
+mutations; compare service/operation/financial/audit/outbox records. Use an isolated
+fictional sign-in account without raising limits/deadlines, fake providers only,
+and no credential-bearing trace/video/screenshot artifacts.
+
+Read installed Next.js guidance before edits. Run focused service/ledger and shared
+tests, relevant API E2E, complete web/package tests, full browser suite, docs:check,
+format, lint, strict workspace/browser types and production build. Sequence heavy
+checks and verify both fictional Prisma model schema and raw-SQL search_path before
+database tests. Do not modify worker source, dependencies, timeouts, default local
+records or test assertions to hide existing execution/isolation risks.
+
+Update docs/PROGRESS.md, commit, reconcile without rewriting published history,
+non-force push origin/main, verify exact-head CI and CodeQL and stop for phase
+review. Exclude customer service history, setup/tool/history pagination, other
+ledgers, richer billing/order/service relationships, service-action redesign,
+automation freshness, dashboard/chrome, schema/auth/worker/dependency changes,
+providers, cleanup, releases, deployment and production approval. Production NO-GO.
+```
+
+**Authorization:** Defined by the Command 86 phase review only; not authorized or
+implemented. Require the user's explicit Command 87 authorization before starting.
+
+---
+
 ## Continuation Command
 
 If a phase encounters errors or remains incomplete, use this prompt in the same Codex task:

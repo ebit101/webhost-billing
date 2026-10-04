@@ -23,7 +23,11 @@ import { serviceDate, serviceError } from './service-ui';
 type AccountTool =
   'GET_ACCOUNT' | 'CHANGE_PACKAGE' | 'CHANGE_PASSWORD' | 'GENERATE_LOGIN_URL';
 
-export function AdminHostingOperationManager() {
+export function AdminHostingOperationManager({
+  onMutationStateChange,
+}: {
+  onMutationStateChange?: (begun: boolean) => void;
+} = {}) {
   const [operations, setOperations] = useState<HostingPanelOperation[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [options, setOptions] = useState<ServiceSetupOptions>({
@@ -146,6 +150,7 @@ export function AdminHostingOperationManager() {
     event.preventDefault();
     const form = event.currentTarget;
     const values = new FormData(form);
+    onMutationStateChange?.(true);
     setSaving(true);
     setError('');
     setNotice('');
@@ -176,6 +181,7 @@ export function AdminHostingOperationManager() {
       setError(serviceError(caught));
     } finally {
       setSaving(false);
+      onMutationStateChange?.(false);
     }
   }
 
@@ -215,6 +221,7 @@ export function AdminHostingOperationManager() {
     body: Record<string, unknown>,
     successMessage: string,
   ) {
+    onMutationStateChange?.(true);
     setSaving(true);
     setError('');
     setNotice('');
@@ -242,6 +249,7 @@ export function AdminHostingOperationManager() {
       setError(serviceError(caught));
     } finally {
       setSaving(false);
+      onMutationStateChange?.(false);
     }
   }
 

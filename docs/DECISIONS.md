@@ -789,6 +789,43 @@ This document records durable technical and product decisions. New decisions sho
   connection with explicit search_path and verifies it before fixtures; the shared
   database/worker isolation risk is not thereby repaired. Production stays `NO-GO`.
 
+## ADR-066 — Page-Local Invalidation Across Service and Panel Workspaces
+
+- **Status:** Accepted; Command 86 phase-review correction
+- **Date:** 2026-10-04
+- **Decision:** Compose the existing service and panel managers in one small client
+  workspace. A panel-dispatch revision clears selected review synchronously; a
+  pending count blocks inspection until every begun panel request finishes. Keep
+  both managers/forms mounted and leave their original requests and policy intact.
+- **Reason:** Command 86 cleared review for creation and lifecycle calls in the
+  service manager, but its sibling panel tools/configuration/retry did not signal
+  dispatch. Those deliberate operations can change stored facts or have uncertain
+  outcomes; old application evidence must not remain visible as current context.
+- **Consequence:** Connection tests, configuration, all account tools and manual
+  retry clear/abort review before CSRF/request dispatch and never restore it on
+  success or failure. A later inspection requires deliberate selection. No global
+  event bus, provider call on review, new approval gate, form remount or mutation
+  body/key/confirmation change. This extends ADR-065 to the complete page boundary.
+
+## ADR-067 — Read-Only Service Inventory Scale Before Broader Fulfilment
+
+- **Status:** Accepted for next-command definition; implementation separately gated
+- **Date:** 2026-10-04
+- **Decision:** Define Command 87 as URL-bound administrator service search/status
+  and bounded pagination using the existing protected list and runtime envelope,
+  preserving independent customer scope, selected review and original operations.
+- **Reason:** Service inspection now exposes existing facts safely, but operators
+  cannot reach services older than the first 100 through this inventory. The API
+  already supplies bounded search/filter inputs, deterministic ordering and counts;
+  one ledger has ready dependencies without new relationships or provider authority.
+- **Consequence:** Command 87 is defined, not authorized or implemented. Queries
+  must preserve unfinished operational forms, discard stale rows/counts/reviews and
+  reconcile the latest query after deliberate writes without injecting a wrong-scope
+  service or retrying a mutation after read failure. Matching counts are not money
+  or remote-state evidence. Setup/tool/history scale, other ledgers, fulfilment
+  relationships, action redesign, freshness/chrome and production gates remain
+  separate; production remains `NO-GO`.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

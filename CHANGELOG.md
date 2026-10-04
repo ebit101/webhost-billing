@@ -10,6 +10,9 @@ and will be called out in release notes.
 
 ### Changed
 
+- Extended service-inspection invalidation to sibling panel configuration, tests,
+  tools and manual retry. Pending dispatches pause inspection; success/failure never
+  restores old context, and unfinished operational forms remain mounted.
 - Added explicit read-only administrator service inspection with validated current
   customer context, historical product references, lossless recurring money and
   business-zone lifecycle facts. Selection/filter/close and mutation dispatch

@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 86 — Add Read-Only Administrator Service Inspection
-- **Current status:** Completed; source delivered with passing CI and CodeQL
+- **Current command:** Phase Review — Review Command 86 and define the next bounded command
+- **Current status:** Review/correction locally validated; hosted delivery pending
 - **Last updated:** 2026-10-04
-- **Next command:** Phase Review — Review Command 86 and define the next bounded command
+- **Next command:** Command 87 — Make Administrator Service Inventory Searchable and Paginated
 - **Next command authorized:** No
 
 ## Command Reports
@@ -7553,6 +7553,111 @@ start its implementation or any later command automatically.
 
 Authorize **Phase Review — Review Command 86 and define the next
 bounded command**. Do not define or implement Command 87 automatically.
+
+### Phase Review — Review Command 86 and define the next bounded command
+
+- **Status:** Review/correction locally validated; hosted delivery pending
+- **Date:** 2026-10-04
+- **Authorization:** User's "contiue" after Command 86 and the recommended phase
+  review. Command 87 implementation is not authorized.
+
+#### Scope reviewed and correction
+
+- Reviewed project/web instructions, plan, decisions, current/recent progress,
+  Command 86, its delivered diff, protected detail/serializer/runtime schemas,
+  service/panel managers, route composition, fixtures and regression evidence.
+- Found a missed page boundary: creation/lifecycle dispatch cleared service review,
+  but the separate panel manager's configuration, connection test, account tools
+  and manual retry could leave old review facts visible after beginning an operation.
+- Added one page-local client coordinator with a dispatch revision and pending
+  count. Sibling dispatch synchronously clears/aborts review before CSRF/request
+  work; inspection stays disabled until all begun panel requests finish. Success,
+  failure and delayed review responses never restore old selection automatically.
+  Forms remain mounted; service and panel requests/bodies/keys/confirmations,
+  classification, eligibility and exact termination behavior remain unchanged.
+- Confirmed safe current-profile/historical-product distinctions, lossless money,
+  business-zone validation, nullable facts and fixed customer links. No provider
+  authority, financial relationship, new endpoint or approval gate was added.
+- Defined only Command 87: URL-bound administrator service inventory search/status
+  and pagination through existing API metadata. Customer scope, forms, selected
+  review and mutation reconciliation must remain independent and safe. Setup/tool/
+  history scale and broader fulfilment remain separately gated.
+
+#### Files changed
+
+- `apps/web/src/components/services/admin-services-workspace.tsx` — page-local
+  coordination, no global framework.
+- `apps/web/src/app/(admin)/admin/services/page.tsx`,
+  `apps/web/src/components/services/admin-service-manager.tsx`,
+  `apps/web/src/components/services/admin-hosting-operation-manager.tsx` — connect
+  dispatch invalidation while retaining original forms and requests.
+- `apps/web/src/components/services/admin-service-review.test.tsx` and
+  `apps/web/e2e/specs/admin-service-review.spec.ts` — sibling boundary regressions.
+- `CODEX_DEVELOPMENT_COMMANDS.md`, `CHANGELOG.md`, `docs/DECISIONS.md`,
+  `docs/PRODUCT_EXPERIENCE_ROADMAP.md`, `docs/PROGRESS.md` — outcome and definition.
+
+#### Validation
+
+- Started clean at `37b29f33c612e5e2ef1dd635e49ed1600f3576a3` on `main`.
+  Reverified exact-head
+  [CI 37205283977](https://github.com/ebit101/webhost-billing/actions/runs/37205283977)
+  and [CodeQL 37205283991](https://github.com/ebit101/webhost-billing/actions/runs/37205283991):
+  both successful, closing Command 86's completion-report checkpoint.
+- Read the installed Next.js server/client guide before code edits. Loopback
+  PostgreSQL/Redis were healthy; C: 16.44 GiB and D: 32.46 GiB free. No cleanup,
+  relocation, external provider or default-development database action.
+- Fresh two-file service regression: **51 passed**, including eight new tests for
+  all seven sibling dispatch paths, exact original request/CSRF/body evidence,
+  unfinished creation/reason forms, pending inspection blocking, failed requests,
+  late-response abort/discard and successful completion without resurrection.
+- Fresh focused eight-file service/panel, invoice/order/payment and customer-scope
+  regression: **153 passed**. Shared contracts: **29 passed**. Web strict application/
+  browser types and full workspace lint passed. Full web/browser/build and final
+  documentation/format checks remain pending; no unexecuted success is claimed.
+- Prior Command 86's 521 complete package/tooling tests and 12 relevant API tests
+  are retained evidence, not new local runs. Backend/contracts/worker are unchanged.
+  Final exact-head CI/CodeQL must independently validate the review source.
+- Complete fresh web suite: **313 passed** across 35 files, preserving all original
+  assertions and timing limits. All four offline documentation validators, scoped
+  formatting and diff whitespace checks passed. Full browser evidence, workspace
+  types/production build and exact-head delivery remain pending.
+- Full strict workspace/application/browser types passed. Before and after guarded
+  browser preparation, verified fictional Prisma model and raw-SQL search_path
+  isolation; only the fixed loopback `command26_e2e` schema was recreated. The
+  expanded service journey disables private artifacts and intercepts one deliberate
+  fictional panel failure after separately proving zero inspection writes. Original
+  lifecycle/auth browser tests, rate limits and deadlines remain unchanged.
+- Full fresh Chromium suite: **14 passed** in 3.4 minutes, including expanded
+  service inspection/held sibling failure, invoice/payment journeys, all ten auth-
+  readiness checks and complete original hosting lifecycle. Inspection/navigation
+  produced no writes; the deliberately intercepted POST produced no business
+  record changes. Fresh workspace types/lint are positive; build/delivery pending.
+- Production workspace build passed with explicit child `NODE_ENV=production`,
+  including optimized Next.js and API/worker/shared artifacts. Final repository-wide
+  formatting, all four offline documentation validators and whitespace checks
+  passed. No failed runtime/test run occurred during this correction validation.
+- Fetch confirmed 0 ahead/0 behind before the focused review commit. Deliver the
+  eleven scoped files by non-force push after reconciliation, verify CI/CodeQL for
+  that exact review head, then record completion without starting Command 87.
+
+#### Decisions and unresolved risks
+
+- Apply ADR-066 and define ADR-067. Stored application facts are not remote
+  verification, and matching service counts are not balances or financial states.
+- Local default parallel-worker timing/retained fictional fixtures and unqualified
+  SQL isolation remain unresolved. Verify both model schema and raw-SQL search_path
+  before database testing; do not change worker/deadlines/dependencies to mask them.
+- First-100 service inventory is defined next, not implemented here. Setup/tool/
+  history scale, other ledgers, richer relationships, action redesign, dashboard/
+  freshness/chrome, advisory 15 and direct-main governance remain separate.
+- Production remains **NO-GO**: credentialed providers, SMTP, monitoring, off-site
+  recovery, final policies, infrastructure and operator-pilot evidence remain gates.
+  No deployment, release, cleanup or later implementation is authorized.
+
+#### Exact recommended next command
+
+Authorize **Command 87 — Make Administrator Service Inventory Searchable and
+Paginated**. Do not start it or any later command automatically.
 
 ## Report Template
 

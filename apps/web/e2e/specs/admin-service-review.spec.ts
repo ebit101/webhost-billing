@@ -178,6 +178,58 @@ test('administrator inspects service facts and customer without business mutatio
     ),
   ).toBe(true);
   expect(await snapshot()).toEqual(before);
+
+  // Deliberate sibling dispatch is distinct from inspection. Hold a fictional
+  // failure at the browser boundary: no provider or API business write occurs.
+  await trigger.click();
+  await expect(
+    review.getByRole('heading', { name: domain, exact: true }),
+  ).toBeVisible();
+  const readsBeforeDispatch = detailReads.length;
+  let finish!: () => void;
+  let operationBody: unknown;
+  const held = new Promise<void>((resolve) => {
+    finish = resolve;
+  });
+  const testPath = `/hosting-panel/servers/${E2E_SERVER.id}/test`;
+  await page.route(`**${testPath}`, async (route) => {
+    operationBody = route.request().postDataJSON();
+    await held;
+    await route.fulfill({
+      status: 503,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        success: false,
+        error: { code: 'FICTIONAL', message: 'Fictional panel test failure' },
+      }),
+    });
+  });
+  await page
+    .getByRole('button', { name: `Test ${E2E_SERVER.name}`, exact: true })
+    .click();
+  await expect(review).toHaveCount(0);
+  await expect(trigger).toBeDisabled();
+  await expect(
+    page.getByText(
+      'Service inspection is paused while a panel operation is in progress.',
+    ),
+  ).toBeVisible();
+  await expect
+    .poll(() => operationBody)
+    .toEqual({ submissionKey: expect.stringMatching(/^[0-9a-f-]{36}$/) });
+  finish();
+  await expect(
+    page.getByText('Fictional panel test failure', { exact: true }),
+  ).toBeVisible();
+  await expect(trigger).toBeEnabled();
+  await expect(review).toHaveCount(0);
+  expect(detailReads).toHaveLength(readsBeforeDispatch);
+  expect(writes).toEqual([testPath]);
+  expect(await snapshot()).toEqual(before);
+  await trigger.click();
+  await expect(
+    review.getByRole('heading', { name: domain, exact: true }),
+  ).toBeVisible();
 });
 
 async function snapshot() {

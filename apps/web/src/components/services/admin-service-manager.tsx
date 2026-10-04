@@ -51,8 +51,12 @@ interface ActionState {
 
 export function AdminServiceManager({
   customerFilter = emptyAdminCustomerFilter,
+  reviewRevision = 0,
+  inspectionBlocked = false,
 }: {
   customerFilter?: AdminCustomerFilter;
+  reviewRevision?: number;
+  inspectionBlocked?: boolean;
 } = {}) {
   const [services, setServices] = useState<Service[]>([]);
   const [filteredCustomer, setFilteredCustomer] = useState<CustomerDetail>();
@@ -70,7 +74,7 @@ export function AdminServiceManager({
     customerFilter,
   );
   const filteredCustomerId = customerFilter.customerId;
-  const scope = `${filteredCustomerId ?? ''}:${customerFilter.invalid}`;
+  const scope = `${filteredCustomerId ?? ''}:${customerFilter.invalid}:${reviewRevision}`;
   const [reviewScope, setReviewScope] = useState(scope);
   const [review, setReview] = useState<{ id: string; sequence: number }>();
   const reviewSequence = useRef(0);
@@ -176,7 +180,7 @@ export function AdminServiceManager({
           type="button"
           size="sm"
           variant="secondary"
-          disabled={saving}
+          disabled={saving || inspectionBlocked}
           aria-label={`Review ${service.domain ?? service.id}`}
           aria-controls="admin-service-review"
           aria-expanded={review?.id === service.id}
@@ -441,6 +445,11 @@ export function AdminServiceManager({
       />
       {error ? <Message error>{error}</Message> : null}
       {notice ? <Message>{notice}</Message> : null}
+      {inspectionBlocked ? (
+        <Message>
+          Service inspection is paused while a panel operation is in progress.
+        </Message>
+      ) : null}
 
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
         <h2 className="text-lg font-bold text-slate-950">
