@@ -436,6 +436,54 @@ describe('Hosting services (e2e)', () => {
     expect(services.every((service) => service.customerId === customerId)).toBe(
       true,
     );
+    const before = await Promise.all([
+      prisma.service.findMany({ orderBy: { id: 'asc' } }),
+      prisma.hostingPanelOperation.count(),
+      prisma.invoice.count(),
+      prisma.payment.count(),
+      prisma.order.count(),
+      prisma.activityLog.count(),
+      prisma.outboxEvent.count(),
+    ]);
+    const detail = apiSuccessResponseSchema(serviceSchema).parse(
+      (await admin.get(`/services/${serviceId}`).expect(200)).body,
+    ).data;
+    expect(detail).toMatchObject({ id: serviceId, customerId });
+    expect(detail).toEqual(
+      services.find((service) => service.id === serviceId),
+    );
+    for (const field of [
+      'invoiceId',
+      'paymentState',
+      'orderStatus',
+      'loginUrl',
+    ])
+      expect(detail).not.toHaveProperty(field);
+    expect(Object.keys(detail.server)).toEqual([
+      'id',
+      'name',
+      'hostname',
+      'status',
+      'adapterKey',
+    ]);
+    await admin
+      .get('/services/86000000-0000-4000-8000-000000000086')
+      .expect(404);
+    await admin.get('/services/invalid').expect(400);
+    await request(app.getHttpServer())
+      .get(`/services/${serviceId}`)
+      .expect(401);
+    expect(
+      await Promise.all([
+        prisma.service.findMany({ orderBy: { id: 'asc' } }),
+        prisma.hostingPanelOperation.count(),
+        prisma.invoice.count(),
+        prisma.payment.count(),
+        prisma.order.count(),
+        prisma.activityLog.count(),
+        prisma.outboxEvent.count(),
+      ]),
+    ).toEqual(before);
   });
 
   afterAll(async () => {

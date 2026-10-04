@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Phase Review — Review Command 85 and define the next bounded command
-- **Current status:** Review completed; Command 86 defined, not authorized
+- **Current command:** Command 86 — Add Read-Only Administrator Service Inspection
+- **Current status:** Implementation and local validation complete; hosted delivery pending
 - **Last updated:** 2026-10-04
-- **Next command:** Command 86 — Add Read-Only Administrator Service Inspection
+- **Next command:** Phase Review — Review Command 86 and define the next bounded command
 - **Next command authorized:** No
 
 ## Command Reports
@@ -7428,6 +7428,118 @@ bounded command**. Do not implement or define Command 86 automatically.
 
 Authorize **Command 86 — Add Read-Only Administrator Service Inspection**. Do not
 start its implementation or any later command automatically.
+
+### Command 86 — Add Read-Only Administrator Service Inspection
+
+- **Status:** Implementation and local validation complete; hosted delivery pending
+- **Date:** 2026-10-04
+- **Authorization:** User's "command 86"; no later command authorized.
+
+#### Scope implemented
+
+- Add explicit service review through the existing protected detail and validated
+  business-zone settings read; no new endpoint, route, relationship or provider call.
+- Runtime-validate unknown detail, selected service/customer scope and time zone.
+  Abort/discard obsolete selection/close/filter/unmount reads. Invalidate selection
+  synchronously on customer scope changes and at every existing mutation dispatch;
+  keep unrelated forms mounted and disable new inspection while a mutation runs.
+- Show application state, historical product/price references, lossless recurring
+  money, nullable order references, current profile identity, server/account and
+  lifecycle facts/reasons. Only the fixed returned customer destination is linked;
+  no inferred invoice/payment/order/remote-panel state or operation history.
+- Preserve all original lifecycle endpoints/bodies/CSRF/keys/reasons and exact
+  termination confirmation. Add focused boundary/form/action tests and isolated
+  fictional browser evidence; strengthen existing API read/invariant assertions.
+
+#### Files changed
+
+- `apps/web/src/components/services/admin-service-review.tsx` and its test.
+- `apps/web/src/components/services/admin-service-manager.tsx`.
+- `apps/web/e2e/specs/admin-service-review.spec.ts`.
+- `apps/api/test/services.e2e-spec.ts`.
+- `CODEX_DEVELOPMENT_COMMANDS.md`, `CHANGELOG.md`, `docs/DECISIONS.md`,
+  `docs/PRODUCT_EXPERIENCE_ROADMAP.md`, `docs/PROGRESS.md` — authority and evidence.
+
+#### Validation
+
+- Started clean at `e0a6fea73d916f98ab3d727b270d6a5a0c6bb66f` on `main`.
+  Read project/web instructions, plan, decisions/progress, authorized command and
+  installed Next.js client/server and Link guidance before web edits.
+- Loopback PostgreSQL and Redis inspected healthy; C: had 16.45 GiB and D: 32.49 GiB
+  free. No Docker cleanup, disk relocation or default development data mutation.
+- Initial web lint passed. First two-file service run: **34 passed, eight failed**
+  because seven new assertions expected a customer name alone inside combined
+  name/email text and one expected different existing warning wording. Corrected
+  exact text assertions; no runtime contract, business behavior or original
+  assertion was weakened. Rerun required.
+- Focused/API/full package/browser/types/lint/docs/format/build and hosted delivery
+  checks remain required; no unexecuted success is claimed.
+- Second service run: **41 passed, one failed** because both application service
+  and server state legitimately displayed ACTIVE. Narrowed the assertion to the
+  labelled application-state fact, retaining server-state coverage. First web
+  types rejected three Playwright-style `exact` options in Testing Library calls;
+  removed those unsupported options (string role names are already exact).
+  Added a delayed-review/failed-mutation discard regression; reruns required.
+- Final focused eight-file service/panel, admin/customer invoice, order/payment
+  review and customer-filter run: **145 passed**. Web strict application/browser
+  types and full workspace lint passed. All four offline documentation validators
+  and diff whitespace checks passed; broader validation and delivery remain pending.
+- New browser evidence uses its own fixed fictional client with connection
+  search_path, verified before fixture creation, so it does not rely on URL schema
+  alone. Shared database/worker isolation behavior remains unchanged and unresolved.
+- Relevant service/hosting-panel/customer API E2E: **12 passed** across three
+  suites after guarded fictional preparation and verified model/raw-SQL isolation.
+  Retained ownership, financial/provisioning separation, redaction, retry and exact
+  termination tests; added selected administrator GET equality, missing/invalid/
+  anonymous denial and unchanged service/operation/financial/audit/outbox evidence.
+  Existing pg/experimental-VM warnings were non-failing. Repository formatting passed.
+  Complete package/tooling tests, browser suite, workspace types and build remain
+  required. No production or default-development database was reset.
+- Complete package/tooling validation passed sequentially under verified fictional
+  model/raw-SQL isolation: **521 tests** (57 tooling, 29 shared, three queue,
+  305 web across 35 files, 98 API unit and 29 worker). Original runner assertions
+  and deadlines remain unchanged; experimental-VM and intentional failure-path logs
+  were non-failing. This does not repair default local parallel-worker execution.
+- Full strict workspace/application/browser types passed. Full browser evidence,
+  production build and hosted source delivery remain required.
+- First full browser run: **13 passed, one failed**, exposing an incorrect new
+  assertion: the existing sibling
+  panel workspace reads stored `GET /hosting-panel/operations` history on mount.
+  This is not a provider operation. Preserve that component; capture its initialized
+  baseline, prove selecting review adds no history read, and allow only that stored
+  GET while separately rejecting all browsing writes/action requests. All original
+  browser tests remain unchanged; final full-suite rerun is required.
+- Final strict workspace/application/browser types and all four offline
+  documentation validators passed after the browser assertion correction.
+- Final full browser rerun: **14 passed** in 4.3 minutes, including the new
+  keyboard/mobile service review and unchanged-record journey, all ten original
+  auth-readiness tests, invoice/payment journeys and complete hosting lifecycle.
+  Final workspace lint and diff whitespace checks passed. Production build and
+  exact-head hosted delivery checks remain pending.
+- Production workspace build passed with explicit child `NODE_ENV=production`,
+  including optimized Next.js, API, worker and shared artifacts. No private
+  environment file or production configuration was changed. Final remote fetch
+  confirmed 0 ahead/0 behind before the focused implementation commit.
+- Delivery gate: commit the ten scoped files, reconcile without force/history
+  rewrite and push `origin/main`; verify CI and CodeQL for that exact source head
+  before completing the report. Previous command results are not a substitute.
+
+#### Decisions and unresolved risks
+
+- Apply ADR-064. Current customer identity is not an invoice snapshot; a service
+  read is not provider verification. Review is read-only, never an approval gate.
+- First-100/service setup limitations, other relationships/workflows, worker/isolation,
+  dependency/governance and production gates remain outside this authorization.
+  Production stays **NO-GO**; use fake providers and verified fictional isolation.
+- Existing Dependabot high advisory 15 and direct-main rule bypass remain tracked,
+  not repaired. Credentialed providers, SMTP, monitoring, off-site recovery, final
+  business policies, infrastructure and operator-pilot evidence remain production
+  gates; source delivery does not authorize deployment or a new release.
+
+#### Exact recommended next command
+
+After completion, authorize **Phase Review — Review Command 86 and define the next
+bounded command**. Do not define or implement Command 87 automatically.
 
 ## Report Template
 

@@ -2413,8 +2413,9 @@ global search, dashboard/freshness/chrome, schema/auth/dependency/worker changes
 providers, cleanup, releases, deployments and production approval. Production stays NO-GO.
 ```
 
-**Authorization:** Defined by the Command 85 phase review on 2026-10-04. Not
-authorized or implemented; explicit user authorization is required.
+**Authorization:** Defined by the Command 85 phase review and explicitly authorized
+by the user's "command 86" on 2026-10-04. Implementation and validation are recorded
+in `docs/PROGRESS.md`. Later work requires a separately authorized phase review.
 
 ---
 

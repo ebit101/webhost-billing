@@ -10,6 +10,11 @@ and will be called out in release notes.
 
 ### Changed
 
+- Added explicit read-only administrator service inspection with validated current
+  customer context, historical product references, lossless recurring money and
+  business-zone lifecycle facts. Selection/filter/close and mutation dispatch
+  invalidate old context; all existing service actions and termination confirmation
+  remain unchanged. Inspection does not contact or verify a remote hosting panel.
 - Made the administrator invoice ledger searchable and paginated with validated
   URL/customer scope, authoritative record counts, abortable reads and honest
   recovery states. Draft and business-identity forms retain unsaved input during

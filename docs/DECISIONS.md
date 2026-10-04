@@ -768,6 +768,27 @@ This document records durable technical and product decisions. New decisions sho
   attention/freshness/chrome, worker/isolation, dependency/governance, cleanup,
   releases and deployments remain separate. Production remains `NO-GO`.
 
+## ADR-065 — Selected Application Service Facts With Dispatch Invalidation
+
+- **Status:** Accepted and implemented by authorized Command 86
+- **Date:** 2026-10-04
+- **Decision:** Add one selection-keyed, abortable cookie/no-store service review
+  using the existing runtime detail and narrowed business-zone settings envelopes.
+  Invalidate it synchronously on customer-scope change and at creation/panel/status
+  mutation dispatch, without remounting financial or operational forms.
+- **Reason:** Old application state must not survive a begun operation whose remote
+  or follow-up read outcome may be uncertain. Clearing only on successful refresh
+  would retain stale evidence. Explicitly disabling review while a mutation runs
+  also prevents an immediate re-read from appearing to certify its outcome.
+- **Consequence:** Review supplies safe current-profile identity, historical product
+  facts and nullable account/lifecycle evidence, with only a fixed validated customer
+  link. No inferred invoice/payment/order state, chain fetch, operation history,
+  external hostname link, login session or provider verification. Original requests,
+  retry keys, confirmations and failure handling remain intact; review is not a
+  prerequisite for an action. New browser evidence owns a loopback-only fictional
+  connection with explicit search_path and verifies it before fixtures; the shared
+  database/worker isolation risk is not thereby repaired. Production stays `NO-GO`.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

@@ -8,7 +8,13 @@ import type {
   ServiceSetupOptions,
   ServiceStatus,
 } from '@webhost-billing/shared';
-import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+  type ReactNode,
+} from 'react';
 import {
   authMutation,
   authenticatedGet,
@@ -31,6 +37,7 @@ import { EmptyState, LoadingState } from '../ui/feedback-state';
 import { PageHeader } from '../ui/page-header';
 import { StatusBadge } from '../ui/status-badge';
 import { serviceDate, serviceError, serviceTone } from './service-ui';
+import { AdminServiceReview } from './admin-service-review';
 
 type EvidenceStatus = Extract<
   ServiceStatus,
@@ -63,6 +70,16 @@ export function AdminServiceManager({
     customerFilter,
   );
   const filteredCustomerId = customerFilter.customerId;
+  const scope = `${filteredCustomerId ?? ''}:${customerFilter.invalid}`;
+  const [reviewScope, setReviewScope] = useState(scope);
+  const [review, setReview] = useState<{ id: string; sequence: number }>();
+  const reviewSequence = useRef(0);
+  const reviewTrigger = useRef<HTMLButtonElement | null>(null);
+  // Discard selection synchronously on scope change without remounting forms.
+  if (reviewScope !== scope) {
+    setReviewScope(scope);
+    setReview(undefined);
+  }
 
   useEffect(() => {
     let active = true;
@@ -152,6 +169,27 @@ export function AdminServiceManager({
       ),
     },
     {
+      key: 'review',
+      header: 'Review',
+      render: (service) => (
+        <Button
+          type="button"
+          size="sm"
+          variant="secondary"
+          disabled={saving}
+          aria-label={`Review ${service.domain ?? service.id}`}
+          aria-controls="admin-service-review"
+          aria-expanded={review?.id === service.id}
+          onClick={(event) => {
+            reviewTrigger.current = event.currentTarget;
+            setReview({ id: service.id, sequence: ++reviewSequence.current });
+          }}
+        >
+          Review
+        </Button>
+      ),
+    },
+    {
       key: 'actions',
       header: 'Actions',
       align: 'right',
@@ -163,6 +201,7 @@ export function AdminServiceManager({
     event.preventDefault();
     const form = event.currentTarget;
     const values = new FormData(form);
+    setReview(undefined);
     setSaving(true);
     clearMessages();
     try {
@@ -198,6 +237,7 @@ export function AdminServiceManager({
     service: Service,
     body: Record<string, unknown>,
   ) {
+    setReview(undefined);
     setSaving(true);
     clearMessages();
     try {
@@ -232,6 +272,7 @@ export function AdminServiceManager({
     if (!action) return;
     const values = new FormData(event.currentTarget);
     const reason = String(values.get('reason'));
+    setReview(undefined);
     setSaving(true);
     clearMessages();
     try {
@@ -457,6 +498,19 @@ export function AdminServiceManager({
           saving={saving}
           onCancel={() => setAction(undefined)}
           onSubmit={submitAction}
+        />
+      ) : null}
+
+      {review ? (
+        <AdminServiceReview
+          key={`${review.id}:${review.sequence}`}
+          serviceId={review.id}
+          customerId={filteredCustomerId}
+          onClose={() => {
+            setReview(undefined);
+            if (reviewTrigger.current?.isConnected)
+              reviewTrigger.current.focus();
+          }}
         />
       ) : null}
 
