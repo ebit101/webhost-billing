@@ -3,7 +3,7 @@
 ## Status Summary
 
 - **Current command:** Command 87 — Make Administrator Service Inventory Searchable and Paginated
-- **Current status:** Locally validated; source delivery and hosted checks pending
+- **Current status:** Completed; source delivered and exact-source-head CI/CodeQL verified
 - **Last updated:** 2026-10-05
 - **Next command:** Phase Review — Review Command 87 and define the next bounded command
 - **Next command authorized:** No
@@ -7674,7 +7674,7 @@ Paginated**. Do not start it or any later command automatically.
 
 ### Command 87 — Make Administrator Service Inventory Searchable and Paginated
 
-- **Status:** Locally validated; source delivery and hosted checks pending
+- **Status:** Completed; delivered to `origin/main` with exact-source-head CI/CodeQL verified
 - **Date:** 2026-10-04
 - **Authorization:** User explicitly authorized Command 87 by its full title.
 - **Validation/delivery:** Continued on 2026-10-05 (Asia/Dhaka).
@@ -7752,12 +7752,12 @@ Paginated**. Do not start it or any later command automatically.
   server, avoiding original active-server capacity. Pagination's added status role
   collided with the original operation-status assertion; use polite live inventory
   announcements while preserving original action status and lifecycle assertions.
-  Full rerun and complete package/workspace/build/hosted evidence remain pending.
+  These intermediate failures were resolved and revalidated by the final runs below.
 - Second full browser run: **14 passed, 1 failed** (3.1 minutes). All original
   lifecycle/auth/review journeys passed. New journey reached older records and
   combined filters, then encountered an ambiguous searchbox locator from existing
   workspace chrome; scope the locator to the inventory search field. No original
-  assertion or timeout was relaxed; final focused/full browser reruns are pending.
+  assertion or timeout was relaxed; final focused/full browser reruns passed below.
 - Corrected focused browser journey: **1 passed** (51.6 seconds), including older
   page/search, combined scope/status, history/refresh, keyboard, 375px filters,
   selected review/customer link, separate clearing, out-of-range/invalid recovery,
@@ -7765,7 +7765,7 @@ Paginated**. Do not start it or any later command automatically.
 - Full fresh Chromium suite: **15 passed** (3.0 minutes), preserving all original
   lifecycle, auth-readiness, service/panel, invoice and payment journeys. Strengthened
   new API/browser comparisons to retain complete audit/outbox records, not merely
-  counts; revalidate these final assertions before delivery. No product behavior,
+  counts; these final assertions were revalidated before delivery. No product behavior,
   fixture ownership, worker/source dependency or original assertion was broadened.
 - Final strengthened-record revalidation: **39 relevant API tests passed** again
   (35.1 seconds), followed by a guarded fresh-schema **15/15 full Chromium pass**
@@ -7781,14 +7781,23 @@ Paginated**. Do not start it or any later command automatically.
   has been repaired; hosted CI still exercises its ordinary complete command.
 - Final workspace lint initially identified three unnecessary non-null assertions
   in the new API fixture. Removed only the erased type assertions; runtime data,
-  expectations and business behavior are unchanged. Re-run service E2E and the full
-  lint/type/docs/format/production-build sequence before delivery.
+  expectations and business behavior are unchanged. Service E2E and the full
+  lint/type/docs/format/production-build sequence were rerun successfully below.
 - Final quality sequence passed after the type-only fixture correction: **6 service
   API E2E tests**, full workspace lint, full strict workspace type checking (including
   generated Next.js routes and browser tests), all **four offline documentation
   validators**, repository formatting and the complete production build with explicit
   `NODE_ENV=production`. All package, Next.js, API and worker build steps succeeded.
-  Source delivery and exact-head hosted CI/CodeQL remain pending.
+- Focused 17-file source commit `d4b9a91187014b01c7cdaacc13707bb6c6ace40c`
+  was reconciled without force and pushed to canonical `origin/main`. Exact-source-head
+  [CI](https://github.com/ebit101/webhost-billing/actions/runs/37224469334) and
+  [CodeQL](https://github.com/ebit101/webhost-billing/actions/runs/37224469340)
+  both completed successfully. CI validated full-history secret scanning, formatting,
+  offline documentation, lint, types, default package tests, full API integration,
+  critical invariants, browser lifecycle, production dependency audit, license inventory
+  and the production build. Pull-request-only dependency review was skipped on push,
+  not reported as executed. Final report delivery and its own exact-head checks are
+  verified separately at handoff; no production deployment or release was performed.
 
 #### Decisions and unresolved risks
 
@@ -7797,7 +7806,8 @@ Paginated**. Do not start it or any later command automatically.
 - Known default parallel-worker timing/retained fictional fixture and unqualified
   raw-SQL isolation risks remain unresolved. Private local validation uses explicit
   connection search_path with model/raw verification; worker/dependency/deadline and
-  default-development records remain untouched. Hosted gates must validate exact head.
+  default-development records remain untouched. Exact-source-head hosted gates passed;
+  that result does not establish a repair of the recorded local timing/isolation risks.
 - Setup/tool/history scale, customer service history, other ledgers, richer relations,
   action redesign, attention/freshness/chrome, advisory 15 and direct-main governance
   remain separate. No release, deployment, cleanup or next implementation authorized.
