@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 85 — Make the Administrator Invoice Ledger Searchable and Paginated
-- **Current status:** Completed; source delivered with passing hosted CI and CodeQL
+- **Current command:** Phase Review — Review Command 85 and define the next bounded command
+- **Current status:** Review completed; Command 86 defined, not authorized
 - **Last updated:** 2026-10-04
-- **Next command:** Phase Review — Review Command 85 and define the next bounded command
+- **Next command:** Command 86 — Add Read-Only Administrator Service Inspection
 - **Next command authorized:** No
 
 ## Command Reports
@@ -7348,6 +7348,86 @@ Paginated**. Do not begin it or define Command 86 automatically.
 
 After completion, authorize **Phase Review — Review Command 85 and define the next
 bounded command**. Do not implement or define Command 86 automatically.
+
+### Phase Review — Review Command 85 and define the next bounded command
+
+- **Status:** Review completed; documentation-only next-command definition
+- **Date:** 2026-10-04
+- **Authorization:** User's "continue" after Command 85 and its recommended phase
+  review; Command 86 implementation is not authorized.
+
+#### Scope reviewed and outcome
+
+- Reconciled Command 85 with project instructions/plan, ADR-062/063, delivered diff,
+  route/API role boundary, query/response helpers, independent ledger/forms, tests,
+  fictional fixtures/browser journey and recorded validation. No corrective
+  application change was identified; this review changes documentation only.
+- Confirmed bounded URL inputs/offsets, invalid-query no-read behavior, independent
+  customer warning/explicit all-customer scope, encoded fixed destinations,
+  runtime page/row/customer/status validation and server ordering/count filters.
+  Matching records are not money aggregates. Rows/counts use a transaction but do
+  not promise a frozen history across requests or pages.
+- Confirmed cookie/no-store abortable GETs, keyed read-only context, distinct
+  recovery states, no detail/PDF preloads, unchanged lossless/historical facts,
+  persistent unsaved forms and original financial bodies/CSRF/retry keys.
+  Successful draft creation refreshes the latest query without injecting a row;
+  a subsequent read failure cannot become a duplicate creation retry.
+- Defined one next service-inspection slice after inspecting its existing protected
+  detail, serializer, shared contract, administrator workspace and ownership tests.
+  Service customer identity is current profile data; product references are
+  historical snapshots. Nullable order references supply no invoice/payment/order
+  state. Command 86 adds no new relationship contract or provider authority.
+
+#### Files changed
+
+- `CODEX_DEVELOPMENT_COMMANDS.md` — full bounded Command 86 definition and explicit
+  not-authorized/not-implemented boundary.
+- `docs/DECISIONS.md` — ADR-064 for selected application service facts.
+- `docs/PRODUCT_EXPERIENCE_ROADMAP.md` — review outcome, remaining boundaries and
+  next-slice rationale.
+- `docs/PROGRESS.md` — current summary, review evidence and exact next command.
+
+#### Validation
+
+- Started clean on `main` at `563f9ca0ab8ed88158e1d76110ae8776345b2764`.
+  Initial remote-tracking comparison was 0 ahead/0 behind.
+- Reverified completed-head [CI 37199212977](https://github.com/ebit101/webhost-billing/actions/runs/37199212977)
+  and [CodeQL 37199212961](https://github.com/ebit101/webhost-billing/actions/runs/37199212961)
+  via hosted metadata: both completed successfully for that exact SHA. This closes
+  the preceding completion-report hosted checkpoint, not a new application run.
+- Initial web test filter matched eight files (**99 passed**); three filenames did
+  not correspond to existing suites. Corrected the filter from the file inventory.
+  Final 11-file admin/customer invoice, server-entry, order/payment review and
+  customer-filter regression run: **155 passed**, `--maxWorkers=1`.
+- Fresh shared contracts: **29 passed**. No application/business rule changed.
+  Previous eight API, 13 full browser and 484 complete local package/tooling tests
+  plus types/lint/production build are retained Command 85 evidence, not fresh local
+  reruns. This review performed no database preparation, Docker or provider action.
+- All four offline documentation validators passed; repository-wide Prettier check
+  and `git diff --check` passed. Final fetch confirmed canonical `origin/main` has
+  no intervening changes (0 ahead/0 behind before the focused review commit).
+- Delivery gate: use a focused documentation commit and non-force push after
+  reconciliation, then verify CI and CodeQL for that exact review head before final
+  handoff. Earlier hosted results cannot substitute for the review head's checks.
+
+#### Decisions and unresolved risks
+
+- Apply ADR-064. Command 86 is definition only; review/close/retry/navigation must
+  remain read-only and lifecycle actions retain their current confirmations.
+- First-100 customer chooser, other ledgers/service setup, financial histories,
+  service relationships, attention/freshness and inactive chrome remain separately
+  gated. No cleanup, worker, dependency, release or deployment change is authorized.
+- Existing local parallel-worker timeout/retained fictional-fixture risk and
+  model-schema versus unqualified-SQL isolation limitation remain unresolved.
+  Any later database testing must verify both model and raw-SQL search_path.
+- Dependabot advisory 15 and direct-main rule bypass remain tracked. Credentialed
+  providers, SMTP, monitoring, off-site recovery, final business policies,
+  infrastructure and operator-pilot gates keep production **NO-GO**.
+
+#### Exact recommended next command
+
+Authorize **Command 86 — Add Read-Only Administrator Service Inspection**. Do not
+start its implementation or any later command automatically.
 
 ## Report Template
 

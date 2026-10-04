@@ -2330,6 +2330,94 @@ in `docs/PROGRESS.md`. Further work requires a separately authorized phase revie
 
 ---
 
+## Command 86 — Add Read-Only Administrator Service Inspection
+
+```text
+Implement one explicit read-only service review in the existing /admin/services
+workspace. Use the existing protected GET /services/:serviceId and
+apiSuccessResponseSchema(serviceSchema); do not add a detail route, endpoint,
+relationship read model, global review framework or provider request.
+
+Add a labelled keyboard-operable Review control for each listed service, including
+final states. Fetch only the deliberately selected service with cookie credentials,
+no-store caching and abort/discard protection. Validate unknown responses, requested
+and returned UUIDs, and any valid applied customer scope before showing context or
+links. Do not trust a TypeScript cast or the cached row as current detail. Preserve
+the existing invalid-customer warning/no-inferred-context semantics. Selection,
+filter change, close, retry, unmount and a begun existing mutation must invalidate
+old review context; superseded responses must never appear current. Invalidate at
+mutation dispatch, not only after a successful follow-up read: uncertain outcomes
+must not leave old service facts visible as refreshed evidence.
+
+Show service state and returned domain, historical product/price references,
+billing period, lossless recurring amount, server/account metadata, started/next-due
+dates, lifecycle timestamps and exceptional/final-state reasons. Use the configured
+business time zone through the existing settings read and validate that boundary;
+never silently label browser-local dates as business dates. Nullable facts must be
+explicit, not guessed. Reasons, product text, identifiers and hostnames remain
+escaped text, not HTML, external links or login actions. Expose no secrets, tokens,
+provider responses or generated control-panel sessions.
+
+Use only a validated fixed /admin/customers/:customerId link for the returned
+customer. Customer name/email in serviceSchema come from the current profile, not
+an invoice identity snapshot; label that distinction. Display returned nullable
+order number/IDs as references only. This contract supplies no invoice link,
+invoice balance, payment state, current order state, operation history or provider
+verification timestamp: do not infer them, invent destinations, fetch chains, or
+claim this read contacts the hosting panel. Service state is application evidence,
+not proof that the remote account currently matches; payment is not provisioning.
+
+Provide loading, malformed/mismatched/forbidden/not-found and recoverable read-failure
+states with deliberate GET-only retry and close. Focus the review heading after
+selection and restore its trigger on explicit close when still present. Keep the
+panel and long text usable at 375px and preserve accessible status/error feedback.
+No detail preloads, reads per visible row, write-on-review or automatic retries.
+
+Keep existing creation, provisioning, suspend/reactivate/cancel/terminate and panel
+retry/reconciliation behavior unchanged. Preserve endpoints, request bodies, CSRF,
+submission keys, eligible-order/server rules, failure classification, evidence
+reasons and exact TERMINATE confirmation. Review is neither a new approval gate nor
+a prerequisite for existing deliberate actions. Do not reset unrelated unsaved
+creation/action forms merely to select/close/retry a review. The first-100 list,
+setup-option scale and broader fulfilment UI remain explicit separate limitations.
+
+Add focused component tests for all service states, nullable facts, safe text,
+lossless amounts, business-zone dates, fixed customer links/current identity,
+malformed/mismatched and customer-scope responses, read recovery, abort/discard on
+selection/filter/close/unmount/mutation (including failed refresh), focus/mobile and
+zero inspection mutations. Strengthen original service/panel request-body and exact
+termination regressions without weakening assertions or business policy. Retain
+administrator invoice/order/payment and customer-filter regressions.
+
+Reuse relevant service/hosting-panel/customer API role, ownership, redaction and
+financial-state invariants; add missing read-only assertions only as needed. Add
+guarded fictional browser evidence for review/customer navigation/close and unchanged
+service, operation, financial, audit and outbox records. Preserve the full existing
+browser suite, all ten auth-readiness checks and hosting lifecycle; isolate any new
+fictional sign-in account if needed rather than raising rate limits or deadlines.
+Use fake providers only, and disable credential-bearing trace/video/screenshot
+artifacts for the new journey.
+
+Read installed Next.js guidance before web edits. Run focused service/panel and
+invoice/order/payment/filter tests, shared contracts, relevant API E2E, full browser
+suite, complete package tests, docs:check, format, lint, strict workspace/browser
+types and production build. Sequence heavy checks and verify fictional Prisma model
+schema and raw-SQL search_path before database tests. Do not change worker source,
+timeouts, default development records or dependencies to mask known local failures.
+Record fresh versus retained evidence honestly; hosted CI and CodeQL must pass.
+
+Update docs/PROGRESS.md, commit, reconcile without rewriting history and push
+origin/main, verify hosted checks, then stop for a separately authorized phase review.
+Exclude new relationships/routes, invoice/payment/order workflows, service pagination,
+global search, dashboard/freshness/chrome, schema/auth/dependency/worker changes,
+providers, cleanup, releases, deployments and production approval. Production stays NO-GO.
+```
+
+**Authorization:** Defined by the Command 85 phase review on 2026-10-04. Not
+authorized or implemented; explicit user authorization is required.
+
+---
+
 ## Continuation Command
 
 If a phase encounters errors or remains incomplete, use this prompt in the same Codex task:

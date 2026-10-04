@@ -744,6 +744,30 @@ This document records durable technical and product decisions. New decisions sho
   rules or global list framework. First-100 customer options and other workflows
   remain separately gated. Production remains `NO-GO`.
 
+## ADR-064 — Selected Service Facts Before Broader Fulfilment Work
+
+- **Status:** Accepted for next-command definition; implementation separately gated
+- **Date:** 2026-10-04
+- **Decision:** After reviewing Command 85, define one explicit read-only
+  administrator service inspection using the existing protected detail and runtime
+  contract. Show application service/account facts, business-zone lifecycle dates,
+  historical product references and current customer context; preserve every existing
+  deliberate service and panel action.
+- **Reason:** Administrator invoice history now reaches older records without
+  discarding financial forms. Service rows still hide exceptional/final-state reasons
+  and lifecycle facts beside consequential operations, although the protected detail
+  already supplies them. This operational lookup has ready dependencies without a
+  new backend relationship model, financial rule or provider authority.
+- **Consequence:** Command 86 is defined, not authorized or implemented. Selected
+  context must be runtime-validated and invalidated on filter/selection/close and
+  mutation dispatch, including uncertain follow-up reads. Current profile identity
+  is not an invoice snapshot. Nullable order references do not supply invoice,
+  payment, current order or remote-panel state; only the fixed returned customer
+  detail link is added. Review is not an approval gate, remote check or operation
+  retry. First-100/service setup limits, broader fulfilment, other ledgers,
+  attention/freshness/chrome, worker/isolation, dependency/governance, cleanup,
+  releases and deployments remain separate. Production remains `NO-GO`.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

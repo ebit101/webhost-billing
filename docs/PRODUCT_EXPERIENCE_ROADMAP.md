@@ -469,6 +469,31 @@ remain P1 work for the next phase review.
   freshness work and production gates remain separate. A phase review must be
   authorized before defining later work.
 
+### Command 85 phase-review outcome and next bounded slice
+
+- URL narrowing and offset bounds, explicit customer scope, runtime page/row
+  validation, historical identity/lossless money, stale-read protection and honest
+  recovery match Command 85. Only the read subtree resets; original financial bodies,
+  retry keys and unsaved forms remain intact. No corrective application change was
+  identified. Matching counts are records, not balances; transactional rows/counts
+  do not promise a frozen snapshot across navigation.
+- Fresh focused web regressions passed **155 tests across 11 files** and shared
+  contracts passed **29 tests**. The completed head's CI and CodeQL were reverified
+  successful. Earlier complete local API/browser/package/build results are retained
+  evidence, not reruns by this documentation-only review.
+- **Command 86 defined, not authorized:** Add Read-Only Administrator Service
+  Inspection. Explicitly selected `GET /services/:serviceId` can show lifecycle
+  facts/reasons, account/server metadata, historical product references and current
+  customer identity with a fixed customer link. Preserve deliberate operations and
+  exact termination confirmation; invalidate review when a mutation begins, even
+  when its subsequent refresh fails. No remote panel check or new approval gate.
+- The service contract has nullable order references but no invoice/payment/current
+  order state or operation history. These remain unavailable rather than inferred;
+  broader relationships, service pagination/setup scale, attention, freshness and
+  inactive chrome require separate commands. Known local worker/raw-SQL isolation,
+  dependency and direct-main governance risks remain unresolved. No deployment,
+  cleanup or later implementation is authorized by this review.
+
 ### Remaining production gates
 
 This roadmap improves evaluation and product coherence only. It does not close the
