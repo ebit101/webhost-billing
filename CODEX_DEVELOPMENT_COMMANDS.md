@@ -849,6 +849,22 @@ Do not invent legal or tax answers. Record unresolved owner decisions as blocker
 Validate changed schemas/defaults/tests if code changes. Update docs/PROGRESS.md, commit, reconcile, push main, stop, and request Command 34 authorization.
 ```
 
+### Authorized Command 33 follow-up — Installation-Specific Speed Host Web Branding
+
+The owner explicitly authorized this bounded branding implementation after the public
+portal/logo source intake. Implement opt-in public web branding for the storefront,
+authentication and administrator/customer shells, their document titles and approved
+public footer contacts. Preserve generic Webhost Billing defaults and fictional/readiness
+warnings. Use the unchanged owner logo locally; do not include trademark assets in the
+generic source distribution. Validate configuration and local PNG metadata, reject remote
+or unsafe asset paths, and document build-time image configuration. Add regression tests
+for generic/branded views and unsafe configuration, then run web/shared validation and
+documentation checks. Record progress, commit, reconcile and non-force push `main`.
+
+This follow-up approves no new operating policy, production setting, invoice-history change,
+email delivery, WHMCS import, deployment or cutover. Stop after reporting; the remaining
+Command 33 operating-policy approvals are still required.
+
 ## Command 34 — Select and Audit Production Infrastructure
 
 ```text

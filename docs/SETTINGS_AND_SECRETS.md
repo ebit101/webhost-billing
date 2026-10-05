@@ -26,6 +26,11 @@ The business time zone is also the renewal scheduler time zone. Saving either th
 
 ## Secret boundary
 
+Public web installation branding is a separate build-time control, documented in
+[Installation Web Branding](INSTALLATION_BRANDING.md). It does not expose the administrator
+settings document, update `email.branding` or replace invoice identity snapshots. Never use
+the public branding variables for secrets; local owner logo assets stay outside public Git.
+
 bKash and SSLCOMMERZ credential bundles are stored only in `integration_credentials`. The API encrypts the complete provider bundle with AES-256-GCM using a domain-separated key derived from deployment-provided `CREDENTIAL_ENCRYPTION_KEY`. The provider key is authenticated as additional data, so ciphertext cannot be moved between providers.
 
 `PUT /settings/credentials` is administrator-only, CSRF-protected, requires the exact `REPLACE_CREDENTIALS` confirmation, validates a complete provider bundle, and replaces it atomically. Responses contain only:

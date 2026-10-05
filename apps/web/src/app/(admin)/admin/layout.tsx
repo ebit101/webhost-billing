@@ -8,12 +8,10 @@ import {
   type WorkspaceNavigationItem,
 } from '../../../components/layout/workspace-shell';
 import { getAuthenticatedIdentity } from '../../../lib/server-auth';
+import { getBrandTitle } from '../../../lib/web-branding';
 
 export const metadata: Metadata = {
-  title: {
-    default: 'Administrator · Webhost Billing',
-    template: '%s · Administrator · Webhost Billing',
-  },
+  title: getBrandTitle('Administrator'),
 };
 
 const navigation: WorkspaceNavigationItem[] = [

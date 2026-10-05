@@ -5,12 +5,10 @@ import {
   type WorkspaceNavigationItem,
 } from '../../../components/layout/workspace-shell';
 import { requireWorkspaceRole } from '../../../lib/server-auth';
+import { getBrandTitle } from '../../../lib/web-branding';
 
 export const metadata: Metadata = {
-  title: {
-    default: 'Customer portal · Webhost Billing',
-    template: '%s · Customer portal · Webhost Billing',
-  },
+  title: getBrandTitle('Customer portal'),
 };
 
 const navigation: WorkspaceNavigationItem[] = [

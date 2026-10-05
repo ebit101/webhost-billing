@@ -10,6 +10,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
+    "test:branding": "playwright test --config playwright.branding.config.ts",
     "pretest:e2e": "pnpm --filter @webhost-billing/worker build && tsx e2e/prepare-environment.ts",
     "test:e2e": "playwright test",
     "typecheck": "next typegen && tsc --noEmit && tsc --noEmit -p e2e/tsconfig.json"

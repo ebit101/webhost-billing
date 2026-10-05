@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { buttonStyles } from '../../components/ui/button';
 import { Icon, type IconName } from '../../components/ui/icon';
+import { getWebBranding } from '../../lib/web-branding';
 
 export const metadata: Metadata = {
   title: 'Hosting and billing in one clear place',
@@ -91,7 +92,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
           <div className="max-w-2xl">
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-700">
-              Why Webhost Billing
+              Why {getWebBranding().name}
             </p>
             <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-950">
               The essential hosting journey, without hidden steps.

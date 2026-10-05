@@ -3,9 +3,14 @@ import {
   loadEnvironmentFiles,
   parseWebEnvironment,
 } from '@webhost-billing/config';
+import { resolve } from 'node:path';
+import { getWebBranding } from './src/lib/web-branding';
+import { validateBrandLogo } from './src/lib/validate-brand-logo';
 
 loadEnvironmentFiles();
 const environment = parseWebEnvironment(process.env);
+const branding = getWebBranding();
+validateBrandLogo(branding, resolve(process.cwd(), 'public'));
 const isDevelopment = environment.NODE_ENV === 'development';
 const isSecurePublicOrigin =
   new URL(environment.NEXT_PUBLIC_API_URL).protocol === 'https:';
@@ -30,6 +35,15 @@ const nextConfig: NextConfig = {
   output: 'standalone',
   env: {
     NEXT_PUBLIC_API_URL: environment.NEXT_PUBLIC_API_URL,
+    NEXT_PUBLIC_BRAND_NAME: branding.name,
+    NEXT_PUBLIC_BRAND_LOGO_PATH: branding.logoPath ?? '',
+    NEXT_PUBLIC_BRAND_LOGO_WIDTH: String(branding.logoWidth),
+    NEXT_PUBLIC_BRAND_LOGO_HEIGHT: String(branding.logoHeight),
+    NEXT_PUBLIC_BRAND_TAGLINE: branding.tagline ?? '',
+    NEXT_PUBLIC_BRAND_CONTACT_EMAIL: branding.contactEmail ?? '',
+    NEXT_PUBLIC_BRAND_CONTACT_PHONE: branding.contactPhone ?? '',
+    NEXT_PUBLIC_BRAND_CONTACT_ADDRESS: branding.contactAddress ?? '',
+    NEXT_PUBLIC_BRAND_WEBSITE: branding.website ?? '',
   },
   async headers() {
     return [

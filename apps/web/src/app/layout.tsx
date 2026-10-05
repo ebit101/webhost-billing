@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { ToastProvider } from '../components/ui/toast';
+import { getBrandTitle } from '../lib/web-branding';
 import './globals.css';
 
 const geistSans = Geist({
@@ -14,10 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: {
-    default: 'Webhost Billing',
-    template: '%s · Webhost Billing',
-  },
+  title: getBrandTitle(),
   description: 'Private web-hosting billing and customer management',
 };
 

@@ -24,6 +24,10 @@ packages/database/src/generated
 *.dump.gpg.sha256
 *.dump.gpg.metadata.json
 backups
+release-artifacts
 .env
 .env.*
+**/.env
+**/.env.*
 !.env.example
+!**/.env.example

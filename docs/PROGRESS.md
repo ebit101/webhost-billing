@@ -2,9 +2,9 @@
 
 ## Status Summary
 
-- **Current command:** Resume Command 33 — Collect Existing Speed Host Portal Branding and Public Information
-- **Current status:** Public portal source and unchanged local logo collected; DRAFT-OPS-1 awaits approval; no application/deployment change; staging release 6085629 unchanged; production remains NO-GO
-- **Last updated:** 2026-10-05
+- **Current command:** Resume Command 33 — Implement Installation-Specific Speed Host Web Branding
+- **Current status:** Opt-in web branding implemented and locally validated; Speed Host profile/logo prepared outside Git; DRAFT-OPS-1 awaits approval; no deployment; staging release 6085629 unchanged; production remains NO-GO
+- **Last updated:** 2026-10-06
 - **Next command:** Resume Command 33 — Review DRAFT-OPS-1 and Supply Remaining Operating Approvals
 - **Next command authorized:** No
 
@@ -9002,6 +9002,102 @@ Command 34 remediation, an importer, Command 91 or cutover automatically.
 **Resume Command 33 — Review DRAFT-OPS-1 and Supply Remaining Operating Approvals**.
 Do not start branding implementation, migration, another development command or cutover
 without its bounded authorization.
+
+### Resume Command 33 — Implement Installation-Specific Speed Host Web Branding
+
+- **Status:** Bounded local implementation completed; operating approvals and production cutover remain BLOCKED
+- **Date:** 2026-10-06; began during the previous local date
+
+#### Scope completed
+
+- Recorded the explicitly approved branding follow-up without authorizing Command 34,
+  Command 91, policy acceptance, migration or deployment.
+- Added a strict browser-compatible public-branding contract, explicit build-time variables
+  and fixed errors. Rejected unsafe/remote/traversal/query-bearing logo paths, invalid links,
+  dimensions, markup/control characters, title placeholders and unknown contract fields.
+- Reused one renderer for storefront, authentication and both workspaces; updated root and
+  nested title templates, homepage brand label, optional tagline and approved footer contacts.
+  Preserved generic Webhost Billing defaults, routes, focus/navigation and fictional warnings.
+- Added build-time local PNG metadata validation with canonical confinement, file/size/
+  signature/IHDR/dimension checks. This is not a complete image decoder or upload facility.
+- Prepared the original Speed Host PNG and approved public environment locally outside Git.
+  Its SHA-256 matches the source-intake record. No asset redraw, third-party request or CSP
+  relaxation; owner trademark rights remain separate from the code licence.
+- Added explicit Docker/Compose public build arguments, ignored installation PNGs and
+  excluded nested local environments/raw release artifacts from the Docker context.
+- Added reproducible anonymous loopback browser checks and deployment/rollback guidance.
+  Email settings, invoice snapshots/PDFs, authentication/business rules and providers remain
+  unchanged; no customer data, forms, payment, SMTP, database, Docker or live host was used.
+
+#### Files changed
+
+- `packages/shared/src/contracts/web-branding.ts`, `packages/shared/src/index.ts`,
+  `packages/shared/test/web-branding.spec.ts` — strict public contract and regressions.
+- `apps/web/src/lib/web-branding.ts`, `apps/web/src/lib/validate-brand-logo.ts`,
+  `apps/web/src/lib/validate-brand-logo.test.ts`, `apps/web/next.config.ts` — validated public
+  build configuration, titles and local file metadata boundary.
+- `apps/web/src/components/layout/brand.tsx`, `public-footer.tsx`, `branding.test.tsx`;
+  `apps/web/src/app/layout.tsx`, `(store)/page.tsx`, `(admin)/admin/layout.tsx`,
+  `(portal)/portal/layout.tsx` — shared rendering, public contacts and metadata.
+- `apps/web/package.json`, `apps/web/playwright.branding.config.ts`,
+  `apps/web/e2e/branding/branding.spec.ts` — isolated read-only browser validation.
+- `apps/web/Dockerfile`, `deploy/production/compose.production.yaml`,
+  `deploy/production/.env.example`, `deploy/branding/speed-host.env.example`,
+  `.gitignore`, `.dockerignore` — optional packaging and distribution boundaries.
+- `CODEX_DEVELOPMENT_COMMANDS.md`, `docs/DECISIONS.md`,
+  `docs/PRODUCTION_BUSINESS_POLICIES.md`, `docs/SETTINGS_AND_SECRETS.md`,
+  `docs/INSTALLATION_BRANDING.md`, `docs/PROGRESS.md` — authorization, ADR-076 and guidance.
+- Local only: `apps/web/.env.local`, `apps/web/public/branding/speed-host-logo.png`,
+  `release-artifacts/branding-preview/` screenshots; none committed or deployed.
+
+#### Validation
+
+- Shared build, all **34 shared tests** and shared typecheck passed.
+- Focused generic/branded surface, title/contact, unsafe-configuration and PNG metadata
+  checks passed. Complete web suite passed **49 files / 538 tests** with `--maxWorkers=2`.
+  The first concurrent full-suite run had one 5-second registration-test timeout;
+  **537 passed / 1 failed**. The unchanged test passed on the bounded-worker rerun; no
+  timeout was increased and the initial failure is not concealed.
+- Web lint and both application/e2e typechecks passed. Generic and Speed Host production
+  web builds passed. The final local build was restored to the Speed Host profile.
+- Anonymous browser checks passed **six generic and six Speed Host scenarios** across
+  320/375/1440px home/password-reset screens. Checked native PNG decoding, expected titles,
+  local/contact destinations, mobile navigation, keyboard focus and no horizontal overflow.
+  Browser requests were GET-only to the pinned loopback origin; no external/provider access.
+  Screenshots were visually inspected. Local `next start` emitted its existing standalone-
+  output warning; these checks are not a Docker/standalone-container deployment test.
+- Production Compose YAML parsed and all nine public-branding build arguments matched the
+  Dockerfile. No Docker image build, Compose start or production interpolation check claimed.
+- Owner asset hash and Git-ignore checks passed. Scoped Prettier, all four offline
+  `pnpm docs:check` validators and `git diff --check` passed after the final report update.
+- Deliver only validated source/docs, reconcile and non-force push to `main`. Hosted checks
+  for this new commit remain unclaimed until their results are observed.
+
+#### Decisions made
+
+- Installation branding is opt-in and build-time, not a database settings/public policy
+  endpoint or multi-tenant theme system. No Speed Host asset is shipped by generic Git.
+- Keep the logo unchanged and local with a white backing and responsive aspect ratio.
+  Missing/unsafe asset metadata fails the build instead of adding a remote fallback.
+- Owner branding does not remove fictional warnings, grant trademark use to other
+  operators, approve SMTP or rewrite historical invoice identity.
+- User authorization covers this implementation, not the next command or live deployment.
+
+#### Open questions and risks
+
+- A fresh owner deployment requires the separately supplied original PNG and selected
+  public build values; changing only runtime variables cannot rebrand an existing image.
+- DRAFT-OPS-1 approvals, protected operating inputs, final catalogue, WHMCS isolated import/
+  reconciliation, infrastructure/security/recovery/SMTP/monitoring/release and cutover gates
+  remain open. Existing dependency, branch-governance and worker-isolation risks remain.
+- No authenticated customer/administrator browser lifecycle or live deployment acceptance
+  was rerun for this frontend-only slice. Production stays **NO-GO**.
+
+#### Recommended next command
+
+**Resume Command 33 — Review DRAFT-OPS-1 and Supply Remaining Operating Approvals**.
+Review the proposed operating groups and provide the missing actual decisions/references.
+Do not automatically begin deployment, migration, Command 34 remediation or Command 91.
 
 ## Report Template
 

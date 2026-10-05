@@ -989,6 +989,25 @@ This document records durable technical and product decisions. New decisions sho
   governance, providers, cleanup, releases and deployment remain separate.
   Production stays `NO-GO`.
 
+## ADR-076 — Opt-In Build-Time Installation Web Branding
+
+- **Status:** Accepted and implemented by the explicitly authorized Command 33 branding follow-up
+- **Date:** 2026-10-06
+- **Decision:** Add a strict shared public-branding contract and explicit build-time web
+  variables for name, local PNG dimensions/path, tagline and public contacts. Reuse one
+  brand renderer across storefront, authentication and operational shells, and one title
+  helper for root/administrator/customer metadata. Keep generic Webhost Billing defaults.
+- **Reason:** The owner supplied an existing portal logo and approved Speed Host contacts,
+  but hard-coded web chrome prevented installation branding. A local, confined PNG avoids
+  remote dependencies, tracking, image-proxy authority and CSP exceptions. Build-time
+  validation checks file/metadata boundaries rather than claiming full image decoding.
+- **Consequence:** Owner assets and local configuration remain ignored, while Docker accepts
+  explicit public build arguments and excludes raw release artifacts/local environment files.
+  Changing branding requires a new web build, not only runtime variables. Existing fictional
+  warnings remain; email settings and immutable invoice identity/PDF behavior are independent.
+  Anonymous loopback browser checks require no API/database/provider authority. No policy
+  approval, migration, deployment or cutover is inferred; production remains `NO-GO`.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

@@ -28,6 +28,8 @@ webhost-billing.txt
 playwright-report/
 test-results/
 release-artifacts/
+# Installation-owned logos are not licensed as generic project assets.
+/apps/web/public/branding/*.png
 .demo-runtime/
 
 # Local database and backup files

@@ -6,6 +6,7 @@
 - Record created: 2026-08-26
 - Public-source review: 2026-10-05 — owner supplied `https://www.speedhost.com.bd/`
 - Existing-portal branding intake: 2026-10-05 — public `https://clients.speedhost.com.bd/`
+- Authorized local web-branding implementation: 2026-10-06 — no deployment or policy approval
 - Remaining operating-policy draft: 2026-10-05 — version `DRAFT-OPS-1`, awaiting approval
 - Business owner approval: **PARTIAL NAMED APPROVAL RECORDED; REMAINING OPERATING DECISIONS OPEN**
 - Policy status: **COMMAND 33 OPERATING DRAFT READY — APPROVAL AND LAUNCH EVIDENCE BLOCKED**
@@ -149,6 +150,14 @@ changed in this source intake. The existing portal remains separate from the int
 `my.speedhost.bd` replacement until the migration and cutover gates are satisfied.
 
 ### Speed Host preparation before final WHMCS data — 2026-10-05
+
+On 2026-10-06, the owner's subsequent bounded installation web-branding implementation was
+completed locally.
+The opt-in configuration, local PNG validation and shared frontend/title/contact rendering
+are now implemented; this workspace's ignored profile/asset selects Speed Host for local
+web builds. See [Installation Web Branding](INSTALLATION_BRANDING.md). No deployment,
+administrator setting, email delivery, invoice history or `DRAFT-OPS-1` approval is changed.
+This implementation does not satisfy any remaining production launch gate.
 
 The owner requested preparation for **Speed Host**, with existing WHMCS data to be supplied
 later before production. Speed Host is the intended installation/display brand; the owner
