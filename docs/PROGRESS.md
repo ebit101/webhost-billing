@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Resume Command 33 — Finalize Business and Launch Policies
-- **Current status:** Named Speed Host business/contact approval and optional-tax/30-day-refund decisions recorded; remaining operating/migration decisions pending; staging release 6085629 unchanged; production remains NO-GO
+- **Current command:** Resume Command 33 — Draft Remaining Speed Host Operating Policies for Approval
+- **Current status:** DRAFT-OPS-1 prepared for review; my.speedhost.bd reaffirmed as intended operating portal; no cutover performed; staging release 6085629 unchanged; production remains NO-GO
 - **Last updated:** 2026-10-05
-- **Next command:** Resume Command 33 — Resolve Source Conflicts and Approve Remaining Launch Policies
+- **Next command:** Resume Command 33 — Review DRAFT-OPS-1 and Supply Remaining Operating Approvals
 - **Next command authorized:** No
 
 ## Command Reports
@@ -8866,6 +8866,80 @@ Do not begin an importer, Command 34 remediation, Command 91 or production cutov
 Do not request mandatory tax input again for preparation; obtain the remaining actual
 owner decisions. No importer, infrastructure remediation, Command 91 or cutover begins
 without separate bounded authorization.
+
+### Resume Command 33 — Draft Remaining Speed Host Operating Policies for Approval
+
+- **Status:** Draft completed; owner approval, protected operating inputs and real-portal cutover BLOCKED
+- **Date:** 2026-10-05
+
+#### Scope completed
+
+- Produced `DRAFT-OPS-1` inside the existing policy record, with eight review groups:
+  periods/manual proof, order approval, cancellation, refund processing, retention,
+  maintenance/incident/renewal operations, interface workarounds and real-portal cutover.
+- Preserved existing owner approvals without requesting business identity, tax input,
+  preferred phone or refund-window choice again. Every new proposal is clearly unapproved.
+- Recorded the owner's real operating portal goal for `https://my.speedhost.bd`.
+  Anonymous read-only GET returned HTTP 200 and the Webhost Billing title. Existing
+  deployment evidence identifies fictional staging release 6085629; no fresh authenticated
+  lifecycle/production readiness test or host audit is claimed.
+- Separated proposed payment/customer handling from implemented schema/API behavior.
+  No nonexistent cancellation scheduler, audit export, batch allowlist, tax engine,
+  branding configuration or data importer is represented as implemented.
+- Drafted operational retention review targets while leaving applicable financial/legal
+  periods and hold/disposal controls for owner verification. Reviewed primary OWASP logging
+  guidance; it does not prescribe Speed Host's numerical retention obligations.
+- Linked real-portal preparation to existing isolated migration, target/security/recovery,
+  SMTP/monitoring/release and final cutover gates. No real customer, payment/provider,
+  export, SSH, infrastructure or production action was performed.
+
+#### Files changed
+
+- `docs/PRODUCTION_BUSINESS_POLICIES.md` — DRAFT-OPS-1, review inputs and operating-origin goal.
+- `docs/PROGRESS.md` — draft status, actual validation and exact next review step.
+- No application/default/schema/test/dependency/provider/secret or deployment changes.
+
+#### Validation
+
+- Scoped Prettier formatting/check and `git diff --check` passed for the two changed files.
+- `pnpm docs:check` passed all four offline validators: links/anchors, contributor
+  paths/scripts, issue forms and safe-demo screenshot assets.
+- Reviewed the focused diff and approval boundaries. The file-preview request was queued
+  for the draft's section; this is not evidence that runtime or deployment settings changed.
+- Inspected existing product/payment contracts and operations/release records. Some web
+  readers timed out; a direct public portal GET succeeded. Initial searches included missing
+  documentation/source names; file inventory and actual contracts corrected those paths.
+- Application tests/builds are not rerun for this documentation-only draft; no effective
+  business rule or runtime behavior is changed.
+- Deliver only a focused documentation commit, reconcile and non-force push `main`.
+  Hosted CI/CodeQL triggered for that commit remain unclaimed until their results are known;
+  prior green evidence does not certify this draft or the requested production cutover.
+
+#### Decisions made
+
+- Draft approval must be explicit; new proposals never inherit the earlier approval of
+  concrete defaults. Preserve no automatic termination or normal financial/audit deletion.
+- Do not invent legal/tax answers, incident contacts, named appointments, date/time windows,
+  product prices, payment destinations or tested workaround/production evidence.
+- The request to create a real operating portal states the goal but does not close missing
+  target/release/backup/window/rollback and readiness gates. Stop before production mutation;
+  do not relabel staging, reuse demo data/secrets or run two billing authorities.
+
+#### Open questions and risks
+
+- D1–D8 approval/edits; actual products/prices/cycles and payment-review owner/destinations;
+  lawful retention durations/holds; incident primary/distinct backup/protected routes;
+  exact maintenance/first-renewal windows, eligibility and workaround evidence remain required.
+- WHMCS mapping/importer/rehearsal and all existing infrastructure/security/recovery/SMTP/
+  monitoring/release gates remain separate. Production is **NO-GO**; real portal not created.
+
+#### Recommended next command
+
+**Resume Command 33 — Review DRAFT-OPS-1 and Supply Remaining Operating Approvals**.
+Review the eight proposed groups and provide missing owner-controlled values/references.
+Only after readiness evidence and final exact target/window confirmation may the separately
+authorized production cutover make `my.speedhost.bd` the real operating portal. Do not begin
+Command 34 remediation, an importer, Command 91 or cutover automatically.
 
 ## Report Template
 

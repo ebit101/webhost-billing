@@ -5,8 +5,9 @@
 - Command: 33 — Finalize Business and Launch Policies
 - Record created: 2026-08-26
 - Public-source review: 2026-10-05 — owner supplied `https://www.speedhost.com.bd/`
+- Remaining operating-policy draft: 2026-10-05 — version `DRAFT-OPS-1`, awaiting approval
 - Business owner approval: **PARTIAL NAMED APPROVAL RECORDED; REMAINING OPERATING DECISIONS OPEN**
-- Policy status: **COMMAND 33 RESUMED — SOURCE CONFLICTS AND OWNER DECISIONS BLOCKED**
+- Policy status: **COMMAND 33 OPERATING DRAFT READY — APPROVAL AND LAUNCH EVIDENCE BLOCKED**
 - Production effect: **None**
 
 This is the non-secret approval record for the single business that will operate Webhost
@@ -37,8 +38,9 @@ not approve production launch:
 - Permanent hosting termination requires an administrator reason and the exact confirmation
   text `TERMINATE`; it is never automatic.
 - `my.speedhost.bd` is the current staging hostname and the owner-selected same-origin
-  production candidate under ADR-041. Target selection is not production approval; the
-  infrastructure audit and launch gates remain blocked.
+  production candidate under ADR-041. The owner reaffirmed it as the desired real operating
+  portal in this Command 33 draft request. Target selection is not a passed production gate;
+  the infrastructure audit, migration and launch evidence remain blocked.
 
 ## Public business and policy source review — 2026-10-05
 
@@ -309,6 +311,140 @@ For each gap, choose `ACCEPT FOR INITIAL LAUNCH` with an operational workaround 
 Accepting an interface gap does not waive security, financial integrity, monitoring, or
 incident-response gates. Direct external monitoring and a tested alert route remain required
 before launch even if the in-app alerting gap is accepted.
+
+## Remaining Speed Host operating policies — DRAFT-OPS-1
+
+**Review status: PROPOSED ONLY — NOT APPROVED, CUSTOMER-PUBLISHED OR APPLIED.** The owner authorized
+drafting, not automatic acceptance of the following proposals. Earlier approvals above remain
+intact: business identity/contact, optional tax, BDT, invoice-numbering proposal, disabled
+partial payments, 30-day refund window, renewal defaults and manual-first provider modes.
+Approval of a draft group does not supply missing names, dates, destinations, legal retention
+periods or tested evidence, and does not authorize production execution or a new command.
+
+### D1 — Billing periods and payment review (B11/P1–P2)
+
+- Propose `ANNUAL` for new public hosting orders at initial launch. Reconcile actual WHMCS
+  products/prices before activation; preserve any supported existing customer cycle under an
+  approved migration mapping rather than converting historical agreements to annual.
+- Offer only reconfirmed business bank/mobile-financial-service destinations and approved
+  cash handling. Do not treat public payment links as permission to enable an online gateway.
+- Customer supplies invoice, full BDT amount, channel and transaction/receipt reference through
+  the existing text-proof form. Ask for payer/date where available; administrator establishes
+  missing payment facts before verification. No attachment feature or credential collection.
+- Administrator checks the actual business statement/provider record or controlled cash
+  receipt, invoice/customer, amount/currency and duplicate reference before verification.
+  A screenshot, receipt text, browser redirect or pending payment alone is not proof.
+- Propose daily reconciliation while taking payments and a one-working-day review target.
+  Exact destinations and named payment-review operator still require confirmation.
+
+### D2 — Administrator order approval (P4)
+
+Propose retaining required administrator review after verified full payment and before
+fulfilment. Check requested domain/package/account facts and actual hosting availability.
+Provision outside the application in manual-first mode; record only verified service state.
+Do not add an approval toggle, assume a paid order is provisioned or grant WHM authority.
+
+### D3 — Cancellation handling (P5)
+
+Propose an authenticated support ticket and administrator confirmation. For non-renewal,
+request notice three working days before the due date; late requests require manual review,
+not silent rejection or automatic termination. Confirm the final paid-through date and service
+effect with the customer. This notice does not shorten the approved 30-day refund window.
+
+Review outstanding invoices separately using existing permitted cancellation/adjustment
+workflows; never erase issued financial history. Do not claim a scheduled-cancellation toggle
+exists. Before renewal automation starts, prove cancelled/non-renewing services cannot be
+inadvertently renewed or suspended. If the existing workflow cannot enforce the approved
+operating procedure, keep automation stopped and authorize a separate tested change.
+
+### D4 — Refund processing (remaining P6 details)
+
+Keep the approved 30-day window and no additional eligibility/exclusion section. Propose
+counting 30 calendar days from the relevant payment's received date, with no extra refund
+fee, a one-working-day acknowledgement and processing within five working days after
+request verification. These timing/method details are new proposals, not already approved.
+For these draft targets, working days mean Saturday–Thursday excluding announced business
+holidays; confirm this definition before making a customer-facing promise.
+
+Verify the requesting account and original payment. Return money through the original channel
+where possible; independently verify any alternative destination. Do not exceed the remaining
+refundable amount or blindly repeat an uncertain transfer. Reconcile the external outcome,
+then record an append-only refund with its reference. Confirm service effects separately;
+no automatic termination, deletion or new eligibility exclusion is introduced.
+
+### D5 — Retention and access (R1–R4)
+
+These are operational review proposals, **not invented legal retention periods**. Validate
+applicable obligations and any dispute/incident hold before approval or disposal. No deletion
+job, archive process or legal exemption is implemented by this draft.
+
+| Class                                                       | Proposed operational handling                                                                                                                         | Still required                                                                                                     |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| R1 profiles/service records                                 | Retain during service; propose restricted review at 12 months after closure, minimizing unnecessary personal data while preserving required snapshots | Approved lawful duration and reviewed disposal/redaction procedure                                                 |
+| R2 financial records and authoritative audit/gateway events | Preserve append-only history; no hard deletion in normal operation; restricted access and encrypted recovery                                          | Owner-supplied applicable retention duration/hold/archive rules; no arbitrary seven-year or indefinite legal claim |
+| R3 diagnostic/security logs                                 | Propose 90 days online and archive through 365 days total, subject to approved obligations/holds; authoritative audit/payment events follow R2        | Validated period, protected log destination/access and separately authorized lifecycle controls                    |
+| R4 email/support records                                    | Propose email-body review at 90 days and closed-ticket review at 24 months; billing/dispute evidence follows its required record class                | Approved durations, sensitive-content handling and reviewed disposal; no premature removal of required evidence    |
+
+These periods are local proposals, not numbers prescribed by a source. The
+[OWASP logging guidance](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html#disposal-of-logs)
+supports setting retention against obligations and protecting access; it does not establish
+Speed Host's legal retention schedule. Keep the already approved backup proposal (R5), with
+off-site integrity/restore evidence still required.
+
+### D6 — Maintenance, incident and first-renewal operations (L3–L6/A5–A7)
+
+- Propose Shahadat Hossain as maintenance communicator and first-renewal supervisor, subject
+  to his explicit acceptance/availability. Being the approver does not appoint every role.
+- Propose customer notices through the approved business email and support portal: advance
+  notice, start, completion or delay. Record impact honestly; shared-host maintenance must
+  also account for unrelated services. Do not promise a staffed SLA that has not been proved.
+- Require a named incident primary, a distinct reachable backup and tested protected alert
+  routes. The public invoice phone/email are not evidence of a tested incident route.
+- Propose a two-hour maintenance window in `Asia/Dhaka`; exact calendar date/start/end and
+  rollback authority remain required. No window, reminder or background task is scheduled.
+- Keep production scheduler stopped until the exact first-renewal window and full eligible
+  service list are reviewed. Do not assume a per-run allowlist/cap exists. Prove the intended
+  manual-first behavior and absence of unapproved hosting actions before starting one scheduler.
+- Propose policy review 90 days after actual launch and after any incident/material change.
+
+### D7 — Conditional initial interface-gap acceptance (G1–G3)
+
+Propose accepting G1 using the existing payment history and daily reconciliation; G2 using
+protected, tested read-only audit review by an authorized operator; G3 using independently
+configured external monitoring with tested primary/backup alerts. Name an operator and verify
+each workaround against the actual release before accepting it. No gap is accepted merely by
+drafting this proposal, and lack of working external monitoring still blocks production.
+
+### D8 — Real operating portal and cutover boundary
+
+The desired customer/admin operating origin is **`https://my.speedhost.bd`**. Anonymous
+read-only verification during this draft returned HTTP 200 with the Webhost Billing page
+title. Current deployment evidence still identifies staging release `6085629` and fictional
+data. This is not evidence of Speed Host branding, imported customers or production readiness.
+
+Before making that origin the real operating portal:
+
+1. Confirm these operating policies and missing protected owners/contacts/windows, and
+   complete the shared-host/security, independent-secret, SMTP, external-monitoring,
+   off-site backup/restore and immutable-release gates in the production runbook.
+2. Apply/verify Speed Host's approved installation settings and any separately authorized
+   frontend branding work. Saving invoice identity does not rebrand every public/navigation
+   surface. Preserve the open-source project's generic identity/defaults and unrelated sites.
+3. Assess/build/rehearse WHMCS migration in a new isolated allowlisted database; reconcile
+   balances, immutable invoices/payments, source-ID ownership, service dates and next invoice
+   number. Do not replace an active database, promote demo users or reuse staging secrets.
+4. Obtain final target/release/digest/backup/window/rollback confirmation. Cut over under the
+   [production runbook](PRODUCTION_LAUNCH_RUNBOOK.md) with one billing authority per scope,
+   tested customer/admin ownership and controlled worker/scheduler activation. No hostname,
+   DNS, Nginx, database or running process is changed by this draft.
+
+### Approval reply for DRAFT-OPS-1
+
+Approve or edit each group `D1`–`D8`, explicitly identifying this draft/version and approver.
+Supply actual product/cycle choices and protected payment/operator/contact/window references;
+name the distinct incident backup and approve lawful retention durations, especially R2.
+Do not paste credentials or customer exports into chat or Git. Blank inputs remain blockers
+even if every proposal is accepted. Final policy approval and production go/no-go are separate.
 
 ## Deferred configuration locations
 
