@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Authorized Command 33 follow-up — App-wide sentence-case presentation
-- **Current status:** App-wide presentation rule implemented and locally validated; operating-policy draft awaits approval; no deployment; staging release 6085629 unchanged; production not approved
+- **Current command:** Authorized Command 33 follow-up — Review remaining operating policies
+- **Current status:** Remaining operating-policy review completed; DRAFT-OPS-1 still awaits owner decisions and inputs; no deployment; recorded staging release 6085629 unchanged; production not approved
 - **Last updated:** 2026-10-06
-- **Next command:** Resume Command 33 — Review DRAFT-OPS-1 and Supply Remaining Operating Approvals
+- **Next command:** Resume Command 33 — Approve DRAFT-OPS-1 and Supply Remaining Operating Inputs
 - **Next command authorized:** No
 
 ## Command Reports
@@ -9196,6 +9196,68 @@ Do not automatically begin deployment, migration, Command 34 remediation or Comm
 
 **Resume Command 33 — Review DRAFT-OPS-1 and Supply Remaining Operating Approvals**.
 Request owner authorization before beginning; do not infer deployment or migration approval.
+
+### Authorized Command 33 follow-up — Review remaining operating policies
+
+- **Status:** Review completed; policy acceptance and required operational evidence pending
+- **Date:** 2026-10-06
+
+#### Scope completed
+
+- Reviewed the unchanged `DRAFT-OPS-1` against existing settings boundaries, the recorded
+  release checklist and production launch runbook.
+- Added an eight-group decision checklist and an approval/input reply form in the existing
+  business-policy record. Suggested a staged D1–D4 decision followed by D5–D8 inputs.
+- Separated rule approval from catalogue/payment details, named roles, protected contacts,
+  retention obligations, exact windows, tested workarounds and release/migration evidence.
+- Preserved existing approved identity/contact, optional tax, currency, refund window,
+  numbering baseline, partial-payment, renewal, backup and manual-first choices.
+- Recorded the latest “Yes” as authorization to review, not policy acceptance or launch.
+
+#### Files changed
+
+- `docs/PRODUCTION_BUSINESS_POLICIES.md` — dated review, decision checklist, staged reply
+  and explicit evidence/authority boundaries; draft groups remain unchanged and unapproved.
+- `CODEX_DEVELOPMENT_COMMANDS.md` — bounded authorized review and next owner-input command.
+- `docs/PROGRESS.md` — current status and this review report.
+
+#### Validation
+
+- Documentation-only change; no schema, default, runtime behavior or business-rule change.
+  Application tests, Docker, browsers and deployment acceptance are not claimed.
+- Initial scoped Prettier check identified only the new Markdown table's formatting.
+  Formatted it with Prettier; the repeat check passed for all three changed documents.
+- `pnpm docs:check` passed all four offline validators: links/anchors, contributor paths,
+  issue forms and safe-demo assets. `git diff --check` passed.
+- Verified the canonical remote and `main` branch; fetched `origin/main` and confirmed zero
+  ahead/behind before the focused commit. Delivery uses a non-force push; no hosted check
+  result or new source release is inferred.
+
+#### Decisions made
+
+- Existing decisions do not need reapproval. Partial replies approve only their stated
+  groups; blanks remain unresolved. No operator is appointed from the approver's identity.
+- Review/refund targets require owner acceptance and feasible staffing before publication.
+  Retention review dates are not deletion permission or legal retention conclusions.
+- Accepting an interface gap requires a named operator and verified workaround; independent
+  monitoring and tested incident routes remain mandatory.
+- A protected evidence reference is not itself a passed check. This review does not refresh
+  historic website, provider, infrastructure or full-release evidence.
+
+#### Open questions and risks
+
+- D1–D8 are still proposed only; actual destinations/operators, retention rules, incident
+  backup, windows, first-run eligible list and gap decisions/evidence remain unresolved.
+- Infrastructure/security/recovery, real mail/monitoring, final catalogue, legacy migration
+  and release/cutover gates remain separate. No live setting or process was changed.
+- Command 33's overall business-policy gate remains open. This completed documentation
+  review is not final policy approval or production readiness.
+
+#### Recommended next command
+
+**Resume Command 33 — Approve DRAFT-OPS-1 and Supply Remaining Operating Inputs**.
+Request explicit owner decisions/inputs before recording approval; do not start Command 34,
+migration, deployment or cutover from this review authorization.
 
 ## Report Template
 

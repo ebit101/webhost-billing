@@ -8,6 +8,7 @@
 - Existing-portal branding intake: 2026-10-05 — public `https://clients.speedhost.com.bd/`
 - Authorized local web-branding implementation: 2026-10-06 — no deployment or policy approval
 - Remaining operating-policy draft: 2026-10-05 — version `DRAFT-OPS-1`, awaiting approval
+- Operating-policy review: 2026-10-06 — decision checklist prepared; no new policy approval
 - Business owner approval: **PARTIAL NAMED APPROVAL RECORDED; REMAINING OPERATING DECISIONS OPEN**
 - Policy status: **COMMAND 33 OPERATING DRAFT READY — APPROVAL AND LAUNCH EVIDENCE BLOCKED**
 - Production effect: **None**
@@ -497,6 +498,65 @@ Supply actual product/cycle choices and protected payment/operator/contact/windo
 name the distinct incident backup and approve lawful retention durations, especially R2.
 Do not paste credentials or customer exports into chat or Git. Blank inputs remain blockers
 even if every proposal is accepted. Final policy approval and production go/no-go are separate.
+
+### Owner decision checklist — reviewed 2026-10-06
+
+The owner's latest “Yes” authorized review of the remaining draft after the sentence-case
+follow-up. It did not approve `DRAFT-OPS-1`, appoint operators, publish customer promises or
+authorize deployment. This checklist summarizes the unchanged draft above; it is not a new
+draft version. If a summary seems narrower than a group, review the full group before approval.
+
+| Group | Decision to approve or edit                                                                                                                                                                 | Missing input or acceptance evidence                                                                                                                                        |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1    | Annual-only new hosting orders initially; verified full manual payments; daily reconciliation and one-working-day review target                                                             | Final catalogue/prices, legacy-cycle mapping, reconfirmed payment destinations/cash procedure and named reviewer                                                            |
+| D2    | Administrator review after verified full payment, then manual-first fulfilment                                                                                                              | Named order/hosting operator; verified fulfilment record, not payment alone                                                                                                 |
+| D3    | Authenticated cancellation ticket and confirmation; request non-renewal three working days before due date; manually review late requests                                                   | Responsible operator and proof that cancelled/non-renewing services are excluded from renewal/suspension before automation                                                  |
+| D4    | Thirty calendar days from payment receipt; no extra refund fee; acknowledge within one working day and process within five working days after verification; original channel where possible | Confirm Saturday–Thursday working days excluding announced business holidays, responsible reviewer and feasible processing targets                                          |
+| D5    | Restricted access, preserved financial history and the proposed operational retention reviews                                                                                               | Applicable approved durations/holds for each record class, especially financial records; protected storage and reviewed disposal procedure                                  |
+| D6    | Proposed communication/supervision roles, customer notices, two-hour maintenance proposal and policy-review cadence                                                                         | Explicit role acceptance, distinct incident backup, tested private alert routes, exact maintenance/first-renewal windows, full eligible-service list and rollback authority |
+| D7    | Decide separately whether to accept or remediate G1, G2 and G3                                                                                                                              | Named operator and tested workaround for each accepted gap; external monitoring/alerts remain a launch requirement                                                          |
+| D8    | `my.speedhost.bd` as the intended operating origin with evidence-gated settings, migration and cutover                                                                                      | Separate infrastructure/release evidence, approved migration scope/reconciliation and final production authorization                                                        |
+
+The approved business identity, contacts, optional tax fields, single BDT currency, disabled
+partial payments, 30-day refund window, renewal defaults and manual-first modes do not need
+reapproval. An imported invoice sequence still needs a reconciled next number; the empty
+baseline proposal must not overwrite or renumber legacy history.
+
+The next owner reply can be staged: first approve or edit D1–D4, then supply D5–D8 decisions
+and protected operational references. A partial reply closes only its explicit scope; no
+blank field defaults to acceptance. Confirm review/refund targets can actually be staffed
+before publishing them. A retention review date is not permission to delete records.
+
+```text
+Draft: DRAFT-OPS-1
+Approver: Shahadat Hossain, Administrator
+D1 decision: Approve / edit / defer
+D2 decision: Approve / edit / defer
+D3 decision: Approve / edit / defer
+D4 decision: Approve / edit / defer
+Working days decision: Saturday–Thursday excluding announced business holidays / edit / defer
+D5 decision and retention-policy reference:
+D6 decision and protected operations-record reference:
+D7 decision for G1 / G2 / G3 and tested-workaround references:
+D8 decision: Accept intended origin/boundaries / edit / defer
+Catalogue and reconfirmed manual-payment-instructions reference:
+Named payment reviewer and order/hosting operator:
+Named maintenance communicator and first-renewal supervisor:
+Named incident primary and distinct backup; protected alert-test reference:
+Exact maintenance and first-renewal windows in Asia/Dhaka:
+Full eligible-service-list and rollback-authority references:
+```
+
+Use “defer” when an input is not ready. Provide private routing, payment details, retention
+evidence and service lists in access-controlled records, not the public repository. Do not
+paste credentials or customer exports into chat. A reference records where evidence belongs;
+it does not prove the evidence passed until an authorized review verifies it.
+
+This review used the recorded policy/source intake, settings boundaries, release checklist
+and launch runbook. It is not a fresh legal opinion, website/provider verification, full
+release audit or infrastructure inspection. In particular, G2's protected audit-review
+procedure and G3's external alert delivery are not established by this checklist. No live
+settings, providers, workers, scheduler, database, hostname or deployment were changed.
 
 ## Deferred configuration locations
 

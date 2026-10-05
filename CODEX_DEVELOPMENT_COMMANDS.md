@@ -880,6 +880,19 @@ Inspect fictional invoice and anonymous local browser previews. Record results,
 commit, reconcile and non-force push `main`; stop after reporting. This authorization
 does not approve remaining operating policies, migration, release, deployment or cutover.
 
+### Authorized Command 33 follow-up — Review remaining operating policies
+
+The owner authorized review of the remaining operating-policy draft after the app-wide
+sentence-case follow-up. Review `DRAFT-OPS-1` against the existing settings, release checklist
+and launch runbook; prepare a concise owner decision checklist and safe approval reply.
+Preserve existing approvals, the original draft version and every unresolved input. Record
+review authorization separately from policy acceptance. Do not appoint owners, invent legal
+retention periods, publish policy promises, change settings/code or access/mutate production.
+
+Validate the documentation, record progress, commit, reconcile and non-force push `main`;
+stop and request **Resume Command 33 — Approve DRAFT-OPS-1 and Supply Remaining Operating
+Inputs**. This review does not authorize Command 34, migration, deployment or cutover.
+
 ## Command 34 — Select and Audit Production Infrastructure
 
 ```text
