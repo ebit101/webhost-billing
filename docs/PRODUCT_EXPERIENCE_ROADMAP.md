@@ -92,7 +92,7 @@ evidence recorded in `docs/PROGRESS.md`.
 | `/admin/customers`              | Search, status filter, add customer, pagination                                       | Server-side query and pagination                                         | This is the strongest scalable directory pattern and should be reused elsewhere.                                                                                                   |
 | `/admin/customers/[customerId]` | Operational identity, linked navigation, profile/billing/access and bounded history   | Role guard, bounded customer aggregate, and validated ledger filters     | Command 77 puts actionable context first, formats money/dates safely, and links direct invoice or customer-filtered ledgers.                                                       |
 | `/admin/products`               | Product lifecycle, public visibility, cPanel mapping, price versions                  | Append-only price definitions                                            | Capable but dense; amounts are entered and described as raw minor units, increasing operator error risk.                                                                           |
-| `/admin/orders`                 | Create order/invoice, approve states and explicit read-only order review              | Server pricing, validated historical snapshots, separate states          | Command 82 links all-item review to customer/invoice detail; the list still requests the first 100 and supplies no service state.                                                  |
+| `/admin/orders`                 | Create order/invoice, searchable paginated ledger and explicit read-only order review | Server pricing, validated historical snapshots, separate states          | Commands 82 and 88 connect all-item review and older-order lookup; creation drafts and original action targets stay independent, while service state is not inferred.              |
 | `/admin/services`               | Create/provision/suspend/reactivate/terminate; searchable inventory, review and tools | Fake provider, protected paginated reads, exact termination confirmation | Commands 86–87 add selected application facts and URL-bound inventory; forms/targets remain independent, while setup/tool/history scale and broader relationships remain separate. |
 | `/admin/invoices`               | Draft creation, business identity, searchable paginated ledger/detail                 | Protected query contract, immutable invoices and historical snapshots    | Command 85 adds URL-bound search/status/pages/customer scope without resetting financial forms; customer chooser and richer relationship navigation remain separate.               |
 | `/admin/invoices/[invoiceId]`   | Invoice detail and PDF                                                                | Role guard and immutable financial model                                 | Clear document, but customer/order/payment context is not navigable.                                                                                                               |
@@ -581,6 +581,23 @@ remain P1 work for the next phase review.
   richer relationships, action redesign, attention/freshness/chrome, local worker/
   isolation and dependency/governance risks remain separate. No implementation,
   provider, cleanup, release or deployment is authorized by this definition.
+
+### Command 88 bounded implementation
+
+- Replaces only the administrator order list with runtime-validated URL search,
+  status, page/page-size and independent customer scope. Existing protected order
+  contracts supply older records and authoritative counts; search remains historical
+  email/order number/any requested domain, with createdAt/ID ordering.
+- Query/retry discards stale rows/counts/review without remounting independent
+  creation fields/key or reassigning its customer. Existing deliberate writes retain
+  original targets/bodies/CSRF and refresh the latest query after completion, never
+  inject a nonmatching row, restore selected review or repeat a write after read failure.
+- All-item historical review and fixed customer/invoice links remain deliberate,
+  read-only and separate from service/provisioning evidence. Validation/delivery are
+  recorded in `docs/PROGRESS.md`; other ledgers, pickers/setup/tool/history scale,
+  relationships and production gates remain separately authorized work.
+- Next: separately authorize **Phase Review — Review Command 88 and define the
+  next bounded command**. No Command 89 is defined or implemented here.
 
 ### Remaining production gates
 

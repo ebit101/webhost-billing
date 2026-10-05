@@ -598,7 +598,7 @@ test('complete hosting customer and administrator lifecycle', async ({
     ).toBeVisible();
     await expect(
       page.getByRole('link', { name: 'Clear customer filter' }),
-    ).toHaveAttribute('href', '/admin/orders');
+    ).toHaveAttribute('href', '/admin/orders?page=1&pageSize=20');
   });
 
   await test.step('administrator reviews and cancels a partial-payment policy change without mutating the seed', async () => {

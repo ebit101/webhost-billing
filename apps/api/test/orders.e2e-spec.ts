@@ -441,6 +441,184 @@ describe('Order creation (e2e)', () => {
     ).toMatchObject({ amount: 99_000n, setupFee: 1_234n });
   });
 
+  it('browses >100 orders by historical email/any item domain, isolated status and stable creation ties without writes', async () => {
+    const template = await prisma.order.findUniqueOrThrow({
+      where: { id: orderId },
+      include: { items: true, invoices: true },
+    });
+    const invoice = template.invoices[0];
+    const ids = Array.from(
+      { length: 140 },
+      (_, index) =>
+        `88000000-0000-4000-8000-${String(index).padStart(12, '0')}`,
+    );
+    for (const [index, id] of ids.entries()) {
+      await prisma.order.create({
+        data: {
+          id,
+          customerId,
+          orderNumber: `ORD-CMD88-${String(index).padStart(4, '0')}`,
+          submissionKey: `command88-api-${index}`,
+          status: index % 2 === 0 ? 'CANCELLED' : 'REJECTED',
+          currency: 'BDT',
+          subtotal: 24000n,
+          setupTotal: 1000n,
+          total: 25000n,
+          customerEmailSnapshot: 'historical-command88@example.test',
+          createdAt: new Date(
+            Date.UTC(2026, 0, 1, 0, 0, Math.floor(index / 2)),
+          ),
+          placedAt: new Date(Date.UTC(2026, 0, 1, 0, 0, 140 - index)),
+          items: {
+            create: [0, 1].map((position) => ({
+              productId,
+              productPriceId: activePriceId,
+              productNameSnapshot: 'Command88 Snapshot Plan',
+              billingPeriod: 'MONTHLY',
+              currency: 'BDT',
+              unitAmount: 12000n,
+              setupFee: 500n,
+              lineTotal: 12500n,
+              requestedDomain: position
+                ? `second-command88-${index}.example.test`
+                : 'first-command88.example.test',
+              createdAt: new Date(Date.UTC(2026, 0, 1, 0, 0, position)),
+            })),
+          },
+          invoices: {
+            create: {
+              invoiceNumber: `INV-CMD88-${index}`,
+              submissionKey: `command88-api-invoice-${index}`,
+              customerId,
+              status: 'CANCELLED',
+              currency: 'BDT',
+              subtotal: 25000n,
+              total: 25000n,
+              balanceDue: 25000n,
+              customerNameSnapshot: invoice.customerNameSnapshot,
+              customerEmailSnapshot: 'historical-command88@example.test',
+              customerAddressSnapshot: invoice.customerAddressSnapshot!,
+              businessIdentitySnapshot: invoice.businessIdentitySnapshot!,
+              dueAt: new Date('2026-02-01T00:00:00Z'),
+            },
+          },
+        },
+      });
+    }
+    const admin = request.agent(app.getHttpServer());
+    await login(admin, await csrfToken(admin), ADMIN_EMAIL);
+    const other = request.agent(app.getHttpServer());
+    await login(other, await csrfToken(other), OTHER_CUSTOMER_EMAIL);
+    // Authorization failures intentionally audit; compare only permitted browsing.
+    await request(app.getHttpServer()).get('/orders').expect(401);
+    await other.get('/orders').expect(403);
+    await other.get(`/orders/${ids[0]}`).expect(403);
+    const before = await ledgerSnapshot();
+    const read = async (query: Record<string, string | number>) => {
+      const response = await admin.get('/orders').query(query).expect(200);
+      return paginatedApiSuccessResponseSchema(orderSchema).parse(
+        response.body,
+      );
+    };
+    const all = await read({
+      search: 'ORD-CMD88',
+      customerId,
+      page: 1,
+      pageSize: 100,
+    });
+    expect(all.pagination).toMatchObject({
+      totalItems: 140,
+      totalPages: 2,
+      pageSize: 100,
+    });
+    expect(all.data.map((row) => row.id)).toEqual(
+      [...ids].reverse().slice(0, 100),
+    );
+    const older = await read({
+      search: 'ord-cmd88',
+      customerId,
+      page: 2,
+      pageSize: 100,
+    });
+    expect(older.data.map((row) => row.id)).toEqual(
+      [...ids].reverse().slice(100),
+    );
+    const combined = await read({
+      search: 'HISTORICAL-COMMAND88',
+      status: 'CANCELLED',
+      customerId,
+      page: 1,
+      pageSize: 100,
+    });
+    expect(combined.pagination.totalItems).toBe(70);
+    expect(
+      combined.data.every(
+        (row) => row.status === 'CANCELLED' && row.customerId === customerId,
+      ),
+    ).toBe(true);
+    const secondItem = await read({
+      search: 'SECOND-COMMAND88-0.EXAMPLE.TEST',
+      customerId,
+      pageSize: 20,
+    });
+    expect(secondItem.data.map((row) => row.id)).toEqual([ids[0]]);
+    expect(secondItem.data[0]?.items).toHaveLength(2);
+    for (const search of [
+      CUSTOMER_EMAIL,
+      'Command88 Snapshot Plan',
+      'INV-CMD88',
+      'Command Nine',
+    ]) {
+      const absent = await read({
+        search,
+        customerId,
+        status: 'CANCELLED',
+        pageSize: 100,
+      });
+      expect(absent.data.some((row) => ids.includes(row.id))).toBe(false);
+    }
+    const otherId = (
+      await prisma.customer.findFirstOrThrow({
+        where: { user: { email: OTHER_CUSTOMER_EMAIL } },
+      })
+    ).id;
+    expect(
+      (await read({ search: 'ORD-CMD88', customerId: otherId })).pagination
+        .totalItems,
+    ).toBe(0);
+    const outside = await read({
+      search: 'ORD-CMD88',
+      customerId,
+      page: 99,
+      pageSize: 100,
+    });
+    expect(outside.data).toEqual([]);
+    expect(outside.pagination).toMatchObject({
+      page: 99,
+      totalItems: 140,
+      totalPages: 2,
+    });
+    expect(await ledgerSnapshot()).toEqual(before);
+  });
+
+  async function ledgerSnapshot() {
+    return {
+      orders: await prisma.order.findMany({ orderBy: { id: 'asc' } }),
+      items: await prisma.orderItem.findMany({ orderBy: { id: 'asc' } }),
+      invoices: await prisma.invoice.findMany({ orderBy: { id: 'asc' } }),
+      invoiceItems: await prisma.invoiceItem.findMany({
+        orderBy: { id: 'asc' },
+      }),
+      payments: await prisma.payment.findMany({ orderBy: { id: 'asc' } }),
+      services: await prisma.service.findMany({ orderBy: { id: 'asc' } }),
+      operations: await prisma.hostingPanelOperation.findMany({
+        orderBy: { id: 'asc' },
+      }),
+      audits: await prisma.activityLog.findMany({ orderBy: { id: 'asc' } }),
+      outbox: await prisma.outboxEvent.findMany({ orderBy: { id: 'asc' } }),
+    };
+  }
+
   afterAll(async () => {
     if (prisma) await cleanup();
     if (app) await app.close();

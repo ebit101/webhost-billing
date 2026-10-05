@@ -2579,8 +2579,8 @@ deployment and production approval. Production remains NO-GO.
 ```
 
 **Authorization:** Defined by the explicitly authorized Command 87 phase review
-on 2026-10-05. Command 88 implementation is not authorized; require the user's
-separate authorization before starting it.
+on 2026-10-05. The user separately authorized Command 88 by its full title on
+2026-10-05. Stop after its verified delivery for a separately authorized phase review.
 
 ---
 

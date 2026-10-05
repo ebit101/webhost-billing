@@ -10,6 +10,10 @@ and will be called out in release notes.
 
 ### Changed
 
+- Administrator order ledger gains validated URL search/status/customer context
+  and pagination beyond 100 records, without losing creation drafts or retargeting
+  existing actions. Browsing remains read-only and preserves historical snapshots.
+
 - Made administrator service inventory searchable and paginated through validated
   URL filters, independent customer scope and authoritative runtime-checked counts.
   Browsing discards stale reads/reviews without resetting operational forms or

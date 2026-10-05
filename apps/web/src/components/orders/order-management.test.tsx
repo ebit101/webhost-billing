@@ -11,6 +11,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AdminOrderManager } from './admin-order-manager';
 import { CustomerCheckout } from './customer-checkout';
 
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
+
 const customerId = '90000000-0000-4000-8000-000000000001';
 const productId = '90000000-0000-4000-8000-000000000002';
 const priceId = '90000000-0000-4000-8000-000000000003';
@@ -326,7 +328,7 @@ describe('order interfaces', () => {
       'fetch',
       vi.fn(async (input: RequestInfo | URL) => {
         const url = String(input);
-        if (url.includes('/orders?')) return paginatedResponse([order]);
+        if (url.includes('/orders?')) return paginatedResponse([order], 20);
         if (url.includes('/customers?')) return paginatedResponse([customer]);
         if (url.endsWith('/products')) {
           return jsonResponse({ success: true, data: [product] });
@@ -340,7 +342,7 @@ describe('order interfaces', () => {
         name: 'Create order and invoice',
       }),
     ).toBeTruthy();
-    expect(screen.getByText(order.orderNumber)).toBeTruthy();
+    expect(await screen.findByText(order.orderNumber)).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Reject' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeTruthy();
   });
@@ -348,7 +350,7 @@ describe('order interfaces', () => {
   it('applies, explains, and clears URL-bound customer context', async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input);
-      if (url.includes('/orders?')) return paginatedResponse([]);
+      if (url.includes('/orders?')) return paginatedResponse([], 20);
       if (url.includes('/customers?pageSize=')) {
         return paginatedResponse([customer]);
       }
@@ -370,16 +372,16 @@ describe('order interfaces', () => {
     expect(filterNotice.textContent).toContain(
       'Showing orders for Amina Rahman · CUST-0001',
     );
-    expect(screen.getByText('No orders for Amina Rahman')).toBeTruthy();
+    expect(await screen.findByText('No orders for this customer')).toBeTruthy();
     expect(
       screen
         .getByRole('link', { name: 'Clear customer filter' })
         .getAttribute('href'),
-    ).toBe('/admin/orders');
+    ).toBe('/admin/orders?page=1&pageSize=20');
     expect(
       fetchMock.mock.calls.some(([request]) =>
         String(request).endsWith(
-          `/orders?pageSize=100&customerId=${customerId}`,
+          `/orders?page=1&pageSize=20&customerId=${customerId}`,
         ),
       ),
     ).toBe(true);
@@ -388,7 +390,7 @@ describe('order interfaces', () => {
   it('ignores malformed customer context and offers a safe clear action', async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input);
-      if (url.includes('/orders?')) return paginatedResponse([]);
+      if (url.includes('/orders?')) return paginatedResponse([], 20);
       if (url.includes('/customers?')) return paginatedResponse([customer]);
       if (url.endsWith('/products')) {
         return jsonResponse({ success: true, data: [product] });
@@ -408,7 +410,7 @@ describe('order interfaces', () => {
       screen
         .getByRole('link', { name: 'Clear invalid filter' })
         .getAttribute('href'),
-    ).toBe('/admin/orders');
+    ).toBe('/admin/orders?page=1&pageSize=20');
     expect(
       fetchMock.mock.calls.some(([request]) =>
         String(request).includes('customerId='),
@@ -432,7 +434,7 @@ describe('order interfaces', () => {
       'fetch',
       vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
         const url = String(input);
-        if (url.includes('/orders?')) return paginatedResponse([paidOrder]);
+        if (url.includes('/orders?')) return paginatedResponse([paidOrder], 20);
         if (url.includes('/customers?')) return paginatedResponse([customer]);
         if (url.endsWith('/products')) {
           return jsonResponse({ success: true, data: [product] });
@@ -488,7 +490,7 @@ describe('order interfaces', () => {
         expect(init?.method).toBeUndefined();
         const url = String(input);
         reads.push(url);
-        if (url.includes('/orders?')) return paginatedResponse([order]);
+        if (url.includes('/orders?')) return paginatedResponse([order], 20);
         if (url.includes('/customers?')) return paginatedResponse([customer]);
         if (url.endsWith('/products'))
           return jsonResponse({ success: true, data: [product] });
@@ -533,7 +535,7 @@ describe('order interfaces', () => {
     });
     const mock = vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input);
-      if (url.includes('/orders?')) return paginatedResponse([order]);
+      if (url.includes('/orders?')) return paginatedResponse([order], 20);
       if (url.includes('/customers?')) return paginatedResponse([customer]);
       if (url.endsWith('/products'))
         return jsonResponse({ success: true, data: [product] });
@@ -571,7 +573,7 @@ describe('order interfaces', () => {
         'fetch',
         vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
           const url = String(input);
-          if (url.includes('/orders?')) return paginatedResponse([order]);
+          if (url.includes('/orders?')) return paginatedResponse([order], 20);
           if (url.includes('/customers?')) return paginatedResponse([customer]);
           if (url.endsWith('/products'))
             return jsonResponse({ success: true, data: [product] });
@@ -620,7 +622,7 @@ describe('order interfaces', () => {
       'fetch',
       vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
         const url = String(input);
-        if (url.includes('/orders?')) return paginatedResponse([order]);
+        if (url.includes('/orders?')) return paginatedResponse([order], 20);
         if (url.includes('/customers?')) return paginatedResponse([customer]);
         if (url.endsWith('/products'))
           return jsonResponse({ success: true, data: [product] });
@@ -686,13 +688,13 @@ function jsonResponse(body: unknown) {
   });
 }
 
-function paginatedResponse(data: unknown[]) {
+function paginatedResponse(data: unknown[], pageSize = 100) {
   return jsonResponse({
     success: true,
     data,
     pagination: {
       page: 1,
-      pageSize: 100,
+      pageSize,
       totalItems: data.length,
       totalPages: data.length ? 1 : 0,
     },

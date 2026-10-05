@@ -16,41 +16,38 @@ import {
 import {
   emptyAdminCustomerFilter,
   type AdminCustomerFilter,
-  withAdminCustomerFilter,
 } from '../../lib/admin-customer-filter';
-import {
-  AdminCustomerFilterNotice,
-  filteredEmptyTitle,
-} from '../customers/admin-customer-filter-notice';
+import { AdminCustomerFilterNotice } from '../customers/admin-customer-filter-notice';
 import { Card, Field, fieldClass } from '../customers/customer-fields';
 import { Button } from '../ui/button';
-import { DataTable, type DataColumn } from '../ui/data-table';
-import { EmptyState, LoadingState } from '../ui/feedback-state';
+import { type DataColumn } from '../ui/data-table';
+import { LoadingState } from '../ui/feedback-state';
 import { Icon } from '../ui/icon';
 import { PageHeader } from '../ui/page-header';
 import { StatusBadge } from '../ui/status-badge';
 import { errorMessage, formatMinor, orderTone } from './order-ui';
 import { AdminOrderReview } from './admin-order-review';
+import { AdminOrderLedger } from './admin-order-ledger';
+import {
+  adminOrderHref,
+  adminOrderQueryString,
+  readAdminOrderQuery,
+  type AdminOrderSelection,
+} from '../../lib/admin-order-ledger-query';
 
 export function AdminOrderManager({
   customerFilter = emptyAdminCustomerFilter,
+  selection,
 }: {
   customerFilter?: AdminCustomerFilter;
+  selection?: AdminOrderSelection;
 } = {}) {
-  return (
-    <OrderWorkspace
-      key={`${customerFilter.customerId ?? ''}:${customerFilter.invalid}`}
-      customerFilter={customerFilter}
-    />
-  );
-}
-
-function OrderWorkspace({
-  customerFilter,
-}: {
-  customerFilter: AdminCustomerFilter;
-}) {
-  const [orders, setOrders] = useState<Order[]>([]);
+  const applied = selection ?? {
+    ...readAdminOrderQuery({ customerId: customerFilter.customerId }),
+    customerFilter,
+  };
+  customerFilter = applied.customerFilter;
+  const [readRevision, setReadRevision] = useState(0);
   const [customers, setCustomers] = useState<CustomerSummary[]>([]);
   const [filteredCustomer, setFilteredCustomer] = useState<CustomerDetail>();
   const [products, setProducts] = useState<Product[]>([]);
@@ -63,28 +60,25 @@ function OrderWorkspace({
   const [review, setReview] = useState<{ id: string; sequence: number }>();
   const reviewSequence = useRef(0);
   const reviewTrigger = useRef<HTMLButtonElement | null>(null);
-  const ordersPath = withAdminCustomerFilter(
-    '/orders?pageSize=100',
-    customerFilter,
-  );
   const filteredCustomerId = customerFilter.customerId;
+  const scope = `${adminOrderQueryString(applied.query)}:${applied.invalid}:${customerFilter.invalid}`;
+  const [reviewScope, setReviewScope] = useState(scope);
+  // Discard old selection without remounting independent creation inputs/key.
+  if (reviewScope !== scope) {
+    setReviewScope(scope);
+    setReview(undefined);
+  }
 
   useEffect(() => {
     let active = true;
     void Promise.all([
-      authenticatedPaginatedGet<Order>(ordersPath),
       authenticatedPaginatedGet<CustomerSummary>('/customers?pageSize=100'),
       authenticatedGet<Product[]>('/products'),
-      filteredCustomerId
-        ? authenticatedGet<CustomerDetail>(`/customers/${filteredCustomerId}`)
-        : Promise.resolve(undefined),
     ])
-      .then(([orderResult, customerResult, productResult, customerContext]) => {
+      .then(([customerResult, productResult]) => {
         if (!active) return;
-        setOrders(orderResult.data);
         setCustomers(customerResult.data);
         setProducts(productResult);
-        setFilteredCustomer(customerContext);
         setSelectedProductId(
           productResult.find((product) => product.status === 'ACTIVE')?.id ??
             '',
@@ -99,7 +93,25 @@ function OrderWorkspace({
     return () => {
       active = false;
     };
-  }, [filteredCustomerId, ordersPath]);
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    void (
+      filteredCustomerId
+        ? authenticatedGet<CustomerDetail>(`/customers/${filteredCustomerId}`)
+        : Promise.resolve(undefined)
+    )
+      .then((customer) => {
+        if (active) setFilteredCustomer(customer);
+      })
+      .catch((caught: unknown) => {
+        if (active) setError(errorMessage(caught));
+      });
+    return () => {
+      active = false;
+    };
+  }, [filteredCustomerId]);
 
   const selectedProduct = products.find(
     (product) => product.id === selectedProductId,
@@ -227,6 +239,7 @@ function OrderWorkspace({
     const form = event.currentTarget;
     const values = new FormData(form);
     if (!submissionKey.current) submissionKey.current = crypto.randomUUID();
+    setReview(undefined);
     setSaving(true);
     setError('');
     setNotice('');
@@ -245,11 +258,6 @@ function OrderWorkspace({
             : {}),
         },
       );
-      setOrders((current) => [
-        result.order,
-        ...current.filter((order) => order.id !== result.order.id),
-      ]);
-      setReview(undefined);
       submissionKey.current = '';
       form.reset();
       setNotice(
@@ -259,6 +267,7 @@ function OrderWorkspace({
       setError(errorMessage(caught));
     } finally {
       setSaving(false);
+      setReadRevision((current) => current + 1);
     }
   }
 
@@ -266,6 +275,7 @@ function OrderWorkspace({
     orderId: string,
     status: 'PROCESSING' | 'REJECTED' | 'CANCELLED',
   ) {
+    setReview(undefined);
     setSaving(true);
     setError('');
     try {
@@ -274,15 +284,12 @@ function OrderWorkspace({
         'PATCH',
         { status },
       );
-      setOrders((current) =>
-        current.map((order) => (order.id === updated.id ? updated : order)),
-      );
-      setReview(undefined);
       setNotice(`${updated.orderNumber} moved to ${status.toLowerCase()}.`);
     } catch (caught) {
       setError(errorMessage(caught));
     } finally {
       setSaving(false);
+      setReadRevision((current) => current + 1);
     }
   }
 
@@ -296,9 +303,18 @@ function OrderWorkspace({
         description="Create customer orders with server-authoritative prices, then track payment and fulfilment states independently."
       />
       <AdminCustomerFilterNotice
-        customer={filteredCustomer}
+        customer={
+          filteredCustomer?.id.toLowerCase() ===
+          filteredCustomerId?.toLowerCase()
+            ? filteredCustomer
+            : undefined
+        }
         invalid={customerFilter.invalid}
-        clearHref="/admin/orders"
+        clearHref={adminOrderHref({
+          ...applied.query,
+          customerId: undefined,
+          page: 1,
+        })}
         resourceLabel="orders"
       />
       {error ? <Message tone="error">{error}</Message> : null}
@@ -370,27 +386,12 @@ function OrderWorkspace({
           </div>
         </form>
       </Card>
-      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        {orders.length ? (
-          <DataTable
-            caption="Hosting orders"
-            columns={columns}
-            rows={orders}
-            rowKey={(order) => order.id}
-          />
-        ) : (
-          <EmptyState
-            title={
-              filteredEmptyTitle('orders', filteredCustomer) ?? 'No orders yet'
-            }
-            description={
-              filteredCustomer
-                ? 'This customer has no orders in the current bounded result.'
-                : 'Create an order for an active customer and hosting plan.'
-            }
-          />
-        )}
-      </section>
+      <AdminOrderLedger
+        selection={applied}
+        revision={readRevision}
+        columns={columns}
+        onNavigate={() => setReview(undefined)}
+      />
       {review ? (
         <AdminOrderReview
           key={`${review.id}:${review.sequence}`}
@@ -398,7 +399,8 @@ function OrderWorkspace({
           customerId={filteredCustomerId}
           onClose={() => {
             setReview(undefined);
-            reviewTrigger.current?.focus();
+            if (reviewTrigger.current?.isConnected)
+              reviewTrigger.current.focus();
           }}
         />
       ) : null}

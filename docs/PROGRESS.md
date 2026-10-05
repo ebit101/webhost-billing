@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Phase Review — Review Command 87 and define the next bounded command
-- **Current status:** Review completed; Command 88 defined only, implementation not authorized
+- **Current command:** Command 88 — Make Administrator Order Ledger Searchable and Paginated
+- **Current status:** Implementation and local validation completed; delivery and exact-head hosted verification pending
 - **Last updated:** 2026-10-05
-- **Next command:** Command 88 — Make Administrator Order Ledger Searchable and Paginated
+- **Next command:** Phase Review — Review Command 88 and define the next bounded command
 - **Next command authorized:** No
 
 ## Command Reports
@@ -7909,6 +7909,101 @@ Stop after Command 87 delivery; do not define or implement Command 88 automatica
 
 Authorize **Command 88 — Make Administrator Order Ledger Searchable and Paginated**.
 Stop after this review's delivery; do not implement Command 88 automatically.
+
+### Command 88 — Make Administrator Order Ledger Searchable and Paginated
+
+- **Status:** Implementation and required local validation completed; delivery verification pending
+- **Date:** 2026-10-05
+- **Authorization:** The user explicitly requested Command 88 by its full title.
+
+#### Scope implemented
+
+- Replace only the administrator order list with bounded URL search/status/page/
+  page-size and independently validated customer scope using existing contracts.
+  Reject duplicate/malformed/unsupported owned inputs and unsafe offsets; expose
+  fixed local navigation and honest invalid/empty/out-of-range/retry states.
+- Validate all order/item/invoice facts, unique IDs, scope and authoritative counts.
+  Abort/discard superseded cookie/no-store reads. Search retains historical email,
+  order number and any requested domain semantics; ordering remains createdAt/ID.
+- Keep creation fields, selected customer/product/price and submission key outside
+  the query-keyed subtree. Clear/abort review before navigation/retry/mutation;
+  inspection stays blocked during writes. Preserve original mutation targets,
+  bodies, CSRF, eligibility and submission-key lifecycle; refresh the latest query
+  after completion without injecting nonmatching records or replaying a write.
+- Add >100-record query/component/API/browser evidence with all-item historical
+  review, fixed customer/invoice links, history/reload/keyboard/375px checks and
+  complete before/after business snapshots. Fake providers and fictional isolated
+  accounts only; no credential-bearing traces/video/screenshots.
+
+#### Files changed
+
+- `apps/web/src/app/(admin)/admin/orders/page.tsx` and server-entry regression.
+- `apps/web/src/lib/admin-order-ledger-query.ts` and query/metadata tests.
+- `apps/web/src/components/orders/admin-order-ledger.tsx`, its tests, manager
+  integration and retained original order/checkout regressions.
+- `apps/api/test/orders.e2e-spec.ts` and
+  `apps/web/e2e/specs/admin-order-ledger.spec.ts`; the existing lifecycle's exact
+  customer-clear URL expectation now includes canonical page/page-size defaults.
+- `CHANGELOG.md`, `CODEX_DEVELOPMENT_COMMANDS.md`, `docs/DECISIONS.md`,
+  `docs/PRODUCT_EXPERIENCE_ROADMAP.md` and this report.
+
+#### Validation
+
+- Started clean on main at `ee937cc965ff06096b58d530451f9c8019bc6c5b`;
+  existing review correction's exact-head CI/CodeQL completed successfully.
+- Focused new ledger/query/entry plus retained order/checkout regressions:
+  **70 tests across 4 files passed**. Initial test-only failure used an unavailable
+  Chai matcher; corrected to the same native disabled-property assertion used
+  by existing tests. No product assertion or default deadline was weakened.
+- Guarded local database preparation verifies both Prisma model access and
+  raw-SQL current_schema at fixed loopback `command26_e2e`, with explicit
+  search_path. Focused orders API: **6 passed**; fictional older-order browser
+  journey: **1 passed (51.9s)**, with complete unchanged business snapshots.
+  Initial API snapshot included intentional access-denial audits: moved role/
+  ownership probes before the permitted-browsing baseline, retaining both checks.
+  Initial browser attempts hit a local 404 during overlapping type generation,
+  then an exact text-label locator mismatch for a wrapped select. Sequential
+  rerun and unique role-based creation selectors passed without changing default
+  deadlines or product assertions. Strict web/browser types passed after removing
+  two unsupported testing-library options. Complete suite, workspace quality,
+  production build and exact-head hosted checks are pending, not claimed passed.
+- Complete local web **419/41 files**, API unit **98/24 suites**, shared **29**,
+  queue **3**, worker **29/10 suites** and all nine tooling-test commands passed.
+  Local Nest checks were serial; no timing limit or worker assertion changed.
+  Critical API integrations **40/6 suites passed**. Initial full browser run:
+  **15 passed, 1 failed** solely because the retained lifecycle asserted the old
+  bare customer-clear URL. Update that one exact expectation to the intended bounded
+  URL; retain every lifecycle/business assertion and rerun the complete suite.
+- Complete browser rerun: **16 passed (3.1m)**. API lint then rejected an
+  unnecessary non-null TypeScript assertion in the new fixture; remove that
+  assertion without changing runtime expectations, and rerun focused API plus
+  complete workspace quality/build checks before delivery.
+- Final focused orders API rerun **6 passed** after the lint-only fixture correction.
+  Complete API/worker/web lint, strict workspace/application/browser types, all four
+  offline documentation validators, repository-wide Prettier check and optimized
+  production build **passed**. No dependency, deadline, worker source or original
+  business assertion was changed. Whitespace checks passed and fetch confirmed
+  **0 ahead/0 behind** canonical origin/main before the focused commit.
+- Deliver the validated scoped changes with a focused commit and non-force push;
+  verify that exact source head's CI and CodeQL before final handoff. Hosted gates
+  are not yet claimed passed in this pre-push report. No release or deployment.
+
+#### Decisions and unresolved risks
+
+- ADR-070 isolates the order ledger from creation state and preserves historical
+  search semantics, original write targets and independent billing/service states.
+- No API/schema/worker/dependency, other ledger, picker scale, provider, cleanup,
+  release or deployment change. Production remains **NO-GO**.
+- Known parallel-worker timing/retained fictional fixture and URL-schema-only
+  raw-SQL isolation risks are not repaired here. Run local Nest tests serially,
+  verify both schema boundaries, and retain original deadlines/assertions.
+- Advisory 15, direct-main governance and broader production/provider/SMTP/
+  recovery/policy/infrastructure/operator-pilot gates remain separately unresolved.
+
+#### Exact recommended next command
+
+**Phase Review — Review Command 88 and define the next bounded command.**
+Stop after Command 88 delivery; do not define or implement Command 89 automatically.
 
 ## Report Template
 

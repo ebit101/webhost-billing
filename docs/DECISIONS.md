@@ -868,6 +868,24 @@ This document records durable technical and product decisions. New decisions sho
   risks remain separate. No release, cleanup, deployment or production approval;
   production remains `NO-GO`.
 
+## ADR-070 — Independent Read-Only Administrator Order Ledger
+
+- **Status:** Accepted and implemented by authorized Command 88
+- **Date:** 2026-10-05
+- **Decision:** Use existing protected order contracts with independently validated
+  customer scope and bounded URL search/status/page/page-size. Validate every item,
+  invoice and pagination fact, and key only the abortable ledger subtree.
+- **Reason:** Older-order lookup must preserve independent creation inputs and
+  submission keys, avoid stale review/counts and retain the original clicked status
+  target. Existing deliberate mutations reconcile the latest query through a new
+  read; failed reconciliation must never repeat a write or erase its success notice.
+- **Consequence:** Query/retry and mutation dispatch invalidate selected review;
+  pending writes block inspection. Search stays order number, historical customer
+  email and any item domain; order stays createdAt then ID descending, not placedAt
+  or a frozen cross-page history. Current profile names are distinct from snapshots.
+  Counts are records, not balances, settled cash or provisioning proof. No new API,
+  schema, worker, provider or approval prerequisite; production remains NO-GO.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:
