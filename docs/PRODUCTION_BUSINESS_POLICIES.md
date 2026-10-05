@@ -4,8 +4,9 @@
 
 - Command: 33 — Finalize Business and Launch Policies
 - Record created: 2026-08-26
+- Public-source review: 2026-10-05 — owner supplied `https://www.speedhost.com.bd/`
 - Business owner approval: **PROPOSED VALUES APPROVED; REMAINING VALUES DEFERRED**
-- Policy status: **COMMAND 33 FINAL — PRE-LAUNCH CONFIGURATION BLOCKED**
+- Policy status: **COMMAND 33 RESUMED — SOURCE CONFLICTS AND OWNER DECISIONS BLOCKED**
 - Production effect: **None**
 
 This is the non-secret approval record for the single business that will operate Webhost
@@ -14,7 +15,10 @@ approved by the business owner before this record can become effective. Applicat
 are listed only to make review easier; a default is not an owner decision and must not be
 copied into production merely because it exists in code. On 2026-08-26, the owner directed
 that unresolved values remain configurable and be completed later. That deferral completes
-the Command 33 record but does not satisfy the affected production launch gates.
+the original Command 33 record but does not satisfy the affected production launch gates.
+On 2026-10-05, the owner resumed Command 33 and supplied the public Speedhost website as
+business/policy source material. That instruction supplies evidence, not a choice between
+contradictory policies, verification of legal/tax status, or final launch approval.
 
 Do not add passwords, API keys, bank-account credentials, payment-provider credentials,
 private contacts not intended for the operating record, or customer data to this file.
@@ -32,8 +36,68 @@ not approve production launch:
   production launch.
 - Permanent hosting termination requires an administrator reason and the exact confirmation
   text `TERMINATE`; it is never automatic.
-- `my.speedhost.bd` is the current staging hostname. It is not an approved production
-  billing/API hostname or proof of a production target.
+- `my.speedhost.bd` is the current staging hostname and the owner-selected same-origin
+  production candidate under ADR-041. Target selection is not production approval; the
+  infrastructure audit and launch gates remain blocked.
+
+## Public business and policy source review — 2026-10-05
+
+The following is a dated, paraphrased source review, not a copy of the website's contract or
+a newly effective customer policy. Public pages can change. The approving owner must resolve
+conflicts and retain the approved version/reference in the protected launch record before
+publishing instructions or issuing invoices. `SOURCED` does not mean `APPROVED` or applied.
+
+| Source                                                                   | Relevant published facts                                                                                                                                                                                                                  | Decision boundary                                                                                                                                                                             |
+| ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Contact page](https://www.speedhost.com.bd/contact-us/)                 | Operator/brand: Speedhost Bangladesh. Address: Arma Majeda Malik (AMM) Tower, Kha 215, Level-4, Merul Badda, Dhaka 1212, Bangladesh. Email: `info@speedhost.com.bd`. Phones: `09 678 366 366`, `01782391434`. WhatsApp: `+8801782391434`. | B1–B4 candidates; legal registration and approved invoice identity still need confirmation. Public support contacts are not named incident responders or tested alert routes.                 |
+| [Shared hosting](https://www.speedhost.com.bd/shared-hosting/)           | BDT annual plans; yearly-package FAQ advertises a 30-day refund, requested by support ticket with a verified payment method.                                                                                                              | Supports BDT and annual pricing as source facts, not selection/import of launch products or a resolved refund policy.                                                                         |
+| [Hosting terms](https://www.speedhost.com.bd/hosting-terms-of-services/) | Sections 10–11 discuss overdue remedies and cancellation; section 14 describes USD settlement and country-dependent VAT.                                                                                                                  | Conflicts below must be resolved; no automatic adoption of fees, currency conversion, tax rates, suspension or termination.                                                                   |
+| [Payment options](https://www.speedhost.com.bd/payment-options/)         | Publishes bKash and BRAC Bank payment destinations.                                                                                                                                                                                       | Operator must reconfirm the destination and approve manual evidence/reconciliation requirements before exposure. No payment is initiated, and public destinations do not grant API authority. |
+| [Privacy policy](https://www.speedhost.com.bd/privacy-policy/)           | Page labels its update August 2019, contains an older body phone inconsistent with its footer/contact page, and provides no exact retention durations for this application's record classes.                                              | Use current contact-page candidates; R1–R4 remain unresolved. Website privacy wording is not proof that the new billing application's data handling is covered.                               |
+
+### Conflicts requiring owner decisions
+
+1. **Refund window (P6):** Hosting terms section 11 gives 14 days after initial signup;
+   the shared-hosting FAQ gives 30 days for yearly packages. The terms exclude renewals,
+   dedicated servers/IPs, SSL, separately purchased licences and domain fees. Decide the
+   initial hosting window, eligible launch products, exclusions, refund method/fees,
+   processing commitment and service effect. Neither window is selected by this review.
+2. **Currency and VAT (B5–B7):** Hosting terms section 14 describes USD settlement and
+   billing-country VAT, unlike approved single-currency BDT and the BDT public plans.
+   BDT remains approved. Confirm corrected customer-facing wording and verified VAT/tax
+   treatment; do not infer a registration, rate, exemption or worldwide tax implementation.
+3. **Cancellation and lifecycle (P5/A4/R1–R4):** Terms section 11 requires a Billing Issues
+   ticket at least three working days before renewal. Other clauses allow overdue remedies
+   after 14 days and deletion on termination. These do not replace approved three-day grace,
+   explicit manual termination, or preserved financial/audit history. Define service/data
+   and outstanding-invoice handling; no deletion, late fee or termination job is authorized.
+4. **Operational promises (L1–L6/A5–A7):** Public marketing is not evidence of this
+   application's payment/provisioning automation, SMTP, SLA or alert readiness. Keep the
+   approved manual-first modes. Public support channels do not fill named primary/backup
+   contacts, exact maintenance/first-renewal windows or supervised eligible-service lists.
+
+The website is not an authoritative source for this repository's software licence. Its
+service/software contract does not replace the project's Apache-2.0 licence or expand initial
+scope into domains, resellers, additional currencies or other advertised services.
+
+### Remaining approval inputs
+
+- Verify the legal invoice name and contact/address candidates (B1–B4), tax/VAT treatment
+  and exact invoice wording (B6–B7), and selected launch billing periods (B11).
+- Approve exact manual payment destinations/evidence/review (P1–P2), administrator order
+  approval (P4), and resolve cancellation/refund wording (P5–P6).
+- Supply lawful retention periods and disposal/access rules for R1–R4; public website text
+  supplies no numeric answer. Preserve the already approved backup proposal pending
+  deployment/recovery evidence.
+- Name accountable owner/role, first-renewal supervisor/list/window (A5–A7), maintenance
+  and incident primary/backup contacts/window (L3–L6), and review/expiry date. Keep private
+  routes and service identifiers in protected operations records, not public Git.
+- Accept each G1–G3 gap with an owner and tested workaround, or separately authorize its
+  remediation. This review has not re-audited those interface gaps or waived launch gates.
+
+Use the decision IDs below when responding. Final approval must identify the owner, time
+and approved record version. Until then the resumption is **BLOCKED**, not a completed
+business-policy gate, and no production setting or launch authorization changes.
 
 ## Owner decision record
 
@@ -43,33 +107,33 @@ value. The approval section at the end must identify the approving owner and tim
 
 ### Business identity and invoices
 
-| ID  | Decision                        | Current proposal or constraint                      | Owner-approved value  |
-| --- | ------------------------------- | --------------------------------------------------- | --------------------- |
-| B1  | Legal business name             | Product name is `Webhost Billing`; not a legal name | **UNRESOLVED**        |
-| B2  | Billing address                 | Must be suitable for issued invoice snapshots       | **UNRESOLVED**        |
-| B3  | Billing/support email           | Must be an owner-controlled production mailbox      | **UNRESOLVED**        |
-| B4  | Business phone                  | Must be owner-approved for customer documents       | **UNRESOLVED**        |
-| B5  | Operating currency              | Application default: `BDT`                          | **APPROVED — `BDT`**  |
-| B6  | Tax/VAT registration/treatment  | No automatic jurisdiction or tax-rate policy exists | **UNRESOLVED**        |
-| B7  | Exact invoice tax/VAT wording   | Must match the owner's verified legal/tax position  | **UNRESOLVED**        |
-| B8  | Invoice prefix                  | Application default: `INV`                          | **APPROVED — `INV`**  |
-| B9  | Invoice number padding          | Application default: `6`                            | **APPROVED — `6`**    |
-| B10 | First production invoice number | Application default: `1001`                         | **APPROVED — `1001`** |
-| B11 | Supported billing periods       | Select only periods the business will actually sell | **UNRESOLVED**        |
+| ID  | Decision                        | Current proposal or constraint                                             | Owner-approved value                          |
+| --- | ------------------------------- | -------------------------------------------------------------------------- | --------------------------------------------- |
+| B1  | Legal business name             | Public operator/brand: Speedhost Bangladesh; legal registration unverified | **UNRESOLVED — verify legal invoice name**    |
+| B2  | Billing address                 | Contact-page address in source review above                                | **SOURCED — invoice approval pending**        |
+| B3  | Billing/support email           | Contact page: `info@speedhost.com.bd`; mailbox control/delivery unverified | **SOURCED — invoice approval pending**        |
+| B4  | Business phone                  | Contact-page phone/WhatsApp candidates in source review above              | **SOURCED — preferred invoice phone pending** |
+| B5  | Operating currency              | Application default: `BDT`                                                 | **APPROVED — `BDT`**                          |
+| B6  | Tax/VAT registration/treatment  | No automatic jurisdiction or tax-rate policy exists                        | **UNRESOLVED**                                |
+| B7  | Exact invoice tax/VAT wording   | Must match the owner's verified legal/tax position                         | **UNRESOLVED**                                |
+| B8  | Invoice prefix                  | Application default: `INV`                                                 | **APPROVED — `INV`**                          |
+| B9  | Invoice number padding          | Application default: `6`                                                   | **APPROVED — `6`**                            |
+| B10 | First production invoice number | Application default: `1001`                                                | **APPROVED — `1001`**                         |
+| B11 | Supported billing periods       | Annual BDT plans are publicly listed; select actual launch periods         | **UNRESOLVED**                                |
 
 Invoice numbering must be chosen before the first production invoice. Issued invoice numbers
 and snapshots are historical records and must not be renumbered casually.
 
 ### Orders, manual payments, cancellations, and refunds
 
-| ID  | Decision                             | Current proposal or constraint                                           | Owner-approved value                            |
-| --- | ------------------------------------ | ------------------------------------------------------------------------ | ----------------------------------------------- |
-| P1  | Manual-payment customer instructions | Generic bank/cash/mobile-financial-service text exists only as a default | **APPROVED — use the exact default text below** |
-| P2  | Required payment evidence            | Define accepted reference, receipt, sender, amount, and review criteria  | **UNRESOLVED**                                  |
-| P3  | Partial payments                     | Safe application default: disabled                                       | **APPROVED — disabled**                         |
-| P4  | New-order approval                   | Define whether paid orders require administrator approval                | **UNRESOLVED**                                  |
-| P5  | Cancellation policy                  | Define timing, notice, service/data effect, and unpaid-invoice effect    | **UNRESOLVED**                                  |
-| P6  | Refund policy                        | Define eligibility, timing, method, fees, and service effect             | **UNRESOLVED**                                  |
+| ID  | Decision                             | Current proposal or constraint                                                      | Owner-approved value                            |
+| --- | ------------------------------------ | ----------------------------------------------------------------------------------- | ----------------------------------------------- |
+| P1  | Manual-payment customer instructions | Generic bank/cash/mobile-financial-service text exists only as a default            | **APPROVED — use the exact default text below** |
+| P2  | Required payment evidence            | Define accepted reference, receipt, sender, amount, and review criteria             | **UNRESOLVED**                                  |
+| P3  | Partial payments                     | Safe application default: disabled                                                  | **APPROVED — disabled**                         |
+| P4  | New-order approval                   | Define whether paid orders require administrator approval                           | **UNRESOLVED**                                  |
+| P5  | Cancellation policy                  | Published notice rule sourced above; service/data and invoice effects need approval | **UNRESOLVED**                                  |
+| P6  | Refund policy                        | Conflicting published windows; resolve scope, method, fees and service effect       | **UNRESOLVED — SOURCE CONFLICT**                |
 
 Refunds and reversals remain append-only financial transactions regardless of the selected
 policy. They never rewrite or delete the original payment. Payment confirmation does not
@@ -202,6 +266,9 @@ Partial approval recorded at: 2026-08-26T15:52:58+06:00
 Partial approval source: authenticated project conversation; owner name unresolved
 Deferral instruction: Keep unresolved fields configurable; owner will fill them later
 Deferral recorded at: 2026-08-26T16:00:31+06:00
+Resumption/source instruction date: 2026-10-05 (Asia/Dhaka)
+Resumption/source instruction: Resume Command 33; use https://www.speedhost.com.bd/ for real business information and policy
+Final approval after source-conflict review: UNRESOLVED
 Approved policy record commit: The Git commit containing this Command 33 record; pin its 40-character ID in the protected launch record
 Exceptions and expiry/review date: UNRESOLVED
 ```

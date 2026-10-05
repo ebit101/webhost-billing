@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Staging Deployment — Deploy Current Main Through Command 90
-- **Current status:** Staging release 6085629 deployed and verified; production remains NO-GO; Command 91 awaits authorization
+- **Current command:** Resume Command 33 — Finalize Business and Launch Policies
+- **Current status:** Public Speedhost sources reviewed; conflicting policies and remaining owner decisions block final approval; staging release 6085629 unchanged; production remains NO-GO
 - **Last updated:** 2026-10-05
-- **Next command:** Command 91 — Make Customer Support Ticket History Searchable and Paginated
+- **Next command:** Resume Command 33 — Resolve Source Conflicts and Approve Remaining Launch Policies
 - **Next command authorized:** No
 
 ## Command Reports
@@ -8639,6 +8639,79 @@ Stop after review delivery; do not start Command 91 automatically.
 - After documentation delivery, separately authorize **Command 91 — Make Customer
   Support Ticket History Searchable and Paginated**.
   Do not begin Command 91 automatically.
+
+### Resume Command 33 — Finalize Business and Launch Policies From Public Speedhost Sources
+
+- **Status:** Source review recorded; final owner approval BLOCKED
+- **Date:** 2026-10-05
+
+#### Scope completed
+
+- Resumed only Command 33 following the owner's instruction to use
+  `https://www.speedhost.com.bd/` for real business information and policy.
+- Reviewed published contact, shared-hosting, hosting terms, payment and privacy
+  pages through read-only requests. Some web-reader requests timed out; direct
+  HTTP reads succeeded for contact/shared-hosting/privacy/hosting terms. No login,
+  payment, checkout, third-party provider or production operation was performed.
+- Added dated public business/address/email/phone candidates with source links;
+  kept legal-registration verification and invoice identity approval separate.
+- Recorded refund, currency/tax and lifecycle conflicts rather than selecting or
+  applying an inconsistent policy. The old privacy page cannot supply exact
+  application retention periods or named incident owners.
+- Reconciled the policy document's hostname description with existing ADR-041:
+  `my.speedhost.bd` is an owner-selected production candidate, not an approved
+  production deployment. The staging release and all launch gates are unchanged.
+
+#### Files changed
+
+- `docs/PRODUCTION_BUSINESS_POLICIES.md` — dated source review, candidate details,
+  conflict/approval checklist and truthful resumed-blocked status.
+- `docs/PROGRESS.md` — current command, scope, validation and remaining decisions.
+- No application/default/schema/dependency/secret or production-setting changes.
+
+#### Validation
+
+- Scoped Markdown formatting and repository-wide `pnpm format:check` passed.
+- `pnpm docs:check` passed all four offline validators: links/anchors,
+  contributor paths/scripts, issue forms and safe-demo screenshot assets.
+- `git diff --check` passed. Source conflicts were reviewed against the linked
+  public pages; no secret, credential or private customer data was added.
+- Application tests/builds are not rerun for this documentation-only source review;
+  no business-rule implementation or effective policy has changed.
+- Deliver only the validated source-review documentation on `main`, without a
+  force push. Hosted CI/CodeQL are triggered by delivery; pending runs are not
+  described as passing and do not override the unresolved owner-policy gate.
+
+#### Decisions made
+
+- The supplied site is authorized source material, not verification of a legal
+  registration, tax opinion, contradictory policy choice or final launch approval.
+- Preserve approved BDT, manual-first modes, renewal settings, disabled partial
+  payments, invoice numbering and backup proposal. No automatic fees, termination,
+  deletion, currency conversion, worldwide VAT or scope expansion is introduced.
+- Public contacts cannot stand in for named/tested maintenance or incident routes.
+  Do not commit private operating contacts, service lists or payment credentials.
+- Final policy approval and production remain **BLOCKED / NO-GO**. A validated
+  documentation delivery does not complete the business-policy launch gate.
+
+#### Open questions and risks
+
+- Owner must choose between the hosting terms' initial 14-day refund and the
+  shared-hosting page's yearly 30-day refund, including eligibility/exclusions,
+  processing/method/fees and service effect.
+- Confirm legal invoice identity, published contact candidates, verified VAT/tax
+  treatment/wording, BDT-consistent terms and launch billing periods.
+- P1–P2/P4–P5, R1–R4, A5–A7, L3–L6, G1–G3 and named/versioned final approval
+  remain open as detailed in the policy worksheet. Public website content may
+  change and is not a substitute for an approved, retained policy version.
+- All previously recorded infrastructure/security/provider/recovery/SMTP and
+  monitoring blockers remain. No production launch or worker/scheduler start.
+
+#### Recommended next command
+
+**Resume Command 33 — Resolve Source Conflicts and Approve Remaining Launch Policies**
+after the owner supplies the missing choices and approval. Do not proceed automatically
+to Command 34 remediation or Command 91; both require separate authorization.
 
 ## Report Template
 
