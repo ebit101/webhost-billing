@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Authorized Command 33 follow-up — Review remaining operating policies
-- **Current status:** Remaining operating-policy review completed; DRAFT-OPS-1 still awaits owner decisions and inputs; no deployment; recorded staging release 6085629 unchanged; production not approved
+- **Current command:** Resume Command 33 — Record D1–D4 operating-rule approval
+- **Current status:** DRAFT-OPS-1 D1–D4 approved and recorded; D5–D8 and operating inputs remain open; no deployment; recorded staging release 6085629 unchanged; production not approved
 - **Last updated:** 2026-10-06
-- **Next command:** Resume Command 33 — Approve DRAFT-OPS-1 and Supply Remaining Operating Inputs
+- **Next command:** Resume Command 33 — Resolve D5–D8 and Supply Remaining Operating Inputs
 - **Next command authorized:** No
 
 ## Command Reports
@@ -9258,6 +9258,71 @@ Request owner authorization before beginning; do not infer deployment or migrati
 **Resume Command 33 — Approve DRAFT-OPS-1 and Supply Remaining Operating Inputs**.
 Request explicit owner decisions/inputs before recording approval; do not start Command 34,
 migration, deployment or cutover from this review authorization.
+
+### Resume Command 33 — Record D1–D4 operating-rule approval
+
+- **Status:** Partial owner approval recorded; overall business-policy gate still open
+- **Date:** 2026-10-06
+
+#### Scope completed
+
+- Recorded the exact owner instruction “Approve draft D1–D4”, previously named approver,
+  draft version, reviewed source commit and clearly labelled recording timestamp.
+- Marked B11/P2/P4/P5/P6 rule decisions approved within D1–D4's full original constraints.
+  Retained the original group text and preserved prior identity/tax/currency/financial rules.
+- Recorded D4's Saturday–Thursday working-day definition as approved; no reapproval needed.
+- Updated the checklist, remaining-input list, final approval block, launch-runbook checkpoint
+  and open-decisions index so policy acceptance is distinct from operational readiness.
+- Kept D5–D8 unapproved and all unsupplied inputs/evidence unresolved; no owners appointed.
+
+#### Files changed
+
+- `docs/PRODUCTION_BUSINESS_POLICIES.md` — partial approval, corresponding decision/status
+  updates, source-version provenance, remaining inputs and unchanged production effect.
+- `docs/PRODUCTION_LAUNCH_RUNBOOK.md` — dated partial-policy checkpoint; gate stays blocked.
+- `docs/DECISIONS.md` — current open-input index, preserving existing accepted decisions.
+- `docs/PROGRESS.md` — status, completed approval-record slice and next bounded intake.
+
+#### Validation
+
+- Documentation-only approval record: no application policy enforcement, configuration,
+  code/schema, database or historical financial record changed. Application tests and
+  runtime/deployment acceptance are not claimed.
+- Scoped Prettier check passed for all four changed documents after formatting the tables.
+- `pnpm docs:check` passed all four offline validators: links/anchors, contributor paths,
+  issue forms and safe-demo assets. `git diff --check` passed.
+- A read-only Node assertion compared the retained D1–D4 proposal bodies against the pinned
+  reviewed commit, removing only the new status annotations: exact match. D5–D8 also match
+  the original text, remain unapproved, and the exact instruction/source and no-production-
+  effect boundary were verified. No app, private data or external provider was accessed.
+- Verified canonical remote and `main`; fetched `origin/main` and confirmed zero ahead/behind
+  before the focused commit. Delivery is by non-force push; no hosted checks are claimed.
+
+#### Decisions made
+
+- Owner approval covers the full D1–D4 groups as written at
+  `c880605c854c7d963323fb706533c9703446fd24`, not only the reply's short summaries.
+- Rule acceptance does not supply catalogue/prices/legacy mapping, reconfirmed destinations,
+  cash handling, named payment/order/hosting/cancellation/refund operators or staffing proof.
+- Refunds/reversals remain append-only; payment never proves hosting; service consequences
+  remain separately verified. No automated termination, disposal or refund is introduced.
+- D5–D8, legal retention answers, private routes/incident backup, windows, first eligibility,
+  gap acceptance, migration and production go/no-go are not authorized by this reply.
+
+#### Open questions and risks
+
+- Complete the unsupplied D1–D4 operating inputs and prove cancellation/renewal safeguards
+  before automation or customer-facing promises. Exact private details stay out of public Git.
+- D5–D8 and infrastructure/security/recovery/SMTP/monitoring/migration/release evidence remain
+  open. Staging data is not promoted and the production scheduler remains unapproved.
+- Existing dependency and branch-governance risks are unchanged; no fresh legal, provider,
+  website, infrastructure or full-release audit was performed.
+
+#### Recommended next command
+
+**Resume Command 33 — Resolve D5–D8 and Supply Remaining Operating Inputs**.
+Request owner decisions/inputs; do not start a later development/infrastructure command,
+publish policies, migrate data or deploy from this partial rule approval.
 
 ## Report Template
 

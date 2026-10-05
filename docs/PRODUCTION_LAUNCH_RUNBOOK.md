@@ -9,6 +9,13 @@
 - Production mutation authorized by Command 32: **No**
 - Current production decision: **NO-GO**
 
+Command 33 policy checkpoint, 2026-10-06: Shahadat Hossain, Administrator, approved
+`DRAFT-OPS-1` groups D1–D4 as written. Payment/order/cancellation/refund rules are now
+owner-approved, including the refund working-day definition. D5–D8, exact catalogue/payment
+inputs, named operators/staffing, tested cancellation/renewal safeguards and launch evidence
+remain open in [the policy record](PRODUCTION_BUSINESS_POLICIES.md). The business/legal gate
+stays blocked; this partial approval changes no deployment, provider or worker authority.
+
 This document is the final launch procedure, not authorization to execute it. Replace every
 angle-bracket placeholder, attach evidence for every gate, obtain the business owner's
 written approval, and then use the separate explicit production-deployment command from

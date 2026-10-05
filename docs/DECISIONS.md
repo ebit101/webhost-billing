@@ -1033,6 +1033,11 @@ The following decisions are intentionally unresolved and must be selected before
 2. Dedicated cPanel development reseller/token, hostname, outbound-IP allowlist, disposable packages/account/domain, and explicitly approved manual mutation window. WHM API-token authentication is selected and implemented.
 3. SMTP delivery provider for staging and production.
 4. UK2Group API product/brand, current official documentation, test environment, contact policy, supported TLDs, pricing/renewal behavior, and the separately authorized registrar-command position.
-5. Final business identity values, supported operating currency, VAT/tax rules, reminder schedule, suspension grace period, cancellation policy, and refund policy.
+5. Remaining Speed Host operating inputs and `DRAFT-OPS-1` D5–D8 decisions in
+   `docs/PRODUCTION_BUSINESS_POLICIES.md`. Existing identity, currency, optional-tax,
+   renewal defaults and D1–D4 rules are owner-approved; actual catalogue/legacy mapping,
+   payment destinations, operators/staffing, cancellation safeguards, retention, contacts,
+   windows, gap evidence and final launch approval remain open. No approved value is applied
+   to production by the policy record.
 6. Exact shared-server provider/account ID, plan/region/cost, recovery controls, named
    infrastructure/rollback owners, and off-site immutable backup destination.

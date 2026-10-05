@@ -7,10 +7,11 @@
 - Public-source review: 2026-10-05 — owner supplied `https://www.speedhost.com.bd/`
 - Existing-portal branding intake: 2026-10-05 — public `https://clients.speedhost.com.bd/`
 - Authorized local web-branding implementation: 2026-10-06 — no deployment or policy approval
-- Remaining operating-policy draft: 2026-10-05 — version `DRAFT-OPS-1`, awaiting approval
+- Operating-policy draft: 2026-10-05 — version `DRAFT-OPS-1`; D1–D4 approved, D5–D8 awaiting approval
 - Operating-policy review: 2026-10-06 — decision checklist prepared; no new policy approval
-- Business owner approval: **PARTIAL NAMED APPROVAL RECORDED; REMAINING OPERATING DECISIONS OPEN**
-- Policy status: **COMMAND 33 OPERATING DRAFT READY — APPROVAL AND LAUNCH EVIDENCE BLOCKED**
+- Operating-rule approval: 2026-10-06 — D1–D4 accepted by the previously named owner
+- Business owner approval: **Partial named approval recorded; D1–D4 accepted; remaining inputs open**
+- Policy status: **Command 33 partially approved; operating inputs and launch evidence still required**
 - Production effect: **None**
 
 This is the non-secret approval record for the single business that will operate Webhost
@@ -65,8 +66,9 @@ publishing instructions or issuing invoices. `SOURCED` does not mean `APPROVED` 
 1. **Refund window (P6):** The published 14-/30-day conflict was resolved by the owner's
    subsequent choice of **30 days**, with no additional eligibility/exclusion section
    requested. Do not silently carry exclusions from the conflicting terms into the approved
-   record. Refund method/fees, processing commitment and service effect still need an
-   operating decision; none is implemented or automated by this document.
+   record. The subsequent D1–D4 approval below resolves refund method/fees, processing
+   targets and separate service handling as policy decisions. No policy is implemented,
+   customer-published or automated by this document.
 2. **Currency and VAT (B5–B7):** Hosting terms section 14 describes USD settlement and
    billing-country VAT, unlike approved single-currency BDT and the BDT public plans.
    BDT remains approved. Correct inconsistent customer-facing currency wording before
@@ -88,11 +90,13 @@ scope into domains, resellers, additional currencies or other advertised service
 
 ### Remaining approval inputs
 
-- B1–B4 are now owner-approved below; verify them when applied to the installation. Select
-  launch billing periods (B11). B6–B7 follow the optional-tax decision below; no tax input is
-  required for preparation. Applicable business obligations remain the operator's responsibility.
-- Approve exact manual payment destinations/evidence/review (P1–P2), administrator order
-  approval (P4), and resolve cancellation/refund wording (P5–P6).
+- B1–B4 are owner-approved below; verify them when applied to the installation. D1 approves
+  annual-only new public hosting orders initially; actual catalogue/prices and legacy-cycle
+  mapping remain required. B6–B7 follow the optional-tax decision; no tax input is required
+  for preparation. Applicable business obligations remain the operator's responsibility.
+- D1–D4 now approve payment evidence/review rules, administrator order approval and
+  cancellation/refund procedures. Supply reconfirmed payment destinations/cash handling,
+  named operators and staffing evidence; verify cancellation/renewal safeguards before use.
 - Supply lawful retention periods and disposal/access rules for R1–R4; public website text
   supplies no numeric answer. Preserve the already approved backup proposal pending
   deployment/recovery evidence.
@@ -102,9 +106,9 @@ scope into domains, resellers, additional currencies or other advertised service
 - Accept each G1–G3 gap with an owner and tested workaround, or separately authorize its
   remediation. This review has not re-audited those interface gaps or waived launch gates.
 
-Use the decision IDs below when responding. Final approval must identify the owner, time
-and approved record version. Until then the resumption is **BLOCKED**, not a completed
-business-policy gate, and no production setting or launch authorization changes.
+Use the decision IDs below when responding. The D1–D4 partial approval is recorded by owner,
+recording time and source version below. Final approval still requires the remaining inputs;
+the business-policy gate remains blocked, with no production setting or launch authorization.
 
 ## Owner decision record
 
@@ -262,33 +266,33 @@ rate, exemption or compliance, and does not waive other production launch gates.
 
 ### Business identity and invoices
 
-| ID  | Decision                        | Current proposal or constraint                                                             | Owner-approved value                                    |
-| --- | ------------------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------- |
-| B1  | Legal business name             | Owner-supplied registered/invoice identity; no independent registration audit              | **APPROVED — Speed Host Bangladesh**                    |
-| B2  | Billing address                 | Exact website address retained in named approval above                                     | **APPROVED — website address, no corrections supplied** |
-| B3  | Billing/support email           | Verify mailbox/delivery during the separate SMTP gate                                      | **APPROVED — `info@speedhost.com.bd`**                  |
-| B4  | Business phone                  | Owner-selected preferred invoice phone                                                     | **APPROVED — `+8801782391434`**                         |
-| B5  | Operating currency              | Application default: `BDT`                                                                 | **APPROVED — `BDT`**                                    |
-| B6  | Tax/VAT registration/treatment  | Keep optional fields; no automatic rates or independent legal exemption determination      | **APPROVED — owner states Not applicable**              |
-| B7  | Exact invoice tax/VAT wording   | Owner wording retained in this record; no compulsory custom renderer or Tax ID placeholder | **APPROVED — Not applicable; optional input retained**  |
-| B8  | Invoice prefix                  | Application default: `INV`                                                                 | **APPROVED — `INV`**                                    |
-| B9  | Invoice number padding          | Application default: `6`                                                                   | **APPROVED — `6`**                                      |
-| B10 | First production invoice number | Application default: `1001`                                                                | **APPROVED — `1001`**                                   |
-| B11 | Supported billing periods       | Annual BDT plans are publicly listed; select actual launch periods                         | **UNRESOLVED**                                          |
+| ID  | Decision                        | Current proposal or constraint                                                                        | Owner-approved value                                                  |
+| --- | ------------------------------- | ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| B1  | Legal business name             | Owner-supplied registered/invoice identity; no independent registration audit                         | **APPROVED — Speed Host Bangladesh**                                  |
+| B2  | Billing address                 | Exact website address retained in named approval above                                                | **APPROVED — website address, no corrections supplied**               |
+| B3  | Billing/support email           | Verify mailbox/delivery during the separate SMTP gate                                                 | **APPROVED — `info@speedhost.com.bd`**                                |
+| B4  | Business phone                  | Owner-selected preferred invoice phone                                                                | **APPROVED — `+8801782391434`**                                       |
+| B5  | Operating currency              | Application default: `BDT`                                                                            | **APPROVED — `BDT`**                                                  |
+| B6  | Tax/VAT registration/treatment  | Keep optional fields; no automatic rates or independent legal exemption determination                 | **APPROVED — owner states Not applicable**                            |
+| B7  | Exact invoice tax/VAT wording   | Owner wording retained in this record; no compulsory custom renderer or Tax ID placeholder            | **APPROVED — Not applicable; optional input retained**                |
+| B8  | Invoice prefix                  | Application default: `INV`                                                                            | **APPROVED — `INV`**                                                  |
+| B9  | Invoice number padding          | Application default: `6`                                                                              | **APPROVED — `6`**                                                    |
+| B10 | First production invoice number | Application default: `1001`                                                                           | **APPROVED — `1001`**                                                 |
+| B11 | Supported billing periods       | Annual-only new public hosting orders initially; preserve supported legacy cycles by approved mapping | **Approved — D1; actual catalogue/prices and legacy mapping pending** |
 
 Invoice numbering must be chosen before the first production invoice. Issued invoice numbers
 and snapshots are historical records and must not be renumbered casually.
 
 ### Orders, manual payments, cancellations, and refunds
 
-| ID  | Decision                             | Current proposal or constraint                                                      | Owner-approved value                                                                  |
-| --- | ------------------------------------ | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| P1  | Manual-payment customer instructions | Generic bank/cash/mobile-financial-service text exists only as a default            | **APPROVED — use the exact default text below**                                       |
-| P2  | Required payment evidence            | Define accepted reference, receipt, sender, amount, and review criteria             | **UNRESOLVED**                                                                        |
-| P3  | Partial payments                     | Safe application default: disabled                                                  | **APPROVED — disabled**                                                               |
-| P4  | New-order approval                   | Define whether paid orders require administrator approval                           | **UNRESOLVED**                                                                        |
-| P5  | Cancellation policy                  | Published notice rule sourced above; service/data and invoice effects need approval | **UNRESOLVED**                                                                        |
-| P6  | Refund policy                        | Method/fees, processing commitment and service effect still unresolved              | **PARTIAL APPROVAL — 30 days; no additional eligibility/exclusion section requested** |
+| ID  | Decision                             | Current proposal or constraint                                                                                | Owner-approved value                                                                        |
+| --- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| P1  | Manual-payment customer instructions | Generic bank/cash/mobile-financial-service text exists only as a default                                      | **APPROVED — use the exact default text below**                                             |
+| P2  | Required payment evidence            | D1 invoice/amount/channel/reference proof plus statement or controlled receipt verification                   | **Approved — D1 rules; destinations, operator and operating evidence pending**              |
+| P3  | Partial payments                     | Safe application default: disabled                                                                            | **APPROVED — disabled**                                                                     |
+| P4  | New-order approval                   | Required administrator review after verified full payment, before manual-first fulfilment                     | **Approved — D2; named operator and verified fulfilment required**                          |
+| P5  | Cancellation policy                  | Authenticated ticket/confirmation; three-working-day non-renewal notice; late manual review                   | **Approved — D3; cancellation/renewal safeguards still require verification**               |
+| P6  | Refund policy                        | D4 thirty days from payment receipt, no extra fee, one-/five-working-day targets and separate service effects | **Approved — D4; no extra eligibility/exclusions; staffing and operating evidence pending** |
 
 Refunds and reversals remain append-only financial transactions regardless of the selected
 policy. They never rewrite or delete the original payment. Payment confirmation does not
@@ -299,9 +303,9 @@ Approved default manual-payment text:
 > Pay by bank deposit, cash, or an approved mobile financial service, then submit the
 > transaction reference for review.
 
-This wording does not resolve P2. Production customer instructions still need the actual
-non-secret payment destination/channel and exact evidence/review requirements before manual
-payments can be offered.
+D1 now approves the P2 evidence/review rules. This generic wording alone is not complete
+production customer instructions: reconfirm the actual destination/channel and publish the
+approved evidence requirements only through a separately authorized configuration step.
 
 ### Retention
 
@@ -367,14 +371,18 @@ before launch even if the in-app alerting gap is accepted.
 
 ## Remaining Speed Host operating policies — DRAFT-OPS-1
 
-**Review status: PROPOSED ONLY — NOT APPROVED, CUSTOMER-PUBLISHED OR APPLIED.** The owner authorized
-drafting, not automatic acceptance of the following proposals. Earlier approvals above remain
-intact: business identity/contact, optional tax, BDT, invoice-numbering proposal, disabled
-partial payments, 30-day refund window, renewal defaults and manual-first provider modes.
+**Review status: D1–D4 approved on 2026-10-06; D5–D8 remain proposed only. Nothing is
+customer-published or applied.** Earlier approvals remain intact: business identity/contact,
+optional tax, BDT, invoice-numbering proposal, disabled partial payments, 30-day refund window,
+renewal defaults and manual-first provider modes. The original proposal text is retained
+below; its future-tense wording is historical, not a request to approve D1–D4 again.
 Approval of a draft group does not supply missing names, dates, destinations, legal retention
 periods or tested evidence, and does not authorize production execution or a new command.
 
 ### D1 — Billing periods and payment review (B11/P1–P2)
+
+Current status: Approved as written; catalogue/mapping, destinations/cash handling, named
+reviewer and feasible staffing remain unverified.
 
 - Propose `ANNUAL` for new public hosting orders at initial launch. Reconcile actual WHMCS
   products/prices before activation; preserve any supported existing customer cycle under an
@@ -392,12 +400,17 @@ periods or tested evidence, and does not authorize production execution or a new
 
 ### D2 — Administrator order approval (P4)
 
+Current status: Approved as written; named operator and verified fulfilment remain required.
+
 Propose retaining required administrator review after verified full payment and before
 fulfilment. Check requested domain/package/account facts and actual hosting availability.
 Provision outside the application in manual-first mode; record only verified service state.
 Do not add an approval toggle, assume a paid order is provisioned or grant WHM authority.
 
 ### D3 — Cancellation handling (P5)
+
+Current status: Approved as written; responsible operator and cancellation/renewal safeguards
+remain unverified. No termination or deletion is authorized.
 
 Propose an authenticated support ticket and administrator confirmation. For non-renewal,
 request notice three working days before the due date; late requests require manual review,
@@ -411,6 +424,9 @@ inadvertently renewed or suspended. If the existing workflow cannot enforce the 
 operating procedure, keep automation stopped and authorize a separate tested change.
 
 ### D4 — Refund processing (remaining P6 details)
+
+Current status: Approved as written, including Saturday–Thursday working days excluding
+announced business holidays; named reviewer and feasible staffing remain unverified.
 
 Keep the approved 30-day window and no additional eligibility/exclusion section. Propose
 counting 30 calendar days from the relevant payment's received date, with no extra refund
@@ -493,7 +509,8 @@ Before making that origin the real operating portal:
 
 ### Approval reply for DRAFT-OPS-1
 
-Approve or edit each group `D1`–`D8`, explicitly identifying this draft/version and approver.
+D1–D4 are approved; approve or edit the remaining groups `D5`–`D8`, identifying this
+draft/version and approver. No repeat approval of D1–D4 is needed unless changing their rules.
 Supply actual product/cycle choices and protected payment/operator/contact/window references;
 name the distinct incident backup and approve lawful retention durations, especially R2.
 Do not paste credentials or customer exports into chat or Git. Blank inputs remain blockers
@@ -501,28 +518,28 @@ even if every proposal is accepted. Final policy approval and production go/no-g
 
 ### Owner decision checklist — reviewed 2026-10-06
 
-The owner's latest “Yes” authorized review of the remaining draft after the sentence-case
+The owner's “Yes” at this review checkpoint authorized review after the sentence-case
 follow-up. It did not approve `DRAFT-OPS-1`, appoint operators, publish customer promises or
 authorize deployment. This checklist summarizes the unchanged draft above; it is not a new
 draft version. If a summary seems narrower than a group, review the full group before approval.
 
-| Group | Decision to approve or edit                                                                                                                                                                 | Missing input or acceptance evidence                                                                                                                                        |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| D1    | Annual-only new hosting orders initially; verified full manual payments; daily reconciliation and one-working-day review target                                                             | Final catalogue/prices, legacy-cycle mapping, reconfirmed payment destinations/cash procedure and named reviewer                                                            |
-| D2    | Administrator review after verified full payment, then manual-first fulfilment                                                                                                              | Named order/hosting operator; verified fulfilment record, not payment alone                                                                                                 |
-| D3    | Authenticated cancellation ticket and confirmation; request non-renewal three working days before due date; manually review late requests                                                   | Responsible operator and proof that cancelled/non-renewing services are excluded from renewal/suspension before automation                                                  |
-| D4    | Thirty calendar days from payment receipt; no extra refund fee; acknowledge within one working day and process within five working days after verification; original channel where possible | Confirm Saturday–Thursday working days excluding announced business holidays, responsible reviewer and feasible processing targets                                          |
-| D5    | Restricted access, preserved financial history and the proposed operational retention reviews                                                                                               | Applicable approved durations/holds for each record class, especially financial records; protected storage and reviewed disposal procedure                                  |
-| D6    | Proposed communication/supervision roles, customer notices, two-hour maintenance proposal and policy-review cadence                                                                         | Explicit role acceptance, distinct incident backup, tested private alert routes, exact maintenance/first-renewal windows, full eligible-service list and rollback authority |
-| D7    | Decide separately whether to accept or remediate G1, G2 and G3                                                                                                                              | Named operator and tested workaround for each accepted gap; external monitoring/alerts remain a launch requirement                                                          |
-| D8    | `my.speedhost.bd` as the intended operating origin with evidence-gated settings, migration and cutover                                                                                      | Separate infrastructure/release evidence, approved migration scope/reconciliation and final production authorization                                                        |
+| Group | Decision to approve or edit                                                                                                                          | Missing input or acceptance evidence                                                                                                                                        |
+| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1    | Approved — annual-only new hosting orders initially; verified full manual payments; daily reconciliation and one-working-day review target           | Final catalogue/prices, legacy-cycle mapping, reconfirmed payment destinations/cash procedure, named reviewer and staffing evidence                                         |
+| D2    | Approved — administrator review after verified full payment, then manual-first fulfilment                                                            | Named order/hosting operator; verified fulfilment record, not payment alone                                                                                                 |
+| D3    | Approved — authenticated cancellation ticket and confirmation; request non-renewal three working days before due date; manually review late requests | Responsible operator and proof that cancelled/non-renewing services are excluded from renewal/suspension before automation                                                  |
+| D4    | Approved — thirty calendar days from payment receipt; no extra refund fee; one-/five-working-day targets; original channel where possible            | Responsible reviewer and feasible staffing; working-day definition is approved, not pending                                                                                 |
+| D5    | Restricted access, preserved financial history and the proposed operational retention reviews                                                        | Applicable approved durations/holds for each record class, especially financial records; protected storage and reviewed disposal procedure                                  |
+| D6    | Proposed communication/supervision roles, customer notices, two-hour maintenance proposal and policy-review cadence                                  | Explicit role acceptance, distinct incident backup, tested private alert routes, exact maintenance/first-renewal windows, full eligible-service list and rollback authority |
+| D7    | Decide separately whether to accept or remediate G1, G2 and G3                                                                                       | Named operator and tested workaround for each accepted gap; external monitoring/alerts remain a launch requirement                                                          |
+| D8    | `my.speedhost.bd` as the intended operating origin with evidence-gated settings, migration and cutover                                               | Separate infrastructure/release evidence, approved migration scope/reconciliation and final production authorization                                                        |
 
 The approved business identity, contacts, optional tax fields, single BDT currency, disabled
 partial payments, 30-day refund window, renewal defaults and manual-first modes do not need
 reapproval. An imported invoice sequence still needs a reconciled next number; the empty
 baseline proposal must not overwrite or renumber legacy history.
 
-The next owner reply can be staged: first approve or edit D1–D4, then supply D5–D8 decisions
+The staged D1–D4 approval is now recorded below. The next reply supplies D5–D8 decisions
 and protected operational references. A partial reply closes only its explicit scope; no
 blank field defaults to acceptance. Confirm review/refund targets can actually be staffed
 before publishing them. A retention review date is not permission to delete records.
@@ -530,11 +547,11 @@ before publishing them. A retention review date is not permission to delete reco
 ```text
 Draft: DRAFT-OPS-1
 Approver: Shahadat Hossain, Administrator
-D1 decision: Approve / edit / defer
-D2 decision: Approve / edit / defer
-D3 decision: Approve / edit / defer
-D4 decision: Approve / edit / defer
-Working days decision: Saturday–Thursday excluding announced business holidays / edit / defer
+D1 decision: Approved as written on 2026-10-06
+D2 decision: Approved as written on 2026-10-06
+D3 decision: Approved as written on 2026-10-06
+D4 decision: Approved as written on 2026-10-06
+Working days decision: Approved — Saturday–Thursday excluding announced business holidays
 D5 decision and retention-policy reference:
 D6 decision and protected operations-record reference:
 D7 decision for G1 / G2 / G3 and tested-workaround references:
@@ -557,6 +574,25 @@ and launch runbook. It is not a fresh legal opinion, website/provider verificati
 release audit or infrastructure inspection. In particular, G2's protected audit-review
 procedure and G3's external alert delivery are not established by this checklist. No live
 settings, providers, workers, scheduler, database, hostname or deployment were changed.
+
+### Named D1–D4 operating-rule approval — recorded 2026-10-06
+
+- Approver: **Shahadat Hossain — Administrator**, using the owner identity previously supplied
+  in this authenticated project conversation; no new operational role is inferred.
+- Exact instruction: “Approve draft D1–D4”.
+- Approved version: `DRAFT-OPS-1`, groups D1–D4 as reviewed at source commit
+  `c880605c854c7d963323fb706533c9703446fd24`. Original group text and constraints are retained.
+- Recording time: **2026-10-06T01:09:00+06:00** (`Asia/Dhaka`), the review/record time,
+  not an independently established message-receipt timestamp.
+- Approval includes the full payment-proof/reconciliation procedure, administrator review,
+  cancellation handling, refund receipt-date calculation, no extra refund fee, acknowledgement/
+  processing targets, working-day definition, refund verification and separate service handling.
+- Actual catalogue/mapping, destinations/cash handling, operators, staffing and tested
+  cancellation/renewal safeguards are not supplied by this approval and remain pre-use inputs.
+- D5–D8, retention, role appointments, incident contacts/windows, first-run eligibility,
+  gap acceptance/evidence, migration and final launch authorization remain open.
+- Production effect: none. No customer-facing policy page, setting, refund, service action,
+  provider authority, worker/scheduler activation, database change or deployment is authorized.
 
 ## Deferred configuration locations
 
@@ -608,7 +644,7 @@ All lines are mandatory for an effective policy:
 ```text
 Business owner name: Shahadat Hossain
 Business owner role: Administrator
-Approval decision: PARTIAL NAMED APPROVAL; REMAINING OPERATING DECISIONS OPEN
+Approval decision: Partial named approval including D1–D4; remaining operating inputs open
 Partial approval instruction: ALL proposed/default values approved
 Partial approval recorded at: 2026-08-26T15:52:58+06:00
 Partial approval source: authenticated project conversation; owner name unresolved
@@ -621,6 +657,11 @@ Optional-tax instruction date: 2026-10-05 (Asia/Dhaka)
 Optional-tax decision: B6-B7 APPROVED as optional operator configuration; no mandatory tax input or custom wording; no legal exemption inferred
 Named business approval recorded at: 2026-10-05T23:15:42+06:00 (review/record time, Asia/Dhaka)
 Named approval scope: B1-B4; B6-B7 owner-declared Not applicable with optional fields retained; P6 30-day window/no additional eligibility-exclusion section
+Operating-rule approval instruction: Approve draft D1–D4
+Operating-rule approved version/scope: DRAFT-OPS-1; D1–D4 only, as written
+Operating-rule source commit: c880605c854c7d963323fb706533c9703446fd24
+Operating-rule approval recorded at: 2026-10-06T01:09:00+06:00 (review/record time, Asia/Dhaka)
+Remaining approval/input scope: D5–D8; catalogue/mapping, destinations/operators/staffing and cancellation safeguards
 Approved policy record commit: The Git commit containing this Command 33 record; pin its 40-character ID in the protected launch record
 Exceptions and expiry/review date: UNRESOLVED
 ```
