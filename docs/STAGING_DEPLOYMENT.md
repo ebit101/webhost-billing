@@ -4,17 +4,17 @@
 
 - Environment: staging only
 - URL: `https://my.speedhost.bd`
-- Deployed application version: `71558a8`
+- Deployed application version: `6085629` (source `608562903cd2adbd3b70b8ace5c92259c2ba4c4b`)
 - Compose project: `webhost-billing-staging`
 - Host root: `/srv/webhost-billing-staging`
-- Current release: `/srv/webhost-billing-staging/releases/71558a8`
-- API image: `webhost-billing-api:71558a8`
-- Web image: `webhost-billing-web:71558a8`
-- Worker and scheduler image: `webhost-billing-worker:71558a8`
-- Migration image: `webhost-billing-migration:71558a8`
+- Current release: `/srv/webhost-billing-staging/releases/6085629`
+- API image: `webhost-billing-api:6085629`
+- Web image: `webhost-billing-web:6085629`
+- Worker and scheduler image: `webhost-billing-worker:6085629`
+- Migration image: `webhost-billing-migration:6085629`
 - Web listener: `127.0.0.1:19500`
 - API listener: `127.0.0.1:19600`
-- Edge: the host Nginx instance, after a successful `nginx -t` and graceful reload
+- Edge: the existing host Nginx instance; unchanged during the latest rollout
 - TLS: Let's Encrypt certificate for `my.speedhost.bd`; automatic Certbot renewal is installed
 
 This is a side-by-side deployment on a shared server. It must not manage, restart, prune,
@@ -143,9 +143,74 @@ If Nginx rollback is required, inspect the timestamped archive in
 `my.speedhost.bd`, run `nginx -t`, and use a graceful reload. Do not replace the complete
 Nginx configuration without a separate shared-host review.
 
-### 2026-10-03 current-main staging deployment
+### 2026-10-05 current-main staging deployment
 
-Commit `71558a8` is the current isolated staging release. It contains all application work
+Source `608562903cd2adbd3b70b8ace5c92259c2ba4c4b` is the current isolated staging
+release. It includes all implemented work through Command 90 and the Command 91
+definition only. The user's request to deploy all changes updated the existing
+staging installation; it did not authorize production promotion or real providers.
+Exact-source CI run `37322118344` and CodeQL run `37322118370` passed before rollout.
+
+Clean pinned Git archives supplied both the new source directory and sequential
+Linux/amd64 builds. All four images use UID/GID `10001:10001`; local/remote image
+IDs matched. Packaged dependency-version inventories matched the source lockfile:
+migration 165, API 309, worker 281 and standalone web 14. Frozen install and
+supply-chain checks passed; slow registry retries and image-copy/export stages
+extended the build time without changing dependency versions or policies.
+Web compilation, TypeScript and static generation passed with
+`NEXT_PUBLIC_API_URL=https://my.speedhost.bd`.
+
+- API image ID: `sha256:f6a6db61143708d4acb8d62849af363d3f31287db688ff1620e87b1c3c643e2e`
+- Web image ID: `sha256:4c41f68a449a367be88e11f52e29a9b11a43e1d44f8684788f9b9e4ca5e462e6`
+- Worker/scheduler image ID: `sha256:c867928a9c09be530205c2cb55a0a4338adef949863344efb66f415db1b3e823`
+- Migration image ID: `sha256:fccf06afc5ba005d162fa59a355632b96c88062297602c2ca368eac0c91913bd`
+
+Candidate Compose validation, entrypoint shell syntax and read-only Prisma status
+passed: all 21 migrations were already applied. No migration, seed, reset or
+business-record write was needed. Immediately before the switch, a fresh encrypted
+backup passed checksum, OpenPGP integrity, archive-structure and required-table checks:
+
+- Backup: `/srv/webhost-billing-staging/backups/webhost-billing-webhost_billing_staging-20261005T154456Z.dump.gpg`
+- SHA-256: `3b78a7c42d0c389caa0b5a91dac8480e190ec0ba9c81e1f03cc98e9ba13af450`
+- Protected prior environment: `/srv/webhost-billing-staging/rollback/.env.staging-pre-6085629`
+- Prior release/tag: `71558a8`, retained with its images for schema-compatible application rollback
+- Protected inventories/business fingerprints: `/srv/webhost-billing-staging/rollback/deploy-6085629-*`
+
+Only the old staging worker/scheduler were stopped before atomically switching the
+release/tag and recreating API, web, worker and scheduler with `--no-deps`. All four
+became healthy with zero restarts; exactly one scheduler remains. PostgreSQL, Redis,
+Mailpit and every unrelated running container retained their IDs/images. Counts and
+row fingerprints of 15 business tables matched the fresh pre-switch baseline.
+The host retained about 83 GB free. No Nginx edit/reload, daemon restart, prune,
+volume deletion, SSH configuration change or unrelated application change occurred.
+
+Post-deployment checks passed for public health/readiness, browser API origin/CSP,
+both roles, customer denial of administrator APIs, owned invoice/PDF/support,
+logout/session rejection, disabled credentialed payment gateways, fake payment and
+hosting contracts, and administrator settings in clean Chromium. A fresh fictional
+password-reset email reached `SENT` via staging SMTP with a `PUBLISHED` outbox event;
+Mailpit retained the sandbox message. Authentication/audit/email side effects were
+expected; financial, service, support and settings records were unchanged.
+
+Clean-browser checks passed for the public hosting-plan CTA, plan selection through
+customer sign-in, and all six administrator/customer invoice/order/service ledgers:
+search, page size 100, reload/back/forward, clear filters, keyboard and 375px filter
+layout. Ledger browsing emitted no mutations or browser errors. Temporary operator
+runner mistakes (old checkout selector, premature administrator navigation, exact
+select-label matching and link/button roles) were corrected against repository
+source/tests; successful administrator and customer runs provide the evidence.
+No application change or rate-limit reset/bypass was made. The fake-provider runner
+initially failed resolving piped `/dev/stdin`; rerunning Node with `-` passed.
+
+The existing unrelated Nginx IPv6 protocol-options warning remains, with syntax
+validation successful. Same-host backup/passphrase storage is not off-site recovery.
+Production remains **NO-GO**; provider, public SMTP, monitoring, off-site immutable
+recovery, policy/infrastructure and operator-pilot gates remain separate. Command 91
+still requires explicit authorization.
+
+### 2026-10-03 prior-main staging deployment
+
+Commit `71558a8` was the isolated staging release before the 2026-10-05 rollout. It contains all application work
 through the Commands 76–78 phase review plus a deployment correction that normalizes the
 shared shell entrypoint inside both the migration and worker images. The correction was
 required because a Windows checkout supplied CRLF line endings and the first one-shot

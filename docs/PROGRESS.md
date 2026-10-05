@@ -2,8 +2,8 @@
 
 ## Status Summary
 
-- **Current command:** Phase Review — Review Command 90 and define the next bounded command
-- **Current status:** Review completed; no corrective application change identified; Command 91 defined only; verify review-head CI/CodeQL before handoff
+- **Current command:** Staging Deployment — Deploy Current Main Through Command 90
+- **Current status:** Staging release 6085629 deployed and verified; production remains NO-GO; Command 91 awaits authorization
 - **Last updated:** 2026-10-05
 - **Next command:** Command 91 — Make Customer Support Ticket History Searchable and Paginated
 - **Next command authorized:** No
@@ -8527,6 +8527,118 @@ Stop after Command 90 delivery. Do not define or implement Command 91 automatica
 
 Authorize **Command 91 — Make Customer Support Ticket History Searchable and Paginated**.
 Stop after review delivery; do not start Command 91 automatically.
+
+### Staging Deployment — Deploy Current Main Through Command 90
+
+- **Status:** Completed staging deployment and verification; documentation delivery gated on exact-head CI/CodeQL
+- **Date:** 2026-10-05 (Asia/Dhaka)
+- **Authorization:** User requested “deploy all changes to live server.” The
+  existing `my.speedhost.bd` installation is documented and verified as isolated
+  staging; this authorizes its update, not production promotion or real providers.
+
+#### Scope and preflight evidence
+
+- Pinned candidate: `608562903cd2adbd3b70b8ace5c92259c2ba4c4b`, image tag
+  `6085629`; includes implemented work through Command 90 and the Command 91
+  definition only. Started clean/synced with canonical origin/main and reverified
+  exact-head CI/CodeQL success before building.
+- Verified DNS and strict pinned-host SSH to the documented shared host, hostname
+  `vmi3398336`, root `/srv/webhost-billing-staging`, project
+  `webhost-billing-staging`, current release `71558a8`, loopback listeners and
+  healthy staging services. Host had **85 GB free** and **4.8 GiB available RAM**.
+  Compose validation, Nginx syntax, public liveness/readiness and protected-path
+  permissions passed. The existing unrelated Nginx IPv6 protocol-options warning
+  remains; no Nginx modification/reload is planned.
+- Read-only database preflight found **21 completed migrations**, **zero
+  non-fictional accounts**, **zero integration credentials**, and disabled bKash/
+  SSLCOMMERZ. No database/schema changes exist between the prior and candidate
+  sources; no migration, seed, reset or data import is planned.
+- Two available Speedhost-specific keys were rejected for root. The existing SSH
+  profile for this same pinned host succeeded; commands remain staging-scoped.
+  No key, SSH configuration or unrelated application was changed. The first SQL
+  preflight assumed an incorrect database role and failed read-only; corrected
+  checks use the existing PostgreSQL container's configured user/database.
+- Created and verified an encrypted pre-deployment backup:
+  `/srv/webhost-billing-staging/backups/webhost-billing-webhost_billing_staging-20261005T144843Z.dump.gpg`.
+  SHA-256: `6184ab1712318f60c39fe6dca2fe981fc23f458ec67102cc237fa7d8b72da4ea`.
+  Checksum, OpenPGP integrity, archive structure and required tables passed.
+  Protected rollback environment:
+  `/srv/webhost-billing-staging/rollback/.env.staging-pre-6085629` (mode `0600`).
+  Previous images/release remain retained. Captured protected running-container
+  inventory and fingerprints for 15 business tables before rollout.
+- Uploaded only the clean pinned Git archive to the new release directory.
+  Builds also use that archive, excluding untracked dependencies, generated
+  artifacts and secrets. Builds are sequential, with a free-space guard before
+  each remaining image. No local/remote prune, volume removal or broad cleanup.
+- All four images built and transferred with matching local/remote IDs,
+  Linux/amd64 and UID/GID `10001:10001`. Packaged dependency versions matched the
+  source lockfile: migration **165**, API **309**, worker **281**, standalone web
+  **14**. Frozen installs/supply-chain policies, compilation, web TypeScript/static
+  generation, shell syntax and candidate Compose passed. Slow registry requests,
+  retries and image copy/export extended build time; no policies or versions changed.
+
+#### Rollout and validation completed
+
+- Candidate Prisma status passed read-only: **21 applied migrations**, schema up
+  to date. No migrate deploy, seed, reset or data import was run.
+- Refreshed and verified the encrypted backup immediately before the switch:
+  `/srv/webhost-billing-staging/backups/webhost-billing-webhost_billing_staging-20261005T154456Z.dump.gpg`.
+  SHA-256: `3b78a7c42d0c389caa0b5a91dac8480e190ec0ba9c81e1f03cc98e9ba13af450`.
+  Refreshed the 15-table baseline; kept the earlier backup and old release/images.
+- Stopped only old staging worker/scheduler, atomically switched release/tag and
+  recreated only API/web/worker/scheduler with `--no-deps` and a scoped failure
+  rollback. Switch completed successfully at **2026-10-05 15:45 UTC**.
+- API/web/worker/scheduler healthy with **zero restarts**, exactly one scheduler,
+  no detected application errors; public liveness/readiness passed. PostgreSQL,
+  Redis, Mailpit and every unrelated running container retained their IDs/images.
+  All 15 business-table counts/fingerprints matched before/after the checks.
+  All 21 migrations and zero integration credentials remain; gateways disabled.
+  Nginx syntax passed with its unchanged warning; no edit/reload performed.
+  Host retained about **83 GB free**; local final build check: C **14.71 GiB**,
+  D **22.54 GiB** free. No prune, volume deletion or Docker restart.
+- Public browser API origin/CSP, both logins/roles, customer 403 for administrator
+  API, owned invoice/PDF/support, logout/session rejection, fake payment/hosting
+  contracts and clean-Chromium settings route passed. The provider invocation
+  first failed resolving piped `/dev/stdin`; standard Node stdin `-` rerun passed.
+- Fresh fictional password-reset email reached **SENT** through staging SMTP and
+  its outbox **PUBLISHED**; Mailpit sandbox message retention verified. Normal
+  authentication/audit/queued-email effects were expected, not business changes.
+- Clean-browser public hosting CTA/selection-through-sign-in and all six admin/
+  customer invoice/order/service ledgers passed search, page size 100, no-match,
+  reload/back/forward, clear, keyboard and **375px** filter-layout checks. Ledger
+  browsing had no mutations or browser errors. Temporary runner selectors/login
+  readiness were corrected against source/tests; admin and customer successful
+  runs provide evidence. An additional admin retry did not reach the dashboard;
+  its configured five-per-fifteen-minute protection was left intact, and only the
+  remaining customer checks were rerun. No application change or limit bypass.
+- This deployment does not claim the earlier full local database/unit/e2e suite
+  was rerun. Exact pinned-source hosted CI/CodeQL passed before deployment, and
+  release builds and the live staging smokes above were executed successfully.
+
+#### Files changed and documentation delivery
+
+- `docs/STAGING_DEPLOYMENT.md` — current release/images, validation, fresh backup,
+  rollback and retained staging-only limitations; historical reports preserved.
+- `docs/PROGRESS.md` — deployment scope, actual checks, constraints and next command.
+- No application source, dependency, schema or secret changes. Operational helpers
+  remained task-local; protected host evidence remains outside Git. No credentials,
+  browser traces or real customer information were printed or committed.
+- Scoped/repository formatting, all four offline documentation validators and
+  whitespace checks passed. Deliver a focused documentation commit, reconcile/
+  non-force push main and require that exact head's CI/CodeQL success before
+  handoff; no pending check is represented as passed. The documentation-only
+  delivery commit does not change the pinned deployed application source.
+
+#### Risks and next command
+
+- Production remains **NO-GO**; real providers, public SMTP, monitoring, off-site
+  immutable recovery, policy/infrastructure/operator-pilot gates remain separate.
+  The encrypted backup/passphrase remain on the staging host, not off-site.
+- Retain local worker/isolation, dependency advisory 15 and direct-main governance
+  risks; no repair or approval is implied by deployment or hosted success.
+- After documentation delivery, separately authorize **Command 91 — Make Customer
+  Support Ticket History Searchable and Paginated**.
+  Do not begin Command 91 automatically.
 
 ## Report Template
 
