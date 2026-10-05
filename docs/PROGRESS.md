@@ -2,8 +2,8 @@
 
 ## Status Summary
 
-- **Current command:** Resume Command 33 — Draft Remaining Speed Host Operating Policies for Approval
-- **Current status:** DRAFT-OPS-1 prepared for review; my.speedhost.bd reaffirmed as intended operating portal; no cutover performed; staging release 6085629 unchanged; production remains NO-GO
+- **Current command:** Resume Command 33 — Collect Existing Speed Host Portal Branding and Public Information
+- **Current status:** Public portal source and unchanged local logo collected; DRAFT-OPS-1 awaits approval; no application/deployment change; staging release 6085629 unchanged; production remains NO-GO
 - **Last updated:** 2026-10-05
 - **Next command:** Resume Command 33 — Review DRAFT-OPS-1 and Supply Remaining Operating Approvals
 - **Next command authorized:** No
@@ -8940,6 +8940,68 @@ Review the eight proposed groups and provide missing owner-controlled values/ref
 Only after readiness evidence and final exact target/window confirmation may the separately
 authorized production cutover make `my.speedhost.bd` the real operating portal. Do not begin
 Command 34 remediation, an importer, Command 91 or cutover automatically.
+
+### Resume Command 33 — Collect Existing Speed Host Portal Branding and Public Information
+
+- **Status:** Source intake completed; application branding and production cutover not performed
+- **Date:** 2026-10-05
+
+#### Scope completed
+
+- Checked the supplied `clients.speedhost.com` address; the web reader could not access it,
+  local HTTPS failed name resolution, and local DNS reported the hostname does not exist.
+- Confirmed the main website links Client Login to `clients.speedhost.com.bd`; reviewed
+  that public portal and its pre-sales contact form by anonymous read-only GET. Both the
+  main website and linked portal returned HTTP 200.
+- Downloaded the portal's original public PNG logo unchanged into an already Git-ignored
+  owner-asset directory. Recorded source, PNG dimensions, byte count and SHA-256;
+  inspected its pixels without generating or editing a replacement.
+- Recorded public identity/navigation and the USD/BDT conflict. Preserved approved BDT,
+  Speed Host Bangladesh identity, contacts, optional tax and 30-day refund decisions.
+- Kept owner branding outside the generic Apache-2.0 distribution; no WHMCS template,
+  customer record, credential, provider asset or authenticated page was collected.
+
+#### Files changed
+
+- `docs/PRODUCTION_BUSINESS_POLICIES.md` — portal source, logo provenance and reuse boundaries.
+- `docs/PROGRESS.md` — source-intake outcome, validation and exact next review step.
+- Local only: `release-artifacts/owner-assets/speed-host/logo.png`; ignored, not committed
+  or deployed. No application, configuration, dependency or schema change.
+
+#### Validation
+
+- Public GETs returned HTTP 200 for the linked portal, contact page and logo. The logo
+  response was `image/png`; its PNG signature/dimensions and 14,658-byte length were checked.
+- SHA-256 recorded and visual inspection performed; `git check-ignore` confirmed exclusion
+  of the local owner logo. No file was replaced or removed.
+- Scoped Prettier check, all four `pnpm docs:check` validators and `git diff --check` passed.
+  Application tests/builds are not rerun for this documentation/local-source-asset intake.
+- Previous draft commit `7c2ed9077007d30d1c5479f1d67d4e8402d2563c` had successful CodeQL;
+  CI was still in progress at inspection. New-commit hosted checks are not claimed here.
+- Deliver only the focused documentation commit after validation, reconcile and non-force
+  push to `main`; the ignored owner logo stays local.
+
+#### Decisions made
+
+- Use the independently linked `.com.bd` source and disclose the supplied hostname failure.
+  Public source facts cannot overwrite explicit owner approvals.
+- Collect the owner's logo, not the proprietary portal theme or its broader feature set.
+  A local logo copy does not implement installation branding or grant trademark rights.
+- No production changes, WHMCS import, customer-data access or policy approval was inferred.
+
+#### Open questions and risks
+
+- DRAFT-OPS-1 approval and missing operating inputs, isolated migration and the existing
+  infrastructure/security/recovery/SMTP/monitoring/release gates remain open.
+- Installation branding needs a separately bounded implementation; generic project branding
+  stays unchanged. The local owner asset is not available from a fresh public Git checkout.
+- Existing dependency/governance risks remain; production stays **NO-GO**.
+
+#### Recommended next command
+
+**Resume Command 33 — Review DRAFT-OPS-1 and Supply Remaining Operating Approvals**.
+Do not start branding implementation, migration, another development command or cutover
+without its bounded authorization.
 
 ## Report Template
 

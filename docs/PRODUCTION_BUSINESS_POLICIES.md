@@ -5,6 +5,7 @@
 - Command: 33 — Finalize Business and Launch Policies
 - Record created: 2026-08-26
 - Public-source review: 2026-10-05 — owner supplied `https://www.speedhost.com.bd/`
+- Existing-portal branding intake: 2026-10-05 — public `https://clients.speedhost.com.bd/`
 - Remaining operating-policy draft: 2026-10-05 — version `DRAFT-OPS-1`, awaiting approval
 - Business owner approval: **PARTIAL NAMED APPROVAL RECORDED; REMAINING OPERATING DECISIONS OPEN**
 - Policy status: **COMMAND 33 OPERATING DRAFT READY — APPROVAL AND LAUNCH EVIDENCE BLOCKED**
@@ -104,6 +105,48 @@ and approved record version. Until then the resumption is **BLOCKED**, not a com
 business-policy gate, and no production setting or launch authorization changes.
 
 ## Owner decision record
+
+### Existing portal logo and public information — 2026-10-05
+
+The owner requested the logo and other information from `https://clients.speedhost.com/`.
+That exact hostname failed the public web reader and local HTTPS/DNS checks; local DNS
+reported that the name does not exist. The already authorized
+[main website](https://www.speedhost.com.bd/) links its Client Login to
+`https://clients.speedhost.com.bd/index.php?rp=/login`. Accordingly, the public
+[existing portal](https://clients.speedhost.com.bd/) was reviewed as the independently
+linked source, not as a silent correction of the supplied address. Both the main website
+and the `.com.bd` portal returned HTTP 200 during this intake.
+
+- **Logo:** The portal header references
+  [its PNG logo](https://clients.speedhost.com.bd/assets/img/logo.png), with alternative
+  text `Speedhost Bangladesh`. Downloaded the unchanged public asset for the owner's
+  installation preparation: PNG, 285 × 63 pixels, 14,658 bytes. Visual inspection confirmed
+  the asset and its `better web solutions` tagline; no redraw or image edit was performed.
+- **Local asset:** `release-artifacts/owner-assets/speed-host/logo.png`, SHA-256
+  `5d11099f9a262a1ada9fd6b4679466627245454084f07b40d588193675d98836`.
+  The existing `release-artifacts/` ignore rule excludes this owner-specific copy from Git.
+  This local file is not a deployed asset or part of the generic open-source distribution.
+  Preserve Speed Host's brand rights separately from the application's Apache-2.0 licence;
+  do not imply that third-party installers receive trademark rights.
+- **Public identity/navigation:** The portal identifies itself as `Speedhost Bangladesh`
+  and links contact, support tickets, knowledgebase, announcements, network status and
+  website terms. These are reference navigation, not implemented capabilities or tested
+  support/incident routes for the replacement portal.
+- **Currency conflict:** The anonymous portal displays USD and offers BDT as another
+  currency. Do not import its multi-currency behavior or USD prices: the owner's approved
+  replacement currency remains BDT. Exact launch product/price/period mapping is still
+  required; the existing portal's broader catalogue does not expand this project's scope.
+- **Contacts/policies:** Its public contact page is a pre-sales form, not an independently
+  published billing address/phone/email. Preserve the approved business name, main-website
+  address/email, preferred invoice phone, optional tax fields and 30-day refund decision.
+  Public navigation and marketing do not approve `DRAFT-OPS-1` or replace its open inputs.
+
+No account was accessed, form submitted, customer/export data collected, cart created or
+payment initiated. No WHMCS theme, template, provider logo or other commercial asset was
+copied. Applying the collected logo to frontend/email/invoice surfaces remains a separately
+bounded installation-branding step; no application default, live site or policy setting
+changed in this source intake. The existing portal remains separate from the intended
+`my.speedhost.bd` replacement until the migration and cutover gates are satisfied.
 
 ### Speed Host preparation before final WHMCS data — 2026-10-05
 
