@@ -3,7 +3,7 @@
 ## Status Summary
 
 - **Current command:** Command 89 — Make Customer Order History Searchable and Paginated
-- **Current status:** Implemented and locally validated; GitHub delivery and exact-head hosted checks pending
+- **Current status:** Completed and delivered to GitHub main; exact source-head CI/CodeQL passed; final report-head verification required before handoff
 - **Last updated:** 2026-10-05
 - **Next command:** Phase Review — Review Command 89 and define the next bounded command
 - **Next command authorized:** No
@@ -8109,8 +8109,8 @@ Stop after review delivery; do not start Command 89 automatically.
 
 ### Command 89 — Make Customer Order History Searchable and Paginated
 
-- **Status:** Implemented and locally validated; delivery and exact-head hosted
-  checks pending
+- **Status:** Completed and delivered to GitHub `main`; source-head hosted checks
+  passed; final report-head verification required before handoff
 - **Date:** 2026-10-05
 - **Authorization:** User explicitly requested “command 89”.
 
@@ -8176,6 +8176,29 @@ Stop after review delivery; do not start Command 89 automatically.
   that correction. No assertion or timing threshold was changed. After the report
   update, all four documentation validators and repository formatting passed again.
 - GitHub delivery and exact-head hosted checks are pending, not claimed passed.
+
+#### Delivery closure
+
+- Focused implementation commit `b2769120dcc003708796a859dea79e2573378e91`
+  was reconciled and non-force pushed to canonical origin/main. Working tree was
+  clean and main/origin/main were **0 ahead/0 behind** after delivery.
+- That exact source head's
+  [CI](https://github.com/ebit101/webhost-billing/actions/runs/37304312803) and
+  [CodeQL](https://github.com/ebit101/webhost-billing/actions/runs/37304312807)
+  both completed **successfully**. CI independently passed full-history secrets,
+  frozen dependency installation, database verification, format/docs/lint/types,
+  default package tests, full API integration, critical invariants, browser tests,
+  production dependency audit/license inventory and production build.
+  PR-only dependency review was skipped on this push, not claimed executed.
+- Push repeated the existing direct-main required-PR/check bypass warning and
+  high Dependabot advisory 15. No rule, dependency or production gate was altered.
+  Successful hosted default worker tests do not establish repair of the retained
+  local timing/fixture or raw-SQL isolation limitations. Earlier pending lines
+  are historical checkpoints, not unresolved source validation failures.
+- This final report-only closure is validated with formatting, all four offline
+  documentation checks and whitespace checks, then committed/reconciled/non-force
+  pushed. Verify its own exact-head CI/CodeQL before final handoff and report the
+  final links there; do not substitute this source head's results for that check.
 
 #### Decisions and unresolved risks
 
