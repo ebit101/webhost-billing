@@ -907,6 +907,23 @@ This document records durable technical and product decisions. New decisions sho
   frameworks, workers/isolation, dependencies/governance, providers, cleanup,
   releases and deployments remain separately gated. Production stays `NO-GO`.
 
+## ADR-072 — Read-Only Customer Order History With Session-Derived Scope
+
+- **Status:** Accepted and implemented by authorized Command 89
+- **Date:** 2026-10-05
+- **Decision:** Keep customer order history on the existing customer-only list API.
+  Narrow URL/request builders to search/status/page/page-size, validate complete
+  order/item/invoice and pagination facts, and key only abortable history reads.
+- **Reason:** Older-order lookup needs authoritative owned counts, restored URL
+  state and honest recovery without passing customer identity or introducing a new
+  billing/service relationship. Query/retry must never resurrect stale results.
+- **Consequence:** Identity remains session-derived at the API. Existing historical
+  search and createdAt/ID ordering remain; counts are records, not money or service
+  evidence. First-item summaries identify additional items rather than claiming full
+  review. Existing checkout links, invoice text and financial rules remain intact.
+  No other ledger, new detail/navigation framework, schema, provider, worker,
+  dependency, release or deployment change. Production stays `NO-GO`.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

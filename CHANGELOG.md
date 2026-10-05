@@ -10,6 +10,10 @@ and will be called out in release notes.
 
 ### Changed
 
+- Customer order history gains ownership-bound URL search/status and pagination
+  beyond 100 records, runtime-validated rows/counts, stale-read protection and
+  honest GET-only recovery. Existing checkout and billing/service rules are unchanged.
+
 - Administrator order ledger gains validated URL search/status/customer context
   and pagination beyond 100 records, without losing creation drafts or retargeting
   existing actions. Browsing remains read-only and preserves historical snapshots.

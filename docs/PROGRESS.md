@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Phase Review — Review Command 88 and define the next bounded command
-- **Current status:** Review completed; Command 89 defined only; review-head hosted verification required before handoff
+- **Current command:** Command 89 — Make Customer Order History Searchable and Paginated
+- **Current status:** Implemented and locally validated; GitHub delivery and exact-head hosted checks pending
 - **Last updated:** 2026-10-05
-- **Next command:** Command 89 — Make Customer Order History Searchable and Paginated
+- **Next command:** Phase Review — Review Command 89 and define the next bounded command
 - **Next command authorized:** No
 
 ## Command Reports
@@ -8106,6 +8106,93 @@ Stop after Command 88 delivery; do not define or implement Command 89 automatica
 
 Authorize **Command 89 — Make Customer Order History Searchable and Paginated**.
 Stop after review delivery; do not start Command 89 automatically.
+
+### Command 89 — Make Customer Order History Searchable and Paginated
+
+- **Status:** Implemented and locally validated; delivery and exact-head hosted
+  checks pending
+- **Date:** 2026-10-05
+- **Authorization:** User explicitly requested “command 89”.
+
+#### Scope implemented
+
+- Replace the first-100 customer order fetch with URL-bound search/status/page/
+  page-size and existing customer-only `/orders/my`. Only those four validated
+  fields reach requests or fixed local destinations; identity remains session-derived.
+- Bound inputs/offsets, block invalid reads, validate every row/item/invoice and
+  authoritative pagination, reject duplicate/status/inconsistent metadata and
+  abort/discard superseded query/retry/unmount results. Provide honest invalid,
+  loading, safe failure/GET retry, empty/no matches and out-of-range recovery.
+- Preserve historical email/order-number/any-item-domain search and createdAt/ID
+  ordering. Counts are records, not balances, settlement or provisioning evidence.
+  First-item summaries explicitly identify additional items; original checkout,
+  invoice text, lossless money and separate business state remain unchanged.
+- Add query/server-entry/component regressions, customer API ownership/history
+  checks and one isolated fictional browser journey beyond 100 orders, including
+  history/reload/keyboard/mobile and complete unchanged business snapshots.
+
+#### Files changed
+
+- `apps/web/src/app/(portal)/portal/orders/page.tsx` and server-entry regression.
+- `apps/web/src/lib/customer-order-ledger-query.ts` and URL/metadata regression.
+- `apps/web/src/components/orders/customer-order-list.tsx` and component regression.
+- `apps/api/test/orders.e2e-spec.ts` and
+  `apps/web/e2e/specs/customer-order-ledger.spec.ts`.
+- `CHANGELOG.md`, `CODEX_DEVELOPMENT_COMMANDS.md`, `docs/DECISIONS.md`,
+  `docs/PRODUCT_EXPERIENCE_ROADMAP.md` and this report.
+
+#### Validation
+
+- Started clean on main at `652a1cf60a90849f96125ef8eabc7aa3f249e8ee`; fetch
+  confirmed 0 ahead/0 behind canonical origin/main. Prior review exact-head CI and
+  CodeQL were verified successful before handoff; no deployment or release.
+- Read project rules/plan/decisions/relevant progress and installed Next.js
+  server/client, async page/searchParams, useRouter and Vitest/Playwright guidance.
+- Focused new customer query/server-entry/component plus retained order/checkout
+  regression: **67 tests across four files passed**. Initial failure exposed a
+  strict-schema builder rejecting an extra identity field; explicitly select only
+  four owned fields before validation. Initial types rejected two unsupported test
+  options and undeclared direct zod import; use the shared inferred order query
+  type and supported test options, adding no dependency or changing assertions.
+  Strict web/application/browser types then passed. One additional delayed-retry
+  regression subsequently passed in the complete web run.
+- Guarded loopback preparation verified both Prisma model access and raw SQL
+  current_schema in fixed `command26_e2e` with explicit search_path. Orders API:
+  **7 passed**, including >100 owned pages, any-item/historical search, deterministic
+  ties, isolated status/counts, supplied identity rejection and complete unchanged
+  business snapshots. Denied-role probes precede the permitted browsing baseline.
+- Focused fictional browser journey **1 passed (1.6m)** with complete unchanged
+  business snapshots and owned counts excluding another account's records.
+- Complete local web **471/44 files**, API unit **98/24 suites**, shared **29**,
+  queue **3**, worker **29/10 suites** and all nine tooling-test commands passed.
+  Local Nest checks were serial; no worker/timing or original business assertion
+  was changed. Critical API integrations **41/6 suites passed**.
+- Complete fictional browser regressions: **17 passed (3.3m)**. Workspace lint,
+  strict types, all four offline documentation validators, repository formatting
+  and the complete production build passed. Lint initially reported unused mock
+  parameters in new component tests; retain explicit mock request types without
+  unused parameters. Final focused **68/four files** and web lint then passed
+  without warnings; a fresh complete web rerun **471/44 files** also passed after
+  that correction. No assertion or timing threshold was changed. After the report
+  update, all four documentation validators and repository formatting passed again.
+- GitHub delivery and exact-head hosted checks are pending, not claimed passed.
+
+#### Decisions and unresolved risks
+
+- ADR-072 isolates read-only history and keeps customer ownership/API authority,
+  historical snapshots, monetary precision and separate order/invoice/service state.
+- No backend behavior, schema, worker, dependency, other ledger, new invoice/service
+  link, provider, cleanup, release or deployment changes. Production remains **NO-GO**.
+- Known local parallel-worker timing/fictional fixture and URL-schema-only raw-SQL
+  isolation limitations remain unresolved. Verify both schema boundaries and run
+  local Nest checks serially without altered deadlines, records or assertions.
+- Advisory 15, direct-main governance and credentialed provider/SMTP/monitoring/
+  off-site recovery/policy/infrastructure/operator-pilot gates remain separate.
+
+#### Exact recommended next command
+
+**Phase Review — Review Command 89 and define the next bounded command.**
+Stop after Command 89 delivery; do not define or implement Command 90 automatically.
 
 ## Report Template
 
