@@ -10,6 +10,11 @@ and will be called out in release notes.
 
 ### Changed
 
+- Customer service inventory gains ownership-bound URL search/status and pages
+  beyond 100 records, complete runtime validation, stale-read protection and
+  honest GET-only recovery. Existing service cards, detail links and deliberate
+  panel login remain unchanged; browsing does not verify or contact remote panels.
+
 - Customer order history gains ownership-bound URL search/status and pagination
   beyond 100 records, runtime-validated rows/counts, stale-read protection and
   honest GET-only recovery. Existing checkout and billing/service rules are unchanged.

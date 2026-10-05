@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Phase Review — Review Command 89 and define the next bounded command
-- **Current status:** Review completed and locally validated; Command 90 defined, not authorized; exact review-head CI/CodeQL required before handoff
+- **Current command:** Command 90 — Make Customer Service Inventory Searchable and Paginated
+- **Current status:** Implemented and locally validated; exact-head GitHub delivery gates pending
 - **Last updated:** 2026-10-05
-- **Next command:** Command 90 — Make Customer Service Inventory Searchable and Paginated
+- **Next command:** Phase Review — Review Command 90 and define the next bounded command
 - **Next command authorized:** No
 
 ## Command Reports
@@ -8297,6 +8297,124 @@ Stop after Command 89 delivery; do not define or implement Command 90 automatica
 
 Authorize **Command 90 — Make Customer Service Inventory Searchable and Paginated**.
 Stop after review delivery; do not start Command 90 automatically.
+
+### Command 90 — Make Customer Service Inventory Searchable and Paginated
+
+- **Status:** Implemented and locally validated; GitHub delivery gates pending
+- **Date:** 2026-10-05 (Asia/Dhaka)
+- **Authorization:** User explicitly said "command 90". No next command authorized.
+
+#### Scope completed
+
+- Replaced only the customer service inventory's fixed first-100 read with bounded
+  URL search/status/page/page-size and the existing customer-only `/services/my`.
+  Only singular supported fields are forwarded; invalid/duplicate/unsafe offsets
+  block reads. Customer/server/redirect/other input is ignored, not used as scope.
+- Async server entry restores committed filters on reload and history navigation.
+  Search/status/size changes reset page one while retaining other applied filters;
+  fixed local destinations, clear, Previous/Next and authoritative count/range/page
+  feedback never silently clamp an out-of-range page.
+- Complete runtime service/server/money/nullable lifecycle and pagination checks
+  reject malformed facts, duplicate IDs, wrong applied status and inconsistent
+  metadata/page lengths. Cookie/no-store GETs abort and discard superseded query,
+  retry and unmount results. Recovery is safe, distinct and read-only.
+- Preserved original cards, lossless recurring amount, next-due date, stored status,
+  text server/username and fixed validated UUID detail links. Null domain explicitly
+  reads "Domain unavailable"; missing username remains "Pending setup". Detail,
+  Back to services and deliberate panel login remain unchanged. No eager detail
+  reads, provider checks, login generation or business writes during browsing.
+- Search retains domain/historical product/current email/external-account meaning;
+  ordering remains createdAt/ID, not start/due dates or frozen history. Matching
+  counts are records, not money, active hosting or remote-state evidence.
+- Added focused query/entry/component, owned API history beyond 100 and a dedicated
+  fictional keyboard/mobile/history/detail browser journey. API access-denial
+  probes stay outside permitted-browsing business/audit snapshots; traces/video/
+  screenshots are disabled. No business/security rule or test deadline changed.
+
+#### Files changed
+
+- `apps/web/src/lib/customer-service-ledger-query.ts` and its focused tests.
+- `apps/web/src/app/(portal)/portal/services/page.tsx` and
+  `apps/web/src/app/customer-service-ledger-entry.test.tsx`.
+- `apps/web/src/components/services/customer-service-list.tsx` and its new tests;
+  retained `service-management.test.tsx` list fixture uses the new default page size
+  and waits for the row, preserving every original assertion.
+- `apps/api/test/services.e2e-spec.ts` — owned history/search/count/access/no-write
+  regressions; reuses an already authenticated administrator test session.
+- `apps/web/e2e/specs/customer-service-ledger.spec.ts` — guarded fictional journey.
+- `CHANGELOG.md`, `CODEX_DEVELOPMENT_COMMANDS.md`, `docs/DECISIONS.md`,
+  `docs/PRODUCT_EXPERIENCE_ROADMAP.md`, `docs/PROGRESS.md`.
+
+#### Validation
+
+- Started clean at `e89ffc871d84d8c6797b70c6d125c986b5914e3b`; canonical fetch
+  confirmed 0 ahead/0 behind. Reverified that exact Phase Review 89 head's
+  [CI](https://github.com/ebit101/webhost-billing/actions/runs/37308178133) and
+  [CodeQL](https://github.com/ebit101/webhost-billing/actions/runs/37308178241)
+  successful, closing its final handoff check.
+- Read installed Next.js server/client boundary, async page, useRouter and testing
+  guidance before edits. Focused query/entry/list/original management: **64 passed
+  across four files**. Focused service API: **7 passed**. Web/browser strict types
+  and preliminary full lint passed. Both Prisma model access and raw-SQL
+  `current_schema` were verified on loopback `command26_e2e` before preparation/tests.
+- Initial focused failures exposed a misplaced new test inside cleanup and the
+  retained page-size/wait fixture. A subsequent money assertion omitted existing
+  display commas; corrected the exact expected lossless string. The first new API
+  run hit the existing administrator login limit; reused its authenticated agent
+  rather than raising auth limits. All original assertions/deadlines remain.
+- The first browser run reached the older detail but a new assertion incorrectly
+  assumed one detail GET. The unchanged detail effect runs twice under existing
+  development Strict Mode; asserted both exact clicked-target reads while retaining
+  zero-preload/panel/write checks. No detail behavior or existing test was altered.
+- The initial full API run had **71 passed/one failed**: existing auth ownership
+  coverage expects the standard fictional seed customer, absent from browser-only
+  preparation. The corrected runner applies the unchanged seed only inside the
+  verified fixed fictional schema before rerunning full API checks. Normal/default
+  development data, auth assertions and all application/test definitions remain
+  unchanged; this is test preparation, not an authentication repair.
+- Workspace type checking caught a nullable Prisma JSON read value being spread
+  into the new fixture's create input. Added an explicit source-null assertion and
+  omitted that insert field, preserving SQL NULL rather than casting or changing
+  Prisma contracts. Affected API checks and workspace types are rerun after this
+  test-only correction; previous web/browser evidence is unchanged.
+- Complete local package regressions passed: **529 web tests across 47 files**,
+  **98 API unit tests across 24 suites**, **29 shared contracts**, **three queue
+  tests**, **29 worker tests across 10 suites** and all nine root tooling suites.
+  Nest checks ran serially without changed deadlines/assertions; this is not a
+  claim that the retained default-parallel worker limitation was repaired.
+- Final full API integration after the test-only JSON correction: **72 passed
+  across 16 suites**; critical API invariants: **42 passed across six suites**.
+  Both model and raw-SQL schema guards preceded preparation/tests. Standard seed
+  definitions were applied only to the fixed fictional schema, never normal data.
+- Complete fictional browser regressions: **18 passed (3.5m)**, including older
+  owned service lookup, keyboard/375px/history/detail and unchanged full hosting
+  lifecycle. The new journey proves no preloads/panel requests/business writes and
+  complete unchanged order/item/invoice/item/payment/event/service/operation/audit/
+  outbox snapshots. No browser/application source changed after this successful run.
+- Final full lint, strict workspace/application/browser types, all **four offline
+  documentation validators**, repository formatting and complete production build
+  passed. Whitespace checks passed; canonical fetch remains 0 ahead/0 behind before
+  the focused source commit. Commit/reconcile/non-force push and verify exact-head
+  CI/CodeQL before handoff; pending hosted gates are not claimed passed. This is not
+  a release, deployment or production approval.
+
+#### Decisions and unresolved risks
+
+- ADR-074 keeps inventory read-only, ownership API-derived, money lossless and
+  order/invoice/payment/service/provisioning states independent.
+- No backend behavior, schema, worker, dependency, other ledger, new relationship,
+  detail/action redesign, provider, cleanup, release or deployment changes.
+  Production remains **NO-GO**.
+- Known local parallel-worker timing/fictional fixture and URL-schema-only raw-SQL
+  isolation limitations remain unresolved; verify both schema boundaries and run
+  local Nest checks serially without changing deadlines, records or assertions.
+- Advisory 15, direct-main governance and credentialed provider/SMTP/monitoring/
+  off-site recovery/policy/infrastructure/operator-pilot gates remain separate.
+
+#### Exact recommended next command
+
+**Phase Review — Review Command 90 and define the next bounded command.**
+Stop after Command 90 delivery. Do not define or implement Command 91 automatically.
 
 ## Report Template
 

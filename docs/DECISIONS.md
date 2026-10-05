@@ -947,6 +947,25 @@ This document records durable technical and product decisions. New decisions sho
   attention/freshness/chrome, worker/isolation, dependency/governance, cleanup,
   releases and deployments remain separate. Production stays `NO-GO`.
 
+## ADR-074 — Read-Only Customer Service Inventory With Session-Derived Scope
+
+- **Status:** Accepted and implemented by authorized Command 90
+- **Date:** 2026-10-05
+- **Decision:** Keep customer service lookup on the existing customer-only API.
+  Narrow URL/request builders to search/status/page/page-size, validate complete
+  service/server/money/nullable lifecycle facts and authoritative pagination, and
+  key only abortable inventory reads. Never forward customer/server identity.
+- **Reason:** Older-service lookup needs owned counts, restored URL state and
+  honest recovery without inventing a financial relationship or contacting a panel.
+  Superseded query/retry/unmount reads must not restore stale cards or counts.
+- **Consequence:** The API derives ownership from the session. Existing domain,
+  historical product, current email and external-account search and createdAt/ID
+  ordering remain. Counts are records, not financial or live-hosting evidence.
+  Preserve lossless recurring money, nullable placeholders, text server facts,
+  validated fixed detail links and deliberate panel login. No backend behavior,
+  schema, provider, worker, dependency, other ledger, relationship, release or
+  deployment change; production remains `NO-GO`.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

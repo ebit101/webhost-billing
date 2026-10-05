@@ -71,18 +71,18 @@ evidence recorded in `docs/PROGRESS.md`.
 
 ### Customer portal
 
-| Route                          | Observed capability                                                   | Supporting boundary                             | Product-experience finding                                                                                                       |
-| ------------------------------ | --------------------------------------------------------------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `/portal`                      | Server-derived billing, service-renewal and support next actions      | Ownership-bound full-account portal summary     | Command 78 distinguishes attention, healthy, empty, loading and failure states before bounded recent history.                    |
-| `/portal/orders`               | Order and linked invoice states in one table                          | Paginated ownership-bound order API             | Command 89 adds owned URL search/status/pages and authoritative counts; invoice linking/current service context remain separate. |
-| `/portal/checkout`             | Product, price, domain, server-authoritative total and order creation | Idempotent checkout; product/price revalidation | Command 80 restores exact account-entry selection and requires deliberate replacement of unavailable intent.                     |
-| `/portal/services`             | Service cards with state, server, account, and renewal data           | Ownership-bound service API                     | Useful overview; first-100 loading and inactive workspace search limit growth.                                                   |
-| `/portal/services/[serviceId]` | Service detail and short-lived fake-panel login action                | Ownership check and provider-neutral operation  | Clear detail; the panel action has no nearby invoice/order context.                                                              |
-| `/portal/invoices`             | Invoice status, due date, total, balance                              | Ownership-bound invoice API                     | Command 81 adds URL-bound search/status/paging and authoritative matching counts; broader ledger work remains separate.          |
-| `/portal/invoices/[invoiceId]` | Immutable invoice, PDF/print, payment instructions/references         | Snapshot and payment-state rules                | Strong invoice view; customer payment action appears only when invoice state allows it.                                          |
-| `/invoices/[invoiceId]/print`  | Ownership-bound printable invoice                                     | Server-fetched invoice detail                   | Useful dedicated output; browser print is the only mutation-like action and remains user initiated.                              |
-| `/portal/profile`              | Contact/address update and password change                            | Ownership, audit, session revocation            | Functional and appropriately separates password change.                                                                          |
-| `/portal/support`              | Open, select, read, and reply to plain-text tickets                   | Ownership-bound tickets and service association | Functional; list is first-100 and has no visible search/filter/pagination despite API support.                                   |
+| Route                          | Observed capability                                                    | Supporting boundary                             | Product-experience finding                                                                                                            |
+| ------------------------------ | ---------------------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `/portal`                      | Server-derived billing, service-renewal and support next actions       | Ownership-bound full-account portal summary     | Command 78 distinguishes attention, healthy, empty, loading and failure states before bounded recent history.                         |
+| `/portal/orders`               | Order and linked invoice states in one table                           | Paginated ownership-bound order API             | Command 89 adds owned URL search/status/pages and authoritative counts; invoice linking/current service context remain separate.      |
+| `/portal/checkout`             | Product, price, domain, server-authoritative total and order creation  | Idempotent checkout; product/price revalidation | Command 80 restores exact account-entry selection and requires deliberate replacement of unavailable intent.                          |
+| `/portal/services`             | Searchable paginated service cards with state, server and renewal data | Ownership-bound service API                     | Command 90 adds owned URL search/status/pages and authoritative counts; detail, panel login and richer relationships remain separate. |
+| `/portal/services/[serviceId]` | Service detail and short-lived fake-panel login action                 | Ownership check and provider-neutral operation  | Clear detail; the panel action has no nearby invoice/order context.                                                                   |
+| `/portal/invoices`             | Invoice status, due date, total, balance                               | Ownership-bound invoice API                     | Command 81 adds URL-bound search/status/paging and authoritative matching counts; broader ledger work remains separate.               |
+| `/portal/invoices/[invoiceId]` | Immutable invoice, PDF/print, payment instructions/references          | Snapshot and payment-state rules                | Strong invoice view; customer payment action appears only when invoice state allows it.                                               |
+| `/invoices/[invoiceId]/print`  | Ownership-bound printable invoice                                      | Server-fetched invoice detail                   | Useful dedicated output; browser print is the only mutation-like action and remains user initiated.                                   |
+| `/portal/profile`              | Contact/address update and password change                             | Ownership, audit, session revocation            | Functional and appropriately separates password change.                                                                               |
+| `/portal/support`              | Open, select, read, and reply to plain-text tickets                    | Ownership-bound tickets and service association | Functional; list is first-100 and has no visible search/filter/pagination despite API support.                                        |
 
 ### Administrator workspace
 
@@ -183,7 +183,7 @@ Priorities are:
 | Operational attention is activity-heavy rather than action-led                       | Dashboard metrics do not link; login events dominate recent activity; no recent-payment queue                                                  | Administrator starts the day and triages work                                 | High-value exceptions are hidden behind navigation and low-value audit noise                     | Direct attention links for pending orders, overdue invoices, payments, tickets, and failed work | S3–S5, S7        | Dashboard component/API tests with mixed fixtures                                     | Existing metrics and list filters; payment summary may need bounded API work | P1                                                     |
 | Automation health does not prove freshness                                           | `/admin/automation` can show all zero queues/failures while stating no renewal cycle has run                                                   | Administrator confirms billing automation actually executed                   | “No failures” can be mistaken for “healthy and current”                                          | Last-run/freshness state with never/stale/healthy/failed semantics                              | S3, S5           | Scheduler/API time-fixture tests and admin UI states                                  | Existing renewal run records and business time zone                          | P1                                                     |
 | Workspace search and notification chrome is inactive but visually live               | `WorkspaceShell` has an unbound search input and bell with a red dot for both roles                                                            | Any authenticated user searches or checks alerts                              | Controls invite action but do nothing, eroding trust and accessibility predictability            | Remove them until supported or implement bounded role-safe search/attention behavior            | S1, S7, S8       | Shell component tests and keyboard/browser smoke                                      | Search APIs exist per module; no notification model exists                   | P1                                                     |
-| Other core ledgers silently cap at 100 in the UI                                     | Payment and customer service/ticket lists plus panel history lack controls; invoice, order and administrator service ledgers are repaired      | Customer or administrator finds older records                                 | Records beyond the first page become invisible                                                   | Use bounded URL-bound queries and authoritative metadata, one separately gated ledger at a time | S1, S7           | Large-fixture component/API tests and navigation E2E                                  | Existing pagination contracts                                                | P1 remainder; Commands 81, 85, 87–89 completed         |
+| Other core ledgers silently cap at 100 in the UI                                     | Payment and ticket lists plus panel history lack controls; invoice, order and service ledgers are repaired                                     | Customer or administrator finds older records                                 | Records beyond the first page become invisible                                                   | Use bounded URL-bound queries and authoritative metadata, one separately gated ledger at a time | S1, S7           | Large-fixture component/API tests and navigation E2E                                  | Existing pagination contracts                                                | P1 remainder; Commands 81, 85, 87–90 completed         |
 | Configuration is a single broad high-impact surface                                  | `/admin/settings` combines identity, renewals, gateway/panel mode, email, and credentials                                                      | Administrator configures the business safely                                  | Easy to miss save scope or downstream effect                                                     | Section-level save evidence, change summaries, and clear activation consequences                | S2–S7            | Component tests and audit assertions using fake values                                | Existing settings contracts                                                  | P2                                                     |
 
 ## Explicit affordance, navigation, scale, and shortcut findings
@@ -225,7 +225,11 @@ Priorities are:
   Setup options, tools and operation history retain their independent scale limits.
 - Command 88 implements administrator order search/pagination without discarding
   independent creation drafts/keys or retargeting existing status operations.
-  Customer order history remains a separate first-100 limit.
+- Command 89 implements ownership-bound customer order search/pagination without
+  new invoice/service links or financial rules.
+- Command 90 implements ownership-bound customer service search/pagination while
+  retaining cards, nullable facts, detail links and deliberate panel login. Stored
+  application status and matching counts do not establish live hosting state.
 - Command 85 implements administrator invoice search/pagination with preserved
   customer context and unchanged draft/identity forms. Validation/delivery evidence
   is recorded in `docs/PROGRESS.md`; customer chooser scale and all other ledgers
@@ -665,6 +669,26 @@ remain P1 work for the next phase review.
   support service-picker/setup/tool/history scale, attention/freshness/chrome and
   existing worker/isolation/dependency/governance risks remain separate. No Command
   90 implementation, provider, cleanup, release or deployment authorized here.
+
+### Command 90 bounded implementation
+
+- Customer service inventory uses existing customer-only `/services/my` with four
+  bounded URL fields. Customer/server/redirect inputs never reach the request or
+  fixed local destinations; ownership remains session-derived at the API.
+- Complete service/server/money/lifecycle and pagination facts are validated.
+  Invalid filters block reads; query/retry/unmount abort stale results. Distinct
+  empty/no-match/out-of-range/failure states offer honest GET-only recovery, and
+  committed filters restore on reload and history navigation.
+- Search remains domain, historical product, current email and external account;
+  sorting remains createdAt/ID. Counts and stored state are not financial or live
+  hosting evidence. Cards preserve lossless recurring money, next-due dates,
+  nullable placeholders, text server facts and validated existing detail links.
+  Browsing makes no detail preloads, panel requests or business writes.
+- Validation and delivery are recorded in `docs/PROGRESS.md`. Next: separately
+  authorize **Phase Review — Review Command 90 and define the next bounded command**.
+  No Command 91 is defined or implemented here. Other ledgers, richer relationships,
+  detail/return intent, picker/setup/tool scale, providers, releases and deployments
+  remain separate; production stays `NO-GO`.
 
 ### Remaining production gates
 

@@ -244,12 +244,12 @@ describe('service management interfaces', () => {
   });
 
   it('lists only the customer service cards with renewal and account data', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(paginated([service])));
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(paginated([service], 20)));
     render(<CustomerServiceList />);
     expect(
       await screen.findByRole('heading', { name: 'My services' }),
     ).toBeTruthy();
-    expect(screen.getByText('customer-site.example.test')).toBeTruthy();
+    expect(await screen.findByText('customer-site.example.test')).toBeTruthy();
     expect(screen.getByText('Pending setup')).toBeTruthy();
     expect(
       screen
