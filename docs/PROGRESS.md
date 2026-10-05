@@ -7821,7 +7821,7 @@ Stop after Command 87 delivery; do not define or implement Command 88 automatica
 
 ### Phase Review — Review Command 87 and define the next bounded command
 
-- **Status:** Review completed; Command 88 definition only; implementation separately gated
+- **Status:** Review completed; test synchronization corrected; Command 88 definition only
 - **Date:** 2026-10-05 (Asia/Dhaka)
 - **Authorization:** User explicitly requested this phase review. Command 88
   implementation is not authorized.
@@ -7831,7 +7831,8 @@ Stop after Command 87 delivery; do not define or implement Command 88 automatica
 - Read project instructions, product plan, decisions, recent progress, Command 87,
   delivered diff and runtime/API contracts. Reviewed inventory/query/server entry,
   service/panel coordination and operation preservation, large fictional API/browser
-  fixtures and component regressions. No corrective application change identified.
+  fixtures and component regressions. No corrective application change identified;
+  final hosted verification subsequently exposed a test synchronization gap below.
 - Confirmed bounded URL/customer parsing, fixed destinations, complete runtime row/
   metadata validation, duplicate/context rejection, abort/discard and honest recovery.
   Counts are matching records; createdAt/ID order is not a frozen cross-page snapshot.
@@ -7853,7 +7854,9 @@ Stop after Command 87 delivery; do not define or implement Command 88 automatica
 - `docs/DECISIONS.md` — ADR-069 sequencing/safety boundary.
 - `docs/PRODUCT_EXPERIENCE_ROADMAP.md` — service-scale outcome and next order slice.
 - `docs/PROGRESS.md` — review evidence, risks and exact next authorization.
-- No application, test, schema, dependency, worker or deployment file changed.
+- `apps/web/src/components/services/admin-service-ledger.test.tsx` — synchronize
+  the delayed-read test with actual request dispatch, retaining abort/discard evidence.
+- No application, schema, dependency, worker or deployment behavior changed.
 
 #### Validation
 
@@ -7873,6 +7876,21 @@ Stop after Command 87 delivery; do not define or implement Command 88 automatica
   checks passed. Deliver only the four reviewed documentation files through a focused
   commit, remote reconciliation and non-force push. Final exact-review-head CI/CodeQL
   verification is required before handoff; no unexecuted gate is claimed as passed.
+- Documentation definition commit `cc2f57b139f9cb8d7d8b2f89b38c64a5f0468079`
+  was reconciled and non-force pushed. Its CodeQL passed, but
+  [CI](https://github.com/ebit101/webhost-billing/actions/runs/37256922619) failed
+  at package tests: **362 web tests passed, 1 failed**. The delayed inventory test
+  captured `oldRead` after the search field appeared but before the read effect ran,
+  producing an undefined lookup rather than an abort/discard assertion failure.
+  Add default-deadline `waitFor` assertions for actual first/back request dispatch;
+  retain all original abort, late-response, restored-query and unmount assertions.
+  No sleeps, retries, timing limits, exclusions or application behavior changed.
+  Fresh correction validation passed: **26 focused inventory tests**, complete
+  **363 web tests across 38 files**, web lint, strict web/application/browser types,
+  scoped formatting, all four offline documentation validators and whitespace checks.
+  Installed Next.js testing/client guidance was read before the test edit. Deliver
+  this focused correction and verify its own exact-head CI/CodeQL before handoff;
+  no application/schema/worker/provider or local database behavior was changed.
 
 #### Decisions and unresolved risks
 

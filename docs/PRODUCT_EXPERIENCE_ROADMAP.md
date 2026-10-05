@@ -564,7 +564,14 @@ remain P1 work for the next phase review.
 - Fresh focused regressions passed **197 tests across 11 files**; shared contracts
   passed **29 tests**. Command 87's delivered-head CI and CodeQL were reverified
   successful. Earlier complete API/browser/package/build results are retained
-  evidence, not fresh local reruns in this documentation-only review.
+  evidence, not fresh local reruns in the initial documentation-only review stage.
+- Final hosted review validation exposed a test-only synchronization gap: the
+  delayed-read fixture captured a request before its effect dispatched. Wait for
+  actual first/back request calls with the existing default deadline while keeping
+  all abort/discard/restoration assertions. No application behavior or timeout change;
+  **26 focused** and **363 complete web tests** passed after the correction, along
+  with web lint, strict application/browser types and documentation checks. Hosted
+  correction delivery status is verified separately before handoff.
 - **Command 88 defined, not authorized:** Make Administrator Order Ledger Searchable
   and Paginated. Existing API search covers order number, historical customer email
   and any item's domain; createdAt/ID ordering and matching metadata already exist.

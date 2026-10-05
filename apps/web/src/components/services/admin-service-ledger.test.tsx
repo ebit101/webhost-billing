@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Service, ServiceListQuery } from '@webhost-billing/shared';
@@ -427,6 +427,8 @@ describe('administrator service inventory', () => {
     });
     const view = render(manager({ search: 'old' }));
     await screen.findByRole('searchbox');
+    // The field can render before the inventory effect dispatches its read.
+    await waitFor(() => expect(count).toBe(1));
     const oldRead = fetchMock.mock.calls.find(
       ([url]) => new URL(String(url)).pathname === '/services',
     )!;
@@ -443,6 +445,7 @@ describe('administrator service inventory', () => {
     expect((screen.getByRole('searchbox') as HTMLInputElement).value).toBe(
       'old',
     );
+    await waitFor(() => expect(count).toBe(3));
     const latest = fetchMock.mock.calls
       .filter(([url]) => new URL(String(url)).pathname === '/services')
       .at(-1)!;
