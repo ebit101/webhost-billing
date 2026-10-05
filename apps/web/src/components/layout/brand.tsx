@@ -43,7 +43,7 @@ export function Brand({ inverse = false }: { inverse?: boolean }) {
           </span>
           <span className="leading-none">
             <span
-              className={`block text-[0.68rem] font-bold uppercase tracking-[0.18em] ${inverse ? 'text-white' : 'opacity-65'}`}
+              className={`block text-[0.68rem] font-bold tracking-[0.18em] ${inverse ? 'text-white' : 'opacity-65'}`}
             >
               Webhost
             </span>

@@ -865,6 +865,21 @@ This follow-up approves no new operating policy, production setting, invoice-his
 email delivery, WHMCS import, deployment or cutover. Stop after reporting; the remaining
 Command 33 operating-policy approvals are still required.
 
+### Authorized Command 33 follow-up — App-wide sentence-case presentation
+
+The owner clarified that avoiding all-caps wording is an app-wide rule. Record the
+rule in `AGENTS.md` and apply it to existing storefront, authentication, administrator
+and customer interfaces and generated invoice labels. Remove forced uppercase styles
+and format human enum labels in sentence case without changing submitted values,
+state transitions, identifiers, currency/country codes, historical snapshots,
+user-entered content, original assets or case-sensitive confirmation tokens.
+
+Add presentation regression checks, retain request/financial/security assertions and
+validate shared contracts, affected invoice rendering and web tests/types/lint/build.
+Inspect fictional invoice and anonymous local browser previews. Record results,
+commit, reconcile and non-force push `main`; stop after reporting. This authorization
+does not approve remaining operating policies, migration, release, deployment or cutover.
+
 ## Command 34 — Select and Audit Production Infrastructure
 
 ```text

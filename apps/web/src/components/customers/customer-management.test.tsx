@@ -212,11 +212,11 @@ describe('customer management interfaces', () => {
     ).toBeGreaterThan(0);
     expect(
       screen
-        .getByRole('link', { name: 'INV-001003 · UNPAID' })
+        .getByRole('link', { name: 'INV-001003 · Unpaid' })
         .getAttribute('href'),
     ).toBe('/admin/invoices/71000000-0000-4000-8000-000000000003');
     expect(
-      screen.getByRole('link', { name: 'PAID' }).getAttribute('href'),
+      screen.getByRole('link', { name: 'Paid' }).getAttribute('href'),
     ).toBe(`/admin/orders?customerId=${summary.id}`);
     expect(
       screen.getByRole('link', { name: /Orders\s+1/ }).getAttribute('href'),

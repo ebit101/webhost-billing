@@ -2,8 +2,8 @@
 
 ## Status Summary
 
-- **Current command:** Resume Command 33 — Implement Installation-Specific Speed Host Web Branding
-- **Current status:** Opt-in web branding implemented and locally validated; Speed Host profile/logo prepared outside Git; DRAFT-OPS-1 awaits approval; no deployment; staging release 6085629 unchanged; production remains NO-GO
+- **Current command:** Authorized Command 33 follow-up — App-wide sentence-case presentation
+- **Current status:** App-wide presentation rule implemented and locally validated; operating-policy draft awaits approval; no deployment; staging release 6085629 unchanged; production not approved
 - **Last updated:** 2026-10-06
 - **Next command:** Resume Command 33 — Review DRAFT-OPS-1 and Supply Remaining Operating Approvals
 - **Next command authorized:** No
@@ -9098,6 +9098,104 @@ without its bounded authorization.
 **Resume Command 33 — Review DRAFT-OPS-1 and Supply Remaining Operating Approvals**.
 Review the proposed operating groups and provide the missing actual decisions/references.
 Do not automatically begin deployment, migration, Command 34 remediation or Command 91.
+
+### Authorized Command 33 follow-up — App-wide sentence-case presentation
+
+- **Status:** Completed and locally validated
+- **Date:** 2026-10-06
+
+#### Scope completed
+
+- Recorded the owner's app-wide sentence-case rule in permanent project instructions.
+- Removed forced uppercase styling across the storefront, authentication, shared chrome,
+  administrator and customer workspaces, table headings and browser invoice view.
+- Added explicit shared human-label formatting for enum statuses, priorities, payment
+  methods/kinds, billing periods, operational categories and related record summaries.
+  Badge content itself remains untouched, including customer/invoice identifiers.
+- Updated generated invoice headings, metadata labels, table labels, balance label and
+  human status text. Financial values, historical identities and numbering are unchanged.
+- Kept currency/country codes, technical acronyms, protocol values, exact destructive
+  confirmation tokens, user content and original owner/provider assets unchanged.
+- Added source-wide style and component regressions plus generated-invoice label checks;
+  expanded anonymous browser checks to reject forced uppercase computed styles.
+
+#### Files changed
+
+- `AGENTS.md`, `CODEX_DEVELOPMENT_COMMANDS.md`, `docs/DECISIONS.md`, `docs/PROGRESS.md` —
+  durable rule, bounded authorization, ADR-077 and command tracking.
+- `docs/INSTALLATION_BRANDING.md` — presentation guidance and a document-level policy
+  reference avoiding an inconsistent Unicode-punctuation fragment in the local validator.
+- `packages/shared/src/presentation.ts`, `packages/shared/src/index.ts`,
+  `packages/shared/test/presentation.spec.ts` — presentation-only helper and contracts.
+- `apps/web/src/app/(store)/` and `apps/web/src/components/` — presentation-only updates
+  across existing store/auth/layout/dashboard/customer/order/invoice/payment/service/
+  support/product/automation/email surfaces and their affected display assertions;
+  new `apps/web/src/components/ui/presentation-rule.test.tsx` guards the app-wide rule.
+- `apps/web/e2e/branding/branding.spec.ts` — computed-style browser regression.
+- `apps/api/src/modules/invoices/invoice-pdf.service.ts` and its specification —
+  invoice label presentation and identifier/currency/snapshot preservation regression.
+- Ignored local validation artifacts under `release-artifacts/sentence-case/` and
+  `release-artifacts/branding-preview/`; none distributed or deployed.
+
+#### Validation
+
+- Shared build and all 36 shared tests passed.
+- Invoice renderer's final three tests passed, including deterministic bytes, pagination/
+  draft rejection, sentence-case headings and unchanged snapshot identifiers/currency.
+- Fictional invoice preview rendered and visually inspected with the document-validation
+  workflow. Sentence-case labels are legible, with preserved identifiers/currency and no
+  clipping or overlap. No production data, network provider or live invoice was accessed.
+- First full web run: 520 passed / 20 failed, comprising outdated display expectations
+  and one unsupported matcher in the new test. A diagnostic run made before all corrections
+  completed: 521 passed / 19 outdated display expectations. Only human display assertions
+  and the unsupported matcher were corrected; request enums and business checks remain.
+- A subsequent corrected run passed 537 tests; one old billing-period display expectation
+  and two approximately five-second form-test limits remained. The display assertion was
+  corrected without changing fixture enums. A single-worker run then passed 537 tests,
+  with three approximately one-second order-ledger read waits failing. That unchanged
+  29-test order-ledger file passed in isolation. No timeout or behavioral assertion was
+  relaxed. The final standalone full-suite run with `--maxWorkers=2` passed all
+  **50 files / 540 tests** in 95.53 seconds, with zero failures.
+- Shared typecheck, web application/e2e typechecks, API typecheck and API/web lint passed.
+  Speed Host production web build passed; no generic-profile rebuild was required because
+  branding configuration/contracts were unchanged.
+- Six anonymous Speed Host browser scenarios passed at 320/375/1440px for the home and
+  password-reset screens: no forced uppercase computed styles, local image decoding,
+  titles, navigation, keyboard focus and no overflow. Representative screenshots were
+  visually inspected. Existing standalone-output and color-environment warnings remain;
+  this is not a container deployment acceptance check. Requests were loopback GET-only.
+- The first documentation run rejected the branding guide's Unicode-punctuation section
+  fragment. Replacing it with a document-level link preserved the source policy text and
+  all four offline documentation validators then passed.
+- Scoped Prettier, Git-ignore checks for local owner assets/configuration/preview artifacts
+  and `git diff --check` passed. The original owner-logo hash is unchanged. Final report
+  formatting/documentation checks are required again before source delivery.
+- Reconciled with `origin/main` without rewriting history. Deliver this validated slice
+  through a focused commit and non-force main push; do not infer hosted check results.
+
+#### Decisions made
+
+- Sentence case is a presentation rule, not authorization to alter financial history,
+  stored values, user names/content, original logos or safety confirmations.
+- Use explicit human-label formatting, not automatic transformation of arbitrary badge
+  content, entire pages or user-entered strings. Existing email template headings/subjects
+  already use sentence case; no delivery or worker behavior was changed.
+- This owner-authorized follow-up does not start the next product or launch command.
+
+#### Open questions and risks
+
+- Remaining operating approvals, infrastructure/security/recovery, final catalogue,
+  isolated legacy-data migration/reconciliation, mail/monitoring and cutover gates remain.
+- Existing dependency, branch-governance and worker-isolation risks remain outside scope.
+- Intermittent local short-wait/test-limit failures are recorded above; isolated success
+  does not establish production stability or justify relaxing existing safety assertions.
+- No authenticated live browser lifecycle, container build or deployment acceptance is
+  claimed. Staging release 6085629 is unchanged; production remains not approved.
+
+#### Recommended next command
+
+**Resume Command 33 — Review DRAFT-OPS-1 and Supply Remaining Operating Approvals**.
+Request owner authorization before beginning; do not infer deployment or migration approval.
 
 ## Report Template
 

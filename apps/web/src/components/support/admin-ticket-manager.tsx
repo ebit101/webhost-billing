@@ -1,4 +1,5 @@
 'use client';
+import { sentenceCaseLabel } from '@webhost-billing/shared';
 
 import type {
   CustomerDetail,
@@ -102,7 +103,7 @@ export function AdminTicketManager({
           className="text-left font-bold text-brand-700 hover:text-brand-900 hover:underline"
           onClick={() => void open(ticket.id)}
         >
-          <span className="block text-xs uppercase tracking-wide">
+          <span className="block text-xs tracking-wide">
             {ticket.ticketNumber}
           </span>
           <span className="mt-1 block text-slate-950">{ticket.subject}</span>
@@ -127,10 +128,10 @@ export function AdminTicketManager({
       render: (ticket) => (
         <div className="flex flex-col gap-2">
           <StatusBadge tone={ticketTone(ticket.status)}>
-            {ticket.status.replaceAll('_', ' ')}
+            {sentenceCaseLabel(ticket.status)}
           </StatusBadge>
           <StatusBadge tone={priorityTone(ticket.priority)}>
-            {ticket.priority}
+            {sentenceCaseLabel(ticket.priority)}
           </StatusBadge>
         </div>
       ),
@@ -423,7 +424,7 @@ function FilterSelect({
         <option value="">{emptyLabel}</option>
         {values.map((value) => (
           <option key={value} value={value}>
-            {labels[value] ?? value.replaceAll('_', ' ')}
+            {labels[value] ?? sentenceCaseLabel(value)}
           </option>
         ))}
       </select>

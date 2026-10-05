@@ -1,4 +1,5 @@
 'use client';
+import { sentenceCaseLabel } from '@webhost-billing/shared';
 import {
   orderStatusSchema,
   type Order,
@@ -69,7 +70,7 @@ const columns: DataColumn<Order>[] = [
       <div>
         <p>{order.invoice.invoiceNumber}</p>
         <p className="text-xs text-slate-500">
-          {order.invoice.status.replaceAll('_', ' ')}
+          {sentenceCaseLabel(order.invoice.status)}
         </p>
       </div>
     ),
@@ -79,7 +80,7 @@ const columns: DataColumn<Order>[] = [
     header: 'Order status',
     render: (order) => (
       <StatusBadge tone={orderTone(order.status)}>
-        {order.status.replaceAll('_', ' ')}
+        {sentenceCaseLabel(order.status)}
       </StatusBadge>
     ),
   },
@@ -269,7 +270,7 @@ function Ledger({
             <option value="">All statuses</option>
             {orderStatusSchema.options.map((status) => (
               <option key={status} value={status}>
-                {status.replaceAll('_', ' ')}
+                {sentenceCaseLabel(status)}
               </option>
             ))}
           </select>
@@ -312,7 +313,7 @@ function Ledger({
       </p>
       <p className="text-sm text-slate-600">
         Applied search: {query.search || 'none'} · Applied status:{' '}
-        {query.status?.replaceAll('_', ' ') || 'all'}
+        {sentenceCaseLabel(query.status ?? '') || 'all'}
         {invalid ? ' (invalid URL filters; no ledger request made)' : ''}
       </p>
       {invalid ? (

@@ -1,4 +1,5 @@
 'use client';
+import { sentenceCaseLabel } from '@webhost-billing/shared';
 
 import type {
   DashboardResponse,
@@ -105,7 +106,9 @@ export function AdminDashboard() {
         key: 'entity',
         header: 'Entity',
         render: (row) => (
-          <StatusBadge tone="neutral">{row.entityType}</StatusBadge>
+          <StatusBadge tone="neutral">
+            {sentenceCaseLabel(row.entityType)}
+          </StatusBadge>
         ),
       },
       { key: 'actor', header: 'Actor', render: (row) => row.actor },
@@ -345,7 +348,7 @@ function DateField({
   onChange: (value: string) => void;
 }) {
   return (
-    <label className="grid gap-1 text-xs font-bold uppercase tracking-wide text-slate-500">
+    <label className="grid gap-1 text-xs font-bold tracking-wide text-slate-500">
       {label}
       <input
         required

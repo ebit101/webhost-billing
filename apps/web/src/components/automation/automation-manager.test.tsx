@@ -118,7 +118,7 @@ describe('automation manager', () => {
     expect(
       screen.getByRole('heading', { name: 'Operational health' }),
     ).toBeTruthy();
-    expect(screen.getByText('HOSTING PANEL · cpanel')).toBeTruthy();
+    expect(screen.getByText('Hosting panel · cpanel')).toBeTruthy();
     expect(
       screen.queryByRole('button', { name: 'Retry temporary job' }),
     ).toBeNull();

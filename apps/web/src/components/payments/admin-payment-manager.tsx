@@ -1,4 +1,5 @@
 'use client';
+import { sentenceCaseLabel } from '@webhost-billing/shared';
 
 import type {
   CustomerDetail,
@@ -125,7 +126,7 @@ function PaymentWorkspace({
         <div>
           <p className="font-bold text-slate-950">{payment.reference}</p>
           <p className="mt-1 text-xs text-slate-500">
-            {payment.method.replaceAll('_', ' ')} ·{' '}
+            {sentenceCaseLabel(payment.method)} ·{' '}
             {paymentDate(payment.receivedAt)}
           </p>
         </div>
@@ -148,7 +149,7 @@ function PaymentWorkspace({
       header: 'State',
       render: (payment) => (
         <StatusBadge tone={paymentTone(payment.state)}>
-          {payment.state}
+          {sentenceCaseLabel(payment.state)}
         </StatusBadge>
       ),
     },
@@ -455,7 +456,7 @@ function PaymentWorkspace({
         </section>
 
         <section className="rounded-2xl border border-slate-200 bg-slate-950 p-5 text-white shadow-sm sm:p-6">
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-brand-300">
+          <p className="text-xs font-bold tracking-[0.14em] text-brand-300">
             Settlement policy
           </p>
           <h2 className="mt-2 text-lg font-bold">Partial payments</h2>

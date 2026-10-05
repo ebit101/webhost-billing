@@ -178,7 +178,7 @@ describe('service management interfaces', () => {
       await screen.findByRole('heading', { name: 'Hosting-panel connections' }),
     ).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Account tools' })).toBeTruthy();
-    expect(screen.getByText('CREATE ACCOUNT')).toBeTruthy();
+    expect(screen.getByText('Create account')).toBeTruthy();
     expect(
       screen.getByRole('button', { name: /Test Development Server/i }),
     ).toBeTruthy();

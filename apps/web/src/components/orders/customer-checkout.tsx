@@ -132,7 +132,7 @@ export function CustomerCheckout({
             />
           </dl>
           <div className="mt-6 flex flex-wrap items-center gap-3">
-            <StatusBadge tone="warning">AWAITING PAYMENT</StatusBadge>
+            <StatusBadge tone="warning">Awaiting payment</StatusBadge>
             <Link href="/portal/orders" className={buttonStyles('secondary')}>
               View my orders
             </Link>
@@ -296,7 +296,7 @@ function PriceRow({
 function Summary({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-xs font-bold uppercase tracking-wide text-slate-500">
+      <dt className="text-xs font-bold tracking-wide text-slate-500">
         {label}
       </dt>
       <dd className="mt-1 font-semibold text-slate-950">{value}</dd>

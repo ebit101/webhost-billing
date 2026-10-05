@@ -1,4 +1,5 @@
 'use client';
+import { sentenceCaseLabel } from '@webhost-billing/shared';
 
 import {
   invoiceSchema,
@@ -142,7 +143,7 @@ function Ledger({
         header: 'Status',
         render: (invoice) => (
           <StatusBadge tone={invoiceTone(invoice.status)}>
-            {invoice.status.replaceAll('_', ' ')}
+            {sentenceCaseLabel(invoice.status)}
           </StatusBadge>
         ),
       },
@@ -231,7 +232,7 @@ function Ledger({
             <option value="">All statuses</option>
             {invoiceStatusSchema.options.map((status) => (
               <option key={status} value={status}>
-                {status.replaceAll('_', ' ')}
+                {sentenceCaseLabel(status)}
               </option>
             ))}
           </select>

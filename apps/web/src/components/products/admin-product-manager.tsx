@@ -1,4 +1,5 @@
 'use client';
+import { sentenceCaseLabel } from '@webhost-billing/shared';
 
 import type { Product } from '@webhost-billing/shared';
 import { useEffect, useState, type FormEvent } from 'react';
@@ -269,7 +270,7 @@ export function AdminProductManager() {
                             : 'warning'
                       }
                     >
-                      {product.status}
+                      {sentenceCaseLabel(product.status)}
                     </StatusBadge>
                     {product.publicVisible ? (
                       <StatusBadge tone="info">Public</StatusBadge>

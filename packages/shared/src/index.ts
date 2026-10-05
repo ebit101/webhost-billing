@@ -24,3 +24,4 @@ export * from './contracts/hosting-panels';
 export * from './contracts/states';
 export * from './contracts/tickets';
 export * from './contracts/web-branding';
+export * from './presentation';

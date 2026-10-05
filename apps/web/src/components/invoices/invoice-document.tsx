@@ -1,3 +1,4 @@
+import { sentenceCaseLabel } from '@webhost-billing/shared';
 import type { Invoice } from '@webhost-billing/shared';
 import { StatusBadge } from '../ui/status-badge';
 import { formatMinor, invoiceDate, invoiceTone } from './invoice-ui';
@@ -8,7 +9,7 @@ export function InvoiceDocument({ invoice }: { invoice: Invoice }) {
       <header className="flex flex-col gap-6 border-b border-slate-200 pb-7 sm:flex-row sm:items-start sm:justify-between">
         <Identity identity={invoice.businessIdentity} />
         <div className="sm:text-right">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
+          <p className="text-xs font-bold tracking-[0.16em] text-slate-500">
             Invoice
           </p>
           <h1 className="mt-2 text-2xl font-bold text-slate-950">
@@ -16,7 +17,7 @@ export function InvoiceDocument({ invoice }: { invoice: Invoice }) {
           </h1>
           <div className="mt-3 sm:flex sm:justify-end">
             <StatusBadge tone={invoiceTone(invoice.status)}>
-              {invoice.status.replaceAll('_', ' ')}
+              {sentenceCaseLabel(invoice.status)}
             </StatusBadge>
           </div>
         </div>
@@ -24,7 +25,7 @@ export function InvoiceDocument({ invoice }: { invoice: Invoice }) {
 
       <div className="grid gap-7 py-7 sm:grid-cols-2">
         <section>
-          <h2 className="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">
+          <h2 className="text-xs font-bold tracking-[0.12em] text-slate-500">
             Bill to
           </h2>
           <p className="mt-2 font-bold text-slate-950">
@@ -53,7 +54,7 @@ export function InvoiceDocument({ invoice }: { invoice: Invoice }) {
 
       <div className="overflow-x-auto rounded-xl border border-slate-200">
         <table className="w-full min-w-[680px] text-sm">
-          <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+          <thead className="bg-slate-50 text-left text-xs tracking-wide text-slate-500">
             <tr>
               <th className="px-4 py-3">Description</th>
               <th className="px-4 py-3 text-right">Qty</th>

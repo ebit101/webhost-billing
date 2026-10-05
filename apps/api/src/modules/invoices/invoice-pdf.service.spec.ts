@@ -1,4 +1,5 @@
 import type { Invoice } from '@webhost-billing/shared';
+import PDFDocument from 'pdfkit';
 import { InvoicePdfService, renderInvoicePdf } from './invoice-pdf.service';
 
 const invoice: Invoice = {
@@ -59,6 +60,57 @@ const invoice: Invoice = {
 };
 
 describe('InvoicePdfService', () => {
+  it('uses sentence-case labels while preserving snapshot identifiers and currency', async () => {
+    const original = structuredClone(invoice);
+    const text = jest.spyOn(PDFDocument.prototype, 'text');
+    try {
+      await renderInvoicePdf(invoice);
+      const labels = text.mock.calls.map(([label]) => label);
+      for (const label of [
+        'Invoice',
+        'From',
+        'Bill to',
+        'Created',
+        'Issued',
+        'Due',
+        'Order',
+        'Description',
+        'Qty',
+        'Unit',
+        'Discount',
+        'Tax',
+        'Total',
+        'Balance due',
+        'Payment status',
+        'Partially refunded',
+      ]) {
+        expect(labels).toContain(label);
+      }
+      for (const label of [
+        'INVOICE',
+        'FROM',
+        'BILL TO',
+        'DESCRIPTION',
+        'QTY',
+        'UNIT',
+        'DISCOUNT',
+        'TAX',
+        'TOTAL',
+        'BALANCE DUE',
+        'PAYMENT STATUS',
+        'PARTIALLY REFUNDED',
+      ]) {
+        expect(labels).not.toContain(label);
+      }
+      expect(labels).toContain(invoice.invoiceNumber);
+      expect(labels).toContain(invoice.orderNumber);
+      expect(labels).toContain('BDT 1,470.00');
+      expect(invoice).toEqual(original);
+    } finally {
+      text.mockRestore();
+    }
+  });
+
   it('generates byte-identical printable BDT invoices without internal identifiers', async () => {
     const first = await renderInvoicePdf(invoice);
     const second = await renderInvoicePdf(invoice);

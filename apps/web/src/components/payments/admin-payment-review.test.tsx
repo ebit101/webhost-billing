@@ -135,10 +135,10 @@ describe('read-only administrator manual-payment review', () => {
     ).toBeTruthy();
     expect(document.activeElement?.textContent).toBe('Payment review');
     await screen.findByText(payment.reference);
-    expect(fact('Payment state')).toBe('VERIFIED');
-    expect(fact('Transaction kind')).toBe('CHARGE');
-    expect(fact('Manual method')).toBe('BANK TRANSFER');
-    expect(fact('Submitted by role')).toBe('CUSTOMER');
+    expect(fact('Payment state')).toBe('Verified');
+    expect(fact('Transaction kind')).toBe('Charge');
+    expect(fact('Manual method')).toBe('Bank transfer');
+    expect(fact('Submitted by role')).toBe('Customer');
     expect(fact('Payer name')).toBe(payment.proof.payerName);
     expect(fact('Submitted note')).toBe(payment.proof.note);
     expect(document.querySelector('b, script')).toBeNull();
@@ -203,7 +203,9 @@ describe('read-only administrator manual-payment review', () => {
       );
       render(<AdminPaymentReview paymentId={id} onClose={vi.fn()} />);
       await screen.findByText(payment.reference);
-      expect(fact('Transaction kind')).toBe(kind);
+      expect(fact('Transaction kind')).toBe(
+        kind.charAt(0) + kind.slice(1).toLowerCase(),
+      );
       expect(
         screen.getByText(/the original payment remains unchanged/).textContent,
       ).toContain(otherId);
@@ -230,7 +232,9 @@ describe('read-only administrator manual-payment review', () => {
       );
       render(<AdminPaymentReview paymentId={id} onClose={vi.fn()} />);
       await screen.findByText(payment.reference);
-      expect(fact('Payment state')).toBe(state);
+      expect(fact('Payment state')).toBe(
+        state.charAt(0) + state.slice(1).toLowerCase(),
+      );
       for (const label of [
         'Payer name',
         'Submitted note',

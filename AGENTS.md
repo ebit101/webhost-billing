@@ -46,6 +46,13 @@
 
 ## Quality and Change Discipline
 
+- Use sentence case throughout app-authored interface text, including headings, buttons,
+  table headers, badges, notifications and generated document labels. Never force all-caps
+  styling. Prefer plain-language labels over raw enum codes. Preserve the exact case of
+  case-sensitive identifiers/confirmation tokens, currency/country codes, historical
+  records, user-entered content and original owner/provider assets; do not change protocol
+  values to satisfy a presentation rule. Apply the same rule to new user-facing writing.
+
 - Read this file, `HOSTING_BILLING_SYSTEM_PLAN.md`, `docs/DECISIONS.md`, and `docs/PROGRESS.md` before beginning a development command.
 - Preserve unrelated existing work.
 - Add or update tests with every business-rule change.

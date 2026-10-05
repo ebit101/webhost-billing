@@ -652,7 +652,7 @@ describe('administrator service inventory', () => {
     );
     await screen.findByRole('button', { name: 'Review new-row.example.test' });
     expect(
-      screen.getByRole('heading', { name: `CANCELLED · ${service.domain}` }),
+      screen.getByRole('heading', { name: `Cancelled · ${service.domain}` }),
     ).toBeTruthy();
     await user.click(screen.getByRole('button', { name: 'Confirm cancelled' }));
     await screen.findByText(`${service.domain} moved to cancelled.`);

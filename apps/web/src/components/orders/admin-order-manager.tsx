@@ -1,4 +1,5 @@
 'use client';
+import { sentenceCaseLabel } from '@webhost-billing/shared';
 
 import type {
   CustomerDetail,
@@ -159,7 +160,7 @@ export function AdminOrderManager({
         header: 'Status',
         render: (order) => (
           <StatusBadge tone={orderTone(order.status)}>
-            {order.status.replaceAll('_', ' ')}
+            {sentenceCaseLabel(order.status)}
           </StatusBadge>
         ),
       },

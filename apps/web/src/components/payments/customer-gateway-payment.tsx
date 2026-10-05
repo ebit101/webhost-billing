@@ -51,7 +51,7 @@ export function CustomerGatewayPayment({ invoice }: { invoice: Invoice }) {
   if (!gateways.length && !error) return null;
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-      <p className="text-xs font-bold uppercase tracking-[0.14em] text-brand-700">
+      <p className="text-xs font-bold tracking-[0.14em] text-brand-700">
         Online payment · sandbox
       </p>
       <h2 className="mt-1 text-xl font-bold text-slate-950">

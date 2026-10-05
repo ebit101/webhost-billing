@@ -1,5 +1,9 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import type { Invoice, SerializedMoney } from '@webhost-billing/shared';
+import {
+  sentenceCaseLabel,
+  type Invoice,
+  type SerializedMoney,
+} from '@webhost-billing/shared';
 import { createRequire } from 'node:module';
 import PDFDocument from 'pdfkit';
 import { ApplicationException } from '../../common/errors/application.exception';
@@ -115,7 +119,7 @@ function addPage(
           color: COLORS.ink,
         });
       });
-    text(document, 'INVOICE', PAGE_WIDTH - 192, 37, {
+    text(document, 'Invoice', PAGE_WIDTH - 192, 37, {
       width: 150,
       size: 9,
       bold: true,
@@ -156,7 +160,7 @@ function addPage(
 
 function drawParties(document: PDFKit.PDFDocument, invoice: Invoice) {
   const top = document.y;
-  sectionLabel(document, 'FROM', MARGIN, top);
+  sectionLabel(document, 'From', MARGIN, top);
   let leftY = top + 18;
   leftY = addressBlock(
     document,
@@ -178,7 +182,7 @@ function drawParties(document: PDFKit.PDFDocument, invoice: Invoice) {
   );
 
   const rightX = 310;
-  sectionLabel(document, 'BILL TO', rightX, top);
+  sectionLabel(document, 'Bill to', rightX, top);
   let rightY = top + 18;
   rightY = addressBlock(
     document,
@@ -215,7 +219,7 @@ function drawParties(document: PDFKit.PDFDocument, invoice: Invoice) {
   meta.forEach(([label, value], index) => {
     const columnWidth = CONTENT_WIDTH / meta.length;
     const x = MARGIN + index * columnWidth + 12;
-    sectionLabel(document, label.toUpperCase(), x, metaY + 10);
+    sectionLabel(document, label, x, metaY + 10);
     text(document, value, x, metaY + 27, {
       width: columnWidth - 24,
       size: 9,
@@ -295,12 +299,12 @@ function tableHeader(document: PDFKit.PDFDocument) {
   const y = document.y;
   document.roundedRect(MARGIN, y, CONTENT_WIDTH, 28, 4).fill(COLORS.ink);
   const labels = [
-    ['DESCRIPTION', MARGIN + 7, 205, 'left'],
-    ['QTY', 253, 30, 'right'],
-    ['UNIT', 286, 64, 'right'],
-    ['DISCOUNT', 353, 62, 'right'],
-    ['TAX', 418, 52, 'right'],
-    ['TOTAL', 473, 80, 'right'],
+    ['Description', MARGIN + 7, 205, 'left'],
+    ['Qty', 253, 30, 'right'],
+    ['Unit', 286, 64, 'right'],
+    ['Discount', 353, 62, 'right'],
+    ['Tax', 418, 52, 'right'],
+    ['Total', 473, 80, 'right'],
   ] as const;
   labels.forEach(([label, x, width, align]) =>
     text(document, label, x, y + 9, {
@@ -372,7 +376,7 @@ function drawTotals(document: PDFKit.PDFDocument, invoice: Invoice) {
     .stroke(COLORS.ink);
   document.y += 10;
   const balanceY = document.y;
-  text(document, 'BALANCE DUE', x, balanceY, {
+  text(document, 'Balance due', x, balanceY, {
     width: 100,
     size: 10,
     bold: true,
@@ -391,7 +395,7 @@ function drawTotals(document: PDFKit.PDFDocument, invoice: Invoice) {
 function drawNotes(document: PDFKit.PDFDocument, invoice: Invoice) {
   if (document.y > 720) addPage(document, invoice, false);
   const y = Math.max(document.y + 16, 680);
-  sectionLabel(document, 'PAYMENT STATUS', MARGIN, y);
+  sectionLabel(document, 'Payment status', MARGIN, y);
   text(document, statusLabel(invoice.status), MARGIN, y + 17, {
     width: 230,
     size: 9,
@@ -630,7 +634,7 @@ function date(value: string | null): string {
 }
 
 function statusLabel(status: Invoice['status']): string {
-  return status.replaceAll('_', ' ');
+  return sentenceCaseLabel(status);
 }
 
 function money(value: SerializedMoney): string {

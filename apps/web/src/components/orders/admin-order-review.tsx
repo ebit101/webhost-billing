@@ -1,4 +1,5 @@
 'use client';
+import { sentenceCaseLabel } from '@webhost-billing/shared';
 
 import {
   apiSuccessResponseSchema,
@@ -195,9 +196,7 @@ function ReviewDetails({
             View customer
           </Link>
           <dl className="grid gap-3 text-sm">
-            <Fact label="Order status">
-              {order.status.replaceAll('_', ' ')}
-            </Fact>
+            <Fact label="Order status">{sentenceCaseLabel(order.status)}</Fact>
             <Fact label="Placed">{date(order.placedAt)}</Fact>
             <Fact label="Completed">{date(order.completedAt)}</Fact>
             <Fact label="Cancelled">{date(order.cancelledAt)}</Fact>
@@ -226,7 +225,7 @@ function ReviewDetails({
           </Link>
           <dl className="grid gap-3 text-sm">
             <Fact label="Invoice status">
-              {order.invoice.status.replaceAll('_', ' ')}
+              {sentenceCaseLabel(order.invoice.status)}
             </Fact>
             <Fact label="Invoice due">{date(order.invoice.dueAt)}</Fact>
             <Fact label="Invoice total">
@@ -264,7 +263,7 @@ function ReviewDetails({
             <dl className="mt-3 grid gap-3 text-sm sm:grid-cols-2">
               <Fact label="Requested domain">{item.requestedDomain}</Fact>
               <Fact label="Billing period">
-                {item.billingPeriod.replaceAll('_', ' ')}
+                {sentenceCaseLabel(item.billingPeriod)}
               </Fact>
               <Fact label="Quantity">{item.quantity}</Fact>
               <Fact label="Unit price snapshot">

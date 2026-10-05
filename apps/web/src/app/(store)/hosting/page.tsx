@@ -8,7 +8,7 @@ export default function HostingPage() {
     <main id="main-content" className="flex-1 bg-slate-50">
       <section className="border-b border-slate-200 bg-white">
         <div className="mx-auto max-w-7xl px-4 py-16 text-center sm:px-6 lg:px-8 lg:py-20">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-700">
+          <p className="text-xs font-bold tracking-[0.18em] text-brand-700">
             Hosting catalogue
           </p>
           <h1 className="mx-auto mt-4 max-w-3xl text-4xl font-bold tracking-tight text-slate-950 sm:text-5xl">

@@ -1,4 +1,5 @@
 'use client';
+import { sentenceCaseLabel } from '@webhost-billing/shared';
 
 import {
   apiSuccessResponseSchema,
@@ -212,7 +213,7 @@ function ReviewDetails({
           <dl className="grid gap-3 text-sm">
             <Fact label="Service ID">{service.id}</Fact>
             <Fact label="Application service state">
-              {service.status.replaceAll('_', ' ')}
+              {sentenceCaseLabel(service.status)}
             </Fact>
             <Fact label="Historical product">{service.productName}</Fact>
             <Fact label="Historical description">
@@ -223,7 +224,7 @@ function ReviewDetails({
               {service.productPriceId}
             </Fact>
             <Fact label="Billing period">
-              {service.billingPeriod.replaceAll('_', ' ')}
+              {sentenceCaseLabel(service.billingPeriod)}
             </Fact>
             <Fact label="Recurring amount">
               {formatMinor(
@@ -252,7 +253,9 @@ function ReviewDetails({
             <Fact label="Server">{service.server.name}</Fact>
             <Fact label="Server hostname">{service.server.hostname}</Fact>
             <Fact label="Server ID">{service.server.id}</Fact>
-            <Fact label="Server state">{service.server.status}</Fact>
+            <Fact label="Server state">
+              {sentenceCaseLabel(service.server.status)}
+            </Fact>
             <Fact label="Adapter">{service.server.adapterKey}</Fact>
             <Fact label="Control-panel username">
               {service.controlPanelUsername ?? 'Not recorded'}

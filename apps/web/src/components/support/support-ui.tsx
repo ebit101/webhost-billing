@@ -1,3 +1,4 @@
+import { sentenceCaseLabel } from '@webhost-billing/shared';
 import type {
   TicketDetail,
   TicketPriority,
@@ -82,7 +83,7 @@ export function TicketListButton({
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-xs font-bold uppercase tracking-[0.12em] text-brand-700">
+          <p className="text-xs font-bold tracking-[0.12em] text-brand-700">
             {ticket.ticketNumber}
           </p>
           <p className="mt-1 truncate font-bold text-slate-950">
@@ -90,7 +91,7 @@ export function TicketListButton({
           </p>
         </div>
         <StatusBadge tone={ticketTone(ticket.status)}>
-          {ticket.status.replaceAll('_', ' ')}
+          {sentenceCaseLabel(ticket.status)}
         </StatusBadge>
       </div>
       <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
@@ -126,7 +127,7 @@ export function TicketConversation({
       <div className="border-b border-slate-200 bg-slate-50/70 p-5 sm:p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-brand-700">
+            <p className="text-xs font-bold tracking-[0.14em] text-brand-700">
               {ticket.ticketNumber}
             </p>
             <h2 className="mt-1 text-xl font-bold text-slate-950">
@@ -140,10 +141,10 @@ export function TicketConversation({
           </div>
           <div className="flex flex-wrap gap-2">
             <StatusBadge tone={priorityTone(ticket.priority)}>
-              {ticket.priority} PRIORITY
+              {sentenceCaseLabel(ticket.priority)} priority
             </StatusBadge>
             <StatusBadge tone={ticketTone(ticket.status)}>
-              {ticket.status.replaceAll('_', ' ')}
+              {sentenceCaseLabel(ticket.status)}
             </StatusBadge>
           </div>
         </div>

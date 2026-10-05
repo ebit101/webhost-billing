@@ -1,4 +1,5 @@
 'use client';
+import { sentenceCaseLabel } from '@webhost-billing/shared';
 
 import type {
   Invoice,
@@ -101,7 +102,7 @@ export function CustomerManualPayment({ invoice }: { invoice: Invoice }) {
   return (
     <section className="grid gap-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
       <div>
-        <p className="text-xs font-bold uppercase tracking-[0.14em] text-brand-700">
+        <p className="text-xs font-bold tracking-[0.14em] text-brand-700">
           Manual payment
         </p>
         <h2 className="mt-1 text-xl font-bold text-slate-950">
@@ -195,7 +196,7 @@ export function CustomerManualPayment({ invoice }: { invoice: Invoice }) {
                   </p>
                 </div>
                 <StatusBadge tone={paymentTone(payment.state)}>
-                  {payment.state}
+                  {sentenceCaseLabel(payment.state)}
                 </StatusBadge>
               </li>
             ))}

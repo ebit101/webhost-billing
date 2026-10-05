@@ -1008,6 +1008,23 @@ This document records durable technical and product decisions. New decisions sho
   Anonymous loopback browser checks require no API/database/provider authority. No policy
   approval, migration, deployment or cutover is inferred; production remains `NO-GO`.
 
+## ADR-077 — App-wide sentence case without changing stored facts
+
+- **Status:** Accepted and implemented by the owner-authorized presentation follow-up
+- **Date:** 2026-10-06
+- **Decision:** Use sentence case for app-authored interface and generated invoice labels.
+  Remove forced uppercase styling and explicitly format human enum labels with a shared,
+  browser-safe presentation helper. Keep reusable badges content-preserving so an invoice
+  or customer identifier is never transformed implicitly.
+- **Reason:** The owner clarified that the writing rule applies to the entire application,
+  including existing screens, not just future chat replies or branding.
+- **Consequence:** Protocol enums, submitted values, currency/country codes, case-sensitive
+  confirmation tokens, immutable snapshots, user content and original assets retain their
+  exact case. Technical acronyms retain conventional spelling. No global lowercase style,
+  database rewrite or business-rule change is introduced. Source-wide style regression,
+  component checks, invoice text/determinism tests and anonymous computed-style browser
+  checks protect the rule. No deployment or operating-policy approval is inferred.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

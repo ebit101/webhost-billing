@@ -28,7 +28,7 @@ export function DataTable<Row>({
               <th
                 key={column.key}
                 scope="col"
-                className={`border-b border-slate-200 bg-slate-50/80 px-5 py-3 text-xs font-semibold uppercase tracking-[0.08em] text-slate-500 ${
+                className={`border-b border-slate-200 bg-slate-50/80 px-5 py-3 text-xs font-semibold tracking-[0.08em] text-slate-500 ${
                   column.align === 'right' ? 'text-right' : 'text-left'
                 }`}
               >

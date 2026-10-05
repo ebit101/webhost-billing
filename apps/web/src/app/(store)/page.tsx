@@ -35,7 +35,7 @@ export default function HomePage() {
       <section className="overflow-hidden border-b border-slate-200 bg-slate-950 text-white">
         <div className="mx-auto grid max-w-7xl gap-12 px-4 py-20 sm:px-6 lg:grid-cols-[1.15fr_0.85fr] lg:px-8 lg:py-28">
           <div className="max-w-3xl">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">
+            <p className="text-xs font-bold tracking-[0.2em] text-cyan-300">
               Independent hosting, clear billing
             </p>
             <h1 className="mt-5 text-4xl font-bold tracking-tight sm:text-6xl">
@@ -91,7 +91,7 @@ export default function HomePage() {
       <section id="why-us" className="scroll-mt-24 bg-white">
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
           <div className="max-w-2xl">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-700">
+            <p className="text-xs font-bold tracking-[0.18em] text-brand-700">
               Why {getWebBranding().name}
             </p>
             <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-950">
@@ -122,7 +122,7 @@ export default function HomePage() {
       <section id="support" className="scroll-mt-24 bg-slate-100">
         <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-14 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
           <div className="max-w-2xl">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-700">
+            <p className="text-xs font-bold tracking-[0.18em] text-brand-700">
               Customer support
             </p>
             <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-950">

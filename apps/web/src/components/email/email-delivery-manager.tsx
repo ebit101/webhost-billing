@@ -1,4 +1,5 @@
 'use client';
+import { sentenceCaseLabel } from '@webhost-billing/shared';
 
 import type { EmailLogSummary } from '@webhost-billing/shared';
 import { useEffect, useState } from 'react';
@@ -55,7 +56,7 @@ export function EmailDeliveryManager() {
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-slate-200 text-sm">
-              <thead className="bg-slate-50 text-left text-xs font-bold uppercase tracking-wide text-slate-500">
+              <thead className="bg-slate-50 text-left text-xs font-bold tracking-wide text-slate-500">
                 <tr>
                   <th className="px-5 py-3">Message</th>
                   <th className="px-5 py-3">Recipient</th>
@@ -82,11 +83,12 @@ export function EmailDeliveryManager() {
                       </td>
                       <td className="px-5 py-4">
                         <StatusBadge tone={tone(log.status)}>
-                          {log.status}
+                          {sentenceCaseLabel(log.status)}
                         </StatusBadge>
                         {attempt?.failureCode ? (
                           <p className="mt-2 max-w-xs text-xs text-amber-700">
-                            {attempt.failureKind} · {attempt.failureCode}
+                            {sentenceCaseLabel(attempt.failureKind ?? '')} ·{' '}
+                            {attempt.failureCode}
                           </p>
                         ) : null}
                       </td>

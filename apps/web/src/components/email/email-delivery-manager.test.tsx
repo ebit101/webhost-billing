@@ -58,7 +58,7 @@ describe('EmailDeliveryManager', () => {
       screen.getByText('Payment received for invoice INV-1001'),
     ).toBeTruthy();
     expect(screen.getByText('customer@example.test')).toBeTruthy();
-    expect(screen.getByText('SENT')).toBeTruthy();
+    expect(screen.getByText('Sent')).toBeTruthy();
     expect(screen.queryByText(/token=/)).toBeNull();
   });
 });

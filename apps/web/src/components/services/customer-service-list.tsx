@@ -1,4 +1,5 @@
 'use client';
+import { sentenceCaseLabel } from '@webhost-billing/shared';
 import {
   serviceStatusSchema,
   type Service,
@@ -201,7 +202,7 @@ function Ledger({
             <option value="">All statuses</option>
             {serviceStatusSchema.options.map((status) => (
               <option key={status} value={status}>
-                {status.replaceAll('_', ' ')}
+                {sentenceCaseLabel(status)}
               </option>
             ))}
           </select>
@@ -244,7 +245,7 @@ function Ledger({
       </p>
       <p className="text-sm text-slate-600">
         Applied search: {query.search || 'none'} · Applied status:{' '}
-        {query.status?.replaceAll('_', ' ') || 'all'}
+        {sentenceCaseLabel(query.status ?? '') || 'all'}
         {invalid ? ' (invalid URL filters; no ledger request made)' : ''}
       </p>
       {invalid ? (
@@ -322,7 +323,7 @@ function Ledger({
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
-                      <p className="break-words text-xs font-bold uppercase tracking-[0.14em] text-brand-700">
+                      <p className="break-words text-xs font-bold tracking-[0.14em] text-brand-700">
                         {service.productName}
                       </p>
                       <h2 className="mt-1 break-words text-xl font-bold text-slate-950">
@@ -330,7 +331,7 @@ function Ledger({
                       </h2>
                     </div>
                     <StatusBadge tone={serviceTone(service.status)}>
-                      {service.status.replaceAll('_', ' ')}
+                      {sentenceCaseLabel(service.status)}
                     </StatusBadge>
                   </div>
                   <dl className="mt-5 grid min-w-0 grid-cols-2 gap-4 text-sm">
@@ -390,7 +391,7 @@ function Ledger({
 function Meta({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+      <dt className="text-xs font-semibold tracking-wide text-slate-500">
         {label}
       </dt>
       <dd className="mt-1 break-words font-semibold text-slate-900">{value}</dd>

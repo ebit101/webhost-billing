@@ -1,4 +1,5 @@
 'use client';
+import { sentenceCaseLabel } from '@webhost-billing/shared';
 
 import type {
   AutomationRunSummary,
@@ -197,7 +198,7 @@ export function AutomationManager() {
           <div className="grid gap-4 xl:grid-cols-2">
             <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
               <table className="min-w-full text-left text-sm">
-                <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+                <thead className="bg-slate-50 text-xs text-slate-500">
                   <tr>
                     <th className="px-4 py-3">Queue</th>
                     <th className="px-4 py-3">Backlog</th>
@@ -235,7 +236,7 @@ export function AutomationManager() {
                       className="flex items-center justify-between gap-4 py-3"
                     >
                       <span className="font-semibold text-slate-900">
-                        {metric.providerType.replaceAll('_', ' ')} ·{' '}
+                        {sentenceCaseLabel(metric.providerType)} ·{' '}
                         {metric.provider}
                       </span>
                       <span className="text-slate-600">
@@ -365,7 +366,7 @@ export function AutomationManager() {
         ) : (
           <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
             <table className="min-w-full text-left text-sm">
-              <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+              <thead className="bg-slate-50 text-xs text-slate-500">
                 <tr>
                   <th className="px-4 py-3">Run</th>
                   <th className="px-4 py-3">Status</th>
@@ -389,7 +390,7 @@ export function AutomationManager() {
                               : 'warning'
                         }
                       >
-                        {run.status}
+                        {sentenceCaseLabel(run.status)}
                       </StatusBadge>
                     </td>
                     <td className="px-4 py-3 text-slate-600">
@@ -435,7 +436,7 @@ export function AutomationManager() {
                       </p>
                     </div>
                     <StatusBadge tone="danger">
-                      {job.failureKind ?? 'FAILED'}
+                      {sentenceCaseLabel(job.failureKind ?? 'FAILED')}
                     </StatusBadge>
                   </div>
                   <p className="mt-4 text-sm text-slate-600">
@@ -485,7 +486,7 @@ export function AutomationManager() {
                         {event.aggregateType} · {event.aggregateId}
                       </p>
                     </div>
-                    <StatusBadge tone="danger">FAILED</StatusBadge>
+                    <StatusBadge tone="danger">Failed</StatusBadge>
                   </div>
                   <p className="mt-4 text-sm text-slate-600">
                     Publication attempts: {event.attemptCount}
@@ -536,7 +537,7 @@ function PolicyField({
 function MetricCard({ label, value }: { label: string; value: number }) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+      <p className="text-xs font-semibold tracking-wide text-slate-500">
         {label}
       </p>
       <p className="mt-2 text-2xl font-black text-slate-950">{value}</p>

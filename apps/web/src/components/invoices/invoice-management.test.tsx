@@ -114,7 +114,7 @@ describe('invoice interfaces', () => {
     });
     expect(link.getAttribute('href')).toBe(`/portal/invoices/${invoice.id}`);
     expect(screen.getByText('BDT 256.00')).toBeTruthy();
-    expect(screen.getByRole('cell', { name: 'UNPAID' })).toBeTruthy();
+    expect(screen.getByRole('cell', { name: 'Unpaid' })).toBeTruthy();
   });
 
   it('renders historical snapshots and a working printable view', async () => {

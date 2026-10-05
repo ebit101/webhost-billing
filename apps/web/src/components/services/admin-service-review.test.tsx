@@ -102,7 +102,9 @@ describe('selected administrator service read', () => {
       expect(
         screen.getByText('Application service state').nextElementSibling
           ?.textContent,
-      ).toBe(status.replaceAll('_', ' '));
+      ).toBe(
+        status.charAt(0) + status.slice(1).toLowerCase().replaceAll('_', ' '),
+      );
       expect(
         screen.getByText(`${service.customerName} · ${service.customerEmail}`),
       ).toBeTruthy();

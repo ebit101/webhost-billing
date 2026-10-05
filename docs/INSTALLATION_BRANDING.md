@@ -39,10 +39,15 @@ verify browser decoding, contrast and layout before deployment.
 
 ## Speed Host preparation
 
+App-authored labels use sentence case across all installations, following the
+[project presentation rule](../AGENTS.md#quality-and-change-discipline). Branding
+does not change protocol codes, historical identifiers, user-entered content or
+the original logo's lettering.
+
 The owner-approved public values are in
 [the opt-in example](../deploy/branding/speed-host.env.example). Logo provenance and the
 correct `.com.bd` portal source are recorded in
-[the business policy record](PRODUCTION_BUSINESS_POLICIES.md#existing-portal-logo-and-public-information--2026-10-05).
+[the business policy record](PRODUCTION_BUSINESS_POLICIES.md).
 The original logo is 285 × 63 pixels, 14,658 bytes, SHA-256
 `5d11099f9a262a1ada9fd6b4679466627245454084f07b40d588193675d98836`.
 

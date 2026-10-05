@@ -1,4 +1,5 @@
 'use client';
+import { sentenceCaseLabel } from '@webhost-billing/shared';
 
 import {
   apiSuccessResponseSchema,
@@ -222,13 +223,19 @@ function ReviewDetails({
             View invoice
           </Link>
           <dl className="grid gap-3 text-sm">
-            <Fact label="Transaction kind">{payment.kind}</Fact>
-            <Fact label="Payment state">{payment.state}</Fact>
+            <Fact label="Transaction kind">
+              {sentenceCaseLabel(payment.kind)}
+            </Fact>
+            <Fact label="Payment state">
+              {sentenceCaseLabel(payment.state)}
+            </Fact>
             <Fact label="Manual method">
-              {payment.method.replaceAll('_', ' ')}
+              {sentenceCaseLabel(payment.method)}
             </Fact>
             <Fact label="Submitted by role">
-              {payment.submittedByRole ?? 'Not recorded'}
+              {payment.submittedByRole
+                ? sentenceCaseLabel(payment.submittedByRole)
+                : 'Not recorded'}
             </Fact>
             <Fact label="Original transaction amount">
               {money(payment.amount)}

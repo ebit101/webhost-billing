@@ -77,7 +77,7 @@ export function WorkspaceShell({
           </button>
         </div>
         <div className="px-5 pt-5">
-          <p className="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-slate-400">
+          <p className="text-[0.68rem] font-bold tracking-[0.18em] text-slate-400">
             {mode === 'admin' ? 'Administrator' : 'Customer portal'}
           </p>
         </div>
@@ -208,6 +208,5 @@ function initials(name: string) {
     .split(' ')
     .slice(0, 2)
     .map((part) => part[0])
-    .join('')
-    .toUpperCase();
+    .join('');
 }

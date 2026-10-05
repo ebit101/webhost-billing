@@ -53,7 +53,7 @@ export function AuthShell({
               Back home
             </Link>
           </div>
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-700">
+          <p className="text-xs font-bold tracking-[0.16em] text-brand-700">
             Secure account access
           </p>
           <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-950">

@@ -1,4 +1,5 @@
 'use client';
+import { sentenceCaseLabel } from '@webhost-billing/shared';
 
 import {
   invoiceStatusSchema,
@@ -63,7 +64,7 @@ const columns: DataColumn<Invoice>[] = [
     header: 'Status',
     render: (invoice) => (
       <StatusBadge tone={invoiceTone(invoice.status)}>
-        {invoice.status.replaceAll('_', ' ')}
+        {sentenceCaseLabel(invoice.status)}
       </StatusBadge>
     ),
   },
@@ -237,7 +238,7 @@ function Ledger({
             <option value="">All statuses</option>
             {invoiceStatusSchema.options.map((status) => (
               <option key={status} value={status}>
-                {status.replaceAll('_', ' ')}
+                {sentenceCaseLabel(status)}
               </option>
             ))}
           </select>
@@ -277,7 +278,7 @@ function Ledger({
       </form>
       <p className="text-sm text-slate-600">
         Applied search: {query.search || 'none'} · Applied status:{' '}
-        {query.status?.replaceAll('_', ' ') || 'all'}
+        {sentenceCaseLabel(query.status ?? '') || 'all'}
         {invalid ? ' (invalid URL filters; no ledger request made)' : ''}
       </p>
       {invalid ? (

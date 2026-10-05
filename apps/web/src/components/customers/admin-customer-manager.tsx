@@ -1,4 +1,5 @@
 'use client';
+import { sentenceCaseLabel } from '@webhost-billing/shared';
 
 import type { CustomerDetail, CustomerSummary } from '@webhost-billing/shared';
 import Link from 'next/link';
@@ -235,7 +236,7 @@ export function AdminCustomerManager() {
                     <StatusBadge
                       tone={row.status === 'ACTIVE' ? 'success' : 'danger'}
                     >
-                      {row.status}
+                      {sentenceCaseLabel(row.status)}
                     </StatusBadge>
                   ),
                 },

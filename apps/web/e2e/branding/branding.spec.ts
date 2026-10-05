@@ -103,6 +103,16 @@ for (const width of [320, 375, 1440]) {
       await home.focus();
       await expect(home).toBeFocused();
       expect(unsafeRequests).toBe(0);
+      expect(
+        await page
+          .locator('body *')
+          .evaluateAll((elements) =>
+            elements.some(
+              (element) =>
+                getComputedStyle(element).textTransform === 'uppercase',
+            ),
+          ),
+      ).toBe(false);
       mkdirSync(output, { recursive: true });
       await page.screenshot({
         path: resolve(

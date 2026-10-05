@@ -1,4 +1,5 @@
 'use client';
+import { sentenceCaseLabel } from '@webhost-billing/shared';
 
 import type {
   PaymentGatewayFailure,
@@ -86,7 +87,7 @@ export function GatewayFailurePanel() {
                   <StatusBadge
                     tone={item.status === 'FAILED' ? 'danger' : 'warning'}
                   >
-                    {item.provider} · {item.status}
+                    {item.provider} · {sentenceCaseLabel(item.status)}
                   </StatusBadge>
                 </div>
                 <p className="mt-2 text-sm text-slate-700">

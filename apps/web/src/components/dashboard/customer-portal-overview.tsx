@@ -1,4 +1,5 @@
 'use client';
+import { sentenceCaseLabel } from '@webhost-billing/shared';
 
 import type { CustomerPortalSummary } from '@webhost-billing/shared';
 import Link from 'next/link';
@@ -88,7 +89,7 @@ export function CustomerPortalOverview({ customerId }: { customerId: string }) {
         header: 'Status',
         render: (service) => (
           <StatusBadge tone={serviceTone(service.status)}>
-            {service.status.replaceAll('_', ' ')}
+            {sentenceCaseLabel(service.status)}
           </StatusBadge>
         ),
       },
@@ -143,7 +144,7 @@ export function CustomerPortalOverview({ customerId }: { customerId: string }) {
 
       <section aria-labelledby="next-actions-heading" className="grid gap-4">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-brand-700">
+          <p className="text-xs font-bold tracking-[0.14em] text-brand-700">
             Next actions
           </p>
           <h2
@@ -262,7 +263,7 @@ export function CustomerPortalOverview({ customerId }: { customerId: string }) {
         <section aria-label="Coming up" className="grid gap-4 md:grid-cols-2">
           {activeRenewal ? (
             <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
+              <p className="text-xs font-bold tracking-[0.14em] text-slate-500">
                 Next service renewal
               </p>
               <h2 className="mt-2 font-bold text-slate-950">
@@ -285,7 +286,7 @@ export function CustomerPortalOverview({ customerId }: { customerId: string }) {
           ) : null}
           {support.nextWaitingForStaff ? (
             <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
+              <p className="text-xs font-bold tracking-[0.14em] text-slate-500">
                 Support is reviewing
               </p>
               <h2 className="mt-2 font-bold text-slate-950">
@@ -336,7 +337,7 @@ export function CustomerPortalOverview({ customerId }: { customerId: string }) {
         />
         <MetricCard
           label="Account status"
-          value={customer.status.replaceAll('_', ' ')}
+          value={sentenceCaseLabel(customer.status)}
           icon="activity"
           tone="slate"
           detail={`Customer ${customer.customerNumber}`}
@@ -396,7 +397,7 @@ export function CustomerPortalOverview({ customerId }: { customerId: string }) {
                 <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
+                      <p className="text-xs font-bold tracking-[0.14em] text-slate-500">
                         Recent invoice
                       </p>
                       <h3 className="mt-2 font-bold text-slate-950">
@@ -404,7 +405,7 @@ export function CustomerPortalOverview({ customerId }: { customerId: string }) {
                       </h3>
                     </div>
                     <StatusBadge tone={invoiceTone(recent.invoices[0].status)}>
-                      {recent.invoices[0].status.replaceAll('_', ' ')}
+                      {sentenceCaseLabel(recent.invoices[0].status)}
                     </StatusBadge>
                   </div>
                   <p className="mt-3 text-sm text-slate-600">
@@ -426,7 +427,7 @@ export function CustomerPortalOverview({ customerId }: { customerId: string }) {
                 <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
+                      <p className="text-xs font-bold tracking-[0.14em] text-slate-500">
                         Recent support
                       </p>
                       <h3 className="mt-2 font-bold text-slate-950">
@@ -434,7 +435,7 @@ export function CustomerPortalOverview({ customerId }: { customerId: string }) {
                       </h3>
                     </div>
                     <StatusBadge tone={ticketTone(recent.tickets[0].status)}>
-                      {recent.tickets[0].status.replaceAll('_', ' ')}
+                      {sentenceCaseLabel(recent.tickets[0].status)}
                     </StatusBadge>
                   </div>
                   <Link

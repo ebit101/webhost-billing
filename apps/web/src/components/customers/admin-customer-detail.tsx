@@ -1,4 +1,5 @@
 'use client';
+import { sentenceCaseLabel } from '@webhost-billing/shared';
 
 import type { CustomerDetail, SettingsOverview } from '@webhost-billing/shared';
 import Link from 'next/link';
@@ -188,7 +189,7 @@ export function AdminCustomerDetail({ customerId }: { customerId: string }) {
       />
       <div className="flex flex-wrap gap-2">
         <StatusBadge tone={active ? 'success' : 'danger'}>
-          {customer.status}
+          {sentenceCaseLabel(customer.status)}
         </StatusBadge>
         <StatusBadge tone={customer.emailVerified ? 'success' : 'warning'}>
           {customer.emailVerified ? 'Email verified' : 'Verification pending'}
@@ -196,7 +197,7 @@ export function AdminCustomerDetail({ customerId }: { customerId: string }) {
         <StatusBadge
           tone={customer.accountStatus === 'ACTIVE' ? 'success' : 'neutral'}
         >
-          Account {customer.accountStatus}
+          Account {sentenceCaseLabel(customer.accountStatus)}
         </StatusBadge>
       </div>
       {error ? (
@@ -255,7 +256,7 @@ export function AdminCustomerDetail({ customerId }: { customerId: string }) {
                 href={record.href}
                 className="rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-brand-300 hover:shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-600"
               >
-                <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                <p className="text-xs font-bold tracking-wider text-slate-500">
                   {record.label}
                 </p>
                 <p className="mt-2 text-3xl font-bold text-slate-950">
@@ -271,7 +272,7 @@ export function AdminCustomerDetail({ customerId }: { customerId: string }) {
             empty="No orders"
             rows={customer.linked.orders.map((item) => ({
               id: item.id,
-              primary: item.status,
+              primary: sentenceCaseLabel(item.status),
               secondary: `${formatMinor(item.total.amount, item.total.currency)} · ${businessDate(item.createdAt, timeZone)}`,
               href: adminCustomerFilterHref('/admin/orders', customer.id),
             }))}
@@ -282,7 +283,7 @@ export function AdminCustomerDetail({ customerId }: { customerId: string }) {
             rows={customer.linked.services.map((item) => ({
               id: item.id,
               primary: item.productName,
-              secondary: `${item.status}${item.domain ? ` · ${item.domain}` : ''} · ${formatMinor(item.recurringAmount.amount, item.recurringAmount.currency)} · ${businessDate(item.createdAt, timeZone)}`,
+              secondary: `${sentenceCaseLabel(item.status)}${item.domain ? ` · ${item.domain}` : ''} · ${formatMinor(item.recurringAmount.amount, item.recurringAmount.currency)} · ${businessDate(item.createdAt, timeZone)}`,
               href: adminCustomerFilterHref('/admin/services', customer.id),
             }))}
           />
@@ -291,7 +292,7 @@ export function AdminCustomerDetail({ customerId }: { customerId: string }) {
             empty="No invoices"
             rows={customer.linked.invoices.map((item) => ({
               id: item.id,
-              primary: `${item.invoiceNumber} · ${item.status}`,
+              primary: `${item.invoiceNumber} · ${sentenceCaseLabel(item.status)}`,
               secondary: `${formatMinor(item.total.amount, item.total.currency)} · due ${businessDate(item.dueAt, timeZone)}`,
               href: `/admin/invoices/${item.id}`,
             }))}
@@ -301,7 +302,7 @@ export function AdminCustomerDetail({ customerId }: { customerId: string }) {
             empty="No payments"
             rows={customer.linked.payments.map((item) => ({
               id: item.id,
-              primary: `${item.kind} · ${item.status}`,
+              primary: `${sentenceCaseLabel(item.kind)} · ${sentenceCaseLabel(item.status)}`,
               secondary: `${formatMinor(item.amount.amount, item.amount.currency)} · ${item.invoiceNumber} · ${item.provider} · ${businessDate(item.createdAt, timeZone)}`,
               href: adminCustomerFilterHref('/admin/payments', customer.id),
             }))}
@@ -312,7 +313,7 @@ export function AdminCustomerDetail({ customerId }: { customerId: string }) {
             rows={customer.linked.tickets.map((item) => ({
               id: item.id,
               primary: `${item.ticketNumber} · ${item.subject}`,
-              secondary: `${item.status} · ${item.priority} · ${businessDate(item.updatedAt, timeZone)}`,
+              secondary: `${sentenceCaseLabel(item.status)} · ${sentenceCaseLabel(item.priority)} · ${businessDate(item.updatedAt, timeZone)}`,
               href: adminCustomerFilterHref('/admin/support', customer.id),
             }))}
           />

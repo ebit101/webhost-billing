@@ -36,7 +36,7 @@ export function AdminCustomerFilterNotice({
       className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-brand-200 bg-brand-50 p-4"
     >
       <div>
-        <p className="text-xs font-bold uppercase tracking-wider text-brand-800">
+        <p className="text-xs font-bold tracking-wider text-brand-800">
           Filtered customer context
         </p>
         <p className="mt-1 text-sm text-slate-700">

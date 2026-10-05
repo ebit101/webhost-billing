@@ -1,4 +1,5 @@
 'use client';
+import { sentenceCaseLabel } from '@webhost-billing/shared';
 
 import type {
   CpanelServerConfiguration,
@@ -74,7 +75,7 @@ export function AdminHostingOperationManager({
       render: (operation) => (
         <div>
           <p className="font-bold text-slate-950">
-            {operation.type.replaceAll('_', ' ')}
+            {sentenceCaseLabel(operation.type)}
           </p>
           <p className="mt-1 text-xs text-slate-500">
             Attempt {operation.attemptNumber} ·{' '}
@@ -103,7 +104,7 @@ export function AdminHostingOperationManager({
       render: (operation) => (
         <div>
           <StatusBadge tone={operationTone(operation.status)}>
-            {operation.status}
+            {sentenceCaseLabel(operation.status)}
           </StatusBadge>
           {operation.errorMessage ? (
             <p className="mt-1 max-w-xs text-xs text-red-700">

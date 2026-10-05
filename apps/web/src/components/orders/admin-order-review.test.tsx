@@ -97,8 +97,8 @@ describe('read-only administrator order review', () => {
     expect(
       screen.getByRole('link', { name: 'View invoice' }).getAttribute('href'),
     ).toBe(`/admin/invoices/${invoiceId}`);
-    expect(screen.getByText('PROCESSING')).toBeTruthy();
-    expect(screen.getByText('PAID')).toBeTruthy();
+    expect(screen.getByText('Processing')).toBeTruthy();
+    expect(screen.getByText('Paid')).toBeTruthy();
     expect(
       screen.getByText(/Payment is not proof of hosting provisioning/),
     ).toBeTruthy();
@@ -116,7 +116,7 @@ describe('read-only administrator order review', () => {
     for (const value of [
       'Historical Starter',
       'Original description',
-      'MONTHLY',
+      'Monthly',
       '1',
       'BDT 120.00',
       'BDT 5.00',
@@ -126,7 +126,7 @@ describe('read-only administrator order review', () => {
     const secondItem = within(
       screen.getByRole('article', { name: 'Order item 2' }),
     );
-    for (const value of ['Historical Extra', 'ANNUAL', '1', 'BDT 0.00'])
+    for (const value of ['Historical Extra', 'Annual', '1', 'BDT 0.00'])
       expect(secondItem.getByText(value)).toBeTruthy();
     expect(
       within(screen.getByRole('article', { name: 'Order item 1' })).getByText(
@@ -160,7 +160,7 @@ describe('read-only administrator order review', () => {
     render(<AdminOrderReview orderId={id} onClose={vi.fn()} />);
     await screen.findByText(order.orderNumber);
     expect(screen.queryByText('Internal order notes')).toBeNull();
-    expect(screen.queryByText('ACTIVE')).toBeNull();
+    expect(screen.queryByText('Active')).toBeNull();
     expect(screen.queryByRole('link', { name: /service/i })).toBeNull();
   });
   it.each([403, 404])(

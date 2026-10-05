@@ -1,4 +1,5 @@
 'use client';
+import { sentenceCaseLabel } from '@webhost-billing/shared';
 
 import type {
   HostingPanelOperationResult,
@@ -78,7 +79,7 @@ export function CustomerServiceDetail({ serviceId }: { serviceId: string }) {
       <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
         <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-200 pb-6">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-brand-700">
+            <p className="text-xs font-bold tracking-[0.14em] text-brand-700">
               {service.productName}
             </p>
             <h1 className="mt-1 text-2xl font-bold text-slate-950 sm:text-3xl">
@@ -89,12 +90,12 @@ export function CustomerServiceDetail({ serviceId }: { serviceId: string }) {
             </p>
           </div>
           <StatusBadge tone={serviceTone(service.status)}>
-            {service.status.replaceAll('_', ' ')}
+            {sentenceCaseLabel(service.status)}
           </StatusBadge>
         </div>
         {reason ? (
           <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4">
-            <p className="text-xs font-bold uppercase tracking-wide text-amber-800">
+            <p className="text-xs font-bold tracking-wide text-amber-800">
               Status reason
             </p>
             <p className="mt-1 text-sm text-amber-950">{reason}</p>
@@ -162,7 +163,7 @@ export function CustomerServiceDetail({ serviceId }: { serviceId: string }) {
 function Detail({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-xs font-bold uppercase tracking-wide text-slate-500">
+      <dt className="text-xs font-bold tracking-wide text-slate-500">
         {label}
       </dt>
       <dd className="mt-1 font-semibold capitalize text-slate-950">{value}</dd>
