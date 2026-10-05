@@ -5,6 +5,7 @@ import {
   businessSettingsSchema,
   formatInvoiceNumber,
   integrationCredentialUpdateSchema,
+  invoiceItemInputSchema,
   updateBusinessSettingsRequestSchema,
   updatePaymentSettingsRequestSchema,
   PARTIAL_PAYMENT_POLICY_CONFIRMATION,
@@ -61,6 +62,39 @@ describe('settings contracts', () => {
     assert.equal(
       formatInvoiceNumber({ prefix: 'INV', nextNumber: 42, padding: 6 }),
       'INV-000042',
+    );
+  });
+
+  it('keeps the tax identifier optional and accepts an operator-supplied identifier', () => {
+    const withoutTax = businessSettingsSchema.parse(DEFAULT_BUSINESS_SETTINGS);
+    assert.equal(
+      Object.hasOwn(withoutTax.businessIdentity, 'taxIdentifier'),
+      false,
+    );
+
+    const withTax = businessSettingsSchema.parse({
+      ...DEFAULT_BUSINESS_SETTINGS,
+      businessIdentity: {
+        ...DEFAULT_BUSINESS_SETTINGS.businessIdentity,
+        taxIdentifier: 'FICTIONAL-TAX-ID',
+      },
+    });
+    assert.equal(withTax.businessIdentity.taxIdentifier, 'FICTIONAL-TAX-ID');
+    assert.equal(
+      Object.hasOwn(
+        DEFAULT_BUSINESS_SETTINGS.businessIdentity,
+        'taxIdentifier',
+      ),
+      false,
+    );
+  });
+
+  it('defaults omitted invoice tax to zero without discarding manually entered tax', () => {
+    const line = { description: 'Fictional hosting', unitAmount: '10000' };
+    assert.equal(invoiceItemInputSchema.parse(line).taxAmount, '0');
+    assert.equal(
+      invoiceItemInputSchema.parse({ ...line, taxAmount: '1500' }).taxAmount,
+      '1500',
     );
   });
 

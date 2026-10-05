@@ -3,7 +3,7 @@
 ## Status Summary
 
 - **Current command:** Resume Command 33 — Finalize Business and Launch Policies
-- **Current status:** Speed Host pre-launch configuration/migration prerequisites recorded; WHMCS data and owner decisions pending; staging release 6085629 unchanged; production remains NO-GO
+- **Current status:** Named Speed Host business/contact approval and optional-tax/30-day-refund decisions recorded; remaining operating/migration decisions pending; staging release 6085629 unchanged; production remains NO-GO
 - **Last updated:** 2026-10-05
 - **Next command:** Resume Command 33 — Resolve Source Conflicts and Approve Remaining Launch Policies
 - **Next command authorized:** No
@@ -8789,6 +8789,83 @@ when the owner supplies the actual decisions. If the owner wants technical prepa
 to proceed while those remain pending, first authorize a bounded next command definition
 covering either infrastructure remediation or read-only WHMCS migration assessment.
 Do not begin an importer, Command 34 remediation, Command 91 or production cutover implicitly.
+
+### Resume Command 33 — Record Speed Host Identity, Optional Tax and Refund Decisions
+
+- **Status:** Named partial approval recorded; remaining Command 33 operating approvals BLOCKED
+- **Date:** 2026-10-05
+
+#### Scope completed
+
+- Recorded the owner's explicit instruction to retain tax fields, require no tax
+  input now and let operators configure them when needed. B6–B7 now reflect an
+  approved application configuration choice, not a request for a mandatory value.
+- Incorporated the owner's subsequent values before delivery: registered business
+  name Speed Host Bangladesh, approved website address/email without corrections,
+  preferred invoice phone +8801782391434, and Shahadat Hossain — Administrator.
+- Recorded owner-declared Not applicable tax/VAT wording, 30-day refund window and
+  No need for an additional eligibility/exclusion section. No registration/tax
+  certification, mandatory Tax ID placeholder or broader product scope is inferred.
+- Verified existing shared contracts, administrator invoice form, invoice
+  serialization and HTML/PDF rendering: Tax ID is optional, omitted line tax
+  defaults to string `0`, and supplied manual tax remains an integer minor-unit
+  amount. No new tax-rate/jurisdiction engine or runtime change was necessary.
+- Added regression tests for settings without a tax identifier, an explicitly
+  supplied fictional identifier and omitted/explicit invoice-line tax amounts.
+- Updated the current preparation checklist, configuration-location record and
+  runbook gate to remove the blanket requirement for tax input/custom wording.
+  Historical progress reports remain unchanged.
+
+#### Files changed
+
+- `packages/shared/test/settings.spec.ts` — optional-tax regression coverage.
+- `docs/PRODUCTION_BUSINESS_POLICIES.md` — B6–B7 approval and configuration scope.
+- `docs/PRODUCTION_LAUNCH_RUNBOOK.md` — optional-tax policy boundary in launch gate.
+- `docs/PROGRESS.md` — scope, validation and remaining decisions.
+- No runtime/default/schema/dependency/provider/secret or production changes.
+
+#### Validation
+
+- `pnpm --filter @webhost-billing/shared test` passed all 31 tests, including
+  the two new optional-identifier and omitted/explicit-tax regression cases.
+- `pnpm --filter @webhost-billing/shared typecheck` passed.
+- Scoped Prettier formatting/check and `git diff --check` passed.
+- `pnpm docs:check` passed all four offline documentation validators: links,
+  contributor paths, issue forms and safe-demo screenshot assets.
+- No database, provider or migration rehearsal is performed for this preserved
+  contract behavior. No application release or production deployment is made.
+- Deliver only the focused policy/test commit; reconcile and non-force push
+  `main`. Newly triggered hosted checks are not claimed as passing while pending.
+
+#### Decisions made
+
+- Tax input is optional for application preparation, not a new mandatory setup
+  requirement. Preserve optional Tax ID and manual invoice tax amounts/totals.
+- Do not infer a registration, exemption or tax rate, insert a fictional number,
+  remove imported tax history or rewrite issued invoice snapshots. Operators
+  remain responsible for applicable business obligations and entered amounts.
+- This resolves B6–B7's application configuration choice, not unrelated owner
+  decisions or the final production business/legal gate.
+- B1–B4 now have explicit owner-approved values; P6's published window conflict is
+  resolved to 30 days. Preserve exact invoice identity and record the named partial
+  approval; no runtime setting, tax wording renderer or refund behavior is changed.
+
+#### Open questions and risks
+
+- Supported billing periods, manual evidence/order review, cancellation, refund
+  method/fees/processing/service effects, retention, maintenance/incident contacts/
+  windows, first-renewal scope and interface-gap approval remain pending. Do not
+  request legal identity, preferred phone, tax input or refund-window choice again
+  unless the owner changes the supplied values.
+- WHMCS version/scope/exports, importer/rehearsal and infrastructure/security/
+  recovery/SMTP/monitoring gates remain separate. Production remains **NO-GO**.
+
+#### Recommended next command
+
+**Resume Command 33 — Resolve Source Conflicts and Approve Remaining Launch Policies**.
+Do not request mandatory tax input again for preparation; obtain the remaining actual
+owner decisions. No importer, infrastructure remediation, Command 91 or cutover begins
+without separate bounded authorization.
 
 ## Report Template
 

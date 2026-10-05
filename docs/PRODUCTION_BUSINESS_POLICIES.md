@@ -5,7 +5,7 @@
 - Command: 33 — Finalize Business and Launch Policies
 - Record created: 2026-08-26
 - Public-source review: 2026-10-05 — owner supplied `https://www.speedhost.com.bd/`
-- Business owner approval: **PROPOSED VALUES APPROVED; REMAINING VALUES DEFERRED**
+- Business owner approval: **PARTIAL NAMED APPROVAL RECORDED; REMAINING OPERATING DECISIONS OPEN**
 - Policy status: **COMMAND 33 RESUMED — SOURCE CONFLICTS AND OWNER DECISIONS BLOCKED**
 - Production effect: **None**
 
@@ -28,8 +28,8 @@ private contacts not intended for the operating record, or customer data to this
 The following product-scope choices were explicitly established during development. They do
 not approve production launch:
 
-- The product/project display name is **Webhost Billing**. The owner's legal business name
-  remains separate and unresolved.
+- The product/project display name is **Webhost Billing**. The owner's approved business
+  name is **Speed Host Bangladesh**; the intended installation/display brand is **Speed Host**.
 - The application is for one private web-hosting business and one operating currency.
 - cPanel/WHM is the only planned hosting-panel integration.
 - UK2Group is a separate future domain-registrar integration and is outside the initial
@@ -57,15 +57,16 @@ publishing instructions or issuing invoices. `SOURCED` does not mean `APPROVED` 
 
 ### Conflicts requiring owner decisions
 
-1. **Refund window (P6):** Hosting terms section 11 gives 14 days after initial signup;
-   the shared-hosting FAQ gives 30 days for yearly packages. The terms exclude renewals,
-   dedicated servers/IPs, SSL, separately purchased licences and domain fees. Decide the
-   initial hosting window, eligible launch products, exclusions, refund method/fees,
-   processing commitment and service effect. Neither window is selected by this review.
+1. **Refund window (P6):** The published 14-/30-day conflict was resolved by the owner's
+   subsequent choice of **30 days**, with no additional eligibility/exclusion section
+   requested. Do not silently carry exclusions from the conflicting terms into the approved
+   record. Refund method/fees, processing commitment and service effect still need an
+   operating decision; none is implemented or automated by this document.
 2. **Currency and VAT (B5–B7):** Hosting terms section 14 describes USD settlement and
    billing-country VAT, unlike approved single-currency BDT and the BDT public plans.
-   BDT remains approved. Confirm corrected customer-facing wording and verified VAT/tax
-   treatment; do not infer a registration, rate, exemption or worldwide tax implementation.
+   BDT remains approved. Correct inconsistent customer-facing currency wording before
+   use. The 2026-10-05 optional-tax decision below resolves the application configuration
+   choice without inferring a registration, rate, exemption or worldwide tax implementation.
 3. **Cancellation and lifecycle (P5/A4/R1–R4):** Terms section 11 requires a Billing Issues
    ticket at least three working days before renewal. Other clauses allow overdue remedies
    after 14 days and deletion on termination. These do not replace approved three-day grace,
@@ -82,8 +83,9 @@ scope into domains, resellers, additional currencies or other advertised service
 
 ### Remaining approval inputs
 
-- Verify the legal invoice name and contact/address candidates (B1–B4), tax/VAT treatment
-  and exact invoice wording (B6–B7), and selected launch billing periods (B11).
+- B1–B4 are now owner-approved below; verify them when applied to the installation. Select
+  launch billing periods (B11). B6–B7 follow the optional-tax decision below; no tax input is
+  required for preparation. Applicable business obligations remain the operator's responsibility.
 - Approve exact manual payment destinations/evidence/review (P1–P2), administrator order
   approval (P4), and resolve cancellation/refund wording (P5–P6).
 - Supply lawful retention periods and disposal/access rules for R1–R4; public website text
@@ -104,26 +106,27 @@ business-policy gate, and no production setting or launch authorization changes.
 ### Speed Host preparation before final WHMCS data — 2026-10-05
 
 The owner requested preparation for **Speed Host**, with existing WHMCS data to be supplied
-later before production. Record Speed Host as the intended installation/display brand, not
-as a verified registered invoice name. This permits preparation; it does not approve a
-refund choice, tax treatment, data import, provider activation or production cutover.
+later before production. Speed Host is the intended installation/display brand; the owner
+subsequently supplied **Speed Host Bangladesh** as the registered business/invoice name.
+The partial approval below supplies contact, tax-position and refund-window decisions; it
+does not authorize data import, provider activation or production cutover.
 
 This checklist uses existing controls described in [Settings and Secrets](SETTINGS_AND_SECRETS.md).
 It is not an executable settings payload, importer, deployed configuration or proof of
 production readiness. Keep the public project's Webhost Billing identity and generic defaults
 unchanged; business-specific values belong to the Speed Host installation.
 
-| Preparation item            | Speed Host target / existing control                                              | Required before effect                                                                                                                                          |
-| --------------------------- | --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Display/email brand         | Intended brand `Speed Host`; existing `email.branding`                            | Apply only in an authorized installation configuration step; verify sender/reply-to and SMTP separately                                                         |
-| Invoice identity            | Public business/contact candidates above; `business.identity`                     | Owner-confirmed legal name, address, preferred phone and tax identifier/treatment before issuing any real invoice                                               |
-| Currency and business dates | Previously approved `BDT` and `Asia/Dhaka`; `business.localization`               | Reject or explicitly resolve unsupported source currencies; verify source timezone before converting dates to UTC                                               |
-| Invoice numbering           | Approved `INV` / padding 6 / starting number 1001 for an empty numbering baseline | WHMCS history requires a collision/continuity review and approved next-number decision; never renumber issued historical invoices or blindly restart at 1001    |
-| Products and periods        | Existing Products/Pricing controls                                                | Reconcile final Speed Host product/price/period mappings; website examples and fictional seed prices are not final catalog data                                 |
-| Payments and hosting        | Approved `MANUAL_FIRST`; partial payments disabled                                | Approve payment destination/evidence and order review; keep real gateway credentials/WHM tokens absent until separate authorization and acceptance              |
-| Renewal controls            | Approved 14-day lead, 7/3/1 reminders, three-day grace                            | During a separately authorized import rehearsal, disable renewal processing and stop worker/scheduler; approve eligibility/window/supervision before activation |
-| Data separation             | New allowlisted isolated rehearsal database                                       | Never replace an active database with a WHMCS dump, run a development seed in production, or promote fictional staging customers/credentials                    |
-| Final operational gate      | Existing production runbook and Command 33 decision IDs                           | Resolve policies, retention, named owners, contacts/windows and interface-gap acceptance; independently pass security/recovery/SMTP/monitoring gates            |
+| Preparation item            | Speed Host target / existing control                                               | Required before effect                                                                                                                                          |
+| --------------------------- | ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Display/email brand         | Intended brand `Speed Host`; existing `email.branding`                             | Apply only in an authorized installation configuration step; verify sender/reply-to and SMTP separately                                                         |
+| Invoice identity            | Approved Speed Host Bangladesh identity/address/email/phone below; optional Tax ID | Apply and verify future-invoice snapshots before real invoicing; tax fields remain optional and operator-configured when applicable                             |
+| Currency and business dates | Previously approved `BDT` and `Asia/Dhaka`; `business.localization`                | Reject or explicitly resolve unsupported source currencies; verify source timezone before converting dates to UTC                                               |
+| Invoice numbering           | Approved `INV` / padding 6 / starting number 1001 for an empty numbering baseline  | WHMCS history requires a collision/continuity review and approved next-number decision; never renumber issued historical invoices or blindly restart at 1001    |
+| Products and periods        | Existing Products/Pricing controls                                                 | Reconcile final Speed Host product/price/period mappings; website examples and fictional seed prices are not final catalog data                                 |
+| Payments and hosting        | Approved `MANUAL_FIRST`; partial payments disabled                                 | Approve payment destination/evidence and order review; keep real gateway credentials/WHM tokens absent until separate authorization and acceptance              |
+| Renewal controls            | Approved 14-day lead, 7/3/1 reminders, three-day grace                             | During a separately authorized import rehearsal, disable renewal processing and stop worker/scheduler; approve eligibility/window/supervision before activation |
+| Data separation             | New allowlisted isolated rehearsal database                                        | Never replace an active database with a WHMCS dump, run a development seed in production, or promote fictional staging customers/credentials                    |
+| Final operational gate      | Existing production runbook and Command 33 decision IDs                            | Resolve policies, retention, named owners, contacts/windows and interface-gap acceptance; independently pass security/recovery/SMTP/monitoring gates            |
 
 #### WHMCS migration is a separate prerequisite, not a database replacement
 
@@ -164,35 +167,73 @@ Replace every `UNRESOLVED` value with the owner's exact approved wording. If a p
 is accepted, record `APPROVED` and retain the value. If it is changed, replace the proposed
 value. The approval section at the end must identify the approving owner and time.
 
+### Optional tax configuration — owner decision 2026-10-05
+
+The owner directed: keep the tax field, require no tax input now, and let an operator set it
+when needed. B6–B7 are therefore **APPROVED as an application configuration decision**, not
+unresolved requests for a tax value. This does not establish a business's tax registration,
+rate, exemption or compliance, and does not waive other production launch gates.
+
+- Preserve optional `businessIdentity.taxIdentifier`; leave it absent until an operator
+  supplies it. The existing administrator invoice Business identity form provides Tax ID.
+- Preserve invoice-line `taxAmount`, expressed in integer minor units. Omitted input defaults
+  to `0`; an operator can enter an applicable amount. This is not an automatic tax-rate or
+  jurisdiction engine, and `0` does not make a legal assertion of exemption.
+- No custom tax/VAT wording or identifier is required for preparation. Existing invoice/PDF
+  tax amounts/totals remain; absent Tax ID is omitted from rendered identity. Do not fabricate
+  tax numbers or tax-exempt wording, or rewrite previously issued invoice snapshots.
+- Operators remain responsible for applicable business obligations and the accuracy of any
+  entered tax. No production configuration or historical data is changed by this decision.
+
+### Named partial business approval — recorded 2026-10-05
+
+- Approver supplied by the owner: **Shahadat Hossain — Administrator**.
+- Registered business/invoice name supplied: **Speed Host Bangladesh**. This records the
+  owner's statement; no independent registration audit or legal certification was performed.
+- Website address/email approved without supplied corrections: **Arma Majeda Malik (AMM)
+  Tower, Kha 215, Level-4, Merul Badda, Dhaka 1212, Bangladesh**;
+  **`info@speedhost.com.bd`**. Preferred invoice phone: **`+8801782391434`**.
+- Tax/VAT position and wording supplied: **Not applicable** (normalized spelling).
+  Preserve optional fields and do not populate a Tax ID with this phrase. This is an
+  owner-declared position, not independent confirmation of a legal exemption. No new custom
+  invoice wording renderer, tax calculation rule or historical tax rewrite is introduced.
+- Refund window: **30 days**. For eligibility/exclusions the owner answered **No need**;
+  record no additional eligibility/exclusion section, rather than copying exclusions from
+  the conflicting terms. This does not expand initial product scope. Method/fees,
+  processing commitment and service consequences remain open operating details.
+- Review/record timestamp: **2026-10-05T23:15:42+06:00** (`Asia/Dhaka`); the instruction
+  was received in the authenticated project conversation. This is a partial policy approval,
+  not a final go-live approval. No approved value has been applied to a running installation.
+
 ### Business identity and invoices
 
-| ID  | Decision                        | Current proposal or constraint                                             | Owner-approved value                          |
-| --- | ------------------------------- | -------------------------------------------------------------------------- | --------------------------------------------- |
-| B1  | Legal business name             | Public operator/brand: Speedhost Bangladesh; legal registration unverified | **UNRESOLVED — verify legal invoice name**    |
-| B2  | Billing address                 | Contact-page address in source review above                                | **SOURCED — invoice approval pending**        |
-| B3  | Billing/support email           | Contact page: `info@speedhost.com.bd`; mailbox control/delivery unverified | **SOURCED — invoice approval pending**        |
-| B4  | Business phone                  | Contact-page phone/WhatsApp candidates in source review above              | **SOURCED — preferred invoice phone pending** |
-| B5  | Operating currency              | Application default: `BDT`                                                 | **APPROVED — `BDT`**                          |
-| B6  | Tax/VAT registration/treatment  | No automatic jurisdiction or tax-rate policy exists                        | **UNRESOLVED**                                |
-| B7  | Exact invoice tax/VAT wording   | Must match the owner's verified legal/tax position                         | **UNRESOLVED**                                |
-| B8  | Invoice prefix                  | Application default: `INV`                                                 | **APPROVED — `INV`**                          |
-| B9  | Invoice number padding          | Application default: `6`                                                   | **APPROVED — `6`**                            |
-| B10 | First production invoice number | Application default: `1001`                                                | **APPROVED — `1001`**                         |
-| B11 | Supported billing periods       | Annual BDT plans are publicly listed; select actual launch periods         | **UNRESOLVED**                                |
+| ID  | Decision                        | Current proposal or constraint                                                             | Owner-approved value                                    |
+| --- | ------------------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------- |
+| B1  | Legal business name             | Owner-supplied registered/invoice identity; no independent registration audit              | **APPROVED — Speed Host Bangladesh**                    |
+| B2  | Billing address                 | Exact website address retained in named approval above                                     | **APPROVED — website address, no corrections supplied** |
+| B3  | Billing/support email           | Verify mailbox/delivery during the separate SMTP gate                                      | **APPROVED — `info@speedhost.com.bd`**                  |
+| B4  | Business phone                  | Owner-selected preferred invoice phone                                                     | **APPROVED — `+8801782391434`**                         |
+| B5  | Operating currency              | Application default: `BDT`                                                                 | **APPROVED — `BDT`**                                    |
+| B6  | Tax/VAT registration/treatment  | Keep optional fields; no automatic rates or independent legal exemption determination      | **APPROVED — owner states Not applicable**              |
+| B7  | Exact invoice tax/VAT wording   | Owner wording retained in this record; no compulsory custom renderer or Tax ID placeholder | **APPROVED — Not applicable; optional input retained**  |
+| B8  | Invoice prefix                  | Application default: `INV`                                                                 | **APPROVED — `INV`**                                    |
+| B9  | Invoice number padding          | Application default: `6`                                                                   | **APPROVED — `6`**                                      |
+| B10 | First production invoice number | Application default: `1001`                                                                | **APPROVED — `1001`**                                   |
+| B11 | Supported billing periods       | Annual BDT plans are publicly listed; select actual launch periods                         | **UNRESOLVED**                                          |
 
 Invoice numbering must be chosen before the first production invoice. Issued invoice numbers
 and snapshots are historical records and must not be renumbered casually.
 
 ### Orders, manual payments, cancellations, and refunds
 
-| ID  | Decision                             | Current proposal or constraint                                                      | Owner-approved value                            |
-| --- | ------------------------------------ | ----------------------------------------------------------------------------------- | ----------------------------------------------- |
-| P1  | Manual-payment customer instructions | Generic bank/cash/mobile-financial-service text exists only as a default            | **APPROVED — use the exact default text below** |
-| P2  | Required payment evidence            | Define accepted reference, receipt, sender, amount, and review criteria             | **UNRESOLVED**                                  |
-| P3  | Partial payments                     | Safe application default: disabled                                                  | **APPROVED — disabled**                         |
-| P4  | New-order approval                   | Define whether paid orders require administrator approval                           | **UNRESOLVED**                                  |
-| P5  | Cancellation policy                  | Published notice rule sourced above; service/data and invoice effects need approval | **UNRESOLVED**                                  |
-| P6  | Refund policy                        | Conflicting published windows; resolve scope, method, fees and service effect       | **UNRESOLVED — SOURCE CONFLICT**                |
+| ID  | Decision                             | Current proposal or constraint                                                      | Owner-approved value                                                                  |
+| --- | ------------------------------------ | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| P1  | Manual-payment customer instructions | Generic bank/cash/mobile-financial-service text exists only as a default            | **APPROVED — use the exact default text below**                                       |
+| P2  | Required payment evidence            | Define accepted reference, receipt, sender, amount, and review criteria             | **UNRESOLVED**                                                                        |
+| P3  | Partial payments                     | Safe application default: disabled                                                  | **APPROVED — disabled**                                                               |
+| P4  | New-order approval                   | Define whether paid orders require administrator approval                           | **UNRESOLVED**                                                                        |
+| P5  | Cancellation policy                  | Published notice rule sourced above; service/data and invoice effects need approval | **UNRESOLVED**                                                                        |
+| P6  | Refund policy                        | Method/fees, processing commitment and service effect still unresolved              | **PARTIAL APPROVAL — 30 days; no additional eligibility/exclusion section requested** |
 
 Refunds and reversals remain append-only financial transactions regardless of the selected
 policy. They never rewrite or delete the original payment. Payment confirmation does not
@@ -275,20 +316,20 @@ The owner will complete unresolved values later. Use the narrowest existing cont
 do not add placeholder legal/tax wording to customer documents and do not store credentials
 in ordinary settings.
 
-| Decisions     | Configuration/control location                                                                            | Pre-launch rule                                                                                 |
-| ------------- | --------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| B1–B6, B8–B10 | Administrator `/admin/settings` business identity, localization, and invoice numbering                    | Save and audit before the first production invoice; verify a fictional preview/PDF              |
-| B7            | This approved policy record plus invoice wording implementation/review if wording must appear on invoices | Do not issue production invoices until exact wording and behavior are verified                  |
-| B11           | Administrator Products/Pricing records                                                                    | Enable only owner-approved periods and BDT prices before accepting orders                       |
-| P1–P3         | Administrator `/admin/settings` manual-payment instructions and partial-payment toggle                    | Instructions must include the approved evidence criteria before exposure                        |
-| P4            | Current order workflow requires administrator review; no global approval toggle exists                    | Treat administrator approval as required unless a later authorized command adds a tested toggle |
-| P5–P6         | This approved policy record and customer-facing policy publication                                        | No automatic service consequence; refunds/reversals remain append-only                          |
-| R1–R5         | This policy record plus deployment backup/log/storage lifecycle controls                                  | Do not run disposal until policy, owner, evidence, and recovery boundaries are approved         |
-| A1–A4         | Administrator `/admin/settings` or Automation settings                                                    | Verify saved values before starting one scheduler                                               |
-| A5–A7         | Protected first-renewal operations record                                                                 | Keep the production scheduler stopped until completed                                           |
-| L1–L2         | Administrator provider selection plus evidence that production credentials/WHM authority are absent       | Manual-first remains selected until a separately authorized provider command passes             |
-| L3–L6         | Protected maintenance/incident runbook and alert platform                                                 | Test contacts and channels before launch; do not put private credentials here                   |
-| G1–G3         | This policy record and release checklist                                                                  | Record acceptance/workaround or complete the relevant remediation command before final audit    |
+| Decisions     | Configuration/control location                                                                               | Pre-launch rule                                                                                                                         |
+| ------------- | ------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| B1–B5, B8–B10 | Administrator `/admin/settings` business identity, localization, and invoice numbering                       | Save and audit before the first production invoice; verify a fictional preview/PDF                                                      |
+| B6–B7         | Optional Tax ID in administrator invoice Business identity form; manual invoice-line tax; this policy record | No mandatory tax input/custom wording; preserve accurate applicable tax and historical snapshots; no automatic jurisdiction/rate engine |
+| B11           | Administrator Products/Pricing records                                                                       | Enable only owner-approved periods and BDT prices before accepting orders                                                               |
+| P1–P3         | Administrator `/admin/settings` manual-payment instructions and partial-payment toggle                       | Instructions must include the approved evidence criteria before exposure                                                                |
+| P4            | Current order workflow requires administrator review; no global approval toggle exists                       | Treat administrator approval as required unless a later authorized command adds a tested toggle                                         |
+| P5–P6         | This approved policy record and customer-facing policy publication                                           | No automatic service consequence; refunds/reversals remain append-only                                                                  |
+| R1–R5         | This policy record plus deployment backup/log/storage lifecycle controls                                     | Do not run disposal until policy, owner, evidence, and recovery boundaries are approved                                                 |
+| A1–A4         | Administrator `/admin/settings` or Automation settings                                                       | Verify saved values before starting one scheduler                                                                                       |
+| A5–A7         | Protected first-renewal operations record                                                                    | Keep the production scheduler stopped until completed                                                                                   |
+| L1–L2         | Administrator provider selection plus evidence that production credentials/WHM authority are absent          | Manual-first remains selected until a separately authorized provider command passes                                                     |
+| L3–L6         | Protected maintenance/incident runbook and alert platform                                                    | Test contacts and channels before launch; do not put private credentials here                                                           |
+| G1–G3         | This policy record and release checklist                                                                     | Record acceptance/workaround or complete the relevant remediation command before final audit                                            |
 
 Not every policy belongs in runtime application settings. Cancellation/refund wording,
 retention controls, incident contacts, supervised-run evidence, and release-gap acceptance
@@ -317,9 +358,9 @@ Secret values must be referenced by manager entry/version only.
 All lines are mandatory for an effective policy:
 
 ```text
-Business owner name: UNRESOLVED
-Business owner role: UNRESOLVED
-Approval decision: PROPOSED VALUES APPROVED; OTHER VALUES DEFERRED UNTIL PRE-LAUNCH CONFIGURATION
+Business owner name: Shahadat Hossain
+Business owner role: Administrator
+Approval decision: PARTIAL NAMED APPROVAL; REMAINING OPERATING DECISIONS OPEN
 Partial approval instruction: ALL proposed/default values approved
 Partial approval recorded at: 2026-08-26T15:52:58+06:00
 Partial approval source: authenticated project conversation; owner name unresolved
@@ -328,6 +369,10 @@ Deferral recorded at: 2026-08-26T16:00:31+06:00
 Resumption/source instruction date: 2026-10-05 (Asia/Dhaka)
 Resumption/source instruction: Resume Command 33; use https://www.speedhost.com.bd/ for real business information and policy
 Final approval after source-conflict review: UNRESOLVED
+Optional-tax instruction date: 2026-10-05 (Asia/Dhaka)
+Optional-tax decision: B6-B7 APPROVED as optional operator configuration; no mandatory tax input or custom wording; no legal exemption inferred
+Named business approval recorded at: 2026-10-05T23:15:42+06:00 (review/record time, Asia/Dhaka)
+Named approval scope: B1-B4; B6-B7 owner-declared Not applicable with optional fields retained; P6 30-day window/no additional eligibility-exclusion section
 Approved policy record commit: The Git commit containing this Command 33 record; pin its 40-character ID in the protected launch record
 Exceptions and expiry/review date: UNRESOLVED
 ```
