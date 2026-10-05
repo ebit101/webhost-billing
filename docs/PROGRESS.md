@@ -3,7 +3,7 @@
 ## Status Summary
 
 - **Current command:** Resume Command 33 — Finalize Business and Launch Policies
-- **Current status:** Public Speedhost sources reviewed; conflicting policies and remaining owner decisions block final approval; staging release 6085629 unchanged; production remains NO-GO
+- **Current status:** Speed Host pre-launch configuration/migration prerequisites recorded; WHMCS data and owner decisions pending; staging release 6085629 unchanged; production remains NO-GO
 - **Last updated:** 2026-10-05
 - **Next command:** Resume Command 33 — Resolve Source Conflicts and Approve Remaining Launch Policies
 - **Next command authorized:** No
@@ -8712,6 +8712,83 @@ Stop after review delivery; do not start Command 91 automatically.
 **Resume Command 33 — Resolve Source Conflicts and Approve Remaining Launch Policies**
 after the owner supplies the missing choices and approval. Do not proceed automatically
 to Command 34 remediation or Command 91; both require separate authorization.
+
+### Resume Command 33 — Prepare Speed Host Before Final WHMCS Data
+
+- **Status:** Bounded preparation checklist recorded; final policy and migration readiness BLOCKED
+- **Date:** 2026-10-05
+
+#### Scope completed
+
+- Recorded the owner's request to prepare this installation for Speed Host and
+  supply WHMCS data later. Treated this as preparation intent, not approval of
+  unknown legal/VAT, refund, import, provider or production-cutover decisions.
+- Added an installation-specific checklist using existing business/localization,
+  invoice-numbering, product, payment, email-branding and renewal controls. No
+  Speed Host values were applied to generic public defaults or any running app.
+- Highlighted the impact of WHMCS invoice history on the empty-baseline 1001
+  proposal, historical snapshots, source timezone, monetary/status reconciliation
+  and the requirement to keep rehearsal jobs/providers/customer email inactive.
+- Inspected application/package/script sources and file paths: no WHMCS importer
+  was found. Reviewed official WHMCS export/report documentation as potential
+  sources, not as an implemented importer or proof of the owner's source version.
+- Recorded assessment, mapping/idempotency, isolated rehearsal/reconciliation and
+  final freeze/backup/rollback prerequisites. No real export was requested in chat,
+  obtained, read, committed or imported. No source WHMCS system was contacted.
+
+#### Files changed
+
+- `docs/PRODUCTION_BUSINESS_POLICIES.md` — Speed Host preparation checklist and
+  separately gated WHMCS migration prerequisites.
+- `docs/PROGRESS.md` — scope, validation, open decisions and next step.
+- No application/default/schema/provider/secret/dependency or deployment changes.
+
+#### Validation
+
+- Scoped Prettier formatting/check passed for both changed Markdown files.
+- `pnpm docs:check` passed all four offline validators (links/anchors,
+  contributor paths/scripts, issue forms and safe-demo screenshot assets).
+- `git diff --check` passed. Reviewed the focused documentation diff; no real
+  data, credentials, application changes or effective policy approval was added.
+- Previous source-review commit `d435e61731805ddb2b742f374222b0cf5961d372` passed
+  [CI](https://github.com/ebit101/webhost-billing/actions/runs/37340855917) and
+  [CodeQL](https://github.com/ebit101/webhost-billing/actions/runs/37340855706).
+  That evidence does not apply to a later commit or close production gates.
+- Initial broad search included a nonexistent `apps/web/src/apps` path; corrected
+  read-only source/path searches completed. No importer implementation is claimed.
+- Application builds/tests and migration rehearsal are not run for documentation-only
+  preparation. The data and importer needed for a rehearsal are not available.
+- Deliver a focused documentation commit and reconcile/non-force push `main` after
+  validation. That delivery triggers new hosted CI/CodeQL; do not represent pending
+  checks as passed or change the pinned staging application release.
+
+#### Decisions made
+
+- Speed Host is the intended installation/display brand, not a verified legal name.
+- Prepare now and finalize actual data/policies before cutover. Deferral is not
+  business-policy approval, production readiness or authority to import real data.
+- WHMCS data requires an assessed/tested mapping, not a direct database replacement.
+  Preserve issued financial records and identify unsupported source features without
+  silently broadening the product scope or losing business obligations.
+- Importer assessment/implementation, infrastructure remediation and production
+  launch require separately bounded authorization; none starts automatically here.
+
+#### Open questions and risks
+
+- WHMCS version, anonymized export/schema examples, inventory/migration scope,
+  source currencies/timezones and protected transfer method remain unknown.
+- Existing Command 33 refund/legal/VAT/contact/payment/retention/operational/gap
+  decisions remain unresolved. A data export does not supply missing owner approvals.
+- All existing production gates and infrastructure/security/provider/recovery/SMTP/
+  monitoring risks remain; production is **NO-GO** and the staging release unchanged.
+
+#### Recommended next command
+
+**Resume Command 33 — Resolve Source Conflicts and Approve Remaining Launch Policies**
+when the owner supplies the actual decisions. If the owner wants technical preparation
+to proceed while those remain pending, first authorize a bounded next command definition
+covering either infrastructure remediation or read-only WHMCS migration assessment.
+Do not begin an importer, Command 34 remediation, Command 91 or production cutover implicitly.
 
 ## Report Template
 

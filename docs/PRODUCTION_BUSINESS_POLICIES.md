@@ -101,6 +101,65 @@ business-policy gate, and no production setting or launch authorization changes.
 
 ## Owner decision record
 
+### Speed Host preparation before final WHMCS data — 2026-10-05
+
+The owner requested preparation for **Speed Host**, with existing WHMCS data to be supplied
+later before production. Record Speed Host as the intended installation/display brand, not
+as a verified registered invoice name. This permits preparation; it does not approve a
+refund choice, tax treatment, data import, provider activation or production cutover.
+
+This checklist uses existing controls described in [Settings and Secrets](SETTINGS_AND_SECRETS.md).
+It is not an executable settings payload, importer, deployed configuration or proof of
+production readiness. Keep the public project's Webhost Billing identity and generic defaults
+unchanged; business-specific values belong to the Speed Host installation.
+
+| Preparation item            | Speed Host target / existing control                                              | Required before effect                                                                                                                                          |
+| --------------------------- | --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Display/email brand         | Intended brand `Speed Host`; existing `email.branding`                            | Apply only in an authorized installation configuration step; verify sender/reply-to and SMTP separately                                                         |
+| Invoice identity            | Public business/contact candidates above; `business.identity`                     | Owner-confirmed legal name, address, preferred phone and tax identifier/treatment before issuing any real invoice                                               |
+| Currency and business dates | Previously approved `BDT` and `Asia/Dhaka`; `business.localization`               | Reject or explicitly resolve unsupported source currencies; verify source timezone before converting dates to UTC                                               |
+| Invoice numbering           | Approved `INV` / padding 6 / starting number 1001 for an empty numbering baseline | WHMCS history requires a collision/continuity review and approved next-number decision; never renumber issued historical invoices or blindly restart at 1001    |
+| Products and periods        | Existing Products/Pricing controls                                                | Reconcile final Speed Host product/price/period mappings; website examples and fictional seed prices are not final catalog data                                 |
+| Payments and hosting        | Approved `MANUAL_FIRST`; partial payments disabled                                | Approve payment destination/evidence and order review; keep real gateway credentials/WHM tokens absent until separate authorization and acceptance              |
+| Renewal controls            | Approved 14-day lead, 7/3/1 reminders, three-day grace                            | During a separately authorized import rehearsal, disable renewal processing and stop worker/scheduler; approve eligibility/window/supervision before activation |
+| Data separation             | New allowlisted isolated rehearsal database                                       | Never replace an active database with a WHMCS dump, run a development seed in production, or promote fictional staging customers/credentials                    |
+| Final operational gate      | Existing production runbook and Command 33 decision IDs                           | Resolve policies, retention, named owners, contacts/windows and interface-gap acceptance; independently pass security/recovery/SMTP/monitoring gates            |
+
+#### WHMCS migration is a separate prerequisite, not a database replacement
+
+Read-only repository inspection found no WHMCS importer in application, package or script
+sources. No WHMCS export, version, source schema or migration scope has been supplied. Do not
+promise that importing final data alone will make the installation production-ready.
+
+Official WHMCS documentation describes [client JSON exports](https://docs.whmcs.com/8-13/clients/client-management-tutorials/export-client-data/)
+and [CSV reports including client/service/invoice/transaction exports](https://docs.whmcs.com/9-1/system/reports/).
+These are source options, not a Webhost Billing import contract. Confirm the owner's actual
+WHMCS version and the export's completeness before choosing a migration method.
+
+Before any real migration, separately authorize a bounded assessment and implementation:
+
+1. Inventory source version, export/schema headers, record classes, currencies/timezones,
+   invoice numbering, balances, credits, tax history, recurring subscriptions and unsupported
+   products/domains/add-ons. Initially use fictional or anonymized examples only. Unsupported
+   records need an explicit retained-source/operational plan, not silent omission or conversion.
+2. Define strict field/status mappings, stable source-ID links, idempotency, identity ownership,
+   historical invoice snapshots and append-only payment/refund history. Decide authentication
+   migration explicitly; do not assume WHMCS passwords or encrypted integration secrets can be
+   reused by this application. Historical payment status is not new gateway/provisioning proof.
+3. Test a dry-run/import in an isolated allowlisted database with customer email, callbacks,
+   workers, scheduler and provider mutations blocked. Reconcile record counts, invoice lines,
+   money in integer minor units, refunds/balances, ownership, service dates and duplicate reruns
+   against protected source evidence. Counts alone are insufficient financial reconciliation.
+4. Obtain owner acceptance, approved legal/policy/configuration values, fresh protected backups
+   and tested recovery. Plan an explicit source freeze/final delta and one billing authority
+   per migrated scope to prevent double billing, notices or suspension. Execute import/cutover
+   only under a separately confirmed target/window/rollback plan and the production runbook.
+
+Never put real exports, customer records, SQL dumps, configuration files, password hashes,
+payment details or encryption keys in this public repository or chat. Use a protected transfer
+and storage path agreed during the authorized migration assessment. None is created or used
+by this preparation record.
+
 Replace every `UNRESOLVED` value with the owner's exact approved wording. If a proposed value
 is accepted, record `APPROVED` and retain the value. If it is changed, replace the proposed
 value. The approval section at the end must identify the approving owner and time.
