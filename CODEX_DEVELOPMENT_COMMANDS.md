@@ -2747,6 +2747,116 @@ on 2026-10-05. Stop after delivery for a separately authorized phase review.
 
 ---
 
+## Command 91 — Make Customer Support Ticket History Searchable and Paginated
+
+```text
+Replace only the fixed first-100 customer ticket history at /portal/support with
+URL-bound search, ticket status, page and bounded page-size controls. Use existing
+customer-only GET /tickets/my, myTicketListQuerySchema, ticketSummarySchema and
+the paginated envelope. Add no endpoint, route, backend behavior or business rule.
+
+Allow only singular search/status/page/pageSize inputs: trimmed 200-character
+search, ticket enum, positive safe integers, page 1/default size 20/maximum 100 and
+safe PostgreSQL offsets. Invalid/duplicate owned fields block history reads with
+recoverable feedback. Ignore unrelated parameters; never forward customerId,
+serviceId, priority, assignment, user identity, redirects or mutation inputs.
+Reconstruct only fixed /portal/support destinations. Customer ownership remains
+session-derived. Service selection in the creation form is not a history filter.
+
+Submitting search or changing status/page-size resets page one, retaining other
+applied filters. Provide clear filters, Previous/Next and authoritative matching
+count/range/page feedback; restore committed filters on reload/back/forward.
+Keep existing case-insensitive search: ticket number, subject, current customer
+email/company name and linked service domain. Do not claim message-body, product,
+assignee, invoice or order search. Ordering remains status asc, priority desc,
+updatedAt desc then id desc, not createdAt/lastReplyAt or a frozen cross-page
+history. Counts are matching owned tickets, not unread messages or SLA evidence.
+
+Use abortable cookie/no-store GETs; validate complete ticket/customer/service/
+assignee/date/count facts, unique IDs, applied status and authoritative safe
+pagination including expected page length. Discard superseded query/retry/unmount
+reads. Distinguish loading, invalid, malformed/inconsistent response, safe failure/
+GET-only retry, first-use empty, no matches and out-of-range states. Never clamp
+silently, expose raw errors or turn failed reads into empty success. Retain ticket
+number, subject, status, priority, linked-service/plain-text conversation facts and
+usable labels/focus/controls at 375px and by keyboard.
+
+Keep creation/service-options loading independent of the query-keyed history.
+Preserve unfinished subject/body/service selection and Open ticket visibility
+across history navigation/retry, including invalid/failed pages. Leave the existing
+service picker's first-100 scope separate. History recovery must not resubmit a
+ticket, clear a draft or reload options unnecessarily.
+
+Make conversation reads deliberate row selection, not automatic first-row or
+per-row preloads. Abort/clear selected conversation on history query/retry and
+before existing create/reply dispatch; block inspection while a write is pending.
+Validate detail against the clicked UUID and complete runtime conversation schema,
+including message ticket IDs/count and duplicate IDs; late selection/detail reads
+cannot restore an old conversation. Use safe GET-only detail recovery. Retain
+plain-text/no-attachments guidance and the server-enforced closed-ticket reply gate.
+
+Retain reply drafts by their original ticket ID in component-lifetime memory,
+outside the query-keyed history, so navigation/retry does not erase or transfer
+text to another ticket. Restore a draft only after explicitly selecting that same
+ticket. No localStorage, cross-session persistence or general draft framework.
+Preserve existing create/reply endpoints, bodies, CSRF, submission-key policy,
+ownership, duplicate handling and rate limits. Capture the original target/body/key
+before each deliberate dispatch; URL/selection changes must not retarget a pending
+reply. A successful write clears only its submitted draft, not newer edits, and
+keeps a success notice separate from subsequent read failures.
+
+After an existing deliberate create/reply completes, reconcile the latest applied
+history query by GET rather than prepending a nonmatching row, patching stale
+counts or resurrecting a selected conversation. If reconciliation fails, offer
+GET-only recovery and never retry the write or misreport successful submission.
+Query changes, retries and detail inspection themselves perform no business write.
+
+Add query/server-entry/component tests for >100 tickets, combined filters,
+restoration/clearing, exact requests, invalid/duplicate/offset inputs, ignored
+identity/service/assignment payloads, malformed rows/metadata/detail, stale reads,
+safe retry and honest empty/out-of-range recovery. Prove retained creation fields,
+ticket-bound reply drafts, detail invalidation, original pending targets/keys,
+closed-ticket gating and latest-query reconciliation without duplicate submission.
+Retain administrator support, auth, invoice/payment and service/panel regressions.
+
+Extend existing ticket API regressions with >100 fictional owned tickets, each
+supported search field, status/count isolation, exact status/priority/updatedAt/ID
+ordering and out-of-range metadata. Another customer's matching tickets must not
+enter rows or counts. Prove anonymous/admin access to /tickets/my fails, supplied
+customer scope cannot override ownership, administrator routes and cross-customer
+detail/reply stay protected. Preserve existing deliberate write behavior tests.
+
+Add one guarded fictional customer browser journey reaching an older ticket with
+search/status/pages/reload/history/keyboard/mobile and explicitly opening its
+conversation without submitting. Compare complete ticket/message and existing
+order/item/invoice/item/payment/event/service/operation/audit/outbox facts before
+and after permitted browsing; authorization-denial audits stay outside that
+baseline. Use dedicated fictional sign-in and fake providers, no raised limits,
+weakened assertions/deadlines or credential-bearing traces/video/screenshots.
+
+Read installed Next.js guidance before code edits. Run focused ticket/ledger/shared
+and relevant API regressions, complete web/package tests, full fictional browser
+suite, docs:check, format, lint, strict workspace/browser types and production build.
+Sequence heavy checks; verify fictional loopback Prisma model schema AND raw-SQL
+search_path before preparation/tests. Retain known worker/isolation risks; do not
+alter worker source, dependencies, timing limits or default records to hide them.
+
+Update docs/PROGRESS.md, commit, reconcile without published-history rewriting,
+non-force push origin/main, verify exact-head CI/CodeQL and stop for phase review.
+Exclude administrator ticket/payment ledgers, priority/assignment/service history
+filters, ticket workflow redesign, attachments/departments/SLA/knowledgebase,
+conversation-message paging, picker/setup/tool scale, new record relationships,
+general list/draft/navigation frameworks, sorting/date/export/bulk, dashboard/
+automation/chrome, auth/schema/dependency/worker changes, providers, cleanup,
+releases, deployment and production approval. Production remains NO-GO.
+```
+
+**Authorization:** Defined by the explicitly authorized Command 90 phase review
+on 2026-10-05. Definition only; implementation is not authorized. Stop after review
+delivery and request separate authorization for Command 91.
+
+---
+
 ## Continuation Command
 
 If a phase encounters errors or remains incomplete, use this prompt in the same Codex task:

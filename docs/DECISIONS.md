@@ -966,6 +966,29 @@ This document records durable technical and product decisions. New decisions sho
   schema, provider, worker, dependency, other ledger, relationship, release or
   deployment change; production remains `NO-GO`.
 
+## ADR-075 — Customer Support History With Independent Ticket Drafts
+
+- **Status:** Accepted for next-command definition; implementation separately gated
+- **Date:** 2026-10-05
+- **Decision:** After reviewing Command 90, define one customer ticket-history
+  slice on existing session-owned `/tickets/my`, exposing only bounded URL search,
+  status and pages. Keep creation and ticket-bound reply drafts independent of
+  history reads; conversations require explicit selection and validated detail.
+- **Reason:** Customer invoice/order/service lookup now reaches older records.
+  Customer support still discards pagination beyond 100 despite ready protected
+  contracts. Unlike service cards, support shares creation, reply and selection
+  state; blindly remounting the workspace or prepending write results would lose
+  drafts, retarget replies or misrepresent the latest applied query.
+- **Consequence:** Command 91 is defined, not authorized or implemented. Preserve
+  original write targets/bodies/keys and success notices; reconcile latest history
+  by GET without mutation replay, stale conversation restoration or draft transfer.
+  Search retains ticket number/subject/current email/company/linked domain; order
+  retains status/priority/updatedAt/ID, not chronological or frozen history. Counts
+  are ticket records, not unread/SLA evidence. Other ledgers, service-picker and
+  message scale, workflow/relationship changes, workers/isolation, dependencies/
+  governance, providers, cleanup, releases and deployment remain separate.
+  Production stays `NO-GO`.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

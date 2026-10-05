@@ -690,6 +690,34 @@ remain P1 work for the next phase review.
   detail/return intent, picker/setup/tool scale, providers, releases and deployments
   remain separate; production stays `NO-GO`.
 
+### Command 90 phase review and next bounded slice
+
+- Reviewed query/server-entry/inventory source, full runtime/API boundaries and
+  fictional large-history component/API/browser evidence against Command 90.
+  No corrective application change identified. Ownership remains API-derived;
+  only four bounded URL fields reach fixed local destinations or the request.
+- Complete service/server/money/nullable lifecycle and pagination facts are
+  validated; invalid reads block, stale reads are discarded and recovery stays
+  GET-only. Existing search, createdAt/ID ordering, lossless cards/detail links and
+  deliberate panel login remain intact. Counts/stored state are not remote proof.
+- Delivered final report head's CI/CodeQL reverified successful. Fresh focused
+  regressions: **263 tests across 15 files passed**; shared contracts: **29 passed**.
+  Complete fresh web/docs evidence is recorded in `docs/PROGRESS.md`; original
+  local API/browser/build evidence is retained, not claimed rerun here.
+- **Command 91 defined, not authorized:** Make Customer Support Ticket History
+  Searchable and Paginated. `CustomerTicketManager` still loads
+  `/tickets/my?pageSize=100`, discards metadata and automatically selects the first
+  conversation. Existing customer-only contracts supply owned search, counts and
+  status/priority/updatedAt/ID ordering. Expose only search/status/pages; keep
+  creation and ticket-bound reply drafts independent, deliberate detail reads and
+  original pending write targets, then reconcile the latest query without replay.
+- Customer support is ready without financial mutations or new relationships.
+  Administrator support needs assignment/priority/customer workspace safeguards;
+  administrator payments carry financial adjustment targets. Both remain separate,
+  as do service-picker/message/setup/tool scale, richer relationships, attention/
+  freshness/chrome and existing worker/isolation/dependency/governance risks.
+  No implementation, provider, cleanup, release or deployment authorized here.
+
 ### Remaining production gates
 
 This roadmap improves evaluation and product coherence only. It does not close the

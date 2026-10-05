@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 90 — Make Customer Service Inventory Searchable and Paginated
-- **Current status:** Completed and delivered; source-head CI/CodeQL passed; verify final report-head gates before handoff
+- **Current command:** Phase Review — Review Command 90 and define the next bounded command
+- **Current status:** Review completed; no corrective application change identified; Command 91 defined only; verify review-head CI/CodeQL before handoff
 - **Last updated:** 2026-10-05
-- **Next command:** Phase Review — Review Command 90 and define the next bounded command
+- **Next command:** Command 91 — Make Customer Support Ticket History Searchable and Paginated
 - **Next command authorized:** No
 
 ## Command Reports
@@ -8437,6 +8437,96 @@ Stop after review delivery; do not start Command 90 automatically.
 
 **Phase Review — Review Command 90 and define the next bounded command.**
 Stop after Command 90 delivery. Do not define or implement Command 91 automatically.
+
+### Phase Review — Review Command 90 and Define the Next Bounded Command
+
+- **Status:** Review completed; no corrective application change identified;
+  Command 91 definition only
+- **Date:** 2026-10-05 (Asia/Dhaka)
+- **Authorization:** User explicitly requested the Command 90 phase review and
+  next bounded definition. This does not authorize Command 91 implementation.
+
+#### Scope reviewed and outcome
+
+- Read project rules, product plan, decisions, relevant progress and Command 90.
+  Reviewed delivered query parser/request builder, async server entry, inventory,
+  full runtime service/pagination boundaries, session-scoped API and fictional
+  component/API/browser histories beyond 100 services.
+- Confirmed only singular bounded search/status/page/pageSize reaches `/services/my`
+  or fixed local inventory destinations. Invalid filters block reads; customer,
+  server, identity and redirect inputs cannot override session-derived ownership.
+  Complete rows/server/money/nullable lifecycle and authoritative metadata reject
+  malformed, duplicate, wrong-status or inconsistent results. Abort/active guards
+  discard superseded query/retry/unmount reads; safe recovery remains GET-only.
+- Existing domain/historical-product/current-email/external-account search and
+  createdAt/ID ordering remain intact. Cards retain lossless recurring money,
+  next-due dates, nullable placeholders, text server facts and validated detail
+  links. No eager detail/panel reads or business writes from inventory browsing;
+  original detail and deliberate panel login remain unchanged. Matching counts
+  and stored application state are not financial or live remote-hosting evidence.
+  No corrective application/test behavior change identified by this review.
+- Defined only Command 91 from inspected customer ticket manager, shared ticket
+  contracts and API source: `/tickets/my?pageSize=100` still discards metadata,
+  shares state with creation/replies and automatically opens the first ticket.
+  Protected customer API supplies session-owned search and counts with
+  status/priority/updatedAt/ID ordering. Bound the next change to search/status/pages
+  and deliberate conversation selection, preserving independent creation and
+  ticket-bound reply drafts, original pending targets/keys and latest-query GET
+  reconciliation. No service/priority/assignment history filter or new workflow.
+- Customer support has ready dependencies without financial adjustment or new
+  cross-record models. Administrator support/payment ledgers require their own
+  workspace/action safeguards; service-picker/message scale remains separate.
+
+#### Files changed
+
+- `CODEX_DEVELOPMENT_COMMANDS.md` — bounded Command 91 definition/authorization gate.
+- `docs/DECISIONS.md` — ADR-075 ticket-history sequencing and independent drafts.
+- `docs/PRODUCT_EXPERIENCE_ROADMAP.md` — review outcome and next support-history gap.
+- `docs/PROGRESS.md` — review evidence, retained risks and exact next command.
+- No application, API, test, schema, dependency, worker or deployment changes.
+
+#### Validation and delivery gate
+
+- Started clean on main at `5cbce22fbeeb0cea4faeacdbf8fb56d941b49cb1`;
+  fetched canonical origin/main with **0 ahead/0 behind**. Reverified that exact
+  Command 90 final report head's
+  [CI](https://github.com/ebit101/webhost-billing/actions/runs/37315053775) and
+  [CodeQL](https://github.com/ebit101/webhost-billing/actions/runs/37315053652)
+  completed **successfully**. This closes its final-report handoff check, using
+  final-head rather than only source-head results.
+- Fresh focused customer service/order query, server-entry and list tests;
+  administrator service query/ledger/review; original service/order/checkout,
+  customer invoice and support regressions: **263 tests across 15 files passed**.
+  Fresh shared contracts: **29 passed**. Complete fresh web regression:
+  **529 tests across 47 files passed**. No assertion, deadline or test changed.
+- Command 90's full local API/browser/package/lint/types/build evidence remains in
+  its report; those database/browser/build checks are not claimed rerun locally
+  here. No database preparation/reset, provider call, development record mutation,
+  Docker lifecycle or disk cleanup was needed for this documentation-only review.
+- Scoped Prettier, repository formatting, all four offline documentation validators
+  and whitespace checks passed on the final four-file diff before delivery.
+  Deliver a focused documentation commit, reconcile without history rewriting,
+  non-force push origin/main and verify that exact review head's CI/CodeQL before
+  handoff. Pending checks are not claimed passed; no release/deployment authorized.
+
+#### Decisions and unresolved risks
+
+- ADR-075 defines Command 91 only; retain ADR-074, ownership enforcement, historical
+  snapshots, lossless money and independent financial/service/provisioning states.
+- Retain known local parallel-worker timing/fictional fixture and URL-schema-only
+  raw-SQL isolation limitations. Future database checks must verify both model
+  schema and raw search_path; hosted success does not establish a local repair.
+- Administrator ticket/payment ledgers, picker/message/setup/tool scale, richer
+  relationships, attention/freshness/chrome, high Dependabot advisory 15 and
+  direct-main required-PR/check bypass governance remain separately gated.
+- Production remains **NO-GO** pending credentialed providers, SMTP, monitoring,
+  off-site recovery, policy/infrastructure and operator pilot. No Command 91
+  implementation, provider, release, cleanup or deployment authorized by this review.
+
+#### Exact recommended next command
+
+Authorize **Command 91 — Make Customer Support Ticket History Searchable and Paginated**.
+Stop after review delivery; do not start Command 91 automatically.
 
 ## Report Template
 
