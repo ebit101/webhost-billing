@@ -924,6 +924,29 @@ This document records durable technical and product decisions. New decisions sho
   No other ledger, new detail/navigation framework, schema, provider, worker,
   dependency, release or deployment change. Production stays `NO-GO`.
 
+## ADR-073 — Ownership-Bound Customer Service Lookup Before Workflow Expansion
+
+- **Status:** Accepted for next-command definition; implementation separately gated
+- **Date:** 2026-10-05
+- **Decision:** After reviewing Command 89, define one read-only customer service
+  inventory slice using existing customer-only `/services/my`, bounded URL search/
+  status/pages and complete service/pagination runtime contracts. Keep customer
+  identity session-derived; never forward customer/server scope or redirects.
+- **Reason:** Customer order history now reaches older purchases safely. Customer
+  service cards still discard pagination after their first 100 records even though
+  the protected API supplies search, deterministic ordering and matching counts.
+  This recurring self-service lookup has ready dependencies; support lookup also
+  carries creation/reply/selection state and should remain a separate command.
+- **Consequence:** Command 90 is defined, not authorized or implemented here.
+  Search stays domain, historical product name, current customer email and external
+  account ID; sorting stays createdAt/ID, not due/start date. Counts and stored
+  application state do not verify remote hosting or finances. Preserve existing
+  cards and validated detail links, nullable facts, lossless money and deliberate
+  panel login without preloads/provider calls or writes during browsing. Detail/
+  return-intent/relationship work, other ledgers, pickers/setup/tool scale,
+  attention/freshness/chrome, worker/isolation, dependency/governance, cleanup,
+  releases and deployments remain separate. Production stays `NO-GO`.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 89 — Make Customer Order History Searchable and Paginated
-- **Current status:** Completed and delivered to GitHub main; exact source-head CI/CodeQL passed; final report-head verification required before handoff
+- **Current command:** Phase Review — Review Command 89 and define the next bounded command
+- **Current status:** Review completed and locally validated; Command 90 defined, not authorized; exact review-head CI/CodeQL required before handoff
 - **Last updated:** 2026-10-05
-- **Next command:** Phase Review — Review Command 89 and define the next bounded command
+- **Next command:** Command 90 — Make Customer Service Inventory Searchable and Paginated
 - **Next command authorized:** No
 
 ## Command Reports
@@ -8216,6 +8216,87 @@ Stop after review delivery; do not start Command 89 automatically.
 
 **Phase Review — Review Command 89 and define the next bounded command.**
 Stop after Command 89 delivery; do not define or implement Command 90 automatically.
+
+### Phase Review — Review Command 89 and Define the Next Bounded Command
+
+- **Status:** Review completed; no corrective application change identified;
+  Command 90 definition only
+- **Date:** 2026-10-05 (Asia/Dhaka)
+- **Authorization:** User said “continue” after the proposed Command 89 phase
+  review. This authorizes review/definition, not Command 90 implementation.
+
+#### Scope reviewed and outcome
+
+- Read project rules, product plan, decisions, relevant progress, Command 89 and
+  delivered source/tests. Reviewed query parser/builder, async server entry, customer
+  list, full runtime order/pagination contracts, session-scoped API and dedicated
+  fictional component/API/browser histories beyond 100.
+- Confirmed singular bounded query/offset validation, invalid-read blocking,
+  ignored identity/redirect inputs and fixed local destinations. Complete runtime
+  rows/items/invoice/money and authoritative pagination reject malformed,
+  duplicate, wrong-status and inconsistent results. Abort/active guards discard
+  superseded query/retry/unmount responses; recovery stays GET-only.
+- Historical email/order-number/any-item-domain search and createdAt/ID ordering
+  are retained. First-item summaries disclose additional items; counts are records,
+  not financial or service/provisioning evidence. Checkout destinations, invoice
+  text and independent order/invoice/service rules remain unchanged. No corrective
+  application or test behavior change identified by this review.
+- Defined only Command 90 from inspected source: customer service cards load
+  `/services/my?pageSize=100` and discard pagination. Existing customer-only API
+  omits customer/server filters, derives identity from the session and supplies
+  domain/historical-product/current-email/external-account search, createdAt/ID
+  ordering and owned counts. Preserve cards/detail links and deliberate panel login.
+  Support lookup adds creation/reply/selection concerns; choose this smaller read-only
+  inventory first, without authorizing service-detail or financial relationships.
+
+#### Files changed
+
+- `CODEX_DEVELOPMENT_COMMANDS.md` — bounded Command 90 and explicit authorization.
+- `docs/DECISIONS.md` — ADR-073 ownership-bound service lookup sequencing.
+- `docs/PRODUCT_EXPERIENCE_ROADMAP.md` — review outcome and next inventory gap.
+- `docs/PROGRESS.md` — review evidence, retained risks and exact next command.
+- No application, API, test, schema, dependency, worker or deployment changes.
+
+#### Validation
+
+- Started clean on main at `5b665f1a0df4d00860a0a4a15b6aafbfeb6dc722`.
+  Fetch confirmed **0 ahead/0 behind** canonical origin/main. Reverified that exact
+  delivered report head's
+  [CI](https://github.com/ebit101/webhost-billing/actions/runs/37305391397) and
+  [CodeQL](https://github.com/ebit101/webhost-billing/actions/runs/37305391387)
+  completed **successfully**; this closes Command 89's final-report handoff check.
+- Fresh focused customer order query/list/server-entry, administrator order query/
+  ledger/review, original checkout/management, service inventory/review/management
+  and invoice regressions: **248 tests across 13 files passed**. Fresh shared
+  contracts: **29 passed**. No assertion, timing limit or test was changed.
+- Command 89's complete local API/browser/package/lint/types/build evidence remains
+  in its report; those database/browser/build checks are not claimed rerun locally
+  here. No database preparation/reset, provider call, Docker lifecycle/cleanup or
+  development record mutation was needed for this documentation-only review.
+- Complete fresh web regression: **471 tests across 44 files passed**. Scoped
+  Prettier formatting, repository formatting, all **four offline documentation
+  validators** and whitespace checks passed. Deliver only the four reviewed
+  documentation files via a focused commit, remote reconciliation and non-force
+  push; verify the exact review head's CI/CodeQL before handoff. Pending hosted
+  gates are not claimed passed, and no release or deployment is authorized.
+
+#### Decisions and unresolved risks
+
+- ADR-073 defines Command 90 only. Preserve ADR-072 and independent financial/
+  service/provisioning state, historical snapshots and lossless money.
+- Retain known local parallel-worker timing/fictional fixture and URL-schema-only
+  raw-SQL isolation limitations. Future DB checks must verify both model schema
+  and raw search_path; hosted success does not establish a local repair.
+- Other ledgers, service detail/return intent, richer relationships, support
+  service-picker/setup/tool/history scale, attention/freshness/chrome, advisory 15
+  and direct-main governance remain separate. Production stays **NO-GO** pending
+  credentialed providers, SMTP, monitoring, off-site recovery, policy/infrastructure
+  and operator pilot. No Command 90 implementation, release, cleanup or deployment.
+
+#### Exact recommended next command
+
+Authorize **Command 90 — Make Customer Service Inventory Searchable and Paginated**.
+Stop after review delivery; do not start Command 90 automatically.
 
 ## Report Template
 

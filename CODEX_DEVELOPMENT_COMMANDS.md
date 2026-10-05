@@ -2660,6 +2660,92 @@ on 2026-10-05. Stop after verified delivery for a separately authorized phase re
 
 ---
 
+## Command 90 — Make Customer Service Inventory Searchable and Paginated
+
+```text
+Replace only the fixed first-100 customer service list at /portal/services with
+URL-bound search, service status, page and bounded page-size controls. Use existing
+customer-only GET /services/my, serviceListQuerySchema.omit({ customerId: true,
+serverId: true }), serviceSchema and the paginated envelope. Add no endpoint,
+route, backend behavior or business rule.
+
+Allow only singular search/status/page/pageSize inputs: existing trimmed
+200-character search bound, service enum, positive safe integers, page 1/default
+size 20/maximum 100 and safe PostgreSQL offsets. Invalid/duplicate owned fields
+must block reads with recoverable invalid-filter feedback. Ignore unrelated URL
+parameters; never forward customerId, serverId, user/account identity, redirects,
+amounts or mutation inputs. Reconstruct only fixed /portal/services destinations.
+The API derives customer scope from the authenticated session, never browser input.
+
+Submitting search or changing status/page-size resets page one and preserves other
+applied filters. Provide clear filters, Previous/Next and authoritative matching
+count/range/page feedback. Restore committed filters on reload and browser
+back/forward. Retain existing case-insensitive search over service domain,
+historical product name, current customer email and external account ID. Do not
+claim control-panel username, server hostname, order/invoice number or customer-name
+search. Ordering is createdAt desc then id desc, not startedAt/nextDueAt or a frozen
+history across page requests. Counts are matching owned service records, not
+active-hosting totals, balances, settled cash or live remote-panel verification.
+
+Use abortable cookie/no-store GETs; runtime-validate complete service/server/money/
+nullable lifecycle facts and authoritative pagination, unique IDs, applied status
+and safe/consistent metadata including expected page length. Superseded query,
+retry and unmount reads cannot restore stale cards or counts. Keep loading,
+malformed/inconsistent response, safe failure/GET-only retry, first-use empty,
+no matches and out-of-range states distinct. Never silently clamp pages, turn a
+failed read into first-use empty, or display raw network/response errors. Keep
+labels, keyboard focus and controls usable at 375px.
+
+Preserve existing service cards, lossless recurring amount, next-due date,
+application status, server/username facts and fixed /portal/services/<validated UUID>
+detail links. Show a clear domain-unavailable placeholder when domain is null;
+never infer that a missing domain/account or stored status proves remote success.
+Server hostnames remain text, not new external links. No eager per-row detail reads,
+panel/provider checks, login-URL generation or business writes during browsing.
+Existing service detail, Back to services, deliberate panel-login action and
+administrator fulfilment/confirmation/retry behavior remain unchanged. Return-intent,
+invoice/order links and richer service context are separately gated.
+
+Add focused query/server-entry/component tests for >100 services, exact requests,
+combined filters, page-size resets, history restoration, invalid/duplicate/offset
+inputs, ignored customer/server/redirect payloads, malformed money/server/status/
+nullable facts, duplicate IDs, inconsistent metadata, delayed query/retry/unmount
+discard, safe GET retry and honest empty/no-match/out-of-range recovery.
+Extend existing service API regressions with >100 fictional owned services,
+another customer's matching records excluded from rows AND counts, each supported
+search field, combined status, deterministic createdAt/ID ties and out-of-range
+metadata. Prove customerId/serverId cannot override /services/my, anonymous/admin
+access fails, administrator routes and cross-customer detail remain protected.
+
+Add one guarded fictional customer browser journey reaching an older service with
+search/status/paging/reload/history/keyboard/mobile. Follow its existing fixed
+detail link without invoking panel login. Compare complete order/item/invoice/
+invoice-item/payment/event/service/operation/audit/outbox facts before/after
+permitted browsing; take authorization-denial audits outside that baseline.
+Use dedicated fictional sign-in and fake providers, no raised auth limits,
+weakened deadlines/assertions or credential-bearing traces/video/screenshots.
+
+Read installed Next.js guidance before code edits. Run focused service/order/shared
+and relevant API regressions, complete web/package tests, full fictional browser
+suite, docs:check, format, lint, strict workspace/browser types and production build.
+Sequence heavy checks; verify loopback fictional Prisma model schema AND raw-SQL
+search_path before preparation/tests. Preserve known worker/isolation risks;
+do not alter worker source, dependencies, timing limits or default records.
+
+Update docs/PROGRESS.md, commit, reconcile without published-history rewriting,
+non-force push origin/main, verify exact-head CI/CodeQL and stop for phase review.
+Exclude other ledgers, general list/search frameworks, sorting/date/export/bulk,
+financial/service mutations, detail/action redesign, new relationships, support
+service-picker/setup/tool/history scale, dashboard/automation/chrome, auth/schema/
+dependency/worker changes, providers, cleanup, releases, deployments and production
+approval. Production remains NO-GO.
+```
+
+**Authorization:** Defined by the authorized Command 89 phase review on
+2026-10-05. Implementation requires separate user authorization; it has not started.
+
+---
+
 ## Continuation Command
 
 If a phase encounters errors or remains incomplete, use this prompt in the same Codex task:

@@ -641,6 +641,31 @@ remain P1 work for the next phase review.
   authorize **Phase Review — Review Command 89 and define the next bounded command**.
   No Command 90 is defined or implemented here; production stays `NO-GO`.
 
+### Command 89 phase review and next bounded slice
+
+- Reviewed the delivered query/server entry/customer list, full runtime/API
+  boundaries and fictional large-history component/API/browser evidence against
+  Command 89. No corrective application change identified.
+- Confirmed only four URL fields reach fixed local links or `/orders/my`, identity
+  remains session-derived, invalid filters block reads, complete rows/metadata are
+  validated and superseded reads cannot restore stale results. Search retains
+  historical email/order number/any-item domain and createdAt/ID ordering; first-item
+  wording remains explicitly incomplete and counts are not financial/service proof.
+- Delivered final report head's CI/CodeQL reverified successful. Fresh focused
+  regressions: **248 tests across 13 files passed**; shared contracts: **29 passed**.
+  Complete fresh web and documentation evidence is recorded in `docs/PROGRESS.md`.
+  Original full local API/browser/build evidence is retained, not claimed rerun here.
+- **Command 90 defined, not authorized:** Make Customer Service Inventory Searchable
+  and Paginated. `CustomerServiceList` requests `/services/my?pageSize=100` and
+  discards counts. Existing customer-only API omits customer/server input, injects
+  session scope and searches domain, historical product name, current email and
+  external account ID with createdAt/ID ordering. Repair this one read-only inventory
+  while preserving service cards and existing detail/panel-login boundaries.
+- Support/payment lookup, service detail/return intent, invoice/order relationships,
+  support service-picker/setup/tool/history scale, attention/freshness/chrome and
+  existing worker/isolation/dependency/governance risks remain separate. No Command
+  90 implementation, provider, cleanup, release or deployment authorized here.
+
 ### Remaining production gates
 
 This roadmap improves evaluation and product coherence only. It does not close the
