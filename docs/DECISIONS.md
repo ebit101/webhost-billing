@@ -846,6 +846,28 @@ This document records durable technical and product decisions. New decisions sho
   evidence. No new API, policy, relationship, provider call, schema or worker change.
   Setup/tool/history scale remains separate and production remains `NO-GO`.
 
+## ADR-069 — Administrator Order Lookup Before Broader Workflow Expansion
+
+- **Status:** Accepted for next-command definition; implementation separately gated
+- **Date:** 2026-10-05
+- **Decision:** After reviewing Command 87, define one URL-bound administrator
+  order ledger using existing search/status/customer filters and paginated runtime
+  contracts. Preserve independent creation inputs, submission keys, selected review
+  and deliberate operations; reconcile the latest query rather than injecting rows.
+- **Reason:** Service inventory now reaches older records without resetting forms
+  or weakening operation safeguards. The administrator order list still discards
+  pagination beyond its fixed first 100, although its protected API supplies search,
+  counts and deterministic ordering. This is a frequent operator lookup with ready
+  dependencies, not a new fulfilment or financial relationship model.
+- **Consequence:** Command 88 is defined, not authorized or implemented. Search is
+  order number, historical email and any item's domain; ordering uses createdAt/ID,
+  not placedAt. URL/customer changes must not reassign the creation customer, lose
+  its unfinished fields/key, resurrect stale review or retarget a begun status write.
+  Counts are records, not financial/provisioning evidence. Other ledgers, setup scale,
+  relationships, attention/freshness/chrome, worker/isolation and dependency/governance
+  risks remain separate. No release, cleanup, deployment or production approval;
+  production remains `NO-GO`.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

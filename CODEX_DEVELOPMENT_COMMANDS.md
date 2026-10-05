@@ -2499,6 +2499,91 @@ Paginated" on 2026-10-04. Implementation and validation are recorded in
 
 ---
 
+## Command 88 — Make Administrator Order Ledger Searchable and Paginated
+
+```text
+Replace only the fixed first-100 administrator order list with a URL-bound
+read-only ledger in the existing /admin/orders workspace. Use protected GET
+/orders, orderListQuerySchema, orderSchema and the existing paginated envelope.
+Add no endpoint, route, schema, order state or billing rule.
+
+Expose search, order status, bounded page/page-size and independently validated
+optional customerId. Reject duplicate, malformed, overlong, unsafe-offset and
+unsupported owned query inputs before reads; build only the fixed local ledger
+destination. Retain the invalid-customer warning and explicit all-customer wording.
+Reset page on deliberate search/status/page-size changes. Clearing ledger filters
+retains valid customer scope; clearing customer scope is separate. Restore applied
+filters on refresh/back/forward without a general search or navigation framework.
+
+Keep the existing API search semantics: order number, historical customer email
+snapshot and any item's requested domain, case-insensitive. Do not claim current
+email, customer-name, invoice-number or product-name search. Ordering stays
+createdAt desc then id desc, not displayed placedAt or a frozen cross-page history.
+Counts are matching order records, not balances, settled cash or provisioning proof.
+
+Use abortable cookie/no-store GETs. Runtime-validate every order/item/invoice row,
+unique IDs, applied customer/status scope and authoritative pagination. Superseded
+query/retry/unmount responses cannot restore old rows/counts. Show loading, invalid,
+malformed/context-mismatched, failed, empty and out-of-range states with GET-only
+recovery; never silently clamp pages or expose raw response/network errors.
+
+Keep creation and product/price/customer selection outside the query-keyed ledger.
+Preserve unfinished customer/product/price/domain/note inputs and the existing
+submission-key lifecycle across ledger and customer-scope navigation. Ledger
+customer scope is not a reassignment of the creation form's selected customer.
+Setup/options loading remains independent; no customer-picker scale repair here.
+Clear/abort selected order review on query/retry changes and before existing
+creation/status dispatch; block inspection while a write is pending. Completion
+never restores old selection. Review remains deliberate GET-only, with all-item
+snapshots, lossless money, business-zone dates and fixed customer/invoice links.
+Current profile name and historical email/items remain distinct. No service state,
+provider check, per-row detail preload, approval prerequisite or inferred linkage.
+
+Preserve creation/status endpoints, bodies, CSRF, creation submission keys,
+duplicate handling, server-authoritative prices and eligible status buttons. Each
+status request keeps the original clicked order ID even if URL filters change while
+pending. After an existing deliberate mutation finishes, reconcile the latest
+applied query instead of prepending a nonmatching order or patching stale counts.
+A failed subsequent read must not repeat the write or misreport successful creation
+as a failed submission. Preserve 375px controls and keyboard focus/close behavior.
+
+Add query/server-entry/component tests for >100 records, combined filters,
+restoration/clearing, duplicate/invalid/offset/out-of-range inputs, bad rows/metadata,
+delayed-response discard, safe failures/GET retry, retained creation fields/key,
+selected-review invalidation, pending original targets and latest-query mutation
+reconciliation. Retain order/checkout/auth-intent, service/panel, invoice/payment
+and customer-filter regressions. Extend existing API tests where needed to prove
+search semantics, status/customer combination, tie-break ordering, isolated counts,
+role/ownership, out-of-range behavior and no changes from browsing.
+
+Add one guarded fictional browser journey locating an older order, explicitly
+reviewing all items and navigating fixed customer/invoice context, including
+refresh/history/keyboard/mobile. Compare complete order/item/invoice/payment/service/
+operation/audit/outbox facts before and after browsing. Use an isolated fictional
+sign-in account and fake providers; do not raise rate limits/deadlines or retain
+credential-bearing traces/video/screenshots.
+
+Read installed Next.js guidance before edits. Run focused order/ledger/shared and
+relevant API regressions, complete web/package tests, full browser suite, docs:check,
+format, lint, strict workspace/browser types and production build. Sequence heavy
+checks and verify fictional loopback Prisma model schema AND raw-SQL search_path
+before database preparation/tests. Do not modify worker source, dependencies,
+timeouts, default records or assertions to hide existing timing/isolation risks.
+
+Update docs/PROGRESS.md, commit, reconcile without rewriting published history,
+non-force push origin/main, verify exact-head CI/CodeQL and stop for phase review.
+Exclude customer order history, other ledgers, picker/setup/tool/history scale,
+broader financial/service relationships, order-action redesign, automation freshness,
+dashboard/chrome, auth/schema/worker/dependency changes, providers, cleanup, releases,
+deployment and production approval. Production remains NO-GO.
+```
+
+**Authorization:** Defined by the explicitly authorized Command 87 phase review
+on 2026-10-05. Command 88 implementation is not authorized; require the user's
+separate authorization before starting it.
+
+---
+
 ## Continuation Command
 
 If a phase encounters errors or remains incomplete, use this prompt in the same Codex task:
