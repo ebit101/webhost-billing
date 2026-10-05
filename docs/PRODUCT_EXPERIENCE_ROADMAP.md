@@ -223,6 +223,9 @@ Priorities are:
 - Command 87 implements administrator service inventory search/pagination with
   preserved customer scope, unfinished operational forms and original action targets.
   Setup options, tools and operation history retain their independent scale limits.
+- Command 88 implements administrator order search/pagination without discarding
+  independent creation drafts/keys or retargeting existing status operations.
+  Customer order history remains a separate first-100 limit.
 - Command 85 implements administrator invoice search/pagination with preserved
   customer context and unchanged draft/identity forms. Validation/delivery evidence
   is recorded in `docs/PROGRESS.md`; customer chooser scale and all other ledgers
@@ -598,6 +601,29 @@ remain P1 work for the next phase review.
   relationships and production gates remain separately authorized work.
 - Next: separately authorize **Phase Review — Review Command 88 and define the
   next bounded command**. No Command 89 is defined or implemented here.
+
+### Command 88 phase review and next bounded slice
+
+- Reviewed the delivered query/server-entry/ledger/manager changes, original order
+  review and mutation boundaries, runtime/API contracts and fictional large-history
+  fixtures against Command 88. No corrective application change identified.
+- Confirmed independent customer/ledger validation, safe fixed navigation, complete
+  row/metadata validation, stale-read discard and honest GET-only recovery. Creation
+  drafts/keys and original clicked targets remain mounted; query/retry/dispatch
+  invalidates review and post-write reads reconcile the latest query without replay.
+- Fresh focused regressions: **184 tests across 11 files passed**; shared contracts:
+  **29 passed**; complete fresh web regressions: **419 tests across 41 files passed**.
+  Delivered report head's CI/CodeQL were reverified successful;
+  original full API/browser/build evidence remains retained, not fresh local reruns.
+- **Command 89 defined, not authorized:** Make Customer Order History Searchable
+  and Paginated. `CustomerOrderList` still requests `/orders/my?pageSize=100` and
+  discards metadata. Existing customer-only API injects authenticated scope and
+  supplies historical-email/order-number/any-item-domain search and createdAt/ID
+  ordering. Repair that one read-only history, not invoice/service relationships.
+- Customer invoice linking/all-item review, service/support/payment history,
+  setup/picker/tool scale, attention/freshness/chrome and existing worker/isolation/
+  dependency/governance risks remain separate. No implementation, release, cleanup
+  or deployment is authorized by this review. Next: separately authorize Command 89.
 
 ### Remaining production gates
 

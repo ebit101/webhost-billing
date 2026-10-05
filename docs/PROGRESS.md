@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 88 — Make Administrator Order Ledger Searchable and Paginated
-- **Current status:** Command 88 completed; delivered source CI/CodeQL passed; final report-head verification required before handoff
+- **Current command:** Phase Review — Review Command 88 and define the next bounded command
+- **Current status:** Review completed; Command 89 defined only; review-head hosted verification required before handoff
 - **Last updated:** 2026-10-05
-- **Next command:** Phase Review — Review Command 88 and define the next bounded command
+- **Next command:** Command 89 — Make Customer Order History Searchable and Paginated
 - **Next command authorized:** No
 
 ## Command Reports
@@ -8026,6 +8026,86 @@ Stop after this review's delivery; do not implement Command 88 automatically.
 
 **Phase Review — Review Command 88 and define the next bounded command.**
 Stop after Command 88 delivery; do not define or implement Command 89 automatically.
+
+### Phase Review — Review Command 88 and define the next bounded command
+
+- **Status:** Review completed; no corrective application change identified;
+  Command 89 definition only
+- **Date:** 2026-10-05 (Asia/Dhaka)
+- **Authorization:** User said “continue” after the proposed Command 88 phase
+  review. This authorizes review/definition, not Command 89 implementation.
+
+#### Scope reviewed and outcome
+
+- Read project instructions, product plan, decisions, relevant progress, Command 88
+  and delivered changes. Reviewed query/server entry/ledger/manager, original review,
+  order API/runtime contracts and large fictional API/browser/component fixtures.
+- Confirmed bounded URL inputs and offsets, independently validated customer scope,
+  fixed destinations, full item/invoice/metadata validation, duplicate/scope/status
+  rejection, abort/discard and honest invalid/empty/out-of-range/GET retry behavior.
+- Confirmed creation/customer/product/price/domain/note and submission keys remain
+  independent of ledger navigation. Setup options load once and retain their
+  existing initial loading boundary. Query/retry and mutation dispatch clear review;
+  pending writes block inspection. Original clicked status IDs, CSRF/bodies/keys
+  remain unchanged; completion reconciles latest filters without row injection,
+  repeat writes, stale review or loss of successful creation notice.
+- Search is historical email/order number/any item domain, not current profile
+  identity or invoice/product name. Sorting is createdAt/ID, not placedAt. Counts
+  are matching records, not money or service/provisioning proof. No new correction
+  to application or test behavior was found by this review.
+- Defined Command 89 only from inspected customer source: `/portal/orders` fetches
+  `/orders/my?pageSize=100`, discards pagination and has no search/status controls.
+  Existing customer-only controller derives scope from the authenticated identity.
+  One read-only customer history is next; invoice links/richer relationships and
+  all-item review remain separate, not implicitly implemented by pagination.
+
+#### Files changed
+
+- `CODEX_DEVELOPMENT_COMMANDS.md` — bounded Command 89 and explicit authorization.
+- `docs/DECISIONS.md` — ADR-071 ownership/history sequencing boundary.
+- `docs/PRODUCT_EXPERIENCE_ROADMAP.md` — review outcome and customer history gap.
+- `docs/PROGRESS.md` — review evidence, retained risks and exact next command.
+- No application, API, test, schema, dependency, worker or deployment changes.
+
+#### Validation
+
+- Started clean on main at `6b075a3c631b72d959c84352f8b0e0575fa00826`.
+  Fetch confirmed **0 ahead/0 behind** canonical origin/main. Reverified that exact
+  delivered report head's
+  [CI](https://github.com/ebit101/webhost-billing/actions/runs/37261087772) and
+  [CodeQL](https://github.com/ebit101/webhost-billing/actions/runs/37261087775)
+  completed **successfully**; this closes Command 88's report-head handoff check.
+- Fresh focused order query/ledger/server-entry/review/original checkout-management,
+  service inventory/management, invoice ledger, payment review/management and customer
+  filter regressions: **184 tests across 11 files passed**. Fresh shared contracts:
+  **29 passed**. No assertion, timing limit, authentication limit or test changed.
+- Command 88's full local API/browser/package/lint/types/build evidence remains in
+  its report; those database/browser/build checks are not claimed rerun locally here.
+  No database preparation/reset, provider request, Docker lifecycle/cleanup or
+  default-development record mutation was needed for this documentation-only review.
+- Complete fresh web regression: **419 tests across 41 files passed**. Scoped
+  Prettier formatting, all **four offline documentation validators** and whitespace
+  checks passed. Deliver only the four reviewed documentation files through a focused
+  commit, remote reconciliation and non-force push. Verify the exact review head's
+  CI/CodeQL before handoff; pending hosted gates are not claimed passed.
+
+#### Decisions and unresolved risks
+
+- ADR-071 defines Command 89 only. Preserve ADR-070 and independent financial/
+  order/service state, historical snapshots and lossless monetary serialization.
+- Retain known local parallel-worker timing/fictional fixture and URL-schema-only
+  raw-SQL isolation limitations. Future DB checks must verify model schema and raw
+  search_path; hosted success does not establish a local repair.
+- Other ledgers, invoice/service links, picker/setup/tool/history scale, operation
+  redesign, attention/freshness/chrome, advisory 15 and direct-main governance remain
+  separate. Production stays **NO-GO** pending credentialed providers, SMTP,
+  monitoring, off-site recovery, policies/infrastructure and operator pilot.
+- No Command 89 implementation, release, cleanup or deployment authorized here.
+
+#### Exact recommended next command
+
+Authorize **Command 89 — Make Customer Order History Searchable and Paginated**.
+Stop after review delivery; do not start Command 89 automatically.
 
 ## Report Template
 

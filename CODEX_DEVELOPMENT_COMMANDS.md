@@ -2584,6 +2584,81 @@ on 2026-10-05. The user separately authorized Command 88 by its full title on
 
 ---
 
+## Command 89 — Make Customer Order History Searchable and Paginated
+
+```text
+Replace only the fixed first-100 customer order list at /portal/orders with
+URL-bound search, order status, page and bounded page-size controls. Use existing
+customer-only GET /orders/my, orderListQuerySchema.omit({ customerId: true }),
+orderSchema and the paginated envelope. Add no endpoint, route or business rule.
+
+Allow only singular search/status/page/pageSize inputs, with the existing trimmed
+200-character search bound, order enum, positive safe integers, page 1/default
+size 20/maximum 100 and safe PostgreSQL offsets. Invalid or duplicate owned fields
+must block reads and show recoverable invalid-filter feedback. Ignore unrelated
+parameters; never forward customerId, user/account identity, redirect destinations,
+amounts or mutation inputs. Reconstruct only fixed /portal/orders destinations.
+The API derives customer scope from the session, not URL or browser input.
+
+Submitting search or changing status/page-size resets page one and preserves the
+other applied filters. Provide clear filters, Previous/Next and authoritative
+matching count/range/page feedback. Restore committed filters on reload and browser
+back/forward. Counts are owned matching orders, not account balances, settled cash
+or proof of provisioning. Keep existing case-insensitive search: order number,
+historical customer email and any item's requested domain. Do not claim product,
+invoice-number, current-email or customer-name search. Ordering is createdAt desc
+then id desc, not displayed placedAt or a frozen history across page requests.
+
+Use abortable cookie/no-store GETs and runtime-validate the full order/item/invoice
+rows, unique IDs, applied status and safe/consistent pagination including expected
+page length. Superseded query/retry/unmount reads cannot restore stale rows/counts.
+Keep loading, malformed/inconsistent response, safe failure/GET-only retry, first-use
+empty, no matches and out-of-range states distinct. Never silently clamp pages or
+display raw network/response errors. Keep controls usable and labels/focus legible
+at 375px and by keyboard. Make any first-item summary explicitly incomplete when
+additional items exist; any-item search must not imply a full item review.
+
+Preserve existing New order/Browse hosting plans destinations, order/invoice state
+columns, lossless money and deliberate checkout. No order-detail/review interface,
+new invoice/customer/service navigation or inferred service state here. Invoice
+linking and richer customer purchase context remain separately gated work.
+
+Add focused query/server-entry/component tests for >100 records, exact requests,
+combined filters, metadata, page-size resets, history restoration, invalid/duplicate/
+offset inputs, ignored identity/redirect payloads, bad rows/metadata, duplicates,
+stale response discard, safe retry and honest empty/out-of-range recovery. Extend
+existing order API tests with fictional histories beyond 100, any-item/historical
+email search, tie-break ordering, status/count isolation and another customer's
+records excluded from both data and metadata. Prove supplied customerId cannot
+override /orders/my, anonymous access fails and administrator routes stay protected.
+
+Add one guarded fictional customer browser journey reaching an older order with
+search/status/paging, reload/history/keyboard/mobile and no business writes. Compare
+complete order/item/invoice/invoice-item/payment/event/service/operation/audit/outbox
+facts before/after permitted browsing; take authorization-denial audits outside that
+baseline. Use dedicated fictional sign-in and fake providers, no raised auth limits,
+weakened deadlines/assertions or credential-bearing traces/video/screenshots.
+
+Read installed Next.js guidance before code edits. Run focused order/shared and
+relevant API regressions, complete web/package tests, full fictional browser suite,
+docs:check, format, lint, strict workspace/browser types and production build.
+Sequence heavy checks; verify loopback fictional Prisma model schema AND raw-SQL
+search_path before preparation/tests. Preserve existing worker/isolation risks;
+do not alter worker source, dependencies, timing limits or default records.
+
+Update docs/PROGRESS.md, commit, reconcile without published-history rewriting,
+non-force push origin/main, verify exact-head CI/CodeQL and stop for phase review.
+Exclude other ledgers, general list/search frameworks, sorting/date/export/bulk
+features, financial or service mutations, relationships, setup/picker/history scale,
+dashboard/automation/chrome, auth/schema/dependency/worker changes, providers,
+cleanup, releases, deployments and production approval. Production remains NO-GO.
+```
+
+**Authorization:** Defined by the authorized Command 88 phase review on
+2026-10-05. Implementation requires separate user authorization; it has not started.
+
+---
+
 ## Continuation Command
 
 If a phase encounters errors or remains incomplete, use this prompt in the same Codex task:

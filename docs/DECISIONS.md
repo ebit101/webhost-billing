@@ -886,6 +886,27 @@ This document records durable technical and product decisions. New decisions sho
   Counts are records, not balances, settled cash or provisioning proof. No new API,
   schema, worker, provider or approval prerequisite; production remains NO-GO.
 
+## ADR-071 — Ownership-Bound Customer Order History Before Richer Relationships
+
+- **Status:** Accepted for next-command definition; implementation separately gated
+- **Date:** 2026-10-05
+- **Decision:** After reviewing Command 88, define one customer order-history
+  slice with bounded URL search/status/pages using existing customer-only
+  `/orders/my` and complete runtime order/pagination contracts. Never forward
+  identity or arbitrary return navigation; customer scope remains session-derived.
+- **Reason:** Administrator order lookup now reaches older records without losing
+  drafts or retargeting operations. The customer order screen still discards pages
+  beyond its first 100, despite an existing ownership-bound searchable API. This
+  recurring self-service lookup is ready without a new financial/service read model.
+- **Consequence:** Command 89 is defined, not authorized or implemented here.
+  Search remains historical email/order number/any item domain; sorting is
+  createdAt/ID, not placedAt. Matching counts are not balances or provisioning
+  evidence. Reject stale/malformed results and provide honest GET-only recovery.
+  First-item summaries must not imply all-item review. Existing invoice text and
+  checkout routes remain; new cross-record links/review, other ledgers, general
+  frameworks, workers/isolation, dependencies/governance, providers, cleanup,
+  releases and deployments remain separately gated. Production stays `NO-GO`.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:
