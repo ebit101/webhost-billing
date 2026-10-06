@@ -3,10 +3,10 @@
 ## Status Summary
 
 - **Current command:** Command 96 — Build the exact currency arithmetic foundation
-- **Current status:** Command 96 pure shared foundation implemented and local acceptance complete. Docker Engine recovered; guarded package/API/invariant tests and both browser suites passed sequentially. Shared 67 tests, web 572 tests, all workspace types, builds, lint/docs/format/licenses, frozen install and ten mitigation checks pass. Production audit clean; full audit retains one high/one moderate development-tooling finding, not waived. Canonical delivery and exact-head CI/CodeQL verification are next. No application currency behavior, staging release or production approval changed
+- **Current status:** Command 96 completed and source delivered to canonical main. Local guarded package/API/invariant and lifecycle/staff browser acceptance passed; exact source-head CI and CodeQL succeeded. Shared 67 tests, web 572 tests, types, builds, lint/docs/format/licenses, frozen install and mitigation checks pass. Production audit clean; full audit retains one high/one moderate development-tooling finding, not waived. Final report-head checks are verified in the owner handoff. No application currency behavior, staging release or production approval changed
 - **Last updated:** 2026-10-07
-- **Next command:** Continue Command 96 — Complete canonical delivery and exact-head CI/CodeQL verification
-- **Next command authorized:** Yes, within Command 96 only
+- **Next command:** Phase review — Review Command 96 arithmetic foundation and define the next bounded currency command
+- **Next command authorized:** No
 
 ## Command Reports
 
@@ -10179,7 +10179,7 @@ Stop after this phase review; no currency functionality, release or deployment i
 
 ### Command 96 — Build the exact currency arithmetic foundation
 
-- **Status:** Implemented and locally validated; canonical delivery and exact-head hosted acceptance pending
+- **Status:** Completed and source delivered to GitHub main; exact source-head local/hosted acceptance passed
 - **Date:** 2026-10-07
 - **Authorization:** The owner explicitly authorized Command 96 after the Command 95
   phase-review handoff. This does not approve live currency activation or remaining risks.
@@ -10280,8 +10280,21 @@ Stop after this phase review; no currency functionality, release or deployment i
   for the same two findings. Local memory remains tight (gates run sequentially);
   read-only disk inspection showed approximately 20 GiB free on both C: and D:.
 - Canonical main fetch reconciled 0/0 before delivery. Final documentation/format/staged
-  whitespace checks precede the focused source commit and non-force push. Exact-head
-  CI/CodeQL results must be verified after push, not inferred from the previous command.
+  whitespace checks passed after the local acceptance report. Focused source commit
+  `2b319ae22dcb0f1f99ea67fad5382b66fa5618e9` was non-force pushed to `origin/main`;
+  working tree clean and local/remote main reconciled 0/0 afterward.
+- Exact source-head [CI](https://github.com/ebit101/webhost-billing/actions/runs/37512995878)
+  and [CodeQL](https://github.com/ebit101/webhost-billing/actions/runs/37512995914)
+  both succeeded. Every Validate step passed, including complete-history secret scan,
+  frozen install/mitigations, docs/format/lint/types, package/API/invariant tests, both
+  browser suites, production audit/license inventory and builds. Job logs independently
+  confirm API integration 81, lifecycle browser 19 (2.1 minutes), staff UI 4 (10 seconds),
+  clean production audit and 30/30 generated web pages. PR-only Dependency review was
+  skipped on direct push, not passed; GitHub explicitly reported owner rule bypass.
+  Existing direct-main governance and both advisory findings remain unresolved.
+- This documentation-only acceptance follow-up records source-head evidence; commit/push
+  it after scoped docs/format/whitespace checks and verify its exact-head CI/CodeQL in
+  the owner handoff without another self-recording report commit. No new scope is added.
 
 #### Decisions made
 
@@ -10294,9 +10307,10 @@ Stop after this phase review; no currency functionality, release or deployment i
 
 #### Open questions and risks
 
-- The earlier Docker blocker is resolved and all required local acceptance passed.
-  Canonical delivery/hosted checks remain pending until recorded below. Local low-memory
-  constraints and the retained non-failing development diagnostics remain visible.
+- The earlier Docker blocker is resolved; local and exact source-head hosted acceptance
+  passed. Local low-memory constraints, direct-main bypass/PR-only skipped review and
+  retained non-failing development diagnostics remain visible. No Docker image rebuild
+  or deployment acceptance is claimed.
 - Metadata/provider rights, enabled currencies/routes, operational quote/rounding/rate
   policies, protected WHMCS source/target/credits, Command 33 D5–D8, staffing/operators,
   residual tooling exposure and deployment/production approval remain separately gated.
@@ -10306,10 +10320,9 @@ Stop after this phase review; no currency functionality, release or deployment i
 
 #### Exact recommended next command
 
-**Continue Command 96 — Complete canonical delivery and exact-head CI/CodeQL verification**.
-After full validated delivery, stop for separately authorized
-**Phase review — Review Command 96 arithmetic foundation and define the next bounded
-currency command**. Do not start a new implementation, activate providers or deploy.
+Authorize **Phase review — Review Command 96 arithmetic foundation and define the next
+bounded currency command**. Stop after verified delivery. This recommendation is not
+authorization for a new implementation, provider activation or deployment.
 
 ## Report Template
 

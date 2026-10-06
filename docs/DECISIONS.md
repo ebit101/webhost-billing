@@ -1229,7 +1229,7 @@ This document records durable technical and product decisions. New decisions sho
 
 ## ADR-085 — Explicit historical unit context and bounded exact currency arithmetic
 
-- **Status:** Owner-authorized Command 96; pure foundation implemented and locally validated
+- **Status:** Accepted for Command 96; unused pure foundation delivered with local and exact source-head hosted validation
 - **Date:** 2026-10-07
 - **Decision:** Add an unused `@webhost-billing/shared/currency-arithmetic` subpath without
   modifying root exports or existing money contracts. Require explicit code/version unit
