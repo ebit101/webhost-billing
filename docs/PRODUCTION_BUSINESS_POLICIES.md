@@ -594,6 +594,25 @@ settings, providers, workers, scheduler, database, hostname or deployment were c
 - Production effect: none. No customer-facing policy page, setting, refund, service action,
   provider authority, worker/scheduler activation, database change or deployment is authorized.
 
+### Remaining owner-input intake — 2026-10-06
+
+The owner authorized **Resume Command 33 — Resolve D5–D8 and Supply Remaining Operating
+Inputs**. This authorizes collection/review, not acceptance of D5–D8. At this checkpoint no
+new retention reference, operator appointment, incident backup, protected payment/catalogue
+reference, maintenance/renewal window or gap decision has been supplied. D1–D4 remain approved.
+
+Read-only source inspection confirms `/admin/payments` exists, dashboard activity is limited
+to the latest 12 events and the observability layer exposes health/readiness/protected
+operational signals rather than external alert delivery. This supports the existing D7
+decision boundary, not acceptance of a workaround. A complete protected audit-review
+procedure, named operator and tested external primary/backup alert routes remain required.
+No live installation, account, database, alert route or provider was inspected or exercised.
+
+The reply form above remains the single intake form. The first required answers are named
+roles, D5 retention decisions/references and separate D7/D8 choices. Exact dates and protected
+operating references can be supplied subsequently; “not ready” leaves the affected gate open.
+Do not repeat D1–D4 approval, infer a legal duration or publish private details to fill blanks.
+
 ## Deferred configuration locations
 
 The owner will complete unresolved values later. Use the narrowest existing control below;

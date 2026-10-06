@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Resume Command 33 — Record D1–D4 operating-rule approval
-- **Current status:** DRAFT-OPS-1 D1–D4 approved and recorded; D5–D8 and operating inputs remain open; no deployment; recorded staging release 6085629 unchanged; production not approved
+- **Current command:** Resume Command 33 — Resolve D5–D8 and Supply Remaining Operating Inputs
+- **Current status:** Authorized owner-input intake reviewed; awaiting actual D5–D8 decisions and operating inputs; D1–D4 remain approved; no deployment; recorded staging release 6085629 unchanged; production not approved
 - **Last updated:** 2026-10-06
-- **Next command:** Resume Command 33 — Resolve D5–D8 and Supply Remaining Operating Inputs
+- **Next command:** Resume Command 33 — Record Remaining Owner Decisions and Operating Inputs
 - **Next command authorized:** No
 
 ## Command Reports
@@ -9323,6 +9323,68 @@ migration, deployment or cutover from this review authorization.
 **Resume Command 33 — Resolve D5–D8 and Supply Remaining Operating Inputs**.
 Request owner decisions/inputs; do not start a later development/infrastructure command,
 publish policies, migrate data or deploy from this partial rule approval.
+
+### Resume Command 33 — Resolve D5–D8 and Supply Remaining Operating Inputs
+
+- **Status:** Intake checkpoint prepared; awaiting owner answers, not policy completion
+- **Date:** 2026-10-06
+
+#### Scope completed
+
+- Recorded explicit authorization to collect/resolve remaining inputs, without approving
+  D5–D8 or altering the previous D1–D4 owner approval.
+- Reused the existing approval/input form; requested named operators/distinct incident
+  backup, D5 retention decisions/references and separate D7/D8 choices from the owner.
+- Cross-checked relevant settings, launch/release records and local source read-only:
+  administrator payments route exists; recent audit activity is limited to 12 events;
+  observability exposes signals but external monitor/alert delivery remains operational.
+- Identified remaining exact windows, catalogue/legacy mapping, reconfirmed payment/cash
+  handling, staffing, first eligible-service list and rollback/evidence references as inputs.
+
+#### Files changed
+
+- `CODEX_DEVELOPMENT_COMMANDS.md` — bounded authorized remaining-input intake.
+- `docs/PRODUCTION_BUSINESS_POLICIES.md` — dated authorization/input checkpoint, preserving
+  the existing form and all draft-group text/statuses.
+- `docs/PROGRESS.md` — authorized intake status, this report and next owner-input action.
+
+#### Validation
+
+- Source/document inspection only; no database, API, browser, Docker, private record,
+  real provider or live installation accessed. No runtime acceptance or legal review claimed.
+- Scoped Prettier and `git diff --check` passed for the three changed documents.
+- `pnpm docs:check` passed all four offline validators: links/anchors, contributor paths,
+  issue forms and safe-demo assets.
+- A read-only Node assertion verified exact preservation of all D1–D8 bodies/statuses
+  and the previous named D1–D4 approval; the new intake remains collection-only and the
+  no-production-effect boundary is intact.
+- Verified canonical remote and `main`, fetched `origin/main` and confirmed zero ahead/behind
+  before delivery. This validated documentation checkpoint uses a focused commit and
+  non-force push; no hosted-check result or completed business-policy gate is claimed.
+
+#### Decisions made
+
+- A command title is authorization to do the intake, not an answer to its business questions.
+  Missing role appointments, dates, retention obligations and private references cannot be
+  invented or inferred from public marketing or the previously named approver.
+- Conditional G1–G3 acceptance requires owner choice and tested, owned workarounds. Recent
+  dashboard activity is not a full audit-review process, and health signals are not alerts.
+- D8 acceptance cannot approve migration/cutover execution. No retention/disposal job,
+  alert integration, audit tool or customer-facing policy implementation was added.
+
+#### Open questions and risks
+
+- Owner answers have not yet supplied D5–D8 acceptance/edits, retention obligations, roles
+  or distinct incident backup. Maintenance/renewal windows and protected operating inputs
+  remain unresolved. This is a validated intake checkpoint, not a completed Command 33 gate.
+- Security/infrastructure, mail/monitoring, independent secrets, backup/restore, legacy-data
+  migration and release/cutover evidence remain separate. Production is not authorized.
+
+#### Recommended next command
+
+**Resume Command 33 — Record Remaining Owner Decisions and Operating Inputs**, after the
+owner supplies actual answers/references. Do not request another generic review or begin a
+later command to substitute for the missing information; no production authority is implied.
 
 ## Report Template
 

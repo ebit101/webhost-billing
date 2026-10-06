@@ -893,6 +893,19 @@ Validate the documentation, record progress, commit, reconcile and non-force pus
 stop and request **Resume Command 33 — Approve DRAFT-OPS-1 and Supply Remaining Operating
 Inputs**. This review does not authorize Command 34, migration, deployment or cutover.
 
+### Authorized Command 33 resumption — Remaining owner-input intake
+
+The owner authorized **Resume Command 33 — Resolve D5–D8 and Supply Remaining Operating
+Inputs** after approving D1–D4. Collect explicit remaining group decisions, lawful retention
+references, named operational roles/distinct incident backup, protected payment/catalogue
+references, exact maintenance/first-renewal windows and eligible-list/rollback evidence.
+Recheck relevant source boundaries read-only; do not invent missing inputs, appoint owners
+from the approver's identity or treat command authorization as draft acceptance. Preserve
+the approved D1–D4 source/version and leave unsupplied values open. No implementation,
+provider test, policy publication, live setting, migration, deployment or cutover is authorized.
+Record the intake checkpoint and proportionate documentation validation; stop for owner
+inputs rather than starting Command 34 or repeatedly preparing the same approval packet.
+
 ## Command 34 — Select and Audit Production Infrastructure
 
 ```text
