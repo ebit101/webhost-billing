@@ -1144,6 +1144,42 @@ This document records durable technical and product decisions. New decisions sho
   two patches. Review package/advisory conflicts and authorize a bounded tooling-security
   repair before progressing to currency implementation; do not suppress the findings.
 
+## ADR-082 — Separate unpatched tooling mitigation from audit closure
+
+- **Status:** Accepted sequencing decision from the owner-authorized Command 93 phase
+  review; Command 95 defined only, implementation and residual-risk acceptance not authorized
+- **Date:** 2026-10-06
+- **Evidence:** Command 93 report head `ceb40ca` passed exact-head CI and CodeQL; fresh
+  production audit is clean. Full audit still reports high `braces` 3.0.3 through Next
+  lint tooling and moderate `sprintf-js` 1.0.3 through Jest/Istanbul/YAML/argparse.
+  Official registry metadata for [braces](https://registry.npmjs.org/braces) and
+  [sprintf-js](https://registry.npmjs.org/sprintf-js) lists latest 3.0.3/1.1.3 and contains neither suggested
+  fixed floor 3.0.4/1.1.4. Both primary advisories list no patched release:
+  [braces](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm) and
+  [sprintf-js](https://github.com/advisories/GHSA-hp3w-g68c-fv3c).
+- **Decision:** Define one bounded Command 95. Prefer verified published compatible fixes
+  if released; otherwise permit, after separate authorization, narrowly attributed
+  exact-version local pnpm patches with bounded installed-consumer regressions, frozen
+  reproducibility and removal criteria. No unmerged-branch installation, invented version,
+  package rename, broad dependency migration or audit suppression is permitted. The open
+  [sprintf-js proposal](https://github.com/alexei/sprintf.js/pull/238) is evidence to review,
+  not an accepted/released fix; a parse-time exception alone does not establish safe
+  caller behavior for the installed version.
+- **Acceptance:** Preserve the production audit and existing complete acceptance gates.
+  Verify local mitigation independently and report full audit failures honestly; patches
+  do not necessarily clear version-based alerts. Retain upstream findings and require a
+  separate owner-authorized phase review of remaining exposure before currency work.
+  [pnpm patch documentation](https://pnpm.io/cli/patch) supports registered patch files;
+  use exact versions and keep unused-patch tolerance disabled.
+- **Limitations:** Individual repository Dependabot alert states could not be read without
+  authenticated security-alert permission (HTTP 401). The two-finding GitHub push notice
+  and local audit agree in count, but are not proof of alert-by-alert closure. No evidence
+  of live compromise or a proved application exploit was found in this review. Retain
+  the trusted-local/isolated-CI boundary, direct-main governance risk and launch inputs.
+- **Consequence:** Review delivery changes documentation only. Command 94 remains design
+  only; Command 91, Command 33 D5–D8, private-data rehearsal, provider activation and
+  production/deployment approval remain separately gated.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

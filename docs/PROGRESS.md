@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 93 — Restore the security and browser validation gate
-- **Current status:** Command 93 authorized repair delivered as 63643a3; complete local acceptance and exact-source hosted CI/CodeQL pass, including production audit/license inventory and both browser suites. Two development-only advisories remain outside this command; review/authorize their bounded repair before currency implementation. Final report delivery is checked separately. Command 33 inputs/D5–D8 remain unresolved; recorded staging release 6085629 unchanged; production not approved
+- **Current command:** Phase review — Review Command 93 and the remaining development-tooling advisories
+- **Current status:** Review complete: Command 93 source/report heads passed CI/CodeQL; fresh production audit is clean. Two development-only advisories have no published patched versions. Command 95 defines bounded local mitigation and honest audit reporting, not implementation or residual-risk acceptance. Currency remains design-only; Command 33 inputs/D5–D8 remain unresolved; recorded staging release 6085629 unchanged; production not approved
 - **Last updated:** 2026-10-06
-- **Next command:** Phase review — Review Command 93 and the remaining development-tooling advisories; define the next bounded security repair before currency implementation
+- **Next command:** Command 95 — Mitigate unpatched development-tooling denial-of-service risks
 - **Next command authorized:** No
 
 ## Command Reports
@@ -9847,6 +9847,105 @@ this design delivery; do not implement or run a private-data rehearsal by infere
 define the next bounded security repair before currency implementation.** Stop after
 this repair's delivery; require separate owner authorization before additional dependency
 patches, currency functionality, Command 91, a private-data rehearsal or deployment.
+
+### Phase review — Review Command 93 and the remaining development-tooling advisories
+
+- **Status:** Review completed; Command 95 defined only, not authorized for implementation
+- **Date:** 2026-10-06
+
+#### Scope reviewed
+
+- Compared Command 93's definition and source repair `63643a3` with the delivered report
+  head `ceb40ca`. The two production overrides, test-only nonce/schema/marker boundary,
+  fixture preparation/cleanup, compiled API startup and concrete sentence-case assertions
+  match the authorized repair. Browser deadlines, retries and business assertions remain
+  intact; production database clients, workers and business rules were not rewritten.
+- Rechecked exact report-head hosted acceptance, decoded job logs, current production/full
+  audits, installed dependency consumers, registry version availability and primary
+  advisories. No new in-scope source defect was identified by this bounded inspection;
+  this is not an exhaustive security audit or proof of production readiness.
+- Resolved the suggested-version conflict: npm audit advertises fixed floors that are not
+  published. Registry latest is `braces` 3.0.3 and `sprintf-js` 1.1.3; neither 3.0.4 nor
+  1.1.4 exists in current official version metadata. Both advisories list no patched release.
+- Defined Command 95 for compatible published fixes if available later, otherwise minimal
+  exact-version local patches with adversarial/normal consumer regressions and independent
+  mitigation verification. No patch, dependency, test, CI or runtime change was made now.
+
+#### Files changed
+
+- `CODEX_DEVELOPMENT_COMMANDS.md` — corrected Command 93's stale authorization heading
+  while preserving its historical scope; defined Command 95 with explicit stop conditions.
+- `docs/DECISIONS.md` — ADR-082 separates local mitigation, upstream audit closure and
+  owner residual-risk acceptance.
+- `docs/PROGRESS.md` — current summary and this evidence-backed phase-review report.
+
+#### Validation and evidence
+
+- Fresh `pnpm audit --prod`: passed, no known vulnerabilities. Fresh unrestricted
+  `pnpm audit`: two findings, high `braces` and moderate `sprintf-js`; exit 1, not a passed check.
+  `pnpm why -r braces sprintf-js` confirms only installed versions 3.0.3 and 1.0.3,
+  respectively, through development-only lint/Jest consumers. An unrestricted audit
+  failure remains visible; no advisory suppression or threshold change was made.
+- Official registry version metadata read-only checks confirm both suggested fixed
+  versions are unavailable. Primary [braces advisory](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm)
+  and [sprintf-js advisory](https://github.com/advisories/GHSA-hp3w-g68c-fv3c) list no patched
+  version. The [upstream sprintf-js proposal](https://github.com/alexei/sprintf.js/pull/238)
+  is open/unreleased, not approved as this repository's mitigation. Installed argparse
+  formatting consumers and braces/sprintf parser code were inspected without execution
+  of unbounded exploit cases or downloading/installing candidate packages.
+- Exact report head `ceb40ca44114d7b1dad6d5242f51b319a2a3b7b9`:
+  [CI](https://github.com/ebit101/webhost-billing/actions/runs/37419658488) and
+  [CodeQL](https://github.com/ebit101/webhost-billing/actions/runs/37419658442) succeeded.
+  Validate job's steps all succeeded, including browser/audit/licenses/builds. PR-only
+  Dependency review was skipped on push and is not claimed as passed. Decoded logs confirm
+  81 API integration tests, 19 browser tests in 2.0 minutes, four staff browser tests in
+  8.7 seconds, clean production audit and 30/30 static pages.
+- Re-executed focused browser database-boundary regressions locally: 22/22 passed.
+  No PostgreSQL fixture preparation, schema reset, worker/provider operation or live
+  browser session was needed for this documentation review. Full suites/builds were not
+  rerun locally; exact source/report-head hosted evidence above is used explicitly.
+- Individual repository Dependabot alerts read returned HTTP 401 without authenticated
+  security-alert permission. Do not claim individual alert resolution; GitHub's final
+  Command 93 push reported two findings, matching the local count but not proving states.
+- All four offline documentation validators, scoped Prettier checks for the three changed
+  documents and `git diff --check` passed. Delivery contains documentation only; no
+  dependency/source artifact changed. Reconcile and non-force push the focused review;
+  any final review-head hosted results are reported in the owner handoff rather than
+  creating another report-only commit solely to record its own checks.
+
+#### Decisions made
+
+- Command 93's authorized repair is accepted as delivered; development-only risk is a
+  separate bounded command, not an unrecorded extension or a reason to revert the repair.
+- Do not install nonexistent fixed versions, unmerged Git code or renamed substitutes to
+  make an audit appear clean. Local registered patches must be reviewable/reproducible,
+  attributed, exact-version and accompanied by removal criteria and consumer tests.
+- A guard that merely moves an uncaught native exception to another parser location is
+  not sufficient denial-of-service mitigation. Verify bounded failure and actual caller
+  behavior, ordinary semantics and installed version compatibility.
+- Registry alerts may remain after a proven local mitigation. Report both independently,
+  retain existing audit policy and require a subsequent owner-authorized residual-risk
+  review before defining currency implementation. No waiver is granted by this review.
+
+#### Open questions and risks
+
+- Upstream patched release availability and individual GitHub alert states remain open.
+  Whether both installed-tooling mitigations can be safely applied is not yet tested;
+  stop Command 95 for separate strategy if compatibility or safety cannot be established.
+- Tooling code is executable during development/CI, not harmless merely because it is
+  absent from the production graph. This review establishes affected versions/consumers,
+  not a proved live exploit or compromise. Retain trusted machine/isolated CI guidance.
+- Direct-main delivery bypasses PR-only dependency review; retain the existing documented
+  governance risk rather than claiming a skipped check passed. No repository rule changed.
+- Existing listener/interface boundary, low-memory operational constraint, owner D5–D8
+  inputs, real staffing, protected migration sample/target and currency activation inputs
+  remain open. No deployment, customer data, provider, financial record or policy changed.
+
+#### Exact recommended next command
+
+Authorize **Command 95 — Mitigate unpatched development-tooling denial-of-service risks**.
+This review defines the command only. Stop for separate authorization; do not apply
+patches, implement currency or proceed to Command 91, migration or deployment now.
 
 ## Report Template
 

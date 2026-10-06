@@ -2958,10 +2958,11 @@ only; no deployment or business-policy approval.
 
 ## Command 93 — Restore the security and browser validation gate
 
-**Definition only — not authorized for implementation.** The owner-authorized Command 92
-phase review on 2026-10-06 identified three acceptance blockers: affected production
-dependencies, stale browser label assertions and browser raw-SQL isolation. This is one
-bounded validation-repair slice, not a new product feature or production launch.
+**Authorized and delivered on 2026-10-06.** The owner separately authorized Command 93
+after the Command 92 phase review defined the three acceptance blockers below. Source
+repair `63643a3` and report head `ceb40ca` passed exact-head CI and CodeQL. The Command 93
+phase review defines Command 95 for remaining development-tooling risks; it does not
+authorize that implementation, currency work or production launch.
 
 ```text
 Command 93 — Restore the security and browser validation gate
@@ -3008,9 +3009,9 @@ Stop for phase review. Do not deploy, invite real staff, appoint operators, acce
 D5–D8, publish policies, import WHMCS, enable providers or begin Command 91.
 ```
 
-**Authorization boundary:** This phase review defines Command 93 only. Require a new
-explicit owner instruction before changing dependencies, tests or runtime behavior.
-Command 33 remains partly approved and production remains unapproved.
+**Historical authorization boundary:** The Command 92 phase review defined Command 93
+only; the later explicit owner instruction authorized the delivered repair. Command 33
+remains partly approved and production remains unapproved.
 
 ---
 
@@ -3040,6 +3041,76 @@ progress, commit the focused design, reconcile canonical main without rewriting 
 and non-force push. Stop. The exact next implementation recommendation remains
 **Command 93 — Restore the security and browser validation gate**; define a bounded
 currency-foundation implementation only after that repair's review and new authorization.
+
+---
+
+## Command 95 — Mitigate unpatched development-tooling denial-of-service risks
+
+**Definition only — implementation not authorized.** The owner-authorized Command 93
+phase review on 2026-10-06 confirmed clean production acceptance but two development-only
+advisories. Registry metadata contains neither suggested fix, `braces` 3.0.4 nor
+`sprintf-js` 1.1.4; do not install nonexistent versions or call a local mitigation an
+upstream release. Command 94 remains design-only.
+
+```text
+Command 95 — Mitigate unpatched development-tooling denial-of-service risks
+
+Read AGENTS.md, the product plan, decisions and the Command 93 phase-review report.
+Recheck GHSA-vfj7-8cjw-p6xm and GHSA-hp3w-g68c-fv3c, actual lockfile consumers,
+official registry releases, upstream changes and available repository alert evidence.
+Keep production overrides proxy-addr 2.0.8/source-map-js 1.2.2 and all supply-chain
+controls. Do not treat npm's suggested fixed floor as proof a release exists.
+
+Prefer verified, compatible, published upstream security fixes if available at execution.
+Otherwise implement only minimal, reviewable local pnpm patches for the installed
+braces 3.0.3 and sprintf-js 1.0.3. Register exact-version patchedDependencies, commit
+patches with upstream/license attribution and a documented removal condition. Prove
+patch application from a frozen install; leave unused-patch tolerance disabled. Do not
+install an unmerged Git branch, rename vulnerable packages to hide alerts, publish a
+fork, edit package versions, replace a framework/test runner or make broad upgrades.
+
+Bound the affected braces recursive walkers, including direct AST entry points and
+all reachable compile/expand/stringify paths; prevent stack exhaustion without
+breaking ordinary lint/glob behavior. For sprintf-js, handle invalid numeric precision
+without unbounded native calls or uncaught process termination, preserving ordinary
+formatting and positional/named placeholders. Review the installed 1.0.3 code, not
+only a proposed 1.1.3 upstream patch. Moving the same uncaught RangeError to parse time
+is not sufficient mitigation. Do not silently change application monetary arithmetic.
+
+Add deterministic, resource-bounded subprocess regressions against actual installed
+dependency entry points: deeply nested and direct AST inputs, valid boundary cases,
+oversized/zero numeric precision and representative normal formats/globs. Verify
+caller error handling, supported rejection behavior, no timeout/stack overflow and
+compatibility with Next lint and Jest/coverage. Do not execute unbounded exploit cases
+in the main process. If either mitigation cannot be safely bounded, stop with evidence
+and request a separate strategy rather than widening this command.
+
+Keep registry audit findings visible. Record full pnpm audit's exact output/exit status,
+production audit and dependency graph separately; local patches may leave the original
+version-based findings open. Add reproducible mitigation verification to normal local
+and hosted acceptance, but do not ignore advisory IDs, lower thresholds, disable audit,
+change vulnerability severities or claim full audit is clean when it is not. Retain
+the existing production audit gate. Document remaining exposure, owner review needed
+and removal/upgrade criteria; mitigation is not automatic residual-risk acceptance.
+
+Run focused parser/consumer tests, complete package/API/invariant suites and both guarded
+fictional browser suites sequentially. Run frozen-install checks, full and production
+audits, production licenses, docs:check, formatting, lint, strict types and production
+builds. Keep browser isolation, deadlines, retries, MFA/ownership and all financial and
+provider assertions unchanged. No application/live schema reset or real provider use.
+
+Update docs/PROGRESS.md and decisions with actual results and unresolved audit findings.
+Commit validated in-scope work, reconcile canonical main without rewriting history,
+non-force push origin/main and verify exact-head CI/CodeQL. Stop for a separately
+authorized phase review to assess residual risk before defining currency implementation.
+Exclude currency functionality, Command 91, staff appointments, D5–D8 approval,
+WHMCS import, provider activation, releases, deployment and production approval.
+```
+
+**Authorization boundary:** This review defines Command 95 only. Require explicit owner
+authorization before applying patches, changing dependencies, tests or CI. If upstream
+fixes remain absent, passing mitigation tests does not close GitHub/npm advisories or
+authorize proceeding to currency work by inference.
 
 ---
 
