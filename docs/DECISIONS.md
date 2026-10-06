@@ -1227,6 +1227,29 @@ This document records durable technical and product decisions. New decisions sho
   passing tests, this review or a currency request as a residual-risk waiver. Command 33,
   Command 91, real providers, releases/deployment and production approval remain gated.
 
+## ADR-085 — Explicit historical unit context and bounded exact currency arithmetic
+
+- **Status:** Owner-authorized Command 96; pure foundation implemented and locally validated
+- **Date:** 2026-10-07
+- **Decision:** Add an unused `@webhost-billing/shared/currency-arithmetic` subpath without
+  modifying root exports or existing money contracts. Require explicit code/version unit
+  definitions with provenance/status; reject ambiguous identities and unknown contexts.
+  Historical precision never falls back to today's metadata. This is not a currency
+  registry or display/sales/collection policy.
+- **Arithmetic:** Parse positive plain decimal strings losslessly, reduce bounded positive
+  rational rates with BigInt, verify target-major/source-major direction, scale explicit
+  exponents and round once by half-even quotient/remainder. Same-currency identity needs
+  matching metadata and no external rate. Return canonical string money and exact
+  calculation evidence; reject final BIGINT overflow rather than clip or reinterpret units.
+- **Limits:** 32 definitions, exponent 0–4, ratio components 96 digits, decimal tokens
+  64 whole/32 fractional digits, bounded metadata and 19-digit database-safe source money.
+  Validate length/array budgets before integer construction/member traversal. Scientific
+  notation, numeric JSON and executable-input isolation are not supported by this slice.
+- **Boundary:** All rates and synthetic unit histories are fictional tests; no provider
+  data, maintained dataset, application integration, database change or live price effect.
+  Source rights, capability policy, provider contracts, operational rounding/quotes,
+  migration, residual tooling risk, deployment and production approval remain separate.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

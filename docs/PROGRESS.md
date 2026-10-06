@@ -2,11 +2,11 @@
 
 ## Status Summary
 
-- **Current command:** Phase review — Review Command 95 mitigation evidence and remaining audit exposure before defining currency implementation
-- **Current status:** Review completed; Command 95 engineering delivery accepted, residual-risk waiver not granted. Source/report-head hosted acceptance and fresh ten mitigation checks/frozen install pass; production audit clean, full audit retains one high/one moderate development-tooling finding. Command 96 pure currency arithmetic foundation defined only, not implemented or authorized. Command 33 inputs/D5–D8 remain unresolved; recorded staging release 6085629 unchanged; production not approved
-- **Last updated:** 2026-10-06
-- **Next command:** Command 96 — Build the exact currency arithmetic foundation
-- **Next command authorized:** No
+- **Current command:** Command 96 — Build the exact currency arithmetic foundation
+- **Current status:** Command 96 pure shared foundation implemented and local acceptance complete. Docker Engine recovered; guarded package/API/invariant tests and both browser suites passed sequentially. Shared 67 tests, web 572 tests, all workspace types, builds, lint/docs/format/licenses, frozen install and ten mitigation checks pass. Production audit clean; full audit retains one high/one moderate development-tooling finding, not waived. Canonical delivery and exact-head CI/CodeQL verification are next. No application currency behavior, staging release or production approval changed
+- **Last updated:** 2026-10-07
+- **Next command:** Continue Command 96 — Complete canonical delivery and exact-head CI/CodeQL verification
+- **Next command authorized:** Yes, within Command 96 only
 
 ## Command Reports
 
@@ -10176,6 +10176,140 @@ bounded command; do not start currency implementation or accept residual risk by
 
 Authorize **Command 96 — Build the exact currency arithmetic foundation**.
 Stop after this phase review; no currency functionality, release or deployment is authorized.
+
+### Command 96 — Build the exact currency arithmetic foundation
+
+- **Status:** Implemented and locally validated; canonical delivery and exact-head hosted acceptance pending
+- **Date:** 2026-10-07
+- **Authorization:** The owner explicitly authorized Command 96 after the Command 95
+  phase-review handoff. This does not approve live currency activation or remaining risks.
+
+#### Implemented scope
+
+- Added unused `@webhost-billing/shared/currency-arithmetic` subpath. Existing root exports,
+  money parsing/serialization and every application consumer remain unchanged.
+- Added strict explicit code/version unit contexts with exponent, provenance and
+  current/historical status. Reject duplicate/conflicting identities, unknown versions
+  and implicit precision fallbacks. No maintained registry/dataset or capability policy.
+- Added bounded positive decimal-string parsing, canonical reduced rational rates,
+  directed BigInt conversion and versioned half-even quotient/remainder rounding.
+  Validate budgets before integer/power construction, preserve metadata snapshots,
+  reject source/final BIGINT overflow and return JSON-safe exact calculation evidence.
+- Identity requires matching metadata and no external rate. Different currencies require
+  the exact requested direction; missing/mismatched rates are not inverted or guessed.
+  No rate/monetary token is converted through Number or floating-point parsing.
+- Added fictional rates/unit-history fixtures, independent expected conversions,
+  boundary/malformed/overflow/tie/identity tests, 297 nearest-integer oracle cases,
+  copied-input evidence and a rounded-line/header discrepancy regression. No fetched
+  rates, customer information, provider operation or live financial mutation.
+- Documented grammar, limits, APIs, source facts, historical-context behavior and
+  operational exclusions. Updated command authorization and ADR-085 without erasing
+  prior design/phase-review approval boundaries.
+
+#### Files changed
+
+- `packages/shared/src/currency-arithmetic.ts` — pure schemas, bounded parsing/conversion
+  and JSON-safe evidence.
+- `packages/shared/test/currency-arithmetic.spec.ts`,
+  `packages/shared/test/package-boundaries.spec.ts` — arithmetic and isolated-entry tests.
+- `packages/shared/package.json` — subpath only, no new dependency/root export.
+- `docs/MULTI_CURRENCY_DESIGN.md`, `HOSTING_BILLING_SYSTEM_PLAN.md`,
+  `CODEX_DEVELOPMENT_COMMANDS.md`, `docs/DECISIONS.md`, `docs/PROGRESS.md` — implementation
+  boundaries, limits, authorization, ADR-085 and validation record.
+
+#### Validation and results
+
+- Fresh registry reads still show latest braces 3.0.3 / sprintf-js 1.1.3 and no suggested
+  3.0.4 / 1.1.4 releases. Primary advisories remain without a patched version; existing
+  exact-version patches, production overrides and supply-chain controls are unchanged.
+- Frozen install passed, already up to date; ten installed tooling-mitigation checks pass.
+  Fresh production audit exits 0 with no known vulnerabilities. Unrestricted full audit
+  exits 1 for the same one high braces / one moderate sprintf-js finding, not suppressed.
+- Shared package tests passed initially 64, then 65 after strengthening the entry/line
+  regressions, and 67 after exact large-precision and independent-oracle cases. Shared
+  build/type checks passed; compiled subpath parsing and absence of the new helper from
+  the existing root entry were verified with actual package self-resolution.
+- Read-only SIX current XML verification on 2026-10-07 (published 2026-09-17) confirmed
+  BDT/USD exponent two, JPY zero and KWD three. The web reader could not parse the XML;
+  direct read-only retrieval verified just those facts without saving/distributing it.
+  An initial metadata-property typo returned null exponents; corrected to CcyMnrUnts
+  before claiming verification. All rate values and synthetic historical metadata are
+  authored fictional fixtures, not a licensed provider feed or full currency registry.
+- Docker Engine preflight cannot connect to its Linux named pipe. Asked the owner to
+  start Docker while independent work continues. Subsequently checked the installed
+  Desktop CLI and used its normal `start --detach --timeout 30` command, which returned
+  success. Read-only process checks show the existing backend at
+  `D:\DockerBackup\DockerDesktop\resources\com.docker.backend.exe`, but its explicit
+  local desktop-linux named pipe and loopback PostgreSQL/Redis ports remain unavailable.
+  No engine reinstall, disk cleanup, application schema reset, unrelated process
+  termination or machine setting changed. Isolated full package/API/invariant and both
+  browser gates remain pending, not passed; no fixture/database write was attempted.
+  A later Desktop status query stalled without output; stopped only its own CLI helper
+  after verifying the exact process/parent/validation-shell chain. Backend processes
+  were not stopped. The final explicit engine preflight still exits 1 for the missing
+  local Linux-engine pipe. Requested the owner's visible Desktop status/error details;
+  repairing Docker installation/storage is outside Command 96.
+- Standalone frontend unit tests passed 572/572 across 54 files. All seven workspace
+  strict type scripts passed sequentially, including the browser-harness types. All
+  library builds and API/worker/web production builds passed; web generated 30/30 pages.
+  Root lint, all four offline documentation validators, production license inventory,
+  repository-wide formatting and scoped checks passed. `git diff --check` passed.
+  Fresh production graph has neither patched tooling dependency; full JSON audit confirms
+  both retained findings are development-only, with zero critical findings.
+  All four offline documentation validators passed again after the implementation report.
+- Owner subsequently confirmed Docker was running. Explicit local `desktop-linux`
+  preflight verified Engine 29.8.1 and healthy project PostgreSQL/Redis services.
+  The earlier Docker blocker is resolved, not a waived acceptance requirement.
+- Guarded `e2e/validate-gate.ts packages`, `api` and `invariants` each exited 0.
+  Each database-backed invocation created a fresh nonce-qualified fictional schema,
+  verified model/raw-SQL scope and its marker, then removed only its owned schema.
+  Package gate: all ten root test groups, shared 67, queue 3, API 107, worker 29 and
+  frontend 572 tests passed. API integration: 81 tests across 17 suites passed.
+  Invariants: shared 67, API unit 12, API integration 42 and worker renewal 2 passed.
+- `pnpm test:e2e` passed 19/19 lifecycle browser tests (4.0 minutes), followed by
+  `playwright test --config playwright.staff.config.ts` passing 4/4 role UI checks
+  (23.9 seconds). Staff UI mocks are not evidence of real backend authorization;
+  the separate API suite provides that coverage. No assertions, deadlines, retries,
+  cache files or machine settings changed to obtain acceptance.
+- Retained non-failing diagnostics: Node color/VM-module warnings, image eager-loading
+  advice, PostgreSQL client concurrent-query deprecation and two Next development-server
+  destination-stream-close errors. Both browser suites still completed successfully;
+  no currency consumer or unrelated frontend repair was introduced.
+- After all suites, frozen install passed again without dependency/lockfile changes,
+  ten tooling-mitigation checks passed, production audit exited 0 and full audit exited 1
+  for the same two findings. Local memory remains tight (gates run sequentially);
+  read-only disk inspection showed approximately 20 GiB free on both C: and D:.
+- Canonical main fetch reconciled 0/0 before delivery. Final documentation/format/staged
+  whitespace checks precede the focused source commit and non-force push. Exact-head
+  CI/CodeQL results must be verified after push, not inferred from the previous command.
+
+#### Decisions made
+
+- ADR-085 records explicit versioned contexts and bounded exact arithmetic. The half-even
+  policy version is a library calculation contract, not an approved live billing policy.
+- Keep the helper separately exported and unused. Do not add a runtime registry, schema,
+  API/UI/worker consumer, catalogue price, quote, FX adapter or collection capability.
+- Retain all audit findings and acceptance requirements. Deliver only after local
+  acceptance, verify exact-head hosted checks and never infer production permission.
+
+#### Open questions and risks
+
+- The earlier Docker blocker is resolved and all required local acceptance passed.
+  Canonical delivery/hosted checks remain pending until recorded below. Local low-memory
+  constraints and the retained non-failing development diagnostics remain visible.
+- Metadata/provider rights, enabled currencies/routes, operational quote/rounding/rate
+  policies, protected WHMCS source/target/credits, Command 33 D5–D8, staffing/operators,
+  residual tooling exposure and deployment/production approval remain separately gated.
+- Technical parsers accept bounded plain data, not scientific notation/numeric JSON or
+  arbitrary executable objects. A future provider adapter needs lossless token handling,
+  transport/age/provenance validation and separate authorization.
+
+#### Exact recommended next command
+
+**Continue Command 96 — Complete canonical delivery and exact-head CI/CodeQL verification**.
+After full validated delivery, stop for separately authorized
+**Phase review — Review Command 96 arithmetic foundation and define the next bounded
+currency command**. Do not start a new implementation, activate providers or deploy.
 
 ## Report Template
 

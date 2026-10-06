@@ -10,6 +10,10 @@
       "types": "./src/index.ts",
       "default": "./dist/index.js"
     },
+    "./currency-arithmetic": {
+      "types": "./src/currency-arithmetic.ts",
+      "default": "./dist/currency-arithmetic.js"
+    },
     "./observability": {
       "types": "./src/observability.ts",
       "default": "./dist/observability.js"

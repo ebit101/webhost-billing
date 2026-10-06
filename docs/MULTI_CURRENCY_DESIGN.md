@@ -118,6 +118,67 @@ on 2026-10-06 confirmed BDT/USD exponent two, JPY zero and KWD three for these e
 Reverify at implementation and preserve the referenced metadata version. Examples alone
 are not a maintained registry.
 
+### Command 96 arithmetic foundation
+
+The owner authorized the pure shared foundation on 2026-10-07. It is available only
+through `@webhost-billing/shared/currency-arithmetic`; the existing root entry and money
+contracts remain unchanged. No API, UI, worker, financial record or provider consumes it.
+This implements arithmetic, not sales/collection support, quotes or a live rounding policy.
+
+- `currencyUnitDefinitionSchema` requires code, integer exponent, metadata version,
+  provenance and current/historical status. `currencyUnitContextSchema` validates a
+  caller-supplied bounded list, rejecting duplicate/conflicting code/version identities.
+  There is no built-in currency registry, latest-version fallback or network lookup.
+  A conversion explicitly references each currency's metadata version. Historical
+  versions stay usable only when the caller supplies their actual unit definitions.
+- `parseExactDecimalRate` accepts positive plain decimal strings with canonical whole
+  parts, including trailing fractional zeroes. Signs, whitespace, scientific notation,
+  missing whole/fraction parts and numeric JSON values are rejected. This is not a
+  provider JSON parser: a future adapter must retain original numeric tokens losslessly.
+- `normalizeExactRatio` validates positive canonical integer strings and reduces them
+  with BigInt Euclidean arithmetic. Both ratio components must be nonzero. No monetary
+  or rate value passes through JavaScript Number or floating-point parsing.
+- `convertCurrencyMinorUnits` requires a matching target-major/source-major directed
+  rate for different currencies. It scales explicit exponents, rounds once by integer
+  quotient/remainder and returns source/target money, copied metadata, reduced rate,
+  `currency-half-even-v1` and exact rounding evidence as JSON-safe strings. Same-currency
+  identity requires the same explicit metadata version and no supplied external rate;
+  conflicting versions fail closed rather than reinterpreting historical units.
+- Zero monetary amounts are valid. Inputs/results must fit the existing non-negative
+  PostgreSQL BIGINT money range; final overflow, including a rounding carry, is rejected.
+  Signed reporting totals, discounts/tax rules, quantity multiplication and invoice
+  issuance remain with their existing owners, not this unused conversion helper.
+
+Technical limits, not operational approval:
+
+| Input                     | Limit                                                    |
+| ------------------------- | -------------------------------------------------------- |
+| Explicit definitions      | 1–32, checked before traversing members                  |
+| Minor-unit exponent       | Integer 0–4; no configurable unbounded powers            |
+| Metadata version          | 1–64 ASCII identifier characters                         |
+| Provenance                | 1–256 printable ASCII characters, no edge whitespace     |
+| Source minor-unit amount  | Canonical string, at most 19 digits and BIGINT maximum   |
+| Rational component        | Positive canonical string, at most 96 digits             |
+| Decimal rate token        | At most 97 characters, 64 whole and 32 fractional digits |
+| Calculation intermediates | At most 119 numerator and 100 divisor decimal digits     |
+
+The bounds are validated before constructing BigInts/powers, and runtime limits are
+not caller-overridable. Plain-data schemas do not sandbox arbitrary getters/proxies or
+executable configuration. Results are calculation evidence, not authenticated provider
+evidence or payable quotes. Never use a fresh inverse conversion to reconstruct refunds.
+
+Fictional tests cover BDT/USD, USD/JPY and USD/KWD; every rate is authored, not fetched.
+Read-only SIX XML verification on 2026-10-07 (list published 2026-09-17) reconfirmed their
+2/2/0/3 exponents. Only these example facts are used; the XML/dataset is not redistributed,
+and its distribution rights are not approved. Synthetic historical codes exercise unit
+changes without asserting a real currency changed precision. A maintained registry,
+source rights and capability policy remain separate gates.
+
+Tests also show why rounded unit amounts are multiplied and summed: fictional source
+units `5` (quantity three) and `7` (quantity one), at rate `1/2` with equal exponents,
+produce stored target lines `6` and `4`, totaling `10`. Converting the source header `22`
+would instead produce `11`. This is an arithmetic regression, not a new invoice policy.
+
 ## 4. Price publication, quote and renewal rules
 
 ### Catalogue pricing
@@ -378,10 +439,11 @@ Delivery sequence, each needing separate authorization:
    audit still reports two development-tooling advisories; mitigation is not upstream
    closure or owner residual-risk acceptance. Keep mitigation verification and the
    production audit gate; separately review any changed exposure before activation.
-2. **Command 96 — Build the exact currency arithmetic foundation** is defined, not
-   authorized. Add pure shared metadata contracts, bounded exact-rational/decimal-string
-   arithmetic and fictional zero/two/three-decimal tests without connecting application
-   consumers. Do not ship a maintained currency dataset without verified source rights.
+2. **Command 96 — Build the exact currency arithmetic foundation** is owner-authorized
+   on 2026-10-07, with implementation/validation tracked in the progress report. Pure
+   shared metadata contracts, bounded exact-rational/decimal-string arithmetic and
+   fictional zero/two/three-decimal tests do not connect application consumers or activate
+   billing. Do not ship a maintained currency dataset without verified source rights.
    A production registry/capability policy, adapter, database backfill and pricing effects
    remain later, separately authorized slices. See the bounded command definition in
    [command tracking](../CODEX_DEVELOPMENT_COMMANDS.md).

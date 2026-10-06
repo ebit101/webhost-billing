@@ -59,9 +59,10 @@ currency capabilities, price/quote provenance, fixed renewals, provider failure 
 per-currency reporting and preservation of WHMCS BDT/USD history. Command 94 is design
 only. Existing single-currency contracts remain unchanged until separately authorized
 implementation. Commands 93 and 95 repaired and validated the acceptance gate; the
-Command 95 phase review defines Command 96's pure arithmetic foundation only. Its
-implementation needs separate authorization, and remaining tooling advisories are
-not waived. No currency is activated by this sequence.
+Command 95 phase review defined Command 96's pure arithmetic foundation, subsequently
+authorized on 2026-10-07. Its unused helpers do not change application billing behavior;
+later integration/activation needs separate authorization, and remaining tooling advisories
+are not waived. No currency is activated by this sequence.
 
 ## 3. User Roles
 

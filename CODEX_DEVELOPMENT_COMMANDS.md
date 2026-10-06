@@ -3116,8 +3116,8 @@ authorize proceeding to currency work by inference.
 
 ## Command 96 — Build the exact currency arithmetic foundation
 
-**Defined by the owner-authorized Command 95 phase review on 2026-10-06; not authorized
-for implementation.** This is an unused, pure shared-library foundation, not currency
+**Defined by the owner-authorized Command 95 phase review on 2026-10-06 and explicitly
+authorized for implementation on 2026-10-07.** This is an unused, pure shared-library foundation, not currency
 activation or acceptance of the remaining tooling risks. BDT default/USD preferred
 secondary remain the owner-directed target under ADR-080.
 
@@ -3178,9 +3178,10 @@ refund/renewal changes, WHMCS export/import, Command 91, D5–D8 approval, real 
 provider accounts/activation, release, deployment and production approval.
 ```
 
-**Authorization boundary:** The review defines this command only. Implementation
-requires the owner's separate instruction; no residual-risk waiver, currency dataset
-licence or operational currency policy is approved by this definition.
+**Authorization boundary:** The review defined this command only; the owner's later
+explicit instruction authorized this bounded implementation. No residual-risk waiver,
+currency dataset licence or operational currency policy is approved. Stop after verified
+delivery for a separately authorized phase review, not another implementation command.
 
 ---
 
