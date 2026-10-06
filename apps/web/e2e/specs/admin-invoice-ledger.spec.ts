@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import { hash } from 'argon2';
 import { e2ePrisma } from '../database';
 import { E2E_DATABASE_URL, E2E_SCHEMA } from '../environment';
+import { assertBrowserDatabaseScope } from '../database-scope';
 import {
   E2E_ADMIN,
   E2E_HISTORY_CUSTOMER,
@@ -16,13 +17,14 @@ test('administrator searches older invoices with URL context without business mu
 }) => {
   const database = new URL(E2E_DATABASE_URL);
   if (
-    E2E_SCHEMA !== 'command26_e2e' ||
+    !/^command26_e2e_[a-f0-9]{32}$/.test(E2E_SCHEMA) ||
     database.searchParams.get('schema') !== E2E_SCHEMA ||
     !['127.0.0.1', 'localhost', '[::1]'].includes(database.hostname)
   )
     throw new Error(
       'Invoice ledger evidence requires the dedicated loopback fictional schema.',
     );
+  await assertBrowserDatabaseScope(e2ePrisma, E2E_DATABASE_URL, E2E_SCHEMA);
   // The original lifecycle uses four logins and payment review uses the fifth.
   // Isolate this new journey rather than increase the account's five-attempt limit.
   const ledgerEmail = 'command85-ledger-admin@example.test';

@@ -13,7 +13,8 @@ import type { Clock } from '../../worker/dist/renewal/clock.js';
 import { HostingAutomationService } from '../../worker/dist/renewal/hosting-automation.service.js';
 import { businessDate } from '../../worker/dist/renewal/renewal-calendar.js';
 import { RenewalProcessorService } from '../../worker/dist/renewal/renewal-processor.service.js';
-import { E2E_DATABASE_URL, e2eApiEnvironment } from './environment';
+import { E2E_DATABASE_URL, E2E_SCHEMA, e2eApiEnvironment } from './environment';
+import { assertBrowserDatabaseScope } from './database-scope';
 
 const prisma = createPrismaClient(E2E_DATABASE_URL);
 const workerEnvironment = parseWorkerEnvironment(e2eApiEnvironment);
@@ -27,6 +28,7 @@ class FixedClock implements Clock {
 }
 
 async function main(): Promise<void> {
+  await assertBrowserDatabaseScope(prisma, E2E_DATABASE_URL, E2E_SCHEMA);
   const [action, serviceId, invoiceId] = process.argv.slice(2);
   if (!action || !serviceId)
     throw new Error('Missing automation action or service ID.');

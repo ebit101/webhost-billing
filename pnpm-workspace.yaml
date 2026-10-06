@@ -10,7 +10,9 @@ overrides:
   'js-yaml@^3': 3.15.2
   'js-yaml@^4': 4.3.2
   mysql2: 3.23.1
+  'proxy-addr@^2.0.7': 2.0.8
   qs: 6.16.0
+  'source-map-js@^1.0.0': 1.2.2
 allowBuilds:
   '@prisma/engines': true
   argon2: true

@@ -2,10 +2,10 @@ import { expect, test } from '@playwright/test';
 import { hash } from 'argon2';
 import { createPrismaClient } from '@webhost-billing/database';
 import { E2E_DATABASE_URL, E2E_SCHEMA } from '../environment';
+import { assertBrowserDatabaseScope } from '../database-scope';
 import { E2E_ADMIN, E2E_PRODUCT } from '../fixtures';
 
 const databaseUrl = new URL(E2E_DATABASE_URL);
-databaseUrl.searchParams.set('options', '-csearch_path=command26_e2e');
 const prisma = createPrismaClient(databaseUrl.toString());
 test.use({ trace: 'off', screenshot: 'off', video: 'off' });
 test.afterAll(async () => prisma.$disconnect());
@@ -18,13 +18,14 @@ test('administrator finds older orders and reviews all items without business mu
   page,
 }) => {
   if (
-    E2E_SCHEMA !== 'command26_e2e' ||
+    !/^command26_e2e_[a-f0-9]{32}$/.test(E2E_SCHEMA) ||
     databaseUrl.searchParams.get('schema') !== E2E_SCHEMA ||
     !['127.0.0.1', 'localhost', '[::1]'].includes(databaseUrl.hostname)
   )
     throw new Error(
       'Order ledger requires dedicated fictional loopback isolation.',
     );
+  await assertBrowserDatabaseScope(prisma, E2E_DATABASE_URL, E2E_SCHEMA);
   const raw = await prisma.$queryRawUnsafe<{ schema: string }[]>(
     'SELECT current_schema() AS schema',
   );

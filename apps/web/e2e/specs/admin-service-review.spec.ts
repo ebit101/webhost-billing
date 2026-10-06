@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import { hash } from 'argon2';
 import { createPrismaClient } from '@webhost-billing/database';
 import { E2E_DATABASE_URL, E2E_SCHEMA } from '../environment';
+import { assertBrowserDatabaseScope } from '../database-scope';
 import {
   E2E_ADMIN,
   E2E_HISTORY_CUSTOMER,
@@ -9,10 +10,8 @@ import {
   E2E_SERVER,
 } from '../fixtures';
 
-// This journey owns its fixed fictional connection; URL schema alone does not
-// isolate unqualified SQL. Do not change the shared browser/database boundary.
+// Use the shared, guarded per-run model and raw-SQL boundary.
 const reviewDatabaseUrl = new URL(E2E_DATABASE_URL);
-reviewDatabaseUrl.searchParams.set('options', '-csearch_path=command26_e2e');
 const e2ePrisma = createPrismaClient(reviewDatabaseUrl.toString());
 
 test.use({ trace: 'off', screenshot: 'off', video: 'off' });
@@ -24,13 +23,14 @@ test('administrator inspects service facts and customer without business mutatio
 }) => {
   const database = new URL(E2E_DATABASE_URL);
   if (
-    E2E_SCHEMA !== 'command26_e2e' ||
+    !/^command26_e2e_[a-f0-9]{32}$/.test(E2E_SCHEMA) ||
     database.searchParams.get('schema') !== E2E_SCHEMA ||
     !['127.0.0.1', 'localhost', '[::1]'].includes(database.hostname)
   )
     throw new Error(
       'Service review requires the dedicated loopback fictional schema.',
     );
+  await assertBrowserDatabaseScope(e2ePrisma, E2E_DATABASE_URL, E2E_SCHEMA);
   const schema = await e2ePrisma.$queryRawUnsafe<{ schema: string }[]>(
     'SELECT current_schema() AS schema',
   );
@@ -129,7 +129,7 @@ test('administrator inspects service facts and customer without business mutatio
     review.getByRole('heading', { name: domain, exact: true }),
   ).toBeVisible();
   expect(detailReads.length).toBeGreaterThan(0);
-  await expect(review).toContainText('PROVISION FAILED');
+  await expect(review).toContainText('Provision failed');
   await expect(review).toContainText('<b>Fictional provisioning failure</b>');
   await expect(review).toContainText('BDT 120.00');
   await expect(review).toContainText('4 Oct 2026, 02:00');

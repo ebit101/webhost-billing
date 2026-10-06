@@ -211,7 +211,7 @@ test('complete hosting customer and administrator lifecycle', async ({
     const orderRow = page.getByRole('row').filter({
       hasText: E2E_PRODUCT.domain,
     });
-    await expect(orderRow).toContainText('PAID');
+    await expect(orderRow).toContainText('Paid');
   });
 
   await test.step('administrator approves the paid order', async () => {
@@ -330,7 +330,7 @@ test('complete hosting customer and administrator lifecycle', async ({
     });
     await orderRow.getByRole('button', { name: 'Approve' }).click();
     await expect(page.getByRole('status')).toContainText(/processing/i);
-    await expect(orderRow).toContainText('PROCESSING');
+    await expect(orderRow).toContainText('Processing');
   });
 
   await test.step('administrator provisions through the fake hosting panel', async () => {
@@ -342,10 +342,10 @@ test('complete hosting customer and administrator lifecycle', async ({
       .getByRole('row')
       .filter({ hasText: E2E_PRODUCT.domain })
       .first();
-    await expect(serviceRow).toContainText('PENDING');
+    await expect(serviceRow).toContainText('Pending');
     await serviceRow.getByRole('button', { name: 'Provision account' }).click();
     await expect(page.getByRole('status')).toContainText(/completed/i);
-    await expect(serviceRow).toContainText('ACTIVE');
+    await expect(serviceRow).toContainText('Active');
     const lifecycle = await lifecycleRecord();
     serviceId = lifecycle.items[0]?.service?.id ?? '';
     expect(serviceId).not.toBe('');
@@ -358,7 +358,7 @@ test('complete hosting customer and administrator lifecycle', async ({
     const serviceCard = page.getByRole('link').filter({
       hasText: E2E_PRODUCT.domain,
     });
-    await expect(serviceCard).toContainText('ACTIVE');
+    await expect(serviceCard).toContainText('Active');
   });
 
   await test.step('renewal automation generates the next invoice', async () => {
@@ -371,7 +371,7 @@ test('complete hosting customer and administrator lifecycle', async ({
     const renewalRow = page.getByRole('row').filter({
       hasText: renewal.invoiceNumber,
     });
-    await expect(renewalRow).toContainText('UNPAID');
+    await expect(renewalRow).toContainText('Unpaid');
   });
 
   await test.step('overdue automation suspends only for the renewal invoice', async () => {
@@ -380,7 +380,7 @@ test('complete hosting customer and administrator lifecycle', async ({
     const serviceCard = page.getByRole('link').filter({
       hasText: E2E_PRODUCT.domain,
     });
-    await expect(serviceCard).toContainText('SUSPENDED');
+    await expect(serviceCard).toContainText('Suspended');
   });
 
   await test.step('verified payment triggers safe automatic unsuspension', async () => {
@@ -390,7 +390,7 @@ test('complete hosting customer and administrator lifecycle', async ({
     const serviceCard = page.getByRole('link').filter({
       hasText: E2E_PRODUCT.domain,
     });
-    await expect(serviceCard).toContainText('ACTIVE');
+    await expect(serviceCard).toContainText('Active');
     const invoice = await e2ePrisma.invoice.findUniqueOrThrow({
       where: { id: renewalInvoiceId },
     });
@@ -694,7 +694,7 @@ test('complete hosting customer and administrator lifecycle', async ({
     await page.getByLabel('Type TERMINATE to confirm').fill('TERMINATE');
     await page.getByRole('button', { name: 'Confirm terminated' }).click();
     await expect(page.getByRole('status')).toContainText(/terminated/i);
-    await expect(serviceRow).toContainText('TERMINATED');
+    await expect(serviceRow).toContainText('Terminated');
   });
 });
 

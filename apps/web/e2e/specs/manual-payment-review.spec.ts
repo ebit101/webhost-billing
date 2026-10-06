@@ -1,6 +1,7 @@
 import { expect, test, type Request } from '@playwright/test';
 import { e2ePrisma } from '../database';
 import { E2E_DATABASE_URL, E2E_SCHEMA } from '../environment';
+import { assertBrowserDatabaseScope } from '../database-scope';
 import { E2E_ADMIN, E2E_HISTORY_CUSTOMER } from '../fixtures';
 
 test.use({ trace: 'off', screenshot: 'off', video: 'off' });
@@ -13,13 +14,14 @@ test('administrator inspects manual payment and follows context without business
 }) => {
   const database = new URL(E2E_DATABASE_URL);
   if (
-    E2E_SCHEMA !== 'command26_e2e' ||
+    !/^command26_e2e_[a-f0-9]{32}$/.test(E2E_SCHEMA) ||
     database.searchParams.get('schema') !== E2E_SCHEMA ||
     !['127.0.0.1', 'localhost', '[::1]'].includes(database.hostname)
   )
     throw new Error(
       'Manual payment review requires the dedicated loopback fictional schema.',
     );
+  await assertBrowserDatabaseScope(e2ePrisma, E2E_DATABASE_URL, E2E_SCHEMA);
   // One pending fictional reference, not a verified charge or invoice settlement.
   await e2ePrisma.payment.create({
     data: {
@@ -104,7 +106,7 @@ test('administrator inspects manual payment and follows context without business
     await expect(
       review.getByRole('heading', { name: 'Payment review', exact: true }),
     ).toBeFocused();
-    await expect(review).toContainText('PENDING');
+    await expect(review).toContainText('Pending');
     await expect(review).toContainText('BDT 1.00');
     await expect(review).toContainText('BDT 0.00');
     await expect(review).toContainText('<b>Unverified fictional proof</b>');

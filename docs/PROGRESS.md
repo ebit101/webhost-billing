@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 94 — Design multi-currency billing and WHMCS migration rules
-- **Current status:** Currency design completed; owner expands BDT-only target to BDT default, USD preferred secondary and major-currency support; documentation only, no currency implementation, provider activation or import; Command 93 acceptance repair still required; Command 33 inputs/D5–D8 remain unresolved; recorded staging release 6085629 unchanged; production not approved
+- **Current command:** Command 93 — Restore the security and browser validation gate
+- **Current status:** Command 93 repair and complete local acceptance pass, including production audit/license inventory, package/API/invariant checks, 19 lifecycle browser checks, four staff browser checks, full types and production builds. Canonical delivery and exact-head hosted verification follow. Currency remains design-only; Command 33 inputs/D5–D8 remain unresolved; recorded staging release 6085629 unchanged; production not approved
 - **Last updated:** 2026-10-06
-- **Next command:** Command 93 — Restore the security and browser validation gate
+- **Next command:** Phase review — Review Command 93 and define the next bounded currency-foundation command
 - **Next command authorized:** No
 
 ## Command Reports
@@ -9713,6 +9713,115 @@ either implementation or private evidence verification without new authorization
 Authorize **Command 93 — Restore the security and browser validation gate**. After its
 review, define and separately authorize the currency-foundation implementation. Stop after
 this design delivery; do not implement or run a private-data rehearsal by inference.
+
+### Command 93 — Restore the security and browser validation gate
+
+- **Status:** Repair and complete local acceptance passed; canonical/hosted delivery pending
+- **Date:** 2026-10-06
+
+#### Scope completed
+
+- Reverified both primary security advisories against the actual production graph.
+  Added narrow compatible overrides for `proxy-addr` 2.0.8 and `source-map-js` 1.2.2.
+  No unrelated version, release-age exception, provenance control, audit threshold or
+  dependency-build allowlist was changed.
+- Replaced the fixed browser-schema reset with a fresh nonce-qualified fictional schema
+  per invocation. A collision fails instead of dropping existing data. Validate loopback
+  PostgreSQL, supported connection parameters, explicit model schema and raw-SQL search
+  path; require live scope/ownership-marker checks and model/raw agreement before fixtures,
+  API startup, Playwright setup and automation. No public fallback is permitted.
+- Propagated the same boundary to preparation, API, browser clients and the automation
+  runner. Existing fixture-mutating journeys retain their independent checks and now
+  verify the shared boundary. Cleanup drops only the invocation's verified fictional
+  scope after preparation/subprocess completion; ordinary application data is not reset.
+- Explicitly disabled real gateway enablement, used preview email and fixed loopback
+  browser upstream URLs. Compile API/worker sequentially before browser startup and run
+  the compiled API after preflight, without altering the production database client,
+  listener, worker, scheduler or business queries.
+- Updated all eleven obsolete displayed-state assertions in the three affected journeys
+  to concrete sentence-case labels. Preserved raw enums, confirmation tokens, payment,
+  provisioning, replay, ownership, non-mutation, keyboard and mobile assertions. No test
+  was skipped, deadline raised, retry added or case-insensitive shortcut introduced.
+- Added 22 focused boundary regressions and a live PostgreSQL browser isolation check.
+  Added a bounded sequential local acceptance launcher using fresh fictional schemas.
+  The API gate recreates only the canonical fictional seed customer required by its
+  legacy administrator/ownership assertion; no application seed or real identity is used.
+
+#### Files changed
+
+- `pnpm-workspace.yaml`, `pnpm-lock.yaml` — two narrow patched dependency overrides.
+- `apps/web/package.json`, `apps/web/playwright.config.ts` — guarded runner, compiled
+  API startup and global preflight, retaining existing test settings.
+- `apps/web/e2e/database-scope.ts`, `environment.ts`, `prepare-environment.ts`,
+  `run-tests.ts`, `check-scope.ts`, `start-api.ts`, `validate-gate.ts`,
+  `automation-runner.ts` — test-only scope construction, checks, fixtures and cleanup.
+- Seven existing ledger/review specs plus `hosting-lifecycle.spec.ts`, new
+  `e2e/specs/database-isolation.spec.ts` and
+  `src/lib/browser-database-scope.test.ts` — isolation and concrete label assertions.
+- `docs/END_TO_END_TESTING.md`, `docs/DECISIONS.md`, `docs/PROGRESS.md` — contributor
+  instructions, ADR-081, authorization/status and this report.
+
+#### Validation
+
+- Frozen install passed with supply-chain controls intact. The production graph resolves
+  only `proxy-addr` 2.0.8 and `source-map-js` 1.2.2; final `pnpm audit --prod` reports
+  no known vulnerabilities. Production license inventory passes.
+- Local license inventory initially failed on a missing `argon2` store index. An ordinary
+  frozen/forced repeat install did not restore it. Lockfile-based production fetch restored
+  package metadata, completing after transient optional-platform download retries. Restored
+  development links with a frozen non-optimistic install; only generated dependency state
+  was recreated, and no permanent package-manager/security setting was weakened.
+- Focused boundary suite: 22/22 passed. Complete guarded browser suite: 19/19 passed
+  in 5.7 minutes, including lifecycle automation and the live isolation check. Staff
+  browser suite: 4/4 passed in 43.8 seconds, sequentially after the lifecycle suite.
+- The first focused browser attempt passed two journeys but exceeded the unchanged
+  180-second lifecycle limit under low-memory conditions (about 260 MiB free). Its trace
+  reached the final termination assertion without a displayed-state mismatch and is
+  retained outside Git in local temporary storage. The subsequent complete run passed;
+  no deadline/retry policy was changed. Memory pressure is a contributing inference,
+  not a proved exclusive root cause.
+- All nine existing script-test groups passed. Sequential package acceptance passed:
+  shared 39 tests; queue three tests; API 107 tests/25 suites; worker 29 tests/10 suites;
+  web 572 tests/54 files, including the new boundary regressions.
+- Full API integration: 81 tests/17 suites passed. The initial empty-scope invocation
+  passed 80 tests but returned 404 for the absent canonical fictional customer expected
+  by `auth.e2e-spec.ts`; adding that test-only fixture resolved the setup failure without
+  weakening its 200 response assertion or changing application authorization.
+- Critical invariants passed in another fresh schema: 39 contracts, 12 API unit tests,
+  42 tests/six financial-service integration suites and two renewal integration suites.
+  Successfully prepared test scopes were verified and cleaned up after both successful
+  and failed invocations; existing application/public schemas were not reset.
+- All four offline documentation validators, repository formatting, API/worker/web lint,
+  focused e2e TypeScript and `git diff --check` passed. Full monorepo strict type checking
+  and all package/API/worker/Next.js production builds passed sequentially. Next.js
+  compiled and generated all 30 static pages successfully. Exact-head hosted CI/CodeQL
+  will be verified after the validated focused commit is pushed; no result is claimed yet.
+
+#### Decisions made
+
+- ADR-081 makes ownership and raw-SQL isolation explicit in test code rather than hiding
+  a connection mismatch by rewriting production queries. Never adopt/reset a prior run.
+- Keep authored display assertions independent of app formatters and preserve protocol
+  states. Retain one-worker/zero-retry browser acceptance and all existing deadlines.
+- Use sequential local acceptance processes and compiled preflighted API startup to
+  reduce memory overlap. No production deployment or business-rule change is implied.
+
+#### Open questions and risks
+
+- Complete hosted acceptance and canonical delivery before declaring
+  this command finished. Do not push failing or unverified repair work.
+- Existing API entrypoint binds all interfaces; loopback test URLs are not a firewall.
+  Run on a trusted development machine or isolated CI network. Listener changes are
+  outside this repair. Existing preview/experimental/pg/LCP warnings are not suppressed.
+- Retain recorded direct-main governance risk and unresolved owner/launch D5–D8 inputs.
+  Currency remains design-only; no provider activation, WHMCS data import, real appointment,
+  release, production settings or recorded staging deployment was changed.
+
+#### Exact recommended next command
+
+**Phase review — Review Command 93 and define the next bounded currency-foundation
+command.** Stop after this repair's delivery; require separate owner authorization before
+starting currency functionality, Command 91, a private-data rehearsal or deployment.
 
 ## Report Template
 

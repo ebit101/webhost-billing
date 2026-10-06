@@ -1058,8 +1058,8 @@ This document records durable technical and product decisions. New decisions sho
 
 ## ADR-079 — Repair acceptance gates before progressing beyond staff roles
 
-- **Status:** Accepted sequencing decision from the authorized phase review; Command 93
-  definition only, implementation not authorized
+- **Status:** Accepted sequencing decision from the phase review; Command 93 repair
+  explicitly authorized by the owner on 2026-10-06; acceptance remains pending
 - **Date:** 2026-10-06
 - **Decision:** Retain ADR-078's three-role access system, but do not treat local checks
   or successful CodeQL as complete release acceptance. Exact source head `7797bc7` passed
@@ -1116,6 +1116,29 @@ This document records durable technical and product decisions. New decisions sho
   provider or purchase. No fetched provider datasets belong in public source artifacts.
   Command 93 remains the next implementation gate; Command 91, D5–D8, real-data rehearsal,
   deployment and production cutover remain separately gated.
+
+## ADR-081 — Make browser acceptance explicitly fictional and disposable
+
+- **Status:** Implemented under owner-authorized Command 93; complete local acceptance
+  passed, canonical delivery/hosted verification pending
+- **Date:** 2026-10-06
+- **Decision:** Test-only launchers generate a fresh nonce-qualified schema on loopback
+  PostgreSQL. Use the same model schema and explicit raw-SQL search path for preparation,
+  API, test clients and automation. Reject connection-target overrides, reused runner
+  scopes and live schema/path mismatches. Verify fictional ownership and model/raw
+  agreement before fixture or automation writes; no public fallback is allowed.
+- **Cleanup:** Never reset an existing schema. Drop only the current invocation's
+  successfully prepared, validated, marked fictional schema after subprocess completion.
+  Interrupted/incomplete preparation can retain a fictional schema for inspection; do
+  not adopt or reset it on a later run. Ordinary application schemas remain untouched.
+- **Validation:** Keep concrete sentence-case UI expectations separate from raw enums.
+  Build the browser API before launch and run compiled code after the preflight, retaining
+  existing deadlines, zero retries and all business assertions. Local package/API/invariant
+  checks use fresh fictional scopes, with the canonical ownership fixture added only
+  for the legacy API suite and sequential processes to limit RAM.
+- **Boundary:** Patch only the two advisory-affected transitive dependencies; retain
+  provenance, release-age and build allowlists. Production client/worker behavior,
+  currency implementation, operating approvals and deployment remain outside this repair.
 
 ## Open Decisions
 

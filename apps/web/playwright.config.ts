@@ -8,6 +8,7 @@ import {
 
 export default defineConfig({
   testDir: './e2e/specs',
+  globalSetup: './e2e/check-scope.ts',
   fullyParallel: false,
   workers: 1,
   retries: 0,
@@ -29,7 +30,7 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: 'pnpm --filter @webhost-billing/api start',
+      command: 'pnpm --filter @webhost-billing/web exec tsx e2e/start-api.ts',
       cwd: '../..',
       env: e2eApiEnvironment,
       url: `${E2E_API_ORIGIN}/auth/csrf`,
