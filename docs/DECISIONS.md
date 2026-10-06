@@ -1084,6 +1084,39 @@ This document records durable technical and product decisions. New decisions sho
   D1–D4 remain approved, D5–D8 and real appointments remain open, Command 91 stays gated,
   and no source review authorizes deployment, migration, provider activation or launch.
 
+## ADR-080 — Separate currency scope, exact pricing and immutable financial history
+
+- **Status:** Owner-authorized scope and design; implementation/activation not authorized
+- **Date:** 2026-10-06
+- **Decision:** The explicit owner direction supersedes the earlier single-currency-only
+  target. Design one BDT base/default with USD preferred secondary and reviewed major
+  currencies. Separate browsing preference, sale eligibility, invoice/service currency,
+  collection capability, provider settlement and reference reporting. Retain one business
+  per installation; no worldwide tax, wallets, trading or WHMCS parity is implied.
+- **Design:** [Multi-currency billing design](MULTI_CURRENCY_DESIGN.md) proposes versioned
+  minor-unit metadata, lossless exact-rational conversion, bounded half-even arithmetic,
+  fixed/derived append-only price publication, ownership-bound quotes and preserved
+  contracted renewal money. Accepted rates and historical financial evidence are immutable;
+  provider base currency does not have to equal installation base currency. Base changes
+  after financial history exists are not a settings edit.
+- **Evidence:** Existing currency fields/string money do not establish complete support:
+  provider helpers assume two decimals, real adapters here reject non-BDT, the dashboard
+  selects one configured currency and the portal rejects mixed outstanding currencies.
+  Read-only legacy UI inspection reports WHMCS 8.1.3 and BDT/USD, with USD indicated as base.
+  Export field lists are available but invoice lines are absent from invoice report fields.
+  No customer export was downloaded, sample supplied or importer implemented.
+- **Safeguards:** Issued invoices, applied payments/refunds and service renewals retain
+  original money/currency. Mixed-currency sums and automatic cross-currency payment
+  settlement are forbidden. Reconcile WHMCS counts AND money/links per currency; absent
+  historical FX remains unknown. Never scrape/export passwords or treat a public staging
+  hostname as a protected real-data replica destination.
+- **Consequence:** Command 94 delivers documentation only. Provider selection/licensing,
+  operational thresholds, prices/routes, legacy credits and implementation require later
+  review/authorization. ExchangeRate-API is an evaluation candidate, not an activated
+  provider or purchase. No fetched provider datasets belong in public source artifacts.
+  Command 93 remains the next implementation gate; Command 91, D5–D8, real-data rehearsal,
+  deployment and production cutover remain separately gated.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:
@@ -1100,3 +1133,8 @@ The following decisions are intentionally unresolved and must be selected before
    to production by the policy record.
 6. Exact shared-server provider/account ID, plan/region/cost, recovery controls, named
    infrastructure/rollback owners, and off-site immutable backup destination.
+7. Currency implementation/activation under ADR-080: exact enabled sale/collection
+   currencies, catalogue fixed/derived prices, provider/plan/terms and rate evidence rights,
+   freshness/deviation/override/quote/rounding policies, reporting valuations and protected
+   WHMCS source/target/credit treatment. BDT default and USD preferred secondary are the
+   owner-directed target, not approved live collection or a completed implementation.

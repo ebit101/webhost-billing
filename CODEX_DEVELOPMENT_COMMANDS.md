@@ -3014,6 +3014,35 @@ Command 33 remains partly approved and production remains unapproved.
 
 ---
 
+## Command 94 — Design multi-currency billing and WHMCS migration rules
+
+**Authorized design only — no functional implementation or activation.** The owner
+explicitly requested BDT default, USD preferred secondary and major-currency automatic
+conversion, then instructed “Design this for currency” on 2026-10-06. This expands the
+earlier single-currency scope without starting Command 93 or the separate Command 91.
+
+Inspect current money/settings/catalogue/order/invoice/payment/renewal/report contracts
+and relevant source evidence. Produce a repository design covering one BDT base, browsing
+preference, supported currency/unit metadata, exact arithmetic, provider-neutral rates,
+fixed/derived pricing, quote ownership/expiry/idempotency, immutable invoice/refund money,
+fixed service renewals, per-currency collection/balances/reports, administrator/customer
+experience and protected WHMCS BDT/USD migration. Verify provider/metadata documentation
+through primary sources; distinguish technical proposals from operational acceptance.
+
+Record the explicit scope change in the plan, decisions and Command 33 policy record
+without erasing historical approvals or implying D5–D8 acceptance. Preserve existing
+runtime/staging settings, real provider currency guards and all business/security rules.
+Do not fetch customer exports, implement an importer, create tables or accounts, purchase
+or activate a provider, change WHMCS, deploy or authorize production cutover.
+
+Validate documentation/links/formatting and consistency with inspected source. Update
+progress, commit the focused design, reconcile canonical main without rewriting history
+and non-force push. Stop. The exact next implementation recommendation remains
+**Command 93 — Restore the security and browser validation gate**; define a bounded
+currency-foundation implementation only after that repair's review and new authorization.
+
+---
+
 ## Continuation Command
 
 If a phase encounters errors or remains incomplete, use this prompt in the same Codex task:

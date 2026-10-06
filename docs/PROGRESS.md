@@ -2,8 +2,8 @@
 
 ## Status Summary
 
-- **Current command:** Phase review — Review Command 92 administrator access and outstanding Command 33 inputs
-- **Current status:** Review completed; staff boundaries confirmed in the inspected scope, but browser acceptance and production dependency audit are blocked; Command 93 defined only; Command 33 inputs/D5–D8 remain unresolved; no deployment or real staff creation; recorded staging release 6085629 unchanged; production not approved
+- **Current command:** Command 94 — Design multi-currency billing and WHMCS migration rules
+- **Current status:** Currency design completed; owner expands BDT-only target to BDT default, USD preferred secondary and major-currency support; documentation only, no currency implementation, provider activation or import; Command 93 acceptance repair still required; Command 33 inputs/D5–D8 remain unresolved; recorded staging release 6085629 unchanged; production not approved
 - **Last updated:** 2026-10-06
 - **Next command:** Command 93 — Restore the security and browser validation gate
 - **Next command authorized:** No
@@ -9621,6 +9621,98 @@ Authorize **Command 93 — Restore the security and browser validation gate**.
 Separately supply actual answers/references through **Resume Command 33 — Record Remaining
 Owner Decisions and Operating Inputs** when ready. Stop after this review; do not start
 either implementation or private evidence verification without new authorization.
+
+### Command 94 — Design multi-currency billing and WHMCS migration rules
+
+- **Status:** Design completed; documentation validation recorded below; implementation not authorized
+- **Date:** 2026-10-06 (Asia/Dhaka)
+- **Authorization:** Owner explicitly expanded the target to BDT default, USD secondary
+  and major currencies with conversion, then requested “Design this for currency”.
+  This is a design command, not execution of the unapproved Command 93 or Command 91.
+
+#### Scope completed
+
+- Inspected project rules/plan, relevant decision/progress reports and current money,
+  settings, catalogue, schema, order, renewal, provider, dashboard and portal boundaries.
+  Preserved the clean source baseline `724f470`; no runtime changes were made.
+- Designed separate BDT base/default, USD preferred alternate, optional customer browsing
+  preference, per-currency sale/collection capability, fixed service currency and original
+  invoice/payment/refund money. Added proposed exact-rational conversion, versioned unit
+  metadata, fixed/derived price lineage, transactional quote ownership/expiry/idempotency,
+  guarded refresh/quarantine/override behavior and per-currency balances/reporting.
+- Recorded actual gaps: three-letter validation is not a registry; payment helpers assume
+  two decimals; current real adapters reject non-BDT; dashboard money filters one currency;
+  portal next-action home rejects multiple outstanding currencies. Existing database fields
+  are reusable foundations, not a claim that mixed-currency billing is ready.
+- Defined administrator/customer experience, additive persistence/API proposals, acceptance
+  test matrix and separate implementation slices. No unapproved threshold is presented as
+  owner-approved operating policy. No automatic cross-currency payment settlement or wallet.
+- Incorporated earlier read-only Chrome evidence: legacy UI reports WHMCS 8.1.3 and BDT/USD
+  with USD indicated as base; export field lists exist but invoice lines are absent from
+  invoice report fields and service export includes passwords. No export was downloaded or
+  customer data/sample imported. This command performed no additional authenticated browsing.
+- Updated the product/business scope explicitly while preserving historical observations,
+  D1–D4 approvals and unresolved D5–D8. Designed isolated financial reconciliation by
+  currency and retention of USD history under the new BDT base; no real-data rehearsal ran.
+
+#### Files changed
+
+- `docs/MULTI_CURRENCY_DESIGN.md` — complete currency architecture, UX, migration and acceptance design.
+- `HOSTING_BILLING_SYSTEM_PLAN.md` — explicit bounded exception to the prior currency non-goal.
+- `docs/PRODUCTION_BUSINESS_POLICIES.md` — owner scope follow-up and B5 clarification; no activation.
+- `docs/DECISIONS.md` — ADR-080, supersession boundary and remaining currency inputs.
+- `CODEX_DEVELOPMENT_COMMANDS.md` — authorized design-only Command 94 and stop/next gate.
+- `docs/PROGRESS.md` — current status and this report.
+
+#### Validation
+
+- Verified current primary documentation for ExchangeRate-API coverage/open-access usage
+  and terms, Open Exchange Rates coverage, SIX currency metadata and current WHMCS currency
+  updates. Provider documentation is evaluated evidence, not activated integration. The
+  newer WHMCS documentation is not treated as proof of legacy 8.1.3 rate-update behavior.
+- Scoped Prettier formatting/check passed for all six changed documents. `pnpm docs:check`
+  passed all four offline validators: Markdown links/anchors, contributor paths/scripts,
+  issue forms and safe-demo screenshot assets. `git diff --check` passed.
+- Eight independent BigInt design-example assertions passed: BDT/USD conversion,
+  zero-/three-decimal examples, half-even ties, zero, maximum-range identity and detection
+  of an over-range result. These are arithmetic example checks, not application tests.
+- Read-only retrieval of SIX's current XML list confirmed BDT/USD unit exponent two,
+  JPY zero and KWD three. The first field projection produced blank unit values and was
+  corrected to the actual `CcyMnrUnts` element; no blank result was accepted as verification.
+- No application tests, database/browser lifecycle suites, provider calls, installed
+  dependency changes or builds are required/claimed for this design-only diff. The prior
+  source acceptance/security/isolation blockers remain open; this design is not release acceptance.
+- Delivery is a focused documentation-only commit and non-force push after validation;
+  reconcile canonical main and verify synchronization. No hosted application acceptance
+  result is claimed by this report; the previously recorded source blockers remain open.
+
+#### Decisions made
+
+- ADR-080 separates browsing, invoice/service money, collection and reference reporting.
+  BDT remains base/default and USD is preferred secondary; no dual base currencies.
+- Recommend ExchangeRate-API for later evaluation behind a replaceable adapter; no plan,
+  cost, provider credential or licence acceptance. Do not distribute fetched rate datasets.
+- Historical WHMCS USD amounts/services remain USD. Source paid/active states are imported
+  evidence, not fresh provider/hosting success. Unknown historical rates stay unknown.
+
+#### Open questions and risks
+
+- Provider/plan/usage rights, enabled currencies/payment destinations, exact fixed/derived
+  prices, proposed operational/rounding/quote thresholds and reporting valuation policy
+  remain subject to review before implementation/activation.
+- Protected anonymized complete source sample and isolated target remain missing; invoice
+  lines, legacy credits and unsupported cycles/products need explicit reconciliation/treatment.
+- Current real adapters are BDT-only here. Currency support does not authorize a USD
+  gateway, bank destination, cross-currency settlement or production collection.
+- Retain Command 93's known audit/browser/isolation blockers, remaining owner/launch inputs
+  and recorded direct-main governance risk. No production data, credentials, provider feed,
+  worker/scheduler, WHMCS setting, account, deployed configuration or release was changed.
+
+#### Exact recommended next command
+
+Authorize **Command 93 — Restore the security and browser validation gate**. After its
+review, define and separately authorize the currency-foundation implementation. Stop after
+this design delivery; do not implement or run a private-data rehearsal by inference.
 
 ## Report Template
 

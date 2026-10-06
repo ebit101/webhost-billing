@@ -45,6 +45,21 @@ The system should remain a modular monolith: one application and one database, w
 - Creating native mobile applications
 - Adding complex marketing, affiliate, or reseller systems
 
+### Owner-authorized currency expansion — 2026-10-06
+
+The owner explicitly expanded the earlier single-currency scope: BDT is the default,
+USD is the preferred secondary currency, and major currencies should be supported
+through automatic conversion. The design uses one BDT base/reporting currency, an
+independent browsing preference, and immutable invoice/service/payment currencies.
+This is a bounded exception to the currency non-goal above, not worldwide tax,
+gateway parity, reseller accounting or production approval.
+
+[Multi-currency billing design](docs/MULTI_CURRENCY_DESIGN.md) defines exact arithmetic,
+currency capabilities, price/quote provenance, fixed renewals, provider failure behavior,
+per-currency reporting and preservation of WHMCS BDT/USD history. Command 94 is design
+only. Existing single-currency contracts remain unchanged until separately authorized
+implementation; Command 93's validation repair remains the next implementation gate.
+
 ## 3. User Roles
 
 ### Administrator

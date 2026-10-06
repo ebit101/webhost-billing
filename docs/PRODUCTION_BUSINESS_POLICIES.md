@@ -10,6 +10,8 @@
 - Operating-policy draft: 2026-10-05 — version `DRAFT-OPS-1`; D1–D4 approved, D5–D8 awaiting approval
 - Operating-policy review: 2026-10-06 — decision checklist prepared; no new policy approval
 - Operating-rule approval: 2026-10-06 — D1–D4 accepted by the previously named owner
+- Currency scope update: 2026-10-06 — owner requests BDT default, USD preferred secondary
+  and major-currency conversion; Command 94 design only, no runtime activation
 - Business owner approval: **Partial named approval recorded; D1–D4 accepted; remaining inputs open**
 - Policy status: **Command 33 partially approved; operating inputs and launch evidence still required**
 - Production effect: **None**
@@ -35,7 +37,8 @@ not approve production launch:
 
 - The product/project display name is **Webhost Billing**. The owner's approved business
   name is **Speed Host Bangladesh**; the intended installation/display brand is **Speed Host**.
-- The application is for one private web-hosting business and one operating currency.
+- The application is for one private web-hosting business. The owner expanded the
+  earlier one-currency scope on 2026-10-06; see the currency design follow-up below.
 - cPanel/WHM is the only planned hosting-panel integration.
 - UK2Group is a separate future domain-registrar integration and is outside the initial
   production launch.
@@ -222,6 +225,36 @@ payment details or encryption keys in this public repository or chat. Use a prot
 and storage path agreed during the authorized migration assessment. None is created or used
 by this preparation record.
 
+### Currency design follow-up — 2026-10-06
+
+The owner explicitly directed: BDT as default, USD as preferred secondary, and support
+for major currencies using automatic conversion. The subsequent instruction “Design this
+for currency” authorizes **Command 94 — Design multi-currency billing and WHMCS migration
+rules**, not application implementation or activation. This supersedes the single-BDT-only
+target in the older preparation/conflict paragraphs; their original source observations
+and approval history remain intact. BDT remains the desired base/default, not a reason
+to relabel or convert issued USD records.
+
+Read-only Chrome inspection showed WHMCS 8.1.3 and configured BDT/USD; the UI indicated
+USD as the legacy base. Client/service/invoice/transaction export fields were inspected,
+but no export was downloaded or sample supplied. Invoice report fields lack line items;
+service export fields include passwords, which must be excluded. This updates the earlier
+statement that the version was unknown, not the absence of a usable export/importer.
+
+See [Multi-currency billing design](MULTI_CURRENCY_DESIGN.md). One BDT base/reporting
+currency, independent browsing choices, original invoice/payment currencies and fixed
+service renewal contracts are the proposed technical interpretation. No real collection
+method for USD or another currency is approved by currency scope alone. Exact enabled
+currencies/prices, provider/plan/licensing, refresh/freshness/override/rounding/quote rules,
+payment destinations and legacy credit treatment need explicit operational review.
+Provider reference rates are not evidence of actual bank settlement.
+
+The earlier B5 BDT approval now means the BDT default within this expanded target.
+D1–D4 and other accepted policy facts remain unchanged; no D5–D8 decision, operator
+appointment, tax rule, real provider, deployment, import or cutover is authorized.
+Existing application and staging currency settings remain unchanged. Command 93's
+acceptance repair remains required before functional currency implementation proceeds.
+
 Replace every `UNRESOLVED` value with the owner's exact approved wording. If a proposed value
 is accepted, record `APPROVED` and retain the value. If it is changed, replace the proposed
 value. The approval section at the end must identify the approving owner and time.
@@ -266,19 +299,19 @@ rate, exemption or compliance, and does not waive other production launch gates.
 
 ### Business identity and invoices
 
-| ID  | Decision                        | Current proposal or constraint                                                                        | Owner-approved value                                                  |
-| --- | ------------------------------- | ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| B1  | Legal business name             | Owner-supplied registered/invoice identity; no independent registration audit                         | **APPROVED — Speed Host Bangladesh**                                  |
-| B2  | Billing address                 | Exact website address retained in named approval above                                                | **APPROVED — website address, no corrections supplied**               |
-| B3  | Billing/support email           | Verify mailbox/delivery during the separate SMTP gate                                                 | **APPROVED — `info@speedhost.com.bd`**                                |
-| B4  | Business phone                  | Owner-selected preferred invoice phone                                                                | **APPROVED — `+8801782391434`**                                       |
-| B5  | Operating currency              | Application default: `BDT`                                                                            | **APPROVED — `BDT`**                                                  |
-| B6  | Tax/VAT registration/treatment  | Keep optional fields; no automatic rates or independent legal exemption determination                 | **APPROVED — owner states Not applicable**                            |
-| B7  | Exact invoice tax/VAT wording   | Owner wording retained in this record; no compulsory custom renderer or Tax ID placeholder            | **APPROVED — Not applicable; optional input retained**                |
-| B8  | Invoice prefix                  | Application default: `INV`                                                                            | **APPROVED — `INV`**                                                  |
-| B9  | Invoice number padding          | Application default: `6`                                                                              | **APPROVED — `6`**                                                    |
-| B10 | First production invoice number | Application default: `1001`                                                                           | **APPROVED — `1001`**                                                 |
-| B11 | Supported billing periods       | Annual-only new public hosting orders initially; preserve supported legacy cycles by approved mapping | **Approved — D1; actual catalogue/prices and legacy mapping pending** |
+| ID  | Decision                         | Current proposal or constraint                                                                        | Owner-approved value                                                                                         |
+| --- | -------------------------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| B1  | Legal business name              | Owner-supplied registered/invoice identity; no independent registration audit                         | **APPROVED — Speed Host Bangladesh**                                                                         |
+| B2  | Billing address                  | Exact website address retained in named approval above                                                | **APPROVED — website address, no corrections supplied**                                                      |
+| B3  | Billing/support email            | Verify mailbox/delivery during the separate SMTP gate                                                 | **APPROVED — `info@speedhost.com.bd`**                                                                       |
+| B4  | Business phone                   | Owner-selected preferred invoice phone                                                                | **APPROVED — `+8801782391434`**                                                                              |
+| B5  | Default and supported currencies | Existing application default `BDT`; expanded owner target recorded in the currency design follow-up   | **Owner-directed target — BDT default, USD preferred secondary, configurable major currencies; design only** |
+| B6  | Tax/VAT registration/treatment   | Keep optional fields; no automatic rates or independent legal exemption determination                 | **APPROVED — owner states Not applicable**                                                                   |
+| B7  | Exact invoice tax/VAT wording    | Owner wording retained in this record; no compulsory custom renderer or Tax ID placeholder            | **APPROVED — Not applicable; optional input retained**                                                       |
+| B8  | Invoice prefix                   | Application default: `INV`                                                                            | **APPROVED — `INV`**                                                                                         |
+| B9  | Invoice number padding           | Application default: `6`                                                                              | **APPROVED — `6`**                                                                                           |
+| B10 | First production invoice number  | Application default: `1001`                                                                           | **APPROVED — `1001`**                                                                                        |
+| B11 | Supported billing periods        | Annual-only new public hosting orders initially; preserve supported legacy cycles by approved mapping | **Approved — D1; actual catalogue/prices and legacy mapping pending**                                        |
 
 Invoice numbering must be chosen before the first production invoice. Issued invoice numbers
 and snapshots are historical records and must not be renumbered casually.
@@ -534,8 +567,9 @@ draft version. If a summary seems narrower than a group, review the full group b
 | D7    | Decide separately whether to accept or remediate G1, G2 and G3                                                                                       | Named operator and tested workaround for each accepted gap; external monitoring/alerts remain a launch requirement                                                          |
 | D8    | `my.speedhost.bd` as the intended operating origin with evidence-gated settings, migration and cutover                                               | Separate infrastructure/release evidence, approved migration scope/reconciliation and final production authorization                                                        |
 
-The approved business identity, contacts, optional tax fields, single BDT currency, disabled
-partial payments, 30-day refund window, renewal defaults and manual-first modes do not need
+The approved business identity, contacts, optional tax fields, BDT default (with the later
+currency scope expansion recorded above), disabled partial payments, 30-day refund window,
+renewal defaults and manual-first modes do not need
 reapproval. An imported invoice sequence still needs a reconciled next number; the empty
 baseline proposal must not overwrite or renumber legacy history.
 
