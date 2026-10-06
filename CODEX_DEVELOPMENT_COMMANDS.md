@@ -3046,7 +3046,7 @@ currency-foundation implementation only after that repair's review and new autho
 
 ## Command 95 — Mitigate unpatched development-tooling denial-of-service risks
 
-**Explicitly authorized by the owner on 2026-10-06; local acceptance passed, hosted delivery pending.** The
+**Explicitly authorized by the owner on 2026-10-06; implemented and validated locally and at exact source head `51b90fe`.** The
 owner-authorized Command 93 phase review confirmed clean production acceptance but two development-only
 advisories. Registry metadata contains neither suggested fix, `braces` 3.0.4 nor
 `sprintf-js` 1.1.4; do not install nonexistent versions or call a local mitigation an

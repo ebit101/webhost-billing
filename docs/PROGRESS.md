@@ -3,7 +3,7 @@
 ## Status Summary
 
 - **Current command:** Command 95 — Mitigate unpatched development-tooling denial-of-service risks
-- **Current status:** Command 95 local acceptance passed: two exact-version local patches, ten mitigation checks, complete package/API/invariant suites, 19 lifecycle and four staff browser tests, frozen install, docs/format/lint/types/builds and production audit/licenses. Source delivery and exact-head hosted checks pending. Full audit still reports two upstream advisories; no waiver granted. Currency remains design-only; Command 33 inputs/D5–D8 remain unresolved; recorded staging release 6085629 unchanged; production not approved
+- **Current status:** Command 95 completed and delivered: two exact-version local patches; local acceptance and exact source-head CI/CodeQL pass. Ten mitigation checks, complete package/API/invariant suites, 19 lifecycle and four staff browser tests, frozen install, docs/format/lint/types/builds and production audit/licenses pass. Full audit still reports two upstream advisories; no waiver granted. Separate phase review required before currency implementation; Command 33 inputs/D5–D8 remain unresolved; recorded staging release 6085629 unchanged; production not approved
 - **Last updated:** 2026-10-06
 - **Next command:** Phase review — Review Command 95 mitigation evidence and remaining audit exposure before defining currency implementation
 - **Next command authorized:** No
@@ -9949,7 +9949,7 @@ patches, implement currency or proceed to Command 91, migration or deployment no
 
 ### Command 95 — Mitigate unpatched development-tooling denial-of-service risks
 
-- **Status:** Local acceptance passed; source delivery and exact-head hosted checks pending
+- **Status:** Completed; validated source delivered to canonical main, report-only final-head hosted verification in owner handoff
 - **Date:** 2026-10-06
 
 #### Implemented scope
@@ -10036,13 +10036,26 @@ patches, implement currency or proceed to Command 91, migration or deployment no
   fresh fictional schema cleanup and unchanged financial/provider assertions. Staff
   browser acceptance independently passed 4/4. All mandatory local checks now pass
   except the explicitly retained version-based full audit exit 1 (one high/one moderate).
-- Canonical `main` reconciled 0/0 before delivery preparation; no dependency version,
-  production override, source release, live application or deployment changed. Commit,
-  non-force push and exact-head hosted CI/CodeQL verification remain pending.
+- Canonical `main` reconciled 0/0 and focused source commit
+  `51b90fe88b269c7b4c118dceaf02a383122028e4` was non-force pushed to `origin/main`.
+  No dependency version, production override, source release, live application or
+  deployment changed. Working tree was clean and canonical main synchronized afterward.
 - Staged whitespace inspection flags mandatory single-space unified-diff context markers
   on blank lines inside the new patch file. Preserve valid pnpm patch syntax/hash: run
   ordinary `git diff --cached --check` on non-patch source and a patch-only check with
   blank-at-EOL detection disabled. This is a generated-format check, not an audit waiver.
+- Exact source head `51b90fe88b269c7b4c118dceaf02a383122028e4`:
+  [CI](https://github.com/ebit101/webhost-billing/actions/runs/37441233991) and
+  [CodeQL](https://github.com/ebit101/webhost-billing/actions/runs/37441233744) succeeded.
+  Decoded Validate logs confirm both early and root-package mitigation checks (10 each),
+  81 API integration tests, 19 browser tests in 1.8 minutes, four staff browser tests
+  in 8.1 seconds, clean production audit and 30/30 generated static pages. Other required
+  package/invariant, secret scan, frozen install, docs/format/lint/types, license and
+  production-build steps succeeded. PR-only Dependency review was skipped on push,
+  not passed. Existing owner bypass/direct-main governance risk remains unchanged.
+- This final report update changes only the command status, ADR status and acceptance
+  record. Reconcile and non-force push it after documentation validation; report its
+  own exact-head hosted results in the owner handoff, without another self-recording commit.
 
 #### Decisions made
 
@@ -10054,8 +10067,9 @@ patches, implement currency or proceed to Command 91, migration or deployment no
 
 #### Open questions and risks
 
-- Local acceptance passes; exact-head delivery remains pending. Upstream patched releases and
-  authenticated per-alert GitHub evidence remain unavailable at the initial review.
+- Local and exact source-head hosted acceptance pass. Upstream patched releases and
+  authenticated per-alert GitHub evidence remain unavailable; the push notice still reports
+  one high/one moderate finding. Count agreement is not individual alert-state evidence.
 - Patches target the named depth/precision paths, not every resource exhaustion case or
   untrusted executable configuration. Retain trusted development/isolated CI guidance,
   production audit gate, direct-main governance risk and memory constraints.

@@ -1182,7 +1182,7 @@ This document records durable technical and product decisions. New decisions sho
 
 ## ADR-083 — Bound local tooling traversal and preserve invalid precision literally
 
-- **Status:** Owner-authorized Command 95 implementation; local acceptance passed, exact-head hosted delivery pending
+- **Status:** Implemented and validated locally and by exact source-head CI/CodeQL; remaining audit exposure not accepted
 - **Date:** 2026-10-06
 - **Decision:** Register only exact-version `braces` 3.0.3 and `sprintf-js` 1.0.3 pnpm
   patches, preserving registry identity/integrity and all existing policy/override values.
