@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Phase review — Review Command 93 and the remaining development-tooling advisories
-- **Current status:** Review complete: Command 93 source/report heads passed CI/CodeQL; fresh production audit is clean. Two development-only advisories have no published patched versions. Command 95 defines bounded local mitigation and honest audit reporting, not implementation or residual-risk acceptance. Currency remains design-only; Command 33 inputs/D5–D8 remain unresolved; recorded staging release 6085629 unchanged; production not approved
+- **Current command:** Command 95 — Mitigate unpatched development-tooling denial-of-service risks
+- **Current status:** Command 95 local acceptance passed: two exact-version local patches, ten mitigation checks, complete package/API/invariant suites, 19 lifecycle and four staff browser tests, frozen install, docs/format/lint/types/builds and production audit/licenses. Source delivery and exact-head hosted checks pending. Full audit still reports two upstream advisories; no waiver granted. Currency remains design-only; Command 33 inputs/D5–D8 remain unresolved; recorded staging release 6085629 unchanged; production not approved
 - **Last updated:** 2026-10-06
-- **Next command:** Command 95 — Mitigate unpatched development-tooling denial-of-service risks
+- **Next command:** Phase review — Review Command 95 mitigation evidence and remaining audit exposure before defining currency implementation
 - **Next command authorized:** No
 
 ## Command Reports
@@ -9946,6 +9946,127 @@ patches, currency functionality, Command 91, a private-data rehearsal or deploym
 Authorize **Command 95 — Mitigate unpatched development-tooling denial-of-service risks**.
 This review defines the command only. Stop for separate authorization; do not apply
 patches, implement currency or proceed to Command 91, migration or deployment now.
+
+### Command 95 — Mitigate unpatched development-tooling denial-of-service risks
+
+- **Status:** Local acceptance passed; source delivery and exact-head hosted checks pending
+- **Date:** 2026-10-06
+
+#### Implemented scope
+
+- Rechecked registry/advisory evidence: no published `braces` 3.0.4 or `sprintf-js` 1.1.4
+  fix is available. Prior review head `50b0ad268501e7dd61d3d41073e4a6619674d45b` now has
+  successful [CI](https://github.com/ebit101/webhost-billing/actions/runs/37435020396)
+  and [CodeQL](https://github.com/ebit101/webhost-billing/actions/runs/37435020418).
+- Added exact-version local pnpm patches with registered lockfile hashes. Brace parser,
+  direct AST walkers, ancestry and nested-array helpers reject bounded-depth/cyclic inputs
+  before stack exhaustion. Preserve normal/unbalanced brace behavior and legitimate stale
+  parent links. Formatter invalid precision becomes a literal directive without native
+  numeric calls, a new uncaught precision exception or silent numeric clamping.
+- Added eight installed-consumer mitigation groups, bounded child processes, hash and
+  container-install checks (ten checks total). Added root test integration, the guarded
+  sequential package runner and an early hosted verification step. All seven existing
+  pnpm Dockerfiles copy patches before installation. No production audit
+  threshold, suppression, release-age/provenance policy or build allowlist changed.
+- Added original license notices, upstream attribution, behavior/scope limits and explicit
+  removal criteria. No dependency version or application financial/auth/provider behavior changed.
+
+#### Files changed
+
+- `patches/**`, `pnpm-workspace.yaml`, `pnpm-lock.yaml` — exact-version patches and metadata.
+- `scripts/security/**`, `package.json`, `.github/workflows/ci.yml` — installed-consumer tests
+  and local/hosted mitigation verification.
+- `apps/web/e2e/validate-gate.ts`, API/web/worker production and development Dockerfiles,
+  `deploy/production/migration/Dockerfile` — bounded runner and patch-install wiring.
+- `THIRD_PARTY_NOTICES.md`, `CODEX_DEVELOPMENT_COMMANDS.md`, `docs/DECISIONS.md`,
+  `docs/PROGRESS.md` — attribution, authorization, ADR-083 and acceptance record.
+
+#### Validation and results
+
+- Initial production audit exit 0, no known vulnerabilities. Initial full audit exit 1:
+  one high `braces` and one moderate `sprintf-js` development-only finding. These results
+  are distinct from local patch verification and are not waived.
+- Frozen installation passed with supply-chain controls intact; only patch hashes/snapshots
+  changed in the lockfile, with no unrelated version upgrade. New mitigation suite: 10/10 checks
+  passed, including actual glob/YAML/coverage consumers and unhandled-event-loop precision calls.
+- First mitigation invocation passed 7/9 groups: it exposed legitimate stale parent links
+  in imbalanced brace parsing and an incorrect lockfile path expectation (pnpm 11 records
+  patch hashes instead). Corrected ancestry verification and hash assertion; retained the
+  unbalanced-pattern compatibility regression and independently bounded cyclic-parent checks.
+  Removed an unrelated `.npmignore` deletion emitted by patch generation. Subsequent frozen
+  install and all nine initial checks passed; the added container check also passes.
+  No input guard/test deadline was relaxed.
+- Package acceptance passed: nine existing root script groups, shared 39, queue 3, API
+  107, worker 29 and web 572 tests. The ten mitigation checks also passed separately;
+  the runner's new group was added after that package run loaded its script list.
+  API integration acceptance passed 81 tests in 17 suites. Lint, repository formatting,
+  four offline documentation validators, production license inventory and package builds
+  passed. Post-patch production audit remains clean; full audit still exits 1 for the
+  same two advisories, independently of mitigation verification.
+- A type-check invocation used a nonexistent configuration path; the corrected workspace
+  scripts then encountered a generated-Prisma-file race with another validation prebuild.
+  Repeat type checks sequentially after the remaining prebuilds; neither attempt is claimed
+  as passed. Corrected sequential repeat passed all seven workspace type-check scripts,
+  including web route generation and its separate browser-harness configuration.
+- Critical invariants passed: 39 shared contracts, 12 focused API unit tests, 42 financial
+  integration tests and two renewal-worker integration tests. Each guarded gate used its
+  own fresh fictional schema and completed cleanup.
+- First local browser run failed after Next reported `Fatal process out of memory: Zone`.
+  Three administrator-page assertions failed afterward; stopped only the verified browser
+  child-process tree while its wrapper performed guarded schema cleanup (gate exit 1).
+  Read-only OS diagnostics showed about 0.9 GiB free physical memory and 2.4 GiB free
+  virtual memory during the run. No unrelated process, test assertion, retry/deadline or
+  machine setting was changed. Repeat all browser tests only after sequential builds/types.
+- Sequential API, worker and web production builds passed; web generated all 30 static
+  pages. Package-library builds also passed. Container patch-copy ordering is covered by
+  the focused regression; Docker images were not rebuilt and are not claimed as validated.
+  Repository formatting and all ten mitigation checks passed again after these changes.
+- Sequential lifecycle-browser repeat passed 18/19 in 5.5 minutes, then failed loading
+  customer order history after the fake gateway settlement. Saved network evidence shows
+  `GET /orders/my` failed with `net::ERR_INSUFFICIENT_RESOURCES` (and an earlier aborted
+  request), not an HTTP application error response. No paid-order assertion was weakened.
+- First staff browser invocation failed 4/4 with 404/redirect assertions. Preserved the
+  generated `.next-e2e` cache under ignored `release-artifacts/command95-next-e2e-cache`
+  after verifying exact workspace boundaries and stopped fixture listeners. Fresh-cache
+  repeat passed all four staff browser tests in 42.7 seconds with unchanged configuration.
+  Original lifecycle failure artifacts are preserved under ignored
+  `release-artifacts/command95-browser-failures`. No failed assertion, retry count or
+  deadline was changed and no unrelated machine/process setting was modified.
+- Final complete lifecycle repeat passed 19/19 browser tests in 5.7 minutes, with
+  fresh fictional schema cleanup and unchanged financial/provider assertions. Staff
+  browser acceptance independently passed 4/4. All mandatory local checks now pass
+  except the explicitly retained version-based full audit exit 1 (one high/one moderate).
+- Canonical `main` reconciled 0/0 before delivery preparation; no dependency version,
+  production override, source release, live application or deployment changed. Commit,
+  non-force push and exact-head hosted CI/CodeQL verification remain pending.
+- Staged whitespace inspection flags mandatory single-space unified-diff context markers
+  on blank lines inside the new patch file. Preserve valid pnpm patch syntax/hash: run
+  ordinary `git diff --cached --check` on non-patch source and a patch-only check with
+  blank-at-EOL detection disabled. This is a generated-format check, not an audit waiver.
+
+#### Decisions made
+
+- ADR-083 defines bounded traversal and literal invalid-precision behavior. Malformed brace
+  input remains an explicit caught configuration error; normal precision/positions are
+  preserved. No formatter is introduced into application money calculations.
+- Keep version-based registry findings visible. Mitigation success is not a clean full
+  audit, alert closure or residual-risk acceptance. Require a separate phase review.
+
+#### Open questions and risks
+
+- Local acceptance passes; exact-head delivery remains pending. Upstream patched releases and
+  authenticated per-alert GitHub evidence remain unavailable at the initial review.
+- Patches target the named depth/precision paths, not every resource exhaustion case or
+  untrusted executable configuration. Retain trusted development/isolated CI guidance,
+  production audit gate, direct-main governance risk and memory constraints.
+- No provider activation, real customer/staff data, live schema reset, WHMCS import,
+  currency functionality, operating-policy acceptance, release or deployment is authorized.
+
+#### Exact recommended next command
+
+After verified delivery, authorize **Phase review — Review Command 95 mitigation evidence
+and remaining audit exposure before defining currency implementation**. Stop after this
+bounded command; do not start currency implementation or accept residual risk by inference.
 
 ## Report Template
 

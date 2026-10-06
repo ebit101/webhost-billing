@@ -1,0 +1,24 @@
+diff --git a/src/sprintf.js b/src/sprintf.js
+index c0fc7c08b2e6fe38de2883034b8d28c8f34e9866..6c52b292147b60479887dd8cc46ce38896b2baa0 100644
+--- a/src/sprintf.js
++++ b/src/sprintf.js
+@@ -30,6 +30,19 @@
+             }
+             else if (node_type === "array") {
+                 match = parse_tree[i] // convenience purposes only
++                // Local mitigation for GHSA-hp3w-g68c-fv3c; not an upstream release.
++                // Keep an invalid numeric directive literal, rather than throwing or
++                // silently clamping its precision and presenting a different amount.
++                if (match[7] !== undefined && /^[efg]$/.test(match[8])) {
++                    var precision = typeof match[7] === "string" || typeof match[7] === "number" ? Number(match[7]) : NaN
++                    if ((typeof match[7] !== "string" && typeof match[7] !== "number") ||
++                        !Number.isInteger(precision) || precision < (match[8] === "g" ? 1 : 0) || precision > 100) {
++                        output.push(match[0])
++                        // A literal still consumes its implicit argument position.
++                        if (!match[1] && !match[2]) cursor++
++                        continue
++                    }
++                }
+                 if (match[2]) { // keyword argument
+                     arg = argv[cursor]
+                     for (k = 0; k < match[2].length; k++) {

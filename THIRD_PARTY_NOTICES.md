@@ -26,3 +26,12 @@ legal review.
 
 Run the dependency license command again for every release; this list can change when
 the lockfile changes.
+
+## Local development-tooling patches
+
+Command 95 carries repository-maintained patches for `braces` 3.0.3 (MIT) and
+`sprintf-js` 1.0.3 (BSD-3-Clause). These are not upstream releases. Preserve the
+original package licenses and the [reproduced notices](patches/LICENSES.txt) when
+redistributing their patch context. [Patch maintenance](patches/README.md) records
+attribution, behavior, audit limitations and removal criteria. No new source release
+or distribution is authorized by these notices.

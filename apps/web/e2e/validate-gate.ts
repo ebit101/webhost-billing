@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 const gates: Record<string, string[][]> = {
   packages: [
     ...[
+      'tooling-security',
       'demo-doctor',
       'demo-inspection',
       'demo-reset',

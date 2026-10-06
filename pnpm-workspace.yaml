@@ -26,3 +26,6 @@ minimumReleaseAgeExclude:
   - '@nestjs/platform-express@11.2.7'
   - '@nestjs/testing@11.2.7'
   - nodemailer@10.0.13
+patchedDependencies:
+  braces@3.0.3: patches/braces@3.0.3.patch
+  sprintf-js@1.0.3: patches/sprintf-js@1.0.3.patch

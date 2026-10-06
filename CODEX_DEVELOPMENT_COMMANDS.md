@@ -3046,8 +3046,8 @@ currency-foundation implementation only after that repair's review and new autho
 
 ## Command 95 — Mitigate unpatched development-tooling denial-of-service risks
 
-**Definition only — implementation not authorized.** The owner-authorized Command 93
-phase review on 2026-10-06 confirmed clean production acceptance but two development-only
+**Explicitly authorized by the owner on 2026-10-06; local acceptance passed, hosted delivery pending.** The
+owner-authorized Command 93 phase review confirmed clean production acceptance but two development-only
 advisories. Registry metadata contains neither suggested fix, `braces` 3.0.4 nor
 `sprintf-js` 1.1.4; do not install nonexistent versions or call a local mitigation an
 upstream release. Command 94 remains design-only.
@@ -3107,8 +3107,8 @@ Exclude currency functionality, Command 91, staff appointments, D5–D8 approval
 WHMCS import, provider activation, releases, deployment and production approval.
 ```
 
-**Authorization boundary:** This review defines Command 95 only. Require explicit owner
-authorization before applying patches, changing dependencies, tests or CI. If upstream
+**Authorization boundary:** The phase review defined Command 95 only; the later explicit
+owner instruction authorizes this bounded implementation. If upstream
 fixes remain absent, passing mitigation tests does not close GitHub/npm advisories or
 authorize proceeding to currency work by inference.
 

@@ -1180,6 +1180,32 @@ This document records durable technical and product decisions. New decisions sho
   only; Command 91, Command 33 D5–D8, private-data rehearsal, provider activation and
   production/deployment approval remain separately gated.
 
+## ADR-083 — Bound local tooling traversal and preserve invalid precision literally
+
+- **Status:** Owner-authorized Command 95 implementation; local acceptance passed, exact-head hosted delivery pending
+- **Date:** 2026-10-06
+- **Decision:** Register only exact-version `braces` 3.0.3 and `sprintf-js` 1.0.3 pnpm
+  patches, preserving registry identity/integrity and all existing policy/override values.
+  Retain source/license attribution in `patches/README.md` and `patches/LICENSES.txt`.
+  No unpublished version, unmerged branch or renamed substitute is installed.
+- **Behavior:** Iteratively verify bounded, acyclic brace trees/ancestry before recursive
+  compile/expand/stringify entry points. Bound parser nesting and nested-array helpers;
+  preserve legitimate stale parent links from upstream imbalanced-pattern flattening.
+  Unsupported input raises a controlled `SyntaxError` that callers must catch. Out-of-range
+  numeric formatter precision renders the original directive literally, preserves argument
+  position and invokes no native numeric formatter; valid formats are unchanged. Do not
+  silently clamp a numeric result or merely move the same uncaught exception to parsing.
+- **Verification:** Resolve installed libraries through actual Next lint and Jest coverage
+  consumers. Check registered patch hashes and normal/adversarial cases in resource-bounded
+  subprocesses, including an asynchronous precision call without an exception handler.
+  Add this verification to root package acceptance and an early hosted CI step.
+- **Limitations:** This is a local mitigation, not complete untrusted-tooling isolation,
+  upstream advisory closure or owner acceptance of residual risk. Retain separate full
+  audit status and the existing production audit gate; broader expansion, executable
+  config/getter, format-width/cache and other resource paths remain outside this repair.
+  Remove patches only after verified upstream/consumer replacement and equivalent tests
+  under separate authorization. Currency, deployment, D5–D8 and migration remain gated.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:
