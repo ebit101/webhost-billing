@@ -3,9 +3,9 @@
 ## Status Summary
 
 - **Current command:** Command 93 — Restore the security and browser validation gate
-- **Current status:** Command 93 repair and complete local acceptance pass, including production audit/license inventory, package/API/invariant checks, 19 lifecycle browser checks, four staff browser checks, full types and production builds. Canonical delivery and exact-head hosted verification follow. Currency remains design-only; Command 33 inputs/D5–D8 remain unresolved; recorded staging release 6085629 unchanged; production not approved
+- **Current status:** Command 93 authorized repair delivered as 63643a3; complete local acceptance and exact-source hosted CI/CodeQL pass, including production audit/license inventory and both browser suites. Two development-only advisories remain outside this command; review/authorize their bounded repair before currency implementation. Final report delivery is checked separately. Command 33 inputs/D5–D8 remain unresolved; recorded staging release 6085629 unchanged; production not approved
 - **Last updated:** 2026-10-06
-- **Next command:** Phase review — Review Command 93 and define the next bounded currency-foundation command
+- **Next command:** Phase review — Review Command 93 and the remaining development-tooling advisories; define the next bounded security repair before currency implementation
 - **Next command authorized:** No
 
 ## Command Reports
@@ -9716,7 +9716,7 @@ this design delivery; do not implement or run a private-data rehearsal by infere
 
 ### Command 93 — Restore the security and browser validation gate
 
-- **Status:** Repair and complete local acceptance passed; canonical/hosted delivery pending
+- **Status:** Authorized repair completed and delivered; source-head local/hosted acceptance passed, remaining development-tooling findings recorded for separate authorization
 - **Date:** 2026-10-06
 
 #### Scope completed
@@ -9794,8 +9794,19 @@ this design delivery; do not implement or run a private-data rehearsal by infere
 - All four offline documentation validators, repository formatting, API/worker/web lint,
   focused e2e TypeScript and `git diff --check` passed. Full monorepo strict type checking
   and all package/API/worker/Next.js production builds passed sequentially. Next.js
-  compiled and generated all 30 static pages successfully. Exact-head hosted CI/CodeQL
-  will be verified after the validated focused commit is pushed; no result is claimed yet.
+  compiled and generated all 30 static pages successfully.
+- Delivered focused source commit `63643a3af4af3ff278a081c1748f09891cc7d00c` to canonical
+  `origin/main` without rewriting history; local/remote source heads matched. Its exact-head
+  [CI run](https://github.com/ebit101/webhost-billing/actions/runs/37418715832) and
+  [CodeQL run](https://github.com/ebit101/webhost-billing/actions/runs/37418715866) succeeded.
+  All 27 Validate-job steps succeeded, including history secret scanning, frozen install,
+  package/API/invariant checks, lifecycle/staff browsers, production audit/license inventory
+  and production builds. The separate PR-only Dependency review job was skipped on this
+  push and is not claimed as a passed review. Final report-only delivery is checked after
+  its non-force push; final-head results are reported in the owner handoff.
+- Decoded hosted job logs confirm 19/19 lifecycle browser checks in 2.1 minutes,
+  4/4 staff browser checks in 9.5 seconds and a clean production audit; both browser
+  steps and the later license/build gates actually ran rather than being skipped.
 
 #### Decisions made
 
@@ -9808,8 +9819,21 @@ this design delivery; do not implement or run a private-data rehearsal by infere
 
 #### Open questions and risks
 
-- Complete hosted acceptance and canonical delivery before declaring
-  this command finished. Do not push failing or unverified repair work.
+- The authorized source repair's required acceptance is complete. Remaining development
+  advisories are not silently waived and need separate bounded authorization; do not
+  claim all dependencies are clean or proceed automatically to currency implementation.
+- A supplemental unrestricted `pnpm audit` returns two development-only findings:
+  high `braces` through Next.js ESLint/fast-glob/micromatch, and moderate `sprintf-js`
+  through Jest/Istanbul/js-yaml/argparse. Production audit remains clean. These are
+  outside Command 93's two authorized dependency patches; no additional override,
+  suppression or security-threshold change was made. The push still reported four
+  GitHub default-branch findings; do not assume that count has refreshed or all alerts
+  are closed. A bounded follow-up must reconcile the actual repository alerts.
+- Primary [braces advisory](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm) and
+  [sprintf-js advisory](https://github.com/advisories/GHSA-hp3w-g68c-fv3c) confirm the
+  findings. Both pages currently list no patched version, while the npm audit response
+  advertises fixed floors of 3.0.4 and 1.1.4 respectively. Resolve that source conflict,
+  package availability/provenance and compatibility before choosing a future patch.
 - Existing API entrypoint binds all interfaces; loopback test URLs are not a firewall.
   Run on a trusted development machine or isolated CI network. Listener changes are
   outside this repair. Existing preview/experimental/pg/LCP warnings are not suppressed.
@@ -9819,9 +9843,10 @@ this design delivery; do not implement or run a private-data rehearsal by infere
 
 #### Exact recommended next command
 
-**Phase review — Review Command 93 and define the next bounded currency-foundation
-command.** Stop after this repair's delivery; require separate owner authorization before
-starting currency functionality, Command 91, a private-data rehearsal or deployment.
+**Phase review — Review Command 93 and the remaining development-tooling advisories;
+define the next bounded security repair before currency implementation.** Stop after
+this repair's delivery; require separate owner authorization before additional dependency
+patches, currency functionality, Command 91, a private-data rehearsal or deployment.
 
 ## Report Template
 

@@ -1058,8 +1058,8 @@ This document records durable technical and product decisions. New decisions sho
 
 ## ADR-079 — Repair acceptance gates before progressing beyond staff roles
 
-- **Status:** Accepted sequencing decision from the phase review; Command 93 repair
-  explicitly authorized by the owner on 2026-10-06; acceptance remains pending
+- **Status:** Accepted sequencing decision; owner-authorized Command 93 source repair
+  delivered on 2026-10-06 with required local and exact-source hosted acceptance passing
 - **Date:** 2026-10-06
 - **Decision:** Retain ADR-078's three-role access system, but do not treat local checks
   or successful CodeQL as complete release acceptance. Exact source head `7797bc7` passed
@@ -1119,8 +1119,8 @@ This document records durable technical and product decisions. New decisions sho
 
 ## ADR-081 — Make browser acceptance explicitly fictional and disposable
 
-- **Status:** Implemented under owner-authorized Command 93; complete local acceptance
-  passed, canonical delivery/hosted verification pending
+- **Status:** Implemented and delivered under owner-authorized Command 93; complete local
+  acceptance and exact-source hosted CI/CodeQL passed for 63643a3
 - **Date:** 2026-10-06
 - **Decision:** Test-only launchers generate a fresh nonce-qualified schema on loopback
   PostgreSQL. Use the same model schema and explicit raw-SQL search path for preparation,
@@ -1139,6 +1139,10 @@ This document records durable technical and product decisions. New decisions sho
 - **Boundary:** Patch only the two advisory-affected transitive dependencies; retain
   provenance, release-age and build allowlists. Production client/worker behavior,
   currency implementation, operating approvals and deployment remain outside this repair.
+- **Follow-up:** Supplemental full audit identifies development-only `braces` and
+  `sprintf-js` advisories; production audit is clean. These are outside the authorized
+  two patches. Review package/advisory conflicts and authorize a bounded tooling-security
+  repair before progressing to currency implementation; do not suppress the findings.
 
 ## Open Decisions
 
