@@ -1056,6 +1056,34 @@ This document records durable technical and product decisions. New decisions sho
   hosting operator, actual appointments, remaining D5–D8 approval or production
   readiness is implied. Command 91 remains separately gated.
 
+## ADR-079 — Repair acceptance gates before progressing beyond staff roles
+
+- **Status:** Accepted sequencing decision from the authorized phase review; Command 93
+  definition only, implementation not authorized
+- **Date:** 2026-10-06
+- **Decision:** Retain ADR-078's three-role access system, but do not treat local checks
+  or successful CodeQL as complete release acceptance. Exact source head `7797bc7` passed
+  hosted package/API/invariant checks but failed three lifecycle journeys on obsolete
+  all-caps display expectations; its staff browser, audit, license and build steps were
+  skipped. Align tests with ADR-077 rather than restoring all-caps UI or weakening checks.
+- **Evidence:** A read-only loopback check using the unmodified browser environment
+  reported model scope `command26_e2e` and raw `current_schema()` as `public`. URL model
+  schema alone does not establish raw-SQL isolation. No fixture preparation, worker run,
+  schema reset or business write was performed by the review.
+- **Security gate:** The fresh production audit reports critical `proxy-addr` 2.0.7 and
+  high `source-map-js` 1.2.1. Primary advisories identify patched 2.0.8 and 1.2.2:
+  [proxy-addr advisory](https://github.com/advisories/GHSA-jqcg-44mw-7w3h) and
+  [source-map-js advisory](https://github.com/advisories/GHSA-68fv-2mgg-jv7q).
+  These are affected dependency findings, not evidence of compromise or a proved live
+  exploit. The inspected API uses bounded numeric proxy hops rather than the advisory's
+  subnet configuration; this does not waive the dependency audit or justify suppression.
+- **Consequence:** Define one bounded Command 93 to repair only these dependency and
+  test-acceptance boundaries while retaining supply-chain policies and business behavior.
+  No production database-client/worker rewrite, authorization relaxation or unrelated
+  upgrade is included. Require fresh complete validation and exact-head hosted evidence.
+  D1–D4 remain approved, D5–D8 and real appointments remain open, Command 91 stays gated,
+  and no source review authorizes deployment, migration, provider activation or launch.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

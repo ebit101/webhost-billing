@@ -2956,6 +2956,64 @@ only; no deployment or business-policy approval.
 
 ---
 
+## Command 93 — Restore the security and browser validation gate
+
+**Definition only — not authorized for implementation.** The owner-authorized Command 92
+phase review on 2026-10-06 identified three acceptance blockers: affected production
+dependencies, stale browser label assertions and browser raw-SQL isolation. This is one
+bounded validation-repair slice, not a new product feature or production launch.
+
+```text
+Command 93 — Restore the security and browser validation gate
+
+Read AGENTS.md, the product plan, decisions and the Command 92 phase-review report.
+Preserve the three staff roles, MFA, session/CSRF/ownership checks, invitation/access
+invariants, sentence-case UI, immutable financial history and provider boundaries.
+
+Reverify the primary advisories GHSA-jqcg-44mw-7w3h and GHSA-68fv-2mgg-jv7q and the
+actual production dependency graph. Apply narrowly reviewed compatible fixes for
+proxy-addr 2.0.7 and source-map-js 1.2.1, using patched 2.0.8 and 1.2.2 respectively
+or separately justified compatible patched versions. Prefer the existing scoped
+override pattern and minimal lockfile changes. Keep frozen-install verification,
+integrity/provenance, release-age and build-script policies; do not blanket-disable
+them, suppress advisories, raise the audit threshold or perform unrelated upgrades.
+
+Before any lifecycle fixture preparation, fix the test-only connection boundary so
+Prisma model queries AND raw SQL target the same explicit fictional loopback scope.
+Propagate that boundary to browser API/worker-runner/test clients, and fail closed
+before preparation/automation if the host, model schema or current_schema/search_path
+does not match. Never reset application/public schemas, existing business records or
+live databases. Add focused isolation regressions. Do not change the production
+database client, application workers/scheduler or business queries to hide a test issue.
+
+Align obsolete UI state expectations in admin-service-review.spec.ts,
+manual-payment-review.spec.ts and hosting-lifecycle.spec.ts with the approved
+sentence-case labels. Audit later assertions in those journeys, not only their
+first failure. Assert concrete display text independently of the app formatter.
+Preserve raw database/provider enums, currency codes, identifiers and confirmation
+tokens. Keep all payment/provisioning, replay, ownership, non-mutation and keyboard/
+mobile assertions; no skipped tests, removed state checks, case-insensitive shortcuts,
+raised deadlines/retries or reduced fake-provider integrity assertions.
+
+Run focused dependency/isolation/label/staff regressions, package tests, API and
+critical-invariant suites, then the complete guarded fictional lifecycle and staff
+browser suites sequentially. Complete frozen-install, production dependency audit,
+license inventory, docs:check, formatting, lint, strict types and production builds.
+Do not claim a hosted step passed when it was skipped. If a new failure falls outside
+this slice, preserve the evidence and request a new bounded authorization.
+
+Update the report, commit only validated repair work, reconcile canonical main without
+rewriting history, non-force push origin/main and verify exact-head CI and CodeQL.
+Stop for phase review. Do not deploy, invite real staff, appoint operators, accept
+D5–D8, publish policies, import WHMCS, enable providers or begin Command 91.
+```
+
+**Authorization boundary:** This phase review defines Command 93 only. Require a new
+explicit owner instruction before changing dependencies, tests or runtime behavior.
+Command 33 remains partly approved and production remains unapproved.
+
+---
+
 ## Continuation Command
 
 If a phase encounters errors or remains incomplete, use this prompt in the same Codex task:

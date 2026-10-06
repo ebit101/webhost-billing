@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 92 — Implement bounded administrator staff roles
-- **Current status:** Command 92 source implementation completed and locally validated; remaining Command 33 operating inputs and D5–D8 are unchanged and unresolved; no deployment or real staff creation; recorded staging release 6085629 unchanged; production not approved
+- **Current command:** Phase review — Review Command 92 administrator access and outstanding Command 33 inputs
+- **Current status:** Review completed; staff boundaries confirmed in the inspected scope, but browser acceptance and production dependency audit are blocked; Command 93 defined only; Command 33 inputs/D5–D8 remain unresolved; no deployment or real staff creation; recorded staging release 6085629 unchanged; production not approved
 - **Last updated:** 2026-10-06
-- **Next command:** Phase review — Review Command 92 administrator access and outstanding Command 33 inputs
+- **Next command:** Command 93 — Restore the security and browser validation gate
 - **Next command authorized:** No
 
 ## Command Reports
@@ -9498,6 +9498,129 @@ later command to substitute for the missing information; no production authority
 **Phase review — Review Command 92 administrator access and outstanding Command 33 inputs**.
 Review this source slice and the remaining owner decisions; do not create accounts,
 deploy, approve policies, start Command 91 or import production data without new authority.
+
+### Phase review — Review Command 92 administrator access and outstanding Command 33 inputs
+
+- **Status:** Review completed; acceptance blockers identified; Command 93 definition only
+- **Date:** 2026-10-06 (Asia/Dhaka)
+- **Authorization:** The owner explicitly requested this phase review. It does not
+  authorize the next implementation, policy acceptance, staff creation or deployment.
+- **Reviewed source:** `7797bc723d46dcdd6d584736135cfcaf807f757f` on canonical `main`.
+
+#### Scope reviewed and outcome
+
+- Reviewed project rules/plan, relevant decisions/progress, the authorized Command 92
+  definition, migration/shared contracts, global guard registration, current database
+  session identity, granted controllers, staff service/controller/UI, server page checks
+  and focused regression evidence. No blocking access-control defect was identified in
+  those inspected boundaries; this is not an exhaustive security or production sign-off.
+- Confirmed explicit billing/support grants with full-only fallback, missing-role denial,
+  customer ownership, MFA setup access and restricted work, full-administrator MFA for
+  staff mutations, strict requests, encrypted reference-only invitation delivery,
+  incomplete invitation recovery, session/challenge revocation, transactional actor
+  revalidation and self/last-owner protections. No temporary password, API-user role,
+  department builder or actual operator appointment is inferred.
+- Confirmed that UI navigation/controls are secondary to API authority. Full-administrator
+  legacy MFA behavior outside staff mutations remains an explicitly retained boundary;
+  production MFA still applies. Already admitted operations are not retroactively cancelled
+  by revocation. Matching migration/API/web contracts need separate deployment approval.
+
+#### Hosted acceptance findings
+
+- At exact source head, [CodeQL](https://github.com/ebit101/webhost-billing/actions/runs/37405859335)
+  succeeded but [CI](https://github.com/ebit101/webhost-billing/actions/runs/37405859294)
+  failed at the browser lifecycle step. Reviewed decoded job logs and step summaries,
+  not merely a badge or the local report. Full-history secret scan, formatting, offline
+  documentation, lint, strict types, package tests, API integration and critical invariants
+  passed there. API integration: 17 suites / 81 tests, including the nine staff scenarios.
+- Lifecycle browser result: 15 passed / 3 failed. The failures were exact display-text
+  mismatches: service review expected `PROVISION FAILED`, manual-payment review expected
+  `PENDING`, and lifecycle order row expected `PAID`; rendered text was respectively
+  `Provision failed`, `Pending` and `Paid`. Source confirms later lifecycle assertions
+  also expect obsolete all-caps states. This evidence supports stale assertions, not a
+  reason to undo the owner's app-wide sentence-case rule or remove state checks.
+- Staff browser checks, production audit, license inventory and production build were
+  skipped after that failure. Their previous local evidence remains historical; skipped
+  hosted steps are not passed checks. No failing workflow was rerun or suppressed here.
+
+#### Additional validation blockers
+
+- Read-only loopback preflight using the existing browser environment returned
+  `configuredModelSchema=command26_e2e`, `current_schema()=public`. The shared Prisma
+  adapter reads the URL schema for model queries, but this environment does not establish
+  matching raw-SQL search_path. Retain the previously recorded isolation risk; do not
+  run lifecycle preparation/automation until the test-only connection boundary is fixed
+  and checked. No schema was created/dropped and no application record was read or changed.
+- Fresh `pnpm audit --prod --audit-level high` exited 1 with two findings:
+  critical [proxy-addr](https://github.com/advisories/GHSA-jqcg-44mw-7w3h) 2.0.7 through
+  Nest/Express in API/worker dependencies, patched at 2.0.8; high
+  [source-map-js](https://github.com/advisories/GHSA-68fv-2mgg-jv7q) 1.2.1 through
+  Next/PostCSS, patched at 1.2.2. Read-only `pnpm why --prod -r` and the lockfile confirm
+  those versions/paths. Verified the two primary advisory pages on this review date.
+- Severity is the package advisory/audit rating, not evidence of compromise or verified
+  live exploitability. Inspected API proxy configuration uses bounded numeric hops, not
+  the subnet form described by the critical advisory. No installed dependency, lockfile,
+  audit threshold, supply-chain policy, server setting or provider was changed.
+
+#### Outstanding Command 33 owner inputs
+
+| Group | Still required                                                                                                                                                                                                                           |
+| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D5    | Approve/edit retention and access rules with protected lawful durations/holds for R1–R4, especially financial history; reviewed storage/disposal evidence. Backup proposal R5 is already approved, not proof of recovery.                |
+| D6    | Accept named maintenance/renewal roles; name incident primary and a distinct reachable backup; supply tested private alert references, exact Asia/Dhaka maintenance/first-renewal windows, eligible-service list and rollback authority. |
+| D7    | Decide accept/remediate separately for G1/G2/G3, with a named operator and tested workaround for each acceptance. External monitoring and alert delivery still gate launch.                                                              |
+| D8    | Accept/edit/defer intended portal/cutover boundaries; supply separately approved infrastructure, migration/reconciliation, recovery and release/cutover evidence. Intended hostname alone is not launch approval.                        |
+
+- D1–D4 stay approved. Their remaining actual catalogue/prices and legacy-cycle mapping,
+  reconfirmed manual-payment destinations/cash procedure, payment reviewer, order/hosting
+  operator, feasible staffing and tested cancellation/renewal safeguards remain required.
+  Existing approved identity/contact, BDT, optional tax, refund window, renewal defaults
+  and manual-first modes need no repeat approval. Do not infer legal periods or appointments.
+- The existing `DRAFT-OPS-1` reply form in `docs/PRODUCTION_BUSINESS_POLICIES.md` remains
+  the single intake form. This report is not a new draft, approval, customer promise or
+  private evidence store. No policy text/status/owner approval was changed by the review.
+
+#### Files changed
+
+- `CODEX_DEVELOPMENT_COMMANDS.md` — bounded Command 93 definition and authorization gate.
+- `docs/DECISIONS.md` — ADR-079 acceptance-repair sequencing and scope boundaries.
+- `docs/PROGRESS.md` — review evidence, unresolved owner inputs and exact next command.
+- Documentation only; no application, schema, test, dependency, workflow, worker, environment,
+  provider, real account or deployment change.
+
+#### Fresh validation and delivery
+
+- Shared contracts: 39 tests passed. Role guard: eight tests passed. Staff UI/access/server
+  entry regressions: 12 tests across four files passed, sequentially with two web workers.
+  No test assertion, deadline or behavior was altered. Broader hosted evidence above is
+  explicitly distinguished from these fresh local checks; no full local lifecycle/API
+  rerun, migration, fixture preparation/reset or production acceptance is claimed.
+- Production audit failed as recorded, intentionally retaining the actionable findings.
+  Read-only raw-SQL preflight confirmed the isolation mismatch. These are open application
+  acceptance blockers, not failures hidden by a passing documentation-only review.
+- Scoped Prettier, all four offline documentation validators and whitespace checks passed
+  for the three-file review diff. Delivery is a focused documentation commit/non-force
+  push, not an application repair. The existing failed source-head CI remains blocked;
+  this report does not certify a green release or claim new hosted checks passed.
+
+#### Decisions and unresolved risks
+
+- ADR-079 defines one bounded Command 93 to repair the two affected transitive production
+  dependencies, test-only schema/search_path isolation and stale sentence-case assertions,
+  then rerun full guarded validation. Do not broaden it into features or production work.
+- Missing business inputs cannot be replaced by technical staff roles or another generic
+  approval. Command 91 stays separately gated. No D5–D8 acceptance, role appointment,
+  automated disposal, policy publication, migration/import or production authority is implied.
+- Retain recorded direct-main required-PR/check bypass governance and broader infrastructure,
+  real mail/monitoring, provider, recovery and cutover gates. Recorded staging release
+  `6085629` is unchanged and production remains unapproved.
+
+#### Exact recommended next command
+
+Authorize **Command 93 — Restore the security and browser validation gate**.
+Separately supply actual answers/references through **Resume Command 33 — Record Remaining
+Owner Decisions and Operating Inputs** when ready. Stop after this review; do not start
+either implementation or private evidence verification without new authorization.
 
 ## Report Template
 
