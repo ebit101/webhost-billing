@@ -26,7 +26,9 @@ type Pagination = {
   totalPages: number;
 };
 
-export function AdminCustomerManager() {
+export function AdminCustomerManager({
+  readOnly = false,
+}: { readOnly?: boolean } = {}) {
   const [customers, setCustomers] = useState<CustomerSummary[]>([]);
   const [pagination, setPagination] = useState<Pagination>({
     page: 1,
@@ -131,10 +133,12 @@ export function AdminCustomerManager() {
         title="Customers"
         description="Search customer records, review linked business history, and control portal access."
         actions={
-          <Button onClick={() => setCreateOpen(true)}>
-            <Icon name="plus" className="size-4" />
-            Add customer
-          </Button>
+          !readOnly ? (
+            <Button onClick={() => setCreateOpen(true)}>
+              <Icon name="plus" className="size-4" />
+              Add customer
+            </Button>
+          ) : null
         }
       />
 

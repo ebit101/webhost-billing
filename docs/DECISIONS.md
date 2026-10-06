@@ -1025,6 +1025,37 @@ This document records durable technical and product decisions. New decisions sho
   component checks, invoice text/determinism tests and anonymous computed-style browser
   checks protect the rule. No deployment or operating-policy approval is inferred.
 
+## ADR-078 — Fixed staff roles with backend enforcement and protected account changes
+
+- **Status:** Accepted by explicit owner implementation authorization
+- **Date:** 2026-10-06
+- **Decision:** Keep `UserRole` administrator/customer identity unchanged and add a
+  fixed role to administrator profiles. Existing profiles migrate to full
+  administrator; billing operators manage invoices/manual-payment collection with
+  read-only customer context; support operators manage the existing single queue.
+  Use explicit shared grants and API metadata, defaulting unannotated administrator
+  actions to full-only. Missing/unknown staff roles fail closed. Customer ownership
+  checks and financial/provider boundaries remain unchanged.
+- **Safeguards:** Current role/status/MFA are read from PostgreSQL per authenticated
+  request. Restricted business access and full-administrator staff mutations require
+  MFA. Invitations reuse encrypted verification/reset tokens and the existing outbox;
+  no temporary password is exposed. An email-verified invitation without a password
+  remains visibly pending and recoverable by resending the missing setup step. Staff
+  changes revoke sessions and login challenges. Disable consumes invitation/reset
+  tokens; email verification cannot
+  reactivate a disabled account. A transaction-scoped advisory lock serializes staff
+  mutations, rechecks the actor and protects against self-lockout/last-owner loss.
+- **Consequence:** The UI filters navigation and guards administrator pages, but
+  backend checks are authoritative. Billing has a separate read-only customer view
+  and cannot alter business identity or invoke refunds/reversals/provider/hosting
+  actions. Full-administrator legacy MFA behavior is retained outside staff changes;
+  production still requires administrator MFA under the existing launch gates.
+  Session revocation does not claim to cancel already admitted in-flight operations.
+  Deploy the migration and matching API/web contracts together, only after separate
+  deployment authorization. No custom roles, multi-department router, API-user role,
+  hosting operator, actual appointments, remaining D5–D8 approval or production
+  readiness is implied. Command 91 remains separately gated.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

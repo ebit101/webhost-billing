@@ -15,6 +15,12 @@ enum UserRole {
   CUSTOMER
 }
 
+enum StaffRole {
+  FULL_ADMINISTRATOR
+  BILLING_OPERATOR
+  SUPPORT_OPERATOR
+}
+
 enum UserStatus {
   PENDING_VERIFICATION
   ACTIVE
@@ -249,14 +255,15 @@ model Customer {
 }
 
 model AdminProfile {
-  id           String   @id @default(uuid()) @db.Uuid
-  userId       String   @unique(map: "admin_profiles_user_id_key") @map("user_id") @db.Uuid
-  displayName  String   @map("display_name") @db.VarChar(150)
-  jobTitle     String?  @map("job_title") @db.VarChar(100)
-  isSuperAdmin Boolean  @default(false) @map("is_super_admin")
-  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
-  user         User     @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  id           String    @id @default(uuid()) @db.Uuid
+  userId       String    @unique(map: "admin_profiles_user_id_key") @map("user_id") @db.Uuid
+  displayName  String    @map("display_name") @db.VarChar(150)
+  jobTitle     String?   @map("job_title") @db.VarChar(100)
+  isSuperAdmin Boolean   @default(false) @map("is_super_admin")
+  staffRole    StaffRole @default(FULL_ADMINISTRATOR) @map("staff_role")
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user         User      @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
   @@map("admin_profiles")
 }

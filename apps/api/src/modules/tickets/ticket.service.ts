@@ -136,7 +136,9 @@ export class TicketService {
         role: UserRole.ADMIN,
         status: UserStatus.ACTIVE,
         deletedAt: null,
-        adminProfile: { isNot: null },
+        adminProfile: {
+          is: { staffRole: { in: ['FULL_ADMINISTRATOR', 'SUPPORT_OPERATOR'] } },
+        },
       },
       include: { adminProfile: true },
       orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
@@ -369,7 +371,11 @@ export class TicketService {
             role: UserRole.ADMIN,
             status: UserStatus.ACTIVE,
             deletedAt: null,
-            adminProfile: { isNot: null },
+            adminProfile: {
+              is: {
+                staffRole: { in: ['FULL_ADMINISTRATOR', 'SUPPORT_OPERATOR'] },
+              },
+            },
           },
           select: { id: true },
         });

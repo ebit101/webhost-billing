@@ -49,18 +49,51 @@ Recovery-code rotation and MFA disable both require the current password plus an
 
 ## Authorization
 
-The supported roles are `ADMIN` and `CUSTOMER`.
+The identity roles remain `ADMIN` and `CUSTOMER`. Command 92 adds three fixed
+administrator-profile roles: full administrator, billing operator and support operator.
 
 - A narrowly matched Next.js Proxy redirects `/admin/**` and `/portal/**` requests without a recognized session cookie to `/login` before route rendering. The workspace server layouts then validate any presented HttpOnly session against `GET /auth/me` before rendering their shells. Expired sessions redirect to `/login`; a valid user who opens the other role's workspace is redirected to their own workspace.
 - The server-rendering guard forwards only the recognized session cookie, disables fetch caching, validates the API response through the shared runtime identity schema, and fails closed if authentication cannot be verified. It complements rather than replaces API role and ownership enforcement.
 - The global session guard protects routes unless `@Public()` is explicitly present.
 - `@Roles('ADMIN')` protects administrator-only endpoints.
+- The global role guard additionally applies `@StaffPermissionRequired(...)` grants
+  to administrator identities. Unannotated administrator actions are full-only;
+  missing or invalid staff roles deny access. Customers still require resource ownership.
+- Restricted operators must enroll in MFA before business access. Their own account,
+  sessions and MFA setup remain accessible. Full-administrator staff mutations also
+  require MFA; legacy full-administrator access elsewhere is unchanged, not a production
+  MFA exemption. Current role and enrollment are resolved from the database on each request.
 - `@RequireCustomerOwnership('customerId')` requires a customer to own the referenced customer resource; administrators may pass the ownership boundary.
 - Ownership is resolved from the authenticated server-side identity, never from a role or customer identifier supplied by the browser.
 
 `GET /auth/admin-check` and `GET /auth/customer-profile/:customerId` are intentionally small authorization probes for Command 5. Feature modules must apply the same service/API-layer checks when their routes are introduced.
 
 Administrator accounts are not publicly registrable. The first production administrator is provisioned only through the confirmation-gated `deploy/production/bootstrap-admin.cjs` procedure in `docs/PRODUCTION_LAUNCH_RUNBOOK.md`. It refuses an existing administrator/email, reads a protected newline-free password file, hashes with the application Argon2id profile, and writes `PRODUCTION_ADMIN_BOOTSTRAPPED` audit evidence. Remove the one-time password file and enroll TOTP before public exposure. The fictional development seed remains non-authenticating and must never run in production.
+
+### Staff invitations and access changes
+
+Full administrators can read `GET /staff`. MFA-protected, CSRF-checked `POST /staff`
+invites an individual, `PATCH /staff/:userId` changes their name/role/enabled state,
+and `POST /staff/:userId/invitation` replaces an incomplete invitation. Invite/resend
+share a ten-attempt hourly source-fingerprint limit. Responses never contain passwords,
+tokens or integration credentials. There is no public staff registration or API-user role.
+
+Invitations queue separate encrypted, one-time verification and password-setup tokens
+through the existing outbox/email worker. Queueing is not delivery confirmation. Email
+verification alone cannot enable login without a password; the staff list still shows
+that incomplete invitation as pending, and resending sends only the missing setup step.
+Superseded links are consumed. Disabling consumes outstanding invitation/reset links,
+and email verification conditionally updates only a non-deleted pending account.
+
+Staff mutations take a transaction-scoped advisory lock, re-read the acting full
+administrator, prevent self-disable/demotion and preserve another usable full administrator
+when removing one. Changes revoke sessions/login challenges and append audit history.
+Revocation does not cancel operations already admitted before the change. No staff account
+is hard-deleted, and invitation data does not modify financial history or provider state.
+
+The three-role grants are summarized in the [readme](../README.md#administrator-access).
+Deploy the additive migration with matching API/web contracts only after separate
+authorization. Source publication does not appoint operators or authorize production.
 
 ## API endpoints
 

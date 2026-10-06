@@ -117,6 +117,36 @@ demonstration or staging instance a public test target.
 See `docs/PUBLIC_RELEASE.md` for release channels, compatibility expectations,
 distribution checks, and maintainer procedures.
 
+## Administrator access
+
+Each staff member uses an individual administrator account with one fixed role.
+
+| Role               | Permitted work                                                                                                  |
+| ------------------ | --------------------------------------------------------------------------------------------------------------- |
+| Full administrator | All existing administrative operations, including staff management; existing business confirmations still apply |
+| Billing operator   | Read customer billing context, manage invoices, record and verify manual payments                               |
+| Support operator   | View, reply to and manage tickets in the existing single support queue                                          |
+
+Billing/support operators cannot change settings, manage integration credentials,
+operate hosting, run automation, export reports or manage staff. Refunds and
+reversals remain full-administrator-only. Integration credentials are not staff
+accounts; there is no API-user role or custom permission/department builder.
+
+Full administrators use **Administrators** in the navigation to invite staff or
+change access. Staff changes require two-factor authentication. Invitations queue
+separate one-time verification and password-setup emails through the existing
+delivery pipeline; queueing is not proof of delivery. The recipient must complete
+both steps and enroll in two-factor authentication before restricted work is allowed.
+Expired invitations can be resent. Disabled accounts have their outstanding links
+consumed and cannot be reactivated by an old verification link.
+
+Changing access revokes existing sessions/challenges. Administrators cannot disable
+or demote themselves, and concurrent changes cannot remove the last usable full
+administrator through staff management. Existing profiles migrate to full
+administrator without changing customer roles or financial records. Install the
+migration with matching API/web builds; source publication does not apply it to a
+live installation or authorize staff creation/deployment.
+
 ## Project documentation
 
 - `HOSTING_BILLING_SYSTEM_PLAN.md` — product requirements and architecture

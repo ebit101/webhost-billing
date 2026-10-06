@@ -165,7 +165,7 @@ async function loadReview(
   )
     return { kind: 'unavailable' };
   signal.throwIfAborted();
-  const settings = await fetch(`${API_URL}/settings`, options);
+  const settings = await fetch(`${API_URL}/settings/presentation`, options);
   if (!settings.ok) return { kind: 'error' };
   const settingsBody: unknown = await settings.json().catch(() => undefined);
   const parsedSettings = timeZoneResponse.safeParse(settingsBody);

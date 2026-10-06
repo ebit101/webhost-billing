@@ -37,21 +37,26 @@ import { AdminPaymentReview } from './admin-payment-review';
 
 export function AdminPaymentManager({
   customerFilter = emptyAdminCustomerFilter,
+  fullAdministrator = true,
 }: {
   customerFilter?: AdminCustomerFilter;
+  fullAdministrator?: boolean;
 } = {}) {
   return (
     <PaymentWorkspace
       key={`${customerFilter.customerId ?? ''}:${customerFilter.invalid}`}
       customerFilter={customerFilter}
+      fullAdministrator={fullAdministrator}
     />
   );
 }
 
 function PaymentWorkspace({
   customerFilter,
+  fullAdministrator,
 }: {
   customerFilter: AdminCustomerFilter;
+  fullAdministrator: boolean;
 }) {
   const [payments, setPayments] = useState<ManualPayment[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -212,7 +217,8 @@ function PaymentWorkspace({
               </Button>
             </>
           ) : null}
-          {payment.state === 'VERIFIED' &&
+          {fullAdministrator &&
+          payment.state === 'VERIFIED' &&
           BigInt(payment.refundableAmount.amount) > 0n ? (
             <>
               <Button
@@ -390,7 +396,7 @@ function PaymentWorkspace({
       {error ? <Message error>{error}</Message> : null}
       {notice ? <Message>{notice}</Message> : null}
 
-      <GatewayFailurePanel />
+      {fullAdministrator ? <GatewayFailurePanel /> : null}
 
       <div className="grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
         <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
@@ -476,12 +482,18 @@ function PaymentWorkspace({
                 Applies again when a pending reference is verified.
               </p>
             </div>
-            <Link
-              href="/admin/settings#billing-policy"
-              className="rounded-lg px-3 py-2 text-sm font-bold text-brand-300 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-300"
-            >
-              Review billing policy in settings
-            </Link>
+            {fullAdministrator ? (
+              <Link
+                href="/admin/settings#billing-policy"
+                className="rounded-lg px-3 py-2 text-sm font-bold text-brand-300 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-300"
+              >
+                Review billing policy in settings
+              </Link>
+            ) : (
+              <span className="text-sm text-slate-300">
+                Ask a full administrator to change this policy.
+              </span>
+            )}
           </div>
         </section>
       </div>

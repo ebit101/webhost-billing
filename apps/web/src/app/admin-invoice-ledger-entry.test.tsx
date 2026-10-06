@@ -1,6 +1,13 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import Page from './(admin)/admin/invoices/page';
+vi.mock('../lib/server-admin-access', () => ({
+  authorizeAdminPage: vi.fn().mockResolvedValue({
+    role: 'ADMIN',
+    staffRole: 'FULL_ADMINISTRATOR',
+    twoFactorEnabled: true,
+  }),
+}));
 vi.mock('../components/invoices/admin-invoice-manager', () => ({
   AdminInvoiceManager: (props: unknown) => (
     <div data-testid="selection">{JSON.stringify(props)}</div>
@@ -23,6 +30,7 @@ describe('administrator invoice server entry', () => {
       }),
     );
     expect(JSON.parse(screen.getByTestId('selection').textContent!)).toEqual({
+      canManageIdentity: true,
       selection: {
         query: {
           customerId,
@@ -47,6 +55,7 @@ describe('administrator invoice server entry', () => {
       }),
     );
     expect(JSON.parse(screen.getByTestId('selection').textContent!)).toEqual({
+      canManageIdentity: true,
       selection: {
         query: { page: 1, pageSize: 20 },
         invalid: true,

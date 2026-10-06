@@ -43,8 +43,10 @@ const emptyOptions: TicketSetupOptions = { admins: [] };
 
 export function AdminTicketManager({
   customerFilter = emptyAdminCustomerFilter,
+  canReadCustomerContext = true,
 }: {
   customerFilter?: AdminCustomerFilter;
+  canReadCustomerContext?: boolean;
 } = {}) {
   const [tickets, setTickets] = useState<TicketSummary[]>([]);
   const [options, setOptions] = useState(emptyOptions);
@@ -65,7 +67,7 @@ export function AdminTicketManager({
     void Promise.all([
       authenticatedPaginatedGet<TicketSummary>(ticketsPath),
       authenticatedGet<TicketSetupOptions>('/tickets/setup-options'),
-      filteredCustomerId
+      filteredCustomerId && canReadCustomerContext
         ? authenticatedGet<CustomerDetail>(`/customers/${filteredCustomerId}`)
         : Promise.resolve(undefined),
     ])
@@ -91,7 +93,7 @@ export function AdminTicketManager({
     return () => {
       active = false;
     };
-  }, [filteredCustomerId, ticketsPath]);
+  }, [filteredCustomerId, ticketsPath, canReadCustomerContext]);
 
   const columns: DataColumn<TicketSummary>[] = [
     {

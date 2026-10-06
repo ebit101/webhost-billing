@@ -182,6 +182,8 @@ function identityResponse(role: 'ADMIN' | 'CUSTOMER') {
           email: 'admin@example.test',
           role,
           adminProfileId: '10000000-0000-4000-8000-000000000002',
+          staffRole: 'FULL_ADMINISTRATOR',
+          twoFactorEnabled: true,
         }
       : {
           userId: '20000000-0000-4000-8000-000000000001',

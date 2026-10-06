@@ -17,6 +17,23 @@ Zod schemas validate data that crosses an application boundary. Callers must par
 
 Compile-time TypeScript types are inferred from the matching schemas where possible. A TypeScript assertion alone is not boundary validation.
 
+## Administrator staff contracts
+
+Administrator identities include required `staffRole` and `twoFactorEnabled` fields;
+customer identities are unchanged. Unknown or missing staff roles fail runtime validation
+and do not imply full access. Fixed role labels use sentence case; protocol enum values
+are preserved. See [authentication](./AUTHENTICATION.md#staff-invitations-and-access-changes).
+
+`GET /staff` returns an array of safe account summaries: identifier, email, display name,
+staff role, status and MFA-enrollment flag. An email-verified account without a password
+is presented as invitation pending. Create requests accept only email/name/role; update
+requests accept only name/role/enabled state. Both are strict runtime schemas and reject
+permission overrides, identity-role injection and password fields.
+
+`GET /settings/presentation` returns only the configured `timeZone` for billing display.
+It does not expose the general settings overview, secrets or editable settings. All
+administrator API routes enforce staff permissions independently of frontend visibility.
+
 ## Email notification administration
 
 `GET /email-notifications` is administrator-only and returns the latest 100 delivery logs, newest first. Each entry contains the recipient, immutable subject snapshot, template identifier, normalized delivery state, provider key, attempt count, timestamps, and attempt summaries with fixed failure classifications. The template identifier is a bounded string in this historical response so a retired or renamed template cannot break delivery-history visibility.

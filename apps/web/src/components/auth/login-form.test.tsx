@@ -45,6 +45,8 @@ describe('administrator login security', () => {
                 email: 'admin@example.test',
                 role: 'ADMIN',
                 adminProfileId: '10000000-0000-4000-8000-000000000002',
+                staffRole: 'FULL_ADMINISTRATOR',
+                twoFactorEnabled: true,
               },
               session: {
                 id: '10000000-0000-4000-8000-000000000003',

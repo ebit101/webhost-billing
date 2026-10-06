@@ -14,6 +14,7 @@ import { API_ENVIRONMENT } from '../../infrastructure/environment/environment.mo
 import type { AuthRequestContext } from '../auth/auth.types';
 import { CurrentAuth } from '../auth/decorators/current-auth.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { StaffPermissionRequired } from '../auth/decorators/staff-permission.decorator';
 import { IntegrationCredentialService } from './integration-credential.service';
 import { SettingsService } from './settings.service';
 
@@ -33,6 +34,12 @@ export class SettingsController {
   @Get()
   async overview() {
     return createApiSuccessResponse(await this.settings.overview());
+  }
+
+  @Get('presentation')
+  @StaffPermissionRequired('business.presentation')
+  async presentation() {
+    return createApiSuccessResponse(await this.settings.presentation());
   }
 
   @Put()

@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Resume Command 33 — Resolve D5–D8 and Supply Remaining Operating Inputs
-- **Current status:** Authorized owner-input intake reviewed; awaiting actual D5–D8 decisions and operating inputs; D1–D4 remain approved; no deployment; recorded staging release 6085629 unchanged; production not approved
+- **Current command:** Command 92 — Implement bounded administrator staff roles
+- **Current status:** Command 92 source implementation completed and locally validated; remaining Command 33 operating inputs and D5–D8 are unchanged and unresolved; no deployment or real staff creation; recorded staging release 6085629 unchanged; production not approved
 - **Last updated:** 2026-10-06
-- **Next command:** Resume Command 33 — Record Remaining Owner Decisions and Operating Inputs
+- **Next command:** Phase review — Review Command 92 administrator access and outstanding Command 33 inputs
 - **Next command authorized:** No
 
 ## Command Reports
@@ -9385,6 +9385,119 @@ publish policies, migrate data or deploy from this partial rule approval.
 **Resume Command 33 — Record Remaining Owner Decisions and Operating Inputs**, after the
 owner supplies actual answers/references. Do not request another generic review or begin a
 later command to substitute for the missing information; no production authority is implied.
+
+### Command 92 — Implement bounded administrator staff roles
+
+- **Status:** Completed — source implementation only; no deployment or operator appointments
+- **Date:** 2026-10-06
+- **Authorization:** “Okay. Implement as you directed” following the proposed smaller
+  administrator/role/permission structure. This is separate from unresolved Command 33
+  inputs and the separately gated Command 91 ticket-history work.
+
+#### Scope completed
+
+- Added three fixed administrator-profile roles: full administrator, billing operator
+  and support operator. The additive migration defaults existing profiles to full
+  administrator; customer identity and financial/provider states are unchanged.
+- Added explicit shared grants and backend authorization on every authenticated request.
+  Unknown roles fail closed and unannotated administrator actions remain full-only.
+  Billing has invoice/manual-payment work and read-only customer context; support has
+  the existing single queue. Refunds, reversals, settings, reports, orders, hosting,
+  integrations, automation and staff management remain full-only.
+- Added safe staff listing, strict invitation/access-update/resend endpoints and encrypted
+  one-time verification/password delivery through the existing outbox. An email-verified
+  invitation without a password stays visibly pending and can recover the missing setup
+  step. Disabled/superseded links cannot restore access. No temporary password is exposed.
+- Required MFA for restricted business work and full-administrator staff mutations.
+  Preserved access to each operator's own account/MFA setup. Access changes revoke sessions
+  and login challenges and append audit evidence. Staff changes use a transaction-scoped
+  advisory lock and re-read the actor; self-disable/demotion and last-usable-owner loss
+  are prevented, including competing changes.
+- Added permission-aware navigation, server page checks, restricted billing views and
+  an accessible administrator management page with captured targets, duplicate-write
+  protection and confirmation before access changes/resend. A failed refresh cannot
+  automatically repeat a write. No financial history, staff account or audit hard-delete.
+- Added role/guard/UI regressions, isolated HTTP/PostgreSQL scenarios, mobile/desktop
+  browser checks and their CI step. No custom roles, department router, API-user role,
+  actual operator accounts, appointments or production policy approvals were introduced.
+
+#### Files changed
+
+- `packages/database/prisma/schema.prisma` and
+  `packages/database/prisma/migrations/20261006090000_staff_roles/migration.sql`.
+- `packages/shared/src/contracts/staff.ts`, `contracts/auth.ts`, `src/index.ts`,
+  `test/staff.spec.ts` and `test/contracts.spec.ts`.
+- `apps/api/src/app.module.ts`, auth module/controller/service/role guard, the staff
+  permission decorator, rate-limit scope and new guard tests; new `modules/staff/`.
+- API customer/invoice/payment/ticket controllers, ticket assignment service, narrow
+  settings presentation endpoint/service, partial-payment fixture and
+  `apps/api/test/staff.e2e-spec.ts`.
+- Administrator shell/root and customer/invoice/payment/support pages; guarded layouts
+  for all administrator categories and new `/admin/staff` page/layout.
+- Frontend customer/invoice/payment/support managers and payment review; new
+  `components/staff/`, administrator-access helpers/tests and updated authentication,
+  payment-review and server-entry test fixtures.
+- `apps/web/e2e/staff/`, `apps/web/playwright.staff.config.ts` and `.github/workflows/ci.yml`.
+- `HOSTING_BILLING_SYSTEM_PLAN.md`, `CODEX_DEVELOPMENT_COMMANDS.md`, `README.md`,
+  `docs/AUTHENTICATION.md`, `docs/API_CONTRACTS.md`, `docs/DECISIONS.md` and this report.
+
+#### Validation
+
+- Prisma generation, schema formatting/validation and shared/database package builds passed.
+  The migration was applied only to newly created, nonce-scoped fictional schemas on
+  loopback PostgreSQL. The test suite verifies its schema and removes only that exact
+  schema afterward; no existing application/staging/live database was migrated or reset.
+- Shared suite: 39 tests passed. API unit suite: 25 suites / 107 tests passed. Frontend
+  suite: 53 files / 550 tests passed, run alone with two workers after resource contention.
+- Isolated real HTTP/PostgreSQL staff suite: nine tests passed, including current-role
+  enforcement, customer ownership, permission injection denial, encrypted invitations,
+  MFA setup/access, incomplete invitation recovery, old-link/disabled-account denial,
+  session/challenge revocation, financial/audit preservation and competing-owner changes.
+- Dedicated Chromium UI-only suite: four tests passed at 375px/1440px, including keyboard
+  focus, overflow, disabled self-controls, read-without-write behavior, filtered navigation,
+  direct-route redirects and unenrolled-operator account access. Backend authority is
+  established by the real API suite, not the fictional browser fixture. Screenshots were
+  visually inspected and remain in ignored `release-artifacts/staff-preview/`.
+- API/web lint and API/web/worker strict type checks passed. API and frontend production
+  builds passed. Scoped Prettier, `git diff --check` and all four offline documentation
+  validators passed. New browser checks are wired into CI; no hosted result is claimed.
+- Initial runs exposed fixture timestamp/response expectations, old endpoint mocks and
+  server-entry tests requiring an explicit auth mock; corrected them without weakening
+  permission or financial assertions. Separate server-guard regressions cover redirects.
+  Early full-frontend/browser runs also hit local memory contention, locator ambiguity
+  and concurrently written generated Next types. Heavy checks were rerun sequentially,
+  browser output isolated in `.next-e2e`, and only the corrupt ignored generated-type
+  directory was moved recoverably into ignored artifacts. No Docker/data cleanup occurred.
+- The last invitation recovery edge case was fixed and all nine API scenarios rerun;
+  the full API units, API lint/types/build and frontend production build were rerun afterward.
+  Existing experimental VM, PostgreSQL query-concurrency and logo-loading warnings remain
+  non-fatal. Full legacy browser/provider/recovery/release acceptance is not claimed.
+
+#### Decisions made
+
+- ADR-078 records the fixed smaller role system, fail-closed API authority, encrypted
+  invitations, current database identity and atomic access-change safeguards.
+- Full-administrator legacy MFA behavior outside staff changes is retained; the existing
+  production MFA gate remains mandatory. Session revocation cannot cancel already admitted
+  in-flight business operations. Deploy matching migration/API/web contracts together.
+- Source delivery uses a focused commit and non-force push to canonical `origin/main`.
+  Public source delivery is not deployment, staff creation, operator appointment or launch.
+
+#### Open questions and risks
+
+- Command 33 D5–D8 choices, named operators and remaining protected operating inputs remain
+  unresolved. No actual staff member or distinct incident backup has been appointed here.
+- Real mail delivery, migration/deployment, WHMCS import, backup/recovery, provider acceptance
+  and cutover remain separately authorized work. Production remains unapproved and the
+  recorded staging release is unchanged. Installation-owned logo assets remain untouched.
+- The new CI step has local browser evidence but hosted execution is not asserted by this
+  report. Existing broader release/security gates are not replaced by this bounded command.
+
+#### Recommended next command
+
+**Phase review — Review Command 92 administrator access and outstanding Command 33 inputs**.
+Review this source slice and the remaining owner decisions; do not create accounts,
+deploy, approve policies, start Command 91 or import production data without new authority.
 
 ## Report Template
 

@@ -169,6 +169,22 @@ export class SettingsService {
     });
   }
 
+  async presentation(): Promise<{ timeZone: string }> {
+    const record = await this.prisma.setting.findUnique({
+      where: { key: KEYS.localization },
+      select: { value: true },
+    });
+    const localization = this.parse(
+      businessLocalizationSettingsSchema,
+      record?.value,
+      {
+        currency: DEFAULT_BUSINESS_SETTINGS.currency,
+        timeZone: DEFAULT_BUSINESS_SETTINGS.timeZone,
+      },
+    );
+    return { timeZone: localization.timeZone };
+  }
+
   async update(
     input: UpdateBusinessSettingsRequest,
     actor: AuthRequestContext,

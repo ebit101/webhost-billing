@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { staffRoleSchema } from './staff';
 
 const authenticatedIdentityBaseSchema = z.object({
   userId: z.uuid(),
@@ -9,6 +10,8 @@ export const administratorIdentitySchema = authenticatedIdentityBaseSchema
   .extend({
     role: z.literal('ADMIN'),
     adminProfileId: z.uuid(),
+    staffRole: staffRoleSchema,
+    twoFactorEnabled: z.boolean(),
   })
   .strict();
 

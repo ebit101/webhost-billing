@@ -36,6 +36,7 @@ import { API_ENVIRONMENT } from '../../infrastructure/environment/environment.mo
 import type { AuthRequestContext } from '../auth/auth.types';
 import { CurrentAuth } from '../auth/decorators/current-auth.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { StaffPermissionRequired } from '../auth/decorators/staff-permission.decorator';
 import { PaymentService } from './payment.service';
 
 @Controller('payments')
@@ -50,6 +51,7 @@ export class PaymentController {
   }
 
   @Get('settings')
+  @StaffPermissionRequired('payments.read')
   @Roles('ADMIN')
   async getSettings() {
     return createApiSuccessResponse(await this.payments.getSettings());
@@ -69,6 +71,7 @@ export class PaymentController {
   }
 
   @Get('manual/instructions')
+  @StaffPermissionRequired('payments.read')
   @Roles('ADMIN', 'CUSTOMER')
   async manualPaymentInstructions() {
     return createApiSuccessResponse(
@@ -91,6 +94,7 @@ export class PaymentController {
   }
 
   @Post('manual/admin')
+  @StaffPermissionRequired('payments.manage')
   @Roles('ADMIN')
   @HttpCode(HttpStatus.CREATED)
   async recordManual(
@@ -122,6 +126,7 @@ export class PaymentController {
   }
 
   @Get()
+  @StaffPermissionRequired('payments.read')
   @Roles('ADMIN')
   async list(
     @Query(new ZodValidationPipe(paymentListQuerySchema))
@@ -132,6 +137,7 @@ export class PaymentController {
   }
 
   @Get(':paymentId')
+  @StaffPermissionRequired('payments.read')
   @Roles('ADMIN', 'CUSTOMER')
   async detail(
     @Param('paymentId', new ParseUUIDPipe()) paymentId: string,
@@ -141,6 +147,7 @@ export class PaymentController {
   }
 
   @Patch(':paymentId/review')
+  @StaffPermissionRequired('payments.manage')
   @Roles('ADMIN')
   async review(
     @Param('paymentId', new ParseUUIDPipe()) paymentId: string,

@@ -17,6 +17,7 @@ import {
   type LoginRequest,
   type PasswordResetConfirmation,
   type RegistrationRequest,
+  type StaffRole,
   type TwoFactorDisableRequest,
   type TwoFactorLoginRequest,
   type TwoFactorRecoveryCodesResponse,
@@ -45,7 +46,7 @@ interface UserWithProfiles {
   emailVerifiedAt: Date | null;
   deletedAt: Date | null;
   customer: { id: string } | null;
-  adminProfile: { id: string } | null;
+  adminProfile: { id: string; staffRole: StaffRole } | null;
   adminTotpCredential?: { enabledAt: Date | null } | null;
 }
 
@@ -264,13 +265,18 @@ export class AuthService {
         throw invalidTokenException();
       }
 
-      await transaction.user.update({
-        where: { id: verification.userId },
+      const activated = await transaction.user.updateMany({
+        where: {
+          id: verification.userId,
+          status: UserStatus.PENDING_VERIFICATION,
+          deletedAt: null,
+        },
         data: {
           emailVerifiedAt: now,
           status: UserStatus.ACTIVE,
         },
       });
+      if (activated.count !== 1) throw invalidTokenException();
       await transaction.activityLog.create({
         data: {
           actorUserId: verification.userId,
@@ -291,7 +297,7 @@ export class AuthService {
       where: { email: input.email },
       include: {
         customer: { select: { id: true } },
-        adminProfile: { select: { id: true } },
+        adminProfile: { select: { id: true, staffRole: true } },
         adminTotpCredential: { select: { enabledAt: true } },
       },
     });
@@ -437,7 +443,7 @@ export class AuthService {
         user: {
           include: {
             customer: { select: { id: true } },
-            adminProfile: { select: { id: true } },
+            adminProfile: { select: { id: true, staffRole: true } },
             adminTotpCredential: { select: { enabledAt: true } },
           },
         },
@@ -513,7 +519,7 @@ export class AuthService {
         user: {
           include: {
             customer: { select: { id: true } },
-            adminProfile: { select: { id: true } },
+            adminProfile: { select: { id: true, staffRole: true } },
             adminTotpCredential: {
               include: { recoveryCodes: { where: { usedAt: null } } },
             },
@@ -1051,6 +1057,8 @@ export class AuthService {
         email: user.email,
         role: 'ADMIN',
         adminProfileId: user.adminProfile.id,
+        staffRole: user.adminProfile.staffRole,
+        twoFactorEnabled: Boolean(user.adminTotpCredential?.enabledAt),
       });
     }
 

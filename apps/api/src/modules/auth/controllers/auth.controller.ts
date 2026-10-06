@@ -49,6 +49,7 @@ import { RequireCustomerOwnership } from '../decorators/customer-ownership.decor
 import { Public } from '../decorators/public.decorator';
 import { AuthRateLimit } from '../decorators/rate-limit.decorator';
 import { Roles } from '../decorators/roles.decorator';
+import { StaffPermissionRequired } from '../decorators/staff-permission.decorator';
 import { AuthCookieService } from '../services/auth-cookie.service';
 import { AuthService } from '../services/auth.service';
 import { CsrfService } from '../services/csrf.service';
@@ -58,6 +59,7 @@ interface MessageResponse {
 }
 
 @Controller('auth')
+@StaffPermissionRequired('account.self')
 export class AuthController {
   private readonly auditSecret: string;
 
@@ -366,6 +368,7 @@ export class AuthController {
   }
 
   @Get('customer-profile/:customerId')
+  @StaffPermissionRequired('customers.read')
   @RequireCustomerOwnership('customerId')
   async customerProfile(
     @Param('customerId', new ParseUUIDPipe()) customerId: string,

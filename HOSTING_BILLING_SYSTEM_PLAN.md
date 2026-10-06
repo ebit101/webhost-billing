@@ -55,7 +55,15 @@ The business owner or trusted staff member. Administrators can manage customers,
 
 A hosting customer who can manage their profile, place orders, view services, pay invoices, and open support tickets.
 
-The first version does not need a complex staff-permission system. If multiple staff members are later added, role-based permissions can be introduced.
+The owner authorized a bounded staff-role addition on 2026-10-06. Administrator
+accounts now have one fixed staff role: full administrator, billing operator or
+support operator. Existing administrator profiles retain full access during migration.
+Billing operators can read customer context, manage invoices and verify/record manual
+payments; refunds, reversals, hosting operations, settings and staff changes remain
+full-administrator-only. Support operators manage the existing single ticket queue.
+Restricted operators must enroll in two-factor authentication before business access;
+staff changes also require an enrolled full administrator. No custom-role builder,
+department engine, hosting-operator role or integration API-user role is introduced.
 
 ## 4. Minimum Viable Product Scope
 

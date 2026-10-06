@@ -2914,6 +2914,48 @@ delivery and request separate authorization for Command 91.
 
 ---
 
+## Command 92 — Implement bounded administrator staff roles
+
+The owner authorized this separate development slice by saying “Okay. Implement as
+you directed” after accepting the proposed smaller administrator/role/permission
+structure. This does not approve remaining Command 33 operating inputs or start
+the separately defined Command 91 customer ticket-history work.
+
+Implement three fixed roles: full administrator, billing operator and support
+operator. Keep administrator/customer identity separate and migrate existing
+administrator profiles to full administrator. Enforce explicit grants at the API
+boundary on every request, with unannotated administrator actions full-only;
+preserve customer ownership and all existing financial/provider confirmations.
+Keep refunds/reversals, order/hosting operations, settings, integration credentials,
+reports/exports, automation and staff management full-only. Provide narrow billing
+customer/invoice/manual-payment work and the existing single support queue.
+
+Add full-administrator account invitation, access/role update and invitation resend
+through existing encrypted one-time email/password flows. Require enrolled MFA for
+restricted work and full-administrator staff mutations. Audit access changes and
+denials, revoke sessions/challenges after access changes, consume outstanding
+invitation tokens on disable, and prohibit self-disable/demotion and removal of the
+last usable full administrator. Serialize concurrent staff changes and recheck the
+actor after acquiring the lock. Do not create actual staff accounts or import data.
+
+Add permission-aware navigation, server page checks, read-only billing customer
+context and an accessible administrator-management page. Add role/guard/UI tests,
+isolated loopback PostgreSQL/HTTP regressions including MFA enrollment, money/history
+preservation and competing-owner changes. Run relevant/full unit suites, strict
+types, lint, formatting, documentation checks and production builds. Apply migrations
+only to newly created fictional test schemas, never existing application/live data.
+
+Record validation and limitations, create a focused source commit, reconcile and
+non-force push origin/main. Stop for a separately authorized phase review.
+Exclude custom roles, department routing, a hosting-operator role, integration API
+accounts, actual operator appointments, policy publication/approval, provider calls,
+deployment, WHMCS import and production launch. Production remains unapproved.
+
+**Authorization:** Explicit owner instruction on 2026-10-06. Source implementation
+only; no deployment or business-policy approval.
+
+---
+
 ## Continuation Command
 
 If a phase encounters errors or remains incomplete, use this prompt in the same Codex task:

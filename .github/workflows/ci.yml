@@ -93,6 +93,9 @@ jobs:
       - name: Run browser lifecycle test
         run: pnpm test:e2e
 
+      - name: Run administrator role browser checks
+        run: pnpm --filter @webhost-billing/web exec playwright test --config playwright.staff.config.ts
+
       - name: Audit production dependencies
         run: pnpm audit --prod --audit-level high
 

@@ -46,8 +46,10 @@ const blankLine = (): DraftLine => ({
 
 export function AdminInvoiceManager({
   selection = readAdminInvoiceQuery({}),
+  canManageIdentity = true,
 }: {
   selection?: AdminInvoiceSelection;
+  canManageIdentity?: boolean;
 } = {}) {
   const customerFilter = selection.customerFilter;
   const [ledgerRevision, setLedgerRevision] = useState(0);
@@ -317,50 +319,59 @@ export function AdminInvoiceManager({
           </form>
         </Card>
 
-        <Card
-          title="Business identity"
-          description="New invoices snapshot this identity. Issued invoices never change."
-        >
-          <form onSubmit={saveIdentity} className="grid gap-4">
-            <Field
-              label="Business name"
-              name="name"
-              defaultValue={identity.name}
-              required
-            />
-            <Field
-              label="Address"
-              name="addressLine1"
-              defaultValue={identity.addressLine1 ?? ''}
-            />
-            <div className="grid gap-4 sm:grid-cols-2">
+        {canManageIdentity ? (
+          <Card
+            title="Business identity"
+            description="New invoices snapshot this identity. Issued invoices never change."
+          >
+            <form onSubmit={saveIdentity} className="grid gap-4">
               <Field
-                label="City"
-                name="city"
-                defaultValue={identity.city ?? ''}
+                label="Business name"
+                name="name"
+                defaultValue={identity.name}
+                required
               />
               <Field
-                label="Country"
-                name="countryCode"
-                defaultValue={identity.countryCode ?? ''}
+                label="Address"
+                name="addressLine1"
+                defaultValue={identity.addressLine1 ?? ''}
               />
-              <Field
-                label="Email"
-                name="email"
-                type="email"
-                defaultValue={identity.email ?? ''}
-              />
-              <Field
-                label="Tax ID"
-                name="taxIdentifier"
-                defaultValue={identity.taxIdentifier ?? ''}
-              />
-            </div>
-            <Button type="submit" variant="secondary" disabled={saving}>
-              Save business identity
-            </Button>
-          </form>
-        </Card>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field
+                  label="City"
+                  name="city"
+                  defaultValue={identity.city ?? ''}
+                />
+                <Field
+                  label="Country"
+                  name="countryCode"
+                  defaultValue={identity.countryCode ?? ''}
+                />
+                <Field
+                  label="Email"
+                  name="email"
+                  type="email"
+                  defaultValue={identity.email ?? ''}
+                />
+                <Field
+                  label="Tax ID"
+                  name="taxIdentifier"
+                  defaultValue={identity.taxIdentifier ?? ''}
+                />
+              </div>
+              <Button type="submit" variant="secondary" disabled={saving}>
+                Save business identity
+              </Button>
+            </form>
+          </Card>
+        ) : (
+          <Card
+            title="Business identity"
+            description="Only a full administrator can change this identity."
+          >
+            <p>{identity.name}</p>
+          </Card>
+        )}
       </div>
 
       <AdminInvoiceLedger selection={selection} revision={ledgerRevision} />

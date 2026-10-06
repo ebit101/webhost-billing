@@ -35,6 +35,7 @@ import { API_ENVIRONMENT } from '../../infrastructure/environment/environment.mo
 import type { AuthRequestContext } from '../auth/auth.types';
 import { CurrentAuth } from '../auth/decorators/current-auth.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { StaffPermissionRequired } from '../auth/decorators/staff-permission.decorator';
 import { InvoiceService } from './invoice.service';
 import { InvoicePdfService } from './invoice-pdf.service';
 
@@ -51,6 +52,7 @@ export class InvoiceController {
   }
 
   @Get('settings/business-identity')
+  @StaffPermissionRequired('invoices.read')
   @Roles('ADMIN')
   async getBusinessIdentity() {
     return createApiSuccessResponse(await this.invoices.getBusinessIdentity());
@@ -74,6 +76,7 @@ export class InvoiceController {
   }
 
   @Post()
+  @StaffPermissionRequired('invoices.manage')
   @Roles('ADMIN')
   @HttpCode(HttpStatus.CREATED)
   async create(
@@ -105,6 +108,7 @@ export class InvoiceController {
   }
 
   @Get()
+  @StaffPermissionRequired('invoices.read')
   @Roles('ADMIN')
   async list(
     @Query(new ZodValidationPipe(invoiceListQuerySchema))
@@ -115,6 +119,7 @@ export class InvoiceController {
   }
 
   @Get(':invoiceId')
+  @StaffPermissionRequired('invoices.read')
   @Roles('ADMIN', 'CUSTOMER')
   async detail(
     @Param('invoiceId', new ParseUUIDPipe()) invoiceId: string,
@@ -124,6 +129,7 @@ export class InvoiceController {
   }
 
   @Get(':invoiceId/pdf')
+  @StaffPermissionRequired('invoices.read')
   @Roles('ADMIN', 'CUSTOMER')
   async pdf(
     @Param('invoiceId', new ParseUUIDPipe()) invoiceId: string,
@@ -145,6 +151,7 @@ export class InvoiceController {
   }
 
   @Patch(':invoiceId/draft')
+  @StaffPermissionRequired('invoices.manage')
   @Roles('ADMIN')
   async updateDraft(
     @Param('invoiceId', new ParseUUIDPipe()) invoiceId: string,
@@ -164,6 +171,7 @@ export class InvoiceController {
   }
 
   @Patch(':invoiceId/action')
+  @StaffPermissionRequired('invoices.manage')
   @Roles('ADMIN')
   async applyAction(
     @Param('invoiceId', new ParseUUIDPipe()) invoiceId: string,

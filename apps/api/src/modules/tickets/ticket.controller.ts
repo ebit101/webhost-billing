@@ -35,6 +35,7 @@ import type { AuthRequestContext } from '../auth/auth.types';
 import { CurrentAuth } from '../auth/decorators/current-auth.decorator';
 import { AuthRateLimit } from '../auth/decorators/rate-limit.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { StaffPermissionRequired } from '../auth/decorators/staff-permission.decorator';
 import { TicketService } from './ticket.service';
 
 @Controller('tickets')
@@ -49,6 +50,7 @@ export class TicketController {
   }
 
   @Get('setup-options')
+  @StaffPermissionRequired('tickets.manage')
   @Roles('ADMIN')
   async setupOptions() {
     return createApiSuccessResponse(await this.tickets.setupOptions());
@@ -71,6 +73,7 @@ export class TicketController {
   }
 
   @Get()
+  @StaffPermissionRequired('tickets.manage')
   @Roles('ADMIN')
   async list(
     @Query(new ZodValidationPipe(ticketListQuerySchema))
@@ -101,6 +104,7 @@ export class TicketController {
   }
 
   @Get(':ticketId')
+  @StaffPermissionRequired('tickets.manage')
   @Roles('ADMIN', 'CUSTOMER')
   async detail(
     @Param('ticketId', new ParseUUIDPipe()) ticketId: string,
@@ -110,6 +114,7 @@ export class TicketController {
   }
 
   @Post(':ticketId/replies')
+  @StaffPermissionRequired('tickets.manage')
   @Roles('ADMIN', 'CUSTOMER')
   @AuthRateLimit({
     scope: 'ticket-reply',
@@ -131,6 +136,7 @@ export class TicketController {
   }
 
   @Patch(':ticketId')
+  @StaffPermissionRequired('tickets.manage')
   @Roles('ADMIN')
   async update(
     @Param('ticketId', new ParseUUIDPipe()) ticketId: string,

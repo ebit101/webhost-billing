@@ -9,6 +9,8 @@ import {
 } from '../../../components/layout/workspace-shell';
 import { getAuthenticatedIdentity } from '../../../lib/server-auth';
 import { getBrandTitle } from '../../../lib/web-branding';
+import { staffRoleLabels } from '@webhost-billing/shared';
+import { canAccessAdminPath } from '../../../lib/admin-access';
 
 export const metadata: Metadata = {
   title: getBrandTitle('Administrator'),
@@ -26,6 +28,7 @@ const navigation: WorkspaceNavigationItem[] = [
   { href: '/admin/automation', label: 'Automation', icon: 'activity' },
   { href: '/admin/email', label: 'Email delivery', icon: 'bell' },
   { href: '/admin/settings', label: 'Settings', icon: 'settings' },
+  { href: '/admin/staff', label: 'Administrators', icon: 'users' },
 ];
 
 export default async function AdminLayout({
@@ -53,9 +56,11 @@ export default async function AdminLayout({
   return (
     <WorkspaceShell
       mode="admin"
-      navigation={navigation}
+      navigation={navigation.filter((item) =>
+        canAccessAdminPath(identity.staffRole, item.href),
+      )}
       userName={identity.email}
-      userDetail="Administrator"
+      userDetail={staffRoleLabels[identity.staffRole]}
     >
       {children}
     </WorkspaceShell>

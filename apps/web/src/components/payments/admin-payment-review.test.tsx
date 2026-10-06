@@ -81,7 +81,9 @@ function mockRead(
 ) {
   const mock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     void init;
-    return String(input).endsWith('/settings') ? response(settings) : detail();
+    return String(input).endsWith('/settings/presentation')
+      ? response(settings)
+      : detail();
   });
   vi.stubGlobal('fetch', mock);
   return mock;
@@ -102,7 +104,7 @@ function workspace(
     if (url.pathname === '/payment-gateways/failures') return response([]);
     if (url.pathname === '/payments/settings')
       return response({ partialPaymentsEnabled: false });
-    if (url.pathname === '/settings')
+    if (url.pathname === '/settings/presentation')
       return response({ timeZone: 'America/New_York' });
     if (url.pathname === '/payments') return paginated(payments);
     if (url.pathname === '/invoices') return paginated([invoice]);
@@ -174,7 +176,7 @@ describe('read-only administrator manual-payment review', () => {
     expect(document.querySelector('form, input')).toBeNull();
     expect(
       mock.mock.calls.map(([url]) => new URL(String(url)).pathname),
-    ).toEqual([`/payments/${id}`, '/settings']);
+    ).toEqual([`/payments/${id}`, '/settings/presentation']);
     expect(
       mock.mock.calls.every(
         ([, init]) =>
@@ -368,7 +370,7 @@ describe('read-only administrator manual-payment review', () => {
     );
     const signal = mock.mock.calls[0]![1]!.signal!;
     mock.mockImplementation(async (input) =>
-      String(input).endsWith('/settings')
+      String(input).endsWith('/settings/presentation')
         ? response({ timeZone: 'Asia/Dhaka' })
         : response({ ...payment, id: otherId, reference: 'New selection' }),
     );
@@ -393,7 +395,7 @@ describe('read-only administrator manual-payment review', () => {
   it('fails closed when the required settings read fails', async () => {
     const mock = mockRead();
     mock.mockImplementation(async (input) =>
-      String(input).endsWith('/settings')
+      String(input).endsWith('/settings/presentation')
         ? response(undefined, 500)
         : response(),
     );
@@ -417,21 +419,23 @@ describe('read-only administrator manual-payment review', () => {
       name: 'Payment review could not be loaded',
     });
     mock.mockImplementation(async (input) =>
-      String(input).endsWith('/settings') ? held : response(),
+      String(input).endsWith('/settings/presentation') ? held : response(),
     );
     await userEvent
       .setup()
       .click(screen.getByRole('button', { name: 'Retry payment review' }));
     await waitFor(() =>
       expect(
-        mock.mock.calls.some(([input]) => String(input).endsWith('/settings')),
+        mock.mock.calls.some(([input]) =>
+          String(input).endsWith('/settings/presentation'),
+        ),
       ).toBe(true),
     );
     const oldSignal = mock.mock.calls.find(([input]) =>
-      String(input).endsWith('/settings'),
+      String(input).endsWith('/settings/presentation'),
     )![1]!.signal!;
     mock.mockImplementation(async (input) =>
-      String(input).endsWith('/settings')
+      String(input).endsWith('/settings/presentation')
         ? response({ timeZone: 'Asia/Dhaka' })
         : response({
             ...payment,

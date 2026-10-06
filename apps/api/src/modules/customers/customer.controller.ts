@@ -38,6 +38,7 @@ import type { AuthRequestContext } from '../auth/auth.types';
 import { CurrentAuth } from '../auth/decorators/current-auth.decorator';
 import { RequireCustomerOwnership } from '../auth/decorators/customer-ownership.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { StaffPermissionRequired } from '../auth/decorators/staff-permission.decorator';
 import { AuthCookieService } from '../auth/services/auth-cookie.service';
 import { CustomerService } from './customer.service';
 
@@ -68,6 +69,7 @@ export class CustomerController {
   }
 
   @Get()
+  @StaffPermissionRequired('customers.read')
   @Roles('ADMIN')
   async list(
     @Query(new ZodValidationPipe(customerListQuerySchema))
@@ -78,6 +80,7 @@ export class CustomerController {
   }
 
   @Get(':customerId')
+  @StaffPermissionRequired('customers.read')
   @Roles('ADMIN', 'CUSTOMER')
   @RequireCustomerOwnership('customerId')
   async detail(@Param('customerId', new ParseUUIDPipe()) customerId: string) {

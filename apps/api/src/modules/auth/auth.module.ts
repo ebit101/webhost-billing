@@ -61,6 +61,8 @@ import { TotpService } from './services/totp.service';
     AuthAuditService,
     AuthCookieService,
     PasswordHasherService,
+    TokenCipherService,
+    AUTH_TOKEN_FACTORY,
   ],
 })
 export class AuthModule {}

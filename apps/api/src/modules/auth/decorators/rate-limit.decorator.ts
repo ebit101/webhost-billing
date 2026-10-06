@@ -12,7 +12,8 @@ export interface AuthRateLimitDefinition {
     | 'bkash-callback'
     | 'sslcommerz-return'
     | 'ticket-create'
-    | 'ticket-reply';
+    | 'ticket-reply'
+    | 'staff-invite';
   limit: number;
   windowMs: number;
   includeEmail: boolean;
