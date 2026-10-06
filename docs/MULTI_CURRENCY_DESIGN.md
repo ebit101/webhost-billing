@@ -373,12 +373,18 @@ Required before functional activation:
 
 Delivery sequence, each needing separate authorization:
 
-1. **Command 93 — Restore the security and browser validation gate** remains the exact
-   next implementation command. This design does not fix or waive its dependency,
-   stale-label or model/raw-SQL isolation blockers.
-2. Currency foundation: registry, exact conversion primitives and fake-provider fixtures,
-   before any adapter, database backfill or pricing effect. Define its numbered bounded
-   command after the validation repair review; this document does not authorize it.
+1. Commands 93 and 95 have delivered validation-boundary repairs and bounded tooling
+   mitigations. The Command 95 phase review verified their acceptance evidence. Full
+   audit still reports two development-tooling advisories; mitigation is not upstream
+   closure or owner residual-risk acceptance. Keep mitigation verification and the
+   production audit gate; separately review any changed exposure before activation.
+2. **Command 96 — Build the exact currency arithmetic foundation** is defined, not
+   authorized. Add pure shared metadata contracts, bounded exact-rational/decimal-string
+   arithmetic and fictional zero/two/three-decimal tests without connecting application
+   consumers. Do not ship a maintained currency dataset without verified source rights.
+   A production registry/capability policy, adapter, database backfill and pricing effects
+   remain later, separately authorized slices. See the bounded command definition in
+   [command tracking](../CODEX_DEVELOPMENT_COMMANDS.md).
 3. Additive policy/provenance schema and per-currency reads; preserve legacy records and
    pass mixed BDT/USD portal/report tests before an import rehearsal.
 4. Fixed BDT/USD catalogue, ownership-bound quotes and confirmed same-currency collection

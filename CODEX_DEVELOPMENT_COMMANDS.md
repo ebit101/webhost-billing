@@ -3046,7 +3046,7 @@ currency-foundation implementation only after that repair's review and new autho
 
 ## Command 95 — Mitigate unpatched development-tooling denial-of-service risks
 
-**Explicitly authorized by the owner on 2026-10-06; implemented and validated locally and at exact source head `51b90fe`.** The
+**Explicitly authorized by the owner on 2026-10-06; delivered and reviewed with successful source/report-head validation (`51b90fe` / `67ea491`).** The
 owner-authorized Command 93 phase review confirmed clean production acceptance but two development-only
 advisories. Registry metadata contains neither suggested fix, `braces` 3.0.4 nor
 `sprintf-js` 1.1.4; do not install nonexistent versions or call a local mitigation an
@@ -3111,6 +3111,76 @@ WHMCS import, provider activation, releases, deployment and production approval.
 owner instruction authorizes this bounded implementation. If upstream
 fixes remain absent, passing mitigation tests does not close GitHub/npm advisories or
 authorize proceeding to currency work by inference.
+
+---
+
+## Command 96 — Build the exact currency arithmetic foundation
+
+**Defined by the owner-authorized Command 95 phase review on 2026-10-06; not authorized
+for implementation.** This is an unused, pure shared-library foundation, not currency
+activation or acceptance of the remaining tooling risks. BDT default/USD preferred
+secondary remain the owner-directed target under ADR-080.
+
+```text
+Command 96 — Build the exact currency arithmetic foundation
+
+Read AGENTS.md, the product plan, decisions, progress and MULTI_CURRENCY_DESIGN.md.
+Recheck the two development-tooling advisories, published releases, installed mitigation
+checks and production audit. Keep the existing patches, production overrides and all
+supply-chain/acceptance controls. Stop for separate repair if new exposure or a failed
+mandatory gate falls outside this slice; do not suppress full-audit findings.
+
+Implement pure, strictly validated contracts and helpers in packages/shared, with no
+application consumer wired to them. Preserve moneySchema/parseMoney/serializeMoney and
+their existing JSON behavior. Add explicit currency-definition context containing code,
+minor-unit exponent, metadata version and provenance. Code syntax does not establish
+support, current status, sales permission or collection capability. Reject conflicting
+definitions; never look up today's precision to reinterpret historical amounts.
+
+Use BigInt only for monetary/rate calculations. Parse bounded positive decimal strings
+losslessly into reduced positive rational rates, with an explicitly documented grammar
+and limits. Never convert a financial/rate token through Number, parseFloat or ordinary
+JSON numeric parsing. Bound digits, precision, exponents and intermediate work before
+constructing large integers/powers. Reject unsupported forms, zero/negative denominators,
+invalid rates, noncanonical minor-unit strings and final PostgreSQL BIGINT overflow.
+
+Convert non-negative source minor units using target-major/source-major direction and
+explicit source/target exponents. Implement versioned half-even rounding with integer
+quotient/remainder; do not round an intermediate rate or silently clip an amount.
+Same-currency identity needs no external rate but must validate compatible metadata;
+conflicting unit contexts fail closed. Return JSON-safe canonical strings and calculation
+evidence, not raw BigInt JSON or a new payable quote. Document that arithmetic policy
+tests do not approve its use for live prices, refunds, taxes or historical valuations.
+
+Add deterministic fictional fixtures and independent expected results for BDT/USD,
+USD/JPY and USD/KWD examples, zero identity, even/odd half ties, exact/non-exact division,
+ratio reduction, direction, large safe amounts, overflow and malformed/oversized inputs.
+Prove quantity/line sums use stored rounded unit amounts rather than a converted header.
+Test strict metadata/unknown-code handling, incompatible versions/unit contexts and
+unchanged existing money contracts. No fetched market rates or customer data in fixtures.
+Reverify authoritative exponent facts before using real codes in examples. Do not copy
+or ship a full ISO/provider dataset without checked source/licensing rights; metadata
+contracts and clearly scoped test fixtures are not a maintained production registry.
+
+Run focused and complete package tests, API/invariant acceptance and both guarded
+fictional browser suites sequentially. Run frozen install, separate full/production
+audits, licenses, docs, formatting, lint, strict types and production builds. Record
+full audit exit 1 separately if the same mitigated version-based findings remain.
+No weakened assertions, skipped acceptance, schema reset or real provider operation.
+
+Update progress/decisions with actual results and limitations, make a focused commit,
+reconcile canonical main without rewriting history, non-force push origin/main and
+verify exact-head CI/CodeQL. Stop for separately authorized phase review.
+
+Exclude database/schema/backfills, runtime registry/settings/UI changes, catalogue
+prices, quotes, API/worker integration, FX adapters/network calls, schedules, payments,
+refund/renewal changes, WHMCS export/import, Command 91, D5–D8 approval, real staff,
+provider accounts/activation, release, deployment and production approval.
+```
+
+**Authorization boundary:** The review defines this command only. Implementation
+requires the owner's separate instruction; no residual-risk waiver, currency dataset
+licence or operational currency policy is approved by this definition.
 
 ---
 

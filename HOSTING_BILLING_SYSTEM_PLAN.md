@@ -58,7 +58,10 @@ gateway parity, reseller accounting or production approval.
 currency capabilities, price/quote provenance, fixed renewals, provider failure behavior,
 per-currency reporting and preservation of WHMCS BDT/USD history. Command 94 is design
 only. Existing single-currency contracts remain unchanged until separately authorized
-implementation; Command 93's validation repair remains the next implementation gate.
+implementation. Commands 93 and 95 repaired and validated the acceptance gate; the
+Command 95 phase review defines Command 96's pure arithmetic foundation only. Its
+implementation needs separate authorization, and remaining tooling advisories are
+not waived. No currency is activated by this sequence.
 
 ## 3. User Roles
 

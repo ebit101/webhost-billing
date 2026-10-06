@@ -1206,6 +1206,27 @@ This document records durable technical and product decisions. New decisions sho
   Remove patches only after verified upstream/consumer replacement and equivalent tests
   under separate authorization. Currency, deployment, D5–D8 and migration remain gated.
 
+## ADR-084 — Separate currency arithmetic from operational activation
+
+- **Status:** Command 95 review completed; Command 96 defined only, implementation not authorized
+- **Date:** 2026-10-06
+- **Evidence:** Report head `67ea491` passed exact-head CI/CodeQL including full acceptance.
+  Fresh frozen-install and ten installed mitigation checks pass; production audit exits 0.
+  Full audit still exits 1 for one high braces and one moderate sprintf-js finding. Registry
+  metadata has no suggested fixed releases; local patches do not close those findings.
+- **Decision:** Accept Command 95's bounded engineering delivery, not all development
+  risk or production readiness. Define Command 96 as pure, unused shared metadata and
+  exact-rational conversion primitives with fictional tests. Keep current money contracts
+  and every application consumer unchanged. Metadata context is not a sales/collection
+  policy or a maintained production currency registry; dataset distribution rights remain
+  a separate gate. Half-even library tests do not approve a live billing policy.
+- **Boundary:** New authorization is required to implement the foundation. Later schema,
+  catalogue/quote, provider, reporting and migration slices require their own approvals.
+  Retain visible full-audit exposure, trusted development/isolated CI guidance, patch-removal
+  criteria and production audit. Reassess changed exposure before activation; do not treat
+  passing tests, this review or a currency request as a residual-risk waiver. Command 33,
+  Command 91, real providers, releases/deployment and production approval remain gated.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

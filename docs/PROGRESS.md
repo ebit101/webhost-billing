@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 95 — Mitigate unpatched development-tooling denial-of-service risks
-- **Current status:** Command 95 completed and delivered: two exact-version local patches; local acceptance and exact source-head CI/CodeQL pass. Ten mitigation checks, complete package/API/invariant suites, 19 lifecycle and four staff browser tests, frozen install, docs/format/lint/types/builds and production audit/licenses pass. Full audit still reports two upstream advisories; no waiver granted. Separate phase review required before currency implementation; Command 33 inputs/D5–D8 remain unresolved; recorded staging release 6085629 unchanged; production not approved
+- **Current command:** Phase review — Review Command 95 mitigation evidence and remaining audit exposure before defining currency implementation
+- **Current status:** Review completed; Command 95 engineering delivery accepted, residual-risk waiver not granted. Source/report-head hosted acceptance and fresh ten mitigation checks/frozen install pass; production audit clean, full audit retains one high/one moderate development-tooling finding. Command 96 pure currency arithmetic foundation defined only, not implemented or authorized. Command 33 inputs/D5–D8 remain unresolved; recorded staging release 6085629 unchanged; production not approved
 - **Last updated:** 2026-10-06
-- **Next command:** Phase review — Review Command 95 mitigation evidence and remaining audit exposure before defining currency implementation
+- **Next command:** Command 96 — Build the exact currency arithmetic foundation
 - **Next command authorized:** No
 
 ## Command Reports
@@ -10081,6 +10081,101 @@ patches, implement currency or proceed to Command 91, migration or deployment no
 After verified delivery, authorize **Phase review — Review Command 95 mitigation evidence
 and remaining audit exposure before defining currency implementation**. Stop after this
 bounded command; do not start currency implementation or accept residual risk by inference.
+
+### Phase review — Review Command 95 mitigation evidence and remaining audit exposure before defining currency implementation
+
+- **Status:** Review completed; documentation-only delivery, exact review-head hosted verification in owner handoff
+- **Date:** 2026-10-06
+- **Authorization:** The owner's “continue” accepted the offered Command 95 phase review,
+  not currency implementation, risk acceptance or deployment.
+
+#### Scope reviewed
+
+- Reviewed source commit `51b90fe`, delivered report `67ea491`, patch registration/hashes,
+  traversal/precision source, installed-consumer regressions, bounded subprocess controls,
+  root/hosted verification and all seven Dockerfile install layers. Scope matches Command 95;
+  no new source defect identified in this bounded review, not an exhaustive security audit.
+- Confirmed guards cover parser/direct AST/parent and nested-array depth paths, while
+  normal/unbalanced globs retain supported behavior. Invalid numeric precision stays
+  literal without native formatting or new uncaught precision exceptions. Brace rejection
+  still requires caller error handling; neither patch isolates arbitrary executable config.
+- Reviewed ADR-080 and the currency design against current shared money contracts. Defined
+  Command 96 as pure exact arithmetic/metadata contracts and fictional fixtures only,
+  with no application consumer or operational currency activation. Full registry rights,
+  capability policy, persistence, FX adapters, quotes and migration remain later gates.
+- Corrected stale “Command 93 next” sequencing in the current product/design documents;
+  historical command definitions and prior approvals are preserved. No source, dependency,
+  workflow, application setting, financial record or live deployment changed.
+
+#### Files changed
+
+- `HOSTING_BILLING_SYSTEM_PLAN.md`, `docs/MULTI_CURRENCY_DESIGN.md` — current sequence
+  and arithmetic-versus-activation boundary, with tooling exposure retained.
+- `CODEX_DEVELOPMENT_COMMANDS.md` — delivered Command 95 heading and bounded Command 96,
+  explicitly defined only, not authorized.
+- `docs/DECISIONS.md` — ADR-084 separates engineering acceptance, arithmetic foundations
+  and operational/risk approval.
+- `docs/PROGRESS.md` — current summary, evidence, constraints and exact next command.
+
+#### Validation and evidence
+
+- Delivered report head `67ea4919aa7c7c72f2e7e9fa229c85e430b39529`:
+  [CI](https://github.com/ebit101/webhost-billing/actions/runs/37442399767) and
+  [CodeQL](https://github.com/ebit101/webhost-billing/actions/runs/37442399859) succeeded.
+  Fresh job inspection confirms all Validate steps passed: secret scan, frozen install,
+  mitigation verification, package/API/invariant and lifecycle/staff browser tests,
+  docs/format/lint/types, production audit/licenses and builds. PR-only Dependency review
+  was skipped on push, not passed. Prior exact source-head results remain recorded above.
+- Fresh `pnpm install --frozen-lockfile` passed (already up to date); ten installed-consumer
+  mitigation checks passed both before and after it. Registered patch hashes matched;
+  consumer and container-copy ordering tests passed without altering dependencies.
+- Fresh `pnpm audit --prod`: exit 0, no known vulnerabilities.
+  `pnpm --recursive why --prod braces sprintf-js` returned no dependency paths and exited 0.
+  Unrestricted `pnpm audit`:
+  exit 1, exactly one high braces and one moderate sprintf-js finding, not a passed gate.
+- Read-only [official braces registry](https://registry.npmjs.org/braces) and
+  [sprintf-js registry](https://registry.npmjs.org/sprintf-js) checks still show latest
+  3.0.3/1.1.3 respectively, with suggested fixed 3.0.4/1.1.4 absent. Both primary advisories
+  list no patched version: [braces](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm),
+  [sprintf-js](https://github.com/advisories/GHSA-hp3w-g68c-fv3c). The
+  [sprintf-js proposal](https://github.com/alexei/sprintf.js/pull/238) remains unmerged:
+  fresh API reads report closed/merged false, while the cached web page still says open.
+  Neither state establishes a published fix; no proposed code was installed.
+- Full suites/builds were not rerun locally for this documentation-only review; exact
+  delivered-head hosted acceptance is the evidence above. No Docker image rebuild,
+  database preparation/reset, provider operation or real browser account access occurred.
+  Individual authenticated repository alert states remain unverified, not inferred from
+  registry/advisory counts.
+- All four offline documentation validators, scoped Prettier checks for the five changed
+  documents and `git diff --check` passed. Canonical main reconciled 0/0 before delivery.
+  Commit/push the documentation-only review after final scoped checks, then verify its
+  exact-head CI/CodeQL in the owner handoff without another self-recording report commit.
+
+#### Decisions made
+
+- Command 95's specified engineering repair is accepted. Retain the two audit findings,
+  patch verification/removal criteria and production audit without a risk waiver.
+- Define one small next slice: unused shared BigInt arithmetic, strict versioned unit
+  context and fictional tests. Library rounding tests do not approve live conversion,
+  payment destinations, provider terms or a maintained currency dataset.
+- Keep implementation separate from this review. Do not continue into Command 96 by
+  inference; request explicit authorization after verified delivery.
+
+#### Open questions and risks
+
+- Remaining tooling risks include expansion/output budgets, executable configurations,
+  getters/proxies and formatter width/cache inputs. Trusted development and isolated CI
+  are required; local mitigations are not upstream advisory closure or untrusted-code safety.
+- Direct-main governance/PR-only skipped review and local low-memory constraints remain.
+  Docker images still need separately scoped build evidence before deployment.
+- Provider/metadata rights, supported sales/collection currencies and routes, live rounding/
+  quote/freshness policies, protected WHMCS samples/target/credits, Command 33 D5–D8,
+  staff/operators and final production approval remain unresolved.
+
+#### Exact recommended next command
+
+Authorize **Command 96 — Build the exact currency arithmetic foundation**.
+Stop after this phase review; no currency functionality, release or deployment is authorized.
 
 ## Report Template
 
