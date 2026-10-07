@@ -1652,7 +1652,7 @@ current_database()), hashtext(schema)` computed by qualified PostgreSQL function
 
 ## ADR-099 — Test-only statement coordination is not runtime policy or timer authority
 
-- **Status:** Accepted and locally validated for owner-authorized Command 103; canonical/exact-head hosted validation gates the handoff
+- **Status:** Command 103 delivered at `2c05dce` with complete local/exact-head hosted acceptance; owner-authorized phase review accepted its unused scope on 2026-10-08
 - **Date:** 2026-10-08 (owner authorization began 2026-10-07)
 - **Decision:** Add a separate pure fixed SQL renderer, unused by the product. Only the
   mandatory test process may install it atomically in nonce scopes it newly creates and
@@ -1683,6 +1683,41 @@ current_database()), hashtext(schema)` computed by qualified PostgreSQL function
   operating/import/launch risks remain without waiver. Stop after validated delivery for
   **Phase review — Review Command 103 SQL coordination guard prototype and define the next
   bounded currency command**; do not define/implement the next command automatically.
+
+## ADR-100 — Stage unknown control facts before allowing assessed currency authority
+
+- **Status:** Accepted for the owner-authorized Command 103 phase review; Command 104 implementation is not authorized
+- **Date:** 2026-10-08
+- **Review:** Command 103 at `2c05dce1e5bbfe542cb1bba479b799187140c073` meets its pure
+  unused renderer/test-only installation contract. Fresh 42 source/56 SQL cases and
+  seed/verifier passed. Exact-source-head CI passed all 28 Validate steps and CodeQL all
+  eight; PR-only review skipped. No runtime consumer or in-scope source repair found.
+- **Decision:** Define **Command 104 — Stage unselected currency control storage**.
+  One future additive empty key-1 singleton store and unused explicit stage/read entry.
+  The only legal staged shape is generation zero, null selected revision/base-anchor
+  fields and a null history latch meaning unknown. A new row is not history-free.
+  No migration seed, history scan, assessment or selected-state transition is permitted.
+- **Integrity:** SQL enforces exact null/unassessed shape and uniqueness; denies ordinary
+  update/delete/truncate, including no-op statements. Insert/replay creates uncertainty
+  only. Same Command 102 owned coordination, fresh qualified reads after acquisition,
+  strict inputs/identity/budgets and copied commit-only results; no authority or handle.
+  Preserve the 24 migrations and prior-22/23 rows; add prior-24 comparisons and mandatory
+  fictional/non-owner/concurrency/mutation/recovery acceptance. Complete local/hosted gates.
+- **Refinement:** Unknown staging is an intermediate state before the final proposed
+  permanent boolean history latch. A later separately authorized migration must open
+  assessed/selected states with reviewed transition/security/SQL/writer/drain/evidence
+  controls. NULL must never silently coerce to false or become initialization eligibility.
+- **Recovery qualification:** Command 103's caught-error evidence covers JavaScript catch
+  without SQL recovery. Raw savepoints/outer PLpgSQL handlers may recover an error and
+  keep earlier work; triggers cannot promise irrevocable whole-transaction abort. This
+  review documents the primary-source boundary, not a newly executed recovery test.
+  Future mandatory storage tests include it; adopted workflows need complete atomicity.
+- **Boundary:** No storage is implemented by this review. No history/latch activation,
+  selection/ledger/proof, existing-financial-table guard/row/provenance or adopted writer,
+  global privilege changes, registry/pricing/FX, live-data query/import/provider, operating
+  approval, existing-scope/cache cleanup, release or deployment. Timer/snapshot/row-first,
+  trusted-caller/owner, uncertain commit, tooling/resource/governance and launch risks
+  remain without waiver. Request explicit Command 104 authorization after review delivery.
 
 ## Open Decisions
 

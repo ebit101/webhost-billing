@@ -3751,9 +3751,13 @@ currency command**. Do not automatically implement selection or assign the next 
 ## Command 103 — Build an unused SQL currency coordination guard prototype
 
 **Defined by the owner-authorized Command 102 phase review on 2026-10-07.**
-**Subsequently authorized by the owner on 2026-10-07.** Implementation and complete local
-acceptance finished on 2026-10-08; focused canonical delivery and exact-head hosted gates
-must pass before the final handoff. Prove the ordinary-SQL coordination backstop in new
+**Subsequently authorized by the owner on 2026-10-07.** Delivered on 2026-10-08 at
+`2c05dce1e5bbfe542cb1bba479b799187140c073`, with complete local acceptance,
+[CI 37665607889](https://github.com/ebit101/webhost-billing/actions/runs/37665607889)
+(all 28 Validate steps) and
+[CodeQL 37665607804](https://github.com/ebit101/webhost-billing/actions/runs/37665607804)
+(all eight steps). PR-only Dependency review skipped, not passed. The owner-authorized
+phase review accepted its unused prototype scope on 2026-10-08. Prove the backstop in new
 fictional test scopes before installing policy controls or adopting application writers.
 This is not a deployable policy guard or permission to attach triggers to application data.
 
@@ -3846,6 +3850,106 @@ active transaction budget correctly: lowering a positive `transaction_timeout` d
 rearm an already active timer. No deployment instructions or application consumer.
 After validated delivery, stop for separately authorized **Phase review — Review Command
 103 SQL coordination guard prototype and define the next bounded currency command**.
+
+---
+
+## Command 104 — Stage unselected currency control storage
+
+**Defined by the owner-authorized Command 103 phase review on 2026-10-08.**
+**Not yet authorized for implementation.** This is the first additive control-storage
+slice, not policy initialization, a history assessment or application enforcement.
+Command 103 proved statement coordination; installing a selected policy before complete
+writer/row/privilege/deadline/adoption coverage would still be unsafe.
+
+```text
+Command 104 — Stage unselected currency control storage
+
+Read AGENTS.md, the product plan, decisions, progress and MULTI_CURRENCY_DESIGN.md.
+Recheck tooling advisories/releases, frozen install, installed mitigation tests and
+separate production/full audits. Keep patches and mandatory acceptance controls; stop
+for separately authorized repair if changed exposure exceeds this bounded slice.
+
+Add exactly one additive migration and Prisma model for schema-local currency_controls.
+The migration leaves the table empty: no singleton row, candidate, unit/default seed,
+history scan, trigger on existing business tables or application behavior change.
+Use one fixed internal key 1, not tenant IDs. The only legal staged row has generation
+0, selected policy reference NULL, history latch NULL (explicitly unknown, not false),
+and all exact base-anchor reference/code/exponent fields NULL. Preserve nullable exact
+foreign-key bindings to the immutable policy/unit stores where represented; no cascade
+deletion or mutable snapshot copy. Generation is stored as an integer and serialized as
+a canonical string. Unknown history is distinct from history-free and history-present.
+
+Database checks must enforce the complete unassessed shape, singleton uniqueness and
+nonnegative generation. SQL NULL must not pass a check accidentally: reject false/true
+history, any selected revision, nonzero generation and partial/non-null base anchors.
+No selected or assessed row is legal in this migration, even with an existing candidate
+or a caller claiming empty history. A later separately reviewed migration/transition
+protocol must deliberately open assessed/selected states; do not supply a bypass flag.
+
+Allow insertion of the one constant unassessed shape only. Reject ordinary UPDATE,
+DELETE and TRUNCATE at statement level, including empty/no-op operations. Guards apply
+to this new table only, use qualified trusted objects/fixed safe paths and remain
+SECURITY INVOKER; no SECURITY DEFINER, global role/membership/grant/owner changes or
+executing Command 103 installer. Owner/superuser DDL bypass remains a residual power.
+Insertion by a SQL writer can create uncertainty only, never selection or eligibility.
+
+Add a separate unused currency-control database entry with strict explicit schema,
+trusted staff composition and bounded limits. Expose only a bounded read and explicit
+idempotent staging of that constant unassessed row. Reads never insert. Stage/read use
+Command 102's owned transaction and identical key; load qualified control facts in
+subsequent statements after acquisition. Verify raw/model/schema identities, ordinary
+target kinds and permissions rather than trusting search_path or a supplied transaction.
+No supplied generation, history, anchor, policy, actor/approval, eligibility or bypass
+fields; reject unknown fields before work. No root/application/CLI/worker consumer,
+client/env discovery, external I/O, module-load effects, retry or transaction handle.
+Return copied bounded JSON facts only after commit; redacted failure returns no partial
+result. Absent row is explicitly absent; a staged row is explicitly unassessed. Neither
+means history-free, ready, initialized, safe to adopt, or a selected-policy fallback.
+Missing table/permissions, restrictive RLS or malformed rows fail closed, never empty.
+
+Do not read financial/settings/event rows to manufacture an assessment. Do not select
+greatest/newest/first policy or BDT/localization as authority. Command 101 observations
+and Command 97's caller-history pure helper cannot resolve the unknown latch. Staging
+may coexist with legacy writers precisely because it grants no history/base authority;
+later writer drain, fresh post-lock validation, permanent latch/anchor, authenticated
+transition/ledger/proof and reviewed privileges are still required before selection.
+
+Mandatory source and owned fictional PostgreSQL acceptance must prove: empty migration
+and read-without-insert; strict authority refusal; singleton/direct-SQL shape/null/FK
+constraints; concurrent identical stage calls retain one row and original timestamp;
+same-key waiting and fresh post-wait reads with real locks/barriers; rollback/commit
+failure and pool/deadline/role release; qualified decoy and raw/model scope refusal;
+all mutation/truncate denial including COPY/conflict/MERGE/nested/no-row paths; actual
+existing non-owner roles with local SET ROLE and no global privilege changes. A normal
+insert/conflict-do-nothing may replay the constant row; conflict-do-update must deny.
+Probe savepoint/PLpgSQL error recovery without claiming every SQL error irrevocably
+aborts an outer raw transaction: denied control mutations still cannot change its facts.
+
+Keep all 24 existing migration files byte-for-byte, prior-22/23 comparisons, Command
+101/102/103 acceptance and guarded seed/verifier unchanged in meaning. Add a prior-24
+row comparison after the new migration, including immutable unit/policy and all money,
+settings, audit/outbox/event facts. Update hard-coded total migration counts to 25 only
+where required; do not skip older gates. Install Command 103's prototype solely in the
+new schemas its tests own; no application/test-scope adoption or existing-scope cleanup.
+Wire new cases into the mandatory root/database/CI launcher, without optional skips.
+Run complete local acceptance, full-history secret scan and exact-head CI/CodeQL.
+
+Exclude assessed-history/latch activation, selection/replacement/adoption transitions,
+ledger/proof/security executor, financial-table guards/row validation or provenance,
+writer/auth/worker adoption, production-role hardening, legacy backfill/registry,
+amounts/presentation/pricing/quotes/FX/routes, real-data query/import, providers,
+operating approvals, existing-scope/cache cleanup, release/deployment. This unused
+staged store is not installed currency enforcement or approval to migrate live data.
+Update progress/decisions, focused commit, reconcile main without history rewrite,
+non-force push origin/main and verify exact-head CI/CodeQL. Stop for separately
+authorized phase review; do not automatically assess history or select a policy.
+```
+
+**Authorization boundary:** This review defines Command 104 only; it creates no table,
+control row, selected policy or permission. Request explicit authorization before starting.
+After its separately authorized verified delivery, the next review is **Phase review —
+Review Command 104 unselected currency control storage and define the next bounded
+currency command**.
 
 ---
 

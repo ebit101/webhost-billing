@@ -21,7 +21,9 @@
   review accepted its unused engineering scope and defines Command 103's unused SQL
   coordination guard prototype only. The owner subsequently authorized its pure renderer
   and mandatory fictional SQL acceptance on 2026-10-07; complete local acceptance passed
-  on 2026-10-08, with canonical/exact-head hosted delivery gating the handoff.
+  on 2026-10-08, with canonical and exact-head CI/CodeQL delivery at `2c05dce` verified.
+  The owner-authorized phase review accepted its unused scope and defines Command 104's
+  unselected control storage only; implementation remains unauthorized.
   Temporary test installation is not product adoption.
   The selection protocol is not implemented or activated.
   Application integration and activation remain separately gated.
@@ -1066,10 +1068,59 @@ are rolled back or removed. Exact installed triggers/function are marker-verifie
 removed before scope deletion and the unchanged launcher seed/verifier. No existing
 application/test scope, cache, migration history or real customer data is adopted.
 
-Stop after complete validated delivery for separately authorized **Phase review — Review
-Command 103 SQL coordination guard prototype and define the next bounded currency
-command**. No policy selection, latch/ledger/proof, row/provenance validation, writer
-adoption, registry/FX/payment route, real import, provider or deployment follows.
+The owner-authorized phase review on 2026-10-08 verified source-head
+[CI 37665607889](https://github.com/ebit101/webhost-billing/actions/runs/37665607889)
+(28 Validate steps) and
+[CodeQL 37665607804](https://github.com/ebit101/webhost-billing/actions/runs/37665607804)
+(eight steps), completed successfully at `2c05dce1e5bbfe542cb1bba479b799187140c073`.
+PR-only Dependency review skipped on push, not passed. Fresh local acceptance passed
+42 source and 56 SQL cases plus the unchanged seed/verifier. No runtime consumer or
+in-scope source defect was found; this accepts the prototype, not policy enforcement.
+
+Clarify the error boundary: the caught-error tests catch in JavaScript without SQL
+recovery, then prove the transaction remains aborted. An explicit
+[savepoint rollback](https://www.postgresql.org/docs/18/tutorial-transactions.html) or
+[outer PL/pgSQL exception block](https://www.postgresql.org/docs/18/plpgsql-control-structures.html)
+can recover a SQL error and retain earlier work. The renderer cannot prohibit raw
+callers doing that. This is a source-backed qualification, not an additional executed
+Command 103 test or claim of safe workflow recovery. Command 102's trusted body
+forbids transaction/session control; adopted business workflows must propagate failure
+and provide their own complete atomic boundary. Preserve uncertain commit outcomes too.
+
+### Command 103 review and Command 104 storage boundary
+
+Define **Command 104 — Stage unselected currency control storage**, not another lock
+prototype or premature policy activation. Add one future additive `currency_controls`
+store and separate unused stage/read entry. Its migration is empty; explicit staging
+under Command 102 may create only one constant key-1 row: generation `"0"`, selected
+revision and exact base-anchor fields null, history latch null meaning **unknown**.
+Absence and unassessed storage are different, but neither is initialization eligibility.
+Never initialize history to false merely because the control row is new or some observed
+counts are zero. This intermediate unknown state refines the proposed final state model;
+it does not replace the permanent boolean latch once a future assessed state is approved.
+
+Database checks admit only the complete unassessed shape. Ordinary update/delete/truncate
+are denied, including empty statements; insertion/conflict-do-nothing can only replay
+uncertainty. No seeded row, selected policy, history scan, latch setting, existing-table
+trigger, global privilege or application consumer. Creating this inert row can coexist
+with current writers because it makes no claim about them or history. The storage entry
+must not compose separate preflight observations into an eligibility decision.
+
+This future slice must prove concurrent staging, fresh qualified post-lock facts, exact
+singleton/null/reference constraints, actual non-owner SQL mutation denial and safe
+savepoint recovery boundaries in owned fictional acceptance. Preserve all 24 existing
+migrations, prior-22/23 comparisons and previous gates; add prior-24 row preservation
+and update total migration expectations only for the one new additive migration.
+Complete local/exact-head hosted gates are required. No migration is implemented by
+this review, and no live target is authorized for migration by defining the command.
+
+Later assessed/latching states need a deliberately reviewed transition migration plus
+fresh post-lock SQL validation, privileges, ledger/security proof, complete guard-first
+writer adoption/drain, legacy evidence and bounded connection/deadline controls. The
+active timer, initiating snapshot, row-first and owner/SQL recovery limits demonstrated
+or documented above remain. No live selection/adoption, registry/FX/payment route,
+real import, provider, operating approval, cleanup, release or deployment follows.
+Ask for explicit Command 104 authorization and stop after review delivery.
 
 ## 4. Price publication, quote and renewal rules
 
@@ -1377,16 +1428,22 @@ Delivery sequence, each needing separate authorization:
 9. **Command 103 — Build an unused SQL currency coordination guard prototype** was
    subsequently authorized: pure fixed SQL rendering, with temporary installation solely
    by guarded tests in schemas they create themselves. Complete local/canonical/exact-head
-   hosted acceptance gates delivery. No policy/row enforcement, migration, executing
+   hosted acceptance passed at `2c05dce`; the owner-authorized review accepted its scope.
+   No policy/row enforcement, migration, executing
    installer, deployed privilege change or adopted consumer. Snapshot/lock-order/internal
-   timer limits remain explicit; stop for separately authorized phase review.
-10. Later additive policy/provenance services and per-currency reads; preserve legacy records and
+   timer and raw SQL recovery limits remain explicit.
+10. **Command 104 — Stage unselected currency control storage** is defined only, not
+    authorized or implemented. One future additive empty singleton store; explicit unused
+    staging records unknown history and no policy/anchor, never eligibility. Complete SQL
+    shape/immutability/concurrency/history-preservation acceptance before its phase review.
+    Assessed history, selection transitions and writer enforcement remain later approvals.
+11. Later additive policy/provenance services and per-currency reads; preserve legacy records and
     pass mixed BDT/USD portal/report tests before an import rehearsal.
-11. Fixed BDT/USD catalogue, ownership-bound quotes and confirmed same-currency collection
+12. Fixed BDT/USD catalogue, ownership-bound quotes and confirmed same-currency collection
     paths. Use fake providers; real USD payment approval is separate.
-12. Rate-adapter sandbox evaluation, reviewed terms/credentials and proposed operational
+13. Rate-adapter sandbox evaluation, reviewed terms/credentials and proposed operational
     defaults, followed by guarded derived-price publication and additional currency tests.
-13. Protected WHMCS sample/import rehearsal with reconciliation and separate owner review.
+14. Protected WHMCS sample/import rehearsal with reconciliation and separate owner review.
     Actual source export and target controls may be assessed earlier, read-only, by authority.
 
 Remaining decisions: exact supported sales currencies and payment destinations, fixed

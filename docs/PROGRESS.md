@@ -11696,7 +11696,7 @@ without new authority.
 
 ### Command 103 — Build an unused SQL currency coordination guard prototype
 
-- **Status:** Implementation and complete local acceptance completed; focused canonical delivery and exact-head hosted verification gate the handoff
+- **Status:** Delivered to canonical main at `2c05dce` with complete local and exact-head hosted acceptance; owner-authorized phase review accepted its unused scope on 2026-10-08
 - **Date:** 2026-10-08 (owner authorization/implementation began 2026-10-07)
 - **Authorization:** Owner authorized the unused renderer and mandatory fictional tests,
   not application installation, writer adoption, currency activation or deployment.
@@ -11772,9 +11772,13 @@ without new authority.
   Browser lifecycle passed 19 and administrator mock-UI checks passed four. Production
   build passed with explicit production environment restored afterward; production licence
   inventory parsed successfully. Formatting/whitespace/offline docs passed; rerun after
-  final report edits. Focused commit/full-history secret scan and exact-head CI/CodeQL
-  remain delivery gates; final handoff supplies actual commit/run links without a
-  self-recording follow-up commit or premature future-head pass claim.
+  final report edits. Delivery subsequently completed at
+  `2c05dce1e5bbfe542cb1bba479b799187140c073`: normal non-force canonical main push,
+  pinned cached full-history secret scan (205 commits, no leaks), exact-head
+  [CI 37665607889](https://github.com/ebit101/webhost-billing/actions/runs/37665607889)
+  (28 Validate steps) and
+  [CodeQL 37665607804](https://github.com/ebit101/webhost-billing/actions/runs/37665607804)
+  (eight steps) all completed successfully. PR-only review skipped, not passed.
 - Fresh prior-review-head verification at `ac2c12dc7942de12329820492028e56748ba8315`:
   [CI 37657146027](https://github.com/ebit101/webhost-billing/actions/runs/37657146027) passed
   all 28 Validate steps; [CodeQL 37657146240](https://github.com/ebit101/webhost-billing/actions/runs/37657146240)
@@ -11804,10 +11808,102 @@ without new authority.
 #### Exact recommended next command
 
 Authorize **Phase review — Review Command 103 SQL coordination guard prototype and define
-the next bounded currency command** after validated delivery. Stop before that review;
-do not number/implement the next command, install application guards, select policy, adopt
+the next bounded currency command** after validated delivery. The owner subsequently
+authorized that review; its report follows. Do not install application guards, select policy, adopt
 writers, activate currency, query/import real data, invoke providers, approve operations,
 clean existing scopes/cache, release or deploy without separate authorization.
+
+### Phase review — Review Command 103 SQL coordination guard prototype and define the next bounded currency command
+
+- **Status:** Review and proportional local validation completed; focused canonical delivery and exact-review-head hosted verification gate the handoff
+- **Date:** 2026-10-08
+- **Authorization:** Review delivered Command 103 and define the next bounded command only.
+  Command 104 implementation, storage migration, selection and writer adoption are not authorized.
+
+#### Scope completed
+
+- Reviewed `2c05dce1e5bbfe542cb1bba479b799187140c073` against Command 103, the product
+  plan, ADR-098/099 and the authoritative-selection design. Inspected renderer, source/
+  SQL tests, separate exports, launcher and Command 102 composition. No in-scope source
+  defect or root/application/worker consumer found. No code or acceptance-control changes.
+- Fresh exact-source-head verification: [CI 37665607889](https://github.com/ebit101/webhost-billing/actions/runs/37665607889)
+  passed all 28 Validate steps; [CodeQL 37665607804](https://github.com/ebit101/webhost-billing/actions/runs/37665607804)
+  all eight. Aggregate/jobs/steps completed successfully with the exact source SHA.
+  PR-only Dependency review skipped on push, not passed. Source delivery used a normal
+  non-force main push; its cached pinned full-history scan covered 205 commits without leaks.
+- Accepted unused statement-coordination scope only. Actual non-owner writes, owner-only
+  read-dependent cases, stale initiating snapshot, reversed row ordering and active timer
+  counterexample are explicit. The renderer neither validates policy/rows nor certifies
+  caller timer history; temporary installation is not runtime privilege/writer hardening.
+- Qualified caught-error claims: tests catch in JavaScript without SQL recovery. Primary
+  PostgreSQL savepoint/outer-handler semantics permit recovering a SQL error and keeping
+  earlier work. This documentation correction is not an additional executed recovery test
+  or trigger-level guarantee of complete workflow abort. Trusted-body control restrictions,
+  future atomic workflows and uncertain commit outcomes remain required.
+- Defined **Command 104 — Stage unselected currency control storage** in command tracking
+  and ADR-100. One future empty additive store; explicit staging creates only unknown
+  history/generation zero/no policy or anchor. Ordinary mutation denial, concurrent
+  staging, fresh post-lock facts, non-owner/recovery and prior-24 preservation are required.
+  A later reviewed migration must open assessed/selected states; no false-history default
+  or early transition API. This review implements no table, state or runtime change.
+
+#### Files changed
+
+- `CODEX_DEVELOPMENT_COMMANDS.md` — reconcile delivered Command 103 and define Command 104.
+- `HOSTING_BILLING_SYSTEM_PLAN.md`, `docs/MULTI_CURRENCY_DESIGN.md` — accepted prototype,
+  recovery qualification, explicit unknown staging and separately gated delivery sequence.
+- `docs/DECISIONS.md` — reconcile ADR-099; add ADR-100.
+- `docs/PROGRESS.md` — reconcile prior delivery and record this review. Documentation only.
+
+#### Validation performed and results
+
+- Frozen install and all ten installed mitigation tests passed. Production audit: no known
+  vulnerabilities. Full audit exited 1: unchanged high braces GHSA-vfj7-8cjw-p6xm and
+  moderate sprintf-js GHSA-hp3w-g68c-fv3c. Registry latest 3.0.3/1.1.3; suggested
+  3.0.4/1.1.4 returned package-not-found. Primary advisories still report no patched release.
+  No suppression, dependency/patch change or claim of upstream closure/risk acceptance.
+- Fresh mandatory guarded database acceptance passed 42 source and 56 actual SQL cases
+  (9 units, 10 policies, 11 preflight, 11 coordination, 15 prototype), all 24 migrations,
+  prior-22/23 history comparisons and unchanged guarded seed/verifier. Newly owned marked
+  fictional scopes cleaned by their existing harness; no existing scope adopted/removed.
+- Four library builds/Prisma generation, database strict types and all 93 shared tests
+  passed. Compiled separate renderer and unchanged root exports verified. Source diff
+  confirms no existing migration/schema/seed/verifier/root export/dependency/patch/workflow
+  modification; search found prototype consumers only in its tests and mandatory wiring.
+- PostgreSQL primary sources rechecked for function snapshots, built-in role privileges,
+  active transaction timer assignment and SQL recovery; links are in the currency design.
+- All four offline documentation validators, workspace formatting and Git whitespace
+  checks passed. A report edit initially failed to write while formatting was running;
+  the unchanged file remained intact and the edit succeeded after the check finished.
+  Rerun final documentation/formatting/whitespace after that edit. Focused commit/cached
+  pinned full-history scan, non-force canonical push
+  and exact-review-head CI/CodeQL remain handoff gates. Final response supplies observed
+  commit/run evidence without a self-recording follow-up commit or future-head pass claim.
+  This docs-only review did not rerun local API/worker/browser/production gates; complete
+  exact-source-head hosted evidence was reverified, and review-head hosted gates must pass.
+
+#### Decisions made and remaining risks
+
+- Advance from coordination proofs to inert storage, not selected currency authority.
+  Unknown staging may coexist with legacy writes precisely because it cannot assess history
+  or authorize anything. Later selection needs fresh post-lock validation, permanent
+  latch/anchor, ledger/security proof, reviewed privileges/connections/deadlines, complete
+  guard-first writer/drain coverage and legacy evidence. No row/provenance protection yet.
+- Retain snapshot/row-first/timer/raw-recovery/owner/trusted-client and uncertain-commit
+  limits. Two tooling advisories/wider resource risk, direct-main governance bypass and
+  skipped PR-only review remain without waiver. Command 33 D5–D8, Command 91, protected
+  WHMCS/credit/target evidence, metadata/provider rights, maintenance/recovery and final
+  launch approvals remain unresolved. No live query/import/provider/operating approval.
+- Preserve incomplete unmarked scope `command26_e2e_8d7db6b8d0e7489a93eb26daaada1d76`
+  and recoverable ignored Command 101 cache backup. No existing-scope/cache cleanup or
+  new Docker image pull. Free disk measured C: 13.71 GiB / D: 17.69 GiB during this review.
+
+#### Exact recommended next command
+
+Authorize **Command 104 — Stage unselected currency control storage**. Stop after this
+review; do not implement that command, assess/select policy, install application guards,
+adopt writers, activate currency, query/import real data, invoke providers, approve
+operations, clean existing scopes/cache, release or deploy without separate authorization.
 
 ## Report Template
 
