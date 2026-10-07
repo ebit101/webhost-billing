@@ -3458,8 +3458,10 @@ Stop after validated delivery and request a separately authorized phase review.
 ## Command 100 — Design authoritative currency policy selection and legacy-history safeguards
 
 **Defined by the owner-authorized Command 99 phase review on 2026-10-07.**
-**Not authorized for execution.** This is a source-grounded design command, not
-implementation, installation initialization or currency activation.
+**Design explicitly authorized by the owner on 2026-10-07.**
+Source-grounded design and focused local acceptance completed; verify exact-head
+CI/CodeQL in delivery. This is not implementation, installation initialization
+or currency activation.
 
 ```text
 Command 100 — Design authoritative currency policy selection and legacy-history safeguards
@@ -3537,9 +3539,12 @@ formatting/aggregates, catalogue/quotes/FX/provider routes, credentials, live da
 Command 91, Command 33 approvals, releases, deployments and production mutations.
 ```
 
-**Authorization boundary:** This review defines Command 100 only. Its design work
-requires separate owner authorization. No policy is selected, no operating input is
-approved and no currency, provider or production workflow is enabled by this definition.
+**Authorization boundary:** The owner authorized Command 100's design only. No
+policy is selected, no operating input is approved and no currency, provider or
+production workflow is enabled. The proposed read-only adoption preflight is not
+assigned a command number or authorized here. Stop for separately authorized
+**Phase review — Review Command 100 authoritative selection design and define the
+next bounded currency command** before implementation.
 
 ---
 

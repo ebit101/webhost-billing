@@ -9,8 +9,9 @@
   source-head hosted acceptance and was phase-reviewed. Command 98's unused immutable
   unit storage passed complete local/corrected-head hosted acceptance and was phase-reviewed.
   Command 99's unused policy-revision snapshots passed complete local and exact-head
-  hosted acceptance and were phase-reviewed on 2026-10-07. The review defines Command 100's
-  authoritative-selection/legacy-history design only; it is not authorized for execution.
+  hosted acceptance and were phase-reviewed on 2026-10-07. The owner separately authorized
+  Command 100's authoritative-selection/legacy-history design on 2026-10-07; that
+  source-grounded design is completed below. Its protocol is not implemented or activated.
   Application integration and activation remain separately gated.
 - Owner direction: BDT is the default; USD is the preferred secondary currency;
   support major currencies with automatic conversion through a suitable provider.
@@ -361,6 +362,378 @@ design, implement its protocol, choose a live policy or repair current mixed-cur
 portal/report reads. Existing-history, per-currency presentation and operational approval
 gates remain visible; see [command tracking](../CODEX_DEVELOPMENT_COMMANDS.md).
 
+## 3a. Authoritative selection and legacy-history safeguards — Command 100
+
+### Authority and inspected baseline
+
+The owner authorized this design on 2026-10-07. Source baseline:
+`dc49182356b73a1bbe65a997521fff1c3f591c48`. Everything described as a selection
+control, ledger, guard, proof or adoption mechanism below is proposed, not installed.
+No table, endpoint, permission, token or financial writer changes in Command 100.
+Technical safety rules are not approval of a live base, metadata dataset, collection
+destination, maintenance window, WHMCS mapping or remaining operating inputs.
+
+`packages/database/prisma/schema.prisma` contains seven money-bearing tables:
+`product_prices`, `orders`, `order_items`, `services`, `invoices`, `invoice_items`
+and `payments`. They store BIGINT amounts and currency codes, but no unit-version
+or currency-policy foreign keys. Refunds/reversals are `payments.kind`, not separate
+tables. `invoices.credit_total` exists; there is no customer credit ledger to adopt.
+`payment_events` stores normalized JSON callback evidence, not another balance.
+
+`packages/database/src/client.ts:createPrismaClient` specifies no isolation override.
+Inspected production transactions specify no isolation level or general serialization/
+deadlock retry wrapper. Do not assume the server's configured default: future guarded
+transactions must explicitly select and verify Read Committed. Existing invoice/service
+locks and submission keys protect local workflows, not policy selection or legacy units.
+
+### Writer-path map
+
+Paths are repository-relative. These are current source facts; the last column is
+required future adoption, not a claim that those callers have been changed.
+
+| Path and symbol                                                                                                                                                                                                              | Current write/coordination and failure boundary                                                                                                                                                                                                                                                         | Required adoption                                                                                                                                                                                 |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/api/src/modules/products/product.service.ts`: `create`, `definePrice`                                                                                                                                                  | Nested initial prices; replacement retires active rows then inserts a price. Transactional activity log, partial unique active-price index, unique-conflict handling.                                                                                                                                   | Guard before price reads/writes; pin units and publication policy, never reinterpret retired prices.                                                                                              |
+| `apps/api/src/modules/orders/order.service.ts`: `create`, `updateStatus`                                                                                                                                                     | Submission-key replay; reads active price, creates order/items and issued invoice/items, allocates number, writes audit/outbox in one transaction. Status cancellation can cancel an unpaid invoice.                                                                                                    | Currency guard before price/customer/numbering work; preserve replay before new-sale eligibility and retain original receipt money.                                                               |
+| `apps/api/src/modules/invoices/invoice.service.ts`: `create`, `updateDraft`, `applyAction`                                                                                                                                   | Draft creation; draft item delete/recreate; optimistic `updatedAt`/state predicates for editing and issuance/cancellation, audit in transaction. Number setting row lock on creation.                                                                                                                   | Guard before authoritative reads/CAS; draft creation already locks base history. Only draft line replacement remains permissible; issued unit facts stay fixed.                                   |
+| `apps/api/src/modules/payments/payment.service.ts`: `submitManual`, `recordManual`, `review`, `adjust`                                                                                                                       | Invoice `FOR UPDATE` on charge/approval/adjustment; adjustment appends payment and updates balances, cumulative limits, unique keys/references and audit/outbox. Rejection uses conditional update.                                                                                                     | Guard before invoice lock; inherit invoice/original-payment unit, not browsing policy; keep verified same-currency and cumulative limits.                                                         |
+| `apps/api/src/modules/payment-gateways/payment-gateway.service.ts`: `createSession`, `processWebhook`, `reconcilePayment`                                                                                                    | Creates pending payment under invoice lock; provider session call happens afterward. Authenticated/normalized event creates unique event then locks invoice; validation, settlement and outbox/audit are transactional. Session claims/failures also update payments outside that callback transaction. | Guard all payment writes, including claims/failures; preserve signature/merchant/amount/currency/replay checks. No provider call while currency lock is held.                                     |
+| `apps/api/src/modules/services/service.service.ts`: `create`, `transition`                                                                                                                                                   | Locks order item/server to create service from paid order, copies recurring amount/currency. Transition locks service and can update order state, with audit/outbox.                                                                                                                                    | Guard before existing locks; inherit order-item unit and preserve hosting/payment state separation.                                                                                               |
+| `apps/worker/src/renewal/renewal-processor.service.ts`: `createRenewalInvoice`, `markOverdue`, `applyRenewalPayment`                                                                                                         | Service lock, period/submission uniqueness, stored recurring money, invoice numbering; overdue CAS; service-period advancement under service locks; audit/outbox.                                                                                                                                       | Guard before service/invoice reads and numbering; exact original unit for renewal even when new sales are disabled. Sort multiple service locks by ID.                                            |
+| `apps/api/src/modules/hosting-panels/hosting-panel.service.ts`: `executeServiceOperation`, `completeSuccess`, `completeFailure`, `applyServiceSuccess`; `apps/worker/src/renewal/hosting-automation.service.ts`: `complete`  | Provider call separated from preparation/completion; completion changes service and sometimes order status, operation evidence and audit/outbox.                                                                                                                                                        | Guard database completion transactions too: they touch money-bearing rows although they do not change money. Never repeat external operations as a transaction retry.                             |
+| `apps/api/src/modules/settings/settings.service.ts`: `update`; `apps/api/src/modules/payments/payment.service.ts`: `updateSettings`; `apps/api/src/modules/payments/partial-payment-policy.ts`: `updatePartialPaymentPolicy` | Business settings upserts include localization and numbering. Both payment-policy routes use the shared partial-payment advisory lock and explicit confirmation, audit in transaction. Localization currently accepts one currency without a history check.                                             | Currency guard first, then partial-policy/numbering locks. Prevent legacy localization from becoming a second authoritative base/default writer.                                                  |
+| `apps/api/src/common/identifiers/invoice-number.ts`, `apps/worker/src/renewal/invoice-number.ts`: `allocateInvoiceNumber`                                                                                                    | Upsert then lock numbering setting, increment in caller's transaction.                                                                                                                                                                                                                                  | Both callers acquire currency guard first; retain numbering uniqueness/rollback.                                                                                                                  |
+| `packages/database/prisma/seed.ts`: `seed`; `apps/web/e2e/prepare-environment.ts`: `prepareEnvironment`                                                                                                                      | Fictional upserts/nested writes; dedicated E2E scope checks, model/raw guards and nonce ownership. Seed is also a direct development command when no E2E marker is supplied.                                                                                                                            | Explicit fictional selection/unit fixtures only in owned test scopes after adoption; no seed exemption or production invocation. Adapt old-history fixtures deliberately, not by removing guards. |
+| `apps/worker/src/renewal/renewal-scheduler.service.ts`: `scheduleCurrentCycle`; future importer/direct SQL                                                                                                                   | Scheduler advisory lock creates automation/outbox, not financial rows; queued policy is not a current currency authorization. No importer exists. Ordinary SQL currently checks money/code shape, not currency selection.                                                                               | Financial worker rechecks under guard when executing. Importer requires separate authority, exact source evidence and same guard; SQL triggers enforce the currency boundary.                     |
+
+Review `apps/api/src/modules/payment-gateways/payment-money.ts`, provider BDT guards,
+`apps/api/src/modules/customers/customer.service.ts:getPortalSummary`,
+`apps/api/src/modules/dashboard-reports/dashboard-report.service.ts` and
+`apps/web/src/components/orders/order-ui.tsx:formatMinor` before consumer adoption.
+Their two-decimal/provider, mixed-summary rejection, localization-filtered totals and
+current Intl precision behaviors are not repaired by this design.
+
+### Selection identity, history and states
+
+Propose one schema-local singleton control identified by internal key `1`, not tenant
+IDs or mutable localization. It records a nullable exact selected revision, monotonic
+selection generation, permanent history latch and original base anchor (exact unit
+reference plus code/exponent). An append-only selection ledger binds previous/new
+revision, generation, actor/request identity, assessment evidence and activity-log ID.
+Foreign keys bind existing immutable policy/unit rows; no policy JSON copy is mutable.
+Missing control, missing selected revision or invalid exact references means unavailable,
+never greatest revision, newest timestamp, first entry, BDT fallback or localization.
+
+Before history, the anchor is provisional and follows a valid selected-base replacement.
+The first successful financial commit freezes the then-selected exact base reference/code/
+exponent with its latch. Existing-history adoption establishes that anchor once from the
+reviewed adoption decision. After locking, even a compatible metadata replacement leaves
+the frozen anchor unchanged; selection history retains earlier provisional choices too.
+
+Financial history means **any committed row** in orders, order items, services, invoices,
+invoice items or payments, regardless of status, amount, dates, soft-deleted customer,
+pending/failed payment, draft/cancelled invoice or terminated service. Use per-table
+`EXISTS`, not financial sums. Also treat linked normalized gateway evidence or reviewed
+adoption/import evidence as a blocking obligation even if a source row is missing.
+Rejected/unlinked webhook evidence alone does not prove money, but is reviewed at adoption.
+Product prices are configuration, not the permanent-history latch; existing prices still
+block an empty-install initialization/base switch until exact unit compatibility is reviewed.
+
+At the first successful financial insertion set the latch in the same transaction,
+using an AFTER successful-row insert boundary rather than attempted BEFORE insert
+side effects (ON CONFLICT DO NOTHING may insert no row).
+Rollback of the insertion rolls back that latch; a successful commit makes it permanent.
+Deployment bootstrap computes history under a drained writer boundary; thereafter it is
+`stored latch OR observed history`, never reset to false. Cancellation, refund, draft-item
+replacement, zero balance, deletion attempts, cleanup or currency disabling cannot unlock
+the base. Reject normal financial DELETE/TRUNCATE except the existing validated draft-line
+replacement workflow; even that cannot clear the latch. Failed/no-op inserts must not
+fabricate history. Normal SQL cannot delete/truncate/reset control or ledger.
+
+| State                                                                                       | Allowed selection action                                                                                                | Financial boundary                                                                                                                       |
+| ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Control not installed                                                                       | None; current legacy application behavior only                                                                          | No claim of coordination or currency activation.                                                                                         |
+| Control installed, selection absent, history/price context unresolved                       | No empty-install initialization or ordinary replacement                                                                 | Fail closed for new money writes; protected raw/history reads remain visible. Only separately approved legacy adoption may resolve this. |
+| Control installed, selection absent, all seven money tables empty, no unresolved obligation | Confirmed initialization to one exact candidate, expected selection explicitly absent and expected generation unchanged | New financial writes cannot win before initialization; they fail and may be retried only after valid selection.                          |
+| Selected, history false, no price/other compatibility blocker                               | Confirmed replacement with exact expected revision/generation; base may change                                          | First financial write and replacement serialize. Writer must re-read/revalidate selected context after acquiring guard.                  |
+| Selected, history true                                                                      | Confirmed capability/default/compatible metadata replacement only                                                       | Base code and exponent fixed; originals keep their exact units and revision lineage.                                                     |
+| Selected reference, adoption evidence or controls invalid/missing                           | No fallback or ordinary mutation                                                                                        | Stop new financial writes, surface review-required state; do not hide debts or make a new policy automatically.                          |
+
+Initialization and replacement are distinct operations; browser input selects an existing
+exact revision and expected state, not definitions, history flags or computed eligibility.
+Future requests need strict bounded runtime parsing, request/body budgets and server-owned
+canonical fingerprints independent of object field order; reject unknown authority fields.
+Use a new selection generation on every actual replacement and reject exhaustion rather
+than wrapping. A superseded selected revision cannot be selected again; equivalent facts
+need a new revision, preventing A-to-B-to-A stale confirmation. Candidate snapshots may
+be appended without selection authority; they do not change this state machine.
+
+### Coordinated transaction protocol
+
+**Design choice:** one schema-scoped exclusive transaction advisory lock for all relevant
+financial/configuration writes and selection transitions. Start with serialization for
+one hosting business, not a distributed cache or multiple independent policy locks.
+Compute the lock identity from a fixed namespace and database/schema identity consistently
+in SQL and application access; hash collisions can over-serialize but must not bypass
+locking. Do not copy the partial-payment or scheduler key or use session-level locks.
+Every data lookup/control/function reference is schema-qualified or resolved against the
+guarded table schema, not a caller-controlled search path.
+
+Advisory locks alone are cooperative. Future normal-SQL enforcement requires BEFORE
+STATEMENT INSERT/UPDATE/DELETE guards on all seven money tables and relevant settings
+writes, with row validation for exact units, policy/adoption lineage and joins. Include
+COPY, nested writes, ON CONFLICT, MERGE and no-op statements in acceptance. Financial
+TRUNCATE is rejected. Control/ledger direct DML must be revoked from ordinary writer roles;
+only a reviewed narrow transition function may perform checked CAS plus ledger/audit.
+Runtime roles cannot disable guards, use replica trigger bypass, own these tables or call
+unrestricted migration functions. Current shared credentials do not prove these privileges:
+role/function hardening is a future activation prerequisite, not performed here.
+
+Guard-trigger helpers that set the latch need narrowly privileged execution because normal
+writers cannot update control directly. Future SECURITY DEFINER functions must have reviewed
+owners, fixed safe search paths/qualified objects, restricted EXECUTE grants and allowed
+trigger-table checks; runtime writers cannot create/attach replacement triggers. A caller
+GUC, claimed actor ID or public function invocation cannot substitute for selection authority.
+Verify these grants/functions under actual non-owner roles before enabling the protocol.
+
+The settings statement guard coordinates all settings DML; row rules restrict the relevant
+keys, rather than trying to inspect rows before a statement runs. Draft-line deletion checks
+the locked parent's genuine draft state; neither a caller-set exemption flag nor changing
+an issued parent back to draft may bypass historical protections.
+
+The SQL guard is required even when a client bypasses application services. It is not
+proof of an administrator's human intent: service authorization and a trusted selection
+executor remain necessary. Arbitrary SQL with owner/migration credentials can bypass
+controls. Record that residual power; never advertise absolute immutability.
+
+Order for future adopted writers: currency advisory lock, control row, existing business
+locks/settings, business writes, audit/outbox. Preserve existing relative invoice/item/
+server/numbering order; sort multi-row locks deterministically. Selection does not lock
+financial rows to count history. Where staff authorization is required, acquire the
+existing staff mutex (`StaffService.lockAndAuthorize`, key `920006`) **before** currency
+coordination. After currency coordination/control lock, re-read/lock session/user/profile/
+MFA/proof records in a fixed order. Do not hold auth row locks while waiting for currency
+coordination: a financial writer may need those rows for audit foreign keys.
+Selection never calls a financial writer while holding a different lock order.
+
+Statement guards are a safety backstop, not a cure for existing explicit row-first locks.
+Every mapped caller must take the currency lock before authoritative reads/row locks,
+including settings/numbering and status-only hosting completion. Otherwise a legacy
+invoice-lock-then-trigger path can deadlock with a currency-lock-then-invoice path.
+Unexpected/pre-locking SQL must abort safely on deadline/deadlock, never swallow errors.
+Do not enable selection until writer adoption and drain tests prove coverage.
+
+Mutation isolation is explicitly **Read Committed**. Acquire the advisory lock in one
+statement, then obtain selected policy/history/security facts in subsequent statements.
+SQL guard/transition functions are VOLATILE and read after lock acquisition; never put
+lock acquisition and history/current selection into one pre-wait statement snapshot or
+mark these functions STABLE/IMMUTABLE. Guarded mutations at Repeatable Read/Serializable
+are rejected until separately designed/tested; they must not reuse a stale snapshot.
+Read-only advisory preflights may use one consistent read-only snapshot and grant no
+transition authority. This protocol is a design inference from PostgreSQL's
+[isolation](https://www.postgresql.org/docs/18/transaction-iso.html),
+[advisory locks/deadlocks](https://www.postgresql.org/docs/18/explicit-locking.html),
+[function snapshots](https://www.postgresql.org/docs/18/xfunc-volatility.html) and
+[trigger behavior](https://www.postgresql.org/docs/18/trigger-definition.html), not an
+executed concurrency proof.
+
+Within a future selection transaction:
+
+1. Set verified isolation and bounded lock/statement/transaction deadlines; apply initial
+   session/role/CSRF checks and acquire the existing staff mutex, without taking auth row
+   locks before currency coordination. Initial browser/request claims do not authorize commit.
+2. Acquire currency coordination and control lock, then re-read/lock current session/user/
+   profile/MFA/proof facts and authorize. Read an actor/session-bound idempotency receipt
+   if present. Matching completed replay returns its original result without another
+   audit/generation change; current selection is a separate observation. Conflicting body or
+   actor/session binding rejects. A stale new request cannot masquerade as a replay.
+3. Load exact candidate/unit context through Command 99/98 repositories. Require matching
+   expected revision/generation and authoritative history/price/adoption compatibility.
+   Validate confirmation/proof against the captured current/proposed facts and assessment;
+   any relevant change since preview requires a new preview, not silent acceptance.
+4. CAS selection once, retain/set latch and base anchor, append immutable ledger plus
+   redacted activity log, and consume the one-use confirmation proof in the same commit.
+   Failure of validation, audit or proof consumption rolls everything back. Candidate
+   appending, if later supported, must be in this transaction and retain immutable replay rules.
+5. Commit before returning success; read-refresh or delivery failure afterward cannot replay
+   the mutation. Do not insert outbox/provider/hosting work merely for a preference change.
+
+Propose a maximum of three whole-transaction attempts for classified deadlock/serialization
+failures in this future local operation, within an overall request deadline. Explicit lock
+timeouts return a retryable conflict; stale revisions, malformed/unknown facts, missing
+provenance, denied permission and differing idempotent facts are not retried. Use one
+request identity through retries; never retry an aborted statement, failed provider call or
+hosting mutation. Existing services have no general retry wrapper to rely on. Duration
+values require dedicated acceptance/resource measurement before adoption.
+
+### Legacy adoption, compatibility and new-record provenance
+
+An existing installation without selection is **not** empty just because its invoices are
+paid or cancelled. Ordinary initialization must refuse it. A separately approved adoption
+record must identify target reporting base, protected evidence for original units, covered
+row identities/hashes, source mapping and unresolved classes. Mixed BDT/USD or WHMCS's
+old USD base is not permission to choose a target base or relabel money. The BDT target
+direction remains; existing-history adoption approval and exact metadata rights are missing.
+
+Missing legacy metadata stays unknown. No latest/Intl/localization guess, default exponent,
+fabricated revision, current FX or all-rows BDT linkage. Keep raw amount strings, code,
+original record IDs and snapshots intact. A later reviewed additive sidecar may bind exact
+unit evidence to historical records without changing amounts; quarantine uncovered/inconsistent
+records and require billing review before new collection/renewal or decimal presentation.
+Inspection/read-only access remains available, labelled unresolved where necessary; lack
+of current capabilities must never hide original history. This design does not disable or
+alter today's legacy application; that change requires the adoption command and owner window.
+
+Once history exists, the original base anchor's code **and exponent** cannot change.
+A new base metadata version with the same code/exponent is permissible only with verified
+source/compatibility evidence and audited explicit selection; it never rewrites the anchor,
+previous policies, valuations or records. Changed exponent is rejected even if the pure
+Command 97 helper accepts the same code. Before history, a base switch still requires
+compatible/empty price context and explicit re-confirmation; no automatic price rescaling.
+
+Future new money pins immutable unit code/version on each money-bearing record and the
+selected policy revision used for its creation, with a separate origin/adoption classification.
+Header/line money must agree on exact unit, not merely code. Price-to-order-to-invoice/service
+lineage is explicit; payment/refund/renewal inherits original unit/obligation lineage while
+recording the policy under which the new operation was allowed separately. A renewal does
+not pretend that today's policy originally created its service. New-record required links
+and existing-row null/unknown distinctions need additive migrations and SQL validation;
+no columns or backfill are created here.
+
+New-sale flags apply to future sales, not collection/renewal of old obligations. Collection
+requires original exact units, approved same-currency destination/provider coverage,
+authentication and existing payment invariants; a true flag is insufficient. Disabled
+collection leaves visible billing review. No cross-currency settlement, original-payment
+rewrite, repricing, credit-wallet omission or automatic termination follows selection.
+Disabling collection blocks new initiation, not authenticated completion of an already
+admitted in-flight payment. Validate that completion against its captured original unit,
+merchant/route/amount/invoice and replay evidence, even when new initiation is now disabled.
+If that evidence is unresolved, retain/quarantine the event for reconciliation rather than
+drop it, falsely settle or silently leave received funds unexplained. Coordinated callback
+transactions take the guard before event insertion; linked/processed `payment_events`
+writes also need the SQL coordination backstop because history checks inspect that evidence.
+Group future aggregates by compatible unit context as well as code; unresolved or differing
+precision must not be summed as if homogeneous. Formatting resolves pinned precision;
+mixed-currency portal/report/PDF/email/exports are separate consumer changes before rehearsal.
+
+### Adoption and activation prerequisites
+
+Use an explicitly approved maintenance/writer-drain rollout, not zero-downtime inference:
+
+1. Inventory every deployed writer/version/role and in-flight gateway/hosting operation;
+   owner approves target, recovery and maintenance scope. Prepare read-only preflight and
+   reviewed unit/source/adoption evidence. Staging hostname alone is not sufficient authority.
+2. Drain financial API writes, worker consumers, scheduler-produced work, seeds/imports and
+   database writers, preserving authenticated callbacks for safe later processing. Prove no
+   old transaction or queued old implementation can resume; do not drop events or declare
+   external operations failed just to drain. This document shuts down nothing.
+3. In an authorized deployment transaction, hold locks blocking writes on the covered tables/
+   relevant settings, compute prior history, install singleton/latch/provenance/normal-SQL
+   controls and verify runtime privileges. Existing rows remain byte-for-byte unchanged.
+   If evidence is incomplete, selection/new writes remain blocked; do not resume partially
+   upgraded writers. All seven tables empty permits confirmed initialization, not an auto seed.
+4. Roll out every mapped caller with guard-first ordering, new-record provenance, explicit
+   read/collection compatibility and security. Verify fictional SQL/concurrency/application/
+   browser and old-row comparisons, then perform separately authorized selection/adoption.
+   Resume only the reviewed compatible writer set; route/provider approval is still separate.
+5. After new-version financial commits, an old application binary is not a safe rollback.
+   Retain original provenance/ledger and restore or forward-repair only under a reviewed
+   recovery command. Never drop guards or overwrite history to make an old binary work.
+
+Source/metadata distribution rights, live sale/collection currencies and destinations,
+price/quote rules, protected WHMCS data/credits, operational D5–D8, operators/recovery,
+maintenance scope and final launch approval stay open. A fictional test fixture or a
+completed design cannot satisfy those prerequisites.
+
+### Security, confirmation, audit and errors
+
+`AuthModule` installs `SessionAuthGuard`, `RolesGuard`, ownership, CSRF and rate-limit
+guards. `AuthService.authenticateSession` checks active/revoked/expired/idle sessions and
+MFA verification when enrolled. `RolesGuard` defaults unspecified administrator permission
+to full administrator, but does **not** generally require full administrators to enroll
+MFA. `StaffService.lockAndAuthorize` rechecks full role/enrollment under mutex; use this
+pattern, not just controller metadata, and require a currently valid MFA-verified session.
+
+Policy mutation requires active full administrator at both route and service boundary;
+billing/support/customer roles cannot preview restricted evidence or mutate it. Re-read
+session/user/profile/credential after acquiring locks and hold row locks through commit;
+coordinate future auth/staff changes to avoid reversed lock order and revocation races.
+Existing private password/factor helpers verify and consume credentials, but no reusable
+session/operation-bound currency step-up/confirmation grant exists.
+
+Design that missing boundary separately: password plus fresh enrolled factor produces a
+short-lived, one-use server-side proof, proposed five-minute maximum lifetime, bound to
+actor/session, operation, expected selection/generation, exact proposed revision, canonical
+change digest and adoption/history assessment. Store only opaque proof hashes and UTC
+expiry/consumption evidence; never passwords, TOTP secrets/codes, recovery codes or browser
+authority flags. Reusing a factor step must be prevented; recovery use follows existing
+consumption semantics and must not silently bypass mandatory enrollment. This lifetime is
+a proposed technical default, not an implemented token or new API/protocol value.
+
+Use the existing signed double-submit CSRF/origin protection on preview-proof/confirmation
+mutations, HttpOnly sessions and bounded rate limits; no skip-CSRF decorator. Confirmation
+shows before/after base/default/capabilities, affected historical obligations and blockers
+in sentence case, with explicit owner intent; no generic static phrase alone proves target
+binding. Stale generation or changed relevant history/evidence invalidates preview. No
+MFA-enrollment boolean, hidden input, successful GET or redirect authorizes a write.
+
+Successful selection requires an atomic activity log/ledger containing before/after exact
+revisions/generation, safe capability/unit diffs, actor, request/correlation ID, reason and
+protected evidence IDs, with UTC time/IP hash where applicable. No raw customer exports,
+proof tokens or provider credentials. Audit failure denies selection. Denied security
+attempts may be recorded separately without claiming a successful transition. Existing
+`AuthAuditService` alone is not a transactional selection ledger or absolute tamper protection.
+Use existing error-envelope categories with safe sentence-case messages for unavailable
+context, conflict/review-required state and denied authorization; no raw SQL/stack/secret
+detail. Exact response schemas and endpoint names remain a later implementation decision.
+
+### Fictional acceptance matrix — designed, not executed
+
+Each future test uses newly owned marked loopback scopes and model/raw guards. Assertions
+include unchanged historical row hashes, no extra financial/outbox/provider effects,
+selection/ledger/activity/proof atomicity and exact string money. Proposed scenarios:
+
+| Scenario / controlled interleaving                                                                                          | Required outcome                                                                                                                                                                                                        |
+| --------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Two empty initializers pause after preview, then confirm different revisions                                                | One winner; loser stale/conflict; one generation/ledger/audit, no partial selection. Matching same-key replay returns original receipt.                                                                                 |
+| Two replacements share expected revision/generation; attempt A-to-B-to-A                                                    | One CAS winner; stale/new request denies. Superseded revision cannot reactivate; no timestamp ordering inference.                                                                                                       |
+| Uninitialized writer acquires guard before initialization                                                                   | Financial write denied/rolled back, no latch or numbering change; initialization may then succeed. No orphan obligation is created without selection.                                                                   |
+| Selected history-free writer holds guard before base replacement                                                            | Writer commits original pinned money and latch; waiting replacement re-reads history and denies base code/exponent change.                                                                                              |
+| Base replacement acquires guard before first financial writer                                                               | Replacement commits; writer re-reads new context and either creates correctly pinned valid money or rejects stale price/quote. Never re-label supplied amounts.                                                         |
+| Row-first legacy writer/normal SQL bypasses service; SQL takes a pre-lock                                                   | Triggers still enforce selection/unit/history; prove guard-first adoption. Deadlock/timeout aborts safely without swallowed/partial commit; no activation with unresolved coverage.                                     |
+| Long-lived Repeatable Read/Serializable mutation waits on guard                                                             | Isolation rejected, never stale history/selection success; permitted read-only preflight remains advisory only.                                                                                                         |
+| Cancelled draft, zero paid invoice, failed payment, terminated service; draft lines replaced                                | History remains latched; price soft delete/debt clearance does not unlock. Forbidden DELETE/TRUNCATE/control reset rejects.                                                                                             |
+| Same base code, changed exponent; same exponent with new reviewed metadata version                                          | First denies. Second requires explicit compatible evidence and new revision; anchor/old unit facts and old-row hashes stay unchanged.                                                                                   |
+| Existing BDT/USD rows with absent provenance or inconsistent line/payment joins                                             | Empty initialization denies; reviewed adoption absent means blocked. Raw history stays visible, no inference/conversion/hidden debt.                                                                                    |
+| Unknown exact revision/unit, incomplete context, disabled capability, missing route                                         | Fail closed for relevant new operation, never latest/global/default fallback or inferred provider support.                                                                                                              |
+| COPY/nested/ON CONFLICT/MERGE/no-op UPDATE; direct control/ledger DML                                                       | All currency guards/privileges apply; no partial inserts, changed immutable facts or unaudited selection. Validate under a non-owner writer role, not just migration owner.                                             |
+| Transaction exception, audit failure, proof-consume failure, classified retry                                               | Full rollback; bounded whole-transaction retry retains request identity; one receipt/audit; no provider call repeated.                                                                                                  |
+| Billing/support/customer caller; unenrolled/full admin, unverified/expired/revoked session, staff demotion/MFA disable race | Denied at service boundary; locked current auth facts determine winner. No mutation based on stale identity snapshot.                                                                                                   |
+| Wrong/missing CSRF/origin, stale/tampered/expired/other-session proof, reused factor/proof                                  | Denied without selecting; failed attempt leaks no credential/proof/raw error.                                                                                                                                           |
+| Disable new sales/collection; renew/refund or complete admitted in-flight payment in its exact unit                         | Block new initiation where disabled, but validate captured in-flight completion independently; retain unresolved events for reconciliation. No hidden history, repricing/inverse FX or hosting/termination implication. |
+| Prior-24-migration fixture through future migration/guard adoption; replay/import rerun                                     | Preserve all financial/settings/unit/policy facts and idempotency; no legacy backfill/default policy. Keep prior-22/23 history tests intact.                                                                            |
+
+### Smallest proposed follow-on slice and handoff
+
+Propose a **read-only currency adoption preflight** before a selection-state migration:
+an unused injected-client database entry that inventories all seven tables' row/history
+counts and bounded per-code counts from one consistent read-only snapshot. Return exact
+string counts and explicit unknown legacy provenance/selection-not-installed/writer-
+coverage-not-established blockers, not financial sums, interpreted decimal amounts,
+base inference or a ready-to-activate verdict. Cap group results with explicit truncation;
+large/unknown code sets cannot disappear or become zero. Bound query/runtime resources and
+include snapshot observation time; this advisory result never replaces a later locked
+history query. No table creation, latch/pointer,
+metadata publication, app consumer, environment/network I/O or provider access.
+
+This slice makes the existing-history gate inspectable without touching money or installing
+guards prematurely. Fictional tests would cover empty, mixed/zero/cancelled history,
+soft-deleted price/customer scope, bounded counts, snapshot consistency and no writes.
+It is a proposal only: this command does not assign its command number, implement it,
+approve a real-data query or authorize selection. The exact next action is a separately
+authorized **Phase review — Review Command 100 authoritative selection design and define
+the next bounded currency command**.
+
 ## 4. Price publication, quote and renewal rules
 
 ### Catalogue pricing
@@ -648,9 +1021,11 @@ Delivery sequence, each needing separate authorization:
    Active policy selection/initialization, base-history concurrency and financial provenance
    remain separate; no selected policy or caller-history authority is added by snapshot storage.
 6. **Command 100 — Design authoritative currency policy selection and legacy-history
-   safeguards** is defined only, not authorized: map real writers and specify initialization,
-   concurrent history/base locking, exact-unit compatibility, provenance and security/audit
-   acceptance before implementation. No runtime state or source change is included.
+   safeguards** was separately authorized and completed on 2026-10-07: real writer map,
+   initialization/history states, guarded Read Committed coordination, exact-unit/legacy
+   adoption rules, security/audit and fictional acceptance matrix. No runtime state/source
+   change or activation. Proposed unused read-only adoption preflight requires phase review
+   and separate authorization before a selection migration.
 7. Later additive policy/provenance services and per-currency reads; preserve legacy records and
    pass mixed BDT/USD portal/report tests before an import rehearsal.
 8. Fixed BDT/USD catalogue, ownership-bound quotes and confirmed same-currency collection

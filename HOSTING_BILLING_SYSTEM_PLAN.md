@@ -70,7 +70,10 @@ Command 99's unused immutable policy-revision snapshots only; the owner subseque
 implementation on 2026-10-07. Complete local acceptance and exact-head CI/CodeQL passed;
 the owner-authorized phase review accepted its engineering scope. That review defines
 Command 100's source-grounded design of authoritative policy selection and legacy-history
-safeguards only; execution requires separate authorization before any implementation.
+safeguards, separately authorized and completed on 2026-10-07. It specifies coordinated
+writer/SQL protection, permanent base history, explicit legacy adoption, exact-unit
+compatibility and full-administrator confirmation/audit. Its protocol is not implemented;
+the proposed read-only adoption preflight needs phase review and separate authorization.
 No live registry, selected installation policy or financial backfill is included. Broader persistence,
 per-currency reads, pricing and activation remain later separately gated slices. Remaining
 tooling advisories are not waived. No currency is activated by this sequence.

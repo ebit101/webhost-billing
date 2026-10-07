@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Phase review — Review Command 99 immutable policy snapshots and define the next bounded currency command
-- **Current status:** Command 99 accepted at its exact delivered head with complete local and hosted evidence. Source/SQL/history guarantees and unused runtime boundary reviewed; fresh focused checks passed. Command 100's authoritative-selection/legacy-history design is defined only, not authorized or executed. Review delivery includes non-force push and exact-head CI/CodeQL verification in the owner handoff. No selected policy, registry, financial backfill or deployment. Production audit clean; full audit retains two tooling findings without waiver
+- **Current command:** Command 100 — Design authoritative currency policy selection and legacy-history safeguards
+- **Current status:** Owner-authorized documentation-only design completed: concrete writer map, selection/history states, guard-first transaction/SQL protocol, exact-unit/legacy adoption rules, security/audit and fictional acceptance matrix. Proposed read-only adoption preflight is not numbered or authorized. Focused local acceptance passed; exact-head CI/CodeQL verification belongs in delivery. No runtime/schema/writer change, selected policy, registry, backfill or deployment. Production audit clean; full audit retains two tooling findings without waiver
 - **Last updated:** 2026-10-07
-- **Next command:** Command 100 — Design authoritative currency policy selection and legacy-history safeguards
+- **Next command:** Phase review — Review Command 100 authoritative selection design and define the next bounded currency command
 - **Next command authorized:** No
 
 ## Command Reports
@@ -10953,7 +10953,7 @@ select a policy, activate currencies, import data, invoke providers, release or 
 
 ### Phase review — Review Command 99 immutable policy snapshots and define the next bounded currency command
 
-- **Status:** Source review and focused local acceptance completed; exact review-head CI/CodeQL delivery verification belongs in the owner handoff
+- **Status:** Completed; focused local acceptance and exact review-head CI/CodeQL passed at `dc49182`, verified again during Command 100
 - **Date:** 2026-10-07
 - **Authorization:** The owner authorized this review and one next bounded command
   definition only. Command 100 is not authorized or executed; no activation or deployment.
@@ -11044,6 +11044,107 @@ select a policy, activate currencies, import data, invoke providers, release or 
 Authorize **Command 100 — Design authoritative currency policy selection and legacy-history
 safeguards**. Stop after this review. Do not execute that design, implement policy selection,
 seed a registry, change financial writers/history, import data, invoke providers, release or deploy.
+
+### Command 100 — Design authoritative currency policy selection and legacy-history safeguards
+
+- **Status:** Documentation-only design and focused local acceptance completed; exact-head CI/CodeQL delivery verification belongs in the owner handoff
+- **Date:** 2026-10-07
+- **Authorization:** The owner authorized Command 100's design only. No implementation,
+  operating approval, activation, provider, real-data access/import or deployment authority.
+
+#### Scope completed
+
+- Inspected baseline `dc49182356b73a1bbe65a997521fff1c3f591c48`, including seven money
+  tables, all API/product/order/invoice/payment/gateway/service/settings paths, renewal/
+  hosting completion/scheduler and fictional seed/fixture paths. Recorded actual local
+  locks, idempotency, audit/outbox and provider-call boundaries with paths/symbols.
+- Added implementation-ready design in `docs/MULTI_CURRENCY_DESIGN.md` section 3a:
+  singleton exact selection/CAS generation, distinct empty initialization/replacement/
+  legacy adoption, permanent committed-history latch and original code/exponent anchor.
+  Draft/cancelled/failed/zero/terminated history counts; prices impose compatibility blockers.
+- Chose guard-first schema-scoped transaction advisory coordination, explicit Read Committed,
+  post-lock fresh queries/VOLATILE functions, future normal-SQL statement/row guards and
+  restricted control/ledger DML. Reject stale stronger-isolation mutations; specify lock
+  order/deadlines/classified whole-transaction retries and no external-call replay.
+- Require separately authorized writer drain/adoption, provenance/privilege verification
+  and recovery before activation. Existing row-first locks are not magically repaired by
+  triggers; no deployed process, queue, event or connection was changed or stopped.
+- Preserve unknown legacy unit/policy facts. Define reviewed additive evidence and exact
+  future record lineage without conversion/rescaling/relabelling/backfill. Same-code base
+  metadata replacement needs identical exponent and reviewed compatibility; original
+  anchor/versions/record money remain fixed. Collection needs original units and approved
+  same-currency routes independently of new-sale flags.
+- Map full-administrator/session/MFA/CSRF protections to current guards and missing
+  step-up/confirmation boundary. Specify actor/session/revision/generation/digest/assessment-
+  bound one-use proof and atomic selection/ledger/redacted audit. Proposed five-minute
+  proof/three-attempt retry bounds are technical design defaults, not implemented controls.
+- Document seventeen fictional interleaving/security/SQL/history acceptance scenarios,
+  explicitly designed rather than executed. Propose one smallest unused read-only adoption
+  preflight with consistent bounded counts and unknown/uncovered blockers, not financial
+  sums, inferred base or a ready-to-activate verdict. No command number or execution assigned.
+
+#### Files changed
+
+- `docs/MULTI_CURRENCY_DESIGN.md` — concrete writer map, states/protocol, compatibility,
+  adoption/security/audit, test matrix and proposed smallest slice; reconcile design status.
+- `docs/DECISIONS.md` — ADR-093 records accepted technical design and activation boundaries.
+- `CODEX_DEVELOPMENT_COMMANDS.md`, `HOSTING_BILLING_SYSTEM_PLAN.md` — reconcile owner
+  design authorization/completion and next phase review without implementation authority.
+- `docs/PROGRESS.md` — current report/status and prior exact review-head reconciliation.
+  No application/shared/database source, migration, schema, fixture, dependency/lock,
+  patch, workflow, environment, credential or scanner-exception change.
+
+#### Validation performed
+
+- Fresh frozen install passed without lock changes; all ten installed tooling-mitigation
+  tests passed. Production audit found no known vulnerabilities. Full audit retained exit 1
+  with high braces/moderate sprintf-js tooling findings; no suppression or risk waiver.
+  Registry latest remains 3.0.3/1.1.3 and suggested 3.0.4/1.1.4 floors are unpublished;
+  fresh [braces advisory](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm) and
+  [sprintf-js advisory](https://github.com/advisories/GHSA-hp3w-g68c-fv3c) show no patched
+  release. Current mitigations are not upstream closure or broader resource/input safety.
+- Fresh unchanged shared tests passed 93/93; database repository tests passed 18/18.
+  Four library builds, Prisma generation and strict database types passed. New matrix
+  scenarios are not executable tests yet; no fresh local SQL/API/browser run is claimed.
+- Independently verified baseline CI Validate's 28 successful steps and CodeQL's eight:
+  [CI 37607397600](https://github.com/ebit101/webhost-billing/actions/runs/37607397600),
+  [CodeQL 37607397553](https://github.com/ebit101/webhost-billing/actions/runs/37607397553),
+  both exactly `dc49182356b73a1bbe65a997521fff1c3f591c48`. PR-only Dependency review
+  skipped on push, not passed. Those are baseline hosted results, not this design's
+  delivery results or evidence that its proposed protocol exists.
+- Read primary PostgreSQL 18 isolation/locking/function-snapshot/trigger documentation
+  and distinguish documented behavior from the proposed protocol's future acceptance proof.
+  Verified writer/security paths/symbols against source rather than treating existing
+  localized settings, enrolment flags or pure helpers as authoritative selection.
+- An ad-hoc path verifier initially truncated `.tsx` to `.ts`; corrected that checker's
+  regex, then verified all 21 cited source paths and seventeen matrix scenarios. No
+  production/source correction was needed; this checks design references, not its protocol.
+- All four offline documentation validators, repository formatting and whitespace checks
+  passed; rerun after final report edits before delivery. Commit this focused design,
+  reconcile canonical main,
+  non-force push and verify exact-head CI/CodeQL in the owner handoff without a
+  self-recording follow-up report commit.
+
+#### Decisions made and remaining risks
+
+- ADR-093 accepts design only. Writer adoption, direct-SQL privilege/guard enforcement,
+  proof storage, auth-lock coordination, atomic ledger/audit and financial provenance are
+  not implemented. Database owners can bypass ordinary protections; current credentials
+  do not prove the required runtime/migration privilege separation.
+- Unknown legacy units, mixed-currency summaries/aggregates/precision and actual operating
+  inputs remain blockers. No maintained dataset/source rights, sale/collection destinations,
+  WHMCS sample/credit mapping, D5–D8, maintenance/recovery or production approval supplied.
+- Preserve the incomplete unmarked fictional scope
+  `command26_e2e_8d7db6b8d0e7489a93eb26daaada1d76`; no cleanup authorized/performed.
+  Tooling advisories/wider executable-input/resource risk, existing direct-main rule bypass
+  and skipped PR-only review remain visible. No Command 91, release or deployment authority.
+
+#### Exact recommended next command
+
+Authorize **Phase review — Review Command 100 authoritative selection design and define
+the next bounded currency command**. Stop after validated design delivery. Do not implement
+preflight/selection/guards/proofs, seed units, activate currencies, access/import real data,
+invoke providers, change financial history, release or deploy.
 
 ## Report Template
 

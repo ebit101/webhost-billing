@@ -1445,6 +1445,53 @@ This document records durable technical and product decisions. New decisions sho
   executable-input/resource risk, database-owner bypass, direct-main rule bypass and
   skipped PR-only review remain explicit; operating and launch approvals are not waived.
 
+## ADR-093 — Guard-first selection, permanent history and explicit legacy adoption
+
+- **Status:** Accepted as Command 100's owner-authorized design; protocol not implemented, no activation or operating approval
+- **Date:** 2026-10-07
+- **Source:** `dc49182356b73a1bbe65a997521fff1c3f591c48`. Concrete writer/security map
+  and acceptance matrix are in `docs/MULTI_CURRENCY_DESIGN.md` section 3a. Existing
+  invoice/service/numbering locks and submission keys do not coordinate currency policy;
+  all seven money-bearing tables lack immutable currency-unit/policy linkage.
+- **Selection:** One schema-local singleton with exact selected revision, CAS generation,
+  original base anchor and permanent history latch; append-only receipt/selection ledger
+  tied to atomic activity audit. Missing state/context denies, never localization/latest
+  fallback. Distinguish empty initialization, replacement and explicitly reviewed existing-
+  history adoption; reject superseded revision reactivation and stale preview/new requests.
+- **History:** Any committed order/item/service/invoice/item/payment, including drafts,
+  cancelled/failed/zero/terminated states, locks base code and exponent. Latch only actual
+  successful insertion in its transaction; cancellations/deletion attempts cannot clear it.
+  Product prices block incompatible empty initialization/base switches even though they
+  are configuration, not the history latch. Same-code/exponent metadata replacement
+  requires reviewed compatibility; exact original references/anchor remain unchanged.
+- **Concurrency:** Choose a schema-scoped exclusive transaction advisory lock, guard-first
+  writer ordering and future BEFORE STATEMENT/row SQL safeguards, including settings,
+  direct/nested/COPY/upsert/MERGE and status-only completion paths. Require explicit Read
+  Committed and post-lock fresh queries/VOLATILE guard functions. Reject stronger-isolation
+  mutations until separately proved. Preserve staff mutex before currency coordination,
+  existing business lock order, bounded deadlines and classified whole-transaction retries.
+- **Adoption:** Selection cannot activate until all writer versions are adopted/drained,
+  exact provenance and normal-SQL privilege/guard controls are verified, and the owner
+  authorizes maintenance/target/recovery. Direct control/ledger DML is not a normal writer
+  permission. Database-owner credentials can bypass protections and remain a separate risk.
+- **Legacy:** Unknown units/policy stay unknown; no conversion, rescaling, relabelling or
+  backfill. Later additive reviewed evidence may bind original facts without rewriting
+  historical money. New records pin exact units and creation policy; renewal/payment/refund
+  obligation lineage stays distinct from the policy authorizing the later operation.
+  Per-currency/compatible-unit reads and approved same-currency routes are later consumers.
+- **Security:** Full-administrator route/service checks, enrolled and verified MFA/current
+  session, re-read locked auth facts, signed CSRF and proposed password/fresh-factor
+  step-up proof bound to actor/session/revisions/generation/digest/assessment. One-use
+  proof, CAS, ledger and redacted activity audit commit atomically. No new endpoint,
+  grant, confirmation token or proof is implemented by accepting this design.
+- **Next slice:** Propose an unused read-only adoption preflight with consistent-snapshot,
+  bounded per-code counts and explicit unknown/uncovered blockers; no money totals,
+  base inference, ready-to-activate verdict or selection writes. Do not assign/authorize
+  its command number here. Stop for separately authorized Command 100 phase review.
+- **Boundary:** Existing source/financial facts, tooling mitigations/acceptance and schema
+  remain unchanged. Metadata/provider/source rights, D5–D8, protected WHMCS/credit,
+  maintenance/recovery and production gates are not approved; no provider/import/deployment.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:
