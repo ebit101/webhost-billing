@@ -10,6 +10,19 @@ datasource db {
   provider = "postgresql"
 }
 
+// Unused immutable version facts, not an enabled registry or a current pointer.
+model CurrencyUnitDefinition {
+  code              String   @db.VarChar(3)
+  metadataVersion   String   @map("metadata_version") @db.VarChar(64)
+  minorUnitExponent Int      @map("minor_unit_exponent") @db.SmallInt
+  provenance        String   @db.VarChar(256)
+  status            String   @db.VarChar(10)
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@id([code, metadataVersion], map: "currency_unit_definitions_pkey")
+  @@map("currency_unit_definitions")
+}
+
 enum UserRole {
   ADMIN
   CUSTOMER

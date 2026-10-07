@@ -9,6 +9,10 @@
     ".": {
       "types": "./src/index.ts",
       "default": "./dist/index.js"
+    },
+    "./currency-units": {
+      "types": "./src/currency-units.ts",
+      "default": "./dist/currency-units.js"
     }
   },
   "scripts": {
@@ -21,11 +25,14 @@
     "db:seed": "prisma db seed --config prisma.config.ts",
     "db:validate": "prisma validate --config prisma.config.ts",
     "db:verify": "tsx prisma/verify.ts",
-    "typecheck": "pnpm db:generate && tsc -p tsconfig.json --noEmit"
+    "typecheck": "pnpm db:generate && tsc -p tsconfig.json --noEmit",
+    "test:unit": "tsx --test --test-concurrency=1 test/currency-units.spec.ts",
+    "test": "pnpm test:unit && pnpm --filter @webhost-billing/web exec tsx e2e/run-database-tests.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "7.10.0",
     "@prisma/client": "7.10.0",
+    "@webhost-billing/shared": "workspace:*",
     "pg": "8.23.0"
   },
   "devDependencies": {

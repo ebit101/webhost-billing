@@ -3269,8 +3269,9 @@ Further implementation needs the owner's explicit authorization.
 
 ## Command 98 — Persist immutable currency unit definitions
 
-**Defined only by the owner-authorized Command 97 phase review on 2026-10-07.**
-Implementation requires separate authorization. This is an unused additive metadata-storage
+**Implementation explicitly authorized by the owner on 2026-10-07.**
+Implementation and local acceptance completed. Verify the exact committed/pushed head's
+CI and CodeQL in the delivery handoff. This is an unused additive metadata-storage
 slice, not a live registry, persisted installation policy or financial backfill.
 
 ```text
@@ -3346,9 +3347,10 @@ calls, provider routes/credentials, payment/refund/renewal changes, real WHMCS d
 Command 91, Command 33 approvals, releases, deployment and production migrations.
 ```
 
-**Authorization boundary:** This review defines Command 98 only. No dataset/source rights,
+**Authorization boundary:** The owner authorized Command 98 implementation only. No dataset/source rights,
 unit activation, sale/collection currency, persisted policy, provider route, risk waiver,
-operating approval or production migration is approved. Ask before implementation.
+operating approval or production migration is approved. Stop after Command 98 and ask
+for a separately authorized phase review before defining the next bounded command.
 
 ---
 

@@ -1336,6 +1336,29 @@ This document records durable technical and product decisions. New decisions sho
   mixed-currency reporting, operational policies, Command 33/91, rehearsal and deployment
   remain gated. Retain tooling/governance exposure without waiver; ask before Command 98.
 
+## ADR-089 — Empty immutable unit persistence without application authority
+
+- **Status:** Command 98 implemented and locally validated; exact-head hosted verification required in delivery handoff
+- **Date:** 2026-10-07
+- **Decision:** Add only an empty unit-definition store with exact code/version identity,
+  bounded unit facts and UTC creation evidence. Reuse shared schemas and full-string ASCII
+  validation. PostgreSQL checks and statement triggers reject ordinary update, delete and
+  truncate. Database owners can bypass controls; this is not absolute immutability.
+- **Repository:** Separate unused entry with explicit client/transaction injection.
+  Duplicate-safe insertion followed by exact comparison admits identical replay and
+  rejects conflicting exponent/status/provenance without overwrite. Bound exact reference
+  lists before traversal/queries; return complete copied facts or error, never latest/global
+  registry data or capabilities. Captured current/historical status is not a current pointer.
+- **Transactions:** Read Committed supports concurrent identity replay. Do not catch a
+  unique/SQL error inside an aborted PostgreSQL transaction; stronger isolation failures
+  need whole-transaction retry by the caller. Propagate compound-write conflicts to roll back.
+- **Acceptance:** Mandatory source and guarded PostgreSQL tests, including direct SQL,
+  concurrency/rollback, terminal-newline bounds and unchanged prior-migration fictional
+  history. Use only newly owned marked loopback scopes, never reset an application schema.
+- **Boundary:** No policy writes, live metadata dataset, app consumer, inferred legacy unit,
+  financial backfill, provider/rate/pricing effect, import, operational approval or deployment.
+  Preserve tooling/governance/launch risks and require a separately authorized phase review.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

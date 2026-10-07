@@ -6,8 +6,10 @@
 - Date: 2026-10-06.
 - Status: Design completed; Command 96's unused arithmetic foundation delivered and
   phase-reviewed. Command 97's unused policy contracts passed complete local and exact
-  source-head hosted acceptance and was phase-reviewed. Command 98 is defined only for
-  unused immutable unit storage; application integration/activation remains separately gated.
+  source-head hosted acceptance and was phase-reviewed. Command 98's unused immutable
+  unit storage is implemented and locally validated; exact-head delivery verification
+  belongs in the owner handoff. Application integration
+  and activation remain separately gated.
 - Owner direction: BDT is the default; USD is the preferred secondary currency;
   support major currencies with automatic conversion through a suitable provider.
 - Design interpretation: BDT is the single base/reporting currency and default for new
@@ -214,11 +216,11 @@ concurrency, authorization and confirmation; these contracts do not do so. Ficti
 BDT/USD target examples do not approve actual sales/collection capabilities. Persisted
 metadata/policy, per-currency portal/report reads and prices/quotes remain later slices.
 
-### Defined next slice: immutable currency unit storage
+### Command 98 immutable currency unit storage
 
 The owner-authorized Command 97 phase review on 2026-10-07 found no in-scope policy
 contract defect and defines **Command 98 — Persist immutable currency unit definitions**
-only. Separate implementation authorization is required.
+only. The owner separately authorized implementation on 2026-10-07.
 
 Start with an empty, unused additive unit-definition store and exact code/version lookup,
 not an installed currency list or policy. Reuse bounded shared contracts, enforce unique
@@ -232,6 +234,44 @@ This splits the proposed persistence step deliberately: unit identity/immutabili
 authoritative policy revision/history/concurrency services and financial provenance later.
 The next slice does not migrate application consumers, fix mixed-currency reporting,
 establish real metadata/source rights, select live prices/routes or authorize a rehearsal.
+
+The separate unused `@webhost-billing/database/currency-units` entry takes an explicitly
+injected Prisma client or transaction. `appendCurrencyUnit` parses shared unit facts,
+uses `createMany` with `skipDuplicates` (no overwrite), then reads and compares the exact
+code/version. Matching replay returns copied facts; differing exponent, status or
+provenance rejects. PostgreSQL checks enforce the same ASCII/length/exponent/status
+bounds, and a statement trigger rejects ordinary update, delete and truncate, including
+empty/no-op statements. Database owners can disable these controls; no privilege
+hardening or absolute immutability is claimed. The server supplies UTC `created_at`
+by default; it is not a caller field or part of returned unit facts.
+
+`readExactCurrencyUnits` requires 1–32 unique code/version references, validating the
+budget before members and before database work. It returns all requested validated
+definitions in requested order or fails with no partial success. No global enumeration,
+latest-version fallback, network lookup, capability flags or lifecycle mutation exists.
+Captured current/historical status never identifies today's preferred version.
+The storage boundary additionally rejects terminal newlines allowed by JavaScript's
+`$` anchor, without changing existing shared arithmetic/policy contracts.
+
+Append/replay is supported at PostgreSQL Read Committed: duplicate-safe insertion waits
+for a competing identity, and the following read uses a new statement snapshot. A
+caller using Repeatable Read/Serializable must retry the **whole transaction** after
+serialization failure or an unavailable snapshot, not retry a statement in an aborted
+transaction. Propagate conflicting-facts errors out of compound writes so the caller's
+transaction rolls back. No database error is swallowed and no automatic retry is added.
+See PostgreSQL's [insert behavior](https://www.postgresql.org/docs/current/sql-insert.html)
+and [transaction isolation](https://www.postgresql.org/docs/current/transaction-iso.html).
+
+The database package's mandatory `test` runs source-level checks and a dedicated
+test-only launcher using the existing marked nonce schema and model/raw-path guards.
+Both root package acceptance and guarded sequential acceptance include it. Its tests
+create only fresh loopback fictional scopes and never migrate/reset an application
+schema. An additional scope applies the prior 22 SQL migrations, creates fictional
+history, then checks every existing row before/after migration 23 and store operations.
+The launcher also runs the existing fictional seed and schema verifier in its marked
+scope. Each tool independently repeats scope validation before work; normal operation
+remains unchanged, no units are seeded and existing schema/seed assertions are retained.
+An incomplete unmarked preparation is retained, not adopted or automatically removed.
 
 ## 4. Price publication, quote and renewal rules
 
@@ -508,9 +548,10 @@ Delivery sequence, each needing separate authorization:
    independent capabilities, historical lookup and pure revision/base-lock validation.
    It cannot establish real provider routes, enforce database transitions or enable sales.
    The owner-authorized phase review accepted its engineering scope without activating it.
-4. **Command 98 — Persist immutable currency unit definitions** is defined only by that
-   review, not authorized. Add an empty unused version store, exact bounded lookups and
-   database immutability/replay checks using fictional tests. No live registry or policy.
+4. **Command 98 — Persist immutable currency unit definitions** was separately authorized.
+   Implementation and local acceptance completed on 2026-10-07: empty unused version store,
+   exact bounded lookups and database immutability/replay checks using fictional tests.
+   Verify exact-head hosted acceptance in the delivery handoff. No live registry or policy.
 5. Later additive policy/provenance schema and per-currency reads; preserve legacy records and
    pass mixed BDT/USD portal/report tests before an import rehearsal.
 6. Fixed BDT/USD catalogue, ownership-bound quotes and confirmed same-currency collection

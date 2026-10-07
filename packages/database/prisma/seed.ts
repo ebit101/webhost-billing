@@ -70,6 +70,12 @@ const nextDueAt = new Date('2026-09-01T03:00:00.000Z');
 const monthlyAmount = 120_000n;
 
 async function seed(): Promise<void> {
+  const testScope = process.env.WEBHOST_BROWSER_E2E_SCHEMA;
+  if (testScope !== undefined) {
+    const { assertBrowserDatabaseScope } =
+      await import('../../../apps/web/e2e/database-scope.js');
+    await assertBrowserDatabaseScope(prisma, databaseUrl!, testScope);
+  }
   await prisma.$transaction(async (transaction) => {
     await transaction.user.upsert({
       where: { email: 'admin@example.test' },

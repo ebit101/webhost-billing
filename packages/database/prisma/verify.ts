@@ -18,6 +18,8 @@ if (!databaseUrl) {
 }
 
 const prisma = createPrismaClient(databaseUrl);
+const testScope = process.env.WEBHOST_BROWSER_E2E_SCHEMA;
+const schema = testScope ?? 'public';
 
 const expectedTables = [
   'activity_logs',
@@ -27,6 +29,7 @@ const expectedTables = [
   'admin_totp_credentials',
   'auth_sessions',
   'automation_runs',
+  'currency_unit_definitions',
   'customers',
   'email_attempts',
   'email_logs',
@@ -52,6 +55,11 @@ const expectedTables = [
 ] as const;
 
 const requiredCustomConstraints = [
+  'currency_unit_definitions_code_check',
+  'currency_unit_definitions_version_check',
+  'currency_unit_definitions_exponent_check',
+  'currency_unit_definitions_provenance_check',
+  'currency_unit_definitions_status_check',
   'auth_sessions_time_order_check',
   'auth_sessions_token_hash_format_check',
   'auth_sessions_two_factor_time_check',
@@ -128,12 +136,18 @@ const expectedMoneyColumns = [
 ] as const;
 
 async function verify(): Promise<void> {
+  if (testScope !== undefined) {
+    const { assertBrowserDatabaseScope } =
+      await import('../../../apps/web/e2e/database-scope.js');
+    await assertBrowserDatabaseScope(prisma, databaseUrl!, testScope);
+  }
   const tables = await prisma.$queryRaw<Array<{ table_name: string }>>`
     SELECT table_name
     FROM information_schema.tables
-    WHERE table_schema = 'public'
+    WHERE table_schema = ${schema}
       AND table_type = 'BASE TABLE'
       AND table_name <> '_prisma_migrations'
+      AND (table_name <> '__browser_e2e_scope' OR ${testScope === undefined})
     ORDER BY table_name
   `;
 
@@ -147,23 +161,61 @@ async function verify(): Promise<void> {
   >`
     SELECT table_name, data_type
     FROM information_schema.columns
-    WHERE table_schema = 'public'
+    WHERE table_schema = ${schema}
       AND column_name = 'id'
       AND table_name <> '_prisma_migrations'
     ORDER BY table_name
   `;
 
-  assert.equal(idColumnTypes.length, expectedTables.length);
+  const uuidTables = expectedTables.filter(
+    (name) => name !== 'currency_unit_definitions',
+  );
+  assert.equal(idColumnTypes.length, uuidTables.length);
+  assert.deepEqual(
+    idColumnTypes.map((row) => row.table_name),
+    uuidTables,
+  );
   assert.ok(
     idColumnTypes.every(({ data_type: dataType }) => dataType === 'uuid'),
   );
+
+  const unitKeyColumns = await prisma.$queryRaw<{ column_name: string }[]>`
+    SELECT column_name FROM information_schema.key_column_usage
+    WHERE constraint_schema = ${schema}
+      AND constraint_name = 'currency_unit_definitions_pkey'
+    ORDER BY ordinal_position
+  `;
+  assert.deepEqual(unitKeyColumns, [
+    { column_name: 'code' },
+    { column_name: 'metadata_version' },
+  ]);
+  const unitTriggers = await prisma.$queryRaw<{ event_manipulation: string }[]>`
+    SELECT event_manipulation FROM information_schema.triggers
+    WHERE trigger_schema = ${schema}
+      AND trigger_name = 'currency_unit_definitions_immutable'
+      AND action_timing = 'BEFORE' AND action_orientation = 'STATEMENT'
+    ORDER BY event_manipulation
+  `;
+  assert.deepEqual(unitTriggers, [
+    { event_manipulation: 'DELETE' },
+    { event_manipulation: 'UPDATE' },
+  ]);
+  // information_schema.triggers omits TRUNCATE; inspect its PostgreSQL event bit.
+  const truncateTriggers = await prisma.$queryRaw<{ count: bigint }[]>`
+    SELECT count(*) AS count FROM pg_trigger t
+    JOIN pg_class c ON c.oid = t.tgrelid JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = ${schema} AND c.relname = 'currency_unit_definitions'
+      AND t.tgname = 'currency_unit_definitions_immutable'
+      AND (t.tgtype & 32) = 32 AND t.tgenabled = 'O'
+  `;
+  assert.equal(truncateTriggers[0]?.count, 1n);
 
   const moneyColumns = await prisma.$queryRaw<
     Array<{ table_name: string; column_name: string }>
   >`
     SELECT table_name, column_name
     FROM information_schema.columns
-    WHERE table_schema = 'public'
+    WHERE table_schema = ${schema}
       AND data_type = 'bigint'
       AND NOT (
         table_name = 'admin_totp_credentials'
@@ -185,7 +237,7 @@ async function verify(): Promise<void> {
   >`
     SELECT table_name, column_name
     FROM information_schema.columns
-    WHERE table_schema = 'public'
+    WHERE table_schema = ${schema}
       AND data_type = 'timestamp without time zone'
   `;
   assert.deepEqual(timezoneUnsafeTimestamps, []);
@@ -195,7 +247,7 @@ async function verify(): Promise<void> {
   >`
     SELECT constraint_name
     FROM information_schema.table_constraints
-    WHERE constraint_schema = 'public'
+    WHERE constraint_schema = ${schema}
       AND constraint_type = 'CHECK'
   `;
   const customConstraintNames = new Set(
@@ -214,7 +266,7 @@ async function verify(): Promise<void> {
   const partialPriceIndexes = await prisma.$queryRaw<Array<{ count: bigint }>>`
     SELECT COUNT(*)::bigint AS count
     FROM pg_indexes
-    WHERE schemaname = 'public'
+    WHERE schemaname = ${schema}
       AND indexname = 'product_prices_one_active_key'
       AND indexdef LIKE '%WHERE ((is_active = true) AND (deleted_at IS NULL))%'
   `;
@@ -223,7 +275,7 @@ async function verify(): Promise<void> {
   const publicCatalogIndexes = await prisma.$queryRaw<Array<{ count: bigint }>>`
     SELECT COUNT(*)::bigint AS count
     FROM pg_indexes
-    WHERE schemaname = 'public'
+    WHERE schemaname = ${schema}
       AND indexname = 'products_public_catalog_idx'
   `;
   assert.equal(publicCatalogIndexes[0]?.count, 1n);
@@ -233,7 +285,7 @@ async function verify(): Promise<void> {
   >`
     SELECT COUNT(*)::bigint AS count
     FROM pg_indexes
-    WHERE schemaname = 'public'
+    WHERE schemaname = ${schema}
       AND indexname = 'invoice_items_invoice_id_line_position_key'
   `;
   assert.equal(invoiceItemPositionIndexes[0]?.count, 1n);
@@ -241,7 +293,7 @@ async function verify(): Promise<void> {
   const renewalPeriodIndexes = await prisma.$queryRaw<Array<{ count: bigint }>>`
     SELECT COUNT(*)::bigint AS count
     FROM pg_indexes
-    WHERE schemaname = 'public'
+    WHERE schemaname = ${schema}
       AND indexname = 'invoice_items_service_period_key'
       AND indexdef LIKE 'CREATE UNIQUE INDEX%'
       AND indexdef LIKE '%WHERE%service_id IS NOT NULL%'
@@ -251,7 +303,7 @@ async function verify(): Promise<void> {
   const hostingRetryIndexes = await prisma.$queryRaw<Array<{ count: bigint }>>`
     SELECT COUNT(*)::bigint AS count
     FROM pg_indexes
-    WHERE schemaname = 'public'
+    WHERE schemaname = ${schema}
       AND indexname = 'hosting_panel_operations_retry_of_operation_id_key'
       AND indexdef LIKE 'CREATE UNIQUE INDEX%'
   `;
@@ -262,7 +314,7 @@ async function verify(): Promise<void> {
   >`
     SELECT constraint_name
     FROM information_schema.referential_constraints
-    WHERE constraint_schema = 'public'
+    WHERE constraint_schema = ${schema}
       AND delete_rule = 'CASCADE'
     ORDER BY constraint_name
   `;

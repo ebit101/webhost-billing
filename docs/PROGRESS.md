@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Phase review — Review Command 97 currency policy contracts and define the next bounded currency command
-- **Current status:** Command 97 accepted after contract/test review, fresh focused checks and exact delivered-head hosted evidence. No in-scope defect found; no app consumers connected. Command 98 defined only for unused immutable currency-unit storage before policy/financial integration. Production audit clean; full audit retains two development-tooling findings without waiver. No operational approval changed
+- **Current command:** Command 98 — Persist immutable currency unit definitions
+- **Current status:** Command 98 implementation and local acceptance completed. Empty additive migration, exact bounded repository and mandatory guarded database regressions added; final delivery requires non-force push and exact-head CI/CodeQL verification in the owner handoff. No app consumer, live registry, policy write or financial backfill. Production audit clean; full audit retains two tooling findings without waiver
 - **Last updated:** 2026-10-07
-- **Next command:** Command 98 — Persist immutable currency unit definitions
+- **Next command:** Phase review — Review Command 98 immutable currency unit storage and define the next bounded currency command
 - **Next command authorized:** No
 
 ## Command Reports
@@ -10641,6 +10641,116 @@ authorization for another implementation, currency activation, import, release o
 Authorize **Command 98 — Persist immutable currency unit definitions**.
 Stop after the review. Do not implement the next command, seed a registry, activate
 currencies, invoke providers, import real data, publish a release or deploy.
+
+### Command 98 — Persist immutable currency unit definitions
+
+- **Status:** Implementation and local acceptance completed; source delivery and exact-head hosted verification required in owner handoff
+- **Date:** 2026-10-07
+- **Authorization:** The owner explicitly authorized Command 98 only. No live currency,
+  provider, application/production migration, release, deployment or import is authorized.
+
+#### Implemented scope
+
+- Added an empty additive unit-definition table with exact code/version primary key,
+  bounded ASCII/precision/provenance/status checks and server-default UTC timestamp.
+  A statement trigger rejects ordinary update/delete/truncate, including empty/no-op
+  statements. Captured status is version evidence, not a mutable current pointer.
+- Added the unused `@webhost-billing/database/currency-units` entry with injected
+  client/transaction access. Duplicate-safe append compares immutable facts; exact reads
+  require 1–32 unique references, reject missing context and preserve historical precision.
+  Copied JSON-safe results are not capability, authentication or payment evidence.
+- No connection/environment/network side effect, global enumeration, latest fallback,
+  installed registry, policy table, financial provenance/backfill or app integration.
+- Added mandatory database tests to root package acceptance via its test script and
+  guarded sequential package acceptance. Reused existing nonce/loopback/marker/model/raw
+  guards; owned fresh scopes only. The prior-22-migration test compares every existing
+  fictional table row before/after migration 23 and unit-store operations.
+- The launcher runs the existing fictional seed and full schema verifier in its owned
+  scope. Both tools independently validate test scope ownership before work; their normal
+  behavior remains unchanged. The verifier checks the composite identity and immutability
+  trigger while retaining existing UUID, UTC, money, relational and seed assertions.
+- Added only a necessary workspace shared link to the lockfile; no new third-party
+  dependency, changed registry resolution, override, mitigation patch or original root entry.
+
+#### Files changed
+
+- `packages/database/prisma/schema.prisma`, migration
+  `20261007090000_currency_unit_definitions/migration.sql` — additive empty version store.
+- `packages/database/src/currency-units.ts` — strict append/exact-read boundary.
+- `packages/database/test/currency-units.spec.ts`,
+  `packages/database/test/currency-units.integration.spec.ts` — boundary/SQL/history tests.
+- `packages/database/package.json`, `packages/database/tsconfig.json`, `pnpm-lock.yaml` —
+  unused entry, strict test types, mandatory test script and workspace shared link.
+- `apps/web/e2e/run-database-tests.ts`, `apps/web/e2e/validate-gate.ts` — test-only fresh
+  scope launcher and sequential acceptance wiring; no application consumer added.
+- `packages/database/prisma/seed.ts`, `packages/database/prisma/verify.ts` — independently
+  guarded fictional-scope acceptance and additive schema assertions; no unit seed added.
+- `CODEX_DEVELOPMENT_COMMANDS.md`, `HOSTING_BILLING_SYSTEM_PLAN.md`,
+  `docs/MULTI_CURRENCY_DESIGN.md`, `docs/DECISIONS.md`, `docs/PROGRESS.md` — authorization,
+  storage/transaction boundaries, actual evidence and next review gate.
+
+#### Validation performed
+
+- Initial and post-link frozen installs passed. Installed-consumer mitigation tests passed
+  10/10. Initial and final production audits exited 0; full audits exited 1 with one high braces/one
+  moderate sprintf-js finding. No finding suppressed, waived or claimed closed.
+- Fresh registry metadata reports latest braces 3.0.3/sprintf-js 1.1.3; suggested
+  fixed releases 3.0.4/1.1.4 remain unpublished. Primary advisories still list no patched
+  version. Existing mitigation/supply-chain controls are preserved.
+- Minimal offline workspace-link lock update and subsequent frozen install passed;
+  diff is only the three-line shared link. Prisma format/generation/schema validation,
+  four library builds and actual compiled unused-entry/root-boundary checks passed.
+- Final database acceptance passed 10/10 source tests and 8/8 PostgreSQL integration
+  tests, followed by the existing fictional seed and complete schema verifier. All 23
+  migrations passed in a fresh marked loopback scope; prior-22-migration comparison,
+  direct SQL immutability/constraints, concurrent replay/conflicts, transaction rollback,
+  exact historical precision and cleanup passed. No application schema was migrated.
+- Docker initially unavailable; no machine change performed. After the owner started
+  Docker, engine 29.8.1 and existing development PostgreSQL/Redis were healthy.
+- Initial integration run rejected the digit in existing `__browser_e2e_scope`; repaired
+  the fixture's safe identifier pattern without weakening row comparisons. Later strict
+  types caught missing `.js` suffixes on test-only dynamic imports; corrected and reran
+  database strict types and complete guarded database acceptance successfully.
+- Guarded package acceptance passed shared 93, queue 3, API 107, worker 29 and web 572
+  checks, plus database tests. Guarded API acceptance passed 81/81 tests in 17 suites;
+  invariant acceptance passed shared 93, API unit 12, API integration 42 and worker
+  integration 2. Existing assertions, guards, deadlines and retries are unchanged.
+- All four offline documentation validators, complete lint, all seven workspace strict
+  type checks, four library/three application production builds, production licence
+  inventory, repository formatting and whitespace checks passed. Final edited
+  documentation and all seven workspace type rechecks passed; exact-head hosted checks
+  follow local acceptance.
+- Initial browser lifecycle run passed 18/19 but exceeded the unchanged 180-second
+  total deadline in the final test while awaiting billing-policy settings navigation.
+  Inspected its screenshot/trace; available memory was low and documentation validation
+  overlapped that run. A fully sequential unchanged rerun passed 19/19 in 5.1 minutes,
+  followed by all 4 administrator-role browser checks in 32.4 seconds. No timeout, retry,
+  assertion or application behavior was adjusted to conceal the failure.
+- Final production dependency graph has no paths to either retained tooling library.
+  Existing app sources, shared contracts, database root/client and workflows are unchanged.
+- Reconciled canonical main at 0/0 before delivery. After final local checks, commit and
+  non-force push this focused command, then verify its exact-head CI/CodeQL in the owner
+  handoff without a self-recording follow-up report commit. PR-only Dependency review
+  is skipped on push, not passed; direct-main governance remains an existing limitation.
+
+#### Decisions and limitations
+
+- ADR-089 separates immutable stored identity from policy/lifecycle authority. Append
+  uses duplicate-safe insertion, never an overwrite or caught unique violation in an
+  aborted transaction. Read Committed replay is supported; stronger isolation failures
+  require caller-owned whole-transaction retry. Compound conflicts must propagate for rollback.
+- Storage rejects full-string ASCII violations, including terminal newlines allowed by
+  JavaScript `$`, while preserving existing shared arithmetic/policy/root contracts.
+- Database owners can disable ordinary immutability controls; no privilege hardening,
+  absolute immutability, authenticated source rights or financial provenance is claimed.
+- Two tooling findings, broader resource/executable-input exposure, direct-main governance,
+  Command 33 D5–D8, providers/routes, WHMCS sample/credits, recovery and launch remain open.
+
+#### Exact recommended next command
+
+After verified delivery, authorize **Phase review — Review Command 98 immutable currency
+unit storage and define the next bounded currency command**. Stop after Command 98;
+the proposed future command list does not authorize further implementation or production.
 
 ## Report Template
 

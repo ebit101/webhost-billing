@@ -20,6 +20,7 @@ const gates: Record<string, string[][]> = {
       'issue-forms',
     ].map((name) => ['run', `test:${name}`]),
     ['--filter', '@webhost-billing/shared', 'test'],
+    ['--filter', '@webhost-billing/database', 'test'],
     ['--filter', '@webhost-billing/queue', 'test', '--runInBand'],
     ['--filter', '@webhost-billing/api', 'test', '--runInBand'],
     ['--filter', '@webhost-billing/worker', 'test', '--runInBand'],
