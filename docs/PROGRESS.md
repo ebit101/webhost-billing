@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 97 — Build explicit currency policy and capability contracts
-- **Current status:** Command 97 unused shared policy contracts completed and delivered with complete local and exact source-head CI/CodeQL acceptance. Production audit clean; full audit retains two development-tooling findings without waiver. No runtime currency, provider, migration, release or production approval changed
+- **Current command:** Phase review — Review Command 97 currency policy contracts and define the next bounded currency command
+- **Current status:** Command 97 accepted after contract/test review, fresh focused checks and exact delivered-head hosted evidence. No in-scope defect found; no app consumers connected. Command 98 defined only for unused immutable currency-unit storage before policy/financial integration. Production audit clean; full audit retains two development-tooling findings without waiver. No operational approval changed
 - **Last updated:** 2026-10-07
-- **Next command:** Phase review — Review Command 97 currency policy contracts and define the next bounded currency command
+- **Next command:** Command 98 — Persist immutable currency unit definitions
 - **Next command authorized:** No
 
 ## Command Reports
@@ -10543,6 +10543,104 @@ invoke providers, import real data, publish a release or deploy.
 Authorize **Phase review — Review Command 97 currency policy contracts and define the next
 bounded currency command** after verified delivery. Stop after Command 97; this is not
 authorization for another implementation, currency activation, import, release or deployment.
+
+### Command 97 phase review — Review currency policy contracts and define the next bounded currency command
+
+- **Status:** Review completed; Command 98 defined only, implementation not authorized
+- **Date:** 2026-10-07
+- **Authorization:** The owner explicitly requested this phase review. Defining the next
+  command is not authorization to implement it, activate currencies or apply a migration.
+
+#### Scope reviewed and findings
+
+- Read project instructions, product plan, architecture/currency/security decisions,
+  current progress, currency design and exact Command 97 scope/acceptance/exclusions.
+  Reviewed delivered source, all policy tests, existing unit contracts, separate package
+  exports, protected original files and the proposed persistence sequence.
+- No in-scope policy defect or missing mandatory Command 97 acceptance requirement found.
+  Strict shape/context boundaries, independent explicit flags, exact unit/version binding,
+  pre-traversal bounds, current/display-enabled browsing, historical readability and pure
+  stale/equal revision/base-code checks match the command. Historical collection flags
+  remain independent and prove no approved same-currency route or settlement.
+- Missing valid codes return all-false flags; malformed policy/context throws rather than
+  silently configuring a fallback. Copied facts are not immutable stored history, authenticated
+  metadata, authorization tokens or payable quotes. Current/proposed/history inputs need
+  future authoritative server sourcing; global revision uniqueness, history/concurrency,
+  roles/MFA/CSRF and confirmations are not enforced by these unused pure helpers.
+- Verified no app imports the new policy/arithmetic entries and no delivered change to
+  root/money/settings/arithmetic, lockfile, application code or database. Existing mixed-
+  currency portal/report gaps, two-decimal formatter/provider assumptions and non-BDT
+  real-adapter rejection remain unfinished later work, not repaired or activated here.
+- Defined Command 98 as one empty unused unit-definition store with exact bounded reads,
+  immutable version facts and concurrent replay/SQL regression checks. This narrows the
+  larger persistence proposal before installation-policy transactions, financial provenance
+  and read-path integration. A captured status is not a mutable current registry pointer.
+
+#### Files changed
+
+- `CODEX_DEVELOPMENT_COMMANDS.md` — Command 97 review status and bounded Command 98.
+- `HOSTING_BILLING_SYSTEM_PLAN.md`, `docs/MULTI_CURRENCY_DESIGN.md` — accepted contract
+  review, immutable-unit-first sequence and unchanged activation/legacy-data gates.
+- `docs/DECISIONS.md` — ADR-088 for unit persistence versus authoritative policy writes.
+- `docs/PROGRESS.md` — review findings, actual evidence, risks and exact next command.
+- No source, test, schema, dependency, workflow, environment or machine setting changed.
+
+#### Validation and evidence
+
+- Fresh delivered report-head `34b50dab4ca36970210618f6406951f8b0bcc2d6` inspection:
+  [CI](https://github.com/ebit101/webhost-billing/actions/runs/37571250320) and
+  [CodeQL](https://github.com/ebit101/webhost-billing/actions/runs/37571250312) succeeded.
+  Validate job `112630166516` passed all 28 steps, including complete-history secret scan,
+  frozen install/mitigations, docs/format/lint/types, full package/API/invariants, both browser
+  suites, production audit/licenses/builds and cleanup. PR-only Dependency review was
+  skipped on push, not passed. No skipped mandatory Validate acceptance step.
+- Fresh local frozen install, shared 93/93 tests, strict shared types/build and actual
+  compiled policy/arithmetic entry checks passed. Compiled fictional context parsing,
+  copied JSON-safe results, unknown-code all-false denial and unchanged root boundary pass.
+  Ten installed-consumer mitigation checks passed; production audit exited 0, full audit
+  exited 1 with the same one high braces/one moderate sprintf-js finding. Production
+  dependency graph has no paths to either retained tooling library. No finding suppressed.
+- Fresh [braces registry](https://registry.npmjs.org/braces) and
+  [sprintf-js registry](https://registry.npmjs.org/sprintf-js) report latest 3.0.3/1.1.3;
+  suggested fixed floors 3.0.4/1.1.4 remain unpublished. Primary
+  [braces advisory](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm) and
+  [sprintf-js advisory](https://github.com/advisories/GHSA-hp3w-g68c-fv3c) still list no
+  patched version. Existing patches, supply-chain controls and residual-risk gates remain.
+- Complete application/database/browser acceptance is exact delivered-head hosted evidence,
+  not a fresh local rerun for this documentation-only review. No Docker operation, fixture
+  preparation/reset, database migration, business write, real provider or live browser access.
+- All four offline documentation validators, scoped formatting and whitespace checks
+  passed after the review edits; canonical main reconciled 0/0. Commit/non-force push the
+  focused review, then verify its exact-head CI/CodeQL in the owner handoff without another
+  self-recording report commit.
+
+#### Decisions made
+
+- Accept Command 97's bounded engineering delivery, not live multi-currency support or
+  residual tooling risk. Preserve independent history resolution and caller-fact boundaries.
+- Define only Command 98: additive immutable unit identity and exact bounded repository
+  access behind an unused entry, with no real definitions seeded. Require direct PostgreSQL
+  and concurrency/atomicity checks in mandatory acceptance, not optional developer tests.
+- Keep policy revision/history transactions and financial provenance separate. Do not
+  choose a live registry lifecycle, provider/dataset licence, current pointer or payment route.
+
+#### Open questions and risks
+
+- Two tooling advisories, wider resource/executable-input risks, local resource constraints,
+  direct-main rule bypass and skipped PR-only review remain visible. Local patches and
+  successful CI do not establish upstream closure or owner acceptance of residual risk.
+- Actual unit source rights/lifecycle, persisted policy authority, enabled currencies/routes,
+  prices/quotes/FX/rounding/valuation policies and mixed-currency portal/report reads remain
+  separate. Existing financial rows lack new unit/provenance snapshots; never invent them.
+- Protected WHMCS source/target/credits, Command 33 D5–D8, named staff/operators,
+  integration/backup/launch evidence and production approval remain open. No Command 91,
+  real data rehearsal, release, deployment or application/production migration is authorized.
+
+#### Exact recommended next command
+
+Authorize **Command 98 — Persist immutable currency unit definitions**.
+Stop after the review. Do not implement the next command, seed a registry, activate
+currencies, invoke providers, import real data, publish a release or deploy.
 
 ## Report Template
 

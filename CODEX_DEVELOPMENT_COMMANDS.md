@@ -3191,7 +3191,7 @@ delivery for a separately authorized phase review, not another implementation co
 ## Command 97 — Build explicit currency policy and capability contracts
 
 **Implementation explicitly authorized by the owner on 2026-10-07.**
-Delivered with complete local and exact source-head CI/CodeQL acceptance. This is an unused shared-contract
+Delivered with complete local and exact source-head CI/CodeQL acceptance and phase-reviewed on 2026-10-07. This is an unused shared-contract
 slice before persistence and application integration, not a live currency policy.
 
 ```text
@@ -3264,6 +3264,91 @@ export/import, Command 91, Command 33 approvals, releases, deployment and produc
 **Authorization boundary:** The owner authorized Command 97 implementation only. No currency capability,
 base change, provider/data licence, residual-risk waiver or operational policy is approved.
 Further implementation needs the owner's explicit authorization.
+
+---
+
+## Command 98 — Persist immutable currency unit definitions
+
+**Defined only by the owner-authorized Command 97 phase review on 2026-10-07.**
+Implementation requires separate authorization. This is an unused additive metadata-storage
+slice, not a live registry, persisted installation policy or financial backfill.
+
+```text
+Command 98 — Persist immutable currency unit definitions
+
+Read AGENTS.md, the product plan, decisions, progress and MULTI_CURRENCY_DESIGN.md.
+Recheck retained tooling advisories/releases, frozen install, installed mitigation tests
+and separate full/production audits. Preserve patches, supply-chain controls and mandatory
+acceptance. Stop for separately scoped repair if changed exposure is outside this command.
+
+Add an unused currency-unit persistence foundation in packages/database with one forward,
+additive Prisma/PostgreSQL migration. Preserve all existing tables, money/settings/root
+contracts, application consumers and financial records. The migration creates an empty
+unit-definition store; do not seed a live registry or infer metadata for existing money.
+
+Persist exact code, metadata version, integer minor-unit exponent, provenance and
+current/historical version facts, plus server-created UTC evidence where appropriate.
+Reuse the strict shared unit/reference contracts and their existing identifier/exponent
+bounds. Enforce unique code/version identities and equivalent PostgreSQL constraints,
+including direct SQL bypass attempts; do not rely on TypeScript validation alone.
+
+Keep each stored version immutable: reject ordinary UPDATE, DELETE and TRUNCATE at the
+database boundary, and expose no update/delete helper. Do not use upsert to rewrite facts.
+Append a different version for different facts. Current/historical is a captured version
+fact, not a mutable global current pointer or proof of eligibility today. No retirement,
+current-version selection or metadata-refresh workflow is implemented in this slice.
+These controls are not protection against a database owner disabling them; retain the
+existing privilege/governance boundary without claiming absolute immutability.
+
+Add a separate unused database entry with explicit caller-injected Prisma client or
+transaction access; no module-load database/environment/network side effects. Validate
+unknown input through shared schemas. Append identical code/version/facts idempotently,
+including concurrent identical replays; reject conflicting exponent/status/provenance
+for the same identity without overwriting or leaving partial writes. Document transaction
+requirements for conflict recovery rather than swallowing a failed PostgreSQL transaction.
+
+Resolve only requested exact code/version identities. Bound any reference-list request
+to 1–32 before member traversal and database work; reject duplicates and missing/unknown
+identities with no partial success, latest-version fallback or global registry enumeration.
+Return validated copied JSON-safe unit facts, not stored-object references, live support
+flags, authorization tokens or payable quotes. Historical precision stays readable exactly
+as captured, regardless of later version facts or future currency policy enablement.
+
+Allow only necessary workspace-shared dependency/entry/test wiring; install no new
+third-party dependency and change no unrelated lockfile resolution, patch or override.
+Make database tests part of root/guarded package acceptance and hosted CI, not an optional
+manual check. Reuse the nonce-qualified marked fictional schema and model/raw search-path
+guards; new tests must refuse unmarked/non-loopback targets and never reset an existing
+application schema. Test-only validation-launcher wiring is allowed, not app integration.
+
+Test empty migration/store, strict malformed and oversized input, SQL constraints,
+exact version reads, unknown/duplicate requests, immutable UPDATE/DELETE/TRUNCATE,
+same versus conflicting concurrent replay, rollback/atomicity and unchanged historical
+precision. Use authored synthetic/fictional definitions only, never provider data or a
+maintained currency dataset. Compare existing fictional financial/settings rows before
+and after migration/store operations; prove no new invoice/payment/service/backfill write.
+
+Run focused database regressions and complete package, guarded API/invariant and both
+fictional browser suites sequentially. Validate migration on fresh owned fictional scopes
+without destructive reset, Prisma generation/schema, frozen install, separate audits,
+production licences, docs/format/lint, all strict types and production builds. Record
+unchanged mitigated full-audit exit 1 honestly; preserve assertions/deadlines/retries/guards.
+
+Update progress/decisions with actual results and limitations. After local acceptance,
+commit, reconcile canonical main without rewriting history, non-force push origin/main
+and verify exact-head CI/CodeQL. Stop for separately authorized phase review.
+
+Exclude installation-policy tables/writes and revision/base-history transactions,
+API/UI/worker/scheduler integration, financial provenance columns/backfills, existing
+localization/settings changes, maintained datasets or metadata publication/retirement,
+display formatting, mixed-currency aggregates, catalogue prices, quotes, FX feeds/network
+calls, provider routes/credentials, payment/refund/renewal changes, real WHMCS data,
+Command 91, Command 33 approvals, releases, deployment and production migrations.
+```
+
+**Authorization boundary:** This review defines Command 98 only. No dataset/source rights,
+unit activation, sale/collection currency, persisted policy, provider route, risk waiver,
+operating approval or production migration is approved. Ask before implementation.
 
 ---
 

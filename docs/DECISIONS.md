@@ -1311,6 +1311,31 @@ This document records durable technical and product decisions. New decisions sho
   price/quote, operational setting, import or deployment. All activation, source rights,
   residual tooling/governance risks, Command 33 and Command 91 remain separately gated.
 
+## ADR-088 — Persist immutable unit identity before authoritative policy writes
+
+- **Status:** Command 97 phase review accepted; Command 98 defined only, implementation not authorized
+- **Date:** 2026-10-07
+- **Evidence:** Delivered report head `34b50da` passed exact-head CI/CodeQL, including
+  every Validate step. Fresh shared 93 tests, build/types, compiled entry/unknown-code
+  denial and ten installed mitigation tests pass. Production audit is clean; full audit
+  retains one high braces/one moderate sprintf-js finding. No in-scope contract defect or
+  app consumer was found; metadata/provenance/history facts are not authenticated authority.
+- **Decision:** Define one unused additive unit-definition store before policy persistence.
+  Pin exact code/version, exponent, provenance and captured current/historical facts;
+  enforce bounds, unique identities and ordinary database immutability. Permit idempotent
+  identical replay, reject conflicts without overwriting, and return exact bounded contexts.
+  No current-version pointer, maintained dataset, app integration or live registry is added.
+- **History:** Referenced precision must not be rewritten. Immutable version status is
+  captured evidence, not a mutable global lifecycle/eligibility flag. Database-owner powers
+  can bypass ordinary protections; those are not closed by an immutable table. Do not
+  fabricate legacy metadata or populate policy from existing localization/settings.
+- **Boundary:** The next definition requires fictional guarded database and full acceptance
+  tests, including direct SQL, concurrent replay, rollback and unchanged financial rows.
+  Authoritative policy revision/history/concurrency, roles/MFA/CSRF/confirmation and
+  financial provenance remain later slices. Dataset/provider rights, live currencies/routes,
+  mixed-currency reporting, operational policies, Command 33/91, rehearsal and deployment
+  remain gated. Retain tooling/governance exposure without waiver; ask before Command 98.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

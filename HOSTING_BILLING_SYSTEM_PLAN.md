@@ -63,7 +63,9 @@ Command 95 phase review defined Command 96's pure arithmetic foundation, subsequ
 authorized, delivered and phase-reviewed on 2026-10-07. Its unused helpers do not change
 application billing behavior. Command 97's unused explicit currency-policy/capability
 contracts were separately authorized, delivered and validated locally and at the exact
-source head on 2026-10-07. Persistence,
+source head and phase-reviewed on 2026-10-07. The review defines Command 98's unused,
+additive immutable unit-definition storage only; implementation is not authorized. No
+live registry, installation-policy write or financial backfill is included. Broader persistence,
 per-currency reads, pricing and activation remain later separately gated slices. Remaining
 tooling advisories are not waived. No currency is activated by this sequence.
 
