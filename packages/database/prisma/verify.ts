@@ -29,6 +29,7 @@ const expectedTables = [
   'admin_totp_credentials',
   'auth_sessions',
   'automation_runs',
+  'currency_policy_revisions',
   'currency_unit_definitions',
   'customers',
   'email_attempts',
@@ -55,6 +56,8 @@ const expectedTables = [
 ] as const;
 
 const requiredCustomConstraints = [
+  'currency_policy_revisions_revision_check',
+  'currency_policy_revisions_identity_check',
   'currency_unit_definitions_code_check',
   'currency_unit_definitions_version_check',
   'currency_unit_definitions_exponent_check',
@@ -168,7 +171,9 @@ async function verify(): Promise<void> {
   `;
 
   const uuidTables = expectedTables.filter(
-    (name) => name !== 'currency_unit_definitions',
+    (name) =>
+      name !== 'currency_unit_definitions' &&
+      name !== 'currency_policy_revisions',
   );
   assert.equal(idColumnTypes.length, uuidTables.length);
   assert.deepEqual(
@@ -209,6 +214,38 @@ async function verify(): Promise<void> {
       AND (t.tgtype & 32) = 32 AND t.tgenabled = 'O'
   `;
   assert.equal(truncateTriggers[0]?.count, 1n);
+
+  const policyKey = await prisma.$queryRaw<{ column_name: string }[]>`
+    SELECT column_name FROM information_schema.key_column_usage
+    WHERE constraint_schema = ${schema} AND constraint_name = 'currency_policy_revisions_pkey'
+    ORDER BY ordinal_position
+  `;
+  assert.deepEqual(policyKey, [{ column_name: 'revision' }]);
+  const policyColumns = await prisma.$queryRaw<
+    { column_name: string; data_type: string }[]
+  >`
+    SELECT column_name, data_type FROM information_schema.columns
+    WHERE table_schema = ${schema} AND table_name = 'currency_policy_revisions'
+    ORDER BY ordinal_position
+  `;
+  assert.deepEqual(policyColumns, [
+    { column_name: 'revision', data_type: 'character varying' },
+    { column_name: 'policy', data_type: 'jsonb' },
+    { column_name: 'created_at', data_type: 'timestamp with time zone' },
+  ]);
+  const policyTriggers = await prisma.$queryRaw<
+    { name: string; type: number }[]
+  >`
+    SELECT t.tgname AS name, t.tgtype::integer AS type FROM pg_trigger t
+    JOIN pg_class c ON c.oid = t.tgrelid JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = ${schema} AND c.relname = 'currency_policy_revisions'
+      AND NOT t.tgisinternal AND t.tgenabled = 'O' ORDER BY t.tgname
+  `;
+  // BEFORE statement UPDATE/DELETE/TRUNCATE = 58; BEFORE row INSERT = 7.
+  assert.deepEqual(policyTriggers, [
+    { name: 'currency_policy_revisions_immutable', type: 58 },
+    { name: 'currency_policy_revisions_validate', type: 7 },
+  ]);
 
   const moneyColumns = await prisma.$queryRaw<
     Array<{ table_name: string; column_name: string }>

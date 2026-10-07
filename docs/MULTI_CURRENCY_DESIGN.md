@@ -8,7 +8,8 @@
   phase-reviewed. Command 97's unused policy contracts passed complete local and exact
   source-head hosted acceptance and was phase-reviewed. Command 98's unused immutable
   unit storage passed complete local/corrected-head hosted acceptance and was phase-reviewed.
-  Command 99's unused policy-revision snapshots are defined only, not authorized. Application integration
+  Command 99's unused policy-revision snapshots are separately authorized and locally validated;
+  exact-head hosted verification belongs in the delivery handoff. Application integration
   and activation remain separately gated.
 - Owner direction: BDT is the default; USD is the preferred secondary currency;
   support major currencies with automatic conversion through a suitable provider.
@@ -297,11 +298,43 @@ expected-revision concurrency, role/MFA/CSRF/confirmation and audit. These are n
 by an unused store or a caller history boolean. Do not initialize policy from localization,
 guess legacy precision, enforce selection with a pure helper alone or advertise live support.
 
-Command 99 requires separately authorized implementation and full fictional database/
+The owner separately authorized Command 99 on 2026-10-07. It requires full fictional database/
 application/browser acceptance. Extend migration-count scaffolding while preserving the
 original Command 98 history test; compare prior-23-migration unit and financial/settings
 facts before/after the additional migration. Financial provenance, per-currency reads,
 price/quote/provider integration and actual policy activation remain later bounded work.
+
+### Command 99 complete immutable policy snapshots
+
+The empty `currency_policy_revisions` table stores a globally unique explicit revision,
+one complete JSONB policy and server-default UTC creation time. A single snapshot row has
+no extensible children; ordinary UPDATE/DELETE/TRUNCATE are rejected even for no-op/empty
+statements. INSERT validation enforces strict policy/reference/capability fields, 1–32
+unique codes, full-string ASCII bounds, exact stored-unit context, selected bindings and
+current/display browsing versus historical display/new-sales denial. Lookup functions and
+unit tables are resolved in the target snapshot table's schema, not a caller search path.
+Unit immutability preserves referenced precision/status/provenance. Database owners can
+still disable controls; stored policy/status/timestamps prove no external authentication.
+
+`@webhost-billing/database/currency-policies` is a separate unused entry with explicit
+client/transaction injection, no module-load I/O and no root/application export or consumer.
+`appendCurrencyPolicyRevision` parses Command 97 contracts, resolves exact Command 98
+database definitions, sorts a copied entry list by code and validates context. Entry order
+is not a preference; default/secondary are explicit fields. Duplicate-safe append then
+exact comparison admits equivalent facts independent of property/entry order and rejects
+different facts without overwrite. SQL also canonicalizes entries. Returned context is
+copied, runtime-validated JSON-safe evidence; it contains exact pinned unit facts, not dates,
+active-policy authority, a rate/price or permission to collect.
+
+`readExactCurrencyPolicyRevision` accepts one exact revision only. Missing or invalid
+context fails closed, with no global/latest/current fallback. Different-base snapshots
+are candidate/history facts and do not initialize/select an installation base. At Read
+Committed, duplicate-safe INSERT followed by a new SELECT snapshot supports concurrent
+replay. Stronger isolation requires caller-owned whole-transaction retry; conflicts must
+propagate out of compound writes for rollback. No automatic retries or transition helper
+based on invented current/history facts are introduced. Plain-data parsing does not
+sandbox getters/proxies. Mandatory tests use fresh marked fictional scopes and compare
+all prior financial/settings rows plus existing unit facts across migration 24.
 
 ## 4. Price publication, quote and renewal rules
 
@@ -583,9 +616,10 @@ Delivery sequence, each needing separate authorization:
    exact bounded lookups and database immutability/replay checks using fictional tests.
    Corrected-head hosted acceptance and the owner-authorized phase review passed.
    No live registry or policy.
-5. **Command 99 — Persist immutable currency policy revisions** is defined only: empty unused
+5. **Command 99 — Persist immutable currency policy revisions** was separately authorized: empty unused
    complete revision snapshots with exact stored-unit context, immutable/replay guarantees
-   and fictional SQL/history acceptance. Implementation requires explicit authorization.
+   and fictional SQL/history acceptance. Complete local acceptance passed; verify exact-head
+   CI/CodeQL in the delivery handoff.
    Active policy selection/initialization, base-history concurrency and financial provenance
    remain separate; no selected policy or caller-history authority is added by snapshot storage.
 6. Later additive policy/provenance services and per-currency reads; preserve legacy records and

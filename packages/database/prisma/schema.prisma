@@ -10,6 +10,15 @@ datasource db {
   provider = "postgresql"
 }
 
+// Complete unused policy evidence, never an active installation pointer.
+model CurrencyPolicyRevision {
+  revision  String   @id @db.VarChar(64)
+  policy    Json     @db.JsonB
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@map("currency_policy_revisions")
+}
+
 // Unused immutable version facts, not an enabled registry or a current pointer.
 model CurrencyUnitDefinition {
   code              String   @db.VarChar(3)

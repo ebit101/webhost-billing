@@ -3357,7 +3357,9 @@ review defines Command 99 only; its implementation still requires explicit autho
 ## Command 99 — Persist immutable currency policy revisions
 
 **Defined by the owner-authorized Command 98 phase review on 2026-10-07.**
-Definition only; implementation is not authorized. Store complete unused revision
+**Implementation explicitly authorized by the owner on 2026-10-07.**
+Implementation and complete local acceptance passed; verify exact-head CI/CodeQL in delivery.
+Store complete unused revision
 snapshots, not an installation's selected policy or permission to transact.
 
 ```text
@@ -3445,9 +3447,10 @@ catalogue prices/quotes/FX/provider routes/credentials, payment/refund/renewal c
 WHMCS data, Command 91, Command 33 approvals, releases, deployments and production migrations.
 ```
 
-**Authorization boundary:** This phase review authorizes only review/documentation delivery,
-not Command 99 implementation. An immutable stored policy is captured configuration evidence,
+**Authorization boundary:** The owner authorized Command 99 implementation only.
+An immutable stored policy is captured configuration evidence,
 not an active installation policy, approved sales/collection currency or production approval.
+Stop after validated delivery and request a separately authorized phase review.
 
 ---
 

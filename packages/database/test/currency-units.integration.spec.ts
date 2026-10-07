@@ -12,6 +12,10 @@ import {
 } from '../src/currency-units';
 import type { CurrencyUnitDefinition } from '@webhost-billing/shared/currency-arithmetic';
 import {
+  appendCurrencyPolicyRevision,
+  readExactCurrencyPolicyRevision,
+} from '../src/currency-policies';
+import {
   assertBrowserDatabaseScope,
   browserDatabaseUrl,
   validateBrowserDatabaseUrl,
@@ -275,178 +279,225 @@ test('transaction replays remain usable, while rollback and conflicts leave no p
   );
 });
 
-test('additive migration and store operations preserve every pre-existing fictional row', async () => {
-  // New nonce scope only; apply the actual prior SQL chain before the new migration.
-  const owned = `command26_e2e_${randomUUID().replaceAll('-', '')}`;
-  const ownedUrl = browserDatabaseUrl(url, owned);
-  const adminUrl = new URL(url);
-  adminUrl.searchParams.set('schema', 'public');
-  adminUrl.searchParams.delete('options');
-  const admin = createPrismaClient(adminUrl.toString());
-  try {
-    await admin.$executeRawUnsafe(`CREATE SCHEMA "${owned}"`);
-  } finally {
-    await admin.$disconnect();
-  }
-  const pg = new Client({ connectionString: ownedUrl });
-  const client = createPrismaClient(ownedUrl);
-  let marked = false;
-  try {
-    await pg.connect();
-    const live = await pg.query(
-      "SELECT current_schema() AS schema, current_setting('search_path') AS path",
-    );
-    assert.deepEqual(live.rows, [{ schema: owned, path: owned }]);
-    const directory = resolve('prisma/migrations');
-    const migrations = readdirSync(directory)
-      .filter((n) => /^\d{14}_/.test(n))
-      .sort();
-    assert.equal(migrations.at(-1), '20261007090000_currency_unit_definitions');
-    assert.equal(migrations.length, 23);
-    for (const name of migrations.slice(0, -1))
-      await pg.query(
-        readFileSync(resolve(directory, name, 'migration.sql'), 'utf8'),
-      );
-    await assertBrowserDatabaseScope(client, ownedUrl, owned, false);
-    await client.$executeRaw`CREATE TABLE __browser_e2e_scope (owner text NOT NULL)`;
-    await client.$executeRaw`INSERT INTO __browser_e2e_scope (owner) VALUES (${owned})`;
-    await assertBrowserDatabaseScope(client, ownedUrl, owned);
-    marked = true;
-    const user = await client.user.create({
-      data: {
-        email: 'currency-history@example.test',
-        role: 'CUSTOMER',
-        customer: {
-          create: {
-            customerNumber: 'FICTIONAL-98',
-            firstName: 'Fictional',
-            lastName: 'History',
-            addressLine1: '1 Fictional Road',
-            city: 'Dhaka',
-            countryCode: 'BD',
-          },
-        },
-      },
-      include: { customer: true },
-    });
-    const customerId = user.customer!.id;
-    const product = await client.product.create({
-      data: {
-        slug: 'fictional-98',
-        name: 'Fictional hosting',
-        provisioningAdapter: 'fake-panel',
-      },
-    });
-    const price = await client.productPrice.create({
-      data: {
-        productId: product.id,
-        billingPeriod: 'ANNUAL',
-        currency: 'USD',
-        amount: 100n,
-      },
-    });
-    const server = await client.server.create({
-      data: {
-        name: 'Fictional server 98',
-        hostname: 'currency98.example.test',
-        adapterKey: 'fake-panel',
-      },
-    });
-    await client.service.create({
-      data: {
-        customerId,
-        productId: product.id,
-        productPriceId: price.id,
-        serverId: server.id,
-        productNameSnapshot: product.name,
-        billingPeriod: 'ANNUAL',
-        recurringAmount: 100n,
-        currency: 'USD',
-        startedAt: new Date('2026-01-01Z'),
-        nextDueAt: new Date('2027-01-01Z'),
-      },
-    });
-    const invoice = await client.invoice.create({
-      data: {
-        invoiceNumber: 'FICTIONAL-INV-98',
-        submissionKey: 'fictional-invoice-98',
-        customerId,
-        currency: 'USD',
-        subtotal: 100n,
-        total: 100n,
-        balanceDue: 100n,
-        customerNameSnapshot: 'Fictional History',
-        customerEmailSnapshot: user.email,
-        customerAddressSnapshot: { city: 'Dhaka' },
-        businessIdentitySnapshot: { name: 'Fictional business' },
-        dueAt: new Date('2026-11-01Z'),
-        items: {
-          create: {
-            linePosition: 1,
-            descriptionSnapshot: 'Fictional hosting',
-            currency: 'USD',
-            unitAmount: 100n,
-            lineTotal: 100n,
-          },
-        },
-      },
-    });
-    await client.payment.create({
-      data: {
-        invoiceId: invoice.id,
-        provider: 'fake',
-        idempotencyKey: 'fictional-payment-98',
-        amount: 100n,
-        currency: 'USD',
-      },
-    });
-    await client.setting.create({
-      data: {
-        key: 'business.localization',
-        category: 'BUSINESS',
-        value: { currency: 'BDT', timezone: 'Asia/Dhaka' },
-      },
-    });
-    const tables = (
-      await pg.query<{ table_name: string }>(
-        "SELECT table_name FROM information_schema.tables WHERE table_schema=$1 AND table_type='BASE TABLE' ORDER BY table_name",
-        [owned],
-      )
-    ).rows.map((r) => r.table_name);
-    const snapshot = async () => {
-      const result: Record<string, string[]> = {};
-      for (const table of tables) {
-        assert.match(table, /^[a-z_][a-z0-9_]*$/);
-        result[table] = (
-          await pg.query<{ row: string }>(
-            `SELECT to_jsonb(t)::text AS row FROM "${table}" t ORDER BY to_jsonb(t)::text`,
-          )
-        ).rows.map((r) => r.row);
-      }
-      return result;
-    };
-    const before = await snapshot();
-    await pg.query(
-      readFileSync(
-        resolve(directory, migrations.at(-1)!, 'migration.sql'),
-        'utf8',
-      ),
-    );
-    assert.equal(await client.currencyUnitDefinition.count(), 0);
-    assert.deepEqual(await snapshot(), before);
-    await appendCurrencyUnit(client, fictional);
-    await appendCurrencyUnit(client, fictional);
-    await readExactCurrencyUnits(client, [ref(fictional)]);
-    await assert.rejects(
-      appendCurrencyUnit(client, { ...fictional, provenance: 'Conflict' }),
-    );
-    assert.deepEqual(await snapshot(), before);
-  } finally {
-    await pg.end();
-    if (marked) {
-      await assertBrowserDatabaseScope(client, ownedUrl, owned);
-      await client.$executeRawUnsafe(`DROP SCHEMA "${owned}" CASCADE`);
+for (const priorCount of [22, 23])
+  test(`additive migration after ${priorCount} migrations preserves every pre-existing fictional row`, async () => {
+    // New nonce scope only; apply the actual prior SQL chain before the new migration.
+    const owned = `command26_e2e_${randomUUID().replaceAll('-', '')}`;
+    const ownedUrl = browserDatabaseUrl(url, owned);
+    const adminUrl = new URL(url);
+    adminUrl.searchParams.set('schema', 'public');
+    adminUrl.searchParams.delete('options');
+    const admin = createPrismaClient(adminUrl.toString());
+    try {
+      await admin.$executeRawUnsafe(`CREATE SCHEMA "${owned}"`);
+    } finally {
+      await admin.$disconnect();
     }
-    await client.$disconnect();
-  }
-});
+    const pg = new Client({ connectionString: ownedUrl });
+    const client = createPrismaClient(ownedUrl);
+    let marked = false;
+    try {
+      await pg.connect();
+      const live = await pg.query(
+        "SELECT current_schema() AS schema, current_setting('search_path') AS path",
+      );
+      assert.deepEqual(live.rows, [{ schema: owned, path: owned }]);
+      const directory = resolve('prisma/migrations');
+      const migrations = readdirSync(directory)
+        .filter((n) => /^\d{14}_/.test(n))
+        .sort();
+      assert.equal(migrations[22], '20261007090000_currency_unit_definitions');
+      assert.equal(migrations[23], '20261007100000_currency_policy_revisions');
+      assert.equal(migrations.length, 24);
+      for (const name of migrations.slice(0, priorCount))
+        await pg.query(
+          readFileSync(resolve(directory, name, 'migration.sql'), 'utf8'),
+        );
+      await assertBrowserDatabaseScope(client, ownedUrl, owned, false);
+      await client.$executeRaw`CREATE TABLE __browser_e2e_scope (owner text NOT NULL)`;
+      await client.$executeRaw`INSERT INTO __browser_e2e_scope (owner) VALUES (${owned})`;
+      await assertBrowserDatabaseScope(client, ownedUrl, owned);
+      marked = true;
+      const user = await client.user.create({
+        data: {
+          email: 'currency-history@example.test',
+          role: 'CUSTOMER',
+          customer: {
+            create: {
+              customerNumber: 'FICTIONAL-98',
+              firstName: 'Fictional',
+              lastName: 'History',
+              addressLine1: '1 Fictional Road',
+              city: 'Dhaka',
+              countryCode: 'BD',
+            },
+          },
+        },
+        include: { customer: true },
+      });
+      const customerId = user.customer!.id;
+      const product = await client.product.create({
+        data: {
+          slug: 'fictional-98',
+          name: 'Fictional hosting',
+          provisioningAdapter: 'fake-panel',
+        },
+      });
+      const price = await client.productPrice.create({
+        data: {
+          productId: product.id,
+          billingPeriod: 'ANNUAL',
+          currency: 'USD',
+          amount: 100n,
+        },
+      });
+      const server = await client.server.create({
+        data: {
+          name: 'Fictional server 98',
+          hostname: 'currency98.example.test',
+          adapterKey: 'fake-panel',
+        },
+      });
+      await client.service.create({
+        data: {
+          customerId,
+          productId: product.id,
+          productPriceId: price.id,
+          serverId: server.id,
+          productNameSnapshot: product.name,
+          billingPeriod: 'ANNUAL',
+          recurringAmount: 100n,
+          currency: 'USD',
+          startedAt: new Date('2026-01-01Z'),
+          nextDueAt: new Date('2027-01-01Z'),
+        },
+      });
+      const invoice = await client.invoice.create({
+        data: {
+          invoiceNumber: 'FICTIONAL-INV-98',
+          submissionKey: 'fictional-invoice-98',
+          customerId,
+          currency: 'USD',
+          subtotal: 100n,
+          total: 100n,
+          balanceDue: 100n,
+          customerNameSnapshot: 'Fictional History',
+          customerEmailSnapshot: user.email,
+          customerAddressSnapshot: { city: 'Dhaka' },
+          businessIdentitySnapshot: { name: 'Fictional business' },
+          dueAt: new Date('2026-11-01Z'),
+          items: {
+            create: {
+              linePosition: 1,
+              descriptionSnapshot: 'Fictional hosting',
+              currency: 'USD',
+              unitAmount: 100n,
+              lineTotal: 100n,
+            },
+          },
+        },
+      });
+      await client.payment.create({
+        data: {
+          invoiceId: invoice.id,
+          provider: 'fake',
+          idempotencyKey: 'fictional-payment-98',
+          amount: 100n,
+          currency: 'USD',
+        },
+      });
+      await client.setting.create({
+        data: {
+          key: 'business.localization',
+          category: 'BUSINESS',
+          value: { currency: 'BDT', timezone: 'Asia/Dhaka' },
+        },
+      });
+      const browsing = {
+        ...fictional,
+        code: 'XBA',
+        status: 'current',
+      } as const;
+      if (priorCount === 23) {
+        await appendCurrencyUnit(client, fictional);
+        await appendCurrencyUnit(client, browsing);
+      }
+      const tables = (
+        await pg.query<{ table_name: string }>(
+          "SELECT table_name FROM information_schema.tables WHERE table_schema=$1 AND table_type='BASE TABLE' ORDER BY table_name",
+          [owned],
+        )
+      ).rows.map((r) => r.table_name);
+      const snapshot = async () => {
+        const result: Record<string, string[]> = {};
+        for (const table of tables) {
+          assert.match(table, /^[a-z_][a-z0-9_]*$/);
+          result[table] = (
+            await pg.query<{ row: string }>(
+              `SELECT to_jsonb(t)::text AS row FROM "${table}" t ORDER BY to_jsonb(t)::text`,
+            )
+          ).rows.map((r) => r.row);
+        }
+        return result;
+      };
+      const before = await snapshot();
+      await pg.query(
+        readFileSync(
+          resolve(directory, migrations[priorCount]!, 'migration.sql'),
+          'utf8',
+        ),
+      );
+      if (priorCount === 22)
+        assert.equal(await client.currencyUnitDefinition.count(), 0);
+      else assert.equal(await client.currencyPolicyRevision.count(), 0);
+      assert.deepEqual(await snapshot(), before);
+      await appendCurrencyUnit(client, fictional);
+      await appendCurrencyUnit(client, fictional);
+      await readExactCurrencyUnits(client, [ref(fictional)]);
+      await assert.rejects(
+        appendCurrencyUnit(client, { ...fictional, provenance: 'Conflict' }),
+      );
+      if (priorCount === 23) {
+        const policy = {
+          revision: 'authored-history-revision',
+          base: ref(fictional),
+          defaultBrowsing: ref(browsing),
+          currencies: [
+            {
+              unit: ref(fictional),
+              capabilities: {
+                display: false,
+                newSales: false,
+                collection: true,
+              },
+            },
+            {
+              unit: ref(browsing),
+              capabilities: {
+                display: true,
+                newSales: false,
+                collection: false,
+              },
+            },
+          ],
+        };
+        await appendCurrencyPolicyRevision(client, policy);
+        await appendCurrencyPolicyRevision(client, policy);
+        await readExactCurrencyPolicyRevision(client, policy.revision);
+        await assert.rejects(
+          appendCurrencyPolicyRevision(client, {
+            ...policy,
+            base: ref(browsing),
+          }),
+        );
+      }
+      assert.deepEqual(await snapshot(), before);
+    } finally {
+      await pg.end();
+      if (marked) {
+        await assertBrowserDatabaseScope(client, ownedUrl, owned);
+        await client.$executeRawUnsafe(`DROP SCHEMA "${owned}" CASCADE`);
+      }
+      await client.$disconnect();
+    }
+  });

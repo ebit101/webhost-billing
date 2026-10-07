@@ -23,21 +23,24 @@ async function main(): Promise<void> {
   const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
   await prepareEnvironment(false);
   try {
-    const args = [
+    const baseArgs = [
       '--filter',
       '@webhost-billing/database',
       'exec',
       'tsx',
       '--test',
       '--test-concurrency=1',
-      'test/currency-units.integration.spec.ts',
     ];
     const windows = process.platform === 'win32';
-    execFileSync(
-      windows ? (process.env.ComSpec ?? 'cmd.exe') : 'pnpm',
-      windows ? ['/d', '/s', '/c', 'pnpm', ...args] : args,
-      { cwd: root, env: e2eApiEnvironment, stdio: 'inherit' },
-    );
+    // Preserve the empty-unit assertion before policy fixtures add context.
+    for (const file of ['currency-units', 'currency-policies']) {
+      const args = [...baseArgs, `test/${file}.integration.spec.ts`];
+      execFileSync(
+        windows ? (process.env.ComSpec ?? 'cmd.exe') : 'pnpm',
+        windows ? ['/d', '/s', '/c', 'pnpm', ...args] : args,
+        { cwd: root, env: e2eApiEnvironment, stdio: 'inherit' },
+      );
+    }
     // Verify the ordinary schema/seed assertions only in this marked fictional
     // scope. Seed and verifier independently repeat the guard before doing work.
     for (const command of ['db:seed', 'db:verify']) {

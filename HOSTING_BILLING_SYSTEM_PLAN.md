@@ -66,7 +66,9 @@ contracts were separately authorized, delivered and validated locally and at the
 source head and phase-reviewed on 2026-10-07. The review defines Command 98's unused,
 additive immutable unit-definition storage, subsequently authorized, delivered with complete
 local and exact-head hosted acceptance, and phase-reviewed on 2026-10-07. The review defines
-Command 99's unused immutable policy-revision snapshots only; implementation is not authorized.
+Command 99's unused immutable policy-revision snapshots only; the owner subsequently authorized
+implementation on 2026-10-07. Complete local acceptance passed; exact-head delivery verification
+belongs in the owner handoff.
 No live registry, selected installation policy or financial backfill is included. Broader persistence,
 per-currency reads, pricing and activation remain later separately gated slices. Remaining
 tooling advisories are not waived. No currency is activated by this sequence.

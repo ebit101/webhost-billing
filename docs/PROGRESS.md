@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Phase review — Review Command 98 immutable currency unit storage and define the next bounded currency command
-- **Current status:** Command 98 corrected delivery-head CI/CodeQL and bounded engineering scope verified. Review defines Command 99's unused immutable policy-revision storage only; implementation is not authorized. No app consumer, selected policy, live registry, financial backfill or deployment. Production audit clean; full audit retains two tooling findings without waiver
+- **Current command:** Command 99 — Persist immutable currency policy revisions
+- **Current status:** Command 99 implementation and local acceptance completed. Empty additive snapshot store, strict exact repository and mandatory SQL/history regressions passed complete local checks. Final delivery includes non-force push and exact-head CI/CodeQL verification in the owner handoff. No app consumer, selected policy, registry, financial backfill or deployment. Production audit clean; full audit retains two tooling findings without waiver
 - **Last updated:** 2026-10-07
-- **Next command:** Command 99 — Persist immutable currency policy revisions
+- **Next command:** Phase review — Review Command 99 immutable policy snapshots and define the next bounded currency command
 - **Next command authorized:** No
 
 ## Command Reports
@@ -10851,6 +10851,105 @@ the proposed future command list does not authorize further implementation or pr
 Authorize **Command 99 — Persist immutable currency policy revisions**.
 Stop after this review. Do not implement snapshots or active policy selection, seed a
 registry, enable currencies, invoke providers, import real data, release or deploy.
+
+### Command 99 — Persist immutable currency policy revisions
+
+- **Status:** Implementation and local acceptance completed; exact-head hosted delivery verification required in owner handoff
+- **Date:** 2026-10-07
+- **Authorization:** The owner explicitly authorized Command 99 only. No active policy,
+  installation initialization, currency activation, provider, real-data import or deployment.
+
+#### Implemented scope
+
+- Empty additive migration 24 adds one globally unique revision with complete JSONB
+  policy evidence and server-default UTC creation time. No extensible children or partial
+  snapshots. Direct INSERT validates strict shape, budgets, ASCII identities, independent
+  flags, exact stored units and selected/current/historical constraints. Function/unit lookup
+  is pinned to the table schema. Statement UPDATE/DELETE/TRUNCATE reject even no-op cases.
+- Separate unused injected-client repository reuses Command 97 contracts and Command 98
+  exact unit lookup. Copied entries canonicalize by code; equivalent property/entry ordering
+  replays identically, conflicting facts reject without overwrite. Exact requested revision
+  reads return copied JSON-safe context or fail closed, never latest/current/global fallback.
+- Read Committed duplicate-safe append supports concurrency. Stronger isolation needs
+  whole-transaction retry by the caller; compound conflicts propagate for rollback.
+  Different-base snapshots are evidence only, not installation base changes or selection.
+- Mandatory root/guarded/hosted database tests include source, direct SQL, replay, conflict,
+  rollback, bounds and schema verification. Preserve prior-22-to-23 all-row history test
+  and add prior-23-to-24 all-row comparison including immutable units and financial/settings.
+  Only newly owned nonce-qualified marked fictional loopback schemas are disposable.
+- No app/shared/root/client contract, dependencies/lock/patch/workflow/environment change.
+
+#### Files changed
+
+- `packages/database/prisma/schema.prisma` and
+  `packages/database/prisma/migrations/20261007100000_currency_policy_revisions/migration.sql`
+  — empty complete-snapshot store and SQL controls.
+- `packages/database/src/currency-policies.ts`, `packages/database/package.json` — unused
+  subpath and mandatory tests, no new dependencies.
+- `packages/database/test/currency-policies.spec.ts`,
+  `packages/database/test/currency-policies.integration.spec.ts`,
+  `packages/database/test/currency-units.integration.spec.ts` — source/SQL/history regressions.
+- `packages/database/prisma/verify.ts`, `apps/web/e2e/run-database-tests.ts` — retain old
+  assertions/guards and add policy structure/trigger checks and sequential fixture suites.
+- `CODEX_DEVELOPMENT_COMMANDS.md`, `HOSTING_BILLING_SYSTEM_PLAN.md`,
+  `docs/MULTI_CURRENCY_DESIGN.md`, `docs/DECISIONS.md`, `docs/PROGRESS.md` — authority,
+  snapshot semantics, actual validation evidence and next review boundary.
+
+#### Validation performed
+
+- Initial frozen install and ten installed mitigation tests passed. Production audit clean;
+  full audit exited 1 with the same high braces/moderate sprintf-js tooling findings.
+  Fresh registry latest 3.0.3/1.1.3, unpublished suggested 3.0.4/1.1.4 floors, and primary
+  advisory no-patched-version evidence remain unchanged. No suppression or risk waiver.
+- Prisma format/generation/schema validation and four library builds passed. Initial
+  source 18 tests passed; strict types caught a PrismaPromise test-double mismatch.
+  Corrected the fake helper without changing production promises; strict database types
+  and source tests passed afterward.
+- Initial migration failed on an unparenthesized CASE expression in the trigger IF.
+  Corrected the SQL and reran all 24 migrations in a new nonce scope successfully.
+  The incomplete unmarked scope `command26_e2e_8d7db6b8d0e7489a93eb26daaada1d76`
+  is retained, never reset/adopted/dropped. No application schema was touched.
+- Guarded database acceptance passed 18/18 source tests and 19/19 SQL tests (unit/history
+  9, policy 10), followed by fictional seed and the complete schema verifier. All 24
+  migrations pass on fresh owned scopes. Prior-22-to-23 and prior-23-to-24 all-row comparisons,
+  direct SQL, canonical replay/conflict, concurrent winner, exact history, rollback and cleanup pass.
+- Guarded package acceptance passed shared 93, database tests, queue 3, API 107, worker 29
+  and web 572 tests. Guarded API integration passed 81/81 across 17 suites. Invariants
+  passed shared 93, focused API unit 12/API integration 42 and worker integration 2.
+  Existing fake-provider failure logs, Node VM-module and pg deprecation warnings remain
+  visible; these successful suites do not claim to repair those pre-existing warnings.
+- All four offline documentation validators, repository formatting, complete lint, all
+  seven strict workspace type checks, four library/three application production builds,
+  production audit, licence inventory and whitespace checks passed. Actual compiled unused
+  append/read entry and unchanged root boundary passed; no runtime app/shared/client or
+  lock/patch/workflow/scanner changes were found.
+- Browser lifecycle passed 19/19 in 4.1 minutes, then administrator-role browser checks
+  passed 4/4 in 1.2 minutes, fully sequentially. No assertions, deadlines, retries, guards or
+  application behavior changed. Existing branding LCP/colour-setting warnings remain visible.
+- Final edited documentation passed all four validators; repository formatting and
+  whitespace checks passed. The pinned cached scanner checked staged changes read-only,
+  without network/pull, and found no leaks in approximately 59 KB. No scanner exception added.
+  Final full audit retains the same exit 1 findings; neither library has a production path.
+  Reconcile canonical main, commit/non-force push this focused command and verify its exact
+  CI/CodeQL in the owner handoff without a self-recording follow-up report commit. PR-only
+  Dependency review is skipped on push, not passed; direct-main governance remains visible.
+
+#### Decisions and remaining risks
+
+- ADR-091 separates immutable evidence from selection authority. SQL constraints/triggers
+  are ordinary database protection, not absolute immutability against database owners.
+  Captured status/provenance/timestamps do not authenticate metadata rights or payment routes.
+- No selected pointer/current policy, transition helper on invented facts, legacy backfill,
+  inferred unit provenance, app consumer, price/FX/provider or currency activation is added.
+- Tooling advisories, wider executable-input/resource risk, direct-main governance and
+  skipped PR-only review remain. Command 33 D5–D8, operational/provider/recovery evidence,
+  protected WHMCS source/target/credits, Command 91 and launch approval remain open.
+
+#### Exact recommended next command
+
+After verified delivery, authorize **Phase review — Review Command 99 immutable policy
+snapshots and define the next bounded currency command**. Stop after Command 99; do not
+select a policy, activate currencies, import data, invoke providers, release or deploy.
 
 ## Report Template
 

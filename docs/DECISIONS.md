@@ -1391,6 +1391,31 @@ This document records durable technical and product decisions. New decisions sho
   database-owner, tooling/governance, operational/source-rights and launch gates without waiver.
   Ask for explicit Command 99 authorization; this review defines but does not implement it.
 
+## ADR-091 — Complete immutable policy evidence without selection authority
+
+- **Status:** Accepted for explicitly authorized Command 99; complete local acceptance passed, exact-head verification required in handoff
+- **Date:** 2026-10-07
+- **Decision:** Store each complete bounded policy as one JSONB snapshot with a globally
+  unique explicit revision. No mutable parent or extensible children can admit partial or
+  late policy facts. Database INSERT validation binds strict shape and selected references
+  to exact stored unit versions; ordinary UPDATE/DELETE/TRUNCATE are rejected.
+- **Replay:** Canonicalize entries by code independently of JSON property order. Default
+  and secondary preferences remain explicit. Duplicate-safe append then exact comparison
+  accepts matching replay and rejects conflict without overwrite. Read Committed is
+  supported; stronger isolation requires caller-owned whole-transaction retry. Compound
+  conflicts must propagate for rollback; no aborted SQL statement is swallowed.
+- **Repository:** Separate unused injected-client entry reuses shared contracts and exact
+  database unit reads; copied JSON-safe context has no active/current/latest authority.
+  SQL context/function lookup uses the snapshot table's schema, not the caller search path.
+  Different-base candidates are not installation base changes or operational transitions.
+- **Acceptance:** Preserve the original prior-22-to-23 comparison and add prior-23-to-24
+  comparison of all old fictional rows including unit metadata and financial/settings facts.
+  Mandatory source/SQL/concurrency/rollback/browser and full validation gates stay intact.
+- **Boundary:** No selected pointer, initialization, app integration, financial backfill,
+  currency dataset/activation, price/FX/provider, import or deployment. Database-owner
+  bypass, executable-input/resource risks, tooling findings and operating/launch gates remain.
+  Stop for a separately authorized phase review after verified Command 99 delivery.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:
