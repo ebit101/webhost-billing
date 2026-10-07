@@ -13,4 +13,6 @@ regexes = [
   '''^bKash/SSLCOMMERZ$''',
   '''^test-encryption-key-at-least-32-characters$''',
   '''^abc123def456$''',
+  # Authored invoice submission identifier, not an integration credential.
+  '''^fictional-invoice-98$''',
 ]

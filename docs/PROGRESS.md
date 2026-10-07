@@ -10681,6 +10681,8 @@ currencies, invoke providers, import real data, publish a release or deploy.
   `packages/database/test/currency-units.integration.spec.ts` — boundary/SQL/history tests.
 - `packages/database/package.json`, `packages/database/tsconfig.json`, `pnpm-lock.yaml` —
   unused entry, strict test types, mandatory test script and workspace shared link.
+- `.gitleaks.toml` — exact known fictional invoice submission identifier only; all
+  scanner rules and complete-history scanning remain enabled.
 - `apps/web/e2e/run-database-tests.ts`, `apps/web/e2e/validate-gate.ts` — test-only fresh
   scope launcher and sequential acceptance wiring; no application consumer added.
 - `packages/database/prisma/seed.ts`, `packages/database/prisma/verify.ts` — independently
@@ -10732,6 +10734,15 @@ currencies, invoke providers, import real data, publish a release or deploy.
   non-force push this focused command, then verify its exact-head CI/CodeQL in the owner
   handoff without a self-recording follow-up report commit. PR-only Dependency review
   is skipped on push, not passed; direct-main governance remains an existing limitation.
+- Initial source head `ec136c5d8bc815b9ad9f5491d81755e3a26c7a02` passed CodeQL but CI
+  stopped at the complete-history secret scan (later acceptance steps were skipped, not
+  passed). The same pinned local scanner reproduced one generic-key finding at integration
+  fixture line 372: authored `fictional-invoice-98` invoice submission identity, not a
+  credential. Added only that exact literal to the existing fictional-value allowlist;
+  no scanner rule, path or history scope disabled. Complete-history rescan passed with
+  no leaks across 194 local commits; all four documentation validators passed again.
+  Corrected-head CI/CodeQL verification is required before delivery completion. Do not rewrite the
+  published source commit or claim the failed run as hosted acceptance.
 
 #### Decisions and limitations
 
