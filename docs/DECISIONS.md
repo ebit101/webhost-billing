@@ -1393,7 +1393,7 @@ This document records durable technical and product decisions. New decisions sho
 
 ## ADR-091 — Complete immutable policy evidence without selection authority
 
-- **Status:** Accepted for explicitly authorized Command 99; complete local acceptance passed, exact-head verification required in handoff
+- **Status:** Accepted; Command 99 passed complete local and exact-head hosted acceptance and was phase-reviewed on 2026-10-07
 - **Date:** 2026-10-07
 - **Decision:** Store each complete bounded policy as one JSONB snapshot with a globally
   unique explicit revision. No mutable parent or extensible children can admit partial or
@@ -1415,6 +1415,35 @@ This document records durable technical and product decisions. New decisions sho
   currency dataset/activation, price/FX/provider, import or deployment. Database-owner
   bypass, executable-input/resource risks, tooling findings and operating/launch gates remain.
   Stop for a separately authorized phase review after verified Command 99 delivery.
+
+## ADR-092 — Design authoritative selection against real writers before integration
+
+- **Status:** Accepted for the owner-authorized Command 99 phase review; Command 100 is defined only, not authorized
+- **Date:** 2026-10-07
+- **Review:** Command 99 at `15539ee14a08ed02b64a9d9155dc13f61e4d08b1` satisfies its
+  bounded immutable-evidence contract. Exact-head CI Validate passed every mandatory
+  step; CodeQL passed. No connected runtime consumer or in-scope defect was found.
+  Matching replay, direct SQL immutability, complete snapshots, exact unit context and
+  old-row preservation are evidenced, not installation-policy selection or live base locking.
+- **Decision:** Define **Command 100 — Design authoritative currency policy selection
+  and legacy-history safeguards** as documentation-only work requiring separate owner
+  authorization. Specify initialization, exact selection binding, authoritative history,
+  stale-edit protection, coordinated writers and security/audit before adding a live pointer.
+- **Reason:** Existing order/invoice/payment/service and renewal writers do not coordinate
+  with an installation policy. An existence query plus a new row lock can race legacy
+  writes. Existing monetary rows have currency codes but no immutable unit/policy linkage;
+  localization and mixed invoice history do not prove a base or original precision.
+  The pure transition helper checks base code only; same-code precision/version treatment
+  needs an explicit authoritative compatibility rule, not an implied storage guarantee.
+- **Deliverable boundary:** Inventory concrete writer paths; design a lock/adoption or
+  maintenance prerequisite, existing-history/provenance treatment, full-administrator
+  MFA/CSRF/confirmation and atomic audit, and fictional concurrency/security acceptance.
+  Define one proposed follow-on slice but do not implement or automatically authorize it.
+- **Consequence:** No selected policy, guessed legacy metadata, backfill, changed financial
+  writer, aggregate/formatting repair, dataset, provider, import or deployment. Existing
+  mixed-currency portal/report limitations remain future work. Tooling advisories, wider
+  executable-input/resource risk, database-owner bypass, direct-main rule bypass and
+  skipped PR-only review remain explicit; operating and launch approvals are not waived.
 
 ## Open Decisions
 

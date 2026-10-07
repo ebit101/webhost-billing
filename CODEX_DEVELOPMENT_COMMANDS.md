@@ -3358,7 +3358,8 @@ review defines Command 99 only; its implementation still requires explicit autho
 
 **Defined by the owner-authorized Command 98 phase review on 2026-10-07.**
 **Implementation explicitly authorized by the owner on 2026-10-07.**
-Implementation and complete local acceptance passed; verify exact-head CI/CodeQL in delivery.
+Implementation, complete local acceptance and exact-head CI/CodeQL passed; the
+owner-authorized phase review accepted the engineering scope on 2026-10-07.
 Store complete unused revision
 snapshots, not an installation's selected policy or permission to transact.
 
@@ -3451,6 +3452,94 @@ WHMCS data, Command 91, Command 33 approvals, releases, deployments and producti
 An immutable stored policy is captured configuration evidence,
 not an active installation policy, approved sales/collection currency or production approval.
 Stop after validated delivery and request a separately authorized phase review.
+
+---
+
+## Command 100 — Design authoritative currency policy selection and legacy-history safeguards
+
+**Defined by the owner-authorized Command 99 phase review on 2026-10-07.**
+**Not authorized for execution.** This is a source-grounded design command, not
+implementation, installation initialization or currency activation.
+
+```text
+Command 100 — Design authoritative currency policy selection and legacy-history safeguards
+
+Read AGENTS.md, the product plan, decisions, progress and MULTI_CURRENCY_DESIGN.md.
+Recheck retained tooling advisories/releases, frozen install, installed mitigation tests
+and separate full/production audits. Preserve patches and acceptance controls. Stop for
+separate repair if changed exposure is outside this design command.
+
+Extend MULTI_CURRENCY_DESIGN.md with one implementation-ready selection/legacy-safety
+design grounded in the actual schema, transactions, guards and writers. Do not repeat
+the general currency roadmap or implement the design. Cite repository paths/symbols.
+
+Inventory money-bearing tables and all writers: product prices, order/invoice creation,
+draft issuance, payments/gateway callbacks, refund/reversal transactions, service creation
+and renewals, localization changes, fictional seed and future imports. Identify actual
+isolation/locking, idempotency, audit, authorization and failure boundaries. Distinguish
+policy evidence from selection authority, and persisted history from display preferences.
+
+Specify the installation selection identity, absent/uninitialized state, exact immutable
+revision binding, expected-revision compare-and-swap and no-current/latest fallback.
+Define initialization separately from replacement. Empty-install eligibility must be
+derived inside an authoritative transaction, not supplied by a browser/history boolean,
+inferred from localization or reduced to paid/unpaid/outstanding invoices. Decide which
+records/states permanently lock the base and how deletion/cancellation/zero balances
+cannot unlock it. Address exact base-unit version/exponent compatibility as well as code;
+the Command 97 helper's code-only base check is not the full database safety contract.
+
+Choose and justify a concurrency protocol shared by selection changes and relevant
+financial writers. Account for currently uncoordinated API, worker, seed, import and
+direct SQL paths; locking only a new selected-policy row does not stop legacy writers.
+Specify lock order, isolation, retries, stale-edit handling, rollback and audit atomicity.
+Document a staged writer-adoption or explicit writer-drain/maintenance prerequisite
+that fails closed until coverage is proven, without shutting down or modifying services.
+State database-owner bypass limits and an executable acceptance plan for normal SQL.
+
+Design an existing-history path that preserves amounts, currency codes, precision and
+issued snapshots. Mixed BDT/USD records do not identify an installation base. Missing
+metadata/policy provenance stays explicitly unresolved until separately reviewed evidence
+and migration mapping exist; do not invent versions, rescale, convert, relabel or backfill.
+Specify how future new records pin exact unit/policy facts and how legacy reads/collection
+stay distinct from new-sale capabilities without hiding old debts. Outline integration
+boundaries for per-currency aggregates and formatting; do not repair those consumers here.
+
+Define server-side full-administrator permission, required MFA/re-authentication and
+CSRF controls, explicit confirmation bound to expected/current/proposed revisions,
+redacted before/after operational audit, safe errors and idempotent request semantics.
+Map these requirements to existing guards/contracts and identify missing pieces; do not
+add endpoints/UI, grants, credentials, confirmation tokens or new protocol values.
+
+Provide a concrete acceptance matrix and fictional interleaving scenarios: two initializers,
+two stale replacements, first financial write racing initialization/base replacement,
+legacy writer bypass, cancellation/zero-balance history, same-code precision/version
+changes, mixed BDT/USD history with absent provenance, missing exact revision/unit,
+rollback/retry, unauthorized/MFA/CSRF failures and atomic audit. This is a test design,
+not a claim that these behaviors are implemented or that new tests passed.
+
+Deliver a reviewed writer-path map, initialization/replacement/history state table,
+transaction/lock protocol, compatibility and provenance rules, security/audit contract,
+acceptance matrix and one proposed smallest follow-on implementation slice. Record
+unresolved owner/source evidence and activation prerequisites explicitly. Do not assign
+or authorize another development command automatically.
+
+Run all four documentation validators, repository formatting and whitespace checks,
+focused unchanged shared/database tests and strict database types as appropriate.
+Record source-head hosted evidence separately from fresh local checks; do not claim
+SQL/API/browser reruns without executing them. Preserve full-audit exit 1 honestly.
+Update progress/decisions, commit the documentation-only command, reconcile canonical
+main without rewriting history, non-force push origin/main and verify exact-head CI/CodeQL.
+Stop for a separately authorized phase review before implementation.
+
+Exclude application/shared/database source changes, schemas/migrations, selection
+state or activation, metadata publication/datasets, provenance writes/backfills, money
+formatting/aggregates, catalogue/quotes/FX/provider routes, credentials, live data/imports,
+Command 91, Command 33 approvals, releases, deployments and production mutations.
+```
+
+**Authorization boundary:** This review defines Command 100 only. Its design work
+requires separate owner authorization. No policy is selected, no operating input is
+approved and no currency, provider or production workflow is enabled by this definition.
 
 ---
 

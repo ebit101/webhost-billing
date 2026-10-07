@@ -67,8 +67,10 @@ source head and phase-reviewed on 2026-10-07. The review defines Command 98's un
 additive immutable unit-definition storage, subsequently authorized, delivered with complete
 local and exact-head hosted acceptance, and phase-reviewed on 2026-10-07. The review defines
 Command 99's unused immutable policy-revision snapshots only; the owner subsequently authorized
-implementation on 2026-10-07. Complete local acceptance passed; exact-head delivery verification
-belongs in the owner handoff.
+implementation on 2026-10-07. Complete local acceptance and exact-head CI/CodeQL passed;
+the owner-authorized phase review accepted its engineering scope. That review defines
+Command 100's source-grounded design of authoritative policy selection and legacy-history
+safeguards only; execution requires separate authorization before any implementation.
 No live registry, selected installation policy or financial backfill is included. Broader persistence,
 per-currency reads, pricing and activation remain later separately gated slices. Remaining
 tooling advisories are not waived. No currency is activated by this sequence.

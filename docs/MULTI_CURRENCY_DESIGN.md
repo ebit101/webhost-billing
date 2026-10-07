@@ -8,9 +8,10 @@
   phase-reviewed. Command 97's unused policy contracts passed complete local and exact
   source-head hosted acceptance and was phase-reviewed. Command 98's unused immutable
   unit storage passed complete local/corrected-head hosted acceptance and was phase-reviewed.
-  Command 99's unused policy-revision snapshots are separately authorized and locally validated;
-  exact-head hosted verification belongs in the delivery handoff. Application integration
-  and activation remain separately gated.
+  Command 99's unused policy-revision snapshots passed complete local and exact-head
+  hosted acceptance and were phase-reviewed on 2026-10-07. The review defines Command 100's
+  authoritative-selection/legacy-history design only; it is not authorized for execution.
+  Application integration and activation remain separately gated.
 - Owner direction: BDT is the default; USD is the preferred secondary currency;
   support major currencies with automatic conversion through a suitable provider.
 - Design interpretation: BDT is the single base/reporting currency and default for new
@@ -336,6 +337,30 @@ based on invented current/history facts are introduced. Plain-data parsing does 
 sandbox getters/proxies. Mandatory tests use fresh marked fictional scopes and compare
 all prior financial/settings rows plus existing unit facts across migration 24.
 
+### Command 99 review and the next design boundary
+
+The owner-authorized phase review on 2026-10-07 accepted the engineering scope at
+`15539ee14a08ed02b64a9d9155dc13f61e4d08b1`. Source-head CI Validate passed all mandatory
+steps and CodeQL passed; PR-only Dependency review was skipped on push, not passed.
+Fresh local repository/contract/mitigation checks also passed. No in-scope storage defect
+or runtime application consumer was found. Owner bypass and stronger-isolation retries
+remain explicit, and storage is still not selection authority or permission to transact.
+
+Define **Command 100 — Design authoritative currency policy selection and legacy-history
+safeguards** only. The existing financial writers and money rows make initialization more
+than adding a pointer: history must be authoritative and coordinated with writers that
+currently know nothing about that pointer. The pure transition helper's code-only base
+check does not decide same-code precision/version compatibility. Localization, mixed
+BDT/USD debts or a browser flag cannot supply missing base/unit provenance.
+
+That separately authorized design must inventory concrete writers and produce an
+initialization/replacement state table, lock/writer-adoption protocol, legacy compatibility
+and provenance rules, full-administrator MFA/CSRF/confirmation and atomic audit contract,
+and fictional concurrency/security acceptance matrix. This review does not produce that
+design, implement its protocol, choose a live policy or repair current mixed-currency
+portal/report reads. Existing-history, per-currency presentation and operational approval
+gates remain visible; see [command tracking](../CODEX_DEVELOPMENT_COMMANDS.md).
+
 ## 4. Price publication, quote and renewal rules
 
 ### Catalogue pricing
@@ -618,18 +643,22 @@ Delivery sequence, each needing separate authorization:
    No live registry or policy.
 5. **Command 99 — Persist immutable currency policy revisions** was separately authorized: empty unused
    complete revision snapshots with exact stored-unit context, immutable/replay guarantees
-   and fictional SQL/history acceptance. Complete local acceptance passed; verify exact-head
-   CI/CodeQL in the delivery handoff.
+   and fictional SQL/history acceptance. Complete local and exact-head hosted acceptance
+   passed; the owner-authorized phase review accepted the engineering scope.
    Active policy selection/initialization, base-history concurrency and financial provenance
    remain separate; no selected policy or caller-history authority is added by snapshot storage.
-6. Later additive policy/provenance services and per-currency reads; preserve legacy records and
+6. **Command 100 — Design authoritative currency policy selection and legacy-history
+   safeguards** is defined only, not authorized: map real writers and specify initialization,
+   concurrent history/base locking, exact-unit compatibility, provenance and security/audit
+   acceptance before implementation. No runtime state or source change is included.
+7. Later additive policy/provenance services and per-currency reads; preserve legacy records and
    pass mixed BDT/USD portal/report tests before an import rehearsal.
-7. Fixed BDT/USD catalogue, ownership-bound quotes and confirmed same-currency collection
+8. Fixed BDT/USD catalogue, ownership-bound quotes and confirmed same-currency collection
    paths. Use fake providers; real USD payment approval is separate.
-8. Rate-adapter sandbox evaluation, reviewed terms/credentials and proposed operational
+9. Rate-adapter sandbox evaluation, reviewed terms/credentials and proposed operational
    defaults, followed by guarded derived-price publication and additional currency tests.
-9. Protected WHMCS sample/import rehearsal with reconciliation and separate owner review.
-   Actual source export and target controls may be assessed earlier, read-only, by authority.
+10. Protected WHMCS sample/import rehearsal with reconciliation and separate owner review.
+    Actual source export and target controls may be assessed earlier, read-only, by authority.
 
 Remaining decisions: exact supported sales currencies and payment destinations, fixed
 versus derived catalogue prices, provider/plan/licence, refresh/staleness/deviation/override
