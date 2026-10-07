@@ -11815,7 +11815,7 @@ clean existing scopes/cache, release or deploy without separate authorization.
 
 ### Phase review — Review Command 103 SQL coordination guard prototype and define the next bounded currency command
 
-- **Status:** Review and proportional local validation completed; focused canonical delivery and exact-review-head hosted verification gate the handoff
+- **Status:** Delivered at `cd275a1`; proportional local validation and exact-review-head CI/CodeQL completed successfully, with the CI retry reconciled by Command 104
 - **Date:** 2026-10-08
 - **Authorization:** Review delivered Command 103 and define the next bounded command only.
   Command 104 implementation, storage migration, selection and writer adoption are not authorized.
@@ -11881,6 +11881,17 @@ clean existing scopes/cache, release or deploy without separate authorization.
   commit/run evidence without a self-recording follow-up commit or future-head pass claim.
   This docs-only review did not rerun local API/worker/browser/production gates; complete
   exact-source-head hosted evidence was reverified, and review-head hosted gates must pass.
+- Delivery reconciled at `cd275a16e10b2d476f4717aa04d14f315cff91a3`: normal canonical
+  non-force main push and cached pinned full-history scan covered 206 commits without leaks.
+  [CI 37668323496](https://github.com/ebit101/webhost-billing/actions/runs/37668323496)
+  attempt 1 was cancelled after the 45-minute budget when Ubuntu Azure apt mirror
+  requests stalled during Chromium dependency installation; no later skipped step was
+  counted as passed. One unchanged Validate-job retry completed successfully: all 28
+  steps, aggregate and job, at the exact review SHA. Fresh
+  [CodeQL 37668323384](https://github.com/ebit101/webhost-billing/actions/runs/37668323384)
+  also passed all eight steps at that SHA. PR-only Dependency review skipped, not passed.
+  No workflow/dependency/patch/control change or delivery-gate waiver. This is prior
+  review evidence, not evidence for the subsequently authorized Command 104 head.
 
 #### Decisions made and remaining risks
 
@@ -11904,6 +11915,140 @@ Authorize **Command 104 — Stage unselected currency control storage**. Stop af
 review; do not implement that command, assess/select policy, install application guards,
 adopt writers, activate currency, query/import real data, invoke providers, approve
 operations, clean existing scopes/cache, release or deploy without separate authorization.
+
+### Command 104 — Stage unselected currency control storage
+
+- **Status:** Inert storage and unused entry implemented with complete local acceptance; canonical delivery and exact-head hosted checks remain gates
+- **Date:** 2026-10-08
+- **Authorization:** The owner authorized Command 104 only. No assessed history, selected
+  policy, application writer adoption, live-data access/import or deployment.
+
+#### Scope completed
+
+- One additive empty `currency_controls` migration/model. Internal key 1, integer
+  generation zero, null selected policy/history latch/exact base anchor are the only
+  legal shape. Null history is unknown, never false. Exact nullable immutable policy/unit
+  foreign keys restrict update/delete. No candidate/default/history seed or business scan.
+- Invoker/fixed catalog-path statement guards deny ordinary update/delete/truncate on
+  this new table only, including empty operations. SQL constant insert/COPY/conflict-do-
+  nothing can stage only uncertainty; conflict-do-update denies. No existing-table guard,
+  Command 103 installation, global role/membership/grant/owner change or definer function.
+- Separate unused `currency-control` entry with only bounded read and explicit constant
+  stage. Strict explicit schema/staff composition/shorter limits; unknown supplied authority
+  rejects before work. Command 102 owns the identical coordinated transaction/key. Later
+  qualified catalog/raw/model queries establish actual identity, including two empty stores,
+  using the model's real relation locks. Unsupported target/RLS/privilege/corrupt facts deny.
+  Read never inserts; copied absent/unassessed JSON facts return only after successful
+  commit, with generation `"0"`. No discovery, root/runtime consumer, retry or handle.
+- Mandatory source and newly owned fictional PostgreSQL tests cover constant concurrent
+  staging/original timestamp, real key waiting/fresh post-wait row visibility, raw/model
+  decoys, rollback/failure, real acquisition/lock/statement/transaction budgets, pooled role/
+  setting release, existing non-owner SQL/COPY/mutation denial and savepoint/outer-handler
+  recovery. Recovery can retain earlier fictional work but cannot mutate control facts.
+- Preserve all 24 prior migration files and prior-22/23 comparisons/Command 101/102/103
+  gates. Add prior-24 byte-equivalent all-row comparison, including every money table,
+  settings/audit/outbox/events and immutable unit/policy facts. New total is 25. Extend
+  guarded verifier for the new table/column/guard shape and empty unchanged fictional seed;
+  retain old UUID/money/timestamp/seed checks. Only owned marked test scopes are removed.
+
+#### Files changed
+
+- `packages/database/prisma/schema.prisma`, new
+  `packages/database/prisma/migrations/20261008090000_unselected_currency_control/migration.sql`,
+  `packages/database/src/currency-control.ts` — unused storage/entry.
+- `packages/database/test/currency-control.spec.ts`,
+  `packages/database/test/currency-control.integration.spec.ts`,
+  `packages/database/package.json`, `apps/web/e2e/run-database-tests.ts` — mandatory wiring.
+- `packages/database/prisma/verify.ts` and total-only expectations in the four existing
+  unit/preflight/coordination/prototype integration suites — additive shape and total.
+- `CODEX_DEVELOPMENT_COMMANDS.md`, `HOSTING_BILLING_SYSTEM_PLAN.md`,
+  `docs/MULTI_CURRENCY_DESIGN.md`, `docs/DECISIONS.md`, `docs/PROGRESS.md` — authorization,
+  unknown-state boundary, ADR-101 and report. No dependency/lockfile/patch/workflow/scanner
+  exception, old migration, seed or root/runtime consumer change.
+
+#### Validation performed and results
+
+- Frozen install and ten installed mitigation tests passed. Production audit found no
+  known vulnerabilities. Full audit exited 1 with unchanged high braces
+  GHSA-vfj7-8cjw-p6xm and moderate sprintf-js GHSA-hp3w-g68c-fv3c. Registry latest remains
+  3.0.3/1.1.3; suggested 3.0.4/1.1.4 are unpublished. Primary advisories still say no patched
+  release. No suppression, upstream-closure claim or broader resource-risk waiver.
+- All 51 source and 70 actual SQL cases passed (9 units, 10 policies, 11 preflight,
+  11 coordination, 15 prototype, 14 control). Complete guarded rerun also passed the
+  unchanged fictional seed and extended verifier; no earlier failing run counts as passed.
+- Initial source mock retained transaction-local locks across calls; reset its fixture
+  per owned transaction. Initial legacy fixture used obsolete payment-event fields;
+  use current fictional schema. Unsupported-target DDL was initially uncommitted and
+  not observable from the tested connection; use committed DDL in separate owned scopes.
+  RLS evidence also uses committed DDL with an explicit PostgreSQL permission-error
+  probe. Subsequent complete source/SQL suites passed, without weakened assertions.
+- The unchanged verifier first rejected the additional table. Its additive integration
+  then still counted the singleton smallint ID as a UUID; separate the new ID check from
+  retained old UUID checks and explicitly exclude only generation from money-column
+  enumeration. Full guarded rerun passed afterward. No failure is suppressed/skipped.
+- Four library builds/Prisma generation, worker build, workspace strict types/lint and
+  Prisma validation passed. Compiled separate entry works and root excludes its functions;
+  source search found no runtime consumers. All 24 prior migrations are unchanged. Four
+  offline documentation validators passed and production license inventory parsed.
+  Complete guarded `pnpm test` passed all root controls, shared 93, database 51 source/
+  70 SQL/seed/verifier, queue 3, API 25 suites/107, worker 10 suites/29 and frontend
+  54 files/572. No assertion/timeout/acceptance control was weakened. Isolated API/
+  integration passed 17 suites/81; invariant contracts 93, API unit 12, API integration
+  42 and worker renewal/scheduler 2 passed. Final inspection strengthened the new
+  control SQL case from wrapper-thrown rollback alone to an actual deferred-foreign-key
+  COMMIT failure after facts are captured and the violating insert completes. No public
+  API/source behavior changed; database strict types and subsequent complete database
+  rerun passed all 51 source/70 SQL cases, including actual COMMIT refusal, seed/verifier
+  and historical preservation. Local browser lifecycle passed all 19 tests and administrator role
+  mock-UI checks passed all four. Production build passed with its temporary environment
+  restored afterward. Final database strict types, workspace formatting, Git whitespace
+  and all four offline documentation validators passed. Recheck final report edits before
+  focused commit/cached pinned full-history scan/non-force push/exact-head CI/CodeQL;
+  no future commit or hosted pass is claimed. Canonical fetch confirmed unchanged main
+  and 0/0 divergence before the command commit. Final response supplies observed delivery
+  evidence without a self-recording follow-up commit or future-head pass claim.
+- The first unpublished command commit's full-history scan flagged two generic-api-key
+  matches: authored fictional order/invoice submission identifiers in the new legacy
+  fixture, not credentials. Replaced those literals with generated fictional UUIDs;
+  database strict types and complete 51 source/70 SQL/seed/verifier acceptance passed
+  afterward. Confirmed canonical main still at the prior review
+  before amending only the unpublished local command commit. Do not add scanner exceptions,
+  rewrite published history or push until the subsequent full-history scan succeeds.
+- Prior docs-review head `cd275a16e10b2d476f4717aa04d14f315cff91a3` CodeQL completed
+  successfully; its [CI 37668323496](https://github.com/ebit101/webhost-billing/actions/runs/37668323496)
+  first attempt was cancelled after the 45-minute job budget. Completed logs show Ubuntu
+  Azure apt mirror requests stalled during Chromium dependency installation, before
+  browser checks. No code assertion failed there; later skipped steps are not passes.
+  Retried the cancelled Validate job once, without workflow/dependency/control changes;
+  exact-review-head attempt 2 passed all 28 Validate steps, aggregate and job. Fresh
+  [CodeQL 37668323384](https://github.com/ebit101/webhost-billing/actions/runs/37668323384)
+  passed all eight steps at the same review SHA. PR-only review skipped, not passed.
+  Prior delivery is reconciled; this is not evidence for future Command 104 CI.
+
+#### Decisions made and remaining risks
+
+- Absence/unknown are observations only, never history-free/selected/eligible. No amount,
+  presentation, price/quote/FX/payment route, assessment/latch activation, transition,
+  ledger/security proof, row/provenance validation or writer/auth/worker adoption. Future
+  reviewed migration/transition/privileges/drain/fresh evidence are required before selection.
+- Direct SQL creation time is not provenance/approval evidence. Trusted client/owner powers,
+  privileged DDL bypass, uncertain commit transport, snapshot/row-first/internal timer and
+  recoverable outer SQL limits remain. No automatic retry or guaranteed rollback claim.
+- Command 33 D5–D8, Command 91, protected WHMCS/credit/target evidence, metadata/provider
+  rights, maintenance/recovery and final launch approvals remain open. Retained tooling/
+  wider resource risk, direct-main governance bypass and PR-only skipped review are not waived.
+  No live query/import/provider/operating approval, release or deployment.
+- Preserve incomplete unmarked scope `command26_e2e_8d7db6b8d0e7489a93eb26daaada1d76`
+  and recoverable ignored Command 101 cache backup. No existing-scope/cache cleanup or
+  Docker image pull. Free disk measured approximately C: 13.70 GiB / D: 17.69 GiB.
+
+#### Exact recommended next command
+
+After verified delivery, authorize **Phase review — Review Command 104 unselected currency
+control storage and define the next bounded currency command**. Stop after Command 104;
+do not automatically define/implement Command 105, assess/select policy, install application
+guards, adopt writers, activate currency, query/import real data, invoke providers, approve
+operations, clean existing scopes/cache, release or deploy.
 
 ## Report Template
 

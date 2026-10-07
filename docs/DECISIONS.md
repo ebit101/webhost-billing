@@ -1686,7 +1686,7 @@ current_database()), hashtext(schema)` computed by qualified PostgreSQL function
 
 ## ADR-100 — Stage unknown control facts before allowing assessed currency authority
 
-- **Status:** Accepted for the owner-authorized Command 103 phase review; Command 104 implementation is not authorized
+- **Status:** Accepted for the owner-authorized Command 103 phase review; Command 104 subsequently authorized on 2026-10-08
 - **Date:** 2026-10-08
 - **Review:** Command 103 at `2c05dce1e5bbfe542cb1bba479b799187140c073` meets its pure
   unused renderer/test-only installation contract. Fresh 42 source/56 SQL cases and
@@ -1718,6 +1718,42 @@ current_database()), hashtext(schema)` computed by qualified PostgreSQL function
   approval, existing-scope/cache cleanup, release or deployment. Timer/snapshot/row-first,
   trusted-caller/owner, uncertain commit, tooling/resource/governance and launch risks
   remain without waiver. Request explicit Command 104 authorization after review delivery.
+
+## ADR-101 — An unassessed control row records uncertainty, never selection authority
+
+- **Status:** Implemented under owner-authorized Command 104 with complete local acceptance; canonical/exact-head hosted delivery remains gated
+- **Date:** 2026-10-08
+- **Decision:** Add exactly one empty additive `currency_controls` migration and Prisma
+  model. Key 1, integer generation zero, null selected revision/history latch/exact anchor
+  fields are the only legal state. SQL checks use explicit null predicates; nullable exact
+  policy/unit references restrict update/delete. Neither absence nor uncertainty means
+  history-free, eligible or initialized. Seed creates no row; no history scan is performed.
+- **Immutability:** Invoker/fixed catalog-path before-statement guards deny ordinary
+  update/delete/truncate, including no-row statements, only on this new table. Constant
+  insert/conflict-do-nothing/COPY can create uncertainty only. Conflict-do-update denies.
+  Owner/superuser DDL bypass remains; no global roles, grants or privilege installation.
+- **Entry:** Separate unused `currency-control` exports bounded read and explicit constant
+  stage, composed inside Command 102's owned transaction/key and trusted staff ordering.
+  Strict explicit schema/limits; unknown supplied authority rejects before work. Qualified
+  catalog/raw facts and actual model relation locks establish identity even when two
+  stores are empty. Restrictive RLS/unsupported targets/missing privileges/corrupt rows
+  fail closed. Read never inserts; copied JSON facts escape only after successful commit.
+  No root/application/CLI/worker adoption, discovery, retry, callback or transaction handle.
+- **Recovery:** Actual savepoint/outer PLpgSQL acceptance proves an outer raw transaction
+  may retain earlier fictional work after recovering denied DML. The control facts still
+  cannot mutate. Do not claim every SQL error necessarily aborts all outer work. Trusted
+  client/owner powers, uncertain commit transport, deadlines and snapshot limits remain.
+- **Preservation:** Keep all 24 prior migrations byte-for-byte and prior gates; add
+  prior-24 all-row comparisons and update total expectations to 25. Extend the guarded
+  verifier for the new shape/guards/empty seed, without weakening old seed/money checks.
+  Mandatory source and newly owned fictional SQL cover identity, concurrency, post-wait
+  facts, real deadlines/non-owner/mutation/recovery and historical preservation.
+- **Boundary:** No assessment/latch activation, selected-state transition, security ledger/
+  proof, adopted writer, existing-financial-table enforcement, provenance or runtime-role
+  hardening. No live migration/import/query/provider, operating approval, release/deploy
+  or existing-scope/cache cleanup. Later reviewed migration/transition/writer/drain and
+  privilege/evidence controls are still required before selection. Retained tooling,
+  governance/resource and launch risks are not waived. Stop for the Command 104 phase review.
 
 ## Open Decisions
 

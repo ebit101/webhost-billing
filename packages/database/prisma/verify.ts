@@ -29,6 +29,7 @@ const expectedTables = [
   'admin_totp_credentials',
   'auth_sessions',
   'automation_runs',
+  'currency_controls',
   'currency_policy_revisions',
   'currency_unit_definitions',
   'customers',
@@ -56,6 +57,9 @@ const expectedTables = [
 ] as const;
 
 const requiredCustomConstraints = [
+  'currency_controls_singleton_check',
+  'currency_controls_generation_check',
+  'currency_controls_unassessed_check',
   'currency_policy_revisions_revision_check',
   'currency_policy_revisions_identity_check',
   'currency_unit_definitions_code_check',
@@ -167,13 +171,15 @@ async function verify(): Promise<void> {
     WHERE table_schema = ${schema}
       AND column_name = 'id'
       AND table_name <> '_prisma_migrations'
+      AND table_name <> 'currency_controls'
     ORDER BY table_name
   `;
 
   const uuidTables = expectedTables.filter(
     (name) =>
       name !== 'currency_unit_definitions' &&
-      name !== 'currency_policy_revisions',
+      name !== 'currency_policy_revisions' &&
+      name !== 'currency_controls',
   );
   assert.equal(idColumnTypes.length, uuidTables.length);
   assert.deepEqual(
@@ -247,6 +253,63 @@ async function verify(): Promise<void> {
     { name: 'currency_policy_revisions_validate', type: 7 },
   ]);
 
+  const controlColumns = await prisma.$queryRaw<
+    { column_name: string; data_type: string; is_nullable: string }[]
+  >`
+    SELECT column_name, data_type, is_nullable FROM information_schema.columns
+    WHERE table_schema = ${schema} AND table_name = 'currency_controls'
+    ORDER BY ordinal_position
+  `;
+  assert.deepEqual(controlColumns, [
+    { column_name: 'id', data_type: 'smallint', is_nullable: 'NO' },
+    { column_name: 'generation', data_type: 'bigint', is_nullable: 'NO' },
+    {
+      column_name: 'selected_policy_revision',
+      data_type: 'character varying',
+      is_nullable: 'YES',
+    },
+    {
+      column_name: 'history_latched',
+      data_type: 'boolean',
+      is_nullable: 'YES',
+    },
+    {
+      column_name: 'base_code',
+      data_type: 'character varying',
+      is_nullable: 'YES',
+    },
+    {
+      column_name: 'base_metadata_version',
+      data_type: 'character varying',
+      is_nullable: 'YES',
+    },
+    {
+      column_name: 'base_minor_unit_exponent',
+      data_type: 'smallint',
+      is_nullable: 'YES',
+    },
+    {
+      column_name: 'created_at',
+      data_type: 'timestamp with time zone',
+      is_nullable: 'NO',
+    },
+  ]);
+  const controlTriggers = await prisma.$queryRaw<
+    { name: string; type: number }[]
+  >`
+    SELECT t.tgname AS name, t.tgtype::integer AS type FROM pg_trigger t
+    JOIN pg_class c ON c.oid = t.tgrelid JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = ${schema} AND c.relname = 'currency_controls'
+      AND NOT t.tgisinternal AND t.tgenabled = 'O' ORDER BY t.tgname
+  `;
+  assert.deepEqual(controlTriggers, [
+    { name: 'currency_controls_no_delete', type: 10 },
+    { name: 'currency_controls_no_truncate', type: 34 },
+    { name: 'currency_controls_no_update', type: 18 },
+  ]);
+  // The unchanged fictional seed must not initialize authority or even uncertainty.
+  assert.equal(await prisma.currencyControl.count(), 0);
+
   const moneyColumns = await prisma.$queryRaw<
     Array<{ table_name: string; column_name: string }>
   >`
@@ -258,6 +321,7 @@ async function verify(): Promise<void> {
         table_name = 'admin_totp_credentials'
         AND column_name = 'last_used_time_step'
       )
+      AND NOT (table_name = 'currency_controls' AND column_name = 'generation')
     ORDER BY table_name, column_name
   `;
 

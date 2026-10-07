@@ -23,7 +23,9 @@
   and mandatory fictional SQL acceptance on 2026-10-07; complete local acceptance passed
   on 2026-10-08, with canonical and exact-head CI/CodeQL delivery at `2c05dce` verified.
   The owner-authorized phase review accepted its unused scope and defines Command 104's
-  unselected control storage only; implementation remains unauthorized.
+  unselected control storage only. The owner subsequently authorized that slice on
+  2026-10-08; inert storage and its unused entry passed complete local acceptance,
+  with canonical/exact-head hosted acceptance remaining delivery gates.
   Temporary test installation is not product adoption.
   The selection protocol is not implemented or activated.
   Application integration and activation remain separately gated.
@@ -1122,6 +1124,38 @@ or documented above remain. No live selection/adoption, registry/FX/payment rout
 real import, provider, operating approval, cleanup, release or deployment follows.
 Ask for explicit Command 104 authorization and stop after review delivery.
 
+### Implemented Command 104 storage boundary
+
+The owner subsequently authorized the empty additive store and unused
+`@webhost-billing/database/currency-control` entry. The migration itself creates no
+row and reads no business history. Key 1 is internal, not a tenant ID; generation is
+integer zero, returned as `"0"`. All nullable history/selection/anchor fields must remain
+null by SQL check. Exact nullable policy/unit foreign keys restrict update/delete.
+The proposed assessed state model above is deliberately not open in this migration.
+
+`readCurrencyControl` and `stageCurrencyControl` accept only explicit schema, trusted
+staff composition and shorter Command 102 budgets. They own that coordinated transaction,
+read subsequent qualified facts after locking and return copied absent/unassessed facts
+only after commit. No assessment, eligibility, chosen revision, handle, retry or root/
+runtime consumer. Actual Prisma model relation locks are compared with qualified raw
+catalog identities, including two empty stores; a raw/model mismatch cannot stage into
+the wrong schema. Unsupported table kinds, privileges, RLS and corrupt facts deny.
+
+The new table alone has invoker/fixed-path before-statement update/delete/truncate denial,
+including empty statements. Direct constant insertion, conflict-do-nothing and COPY may
+stage uncertainty, never history authority; conflict-do-update denies. SQL-supplied creation
+timestamps are not provenance/approval evidence. Savepoint/outer-handler tests demonstrate
+recoverable outer work without control mutation, not irrevocable workflow abort. Privileged
+DDL, trusted clients and uncertain commit transport remain explicit residual powers.
+
+Mandatory owned fictional tests preserve every prior-24 row and retain prior-22/23 and
+Command 101/102/103 acceptance. The guarded verifier recognizes the new table but still
+requires an empty control store after the unchanged fictional seed. The 24 old migrations
+remain unchanged; the chain now totals 25. No application database is migrated by local
+acceptance, and no live migration is authorized. Full local/exact-head delivery remains
+required; stop for the separately authorized Command 104 phase review, not automatic
+history assessment, selected-state migration or writer adoption.
+
 ## 4. Price publication, quote and renewal rules
 
 ### Catalogue pricing
@@ -1432,10 +1466,10 @@ Delivery sequence, each needing separate authorization:
    No policy/row enforcement, migration, executing
    installer, deployed privilege change or adopted consumer. Snapshot/lock-order/internal
    timer and raw SQL recovery limits remain explicit.
-10. **Command 104 — Stage unselected currency control storage** is defined only, not
-    authorized or implemented. One future additive empty singleton store; explicit unused
-    staging records unknown history and no policy/anchor, never eligibility. Complete SQL
-    shape/immutability/concurrency/history-preservation acceptance before its phase review.
+10. **Command 104 — Stage unselected currency control storage** was subsequently
+    authorized on 2026-10-08 and implemented locally. One additive empty singleton store;
+    explicit unused staging records unknown history and no policy/anchor, never eligibility.
+    Complete local acceptance passed; canonical/exact-head hosted checks gate delivery and its phase review.
     Assessed history, selection transitions and writer enforcement remain later approvals.
 11. Later additive policy/provenance services and per-currency reads; preserve legacy records and
     pass mixed BDT/USD portal/report tests before an import rehearsal.

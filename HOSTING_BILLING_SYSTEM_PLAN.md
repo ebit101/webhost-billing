@@ -98,7 +98,11 @@ unselected currency control storage** only. The proposed additive store starts e
 explicit staging can record only generation zero, no selected revision/anchor and an
 unknown history latch, never false or initialization eligibility. SQL protects this
 unassessed shape; no assessment/selection transition or existing-table enforcement.
-This review implements no storage. Command 104 requires separate authorization.
+The owner subsequently authorized Command 104 on 2026-10-08. Its one additive empty
+store and separate unused read/constant-stage entry passed complete local acceptance;
+canonical and exact-head hosted delivery remain gates. Unknown history remains null, never
+false, and generation zero is not authority. No application/CLI/worker consumer, history
+assessment, selected policy, live migration or existing-business-table guard is added.
 It verifies caller settings and coordination only, not an initiating statement's
 snapshot or internal timer state; trusted callers must establish the first active
 transaction deadline, not assume that lowering a positive setting rearms its timer.

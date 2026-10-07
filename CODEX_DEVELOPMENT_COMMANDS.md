@@ -3856,7 +3856,9 @@ After validated delivery, stop for separately authorized **Phase review — Revi
 ## Command 104 — Stage unselected currency control storage
 
 **Defined by the owner-authorized Command 103 phase review on 2026-10-08.**
-**Not yet authorized for implementation.** This is the first additive control-storage
+**Implementation authorized by the owner on 2026-10-08.** Local implementation and
+complete mandatory acceptance passed; canonical delivery and exact-head hosted checks
+remain gates. This is the first additive control-storage
 slice, not policy initialization, a history assessment or application enforcement.
 Command 103 proved statement coordination; installing a selected policy before complete
 writer/row/privilege/deadline/adoption coverage would still be unsafe.
@@ -3945,9 +3947,10 @@ non-force push origin/main and verify exact-head CI/CodeQL. Stop for separately
 authorized phase review; do not automatically assess history or select a policy.
 ```
 
-**Authorization boundary:** This review defines Command 104 only; it creates no table,
-control row, selected policy or permission. Request explicit authorization before starting.
-After its separately authorized verified delivery, the next review is **Phase review —
+**Authorization boundary:** The owner subsequently authorized Command 104's inert storage
+and fictional acceptance only. The migration is empty; its unused entry may explicitly
+stage unknown facts, never assess history or select a policy. No application or live
+target adoption is authorized. After verified delivery, the next review is **Phase review —
 Review Command 104 unselected currency control storage and define the next bounded
 currency command**.
 

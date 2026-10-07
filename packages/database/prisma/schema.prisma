@@ -12,24 +12,42 @@ datasource db {
 
 // Complete unused policy evidence, never an active installation pointer.
 model CurrencyPolicyRevision {
-  revision  String   @id @db.VarChar(64)
-  policy    Json     @db.JsonB
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  revision  String            @id @db.VarChar(64)
+  policy    Json              @db.JsonB
+  createdAt DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  controls  CurrencyControl[] @relation("SelectedCurrencyPolicy")
 
   @@map("currency_policy_revisions")
 }
 
 // Unused immutable version facts, not an enabled registry or a current pointer.
 model CurrencyUnitDefinition {
-  code              String   @db.VarChar(3)
-  metadataVersion   String   @map("metadata_version") @db.VarChar(64)
-  minorUnitExponent Int      @map("minor_unit_exponent") @db.SmallInt
-  provenance        String   @db.VarChar(256)
-  status            String   @db.VarChar(10)
-  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  code              String            @db.VarChar(3)
+  metadataVersion   String            @map("metadata_version") @db.VarChar(64)
+  minorUnitExponent Int               @map("minor_unit_exponent") @db.SmallInt
+  provenance        String            @db.VarChar(256)
+  status            String            @db.VarChar(10)
+  createdAt         DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  baseControls      CurrencyControl[] @relation("CurrencyControlBaseUnit")
 
   @@id([code, metadataVersion], map: "currency_unit_definitions_pkey")
   @@map("currency_unit_definitions")
+}
+
+// Unused staging only. NULL history means unknown, never history-free.
+model CurrencyControl {
+  id                     Int                     @id @db.SmallInt
+  generation             BigInt                  @default(0)
+  selectedPolicyRevision String?                 @map("selected_policy_revision") @db.VarChar(64)
+  historyLatched         Boolean?                @map("history_latched")
+  baseCode               String?                 @map("base_code") @db.VarChar(3)
+  baseMetadataVersion    String?                 @map("base_metadata_version") @db.VarChar(64)
+  baseMinorUnitExponent  Int?                    @map("base_minor_unit_exponent") @db.SmallInt
+  createdAt              DateTime                @default(now()) @map("created_at") @db.Timestamptz(3)
+  selectedPolicy         CurrencyPolicyRevision? @relation("SelectedCurrencyPolicy", fields: [selectedPolicyRevision], references: [revision], onDelete: Restrict, onUpdate: Restrict)
+  baseUnit               CurrencyUnitDefinition? @relation("CurrencyControlBaseUnit", fields: [baseCode, baseMetadataVersion], references: [code, metadataVersion], onDelete: Restrict, onUpdate: Restrict)
+
+  @@map("currency_controls")
 }
 
 enum UserRole {
