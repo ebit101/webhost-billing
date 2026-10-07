@@ -3459,9 +3459,10 @@ Stop after validated delivery and request a separately authorized phase review.
 
 **Defined by the owner-authorized Command 99 phase review on 2026-10-07.**
 **Design explicitly authorized by the owner on 2026-10-07.**
-Source-grounded design and focused local acceptance completed; verify exact-head
-CI/CodeQL in delivery. This is not implementation, installation initialization
-or currency activation.
+Source-grounded design delivered at `c15117c0974f3bbb3b5ab68812182ad6d58ed196`;
+exact-head CI/CodeQL passed. The owner-authorized phase review accepted its
+documentation-only engineering scope on 2026-10-07. This is not implementation,
+installation initialization or currency activation.
 
 ```text
 Command 100 — Design authoritative currency policy selection and legacy-history safeguards
@@ -3542,9 +3543,99 @@ Command 91, Command 33 approvals, releases, deployments and production mutations
 **Authorization boundary:** The owner authorized Command 100's design only. No
 policy is selected, no operating input is approved and no currency, provider or
 production workflow is enabled. The proposed read-only adoption preflight is not
-assigned a command number or authorized here. Stop for separately authorized
-**Phase review — Review Command 100 authoritative selection design and define the
-next bounded currency command** before implementation.
+assigned a command number or authorized by Command 100. The separately authorized
+phase review below defines Command 101 only; implementation still needs authorization.
+
+---
+
+## Command 101 — Build a read-only currency adoption preflight
+
+**Defined by the owner-authorized Command 100 phase review on 2026-10-07.**
+**Not authorized for implementation.** This is an unused advisory inventory, not
+selection, migration eligibility, a provenance audit or permission to query live data.
+
+```text
+Command 101 — Build a read-only currency adoption preflight
+
+Read AGENTS.md, the product plan, decisions, progress and MULTI_CURRENCY_DESIGN.md.
+Recheck retained tooling advisories/releases, frozen install, installed mitigation tests
+and separate full/production audits. Preserve patches and acceptance controls; stop for
+separate repair if changed exposure is outside this bounded command.
+
+Add one separate unused database-package entry, with an explicitly injected transaction-
+capable client and validated explicit target schema. No root export, application consumer,
+CLI, environment discovery, module-load I/O, self-created connection or provider/file I/O.
+Do not accept caller-owned transactions or browser history/policy/read-only authority flags.
+The repository owns one bounded top-level transaction: explicit Repeatable Read, SET
+TRANSACTION READ ONLY before data queries, then verify transaction modes. Scope transaction-
+local settings only; leave session/pool defaults unchanged. Schema-qualify the fixed source
+tables and trusted catalog/functions, safely validate/quote identifiers, and never fall
+back to public/current_schema/search_path. Missing tables, permissions, mode verification
+or restricted row visibility fail the observation, never produce empty/zero counts.
+Use transaction-local row_security=off to reject RLS-filtered counts, not to gain privileges.
+
+From one consistent snapshot inventory product_prices, orders, order_items, services,
+invoices, invoice_items and payments. Count all persisted rows, independent of status,
+amount, dates, parent/customer soft deletion or active catalogue flags. Distinguish six
+financial-history tables from configuration prices. Return database-derived UTC observation
+time, exact canonical nonnegative string row counts and deterministic per-code row counts.
+Never read/sum money, export record/customer IDs, parse decimal amounts, infer precision,
+choose a base or claim a currency code is supported. Shape-valid unknown codes stay visible;
+malformed/null codes must be explicitly unresolved, not normalized or silently dropped.
+
+Cap each table's displayed code groups at 32 with explicit truncation and exact omitted-
+row count; no monetary sums. Fetch at most one extra group to detect overflow, not an
+unbounded list. Counts are BigInt/string throughout, never Number; runtime-validate and
+copy the JSON-safe output, reject malformed/negative/unsafe counts or inconsistent totals.
+Report payment_events only as bounded aggregate evidence counts (total, linked/unlinked,
+normalized-evidence presence), no payload reads/exports, currency guesses or orphan
+reconciliation. Uninspected gateway/adoption evidence remains an explicit limitation.
+
+Bound acquisition, lock, statement and total transaction time. Initial ceilings: 2 seconds
+acquisition, 500 milliseconds lock, 2 seconds per statement and 10 seconds transaction;
+allow only validated shorter positive limits, never zero/unlimited. Use database deadlines
+as well as client transaction bounds; no retry, Promise.race-only timeout, partial success
+or swallowed aborted SQL. COUNT/GROUP scans are not bounded work just because LIMIT is
+small: document possible scan cost and test timeout/cancellation/release of the connection.
+
+Always report selection authority not implemented in this code version, writer coverage
+not established and adoption/evidence assessment not established. Existing money/price
+rows have unknown exact legacy units/policy. A stored unit/policy or localization setting
+cannot resolve that fact. Empty observation is not ready/eligible/approved: return no
+activation/base/replacement authorization verdict or persistent history latch. Results may
+become stale immediately and cannot substitute for later locked history/adoption checks.
+
+Add source/mock tests for separate-entry/no-I/O/read-only SQL boundaries, strict schema
+and budget parsing, exact >Number-safe counts, copied output, unknown/malformed facts,
+32/33-group truncation and redacted failure propagation. Add mandatory actual PostgreSQL
+tests in newly owned nonce-marked fictional loopback scopes using existing model/raw guards:
+empty and mixed/zero/draft/cancelled/failed/terminated/soft-deleted/retired facts, event
+evidence limits, consistent snapshot while another connection commits, database-enforced
+read-only rejection, restrictive RLS/permission failures, search-path decoys, timeout/lock
+failure, and unchanged financial/settings/unit/policy/audit/outbox rows after inspection.
+Prove transaction-local settings do not leak to the next pooled transaction. Do not expose
+production test hooks or callback execution inside the read-only repository.
+
+Wire both test layers into existing database/root/CI acceptance without optional skips,
+relaxing scope ownership or weakening prior unit/policy/history/verifier assertions. Keep
+the existing 24 migrations unchanged; no schema/model change is needed. Preserve prior-
+22-to-23 and prior-23-to-24 history comparisons, raw/model isolation and cleanup safeguards.
+Run complete local acceptance and verify exact-head CI/CodeQL before reporting delivery.
+Do not push failing or unverified implementation; record failures/blockers honestly.
+
+Exclude schema/migrations, control/latch/selection/ledger/proof/guard installation, financial
+writer adoption, provenance writes/backfills, metadata publication/registry seeds, app/UI/
+HTTP/CLI integration, amounts/formatting/aggregates, catalogue/quote/FX/routes/providers,
+real-data queries/imports, existing-scope cleanup, operating approvals, release/deployment.
+Fictional test setup may write only within new owned guarded scopes, outside the preflight.
+Update progress/decisions, focused commit, reconcile canonical main without history rewrite,
+non-force push origin/main and verify exact-head CI/CodeQL. Stop for a separately authorized
+phase review; do not automatically define or implement a selection migration next.
+```
+
+**Authorization boundary:** This phase review defines Command 101 but does not implement
+it. No permission to inspect live/WHMCS data, activate currency or deploy follows from a
+read-only result. Ask the owner to authorize Command 101 before development.
 
 ---
 

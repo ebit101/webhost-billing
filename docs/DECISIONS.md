@@ -1447,7 +1447,7 @@ This document records durable technical and product decisions. New decisions sho
 
 ## ADR-093 — Guard-first selection, permanent history and explicit legacy adoption
 
-- **Status:** Accepted as Command 100's owner-authorized design; protocol not implemented, no activation or operating approval
+- **Status:** Accepted as Command 100's owner-authorized design; exact-head CI/CodeQL and phase review passed on 2026-10-07; protocol not implemented, no activation or operating approval
 - **Date:** 2026-10-07
 - **Source:** `dc49182356b73a1bbe65a997521fff1c3f591c48`. Concrete writer/security map
   and acceptance matrix are in `docs/MULTI_CURRENCY_DESIGN.md` section 3a. Existing
@@ -1491,6 +1491,35 @@ This document records durable technical and product decisions. New decisions sho
 - **Boundary:** Existing source/financial facts, tooling mitigations/acceptance and schema
   remain unchanged. Metadata/provider/source rights, D5–D8, protected WHMCS/credit,
   maintenance/recovery and production gates are not approved; no provider/import/deployment.
+
+## ADR-094 — Inspect currency history without selecting or certifying adoption
+
+- **Status:** Accepted for the owner-authorized Command 100 phase review; Command 101 is defined only, not authorized
+- **Date:** 2026-10-07
+- **Review:** Command 100 at `c15117c0974f3bbb3b5ab68812182ad6d58ed196` satisfies its
+  documentation-only design scope. Exact-head CI Validate passed all 28 steps and CodeQL
+  all eight; PR-only Dependency review skipped on push. No runtime correction is required.
+  Guard-first coordination, permanent base code/exponent history, unknown legacy facts,
+  writer drain/privileges and security/audit are designed, not installed or tested protocols.
+- **Decision:** Define **Command 101 — Build a read-only currency adoption preflight**
+  requiring separate implementation authorization. Keep it an unused injected-client
+  entry owning a bounded top-level Repeatable Read/READ ONLY transaction, fixed qualified
+  source queries, transaction-local deadlines and fail-closed permission/visibility checks.
+  No root/app/CLI consumer, caller-owned transaction, connection discovery or schema change.
+- **Observation:** Exact string all-row counts for seven money tables, six-table history
+  distinction, deterministic bounded code groups with explicit omitted rows, UTC database
+  observation time and aggregate-only gateway-evidence counts. No amounts, customer IDs,
+  code support/precision/base inference, provenance resolution or readiness verdict.
+  Missing selection implementation and unestablished writer/adoption/evidence coverage
+  remain explicit even when empty; results never replace a later locked assessment.
+- **Acceptance:** Source/mock and mandatory new guarded fictional SQL tests prove snapshot
+  consistency, database-enforced read-only, budgets/cancellation, no pooled-setting leak,
+  RLS/permission/search-path safety and unchanged historical/audit/outbox facts. Keep all
+  24 migrations and prior-22/23 history tests; complete local and exact-head hosted gates.
+- **Boundary:** This review only defines that slice. No preflight implementation/live query,
+  selection/latch/guard/proof/ledger, writer integration, backfill/registry, provider/import,
+  operating approval, cleanup or deployment. Tooling/governance/database-owner and launch
+  risks are unchanged; ask for explicit Command 101 authorization and stop.
 
 ## Open Decisions
 

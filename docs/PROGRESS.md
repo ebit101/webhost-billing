@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 100 — Design authoritative currency policy selection and legacy-history safeguards
-- **Current status:** Owner-authorized documentation-only design completed: concrete writer map, selection/history states, guard-first transaction/SQL protocol, exact-unit/legacy adoption rules, security/audit and fictional acceptance matrix. Proposed read-only adoption preflight is not numbered or authorized. Focused local acceptance passed; exact-head CI/CodeQL verification belongs in delivery. No runtime/schema/writer change, selected policy, registry, backfill or deployment. Production audit clean; full audit retains two tooling findings without waiver
+- **Current command:** Phase review — Review Command 100 authoritative selection design and define the next bounded currency command
+- **Current status:** Command 100's documentation-only design accepted after source and exact-head hosted review; no runtime correction required. Command 101 defined only: unused read-only currency adoption preflight, bounded consistent snapshot/counts and explicit unresolved coverage; not implementation, eligibility or activation authority. Fresh focused/documentation/format checks passed; exact review-head CI/CodeQL verification belongs in delivery. No runtime/schema/history/live-data/provider/deployment change. Production audit clean; full audit retains two tooling findings without waiver
 - **Last updated:** 2026-10-07
-- **Next command:** Phase review — Review Command 100 authoritative selection design and define the next bounded currency command
+- **Next command:** Command 101 — Build a read-only currency adoption preflight
 - **Next command authorized:** No
 
 ## Command Reports
@@ -11047,7 +11047,7 @@ seed a registry, change financial writers/history, import data, invoke providers
 
 ### Command 100 — Design authoritative currency policy selection and legacy-history safeguards
 
-- **Status:** Documentation-only design and focused local acceptance completed; exact-head CI/CodeQL delivery verification belongs in the owner handoff
+- **Status:** Documentation-only design delivered at `c15117c0974f3bbb3b5ab68812182ad6d58ed196`; exact-head CI/CodeQL passed, owner-authorized phase review accepted the scope on 2026-10-07
 - **Date:** 2026-10-07
 - **Authorization:** The owner authorized Command 100's design only. No implementation,
   operating approval, activation, provider, real-data access/import or deployment authority.
@@ -11145,6 +11145,96 @@ Authorize **Phase review — Review Command 100 authoritative selection design a
 the next bounded currency command**. Stop after validated design delivery. Do not implement
 preflight/selection/guards/proofs, seed units, activate currencies, access/import real data,
 invoke providers, change financial history, release or deploy.
+
+### Phase review — Review Command 100 authoritative selection design and define the next bounded currency command
+
+- **Status:** Review and next bounded definition completed; focused local/documentation acceptance passed, exact review-head CI/CodeQL verification belongs in delivery
+- **Date:** 2026-10-07
+- **Authorization:** The owner authorized this review and definition only. Command 101
+  is not authorized for implementation; no live-data observation or activation authority.
+
+#### Scope reviewed and completed
+
+- Reviewed delivered `c15117c0974f3bbb3b5ab68812182ad6d58ed196`, its five-document
+  diff, Command 100 requirements, actual money schema, unused unit/policy boundaries,
+  transaction defaults, writer map and administrator/session/MFA/CSRF dependencies.
+- Accepted design scope: exact selection/generation, first-committed-row permanent
+  history and original code/exponent anchor, guard-first coordination and SQL privilege
+  backstops, writer drain/adoption, unknown legacy facts, original obligation lineage,
+  bound confirmation/idempotency and atomic audit. No runtime correction was needed.
+  Seventeen future concurrency/security cases are not implemented test results.
+- Defined one next slice, **Command 101 — Build a read-only currency adoption preflight**.
+  Tightened the proposal to owned database-enforced read-only Repeatable Read, qualified
+  schema/visibility checks, local resource budgets, exact bounded counts with explicit
+  omitted rows, aggregate-only event evidence and copied safe output. Missing selection
+  and unestablished writer/adoption coverage remain blockers even on an empty observation.
+- Required new guarded fictional SQL proof of snapshot interleaving, read-only enforcement,
+  limits/timeouts, RLS/permission/search-path safety, pooled-setting reset and unchanged
+  rows. No amounts, guessed metadata/base, readiness verdict, selection migration or app/CLI
+  integration. This review does not implement or execute the proposed preflight/tests.
+
+#### Files changed
+
+- `CODEX_DEVELOPMENT_COMMANDS.md` — reconcile delivered design and define Command 101's
+  bounded scope, mandatory acceptance and separate authorization boundary.
+- `docs/MULTI_CURRENCY_DESIGN.md`, `HOSTING_BILLING_SYSTEM_PLAN.md` — review acceptance,
+  precise read-only observation limits and sequence handoff without activation authority.
+- `docs/DECISIONS.md` — reconcile ADR-093 and add ADR-094 for the advisory-only next slice.
+- `docs/PROGRESS.md` — source-head evidence, fresh review checks, remaining risks and next
+  authorization. No source/schema/migration/dependency/patch/workflow/fixture edits.
+
+#### Validation performed
+
+- Fresh frozen install passed without lock changes. All ten installed tooling-mitigation
+  tests, 93 shared tests and 18 database source tests passed. Four library builds, Prisma
+  generation and strict database types passed. No fresh local SQL/API/browser rerun is
+  claimed; proposed read-only/concurrency cases remain next-command acceptance requirements.
+- Fresh production audit passed with no known vulnerabilities. Full audit exited 1 with
+  the same high braces/moderate sprintf-js tooling findings. Registry latest remains
+  3.0.3/1.1.3, suggested 3.0.4/1.1.4 floors unpublished; primary
+  [braces advisory](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm) and
+  [sprintf-js advisory](https://github.com/advisories/GHSA-hp3w-g68c-fv3c) still show no
+  patched release. No suppression or residual-risk waiver; wider executable-input and
+  resource-exhaustion risks remain despite installed mitigation tests.
+- Freshly verified exact delivered design head job steps, not only aggregate statuses:
+  [CI 37610405893](https://github.com/ebit101/webhost-billing/actions/runs/37610405893)
+  passed all 28 Validate steps, including full-history secrets, guarded database prep,
+  documentation/lint/types, package/API/invariants, both browser suites, production
+  audit/licences and builds. [CodeQL 37610405946](https://github.com/ebit101/webhost-billing/actions/runs/37610405946)
+  passed all eight steps. PR-only Dependency review skipped on push, not passed. These
+  are unchanged source-head hosted results, not proof that selection/preflight is installed.
+- Reviewed primary PostgreSQL transaction access/snapshot and row-visibility/deadline
+  documentation to constrain the next slice. Read-only is not no disk/resource cost;
+  LIMIT does not cap scans. Executable proof remains mandatory in Command 101.
+- All four offline documentation validators and repository formatting/whitespace passed.
+  Verified 21 cited source paths, seventeen designed scenarios and exactly five documentation
+  files changed, with no runtime/schema/dependency delta. Re-run final checks after report
+  edits. Reconcile canonical main, focused commit/non-force push and verify exact review-
+  head CI/CodeQL in the owner handoff, without a self-recording follow-up report commit.
+
+#### Decisions made and remaining risks
+
+- ADR-094 accepts the design without activating it; the next inventory is not a full
+  provenance/obligation reconciliation or permission to initialize. Existing exact legacy
+  metadata is unknown; price rows and linked/uninspected gateway evidence cannot disappear
+  behind paid/cancelled/zero state or truncated groups. A snapshot can immediately go stale.
+- Selection/control/guards/proofs, writer coverage, SQL-role hardening and per-currency
+  presentation/report repair remain unimplemented. Database-owner bypass and existing
+  credentials do not prove least privilege or production safety.
+- Command 33 D5–D8, operating destinations/staffing/recovery, dataset/provider rights,
+  protected WHMCS source/target/credit mapping, Command 91 and final launch gates remain.
+  No owner operating approval, real-data query, provider, release or deployment performed.
+- Preserve the incomplete unmarked fictional scope
+  `command26_e2e_8d7db6b8d0e7489a93eb26daaada1d76`; no cleanup authorized/performed.
+  Retained tooling advisories/wider resource risk, direct-main rule bypass and skipped
+  PR-only review are unchanged and not waived.
+
+#### Exact recommended next command
+
+Authorize **Command 101 — Build a read-only currency adoption preflight**. Stop after
+this review's validated delivery. Do not implement it, query live/WHMCS data, add selection/
+guards/proofs/provenance, seed a registry, activate currency, import, clean up scopes,
+invoke providers, release or deploy without separate authorization.
 
 ## Report Template
 

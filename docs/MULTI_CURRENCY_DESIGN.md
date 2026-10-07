@@ -11,7 +11,9 @@
   Command 99's unused policy-revision snapshots passed complete local and exact-head
   hosted acceptance and were phase-reviewed on 2026-10-07. The owner separately authorized
   Command 100's authoritative-selection/legacy-history design on 2026-10-07; that
-  source-grounded design is completed below. Its protocol is not implemented or activated.
+  source-grounded design passed exact-head CI/CodeQL and was phase-reviewed on 2026-10-07.
+  Command 101's unused read-only adoption preflight is defined only, not implemented or
+  authorized. The selection protocol is not implemented or activated.
   Application integration and activation remain separately gated.
 - Owner direction: BDT is the default; USD is the preferred secondary currency;
   support major currencies with automatic conversion through a suitable provider.
@@ -730,9 +732,53 @@ This slice makes the existing-history gate inspectable without touching money or
 guards prematurely. Fictional tests would cover empty, mixed/zero/cancelled history,
 soft-deleted price/customer scope, bounded counts, snapshot consistency and no writes.
 It is a proposal only: this command does not assign its command number, implement it,
-approve a real-data query or authorize selection. The exact next action is a separately
-authorized **Phase review — Review Command 100 authoritative selection design and define
-the next bounded currency command**.
+approve a real-data query or authorize selection. The owner subsequently authorized the
+phase review below, which assigns Command 101 but does not authorize its implementation.
+
+### Command 100 review and Command 101 boundary
+
+The owner-authorized phase review on 2026-10-07 accepted the documentation-only scope
+at `c15117c0974f3bbb3b5ab68812182ad6d58ed196`. Exact-head CI Validate passed all 28
+steps and CodeQL all eight; PR-only Dependency review skipped on push, not passed.
+The writer/state/security map meets Command 100's design deliverables. No runtime defect
+or implementation proof is asserted: selection, SQL guards, adopted writers, unit lineage
+and confirmation/audit remain future work. Its seventeen matrix scenarios are designed,
+not executed by the unchanged acceptance suites.
+
+Define **Command 101 — Build a read-only currency adoption preflight** as one unused
+database entry only. Tighten the proposal into an owned, explicitly Repeatable Read and
+database-enforced READ ONLY transaction, fixed schema-qualified queries and transaction-
+local deadlines/row-visibility checks. Client injection and a TypeScript interface alone
+cannot prove read-only or consistent observation. No caller-owned transaction, automatic
+connection, app/CLI entry or live-data query. Missing schema/permissions or restricted
+visibility fails, never means empty. Preserve pool/session defaults after completion.
+
+Count all seven tables regardless of state/soft deletion; distinguish six financial-history
+tables from price configuration. Return exact string counts, bounded deterministic code
+groups (32 per table), explicit overflow/omitted-row counts and database UTC observation
+time. Codes alone never resolve legacy units or prove support. Payment events receive
+only aggregate evidence counts; payloads/linked obligation consistency and reviewed adoption
+evidence remain unassessed. No amounts, record/customer IDs, inferred base/precision,
+history latch, readiness/eligibility verdict or policy lookup that pretends to select authority.
+The absent selection mechanism and unestablished writer/adoption coverage always remain
+visible, even with zero rows. Evidence can become stale immediately after observation.
+
+Initial technical ceilings are two seconds acquisition, 500 milliseconds lock, two seconds
+statement and ten seconds transaction, with validated shorter positive limits only.
+LIMIT bounds output, not count/group scan cost; cancellation, rollback, connection release
+and local-setting reset need real fictional PostgreSQL tests. No retry/partial-success
+fallback. Mandatory source and guarded SQL acceptance also covers snapshot interleaving,
+read-only write rejection, restricted RLS/permissions, search-path decoys and unchanged
+old financial/settings/unit/policy/audit/outbox facts. Keep all 24 migrations and existing
+prior-22/23 history comparisons unchanged. These are next-command requirements, not tests
+run by this review. The transaction/access-mode and visibility rules are based on primary
+[PostgreSQL transaction documentation](https://www.postgresql.org/docs/18/sql-set-transaction.html)
+and [client defaults](https://www.postgresql.org/docs/18/runtime-config-client.html);
+the proposed implementation still needs executable verification.
+
+The exact definition and acceptance are in [command tracking](../CODEX_DEVELOPMENT_COMMANDS.md).
+No selection migration, financial rewrite, activation, source-rights decision, operating
+approval, existing-scope cleanup or deployment is authorized. Ask for Command 101 approval.
 
 ## 4. Price publication, quote and renewal rules
 
@@ -1024,15 +1070,18 @@ Delivery sequence, each needing separate authorization:
    safeguards** was separately authorized and completed on 2026-10-07: real writer map,
    initialization/history states, guarded Read Committed coordination, exact-unit/legacy
    adoption rules, security/audit and fictional acceptance matrix. No runtime state/source
-   change or activation. Proposed unused read-only adoption preflight requires phase review
-   and separate authorization before a selection migration.
-7. Later additive policy/provenance services and per-currency reads; preserve legacy records and
+   change or activation. Exact-head CI/CodeQL and the owner-authorized phase review passed.
+7. **Command 101 — Build a read-only currency adoption preflight** is defined only, not
+   authorized: unused database entry, one bounded read-only snapshot, exact counts and
+   explicit unknown/truncation limits. It cannot grant selection/adoption authority or
+   live-data access; no migration, runtime consumer or registry publication.
+8. Later additive policy/provenance services and per-currency reads; preserve legacy records and
    pass mixed BDT/USD portal/report tests before an import rehearsal.
-8. Fixed BDT/USD catalogue, ownership-bound quotes and confirmed same-currency collection
+9. Fixed BDT/USD catalogue, ownership-bound quotes and confirmed same-currency collection
    paths. Use fake providers; real USD payment approval is separate.
-9. Rate-adapter sandbox evaluation, reviewed terms/credentials and proposed operational
-   defaults, followed by guarded derived-price publication and additional currency tests.
-10. Protected WHMCS sample/import rehearsal with reconciliation and separate owner review.
+10. Rate-adapter sandbox evaluation, reviewed terms/credentials and proposed operational
+    defaults, followed by guarded derived-price publication and additional currency tests.
+11. Protected WHMCS sample/import rehearsal with reconciliation and separate owner review.
     Actual source export and target controls may be assessed earlier, read-only, by authority.
 
 Remaining decisions: exact supported sales currencies and payment destinations, fixed

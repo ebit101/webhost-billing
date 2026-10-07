@@ -72,8 +72,11 @@ the owner-authorized phase review accepted its engineering scope. That review de
 Command 100's source-grounded design of authoritative policy selection and legacy-history
 safeguards, separately authorized and completed on 2026-10-07. It specifies coordinated
 writer/SQL protection, permanent base history, explicit legacy adoption, exact-unit
-compatibility and full-administrator confirmation/audit. Its protocol is not implemented;
-the proposed read-only adoption preflight needs phase review and separate authorization.
+compatibility and full-administrator confirmation/audit. Its exact-head CI/CodeQL passed;
+the owner-authorized phase review accepted the design and defines Command 101's unused
+read-only adoption preflight only. Its protocol is not implemented. The next slice requires
+one bounded database-enforced read-only snapshot, exact counts and explicit unknowns;
+it cannot authorize migration/activation or live-data access. Implementation needs separate authorization.
 No live registry, selected installation policy or financial backfill is included. Broader persistence,
 per-currency reads, pricing and activation remain later separately gated slices. Remaining
 tooling advisories are not waived. No currency is activated by this sequence.
