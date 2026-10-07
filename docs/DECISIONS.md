@@ -1584,7 +1584,7 @@ This document records durable technical and product decisions. New decisions sho
 
 ## ADR-097 — Owned cooperative coordination without currency or actor authority
 
-- **Status:** Accepted and implemented for owner-authorized Command 102; complete local acceptance passed, exact delivery-head CI/CodeQL gates the canonical handoff
+- **Status:** Command 102 delivered at `fdcaea6` with complete local/exact-head hosted acceptance; owner-authorized phase review accepted its scope on 2026-10-07
 - **Date:** 2026-10-07
 - **Decision:** Add only the unused `currency-coordination` database entry. Require
   injected transaction-capable client, explicit bounded schema, explicit trusted staff
@@ -1616,6 +1616,39 @@ current_database()), hashtext(schema)` computed by qualified PostgreSQL function
   worker consumer, provenance/registry, live-data access/import, operating approval or
   deployment. Retain tooling/governance/database-owner and launch risks without waiver.
   Stop after verified delivery for separately authorized Command 102 phase review.
+
+## ADR-098 — Prove statement-level SQL coordination only in fictional scopes
+
+- **Status:** Accepted for the owner-authorized Command 102 phase review; Command 103 implementation requires separate authorization
+- **Date:** 2026-10-07
+- **Review:** Command 102 at `fdcaea6b086593260b71c198efc99f18d373f769` meets its unused
+  cooperative transaction scope. Exact-head CI passed all 28 Validate steps; CodeQL all
+  eight, PR-only review skipped. No in-scope source correction or runtime consumer found.
+  Ordinary SQL bypass is an explicit tested limit, not a missing promised policy guard.
+- **Decision:** Define **Command 103 — Build an unused SQL currency coordination guard
+  prototype**. Add only a pure separate-entry SQL renderer; the guarded mandatory tests
+  alone may install its fixed functions/triggers in newly owned nonce fictional schemas.
+  No migration, executing installer, existing-scope installation or application consumer.
+- **Contract:** VOLATILE SECURITY INVOKER, fixed qualified catalog context, actual trigger
+  schema/table/OID checks and Command 102's identical two-int transaction key. Statement
+  DML coordination for seven money tables plus settings/events; reject prototype TRUNCATE.
+  Verify caller-established Read Committed/read-write and bounded deadlines before work,
+  preserve shorter limits and never set an in-flight statement's timeout as a safety claim.
+  No session lock, staff/auth lock, automatic retry, SECURITY DEFINER or global grants.
+- **Limits:** Statement serialization is not policy/row/provenance validation or an
+  initialization race solution. It cannot refresh the initiating statement's snapshot or
+  undo earlier row locks. Guard-first application adoption, post-lock volatile validation,
+  singleton/latch/selection/ledger/proof, reviewed privileges and writer drain remain future.
+  Non-owner trigger tests do not establish deployed role hardening; owner bypass remains.
+- **Acceptance:** Future mandatory owned PostgreSQL tests must prove both SQL/helper wait
+  directions, real locks, release/reentrancy, all target/statement forms, actual non-owner
+  operation and inability to disable triggers, mode/deadline/decoy refusal, snapshot limits
+  and safe reversed-order failure. Keep prior rows/migrations/seed/verifier intact and
+  remove test-only objects under marker checks. Complete local/exact-head hosted gates.
+- **Boundary:** No prototype is implemented by this review. No policy activation, writer
+  adoption, real-data query/import, provenance/registry publication, provider, operating
+  approval, cleanup or deployment. Retained tooling/governance/resource and launch risks
+  remain without waiver. Ask for explicit Command 103 authorization and stop.
 
 ## Open Decisions
 

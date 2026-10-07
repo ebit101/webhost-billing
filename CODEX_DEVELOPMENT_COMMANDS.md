@@ -3733,8 +3733,11 @@ Stop for separately authorized phase review; do not automatically implement sele
 ```
 
 **Implementation:** The separate unused helper and mandatory fictional tests passed complete
-local acceptance on 2026-10-07. Exact delivery-head CI/CodeQL verification gates canonical
-delivery; no hosted pass is inferred from prior-head results.
+local acceptance and was delivered at `fdcaea6b086593260b71c198efc99f18d373f769` on
+2026-10-07. Exact-head [CI 37654981028](https://github.com/ebit101/webhost-billing/actions/runs/37654981028)
+passed all 28 Validate steps; [CodeQL 37654980978](https://github.com/ebit101/webhost-billing/actions/runs/37654980978)
+passed all eight. PR-only Dependency review skipped on push, not passed. The owner-authorized
+phase review accepted the unused engineering scope and defines Command 103 only.
 
 **Authorization boundary:** The owner subsequently authorized only Command 102's unused
 helper and fictional acceptance. Selection/adoption, financial-writer integration and
@@ -3742,6 +3745,100 @@ activation remain unauthorized. No policy, runtime writer, SQL guard, operating 
 or live currency is enabled. After validated delivery, stop for separately authorized
 **Phase review — Review Command 102 coordination primitive and define the next bounded
 currency command**. Do not automatically implement selection or assign the next slice.
+
+---
+
+## Command 103 — Build an unused SQL currency coordination guard prototype
+
+**Defined by the owner-authorized Command 102 phase review on 2026-10-07.**
+**Implementation not authorized.** Prove the ordinary-SQL coordination backstop in new
+fictional test scopes before installing policy controls or adopting application writers.
+This is not a deployable policy guard or permission to attach triggers to application data.
+
+```text
+Command 103 — Build an unused SQL currency coordination guard prototype
+
+Read AGENTS.md, the product plan, decisions, progress and MULTI_CURRENCY_DESIGN.md.
+Recheck tooling advisories/releases, frozen install, installed mitigation tests and
+separate production/full audits. Retain patches and acceptance controls; stop for
+separate repair if changed exposure exceeds this bounded command.
+
+Add one separate unused database entry producing a fixed SQL guard prototype from a
+strict explicit schema. It is a pure SQL renderer, not an executing installer: no client,
+connection/env discovery, file/network/provider or module-load I/O, root/application/CLI
+consumer, automatic migration hook or manual production-install instructions. Reject
+unknown authority fields, system/invalid identifiers and caller-selected tables, keys,
+namespaces, function bodies, privileges or exemption flags before rendering.
+
+Generate only schema-qualified VOLATILE SECURITY INVOKER trigger-function/trigger DDL.
+Use a fixed pg_catalog search path and qualified trusted objects/functions. Fixed targets
+are the seven ordinary money tables (product_prices, orders, order_items, services,
+invoices, invoice_items, payments), settings and payment_events. Before installing in a
+test, verify all exact target identities/kinds and absence of prototype-name collisions;
+reject unsupported partition/inheritance/view/foreign-table context. Do not replace
+existing objects or introduce SECURITY DEFINER, global roles, owner changes or grants.
+The trigger function verifies its actual schema/table/OID/BEFORE STATEMENT context;
+direct calls or attachment to unrelated tables cannot become a generic lock API.
+
+BEFORE STATEMENT INSERT/UPDATE/DELETE triggers acquire exactly Command 102's exclusive
+two-int transaction key, derived in SQL from the actual guarded table schema and current
+database. No session advisory lock/unlock, supplied key, GUC-authority flag, pre-lock policy
+facts or staff/auth row locks. Reentrant invocation inside withCurrencyCoordination must
+use the same key and preserve explicitly shorter caller deadlines. Reject TRUNCATE on
+covered targets in this prototype; do not claim that statement guards validate rows.
+
+Require verified Read Committed/read-write and strictly positive caller-established
+lock/statement/transaction deadlines no greater than 500/2000/10000 milliseconds.
+Caller setup must occur in earlier SQL statements before the guarded DML, not rely on
+changing statement_timeout inside an already running trigger to bound that command.
+Unbounded/wrong modes or identity/lock failures deny with safe sentence-case errors;
+do not silently upgrade isolation, widen deadlines, swallow SQL failure or retry.
+Locks last through commit/rollback; no pooled role/default/setting or session-lock leak.
+
+This prototype coordinates statements only. It selects no policy, inspects no business
+history/eligibility or amounts, sets no latch and validates no currency/provenance joins.
+It cannot refresh the initiating DML statement's pre-wait snapshot or repair prior row
+locks. Future adopted callers still acquire coordination before authoritative reads and
+business locks; future VOLATILE validation reads must occur after lock acquisition.
+Document and demonstrate these limits rather than advertise solved writer coverage.
+
+Only the mandatory test harness may install the rendered DDL, atomically, after existing
+nonce ownership/model/raw/loopback guards verify newly created fictional schemas.
+Install no object in an existing test/application/production scope. Verify all nine targets
+in pg_catalog, including no-row statements; exercise actual non-owner DML using an
+existing non-owner PostgreSQL role with transaction-local SET ROLE, not new global roles
+or changes to role memberships/other schemas. Do not rely solely on migration-owner tests.
+
+With controlled connection barriers and real pg_locks evidence, prove helper-to-SQL and
+SQL-to-helper waiting, rollback/commit release, reentrancy, independent owned schemas,
+search-path/attachment decoy refusal and deadline/isolation failures. Cover plain DML,
+COPY INSERT, nested writes, ON CONFLICT, MERGE and no-op statements, plus TRUNCATE refusal.
+Prove non-owner writers cannot disable/replace triggers; retain owner/superuser bypass as
+a residual power. Demonstrate initiating-statement snapshot versus fresh later reads and
+safe failure for reversed row-first ordering without a swallowed or partial commit.
+
+Use rollback or explicit owned fictional probes only; compare every pre-existing
+financial/settings/unit/policy/audit/outbox row before/after acceptance. Marker-verify
+cleanup of exactly test-installed objects before the unchanged seed/verifier. Preserve
+all 24 migrations, prior-22/23 history comparisons, Command 101 read-only and Command 102
+coordination acceptance, scope guards and mandatory root/CI controls. Add source/mock
+and actual PostgreSQL acceptance to the mandatory database launcher, without optional skips.
+Run complete local acceptance and verify exact-head CI/CodeQL before reporting delivery.
+
+Exclude application schema/models/migrations, deployed role/privilege/trigger changes,
+singleton/latch/selection/ledger/proof/row validation, writer/auth/worker adoption, legacy
+provenance/backfill, metadata seeds, amounts/presentation/pricing/quotes/FX/routes,
+live-data queries/import, providers, operating approval, existing-scope/cache cleanup,
+release/deployment. Record this as a test-only installed prototype, unused by the product,
+not ordinary-SQL policy enforcement or a safe initialization/activation boundary.
+Update progress/decisions, focused commit, reconcile main without history rewrite,
+non-force push origin/main and verify exact-head CI/CodeQL. Stop for separately authorized
+phase review; do not automatically install the prototype or implement selection next.
+```
+
+**Authorization boundary:** This review defines Command 103 only. The SQL renderer,
+fictional trigger tests and any installation/adoption are not implemented or authorized
+by this review. Ask for explicit Command 103 authorization and stop after review delivery.
 
 ---
 

@@ -17,7 +17,9 @@
   at `1795160`. The owner-authorized phase review accepted the scope and defines
   Command 102's unused coordination transaction primitive. The owner subsequently authorized
   that helper and fictional acceptance on 2026-10-07; implementation and complete local
-  acceptance passed. Exact delivery-head CI/CodeQL verification gates the canonical handoff.
+  and exact-head CI/CodeQL acceptance passed at `fdcaea6`. The owner-authorized phase
+  review accepted its unused engineering scope and defines Command 103's unused SQL
+  coordination guard prototype only, requiring separate implementation authorization.
   The selection protocol is not implemented or activated.
   Application integration and activation remain separately gated.
 - Owner direction: BDT is the default; USD is the preferred secondary currency;
@@ -951,12 +953,64 @@ rows; owned probe cleanup preserves the unchanged seed/verifier table assertions
 financial/settings/unit/policy/audit/outbox rows and 24 migrations/history comparisons remain.
 
 Complete local acceptance passed, including full root/API/invariant tests, both browser
-gates, lint/types, production builds and retained security controls. Exact delivery-head
-CI/CodeQL verification gates canonical delivery. No selected policy/control/
+gates, lint/types, production builds and retained security controls. Delivery at
+`fdcaea6b086593260b71c198efc99f18d373f769` passed exact-head
+[CI 37654981028](https://github.com/ebit101/webhost-billing/actions/runs/37654981028)
+(28 Validate steps) and [CodeQL 37654980978](https://github.com/ebit101/webhost-billing/actions/runs/37654980978)
+(eight steps). PR-only review skipped on push, not passed. No selected policy/control/
 latch/guard/proof/ledger, grants, financial/auth/worker consumer, provenance, registry, live
-query/import, operating approval or deployment. Stop after delivery for separately authorized
-Command 102 phase review; cooperative serialization is not installed writer coverage or
+query/import, operating approval or deployment. The subsequently owner-authorized review
+accepted the scope; cooperative serialization is not installed writer coverage or
 permission to initialize/activate currencies.
+
+### Command 102 review and Command 103 boundary
+
+The owner-authorized phase review on 2026-10-07 found no in-scope source defect. Fresh
+acceptance passed 39 database source tests, nine unit SQL, ten policy SQL, eleven preflight
+SQL and eleven coordination SQL scenarios, followed by guarded seed/verifier, four library
+builds, strict database types and 93 shared cases. Source-head CI/CodeQL were freshly
+verified separately; their full application/browser acceptance is not a claimed fresh
+local rerun by this documentation-only review. All 24 migrations remain unchanged.
+
+Define **Command 103 — Build an unused SQL currency coordination guard prototype** as
+the next smallest normal-SQL coordination proof, not another selection design or an
+application guard rollout. A pure separate database entry renders fixed qualified SQL
+from an explicit bounded schema; it does not execute DDL or expose an installer. Only
+mandatory guarded tests may install it atomically in fresh nonce-owned fictional schemas,
+then remove their objects under marker checks before the unchanged seed/verifier.
+
+Propose fixed VOLATILE SECURITY INVOKER BEFORE STATEMENT DML triggers for the seven money
+tables plus settings/payment_events, sharing exactly Command 102's two-int key. Reject
+prototype TRUNCATE. Validate actual trigger schema/table/OID and supported ordinary-table
+context; no custom targets, keys, function bodies or exemption flags. No SECURITY DEFINER,
+global roles/grants, staff/auth lock or automatic retry. Callers establish bounded positive
+deadlines and Read Committed/read-write in earlier statements; the trigger verifies them,
+preserves shorter limits and takes only the currency transaction lock.
+
+This is a proposed engineering slice inferred from PostgreSQL's
+[trigger behavior](https://www.postgresql.org/docs/18/trigger-definition.html),
+[function snapshots](https://www.postgresql.org/docs/18/xfunc-volatility.html),
+[advisory functions](https://www.postgresql.org/docs/18/functions-admin.html) and
+[deadline semantics](https://www.postgresql.org/docs/18/runtime-config-client.html).
+Acquisition inside a trigger cannot refresh the initiating DML snapshot or undo earlier
+row locks. Changing an in-flight statement's timeout is not an adequate boundary. Future
+policy validation requires separate post-lock volatile queries; adopted application writers
+must still take coordination before authoritative reads and existing business locks.
+
+Future acceptance must exercise actual non-owner writes using existing roles locally,
+all nine targets/statement forms, both helper/SQL wait directions with real lock evidence,
+commit/rollback release, reentrancy, independent scopes, decoys, modes/deadlines and safe
+reversed-order failure. Show initiating-statement versus later-read snapshot limits.
+Preserve every prior row outside explicit fictional probes and all existing source/SQL/
+migration/history controls. Non-owner inability to alter triggers is not a proof of deployed
+runtime privilege hardening; owner/migration bypass remains a separately recorded power.
+
+No prototype exists or is installed by this review. It would enforce coordination only in
+test scopes, not currency units, policy capabilities, history latch, provenance or actor
+intent. Product behavior remains legacy and uncoordinated. Selection/state/ledger/proof,
+per-row validation/privileges, full writer adoption/drain, legacy evidence and recovery
+remain required before activation. Metadata/source/provider/operating approvals, real-data
+access/import and deployment stay separate. Ask for explicit Command 103 authorization.
 
 ## 4. Price publication, quote and renewal rules
 
@@ -1258,15 +1312,20 @@ Delivery sequence, each needing separate authorization:
 8. **Command 102 — Build an unused currency coordination transaction primitive** is
    separately authorized: owned bounded Read Committed transaction, schema-scoped
    cooperative lock, fresh post-wait reads and explicit staff-first composition. The unused
-   entry and mandatory fictional tests passed complete local acceptance; exact delivery-head
-   CI/CodeQL gates the canonical handoff. No selection state, SQL guards or adopted writer.
-9. Later additive policy/provenance services and per-currency reads; preserve legacy records and
-   pass mixed BDT/USD portal/report tests before an import rehearsal.
-10. Fixed BDT/USD catalogue, ownership-bound quotes and confirmed same-currency collection
+   entry and mandatory fictional tests passed complete local and exact-head CI/CodeQL at
+   `fdcaea6`; the owner-authorized review accepted its scope. No selection state, SQL guards
+   or adopted writer.
+9. **Command 103 — Build an unused SQL currency coordination guard prototype** is defined
+   only: pure fixed SQL rendering, with temporary installation solely by guarded tests in
+   new fictional scopes. It needs separate authorization and is not implemented by this
+   review. No policy/row enforcement, migration, executing installer or adopted consumer.
+10. Later additive policy/provenance services and per-currency reads; preserve legacy records and
+    pass mixed BDT/USD portal/report tests before an import rehearsal.
+11. Fixed BDT/USD catalogue, ownership-bound quotes and confirmed same-currency collection
     paths. Use fake providers; real USD payment approval is separate.
-11. Rate-adapter sandbox evaluation, reviewed terms/credentials and proposed operational
+12. Rate-adapter sandbox evaluation, reviewed terms/credentials and proposed operational
     defaults, followed by guarded derived-price publication and additional currency tests.
-12. Protected WHMCS sample/import rehearsal with reconciliation and separate owner review.
+13. Protected WHMCS sample/import rehearsal with reconciliation and separate owner review.
     Actual source export and target controls may be assessed earlier, read-only, by authority.
 
 Remaining decisions: exact supported sales currencies and payment destinations, fixed
