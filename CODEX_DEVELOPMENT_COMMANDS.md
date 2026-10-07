@@ -3191,7 +3191,7 @@ delivery for a separately authorized phase review, not another implementation co
 ## Command 97 — Build explicit currency policy and capability contracts
 
 **Implementation explicitly authorized by the owner on 2026-10-07.**
-Implemented with complete local acceptance; exact-head hosted delivery verification is pending. This is an unused shared-contract
+Delivered with complete local and exact source-head CI/CodeQL acceptance. This is an unused shared-contract
 slice before persistence and application integration, not a live currency policy.
 
 ```text

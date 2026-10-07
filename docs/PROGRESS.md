@@ -3,7 +3,7 @@
 ## Status Summary
 
 - **Current command:** Command 97 — Build explicit currency policy and capability contracts
-- **Current status:** Unused shared policy contracts implemented and complete local acceptance passed; source delivery and exact-head hosted verification pending. Production audit clean; full audit retains two development-tooling findings without waiver. No runtime currency, provider, migration, release or production approval changed
+- **Current status:** Command 97 unused shared policy contracts completed and delivered with complete local and exact source-head CI/CodeQL acceptance. Production audit clean; full audit retains two development-tooling findings without waiver. No runtime currency, provider, migration, release or production approval changed
 - **Last updated:** 2026-10-07
 - **Next command:** Phase review — Review Command 97 currency policy contracts and define the next bounded currency command
 - **Next command authorized:** No
@@ -10428,7 +10428,7 @@ invoke providers, import real data, publish a release or deploy.
 
 ### Command 97 — Build explicit currency policy and capability contracts
 
-- **Status:** Implemented with complete local acceptance; source delivery and exact-head hosted verification pending
+- **Status:** Completed and delivered; complete local and exact source-head CI/CodeQL acceptance passed
 - **Date:** 2026-10-07
 - **Authorization:** The owner explicitly authorized Command 97. No later command,
   operational currency activation, provider, migration, release or deployment is authorized.
@@ -10498,8 +10498,24 @@ invoke providers, import real data, publish a release or deploy.
   non-failing diagnostics include experimental VM/colour warnings, PostgreSQL query
   deprecation, logo loading guidance and a previously seen Next destination-stream-close
   diagnostic. No assertions, deadlines, retries, guards or existing application code changed.
-- Exact source-head CI/CodeQL will be verified after the focused non-force main delivery;
-  their actual results will be recorded separately. No hosted acceptance is claimed yet.
+- Reconciled canonical main 0/0, committed the focused nine-file source delivery as
+  `a3682a8fdde0f9b8eb4f52f33f0a11cda556cdf2` and non-force pushed `origin/main`; the
+  worktree was clean after delivery. Exact source-head
+  [CodeQL](https://github.com/ebit101/webhost-billing/actions/runs/37570342567) passed.
+  [CI](https://github.com/ebit101/webhost-billing/actions/runs/37570342521) passed too.
+  Validate job `112627310382` and every step succeeded, including complete-history secret
+  scan, frozen install/mitigations, docs/format/lint/types, complete packages/API/invariants,
+  both fictional browser suites, production audit/licenses/builds and scoped CI cleanup.
+  Decoded logs confirm shared 93, queue 3, API 107, worker 29, frontend 572, API integration
+  81 and invariant 93/12/42/2 counts. Hosted lifecycle passed 19/19 in 2.1 minutes and staff
+  4/4 in 8.9 seconds; production audit was clean and Next generated 30 pages.
+- The source push reported the existing owner direct-main bypass of PR/two required
+  checks and the same two dependency findings. No rule, status gate, advisory or history
+  was rewritten/suppressed. PR-only Dependency review was skipped on push, not passed.
+- Final documentation delivery records this source-head evidence after fresh offline
+  documentation/format/whitespace checks, then reconciles and non-force pushes canonical
+  main. Verify its exact-head CI/CodeQL in the owner handoff without another self-recording
+  report commit. No new implementation, deployment or operational approval is inferred.
 
 #### Decisions made
 
@@ -10512,8 +10528,8 @@ invoke providers, import real data, publish a release or deploy.
 
 #### Open questions and risks
 
-- Source delivery and exact-head hosted verification remain pending. Plain-data parsers
-  are not an isolation boundary for arbitrary executable getters/proxies.
+- No unresolved in-scope acceptance failure. Plain-data parsers are not an isolation
+  boundary for arbitrary executable getters/proxies; copied facts are not stored authority.
 - Two development-tooling advisories, wider resource/executable-input risks, local memory
   constraints and direct-main/PR-only review limitations remain open. Tests/builds do not
   establish Docker-image, deployment or production acceptance.

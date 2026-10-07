@@ -1283,7 +1283,7 @@ This document records durable technical and product decisions. New decisions sho
 
 ## ADR-087 — Bounded unused policy facts and authoritative transition boundaries
 
-- **Status:** Implemented for Command 97 with complete local acceptance; exact-head hosted delivery verification pending
+- **Status:** Accepted for Command 97; unused contracts delivered with complete local and exact source-head CI/CodeQL validation
 - **Date:** 2026-10-07
 - **Decision:** Add only the separate `@webhost-billing/shared/currency-policy` entry.
   Require an explicit revision, base, default browsing choice, optional distinct secondary

@@ -5,7 +5,8 @@
 - Command: 94 — Design multi-currency billing and WHMCS migration rules.
 - Date: 2026-10-06.
 - Status: Design completed; Command 96's unused arithmetic foundation delivered and
-  phase-reviewed. Command 97's unused policy contracts passed complete local acceptance;
+  phase-reviewed. Command 97's unused policy contracts passed complete local and exact
+  source-head hosted acceptance;
   application integration/activation remains
   separately gated.
 - Owner direction: BDT is the default; USD is the preferred secondary currency;
@@ -484,7 +485,8 @@ Delivery sequence, each needing separate authorization:
    remain later, separately authorized slices. See the bounded command definition in
    [command tracking](../CODEX_DEVELOPMENT_COMMANDS.md).
 3. **Command 97 — Build explicit currency policy and capability contracts** was separately
-   authorized and locally validated on 2026-10-07. Keep it unused: strict explicit metadata bindings,
+   authorized, delivered and validated locally and at the exact source head on 2026-10-07.
+   Keep it unused: strict explicit metadata bindings,
    independent capabilities, historical lookup and pure revision/base-lock validation.
    It cannot establish real provider routes, enforce database transitions or enable sales.
 4. Additive policy/provenance schema and per-currency reads; preserve legacy records and

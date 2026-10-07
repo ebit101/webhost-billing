@@ -62,7 +62,8 @@ implementation. Commands 93 and 95 repaired and validated the acceptance gate; t
 Command 95 phase review defined Command 96's pure arithmetic foundation, subsequently
 authorized, delivered and phase-reviewed on 2026-10-07. Its unused helpers do not change
 application billing behavior. Command 97's unused explicit currency-policy/capability
-contracts were separately authorized and locally validated on 2026-10-07. Persistence,
+contracts were separately authorized, delivered and validated locally and at the exact
+source head on 2026-10-07. Persistence,
 per-currency reads, pricing and activation remain later separately gated slices. Remaining
 tooling advisories are not waived. No currency is activated by this sequence.
 
