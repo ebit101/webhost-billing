@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Phase review — Review Command 101 read-only adoption preflight and define the next bounded currency command
-- **Current status:** Command 101 delivery at `1795160` accepted after source/SQL review and fresh guarded database acceptance; every exact source-head CI Validate/CodeQL step passed. Documentation-only review defines Command 102's unused coordination transaction primitive, not implementation or activation. No runtime/schema/financial-writer change, real-data query, provider or deployment. Production audit clean; full audit retains two tooling findings without waiver. Review-head delivery/hosted evidence must be verified in the final owner handoff
+- **Current command:** Command 102 — Build an unused currency coordination transaction primitive
+- **Current status:** Command 102 implementation and complete local acceptance passed, including thirty-nine source tests, forty-one actual SQL scenarios with guarded seed/verifier, full root/API/invariant tests, both browser gates, lint/types and production builds. Focused canonical delivery requires pinned full-history secret scanning and exact delivery-head CI/CodeQL verification in the handoff. The helper remains unused: no root/application consumer, selection/SQL guard, writer adoption, schema/financial-history change, real-data query, provider or deployment. Production audit clean; full audit retains two tooling findings without waiver
 - **Last updated:** 2026-10-07
-- **Next command:** Command 102 — Build an unused currency coordination transaction primitive
+- **Next command:** Phase review — Review Command 102 coordination primitive and define the next bounded currency command
 - **Next command authorized:** No
 
 ## Command Reports
@@ -11371,7 +11371,7 @@ financial history, publish metadata, invoke providers, clean up existing scopes 
 
 ### Phase review — Review Command 101 read-only adoption preflight and define the next bounded currency command
 
-- **Status:** Review and next-command definition complete locally; canonical commit/push and exact review-head CI/CodeQL required before completion handoff
+- **Status:** Completed and delivered at `2279475df662b9ffcb4317d31404cb441c88cb3b`; exact-head CI/CodeQL passed
 - **Date:** 2026-10-07
 - **Authorization:** Owner authorized this phase review and next bounded command definition
   only. Command 102 implementation, live-data access and currency activation are not authorized.
@@ -11470,6 +11470,128 @@ Authorize **Command 102 — Build an unused currency coordination transaction pr
 Stop after validated review delivery. Do not implement the primitive, state/guards/proofs,
 change financial writers/history, activate currency, query/import real data, approve operating
 inputs, invoke providers, clean up existing scopes/cache, release or deploy without new authority.
+
+### Command 102 — Build an unused currency coordination transaction primitive
+
+- **Status:** Implementation and complete local acceptance passed; focused canonical delivery and exact delivery-head hosted checks gate the handoff
+- **Date:** 2026-10-07
+- **Authorization:** Owner authorized the unused coordination helper and fictional acceptance
+  only. No selection/adoption, financial-writer integration, live-data query or activation.
+
+#### Scope completed
+
+- Added separate `withCurrencyCoordination` entry with explicit client/schema/staff composition/
+  shorter limits and a trusted database-only void body. Owns one bounded explicit Read
+  Committed/read-write transaction, verified local modes/deadlines/schema USAGE/identity.
+  No root/application/HTTP/CLI consumer, connection discovery, module-load/external I/O or retry.
+- Freeze qualified SQL-derived two-int namespace/database/schema key and exclusive transaction
+  advisory coordination. Required staff composition takes existing bigint mutex `920006`
+  first; no actor authorization or auth row lock. Acquisition is a separate statement;
+  body queries are subsequent fresh snapshots, not preflight/cached policy/history authority.
+- Verify modes/role/backend/schema/actual locks before and after body. Caught aborted SQL,
+  changed required state and returned body values deny. Success returns void after commit,
+  never a live transaction, release function, receipt or authority token. Safe errors redact
+  SQL/body/connection causes; no partial response or callback/transaction retry.
+- Add nine source and eleven actual SQL scenarios to mandatory existing database/root/CI
+  acceptance. Probe-only test writes/verified cleanup preserve all prior rows, migrations,
+  history comparisons, scope guards and seed/verifier assertions. Demonstrate ordinary
+  uncoordinated SQL bypass, not installed policy enforcement or financial-writer coverage.
+
+#### Files changed
+
+- `packages/database/src/currency-coordination.ts` — unused owned transaction/error/body types.
+- `packages/database/test/currency-coordination.spec.ts`,
+  `packages/database/test/currency-coordination.integration.spec.ts` — source/actual SQL proof.
+- `packages/database/package.json`, `apps/web/e2e/run-database-tests.ts` — separate export
+  and mandatory test wiring after existing unit/policy/preflight suites.
+- `CODEX_DEVELOPMENT_COMMANDS.md`, `HOSTING_BILLING_SYSTEM_PLAN.md`,
+  `docs/MULTI_CURRENCY_DESIGN.md`, `docs/DECISIONS.md`, `docs/PROGRESS.md` — reconcile
+  owner authorization/delivery, fixed protocol/limits, ADR-097 and next phase-review boundary.
+  No schema/migration/root export/dependency/lock/patch/workflow/scanner-exception change.
+
+#### Validation performed
+
+- Fresh frozen install and all ten installed mitigation checks passed. Production audit
+  found no known vulnerabilities. Full audit exited 1 with unchanged high braces/moderate
+  sprintf-js findings. Registry latest remains 3.0.3/1.1.3; suggested 3.0.4/1.1.4 releases
+  remain unpublished. Primary [braces advisory](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm)
+  and [sprintf-js advisory](https://github.com/advisories/GHSA-hp3w-g68c-fv3c) show no patched
+  release. No suppression, upstream-closure claim or residual input/resource-risk waiver.
+- First strict type check caught a shadowed test-only transaction parameter/type annotation;
+  corrected that annotation and reran successfully. First SQL run passed ten of eleven new
+  scenarios; staff-wait observer query had an unused untyped parameter. Bound its explicit
+  schema context, preserving real wait/ordering assertions. Rerun passed all eleven cases.
+- The next complete database attempt passed all source and SQL cases but the unchanged
+  verifier correctly rejected the remaining test-only probe table. Added marker-verified
+  cleanup of that exact table in the owned scope, without changing verifier assertions.
+  The complete rerun passed 39 source tests, unit SQL nine, policy SQL ten, preflight SQL
+  eleven and coordination SQL eleven, followed by guarded seed/verifier. Failed/successful
+  owned nonce scopes cleaned by existing guards; no application/existing scope adopted/reset.
+- Proved actual contention/fresh post-wait facts, rollback release, staff-first waiting,
+  nonparticipant bypass, independent new scopes/decoys, acquisition/lock/statement/server-
+  transaction failure and reuse, caught aborted SQL/deferred commit failure, mode/role/
+  handle denial and no pooled defaults/advisory-lock leak. All prior financial/settings/
+  unit/policy/audit/outbox snapshots remain unchanged outside explicit temporary probes.
+- Four library builds/Prisma generation, workspace lint and strict workspace/browser-test
+  types passed. Compiled coordination separate import/root exclusion passed. Test barrier
+  entry waits also observe operation failure, so early SQL failures cannot hang acceptance.
+  Complete guarded root tests passed, including 25 API unit suites/107 tests, ten worker
+  suites/29 tests and 54 frontend files/572 tests. The unchanged root controls and shared
+  tests passed; expanded mandatory database acceptance passed again within that run.
+  Local frontend worker count was explicitly one for bounded resources, not a test skip,
+  assertion/timeout change or committed CI override.
+- Fresh independently owned fictional API integration scope passed all 17 suites/81 tests.
+  Financial invariant gates passed 93 shared cases, two API unit suites/12 tests, six API
+  integration suites/42 tests and two worker suites/two tests. Guarded nonce scopes were
+  verified and cleaned without adopting an existing schema or application database.
+  All four libraries and API/web/worker production builds passed with explicit production
+  NODE_ENV. Formatting passed repository-wide; offline docs and production licences passed.
+  Lifecycle browser gate passed all 19 tests; administrator role browser gate passed all
+  four UI-only tests, sequentially on separate owned loopback servers. No cache repair,
+  assertion weakening, skip, retry or timeout change was required. Existing image-loading,
+  colour-environment and pg concurrent-query warnings remain nonfatal and outside this slice.
+- Prior review baseline `2279475df662b9ffcb4317d31404cb441c88cb3b` passed
+  [CI 37639527795](https://github.com/ebit101/webhost-billing/actions/runs/37639527795)
+  and [CodeQL 37639527789](https://github.com/ebit101/webhost-billing/actions/runs/37639527789).
+  These are prior delivery evidence, not this implementation's exact-head results.
+- All four offline documentation validators, repository formatting/whitespace, compiled
+  separate-entry/root-exclusion and protected-path checks passed. All 24 migrations remain
+  unchanged; no schema/root/lockfile/dependency/patch/workflow/scanner-exception changes.
+  Rerun final documentation/format checks after these report edits. Create the focused
+  implementation commit, scan its full Git history read-only/no-network with the pinned
+  cached Gitleaks image, reconcile canonical main without history rewrite and non-force
+  push. Verify exact delivery-head CI and CodeQL, including each mandatory step; report
+  actual commit/run links in the handoff without a self-recording follow-up commit.
+  PR-only Dependency review is skipped on push, not passed. No premature hosted-pass claim.
+
+#### Decisions made and remaining risks
+
+- ADR-097 accepts cooperative unused infrastructure, not currency/actor authority. The
+  trusted body returns void and permits database-only composition; no transaction/session
+  controls, session advisory locks, detached work or external effects. This is not a
+  JavaScript/body-SQL sandbox. Deadlines cannot undo arbitrary code or external effects;
+  malicious/violating injected clients/body/getters remain outside that trusted contract.
+- Normal observed failures roll back. An unobserved network failure at commit can have
+  uncertain outcome, not guaranteed rollback; no automatic retry. Financial idempotency/
+  receipts, normal-SQL guards/privileges, writer adoption/drain, control/latch/selection/
+  proof/ledger/audit, auth coordination and legacy provenance remain separate future work.
+- Database-owner bypass, schema/database rename/upgrade compatibility, mixed-currency reads/
+  precision, actual metadata/source/provider rights, sale/collection/pricing/quote/rate rules
+  and operating inputs remain. Command 33 D5–D8, protected WHMCS/credit/target evidence,
+  Command 91, maintenance/recovery and final launch approval are not supplied or waived.
+  Retained tooling findings/wider resource risk, direct-main rule bypass and skipped PR-only
+  review remain. No provider, real import, release, deployment or production mutation.
+- Preserve the incomplete unmarked fictional scope
+  `command26_e2e_8d7db6b8d0e7489a93eb26daaada1d76` and ignored recoverable Command 101
+  cache backup; no existing-scope/cache cleanup authorized or performed.
+
+#### Exact recommended next command
+
+Authorize **Phase review — Review Command 102 coordination primitive and define the next
+bounded currency command** after validated delivery. Stop before that review; do not
+automatically number/implement selection, install guards/proofs, adopt financial writers,
+activate currency, query/import real data, approve operating inputs, invoke providers,
+clean up existing scopes/cache, release or deploy without separate authorization.
 
 ## Report Template
 

@@ -15,8 +15,10 @@
   The owner subsequently authorized Command 101's unused read-only adoption preflight;
   its entry and fictional tests passed complete local and exact-head CI/CodeQL acceptance
   at `1795160`. The owner-authorized phase review accepted the scope and defines
-  Command 102's unused coordination transaction primitive only; implementation is not
-  authorized. The selection protocol is not implemented or activated.
+  Command 102's unused coordination transaction primitive. The owner subsequently authorized
+  that helper and fictional acceptance on 2026-10-07; implementation and complete local
+  acceptance passed. Exact delivery-head CI/CodeQL verification gates the canonical handoff.
+  The selection protocol is not implemented or activated.
   Application integration and activation remain separately gated.
 - Owner direction: BDT is the default; USD is the preferred secondary currency;
   support major currencies with automatic conversion through a suitable provider.
@@ -886,6 +888,76 @@ Later complete writer/SQL protection and owner-approved drain/adoption/recovery 
 necessary before selection. No live data, metadata rights, policy activation, operating
 approval, import, existing-scope cleanup or deployment follows from this definition.
 
+## 3c. Unused currency coordination transaction — Command 102
+
+The owner separately authorized this implementation on 2026-10-07.
+`@webhost-billing/database/currency-coordination` is a separate unused entry, not a root,
+application, HTTP or CLI consumer. `withCurrencyCoordination(client, input, body)` accepts
+an injected transaction-capable client and strict `{ schema, staffMutex, limits? }` facts.
+The schema is an explicit bounded lowercase ASCII identifier; missing/system schemas or
+missing schema USAGE fail, never fall back. `staffMutex` must be `required` or `not_required`
+as an explicit trusted server composition choice, never an actor/MFA/browser permission.
+
+It owns one explicit Read Committed/read-write transaction. Local search path `pg_catalog`,
+`row_security=off` and positive lock/statement/transaction deadlines are set and verified,
+with client acquisition/transaction bounds. Default ceilings remain 2 seconds acquisition,
+500 milliseconds lock, 2 seconds statement and 10 seconds transaction; only shorter
+positive integer overrides are accepted. No caller-owned transaction, environment discovery,
+client construction, module-load I/O, external operations or automatic retry.
+
+The frozen PostgreSQL two-int key contract is:
+
+```sql
+pg_catalog.pg_advisory_xact_lock(
+  pg_catalog.hashtext('webhost-billing.currency-coordination.v1:' || pg_catalog.current_database()),
+  pg_catalog.hashtext($1::text)
+)
+```
+
+`$1` is the validated explicit schema, not a caller key or search-path fallback. Future
+SQL guards must use the identical namespace/formula in the same database; PostgreSQL
+upgrade/rename/restore and writer adoption require separate review, not client-side hash
+computation. Hash collisions can over-serialize, never admit independent same-key writers.
+The two-int space is distinct from existing single-bigint staff/scheduler/payment keys.
+Where required, fixed staff mutex `920006::bigint` is acquired before this currency lock.
+No arbitrary pre-lock body, auth row lock, control/history lookup or financial mutation.
+
+Lock acquisition is its own statement. Verify modes, schema permission/identity, backend/
+actor identity and actual granted exclusive advisory locks through qualified `pg_locks`
+before invoking the body. Body statements obtain fresh Read Committed snapshots after
+waiting; Command 101's Repeatable Read observation is not reused inside this transaction.
+After the body, repeat verification: caught aborted SQL, changed modes/deadlines/role/
+schema identity or missing required locks must not return success. The body returns void;
+any runtime return value rejects, so no transaction handle, release function, policy receipt
+or authority token escapes as the helper's result. Success resolves only after commit.
+
+The body is trusted database-only server code: no transaction/session control, session
+advisory locks, detached work, external/file/provider effects or retries. This is not a
+JavaScript sandbox or financial/body-SQL guard; arbitrary injected clients, getters and
+violating body code remain trusted powers. Deadlines abort database work, not JavaScript
+or external effects. Ordinary failures roll back; an unobserved network failure during
+commit can leave outcome uncertain, so this helper never retries or asserts that every
+failed acknowledgement proves rollback. Future financial idempotency/receipts are separate.
+Safe errors retain no raw body/SQL/connection cause or partial response. Helper-owned
+transaction locks/local settings release/reset at transaction end; no session unlock calls.
+
+Nine new mandatory source tests and eleven actual PostgreSQL scenarios cover strict
+input/no-I/O boundaries, fixed key/ordering, commit-gated void results, serialization/fresh
+reads, rollback and deferred commit failure, staff-first waiting, all four deadlines/reuse,
+caught aborted SQL, mode/role/returned-handle denial, pool defaults/lock release, independent
+owned schemas and explicit-target decoys. Nonparticipating SQL demonstrably bypasses
+advisory coordination. Tests use only new nonce-marked loopback scopes and temporary probe
+rows; owned probe cleanup preserves the unchanged seed/verifier table assertions. All prior
+financial/settings/unit/policy/audit/outbox rows and 24 migrations/history comparisons remain.
+
+Complete local acceptance passed, including full root/API/invariant tests, both browser
+gates, lint/types, production builds and retained security controls. Exact delivery-head
+CI/CodeQL verification gates canonical delivery. No selected policy/control/
+latch/guard/proof/ledger, grants, financial/auth/worker consumer, provenance, registry, live
+query/import, operating approval or deployment. Stop after delivery for separately authorized
+Command 102 phase review; cooperative serialization is not installed writer coverage or
+permission to initialize/activate currencies.
+
 ## 4. Price publication, quote and renewal rules
 
 ### Catalogue pricing
@@ -1184,9 +1256,10 @@ Delivery sequence, each needing separate authorization:
    its scope. It cannot grant selection/adoption authority or live-data access;
    no migration, runtime consumer or registry publication.
 8. **Command 102 — Build an unused currency coordination transaction primitive** is
-   defined only, not authorized: owned bounded Read Committed transaction, schema-scoped
-   cooperative lock, fresh post-wait reads and explicit staff-first composition. No
-   selection state, SQL guards or adopted writer. Its mandatory tests remain proposed.
+   separately authorized: owned bounded Read Committed transaction, schema-scoped
+   cooperative lock, fresh post-wait reads and explicit staff-first composition. The unused
+   entry and mandatory fictional tests passed complete local acceptance; exact delivery-head
+   CI/CodeQL gates the canonical handoff. No selection state, SQL guards or adopted writer.
 9. Later additive policy/provenance services and per-currency reads; preserve legacy records and
    pass mixed BDT/USD portal/report tests before an import rehearsal.
 10. Fixed BDT/USD catalogue, ownership-bound quotes and confirmed same-currency collection

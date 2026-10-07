@@ -82,7 +82,11 @@ passed complete local and exact-head CI/CodeQL acceptance at `1795160`. The owne
 authorized phase review accepted its scope on 2026-10-07 and defines Command 102's
 unused coordination transaction primitive only. That next slice must prove cooperative
 Read Committed locking, fresh post-wait reads, staff-before-currency composition and
-bounded failure/release in fictional tests; implementation needs separate authorization.
+bounded failure/release in fictional tests. The owner subsequently authorized that unused
+helper and fictional acceptance on 2026-10-07. It owns a verified bounded Read Committed
+transaction with a fixed SQL-derived schema/database advisory key and explicit staff-first
+composition; the trusted body returns no authority/transaction handle. Selection, writer
+coverage and ordinary-SQL enforcement are not installed by cooperative coordination.
 No selection/guard or application consumer is installed by the observation helper or review.
 No live registry, selected installation policy or financial backfill is included. Broader persistence,
 per-currency reads, pricing and activation remain later separately gated slices. Remaining

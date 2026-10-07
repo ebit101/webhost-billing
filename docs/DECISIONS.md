@@ -1552,7 +1552,7 @@ This document records durable technical and product decisions. New decisions sho
 
 ## ADR-096 — Prove cooperative coordination before installing selection authority
 
-- **Status:** Accepted for the owner-authorized Command 101 phase review; Command 102 defined only, implementation not authorized
+- **Status:** Accepted for the owner-authorized Command 101 phase review; Command 102 subsequently authorized on 2026-10-07
 - **Date:** 2026-10-07
 - **Review:** Command 101 at `17951608eae4622bd88033e44b02bcb5bc467bbe` satisfies its
   unused read-only observation scope. Fresh thirty database source and thirty actual SQL
@@ -1581,6 +1581,41 @@ This document records durable technical and product decisions. New decisions sho
   Database-owner powers, unknown provenance, stale observations, retained tooling/wider
   input-resource risk, direct-main governance and launch gates remain without waiver.
   Ask for explicit Command 102 authorization and stop after review delivery.
+
+## ADR-097 — Owned cooperative coordination without currency or actor authority
+
+- **Status:** Accepted and implemented for owner-authorized Command 102; complete local acceptance passed, exact delivery-head CI/CodeQL gates the canonical handoff
+- **Date:** 2026-10-07
+- **Decision:** Add only the unused `currency-coordination` database entry. Require
+  injected transaction-capable client, explicit bounded schema, explicit trusted staff
+  composition and shorter positive limits. Own Read Committed/read-write transaction;
+  verify local modes/visibility/deadlines and schema USAGE/identity. No caller-owned
+  transaction, root/application consumer, discovery, external effects or retries.
+- **Key:** Freeze two-int `hashtext('webhost-billing.currency-coordination.v1:' ||
+current_database()), hashtext(schema)` computed by qualified PostgreSQL functions;
+  no client key or search-path fallback. Collisions over-serialize, never bypass locking.
+  Required staff composition takes existing single-bigint mutex `920006` first, before
+  currency coordination; it authenticates nobody. Future guards must use identical keys.
+- **Body:** Trusted database-only callback after lock acquisition and verified granted
+  locks, with fresh subsequent statements. Verify modes/identity/locks again after body;
+  caught aborted SQL cannot acknowledge a rolled-back commit. Return void only after
+  commit; runtime body return values reject. No handle, release function or policy token.
+  Safe errors redact causes; no statement/transaction/callback retry or partial result.
+- **Limits:** Helper-owned locks/local settings end with the transaction; no session lock/
+  unlock. Trusted clients/body/getter code is not sandboxed; deadlines do not cancel
+  JavaScript or external effects. Violating transaction/session control is unsupported.
+  Unobserved commit transport failures can have uncertain outcome, not automatic rollback;
+  future financial receipts/idempotency remain necessary before integration.
+- **Acceptance:** Mandatory source and actual owned fictional SQL tests cover real waits,
+  fresh reads, staff-first ordering, rollback/deferred commit refusal, wrong modes/roles,
+  acquisition/lock/statement/transaction failure and pool/lock reuse, independent schemas/
+  decoys, no returned authority and demonstrable nonparticipating SQL bypass. Probe-only
+  writes/verified cleanup preserve prior rows, 24 migrations and seed/verifier assertions.
+- **Boundary:** Cooperative unused infrastructure, not writer adoption or ordinary-SQL
+  currency enforcement. No selection/control/latch/proof/ledger/grants, financial/auth/
+  worker consumer, provenance/registry, live-data access/import, operating approval or
+  deployment. Retain tooling/governance/database-owner and launch risks without waiver.
+  Stop after verified delivery for separately authorized Command 102 phase review.
 
 ## Open Decisions
 
