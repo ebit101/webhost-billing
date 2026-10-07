@@ -10,6 +10,10 @@
       "types": "./src/index.ts",
       "default": "./dist/index.js"
     },
+    "./currency-adoption-preflight": {
+      "types": "./src/currency-adoption-preflight.ts",
+      "default": "./dist/currency-adoption-preflight.js"
+    },
     "./currency-policies": {
       "types": "./src/currency-policies.ts",
       "default": "./dist/currency-policies.js"
@@ -30,7 +34,7 @@
     "db:validate": "prisma validate --config prisma.config.ts",
     "db:verify": "tsx prisma/verify.ts",
     "typecheck": "pnpm db:generate && tsc -p tsconfig.json --noEmit",
-    "test:unit": "tsx --test --test-concurrency=1 test/currency-units.spec.ts test/currency-policies.spec.ts",
+    "test:unit": "tsx --test --test-concurrency=1 test/currency-units.spec.ts test/currency-policies.spec.ts test/currency-adoption-preflight.spec.ts",
     "test": "pnpm test:unit && pnpm --filter @webhost-billing/web exec tsx e2e/run-database-tests.ts"
   },
   "dependencies": {

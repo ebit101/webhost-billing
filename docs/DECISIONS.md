@@ -1494,7 +1494,7 @@ This document records durable technical and product decisions. New decisions sho
 
 ## ADR-094 — Inspect currency history without selecting or certifying adoption
 
-- **Status:** Accepted for the owner-authorized Command 100 phase review; Command 101 is defined only, not authorized
+- **Status:** Accepted for the owner-authorized Command 100 phase review; Command 101 was subsequently authorized on 2026-10-07
 - **Date:** 2026-10-07
 - **Review:** Command 100 at `c15117c0974f3bbb3b5ab68812182ad6d58ed196` satisfies its
   documentation-only design scope. Exact-head CI Validate passed all 28 steps and CodeQL
@@ -1520,6 +1520,35 @@ This document records durable technical and product decisions. New decisions sho
   selection/latch/guard/proof/ledger, writer integration, backfill/registry, provider/import,
   operating approval, cleanup or deployment. Tooling/governance/database-owner and launch
   risks are unchanged; ask for explicit Command 101 authorization and stop.
+
+## ADR-095 — Own a bounded read-only currency observation, not adoption authority
+
+- **Status:** Accepted and implemented for owner-authorized Command 101; complete local acceptance passed, exact-head hosted checks gate delivery
+- **Date:** 2026-10-07
+- **Decision:** Add only the unused `currency-adoption-preflight` database entry with
+  injected transaction-capable client and explicit bounded schema/limits. Own one Repeatable
+  Read transaction; set/verify READ ONLY, local search path/row-security and database/client
+  deadlines. No caller-owned transaction, root/app/HTTP/CLI consumer or connection discovery.
+- **Scope:** Fixed qualified ordinary-table counts across seven money tables and aggregate-
+  only event evidence presence. Use canonical PostgreSQL BIGINT strings and BigInt arithmetic;
+  deterministic maximum 32 displayed groups with exact omitted/unresolved row counts.
+  No amounts, identities, policy/metadata inference, hidden unknown codes or readiness verdict.
+  Empty observations still expose missing selection/writer/adoption/provenance assessment.
+- **Failures:** Unknown input fields, identifiers or budget values reject before work.
+  Missing sources/permissions, restrictive RLS, unverified transaction state, corrupt counts
+  and timeouts fail without partial result or raw SQL/connection causes. No retry. Local
+  settings/roles revert; statement/transaction deadlines bound work beyond client waiting.
+  LIMIT does not bound count/group scans or guarantee zero disk/resource impact.
+- **Acceptance:** Source tests and mandatory guarded SQL tests verify actual read-only
+  rejection, exact counts, snapshot races, limits/acquisition/timeout/reuse, RLS/permissions,
+  decoys/missing tables and unchanged historical/settings/unit/policy/audit/outbox rows.
+  Existing prior-22/23 comparisons, scope guards and all 24 migrations stay intact.
+  Restricted-role tests use existing roles locally; no global role/grant mutation.
+- **Boundary:** No selected pointer, history latch, SQL privilege/guard adoption, security
+  proof/ledger, legacy linkage/backfill, registry publication, provider/import/live query,
+  operating approval, release or deployment. Trusted injected clients and database-owner
+  bypass remain residual powers; observation is not a complete obligation/provenance audit.
+  Stop after verified delivery for a separately authorized Command 101 phase review.
 
 ## Open Decisions
 

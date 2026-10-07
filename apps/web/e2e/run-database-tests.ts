@@ -33,7 +33,11 @@ async function main(): Promise<void> {
     ];
     const windows = process.platform === 'win32';
     // Preserve the empty-unit assertion before policy fixtures add context.
-    for (const file of ['currency-units', 'currency-policies']) {
+    for (const file of [
+      'currency-units',
+      'currency-policies',
+      'currency-adoption-preflight',
+    ]) {
       const args = [...baseArgs, `test/${file}.integration.spec.ts`];
       execFileSync(
         windows ? (process.env.ComSpec ?? 'cmd.exe') : 'pnpm',

@@ -3551,8 +3551,11 @@ phase review below defines Command 101 only; implementation still needs authoriz
 ## Command 101 — Build a read-only currency adoption preflight
 
 **Defined by the owner-authorized Command 100 phase review on 2026-10-07.**
-**Not authorized for implementation.** This is an unused advisory inventory, not
-selection, migration eligibility, a provenance audit or permission to query live data.
+**Implementation explicitly authorized by the owner on 2026-10-07.**
+The unused entry and mandatory fictional tests passed complete local acceptance.
+Canonical delivery requires exact-head CI/CodeQL, with final evidence in the owner
+handoff. This is an advisory inventory, not selection,
+migration eligibility, a provenance audit or permission to query live data.
 
 ```text
 Command 101 — Build a read-only currency adoption preflight
@@ -3633,9 +3636,11 @@ non-force push origin/main and verify exact-head CI/CodeQL. Stop for a separatel
 phase review; do not automatically define or implement a selection migration next.
 ```
 
-**Authorization boundary:** This phase review defines Command 101 but does not implement
-it. No permission to inspect live/WHMCS data, activate currency or deploy follows from a
-read-only result. Ask the owner to authorize Command 101 before development.
+**Authorization boundary:** The owner authorized Command 101's unused preflight and
+fictional acceptance only. No permission to inspect live/WHMCS data, activate currency
+or deploy follows from its result. Stop after validated delivery for separately authorized
+**Phase review — Review Command 101 read-only adoption preflight and define the next
+bounded currency command**. Do not automatically authorize a selection migration.
 
 ---
 

@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Phase review — Review Command 100 authoritative selection design and define the next bounded currency command
-- **Current status:** Command 100's documentation-only design accepted after source and exact-head hosted review; no runtime correction required. Command 101 defined only: unused read-only currency adoption preflight, bounded consistent snapshot/counts and explicit unresolved coverage; not implementation, eligibility or activation authority. Fresh focused/documentation/format checks passed; exact review-head CI/CodeQL verification belongs in delivery. No runtime/schema/history/live-data/provider/deployment change. Production audit clean; full audit retains two tooling findings without waiver
+- **Current command:** Command 101 — Build a read-only currency adoption preflight
+- **Current status:** Owner-authorized unused count-only preflight implemented; complete local acceptance passed, including thirty database source tests, eleven new PostgreSQL scenarios and both browser gates. Prior SQL tests/migration-history comparisons retained. Exact-head CI/CodeQL and canonical delivery must be verified in the final owner handoff. No application/CLI consumer, selection/guard/proof, registry, financial-history/schema change, live-data query, provider or deployment. Production audit clean; full audit retains two tooling findings without waiver
 - **Last updated:** 2026-10-07
-- **Next command:** Command 101 — Build a read-only currency adoption preflight
+- **Next command:** Phase review — Review Command 101 read-only adoption preflight and define the next bounded currency command
 - **Next command authorized:** No
 
 ## Command Reports
@@ -11148,7 +11148,7 @@ invoke providers, change financial history, release or deploy.
 
 ### Phase review — Review Command 100 authoritative selection design and define the next bounded currency command
 
-- **Status:** Review and next bounded definition completed; focused local/documentation acceptance passed, exact review-head CI/CodeQL verification belongs in delivery
+- **Status:** Completed and delivered at `3885006829ba9d6778d2295c252bf1319fead57b`; exact-head CI/CodeQL passed
 - **Date:** 2026-10-07
 - **Authorization:** The owner authorized this review and definition only. Command 101
   is not authorized for implementation; no live-data observation or activation authority.
@@ -11235,6 +11235,139 @@ Authorize **Command 101 — Build a read-only currency adoption preflight**. Sto
 this review's validated delivery. Do not implement it, query live/WHMCS data, add selection/
 guards/proofs/provenance, seed a registry, activate currency, import, clean up scopes,
 invoke providers, release or deploy without separate authorization.
+
+### Command 101 — Build a read-only currency adoption preflight
+
+- **Status:** Implementation and complete local acceptance passed; canonical delivery and exact-head hosted checks required in the final owner handoff
+- **Date:** 2026-10-07
+- **Authorization:** The owner authorized Command 101's unused observation entry and
+  fictional acceptance only. No live/WHMCS query, selection, activation or deployment.
+
+#### Scope completed
+
+- Added `inspectCurrencyAdoption` in a separate unused database entry, with explicit client
+  and strict schema/optional limits. Owns one Repeatable Read transaction, sets/verifies
+  READ ONLY before data queries and uses schema-qualified fixed sources/PG catalog functions.
+  Reject missing/non-table sources, filtered RLS, permissions and unverified modes.
+- Count every row in seven money tables, distinguishing six-table financial-history facts
+  from price configuration. Return copied JSON-safe exact string counts, deterministic code
+  groups, maximum 32 displayed/33 fetched, explicit omitted/unresolved row counts and UTC
+  database observation time. No money columns/sums, customer/record IDs or precision/base guess.
+- Add aggregate-only linked/unlinked/event-payload-presence counts, never payload contents,
+  validation or obligation reconciliation. Always disclose missing selection authority and
+  unestablished writer/adoption/provenance/gateway assessment, including empty observations.
+- Enforce positive bounded acquisition/lock/statement/transaction limits at client and
+  database; transaction-local settings only, no retry/partial success or raw SQL/error cause.
+  COUNT/GROUP scan cost remains possible. No root/app/HTTP/CLI or module-load I/O consumer.
+- Wire twelve new source cases and eleven guarded actual PostgreSQL scenarios into existing
+  database/root/CI acceptance. Retain prior SQL tests, all 24 migrations, prior-22/23 history
+  comparisons, raw/model scope markers and verifier assertions. Test-only roles are existing
+  built-ins used locally, not new production roles/grants.
+
+#### Files changed
+
+- `packages/database/src/currency-adoption-preflight.ts` — unused observation/error/types.
+- `packages/database/test/currency-adoption-preflight.spec.ts`,
+  `packages/database/test/currency-adoption-preflight.integration.spec.ts` — source/SQL acceptance.
+- `packages/database/package.json`, `apps/web/e2e/run-database-tests.ts` — separate export
+  and mandatory ordered test wiring; root/CI commands include both layers without new CLI.
+- `CODEX_DEVELOPMENT_COMMANDS.md`, `HOSTING_BILLING_SYSTEM_PLAN.md`,
+  `docs/MULTI_CURRENCY_DESIGN.md`, `docs/DECISIONS.md`, `docs/PROGRESS.md` — authorization,
+  implementation limits, ADR-095, evidence/risks and exact next review boundary.
+  No schema/migration/dependency/lock/patch/workflow/scanner-exception or app behavior change.
+
+#### Validation performed
+
+- Fresh frozen install and all ten installed tooling-mitigation tests passed. Production
+  audit found no known vulnerabilities. Full audit retained exit 1 with high braces/moderate
+  sprintf-js tooling findings. Registry latest remains 3.0.3/1.1.3; suggested 3.0.4/1.1.4
+  floors remain unpublished. Primary
+  [braces advisory](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm) and
+  [sprintf-js advisory](https://github.com/advisories/GHSA-hp3w-g68c-fv3c) show no patched
+  release. Mitigations are not upstream closure or broader input/resource-risk acceptance.
+- Initial strict type check caught readonly mapped budget fields; corrected the local type
+  and reran successfully. The first SQL run rejected a terminated-service fixture missing
+  required hosting identifiers. Corrected fictional evidence, retained the existing CHECK,
+  and reran the complete guarded database suite successfully. No application fix or weakened
+  constraint; failed/successful marked test scopes were cleaned by verified ownership guards.
+- Thirty database source tests passed (twelve new). Prior unit SQL nine, policy SQL ten and
+  new preflight SQL eleven passed, followed by guarded seed/verifier. Proved SQLSTATE 25006
+  write denial, multiple-table snapshot race, exact overflow/history counts, restrictive
+  RLS/permission failure, acquisition/lock/statement/transaction timeout with reuse, pooled
+  setting reset, decoy qualification and missing-source refusal. All fictional row snapshots,
+  including financial/settings/unit/policy/audit/outbox evidence, remain unchanged by inspection.
+- Complete guarded root tests passed: all 67 root tooling/demo/documentation assertions,
+  93 shared contracts, database source/SQL acceptance, 107 API unit tests, 29 worker tests
+  and all 54 frontend files/572 assertions. Four library builds/Prisma generation, lint,
+  strict workspace/browser-test types, production licence inventory and all production
+  builds passed. Compiled preflight is available only through its separate entry, not root.
+- The first parallel root test run failed two frontend ledger loading waits (order and
+  service), with 570 of 572 frontend assertions passing; API/worker/database tests passed.
+  Both affected files passed all 55 assertions in isolation, then all 54 frontend files/
+  572 assertions passed with one Vitest worker. Assertions, timeouts, application code
+  and CI controls are unchanged. The successful complete root retry used Vitest's supported
+  `VITEST_MAX_WORKERS=1` resource limit, not an assertion skip or timing waiver.
+- The first full API integration run in an empty owned scope passed 80/81 assertions;
+  the administrator ownership assertion returned 404 because the canonical fictional
+  seed customer was absent. Corrected only the ephemeral local setup by invoking the
+  existing guarded `prepareLegacyApiCustomer` helper. The complete rerun passed all
+  17 API suites/81 assertions; invariants passed 93 contracts, twelve invoice/payment
+  unit assertions, six API integration suites/42 assertions and both renewal-worker
+  scenarios. No fixture identifier, assertion, source or guard was changed. Verified
+  ownership cleanup removed only newly created scopes on both failed/successful runs.
+- Final documentation/formatting checks, full-history scanner and exact-head hosted
+  delivery verification are required before the owner completion handoff.
+- Initial lifecycle browser run passed 11/19 scenarios; eight failed on existing nested
+  routes returning 404 (including checkout's expected redirect), not wrong ledger counts.
+  Source routes and assertions are unchanged. With test servers closed, validated the
+  generated cache's exact in-workspace path/no reparse point and moved it recoverably to
+  ignored `backups/command101-next-e2e-cache-568d9ce9fb7141c6814758f1c62276a8`.
+  The complete fresh-cache rerun passed all nineteen lifecycle scenarios, then all four
+  administrator-role browser checks (mobile/desktop/navigation/security). Verified scope
+  cleanup passed. No cache deletion, source/config/test relaxation or existing database-
+  scope cleanup was performed. Nonfatal VM/pg/colour/logo-loading warnings remain; no
+  application performance or unrelated dependency repair is claimed.
+- The first pinned full-history secrets scan found one generic-api-key false positive
+  on a static fictional order submission identifier in the new SQL test. No credential
+  was involved or pushed. Replaced that test identifier with runtime `randomUUID()`,
+  retaining the fixture's meaning. All thirty source and thirty SQL cases, guarded seed/
+  verifier and strict database types passed again. Amend only the unpublished local
+  implementation commit before a fresh full-history scan. No published history rewrite,
+  scanner exclusion, suppression or credential/production change is authorized or needed.
+- Source baseline review commit `3885006829ba9d6778d2295c252bf1319fead57b` passed
+  [CI 37614929641](https://github.com/ebit101/webhost-billing/actions/runs/37614929641)
+  and [CodeQL 37614929684](https://github.com/ebit101/webhost-billing/actions/runs/37614929684).
+  These are prior reviewed delivery evidence, not Command 101's exact-head results.
+- All four offline documentation validators, repository Prettier/whitespace, another
+  frozen install and unchanged excluded paths passed after final report edits. Recheck
+  this final evidence sentence, then create a focused ten-file commit,
+  scan full Git history using the existing pinned cached Gitleaks image read-only without
+  network, reconcile canonical main and non-force push. Verify all exact-head CI Validate
+  and CodeQL job steps, report actual run links in the owner handoff and stop. No premature
+  hosted-pass claim or self-recording report-only follow-up commit.
+
+#### Decisions made and remaining risks
+
+- ADR-095 accepts advisory inspection without initialization/selection authority. A code
+  is not a unit/version; normalized-payload non-null presence is not validity or complete
+  gateway/import evidence. Missing legacy provenance and unestablished writer coverage
+  cannot be resolved from zero/truncated counts, localization or stored candidate metadata.
+- No financial-writer adoption, normal-SQL guard/privilege hardening, latch/selection/proof/
+  ledger or mixed-currency read/presentation repair. Trusted client/database-owner powers,
+  schema changes after observations and resource costs remain; a result can immediately stale.
+- Tooling advisories/wider executable-input/resource risk, direct-main rule bypass/skipped
+  PR-only dependency review and Command 33 D5–D8, source/provider/operating/recovery evidence,
+  WHMCS/credits/target approval, Command 91 and production launch gates remain unchanged.
+- Preserve the incomplete unmarked fictional scope
+  `command26_e2e_8d7db6b8d0e7489a93eb26daaada1d76`. No existing-scope cleanup, real-data access,
+  provider call, release, deployment or production migration authorized/performed.
+
+#### Exact recommended next command
+
+Authorize **Phase review — Review Command 101 read-only adoption preflight and define
+the next bounded currency command** after validated delivery. Stop before that review;
+do not number/implement selection, activate currencies, query/import real data, change
+financial history, publish metadata, invoke providers, clean up existing scopes or deploy.
 
 ## Report Template
 

@@ -76,7 +76,11 @@ compatibility and full-administrator confirmation/audit. Its exact-head CI/CodeQ
 the owner-authorized phase review accepted the design and defines Command 101's unused
 read-only adoption preflight only. Its protocol is not implemented. The next slice requires
 one bounded database-enforced read-only snapshot, exact counts and explicit unknowns;
-it cannot authorize migration/activation or live-data access. Implementation needs separate authorization.
+it cannot authorize migration/activation or live-data access. The owner subsequently
+authorized Command 101 on 2026-10-07. Its unused count-only entry and fictional SQL tests
+passed complete local acceptance. Exact-head hosted checks gate delivery, with final
+evidence in the owner handoff. No selection/guard or application consumer is installed
+by that observation helper.
 No live registry, selected installation policy or financial backfill is included. Broader persistence,
 per-currency reads, pricing and activation remain later separately gated slices. Remaining
 tooling advisories are not waived. No currency is activated by this sequence.

@@ -12,8 +12,10 @@
   hosted acceptance and were phase-reviewed on 2026-10-07. The owner separately authorized
   Command 100's authoritative-selection/legacy-history design on 2026-10-07; that
   source-grounded design passed exact-head CI/CodeQL and was phase-reviewed on 2026-10-07.
-  Command 101's unused read-only adoption preflight is defined only, not implemented or
-  authorized. The selection protocol is not implemented or activated.
+  The owner subsequently authorized Command 101's unused read-only adoption preflight;
+  its entry and fictional tests passed complete local acceptance. Exact-head CI/CodeQL
+  gate delivery, with final evidence in the owner handoff. The selection protocol is
+  not implemented or activated.
   Application integration and activation remain separately gated.
 - Owner direction: BDT is the default; USD is the preferred secondary currency;
   support major currencies with automatic conversion through a suitable provider.
@@ -778,7 +780,64 @@ the proposed implementation still needs executable verification.
 
 The exact definition and acceptance are in [command tracking](../CODEX_DEVELOPMENT_COMMANDS.md).
 No selection migration, financial rewrite, activation, source-rights decision, operating
-approval, existing-scope cleanup or deployment is authorized. Ask for Command 101 approval.
+approval, existing-scope cleanup or deployment is authorized by that review. The owner
+subsequently authorized only Command 101's preflight implementation below.
+
+## 3b. Read-only currency adoption observation — Command 101
+
+`@webhost-billing/database/currency-adoption-preflight` is a separate unused entry.
+`inspectCurrencyAdoption` receives an explicitly injected transaction-capable Prisma
+client and strict `{ schema, limits? }` input. It owns a top-level Repeatable Read
+transaction and sets/verifies READ ONLY before data reads. No root export, application,
+HTTP/CLI consumer, self-created connection, environment discovery or module-load I/O.
+This implementation is not permission to query live or WHMCS data.
+
+Targets use bounded full-string lowercase ASCII schema identifiers and fixed qualified
+table names; system schemas are rejected. A catalog check requires all eight sources to
+be actual ordinary tables, not missing/foreign/view substitutes. Local search path is
+`pg_catalog`; fixed functions/collation are qualified. Local `row_security=off` causes
+filtered non-owner RLS reads to fail rather than silently return partial/empty counts;
+it grants no privilege. Missing tables/permissions/modes or malformed stored observations
+return a redacted observation failure without partial counts or raw SQL/connection cause.
+
+Every row in the seven money tables is counted, including inactive/retired/deleted prices,
+draft/cancelled/paid-zero invoices, failed payments, terminated services and soft-deleted
+customers. Six history tables are distinguished from configuration prices. Count strings
+are validated as canonical nonnegative PostgreSQL BIGINT counts and computed with BigInt,
+not Number. At most 33 shape-valid code groups are fetched per table in deterministic
+ASCII order; 32 are displayed, with explicit truncation and exact omitted-row count.
+Malformed/null code rows receive a separate unresolved count without exporting raw labels.
+Shape-valid unknown codes are visible, not declared supported; codes do not establish units.
+
+Gateway results contain only total, linked/unlinked and SQL-non-null normalized-payload
+presence counts, not payload content, validity or obligation reconciliation. No money
+columns/sums, decimal rendering, record/customer IDs, policy/metadata lookup, base inference
+or readiness/eligibility verdict. `financialHistoryObserved` is an advisory snapshot fact,
+not a persistent latch. Selection authority remains unimplemented; writer/adoption coverage,
+legacy provenance and gateway consistency remain unresolved even with an empty result.
+The database supplies canonical UTC observation time; results can immediately become stale.
+
+Default ceilings: two seconds acquisition, 500 milliseconds lock, two seconds statement
+and ten seconds transaction. Explicit overrides must be strictly positive integers at or
+below those ceilings; unknown fields, null/undefined budgets and authority flags reject
+before work. Database-local lock/statement/transaction deadlines complement the client's
+maxWait/transaction timeout. No retries, Promise.race-only timeout or swallowed aborted
+statement. Success returns after commit; failures roll back. Pooled defaults/roles remain
+unchanged. COUNT/GROUP may scan entire tables and consume resources despite LIMIT; this
+is not a constant-cost/zero-I/O audit or an activation assessment.
+
+Mandatory source and actual PostgreSQL acceptance are wired into the database package's
+existing root/CI path. Fictional tests preserve all current row snapshots, previous unit/
+policy/history assertions and the unchanged 24 migrations. Restricted-role tests use
+existing built-in roles transaction-locally, never create/grant production roles. Read-only
+write rejection verifies SQLSTATE 25006. Snapshot interleaving, overflow, acquisition/
+lock/statement/transaction failure, connection reuse/local-setting reset, RLS/permissions,
+qualified decoys and missing tables are tested in newly marked owned loopback scopes.
+No production hooks or arbitrary callback are exposed by the entry.
+
+No selected pointer/latch/guard/ledger/proof, writer adoption, financial provenance/backfill,
+registry publication, formatting/aggregate repair, provider, real import or deployment.
+After complete acceptance/delivery, stop for the separately authorized Command 101 phase review.
 
 ## 4. Price publication, quote and renewal rules
 
@@ -1071,10 +1130,12 @@ Delivery sequence, each needing separate authorization:
    initialization/history states, guarded Read Committed coordination, exact-unit/legacy
    adoption rules, security/audit and fictional acceptance matrix. No runtime state/source
    change or activation. Exact-head CI/CodeQL and the owner-authorized phase review passed.
-7. **Command 101 — Build a read-only currency adoption preflight** is defined only, not
-   authorized: unused database entry, one bounded read-only snapshot, exact counts and
-   explicit unknown/truncation limits. It cannot grant selection/adoption authority or
-   live-data access; no migration, runtime consumer or registry publication.
+7. **Command 101 — Build a read-only currency adoption preflight** was separately authorized:
+   unused database entry, one bounded read-only snapshot, exact counts and explicit unknown/
+   truncation limits, mandatory fictional acceptance. Implementation and complete local
+   validation passed; exact-head hosted acceptance gates delivery. It cannot grant
+   selection/adoption authority or live-data access;
+   no migration, runtime consumer or registry publication.
 8. Later additive policy/provenance services and per-currency reads; preserve legacy records and
    pass mixed BDT/USD portal/report tests before an import rehearsal.
 9. Fixed BDT/USD catalogue, ownership-bound quotes and confirmed same-currency collection
