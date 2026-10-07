@@ -3116,6 +3116,9 @@ authorize proceeding to currency work by inference.
 
 ## Command 96 — Build the exact currency arithmetic foundation
 
+**Delivered and phase-reviewed on 2026-10-07.** See the progress report for local and
+exact-head hosted acceptance; this does not approve operational currency activation.
+
 **Defined by the owner-authorized Command 95 phase review on 2026-10-06 and explicitly
 authorized for implementation on 2026-10-07.** This is an unused, pure shared-library foundation, not currency
 activation or acceptance of the remaining tooling risks. BDT default/USD preferred
@@ -3182,6 +3185,85 @@ provider accounts/activation, release, deployment and production approval.
 explicit instruction authorized this bounded implementation. No residual-risk waiver,
 currency dataset licence or operational currency policy is approved. Stop after verified
 delivery for a separately authorized phase review, not another implementation command.
+
+---
+
+## Command 97 — Build explicit currency policy and capability contracts
+
+**Defined only by the owner-authorized Command 96 phase review on 2026-10-07.**
+Implementation requires separate authorization. This is an unused shared-contract
+slice before persistence and application integration, not a live currency policy.
+
+```text
+Command 97 — Build explicit currency policy and capability contracts
+
+Read AGENTS.md, the product plan, decisions, progress and MULTI_CURRENCY_DESIGN.md.
+Recheck retained tooling advisories/releases, frozen install, installed mitigation tests
+and separate full/production audits. Preserve patches and supply-chain controls. Stop
+for separately scoped repair if a changed exposure or mandatory failure is out of scope.
+
+Add strict, bounded runtime schemas and pure policy helpers in packages/shared behind
+a separate unused currency-policy entry. Preserve existing root exports, settings/money
+contracts, currency arithmetic and all application consumers. Do not install dependencies.
+
+Represent one installation policy revision, one base/reporting currency, a default
+browsing currency, optional preferred secondary and explicit per-code capabilities.
+Pin selected unit definitions by code and metadata version in caller-supplied context;
+no global registry, environment lookup, latest-version fallback or built-in live defaults.
+BDT base/default and USD preferred secondary are the owner-directed target, exercised
+only as fictional policy fixtures. Keep contracts usable by other single-business installs.
+
+Require explicit independent display, new-sales and collection flags. Omitted/unknown
+currency capabilities fail closed; do not infer permission from code syntax, current
+metadata, browsing preference, a rate or provider coverage. Validate bounded arrays before
+member traversal, unique per-code policy entries, known exact unit references and strict
+bounded revision/identifier fields. Default/secondary browsing references must be current
+and display-enabled; a secondary, when present, must differ from the default. Historical
+definitions cannot enable new browsing/sales. Collection is separate from those flags:
+its policy flag never establishes a tested same-currency payment route or settlement.
+
+Keep historical unit resolution independent of display/sales/collection enablement.
+Resolve only an exact code/version from supplied metadata; never hide, reinterpret,
+convert or update existing money because policy is disabled or metadata is superseded.
+Return copied JSON-safe policy/unit facts, not an authorization token or payable quote.
+
+Provide pure transition validation against an explicit current policy and expected
+revision. Reject stale expected revisions and a replacement revision equal to the current
+one; uniqueness across persisted revision history is a later storage responsibility.
+With an explicit authoritative history-exists fact, prohibit changing the base currency code after financial
+history exists. That fact is a future server/database responsibility, never trusted browser
+input; a pure helper cannot prove history, serialize edits, enforce roles/MFA/CSRF or
+approve a base change. Default/secondary/capability changes must not mutate supplied
+historical records. Runtime transitions/confirmations and storage remain later work.
+
+Test fictional BDT/USD target policy, alternate install base, malformed/oversized input,
+unknown/conflicting versions, duplicates, missing flags, independent disabled states,
+invalid default/secondary, historical-unit readability, unchanged inputs, stale/equal
+revisions and base lock with/without history. Include current versus historical precision
+and prove rates/preferences do not enable collection. No provider data or real business
+policy fixture is shipped. Do not copy/distribute a maintained currency dataset without
+verified source rights; this command requires none.
+
+Run focused and complete package tests, guarded API/invariant acceptance and both fictional
+browser suites sequentially. Run frozen install, full and production audits separately,
+licenses, docs/format/lint, all strict types and production builds. Record unchanged
+mitigated full-audit exit 1 honestly. Preserve assertions, deadlines, retries and scope
+guards; never reset an existing application schema or invoke real providers.
+
+Update progress/decisions with actual results and limitations. After local acceptance,
+commit, reconcile canonical main without rewriting history, non-force push origin/main
+and verify exact-head CI/CodeQL. Stop for separately authorized phase review.
+
+Exclude database tables/migrations/backfills, existing localization/settings writes,
+API/UI/worker integration, maintained registry/metadata refresh, display formatting,
+mixed-currency aggregate repairs, catalogue prices, quotes, FX adapters/network calls,
+provider routes/credentials, scheduler/jobs, payment/refund/renewal behavior, WHMCS
+export/import, Command 91, Command 33 approvals, releases, deployment and production.
+```
+
+**Authorization boundary:** This review defines Command 97 only. No currency capability,
+base change, provider/data licence, residual-risk waiver or operational policy is approved.
+New implementation needs the owner's explicit authorization.
 
 ---
 

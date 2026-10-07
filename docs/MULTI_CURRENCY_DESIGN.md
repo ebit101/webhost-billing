@@ -4,7 +4,9 @@
 
 - Command: 94 — Design multi-currency billing and WHMCS migration rules.
 - Date: 2026-10-06.
-- Status: Design completed; application implementation and activation are not authorized.
+- Status: Design completed; Command 96's unused arithmetic foundation delivered and
+  phase-reviewed. Command 97 is defined only; application integration/activation remains
+  separately gated.
 - Owner direction: BDT is the default; USD is the preferred secondary currency;
   support major currencies with automatic conversion through a suitable provider.
 - Design interpretation: BDT is the single base/reporting currency and default for new
@@ -178,6 +180,25 @@ Tests also show why rounded unit amounts are multiplied and summed: fictional so
 units `5` (quantity three) and `7` (quantity one), at rate `1/2` with equal exponents,
 produce stored target lines `6` and `4`, totaling `10`. Converting the source header `22`
 would instead produce `11`. This is an arithmetic regression, not a new invoice policy.
+
+### Defined next slice: explicit currency policy contracts
+
+The owner-authorized Command 96 phase review on 2026-10-07 found no arithmetic repair
+necessary and defines **Command 97 — Build explicit currency policy and capability
+contracts** only. Its implementation still requires separate authorization.
+
+One unused shared entry will describe revisioned base/default/secondary choices and
+explicit independent display, new-sales and collection flags, pinned to supplied unit
+metadata. It will reject ambiguity and unsupported references without a built-in dataset,
+live default or application consumer. A rate, browsing choice or metadata definition never
+enables collection or proves a payment route. Historical code/version resolution remains
+available independently of disabled flags; it never adopts current precision implicitly.
+
+Pure transition tests will reject stale revisions and base-code changes after an explicit
+history-exists fact. Future server services must obtain that fact authoritatively and enforce
+concurrency, authorization and confirmation; these contracts do not do so. Fictional
+BDT/USD target examples do not approve actual sales/collection capabilities. Persisted
+metadata/policy, per-currency portal/report reads and prices/quotes remain later slices.
 
 ## 4. Price publication, quote and renewal rules
 
@@ -439,21 +460,26 @@ Delivery sequence, each needing separate authorization:
    audit still reports two development-tooling advisories; mitigation is not upstream
    closure or owner residual-risk acceptance. Keep mitigation verification and the
    production audit gate; separately review any changed exposure before activation.
-2. **Command 96 — Build the exact currency arithmetic foundation** is owner-authorized
-   on 2026-10-07, with implementation/validation tracked in the progress report. Pure
+2. **Command 96 — Build the exact currency arithmetic foundation** was authorized,
+   delivered and phase-reviewed on 2026-10-07, with local and exact-head hosted evidence
+   in the progress report. Pure
    shared metadata contracts, bounded exact-rational/decimal-string arithmetic and
    fictional zero/two/three-decimal tests do not connect application consumers or activate
    billing. Do not ship a maintained currency dataset without verified source rights.
    A production registry/capability policy, adapter, database backfill and pricing effects
    remain later, separately authorized slices. See the bounded command definition in
    [command tracking](../CODEX_DEVELOPMENT_COMMANDS.md).
-3. Additive policy/provenance schema and per-currency reads; preserve legacy records and
+3. **Command 97 — Build explicit currency policy and capability contracts** is defined
+   only by that review, not authorized. Keep it unused: strict explicit metadata bindings,
+   independent capabilities, historical lookup and pure revision/base-lock validation.
+   It cannot establish real provider routes, enforce database transitions or enable sales.
+4. Additive policy/provenance schema and per-currency reads; preserve legacy records and
    pass mixed BDT/USD portal/report tests before an import rehearsal.
-4. Fixed BDT/USD catalogue, ownership-bound quotes and confirmed same-currency collection
+5. Fixed BDT/USD catalogue, ownership-bound quotes and confirmed same-currency collection
    paths. Use fake providers; real USD payment approval is separate.
-5. Rate-adapter sandbox evaluation, reviewed terms/credentials and proposed operational
+6. Rate-adapter sandbox evaluation, reviewed terms/credentials and proposed operational
    defaults, followed by guarded derived-price publication and additional currency tests.
-6. Protected WHMCS sample/import rehearsal with reconciliation and separate owner review.
+7. Protected WHMCS sample/import rehearsal with reconciliation and separate owner review.
    Actual source export and target controls may be assessed earlier, read-only, by authority.
 
 Remaining decisions: exact supported sales currencies and payment destinations, fixed

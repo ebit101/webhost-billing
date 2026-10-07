@@ -60,9 +60,11 @@ per-currency reporting and preservation of WHMCS BDT/USD history. Command 94 is 
 only. Existing single-currency contracts remain unchanged until separately authorized
 implementation. Commands 93 and 95 repaired and validated the acceptance gate; the
 Command 95 phase review defined Command 96's pure arithmetic foundation, subsequently
-authorized on 2026-10-07. Its unused helpers do not change application billing behavior;
-later integration/activation needs separate authorization, and remaining tooling advisories
-are not waived. No currency is activated by this sequence.
+authorized, delivered and phase-reviewed on 2026-10-07. Its unused helpers do not change
+application billing behavior. The Command 96 review defines Command 97's unused explicit
+currency-policy/capability contracts only; implementation is not authorized. Persistence,
+per-currency reads, pricing and activation remain later separately gated slices. Remaining
+tooling advisories are not waived. No currency is activated by this sequence.
 
 ## 3. User Roles
 

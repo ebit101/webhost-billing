@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 96 — Build the exact currency arithmetic foundation
-- **Current status:** Command 96 completed and source delivered to canonical main. Local guarded package/API/invariant and lifecycle/staff browser acceptance passed; exact source-head CI and CodeQL succeeded. Shared 67 tests, web 572 tests, types, builds, lint/docs/format/licenses, frozen install and mitigation checks pass. Production audit clean; full audit retains one high/one moderate development-tooling finding, not waived. Final report-head checks are verified in the owner handoff. No application currency behavior, staging release or production approval changed
+- **Current command:** Phase review — Review Command 96 arithmetic foundation and define the next bounded currency command
+- **Current status:** Command 96 accepted after source/test review, fresh focused checks and exact delivered-head hosted evidence. No arithmetic correction found; no application consumers connected. Command 97 defined only for unused explicit currency-policy/capability contracts before persistence/integration. Production audit clean; full audit retains two development-tooling findings without waiver. No runtime currency, provider, migration, release or production approval changed
 - **Last updated:** 2026-10-07
-- **Next command:** Phase review — Review Command 96 arithmetic foundation and define the next bounded currency command
+- **Next command:** Command 97 — Build explicit currency policy and capability contracts
 - **Next command authorized:** No
 
 ## Command Reports
@@ -10323,6 +10323,108 @@ Stop after this phase review; no currency functionality, release or deployment i
 Authorize **Phase review — Review Command 96 arithmetic foundation and define the next
 bounded currency command**. Stop after verified delivery. This recommendation is not
 authorization for a new implementation, provider activation or deployment.
+
+### Command 96 phase review — Review arithmetic foundation and define the next bounded currency command
+
+- **Status:** Review completed; Command 97 defined only, implementation not authorized
+- **Date:** 2026-10-07
+- **Authorization:** The owner explicitly requested this phase review after Command 96.
+  Defining a next command is not permission to implement or activate it.
+
+#### Scope reviewed and findings
+
+- Read project instructions, product plan, decisions, current progress, full currency
+  design and exact Command 96 acceptance/exclusion requirements. Inspected delivered
+  source/test changes and the separate compiled entry point.
+- No in-scope arithmetic defect or missing Command 96 acceptance requirement found.
+  Source and regressions cover positive lossless decimal/rational parsing, bounded work
+  before BigInt/powers, explicit historical units, strict identity/direction, half-even
+  ties and overflow carry, JSON-safe evidence and unchanged existing money contracts.
+  The independent 297-case nearest-distance oracle and stored-line/header discrepancy
+  are useful arithmetic evidence, not approval of a live invoice/rounding policy.
+- Verified no change to existing root exports, money contracts, lockfile, application
+  code or database in the delivered command; no application imports the new helper.
+  Context status/provenance is caller-supplied data, not authenticated metadata or
+  provider truth. Returned calculation objects are copied plain data, not immutable
+  database history or authorization tokens. Getters/proxies remain outside the sandbox
+  claim. The documented 32-definition/exponent-4 limits are technical boundaries.
+- Remaining single-currency behavior is intentional unfinished work, not repaired here:
+  customer summary rejects mixed outstanding currencies, reporting selects one currency,
+  formatting/provider helpers have two-decimal assumptions and real adapters reject
+  non-BDT. No registry, live rate ingestion, routes, quotes or migration is implemented.
+- Defined Command 97 for strict revisioned policy/capability contracts and pure history/
+  transition helpers only. This separates metadata from operational permission before
+  designing storage/API consumers. Avoid choosing a dataset/provider or configuring sales
+  while rights, routes and launch policies remain unresolved.
+
+#### Files changed
+
+- `CODEX_DEVELOPMENT_COMMANDS.md` — Command 96 review status and bounded Command 97.
+- `HOSTING_BILLING_SYSTEM_PLAN.md`, `docs/MULTI_CURRENCY_DESIGN.md` — delivered arithmetic,
+  explicit contract-first sequence and separate activation gates.
+- `docs/DECISIONS.md` — ADR-086 for capabilities/history and pure-versus-runtime limits.
+- `docs/PROGRESS.md` — current summary, review evidence, risks and exact next command.
+- No source, test, dependency, workflow, schema, local environment or machine setting changed.
+
+#### Validation and evidence
+
+- Fresh delivered report-head `4bf8b06a72da81ea3605bf02949a9579e0a90f95` inspection:
+  [CI](https://github.com/ebit101/webhost-billing/actions/runs/37514371672) and
+  [CodeQL](https://github.com/ebit101/webhost-billing/actions/runs/37514371060) succeeded.
+  Every Validate step passed, including history secret scan, frozen install/mitigations,
+  docs/format/lint/types, package/API/invariants, both browser suites, production audit,
+  licenses and builds. PR-only Dependency review was skipped on push, not passed.
+- Fresh local shared package 67/67 tests, build and strict type check passed. Actual
+  compiled subpath parsing passed and the helper is absent from the existing root entry.
+  Frozen install passed unchanged; ten installed-consumer mitigation tests passed.
+  Production audit exit 0; full audit exit 1, same one high braces/one moderate sprintf-js.
+  Production dependency graph has no paths to either retained tooling library.
+- Fresh [braces registry](https://registry.npmjs.org/braces) and
+  [sprintf-js registry](https://registry.npmjs.org/sprintf-js) show latest 3.0.3/1.1.3,
+  with suggested fixed floors 3.0.4/1.1.4 absent. Primary
+  [braces advisory](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm) and
+  [sprintf-js advisory](https://github.com/advisories/GHSA-hp3w-g68c-fv3c) still list
+  no patched version. Patches, supply-chain controls and audit reporting are unchanged;
+  a passing local mitigation is not upstream closure or a risk waiver.
+- Full database/browser/application acceptance is exact delivered-head hosted evidence,
+  not a fresh local rerun for this documentation-only review. No Docker build, fixture
+  preparation/reset, application migration, provider operation or live browser access.
+- All four offline documentation validators, scoped formatting and whitespace checks
+  passed after the review edits; final checks are repeated before the focused commit.
+  Canonical main reconciled 0/0 before review delivery. Commit/non-force push the focused
+  documentation review after those checks, then verify its exact-head CI/CodeQL in the
+  owner handoff without another self-recording report commit.
+
+#### Decisions made
+
+- Accept Command 96's bounded engineering scope; leave arithmetic unused and preserve
+  its technical/operational separation. No new source correction or new acceptance waiver.
+- Define only Command 97: explicit pinned units, independent capabilities, default-deny
+  unknowns, disabled-history readability and pure revision/base-lock checks. Authoritative
+  history, concurrent writes, roles/MFA/CSRF, confirmations and real payment routes remain
+  future server responsibilities. BDT/USD fictional target policy is not live configuration.
+- Preserve historical metadata and money independently of policy edits. No maintained
+  currency dataset is needed for the next contract slice, and none is licensed by review.
+
+#### Open questions and risks
+
+- Two development-tooling advisories, broader resource/executable-input risks, direct-main
+  rule bypass/PR-only skipped review and local low-memory constraints remain unresolved.
+  Trusted local development and isolated CI remain necessary; no Docker-image/deployment
+  acceptance is inferred from application builds.
+- Metadata/provider rights, enabled sale/collection currencies and payment destinations,
+  fixed/derived prices, quote/refresh/staleness/deviation/override/rounding policies and
+  reference valuations remain separately gated. Original-unit history is not a metadata
+  lookup at today's precision. Mixed-currency portal/report reads still need implementation.
+- Protected WHMCS source/target/credits, Command 33 D5–D8, actual staff/operators,
+  providers, backup/launch evidence and production approval remain open. Command 91 is
+  not authorized by the currency work.
+
+#### Exact recommended next command
+
+Authorize **Command 97 — Build explicit currency policy and capability contracts**.
+Stop after this phase review; do not implement the new command, activate currencies,
+invoke providers, import real data, publish a release or deploy.
 
 ## Report Template
 

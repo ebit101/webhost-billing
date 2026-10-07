@@ -1250,6 +1250,37 @@ This document records durable technical and product decisions. New decisions sho
   Source rights, capability policy, provider contracts, operational rounding/quotes,
   migration, residual tooling risk, deployment and production approval remain separate.
 
+## ADR-086 — Separate explicit currency capabilities from metadata and history
+
+- **Status:** Command 96 review accepted; Command 97 defined only, implementation not authorized
+- **Date:** 2026-10-07
+- **Evidence:** Delivered report head `4bf8b06` passed exact-head CI/CodeQL including
+  complete acceptance. Fresh shared 67 tests, build/types, compiled entry boundary,
+  frozen install and ten installed mitigation checks pass. Production audit is clean;
+  full audit retains one high braces/one moderate sprintf-js finding. No Command 96
+  arithmetic defect or connected application consumer was found.
+- **Decision:** Define one unused shared-contract slice before policy persistence:
+  explicit revision, one base, default browsing choice, optional secondary and independent
+  per-code display/new-sales/collection flags with pinned unit metadata. Reject ambiguous,
+  unknown, missing and oversized context; never infer support from code syntax,
+  metadata, preferences, rates or provider coverage. BDT/USD target fixtures are not
+  an installation default or live collection permission.
+- **History:** Exact historical code/version resolution stays independent of enabled
+  capabilities; no latest-precision fallback or hidden/converted financial history.
+  Current/display-enabled metadata is required for browsing defaults; historical
+  definitions cannot enable new browsing/sales. Collection eligibility still needs
+  separately approved, tested same-currency routes and original-unit evidence.
+- **Transitions:** Pure revision/base-lock tests use explicit trusted current policy
+  and history facts. Lock the base code after history exists; changing a browsing
+  preference is not changing the base or original money. Pure helpers cannot prove
+  database history, prevent concurrent writes, enforce roles/MFA/CSRF or approve
+  operational transitions; those remain future server responsibilities.
+- **Boundary:** No persisted registry/policy, maintained dataset, application consumer,
+  provider route, FX feed, price/quote, mixed-currency aggregate, migration or deployment
+  is introduced by this review or the defined slice. Retain tooling/governance risks
+  without a waiver. Provider rights, live policies, Command 33, Command 91 and protected
+  WHMCS rehearsal remain separately gated. Ask for authorization before Command 97.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:
