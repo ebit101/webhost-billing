@@ -1523,7 +1523,7 @@ This document records durable technical and product decisions. New decisions sho
 
 ## ADR-095 — Own a bounded read-only currency observation, not adoption authority
 
-- **Status:** Accepted and implemented for owner-authorized Command 101; complete local acceptance passed, exact-head hosted checks gate delivery
+- **Status:** Command 101 delivered at `1795160` with complete local/exact-head hosted acceptance; owner-authorized phase review accepted the scope on 2026-10-07
 - **Date:** 2026-10-07
 - **Decision:** Add only the unused `currency-adoption-preflight` database entry with
   injected transaction-capable client and explicit bounded schema/limits. Own one Repeatable
@@ -1549,6 +1549,38 @@ This document records durable technical and product decisions. New decisions sho
   operating approval, release or deployment. Trusted injected clients and database-owner
   bypass remain residual powers; observation is not a complete obligation/provenance audit.
   Stop after verified delivery for a separately authorized Command 101 phase review.
+
+## ADR-096 — Prove cooperative coordination before installing selection authority
+
+- **Status:** Accepted for the owner-authorized Command 101 phase review; Command 102 defined only, implementation not authorized
+- **Date:** 2026-10-07
+- **Review:** Command 101 at `17951608eae4622bd88033e44b02bcb5bc467bbe` satisfies its
+  unused read-only observation scope. Fresh thirty database source and thirty actual SQL
+  cases, seed/verifier, 93 shared tests, builds/types and ten mitigation checks passed.
+  Source-head CI passed all 28 Validate steps and CodeQL all eight; PR-only review skipped.
+  No in-scope implementation defect or runtime consumer found. This does not certify
+  provenance, writer coverage, initialization eligibility or safe live-data access.
+- **Decision:** Define **Command 102 — Build an unused currency coordination transaction
+  primitive** before selection state or writer integration. Own a bounded explicit Read
+  Committed/read-write transaction, verify modes/deadlines, derive one fixed qualified
+  schema/database-scoped transaction advisory key and run a trusted database-only body
+  after acquisition. Later statements must see the previous participant's committed facts.
+  No supplied keys, caller-owned transaction, session lock, callback retry or external I/O.
+- **Composition:** Where explicitly required by trusted server configuration, acquire
+  existing staff mutex `920006` before currency coordination. This choice authenticates
+  nobody; later locked session/MFA/role facts, CSRF, proof, control/business order and atomic
+  audit remain required. No arbitrary pre-lock callback or auth row lock is introduced.
+- **Acceptance:** Mandatory new owned fictional source/SQL tests for serialization, fresh
+  post-wait reads, staff ordering, independent schemas, mode/decoy/deadline refusal,
+  rollback/connection/lock release and no pool leakage. Demonstrate nonparticipating SQL
+  bypass; advisory locking is cooperative, not normal-SQL currency enforcement. Preserve
+  24 migrations, prior history and read-only preflight acceptance; complete local/hosted gates.
+- **Boundary:** No primitive is implemented by this review. No control/latch/selection/
+  ledger/proof/SQL guard or privilege installation, writer/auth adoption, legacy linkage,
+  registry, live query/import, policy activation, operating approval or deployment.
+  Database-owner powers, unknown provenance, stale observations, retained tooling/wider
+  input-resource risk, direct-main governance and launch gates remain without waiver.
+  Ask for explicit Command 102 authorization and stop after review delivery.
 
 ## Open Decisions
 

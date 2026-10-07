@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 101 — Build a read-only currency adoption preflight
-- **Current status:** Owner-authorized unused count-only preflight implemented; complete local acceptance passed, including thirty database source tests, eleven new PostgreSQL scenarios and both browser gates. Prior SQL tests/migration-history comparisons retained. Exact-head CI/CodeQL and canonical delivery must be verified in the final owner handoff. No application/CLI consumer, selection/guard/proof, registry, financial-history/schema change, live-data query, provider or deployment. Production audit clean; full audit retains two tooling findings without waiver
+- **Current command:** Phase review — Review Command 101 read-only adoption preflight and define the next bounded currency command
+- **Current status:** Command 101 delivery at `1795160` accepted after source/SQL review and fresh guarded database acceptance; every exact source-head CI Validate/CodeQL step passed. Documentation-only review defines Command 102's unused coordination transaction primitive, not implementation or activation. No runtime/schema/financial-writer change, real-data query, provider or deployment. Production audit clean; full audit retains two tooling findings without waiver. Review-head delivery/hosted evidence must be verified in the final owner handoff
 - **Last updated:** 2026-10-07
-- **Next command:** Phase review — Review Command 101 read-only adoption preflight and define the next bounded currency command
+- **Next command:** Command 102 — Build an unused currency coordination transaction primitive
 - **Next command authorized:** No
 
 ## Command Reports
@@ -11238,7 +11238,7 @@ invoke providers, release or deploy without separate authorization.
 
 ### Command 101 — Build a read-only currency adoption preflight
 
-- **Status:** Implementation and complete local acceptance passed; canonical delivery and exact-head hosted checks required in the final owner handoff
+- **Status:** Delivered at `17951608eae4622bd88033e44b02bcb5bc467bbe`; complete local and exact-head CI/CodeQL passed, owner-authorized phase review accepted the scope on 2026-10-07
 - **Date:** 2026-10-07
 - **Authorization:** The owner authorized Command 101's unused observation entry and
   fictional acceptance only. No live/WHMCS query, selection, activation or deployment.
@@ -11368,6 +11368,108 @@ Authorize **Phase review — Review Command 101 read-only adoption preflight and
 the next bounded currency command** after validated delivery. Stop before that review;
 do not number/implement selection, activate currencies, query/import real data, change
 financial history, publish metadata, invoke providers, clean up existing scopes or deploy.
+
+### Phase review — Review Command 101 read-only adoption preflight and define the next bounded currency command
+
+- **Status:** Review and next-command definition complete locally; canonical commit/push and exact review-head CI/CodeQL required before completion handoff
+- **Date:** 2026-10-07
+- **Authorization:** Owner authorized this phase review and next bounded command definition
+  only. Command 102 implementation, live-data access and currency activation are not authorized.
+
+#### Scope reviewed and completed
+
+- Reviewed delivered `17951608eae4622bd88033e44b02bcb5bc467bbe`, its ten-file delta,
+  Command 101 requirements, preflight source/mock/actual PostgreSQL tests, separate export
+  and mandatory launcher wiring. Rechecked Command 100's selection/writer/security protocol
+  and the actual existing staff mutex. No in-scope implementation defect or runtime consumer
+  found; no source correction needed. Twenty-four migrations and all prior acceptance intact.
+- Accepted explicit owned Repeatable Read/READ ONLY observation, fixed qualified ordinary
+  sources, fail-closed visibility/modes/deadlines, exact all-state counts, bounded deterministic
+  groups/omitted/unresolved rows, aggregate-only event evidence, copied output and safe errors.
+  Empty results, stored candidate units/policies and code syntax remain non-authoritative.
+- Reconciled Command 101's formerly pending delivery status using actual exact-head hosted
+  evidence. Retained initial failed local checks and their successful corrections, without
+  relabelling failures, PR-only skipped review or mitigations as unconditional safety.
+- Defined **Command 102 — Build an unused currency coordination transaction primitive**
+  only: owned bounded explicit Read Committed/read-write transaction, fixed schema/database
+  transaction advisory key, trusted database-only body after acquisition/fresh statements,
+  explicit staff-before-currency composition, no retries/external effects or authority token.
+  Mandatory future source/SQL tests include participating serialization versus uncoordinated
+  bypass, fresh post-wait facts, rollback/deadlines/lock release and unchanged pool defaults.
+  No selection migration or financial-writer integration is automatically authorized.
+
+#### Files changed
+
+- `CODEX_DEVELOPMENT_COMMANDS.md` — reconcile Command 101 delivery; define bounded Command 102.
+- `HOSTING_BILLING_SYSTEM_PLAN.md`, `docs/MULTI_CURRENCY_DESIGN.md` — reviewed observation
+  status, rationale/composition/acceptance and future implementation/activation boundary.
+- `docs/DECISIONS.md` — reconcile ADR-095 and append ADR-096.
+- `docs/PROGRESS.md` — reconcile delivered evidence and record this review/next authorization.
+  Documentation only; no app/shared/database source, tests, schema/migration, dependency/lock,
+  patch, workflow, environment, credentials or scanner-exception edits.
+
+#### Validation performed
+
+- Fresh frozen install and all ten installed mitigation checks passed without lock changes.
+  Production audit passed with no known vulnerabilities. Full audit exited 1 with the same
+  high braces and moderate sprintf-js findings. Registry latest remains 3.0.3/1.1.3; requests
+  for suggested 3.0.4/1.1.4 floors fail because those versions remain unpublished. Primary
+  [braces advisory](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm) and
+  [sprintf-js advisory](https://github.com/advisories/GHSA-hp3w-g68c-fv3c) show no patched
+  release. No suppression, risk waiver or broader executable-input/resource-safety claim.
+- Fresh guarded database acceptance passed thirty source tests, nine unit SQL, ten policy
+  SQL and eleven preflight SQL cases, followed by guarded seed/verifier. Newly owned nonce
+  scopes only, verified cleanup; no existing scope or application database adopted/reset.
+  Proved actual read-only denial, consistent snapshot, full-state counts/overflow, RLS/
+  permission refusal, deadlines/reuse/local-setting reset and unchanged observation rows.
+- Four library builds, Prisma generation, strict database types and all 93 shared tests
+  passed. Compiled separate-entry import/root exclusion passed; all 24 migration directories
+  remain unchanged. No fresh local API/worker/browser rerun is claimed for this documentation-only
+  review; wider source acceptance is supported separately by exact hosted evidence.
+- Freshly verified delivered source-head
+  [CI 37634576863](https://github.com/ebit101/webhost-billing/actions/runs/37634576863):
+  all 28 Validate steps passed, including secrets, install/mitigations, guarded DB prep,
+  docs/lint/types, packages/API/invariants, both browser gates, production audit/licences,
+  builds and cleanup. [CodeQL 37634576764](https://github.com/ebit101/webhost-billing/actions/runs/37634576764)
+  passed all eight steps. Both runs are exactly `17951608eae4622bd88033e44b02bcb5bc467bbe`.
+  PR-only Dependency review skipped on push, not passed. These are Command 101 source-head
+  results, not this review's future commit or the unimplemented coordination protocol.
+- Reviewed primary PostgreSQL transaction advisory [locking](https://www.postgresql.org/docs/18/explicit-locking.html)
+  and [isolation](https://www.postgresql.org/docs/18/transaction-iso.html) documentation;
+  future participating callers require subsequent fresh Read Committed statements after
+  waiting, and nonparticipating writers remain outside advisory enforcement.
+- All four offline documentation validators, repository formatting/whitespace and protected-
+  path checks passed. Exactly five documentation files changed; no runtime, test, schema,
+  migration, dependency, patch or acceptance-control delta. Rerun final checks after report
+  edits, create the focused review commit, scan full history read-only with the pinned cached
+  Gitleaks image, reconcile canonical main and non-force push. Verify exact review-head
+  CI/CodeQL and report actual hosted links in the handoff without a self-recording follow-up
+  commit. No premature claim that the future primitive or review-head hosted checks passed.
+
+#### Decisions made and remaining risks
+
+- ADR-096 accepts bounded observation engineering, not adoption approval. Coordination
+  infrastructure is the next smallest protocol proof, not installed policy control. Its
+  future trusted body/mutex choice authenticates nobody or sandboxes JavaScript; database
+  deadlines cannot undo external effects. No automatic retries are permitted in that slice.
+- Selection/latch/guards/privileges, complete writer ordering/adoption, security proofs/
+  ledger/audit, exact legacy provenance and per-currency consumer repairs remain unimplemented.
+  Database-owner/injected-client powers, observation staleness/scan costs and missing live
+  metadata/source rights, same-currency routes, pricing/quotes/FX remain separately gated.
+- Command 33 D5–D8, operating destinations/staffing/recovery, protected WHMCS/source/target/
+  credit treatment, Command 91, maintenance/writer drain and final production approval remain.
+  Retained tooling findings/wider resource risks and direct-main rule bypass/skipped PR-only
+  review are unchanged without waiver. No provider, release, import or deployment performed.
+- Preserve the incomplete unmarked fictional scope
+  `command26_e2e_8d7db6b8d0e7489a93eb26daaada1d76` and recoverable ignored Command 101 cache
+  backup. No existing-scope/cache cleanup is authorized or performed by this review.
+
+#### Exact recommended next command
+
+Authorize **Command 102 — Build an unused currency coordination transaction primitive**.
+Stop after validated review delivery. Do not implement the primitive, state/guards/proofs,
+change financial writers/history, activate currency, query/import real data, approve operating
+inputs, invoke providers, clean up existing scopes/cache, release or deploy without new authority.
 
 ## Report Template
 

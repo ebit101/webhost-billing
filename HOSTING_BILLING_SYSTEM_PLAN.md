@@ -78,9 +78,12 @@ read-only adoption preflight only. Its protocol is not implemented. The next sli
 one bounded database-enforced read-only snapshot, exact counts and explicit unknowns;
 it cannot authorize migration/activation or live-data access. The owner subsequently
 authorized Command 101 on 2026-10-07. Its unused count-only entry and fictional SQL tests
-passed complete local acceptance. Exact-head hosted checks gate delivery, with final
-evidence in the owner handoff. No selection/guard or application consumer is installed
-by that observation helper.
+passed complete local and exact-head CI/CodeQL acceptance at `1795160`. The owner-
+authorized phase review accepted its scope on 2026-10-07 and defines Command 102's
+unused coordination transaction primitive only. That next slice must prove cooperative
+Read Committed locking, fresh post-wait reads, staff-before-currency composition and
+bounded failure/release in fictional tests; implementation needs separate authorization.
+No selection/guard or application consumer is installed by the observation helper or review.
 No live registry, selected installation policy or financial backfill is included. Broader persistence,
 per-currency reads, pricing and activation remain later separately gated slices. Remaining
 tooling advisories are not waived. No currency is activated by this sequence.

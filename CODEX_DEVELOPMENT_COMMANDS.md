@@ -3552,9 +3552,10 @@ phase review below defines Command 101 only; implementation still needs authoriz
 
 **Defined by the owner-authorized Command 100 phase review on 2026-10-07.**
 **Implementation explicitly authorized by the owner on 2026-10-07.**
-The unused entry and mandatory fictional tests passed complete local acceptance.
-Canonical delivery requires exact-head CI/CodeQL, with final evidence in the owner
-handoff. This is an advisory inventory, not selection,
+The unused entry and mandatory fictional tests passed complete local and exact-head
+CI/CodeQL acceptance at `17951608eae4622bd88033e44b02bcb5bc467bbe`.
+The owner-authorized phase review accepted this scope on 2026-10-07 and defines
+Command 102 below, without authorizing implementation. This is an advisory inventory, not selection,
 migration eligibility, a provenance audit or permission to query live data.
 
 ```text
@@ -3641,6 +3642,100 @@ fictional acceptance only. No permission to inspect live/WHMCS data, activate cu
 or deploy follows from its result. Stop after validated delivery for separately authorized
 **Phase review — Review Command 101 read-only adoption preflight and define the next
 bounded currency command**. Do not automatically authorize a selection migration.
+
+---
+
+## Command 102 — Build an unused currency coordination transaction primitive
+
+**Defined by the owner-authorized Command 101 phase review on 2026-10-07.**
+**Implementation not authorized.** This tests the transaction/lock foundation from
+Command 100 without installing selection state or changing existing writers. An advisory
+lock coordinates only participating callers; it does not enforce currency policy.
+
+```text
+Command 102 — Build an unused currency coordination transaction primitive
+
+Read AGENTS.md, the product plan, decisions, progress and MULTI_CURRENCY_DESIGN.md.
+Recheck tooling advisories/releases, frozen install, installed mitigation tests and
+separate production/full audits. Retain all patches and acceptance controls; stop for
+separate repair if changed exposure exceeds this bounded command.
+
+Add one separate unused database entry with an explicitly injected transaction-capable
+client, strict explicit schema/shorter limits and a trusted server-code transaction body.
+No root/application/HTTP/CLI consumer, connection/env discovery or module-load I/O.
+The body is a technical composition boundary, never an HTTP-supplied callback, JavaScript
+sandbox, financial-write permission, actor authorization or a selection/eligibility receipt.
+No external/provider/file operations or automatic callback/whole-transaction retry.
+
+Own one top-level explicit Read Committed read-write transaction; do not accept a caller-
+owned transaction or caller-selected isolation/key. Verify modes before invoking the body;
+wrong/read-only/Repeatable Read/Serializable modes fail closed. Apply transaction-local
+safe search path and verified database deadlines as well as client acquisition/transaction
+bounds. Start with Command 101's ceilings (2 seconds acquisition, 500 milliseconds lock,
+2 seconds statement, 10 seconds transaction), shorter strictly positive overrides only.
+Missing explicit schema/catalog context or permission/mode/deadline failure must abort.
+
+Acquire one exclusive transaction-level advisory lock, never session-level/unlock calls.
+Freeze and document one SQL-derived two-int key formula with a dedicated fixed currency
+namespace and database/schema identity, usable identically by future SQL guards. Qualify
+trusted catalog/functions; parameterize validated schema data. Reject system/missing
+schemas; no public/current-schema/search-path fallback or client-supplied keys/namespaces.
+Hash collisions may over-serialize, never permit a bypass. Do not reuse staff, scheduler,
+partial-payment or invoice-number keys. Lock acquisition is a separate SQL statement;
+the body runs only afterward and obtains fresh facts through subsequent statements.
+No policy/history lookup in the pre-wait snapshot, cached authority or nested preflight.
+
+Support an explicit trusted server composition choice for the existing staff mutex:
+where required, take fixed staff mutex 920006 before currency coordination, without auth
+row locks or arbitrary pre-lock hooks. Require the choice explicitly, not inferred from
+browser claims. It authenticates nobody and cannot waive future full-administrator,
+MFA/session, CSRF, locked-auth-fact, proof or audit requirements. Non-staff writers use
+the currency lock alone. Preserve Command 100's remaining control/business/auth lock order;
+do not change StaffService, financial services, workers, scheduler or auth consumers here.
+
+Hold coordination until transaction commit/rollback; never return a live transaction,
+release function or transferable authority token. Resolve success only after commit.
+After the body, execute a final in-transaction mode/lock verification before commit;
+a body that catches an aborted SQL error or changes required modes cannot falsely succeed.
+Body/SQL/commit/deadline errors propagate as safe redacted failure, with no partial result,
+swallowed aborted statement or retry. Document that deadlines abort database work, not
+arbitrary JavaScript or external side effects. Pool defaults/settings/roles/locks must
+reset after successful and failing transactions; privileges remain unchanged.
+
+Add mandatory source/mock and actual PostgreSQL tests using only newly owned nonce-marked
+fictional loopback scopes and existing model/raw guards. Verify strict inputs before work,
+separate-entry/no-I/O boundaries, explicit isolation/deadlines, fixed qualified key formula,
+staff-before-currency ordering, body-after-lock and safe errors. With controlled connection
+barriers and real lock evidence, prove same-schema serialization, post-wait visibility of
+the prior participant's commit, rollback release, independent owned-schema operation,
+search-path decoy resistance and missing-schema refusal. Verify acquisition/lock/statement/
+transaction failure, no body on denied acquisition, rollback of fictional body writes,
+no retry, connection reuse and no leaked advisory locks/local settings. Test tampered
+stronger-isolation/read-only modes fail before body and caught SQL errors/mode changes
+inside the body still prevent success; no production test hooks. Demonstrate
+that nonparticipating SQL is not blocked by an advisory lock, not a policy enforcement claim.
+
+Use only fictional probe rows in newly owned scopes for coordination/rollback scenarios;
+preserve every existing financial/settings/unit/policy/audit/outbox fixture outside those
+explicit probe effects. Keep all 24 migrations, prior-22/23 history comparisons, preflight
+read-only acceptance, isolation/ownership/cleanup and verifier assertions unchanged. Wire
+both new test layers into existing mandatory database/root/CI acceptance, no optional skip.
+Run complete local acceptance and verify exact-head CI/CodeQL before reporting delivery.
+
+Exclude schemas/models/migrations, singleton/latch/selection/ledger/proof/SQL guards or
+privilege installation, financial-writer adoption, auth/security implementation, provenance/
+backfill, metadata seeds/publication, amounts/formatting/aggregates/prices/quotes/FX/routes,
+providers/live-data queries/imports, operating approvals, existing-scope cleanup, release/
+deployment. Record the helper as cooperative unused infrastructure, not installed coverage
+or a solved initialization race. Update progress/decisions, focused commit, reconcile main
+without history rewrite, non-force push origin/main and verify exact-head CI/CodeQL.
+Stop for separately authorized phase review; do not automatically implement selection next.
+```
+
+**Authorization boundary:** This review defines Command 102 only. Its coordination
+helper, fictional tests and future selection/adoption are not implemented or authorized
+by this review. No policy, runtime writer, SQL guard, operating input or live currency
+is enabled. Ask for explicit Command 102 authorization and stop after review delivery.
 
 ---
 
