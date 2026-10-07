@@ -14,6 +14,10 @@
       "types": "./src/currency-arithmetic.ts",
       "default": "./dist/currency-arithmetic.js"
     },
+    "./currency-policy": {
+      "types": "./src/currency-policy.ts",
+      "default": "./dist/currency-policy.js"
+    },
     "./observability": {
       "types": "./src/observability.ts",
       "default": "./dist/observability.js"

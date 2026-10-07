@@ -3190,8 +3190,8 @@ delivery for a separately authorized phase review, not another implementation co
 
 ## Command 97 — Build explicit currency policy and capability contracts
 
-**Defined only by the owner-authorized Command 96 phase review on 2026-10-07.**
-Implementation requires separate authorization. This is an unused shared-contract
+**Implementation explicitly authorized by the owner on 2026-10-07.**
+Implemented with complete local acceptance; exact-head hosted delivery verification is pending. This is an unused shared-contract
 slice before persistence and application integration, not a live currency policy.
 
 ```text
@@ -3261,9 +3261,9 @@ provider routes/credentials, scheduler/jobs, payment/refund/renewal behavior, WH
 export/import, Command 91, Command 33 approvals, releases, deployment and production.
 ```
 
-**Authorization boundary:** This review defines Command 97 only. No currency capability,
+**Authorization boundary:** The owner authorized Command 97 implementation only. No currency capability,
 base change, provider/data licence, residual-risk waiver or operational policy is approved.
-New implementation needs the owner's explicit authorization.
+Further implementation needs the owner's explicit authorization.
 
 ---
 

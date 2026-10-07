@@ -1281,6 +1281,36 @@ This document records durable technical and product decisions. New decisions sho
   without a waiver. Provider rights, live policies, Command 33, Command 91 and protected
   WHMCS rehearsal remain separately gated. Ask for authorization before Command 97.
 
+## ADR-087 — Bounded unused policy facts and authoritative transition boundaries
+
+- **Status:** Implemented for Command 97 with complete local acceptance; exact-head hosted delivery verification pending
+- **Date:** 2026-10-07
+- **Decision:** Add only the separate `@webhost-billing/shared/currency-policy` entry.
+  Require an explicit revision, base, default browsing choice, optional distinct secondary
+  and unique per-code entries with three explicit independent capability booleans. Bind
+  selected references to exact caller-supplied code/version definitions. Reject unknown,
+  mismatched, duplicate and oversized data; use no dataset, global/default policy or rate.
+- **Bounds and validation:** Limit policy entries and definitions to 32 before member
+  traversal, revision tokens to 64 ASCII identifier characters and unit identifiers to
+  the existing arithmetic bounds. Full policy/context parsing requires every selected
+  reference to match an entry and definition. Browsing choices require current,
+  display-enabled units. Historical units cannot enable display/new sales; independent
+  collection flags still prove neither tested routes nor settlement. Invalid input throws;
+  a valid omitted/unknown code returns all-false capabilities, never an inferred permission.
+- **History:** Exact unit resolution takes definitions independently of policy enablement.
+  No implicit latest precision, conversion, hidden history or original money update.
+  Returned JSON-safe objects are copied plain facts, not immutable database records,
+  authorization tokens, payable quotes or authenticated metadata/provider evidence.
+- **Transitions:** Reject stale expected revision, equal current/replacement revision and
+  a changed base code when the explicit history fact is true. Same-code version changes
+  may pin new metadata without changing old-unit interpretation. Global revision-history
+  uniqueness, authoritative history, atomic concurrency, roles/MFA/CSRF and confirmation
+  require a future server transaction; these pure helpers cannot enforce those controls.
+- **Boundary:** Fictional BDT/USD target policies and synthetic historical precision only.
+  No root/money/arithmetic change, app consumer, schema, dependency, provider, FX feed,
+  price/quote, operational setting, import or deployment. All activation, source rights,
+  residual tooling/governance risks, Command 33 and Command 91 remain separately gated.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

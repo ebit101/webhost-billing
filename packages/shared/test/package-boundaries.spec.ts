@@ -4,6 +4,25 @@ import { resolve } from 'node:path';
 import { describe, it } from 'node:test';
 
 describe('shared package boundaries', () => {
+  it('keeps unused currency policy behind a separate entry point', async () => {
+    const [manifestText, rootEntry] = await Promise.all([
+      readFile(resolve(__dirname, '../package.json'), 'utf8'),
+      readFile(resolve(__dirname, '../src/index.ts'), 'utf8'),
+    ]);
+    const manifest = JSON.parse(manifestText) as {
+      exports: Record<string, { default: string; types: string }>;
+    };
+    assert.deepEqual(manifest.exports['./currency-policy'], {
+      types: './src/currency-policy.ts',
+      default: './dist/currency-policy.js',
+    });
+    assert.doesNotMatch(rootEntry, /currency-policy/);
+    assert.deepEqual(manifest.exports['.'], {
+      types: './src/index.ts',
+      default: './dist/index.js',
+    });
+  });
+
   it('keeps unused currency arithmetic behind a separate entry point', async () => {
     const [manifestText, rootEntry] = await Promise.all([
       readFile(resolve(__dirname, '../package.json'), 'utf8'),

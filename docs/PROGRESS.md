@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Phase review — Review Command 96 arithmetic foundation and define the next bounded currency command
-- **Current status:** Command 96 accepted after source/test review, fresh focused checks and exact delivered-head hosted evidence. No arithmetic correction found; no application consumers connected. Command 97 defined only for unused explicit currency-policy/capability contracts before persistence/integration. Production audit clean; full audit retains two development-tooling findings without waiver. No runtime currency, provider, migration, release or production approval changed
+- **Current command:** Command 97 — Build explicit currency policy and capability contracts
+- **Current status:** Unused shared policy contracts implemented and complete local acceptance passed; source delivery and exact-head hosted verification pending. Production audit clean; full audit retains two development-tooling findings without waiver. No runtime currency, provider, migration, release or production approval changed
 - **Last updated:** 2026-10-07
-- **Next command:** Command 97 — Build explicit currency policy and capability contracts
+- **Next command:** Phase review — Review Command 97 currency policy contracts and define the next bounded currency command
 - **Next command authorized:** No
 
 ## Command Reports
@@ -10425,6 +10425,108 @@ authorization for a new implementation, provider activation or deployment.
 Authorize **Command 97 — Build explicit currency policy and capability contracts**.
 Stop after this phase review; do not implement the new command, activate currencies,
 invoke providers, import real data, publish a release or deploy.
+
+### Command 97 — Build explicit currency policy and capability contracts
+
+- **Status:** Implemented with complete local acceptance; source delivery and exact-head hosted verification pending
+- **Date:** 2026-10-07
+- **Authorization:** The owner explicitly authorized Command 97. No later command,
+  operational currency activation, provider, migration, release or deployment is authorized.
+
+#### Scope completed
+
+- Added strict, bounded, unused revisioned policy contracts under the separate
+  `@webhost-billing/shared/currency-policy` entry. One base/reporting unit is distinct from
+  default browsing and optional secondary; every per-code display/new-sales/collection
+  flag is explicit and independent. Valid omitted/unknown codes deny all capabilities;
+  invalid context fails validation, with no inferred permission or implicit live defaults.
+- Pinned exact code/version references to caller-supplied unit definitions. Reject
+  duplicate per-code entries, missing/unknown/conflicting definitions, mismatched choices,
+  extra authority fields and oversized lists before member traversal. Browsing requires
+  current/display-enabled units; historical definitions cannot enable display/new sales.
+- Historical resolution remains independent of policy flags, preserving original unit
+  precision even when a newer version is selected. Return copied JSON-safe facts, not
+  immutable persisted history, authorization tokens, provider evidence or payable quotes.
+- Pure transition checks reject stale expected/equal replacement revisions and base-code
+  changes after an explicit history fact. Same-code version changes preserve old units.
+  Global revision uniqueness/order and authoritative history/concurrency/authentication/
+  authorization/MFA/CSRF/confirmation remain future server transaction responsibilities.
+- Preserved root exports, existing money/settings/arithmetic, all application consumers,
+  dependencies/lockfile, database and deployment. Only fictional BDT/USD target policies
+  and synthetic precision histories are used; no maintained/provider dataset is shipped.
+
+#### Files changed
+
+- `packages/shared/src/currency-policy.ts` — strict contracts and pure helpers.
+- `packages/shared/test/currency-policy.spec.ts` — 25 fictional policy/history/transition tests.
+- `packages/shared/package.json`, `packages/shared/test/package-boundaries.spec.ts` —
+  separate unused entry and boundary regression.
+- `CODEX_DEVELOPMENT_COMMANDS.md`, `HOSTING_BILLING_SYSTEM_PLAN.md`,
+  `docs/MULTI_CURRENCY_DESIGN.md` — authorization and contract implementation boundaries.
+- `docs/DECISIONS.md`, `docs/PROGRESS.md` — ADR-087, actual evidence and next-command gate.
+
+#### Validation and evidence
+
+- Fresh frozen install passed without a dependency/lockfile change; installed-consumer
+  mitigation tests passed 10/10. Production audit exited 0; full audit exited 1 with the
+  same one high braces/one moderate sprintf-js finding, not suppressed or accepted.
+  Fresh registry metadata still lacks suggested fixed releases 3.0.4/1.1.4; primary
+  advisories still list no patched version. Existing exact patches and controls remain.
+- Shared package tests passed 93/93 after correcting a test-fixture alias between current
+  and proposed arrays; assertions/contracts were not weakened. Shared strict types and
+  build passed. All four library builds passed. Compiled policy/arithmetic subpaths and
+  unchanged root boundary passed after correcting a diagnostic's arithmetic export name.
+- Complete guarded package acceptance passed sequentially: all ten root script groups,
+  shared 93, queue 3, API 107, worker 29 and frontend 572 tests. Guarded API integration
+  passed 81 tests/17 suites. Guarded invariants passed shared 93, API unit 12, API integration
+  42 and worker integration 2 tests. Each wrapper used its own fresh marked fictional
+  schema and completed scoped cleanup, not an existing application schema reset.
+- Fictional lifecycle browser suite passed 19/19 in 4.5 minutes; staff-role browser suite
+  passed 4/4 in 33.3 seconds, sequentially with unchanged assertions/deadlines/retries.
+  Staff UI mocks do not prove backend authorization; API integration provides that check.
+  No real providers, production data, mail delivery or application deployment.
+- Lint, all seven strict workspace typechecks, four library and three application production
+  builds passed; Next generated 30 pages. Production licence inventory, all four offline
+  documentation validators, repository formatting and whitespace checks passed. After
+  a connection interruption lost the final-check process handle, no matching process
+  remained; lint/types/application builds/licenses/docs/format were repeated successfully
+  instead of assuming the lost output passed. Source and completed test evidence stayed intact.
+- Refreshed frozen install passed after the export change; production audit again exited 0
+  and production dependency graph has no paths to either retained tooling library. Full
+  audit again exited 1 with exactly the same two findings, not passed/suppressed/waived.
+- Docker 29.8.1 and fixed development PostgreSQL/Redis services were healthy. Retained
+  non-failing diagnostics include experimental VM/colour warnings, PostgreSQL query
+  deprecation, logo loading guidance and a previously seen Next destination-stream-close
+  diagnostic. No assertions, deadlines, retries, guards or existing application code changed.
+- Exact source-head CI/CodeQL will be verified after the focused non-force main delivery;
+  their actual results will be recorded separately. No hosted acceptance is claimed yet.
+
+#### Decisions made
+
+- ADR-087 records 32-entry/definition and 64-character revision budgets and the distinction
+  between shape parsing, complete context validation, copied facts and authoritative
+  server transitions. Capability flags are not payment-route or settlement evidence.
+- Keep policy and arithmetic unused until separately authorized persistence/integration.
+  No global registry, latest-version fallback, live settings, FX ingestion or price effect.
+- Retain audit findings, mandatory acceptance, governance and launch gates without waiver.
+
+#### Open questions and risks
+
+- Source delivery and exact-head hosted verification remain pending. Plain-data parsers
+  are not an isolation boundary for arbitrary executable getters/proxies.
+- Two development-tooling advisories, wider resource/executable-input risks, local memory
+  constraints and direct-main/PR-only review limitations remain open. Tests/builds do not
+  establish Docker-image, deployment or production acceptance.
+- Metadata/provider rights, live currencies/routes, catalogue/quote/rate/rounding policies,
+  per-currency reads/reporting and authoritative persistence remain future slices.
+  Protected WHMCS sample/target/credits, Command 33 D5–D8, staff/operators and production
+  approval remain separately gated. Command 91 is not authorized by this work.
+
+#### Exact recommended next command
+
+Authorize **Phase review — Review Command 97 currency policy contracts and define the next
+bounded currency command** after verified delivery. Stop after Command 97; this is not
+authorization for another implementation, currency activation, import, release or deployment.
 
 ## Report Template
 

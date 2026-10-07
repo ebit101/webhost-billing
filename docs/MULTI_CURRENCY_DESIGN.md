@@ -5,7 +5,8 @@
 - Command: 94 — Design multi-currency billing and WHMCS migration rules.
 - Date: 2026-10-06.
 - Status: Design completed; Command 96's unused arithmetic foundation delivered and
-  phase-reviewed. Command 97 is defined only; application integration/activation remains
+  phase-reviewed. Command 97's unused policy contracts passed complete local acceptance;
+  application integration/activation remains
   separately gated.
 - Owner direction: BDT is the default; USD is the preferred secondary currency;
   support major currencies with automatic conversion through a suitable provider.
@@ -181,21 +182,34 @@ units `5` (quantity three) and `7` (quantity one), at rate `1/2` with equal expo
 produce stored target lines `6` and `4`, totaling `10`. Converting the source header `22`
 would instead produce `11`. This is an arithmetic regression, not a new invoice policy.
 
-### Defined next slice: explicit currency policy contracts
+### Command 97 explicit currency policy contracts
 
 The owner-authorized Command 96 phase review on 2026-10-07 found no arithmetic repair
-necessary and defines **Command 97 — Build explicit currency policy and capability
-contracts** only. Its implementation still requires separate authorization.
+necessary and defined **Command 97 — Build explicit currency policy and capability
+contracts**. The owner separately authorized implementation on 2026-10-07.
 
-One unused shared entry will describe revisioned base/default/secondary choices and
-explicit independent display, new-sales and collection flags, pinned to supplied unit
-metadata. It will reject ambiguity and unsupported references without a built-in dataset,
+The unused `@webhost-billing/shared/currency-policy` entry describes revisioned
+base/default/secondary choices and explicit independent display, new-sales and collection
+flags, pinned to supplied unit metadata. It rejects ambiguity and unsupported references without a built-in dataset,
 live default or application consumer. A rate, browsing choice or metadata definition never
 enables collection or proves a payment route. Historical code/version resolution remains
 available independently of disabled flags; it never adopts current precision implicitly.
 
-Pure transition tests will reject stale revisions and base-code changes after an explicit
-history-exists fact. Future server services must obtain that fact authoritatively and enforce
+`currencyPolicyContextSchema` validates a policy and its explicit definitions together;
+`currencyPolicySchema` checks shape/identity only. `readCurrencyPolicyCapabilities` returns
+all-false flags for a valid omitted/unknown code, but throws for malformed context/input.
+`resolveHistoricalCurrencyUnit` takes an exact unit reference and definitions only, never
+an enablement policy. Parsers return copied JSON-safe facts, not immutable stored history.
+Lists are bounded to 32 entries/definitions before member traversal; revision tokens are
+bounded to 64 ASCII identifier characters. Unit identifiers inherit the arithmetic bounds.
+Historical units cannot enable display or new sales; collection remains an independent
+flag, including for historical units, without proving any approved payment route.
+
+`validateCurrencyPolicyTransition` rejects stale expected revisions, a replacement equal
+to the current revision and base-code changes after an explicit history-exists fact.
+It does not prove global revision uniqueness or numeric ordering. Same-code metadata
+version changes do not reinterpret original-unit history. Future server services must
+obtain that fact authoritatively and enforce
 concurrency, authorization and confirmation; these contracts do not do so. Fictional
 BDT/USD target examples do not approve actual sales/collection capabilities. Persisted
 metadata/policy, per-currency portal/report reads and prices/quotes remain later slices.
@@ -469,8 +483,8 @@ Delivery sequence, each needing separate authorization:
    A production registry/capability policy, adapter, database backfill and pricing effects
    remain later, separately authorized slices. See the bounded command definition in
    [command tracking](../CODEX_DEVELOPMENT_COMMANDS.md).
-3. **Command 97 — Build explicit currency policy and capability contracts** is defined
-   only by that review, not authorized. Keep it unused: strict explicit metadata bindings,
+3. **Command 97 — Build explicit currency policy and capability contracts** was separately
+   authorized and locally validated on 2026-10-07. Keep it unused: strict explicit metadata bindings,
    independent capabilities, historical lookup and pure revision/base-lock validation.
    It cannot establish real provider routes, enforce database transitions or enable sales.
 4. Additive policy/provenance schema and per-currency reads; preserve legacy records and
