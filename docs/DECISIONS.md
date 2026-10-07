@@ -1338,7 +1338,7 @@ This document records durable technical and product decisions. New decisions sho
 
 ## ADR-089 — Empty immutable unit persistence without application authority
 
-- **Status:** Command 98 implemented and locally validated; exact-head hosted verification required in delivery handoff
+- **Status:** Command 98 delivered with complete local and corrected-head hosted acceptance; phase-reviewed on 2026-10-07
 - **Date:** 2026-10-07
 - **Decision:** Add only an empty unit-definition store with exact code/version identity,
   bounded unit facts and UTC creation evidence. Reuse shared schemas and full-string ASCII
@@ -1358,6 +1358,38 @@ This document records durable technical and product decisions. New decisions sho
 - **Boundary:** No policy writes, live metadata dataset, app consumer, inferred legacy unit,
   financial backfill, provider/rate/pricing effect, import, operational approval or deployment.
   Preserve tooling/governance/launch risks and require a separately authorized phase review.
+
+## ADR-090 — Capture immutable policy revisions before selecting an active policy
+
+- **Status:** Command 98 phase review accepted; Command 99 defined only, implementation not authorized
+- **Date:** 2026-10-07
+- **Evidence:** Corrected delivery head `8aab8d4` passed all 28 CI Validate steps and
+  CodeQL. Fresh database source 10/shared 93 tests, builds/types, compiled unused entry,
+  frozen install and ten mitigation checks pass. Production audit is clean; full audit
+  retains one high braces/one moderate sprintf-js finding. No in-scope storage defect or
+  app consumer was found. Initial browser timeout and secret-scan false positive remain
+  recorded rather than replacing their evidence with later passing results.
+- **Decision:** Define one empty unused policy-revision snapshot store, reusing Command 97
+  contracts and exact persisted Command 98 units. Capture the complete policy atomically,
+  enforce unique immutable revision facts and copied exact reads, and canonicalize entry
+  order by code for equivalent replay. Database constraints must preserve valid context
+  and complete snapshots, including preventing late child inserts if using related rows.
+- **Authority:** A stored snapshot is not the selected installation policy. Do not infer
+  an initial/current revision from existing localization or accept browser-supplied unit
+  definitions/history facts. Global revision uniqueness is storage identity, not sequence
+  ordering, stale-edit protection, live base locking, authentication or collection authority.
+  Different-base candidate snapshots do not change existing money or an installation base.
+- **Reason:** Active selection/initialization must coordinate authoritative existing history,
+  legacy writers, expected revision, role/MFA/CSRF/confirmation and audit. An isolated unused
+  store cannot establish those guarantees. Keep that transaction/activation work separate
+  from immutable evidence instead of trusting a caller boolean or a metadata status.
+- **Acceptance:** Mandatory guarded SQL/concurrency/rollback/history tests and complete
+  local/exact-head hosted acceptance. Extend migration-count assumptions without weakening
+  Command 98's prior-history comparisons, fictional ownership or existing verifier assertions.
+- **Boundary:** No selected pointer, policy application, app consumer, registry seed, financial
+  provenance/backfill, price/quote/rate/provider, real-data rehearsal or deployment. Preserve
+  database-owner, tooling/governance, operational/source-rights and launch gates without waiver.
+  Ask for explicit Command 99 authorization; this review defines but does not implement it.
 
 ## Open Decisions
 

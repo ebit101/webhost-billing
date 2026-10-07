@@ -7,8 +7,8 @@
 - Status: Design completed; Command 96's unused arithmetic foundation delivered and
   phase-reviewed. Command 97's unused policy contracts passed complete local and exact
   source-head hosted acceptance and was phase-reviewed. Command 98's unused immutable
-  unit storage is implemented and locally validated; exact-head delivery verification
-  belongs in the owner handoff. Application integration
+  unit storage passed complete local/corrected-head hosted acceptance and was phase-reviewed.
+  Command 99's unused policy-revision snapshots are defined only, not authorized. Application integration
   and activation remain separately gated.
 - Owner direction: BDT is the default; USD is the preferred secondary currency;
   support major currencies with automatic conversion through a suitable provider.
@@ -272,6 +272,36 @@ The launcher also runs the existing fictional seed and schema verifier in its ma
 scope. Each tool independently repeats scope validation before work; normal operation
 remains unchanged, no units are seeded and existing schema/seed assertions are retained.
 An incomplete unmarked preparation is retained, not adopted or automatically removed.
+
+### Command 98 review and bounded policy-revision storage
+
+The owner-authorized phase review on 2026-10-07 accepted Command 98's engineering scope
+at corrected delivery head `8aab8d4`: complete local validation and all exact-head CI/CodeQL
+gates passed. No in-scope storage defect or connected application consumer was found.
+Ordinary SQL immutability is not protection against a database owner disabling controls;
+stored provenance/status and default creation time are not authenticated external evidence.
+Stronger transaction isolation still requires caller-owned whole-transaction retry.
+The exact fictional invoice submission-key exception retains every secret-scanning rule.
+
+Define **Command 99 — Persist immutable currency policy revisions** only. Start with an
+empty unused store of complete Command 97 policy snapshots validated against exact
+stored Command 98 units, not caller-supplied metadata. Bound entries/revision identifiers,
+enforce unique immutable revision facts and complete atomic snapshots, and canonicalize
+entries by code for identical replay. Exact reads return copied validated facts; missing
+revisions fail closed. No latest/current lookup, active pointer or implicit unit creation.
+If related rows are used, later inserts must not extend a completed snapshot.
+
+Different-base snapshots are candidates/history, not installation base changes. Policy
+selection and initialization need authoritative history and coordinated legacy writers,
+expected-revision concurrency, role/MFA/CSRF/confirmation and audit. These are not supplied
+by an unused store or a caller history boolean. Do not initialize policy from localization,
+guess legacy precision, enforce selection with a pure helper alone or advertise live support.
+
+Command 99 requires separately authorized implementation and full fictional database/
+application/browser acceptance. Extend migration-count scaffolding while preserving the
+original Command 98 history test; compare prior-23-migration unit and financial/settings
+facts before/after the additional migration. Financial provenance, per-currency reads,
+price/quote/provider integration and actual policy activation remain later bounded work.
 
 ## 4. Price publication, quote and renewal rules
 
@@ -551,14 +581,20 @@ Delivery sequence, each needing separate authorization:
 4. **Command 98 — Persist immutable currency unit definitions** was separately authorized.
    Implementation and local acceptance completed on 2026-10-07: empty unused version store,
    exact bounded lookups and database immutability/replay checks using fictional tests.
-   Verify exact-head hosted acceptance in the delivery handoff. No live registry or policy.
-5. Later additive policy/provenance schema and per-currency reads; preserve legacy records and
+   Corrected-head hosted acceptance and the owner-authorized phase review passed.
+   No live registry or policy.
+5. **Command 99 — Persist immutable currency policy revisions** is defined only: empty unused
+   complete revision snapshots with exact stored-unit context, immutable/replay guarantees
+   and fictional SQL/history acceptance. Implementation requires explicit authorization.
+   Active policy selection/initialization, base-history concurrency and financial provenance
+   remain separate; no selected policy or caller-history authority is added by snapshot storage.
+6. Later additive policy/provenance services and per-currency reads; preserve legacy records and
    pass mixed BDT/USD portal/report tests before an import rehearsal.
-6. Fixed BDT/USD catalogue, ownership-bound quotes and confirmed same-currency collection
+7. Fixed BDT/USD catalogue, ownership-bound quotes and confirmed same-currency collection
    paths. Use fake providers; real USD payment approval is separate.
-7. Rate-adapter sandbox evaluation, reviewed terms/credentials and proposed operational
+8. Rate-adapter sandbox evaluation, reviewed terms/credentials and proposed operational
    defaults, followed by guarded derived-price publication and additional currency tests.
-8. Protected WHMCS sample/import rehearsal with reconciliation and separate owner review.
+9. Protected WHMCS sample/import rehearsal with reconciliation and separate owner review.
    Actual source export and target controls may be assessed earlier, read-only, by authority.
 
 Remaining decisions: exact supported sales currencies and payment destinations, fixed

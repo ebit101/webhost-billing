@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Command 98 — Persist immutable currency unit definitions
-- **Current status:** Command 98 implementation and local acceptance completed. Empty additive migration, exact bounded repository and mandatory guarded database regressions added; final delivery requires non-force push and exact-head CI/CodeQL verification in the owner handoff. No app consumer, live registry, policy write or financial backfill. Production audit clean; full audit retains two tooling findings without waiver
+- **Current command:** Phase review — Review Command 98 immutable currency unit storage and define the next bounded currency command
+- **Current status:** Command 98 corrected delivery-head CI/CodeQL and bounded engineering scope verified. Review defines Command 99's unused immutable policy-revision storage only; implementation is not authorized. No app consumer, selected policy, live registry, financial backfill or deployment. Production audit clean; full audit retains two tooling findings without waiver
 - **Last updated:** 2026-10-07
-- **Next command:** Phase review — Review Command 98 immutable currency unit storage and define the next bounded currency command
+- **Next command:** Command 99 — Persist immutable currency policy revisions
 - **Next command authorized:** No
 
 ## Command Reports
@@ -10644,7 +10644,7 @@ currencies, invoke providers, import real data, publish a release or deploy.
 
 ### Command 98 — Persist immutable currency unit definitions
 
-- **Status:** Implementation and local acceptance completed; source delivery and exact-head hosted verification required in owner handoff
+- **Status:** Completed and delivered to canonical main; corrected-head CI/CodeQL verified and phase-reviewed on 2026-10-07
 - **Date:** 2026-10-07
 - **Authorization:** The owner explicitly authorized Command 98 only. No live currency,
   provider, application/production migration, release, deployment or import is authorized.
@@ -10741,8 +10741,9 @@ currencies, invoke providers, import real data, publish a release or deploy.
   credential. Added only that exact literal to the existing fictional-value allowlist;
   no scanner rule, path or history scope disabled. Complete-history rescan passed with
   no leaks across 194 local commits; all four documentation validators passed again.
-  Corrected-head CI/CodeQL verification is required before delivery completion. Do not rewrite the
-  published source commit or claim the failed run as hosted acceptance.
+  Corrected head `8aab8d47f9ae266b02587187db82f04a51ee1bac` passed complete CI/CodeQL,
+  freshly verified by the phase review below. Published history was not rewritten and
+  the failed run is not claimed as hosted acceptance.
 
 #### Decisions and limitations
 
@@ -10762,6 +10763,94 @@ currencies, invoke providers, import real data, publish a release or deploy.
 After verified delivery, authorize **Phase review — Review Command 98 immutable currency
 unit storage and define the next bounded currency command**. Stop after Command 98;
 the proposed future command list does not authorize further implementation or production.
+
+### Phase review — Command 98 immutable currency unit storage
+
+- **Status:** Review completed; Command 99 defined only, implementation not authorized
+- **Date:** 2026-10-07
+- **Authorization:** The owner authorized review and one bounded next-command definition,
+  not further implementation, real-data rehearsal, operating approval or deployment.
+
+#### Review findings
+
+- Reviewed source commits `ec136c5` and `8aab8d4`, additive schema/SQL, strict repository,
+  source/SQL regressions, package/root/guarded/CI wiring, guarded seed/verifier and exact
+  fictional secret-scanning exception. No in-scope corrective source change was required.
+- Exact code/version facts remain immutable under ordinary SQL; bounded indexed reads
+  validate all requested contexts and preserve captured historical precision. Concurrent
+  replay/conflict and compound rollback evidence match the command. No overwrite/latest/
+  global-list or application consumer was found. Database owners can bypass controls;
+  provenance/status/default timestamps are not authenticated provider evidence.
+- Stronger isolation needs whole-transaction retry by the caller; executable getters/
+  proxies and privileged database tampering remain outside this plain-data boundary.
+  Existing mixed-currency reads, two-decimal formatting/provider assumptions and non-BDT
+  real-adapter rejection remain later work, not fixed or activated by unused unit storage.
+- Migration 23 is empty and the original prior-22-migration test preserves every fictional
+  old row. Its last-migration/count assertions will need deliberate extension for a new
+  migration; they are not a current defect or permission to remove history assertions.
+- Define only Command 99: complete immutable unused policy snapshots backed by exact
+  stored units. Keep selecting/applying a policy, authoritative history/base locking and
+  stale-edit transactions separate. Otherwise an unused store could misleadingly claim
+  safety against live legacy writers or derive authority from a caller boolean.
+
+#### Files changed
+
+- `CODEX_DEVELOPMENT_COMMANDS.md` — verified Command 98 status and bounded Command 99.
+- `HOSTING_BILLING_SYSTEM_PLAN.md`, `docs/MULTI_CURRENCY_DESIGN.md` — accepted unit
+  delivery, snapshot-first sequence and unchanged activation/history gates.
+- `docs/DECISIONS.md` — ADR-089 delivery status and ADR-090 snapshot versus selection authority.
+- `docs/PROGRESS.md` — delivered evidence, review findings, constraints and exact next command.
+- No application/test/schema/dependency/lock/patch/workflow/environment/machine change.
+
+#### Validation and evidence
+
+- Fresh delivered-head `8aab8d47f9ae266b02587187db82f04a51ee1bac` inspection:
+  [CI](https://github.com/ebit101/webhost-billing/actions/runs/37590248880) and
+  [CodeQL](https://github.com/ebit101/webhost-billing/actions/runs/37590249010) succeeded.
+  Validate job `112689741059` passed all 28 steps: complete-history secret scan, frozen
+  install/mitigations, fresh migration/seed/schema verification, docs/format/lint/types,
+  package/API/invariants, both browser suites, production audit/licences/builds and cleanup.
+  CodeQL passed all eight steps. PR-only Dependency review was skipped on push, not passed.
+- Fresh local frozen install, ten installed mitigation tests, database source 10/shared 93
+  tests, shared/database builds and strict types passed. Actual compiled unused entry
+  exposes append/exact-read helpers and leaves the database root unchanged. No application
+  imports or delivered changes to existing app/shared/root/client/workflow contracts.
+- Fresh production audit exited 0; full audit exited 1 with the same one high braces/one
+  moderate sprintf-js finding. Production dependency graph has no paths to either library.
+  Fresh [braces registry](https://registry.npmjs.org/braces) and
+  [sprintf-js registry](https://registry.npmjs.org/sprintf-js) report latest 3.0.3/1.1.3;
+  suggested fixed floors 3.0.4/1.1.4 remain unpublished. Primary
+  [braces advisory](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm) and
+  [sprintf-js advisory](https://github.com/advisories/GHSA-hp3w-g68c-fv3c) still list no
+  patched version. No suppression, package upgrade or residual-risk acceptance.
+- Complete PostgreSQL/API/invariant/browser acceptance is exact delivered-head hosted
+  evidence, not a fresh local rerun during this documentation-only review. No local Docker
+  operation, fixture preparation/reset, migration, business write, provider or live browser access.
+- Final offline documentation checks passed all four validators; scoped formatting and
+  whitespace checks passed. Reconcile canonical main, commit/non-force push the focused review and verify its exact-head
+  CI/CodeQL in the owner handoff without a self-recording report commit.
+
+#### Decisions and remaining risks
+
+- Accept Command 98's bounded engineering delivery, not production currency support,
+  privileged tamper protection, authenticated data rights or a tooling-risk waiver.
+- Command 99 stores immutable complete revision facts with deterministic equivalent
+  replay and exact reads only. Captured policy capabilities prove no live payment route;
+  different-base snapshots never change original money or select an installation base.
+- Later selection/initialization must coordinate actual history and legacy writers,
+  expected revision, role/MFA/CSRF/confirmation and audit. Do not initialize from localization
+  or guess unit provenance for old rows. Actual datasets/rights, policy activation,
+  per-currency reads, pricing/quotes/FX and same-currency routes remain separately gated.
+- Two tooling advisories, broader resource/executable-input exposure, local RAM constraints,
+  direct-main rule bypass and skipped PR-only review remain visible. Command 33 D5–D8,
+  appointments, protected WHMCS source/target/credits, recovery and launch evidence stay open.
+  No Command 91, data rehearsal, release, deployment or production migration authorization.
+
+#### Exact recommended next command
+
+Authorize **Command 99 — Persist immutable currency policy revisions**.
+Stop after this review. Do not implement snapshots or active policy selection, seed a
+registry, enable currencies, invoke providers, import real data, release or deploy.
 
 ## Report Template
 

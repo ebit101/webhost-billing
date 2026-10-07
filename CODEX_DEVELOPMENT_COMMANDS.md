@@ -3270,8 +3270,8 @@ Further implementation needs the owner's explicit authorization.
 ## Command 98 — Persist immutable currency unit definitions
 
 **Implementation explicitly authorized by the owner on 2026-10-07.**
-Implementation and local acceptance completed. Verify the exact committed/pushed head's
-CI and CodeQL in the delivery handoff. This is an unused additive metadata-storage
+Implementation, local acceptance and corrected delivery-head CI/CodeQL completed;
+phase-reviewed on 2026-10-07. This is an unused additive metadata-storage
 slice, not a live registry, persisted installation policy or financial backfill.
 
 ```text
@@ -3349,8 +3349,105 @@ Command 91, Command 33 approvals, releases, deployment and production migrations
 
 **Authorization boundary:** The owner authorized Command 98 implementation only. No dataset/source rights,
 unit activation, sale/collection currency, persisted policy, provider route, risk waiver,
-operating approval or production migration is approved. Stop after Command 98 and ask
-for a separately authorized phase review before defining the next bounded command.
+operating approval or production migration is approved. The separately authorized phase
+review defines Command 99 only; its implementation still requires explicit authorization.
+
+---
+
+## Command 99 — Persist immutable currency policy revisions
+
+**Defined by the owner-authorized Command 98 phase review on 2026-10-07.**
+Definition only; implementation is not authorized. Store complete unused revision
+snapshots, not an installation's selected policy or permission to transact.
+
+```text
+Command 99 — Persist immutable currency policy revisions
+
+Read AGENTS.md, the product plan, decisions, progress and MULTI_CURRENCY_DESIGN.md.
+Recheck retained tooling advisories/releases, frozen install, installed mitigation tests
+and separate full/production audits. Preserve patches, supply-chain controls and complete
+acceptance. Stop for separate repair if changed exposure is outside this command.
+
+Add the smallest empty additive Prisma/PostgreSQL policy-revision store in packages/database.
+Preserve existing unit definitions, every existing table, root/money/settings/shared
+contracts, application consumers and financial records. Seed no policy, live registry or
+installation defaults. Never infer policy or unit provenance from existing localization.
+
+Capture a complete Command 97 policy: globally unique explicit revision, one base unit,
+default browsing unit, optional distinct secondary and 1–32 unique per-code entries with
+explicit independent display/new-sales/collection booleans and exact metadata versions.
+Reuse shared schemas and Command 98's exact stored-unit lookup. Validate all references
+against database definitions, not caller-supplied definitions or a history-exists flag.
+Retain current/display requirements for browsing and the historical display/new-sales
+denial; collection flags still prove no approved route or settlement. Enforce full-string
+ASCII revision/identifier bounds, including terminal-newline rejection.
+
+Enforce equivalent shape, bounds, uniqueness, complete selected-entry bindings and exact
+stored-unit context at the PostgreSQL boundary, including direct SQL bypasses. Store one
+complete immutable snapshot atomically. If using related rows, forbid later INSERTs that
+extend an already completed revision, not just UPDATE/DELETE/TRUNCATE. A partial parent,
+missing entries or changed child facts must not commit as a usable policy. Keep database
+owner bypass limitations explicit; no privilege hardening or absolute immutability claim.
+
+Define a deterministic fact representation: compare JSON object fields independent of
+property order and canonicalize entries by currency code without mutating caller data.
+Document that non-selected entry order is not a preference; default/secondary are explicit.
+Globally unique revision identity admits identical replay, including reordered equivalent
+input, but rejects different facts for that revision without overwrite or partial writes.
+Concurrent matching/conflicting appends must retain one complete immutable winner.
+
+Expose a separate unused database entry with explicitly injected client/transaction access,
+no module-load database/environment/network side effects and no new dependencies/lock changes.
+Accept only strict unknown policy input. Do not create unit definitions implicitly.
+Return runtime-validated copied JSON-safe policy/context facts. Resolve one requested exact
+revision or fail closed; no global enumeration, latest/current fallback or active-policy read.
+Older revisions remain readable with their exact unit versions regardless of later snapshots.
+Document transaction/isolation and whole-transaction retry requirements; propagate compound
+conflicts to roll back rather than swallowing an aborted PostgreSQL statement.
+
+Persisting candidate/history snapshots with different bases does not change an installation
+base. Do not call the pure transition helper with an invented current policy/history fact,
+implement a selected/current pointer, or claim live base locking, stale-edit protection,
+authorization, operational audit or confirmation. Authoritative policy selection/initialization
+must be separately designed against actual financial history and concurrent legacy writers.
+
+Extend mandatory database/root/guarded/hosted acceptance using fresh marked nonce-qualified
+loopback fictional scopes and existing model/raw guards. No reused or reset application schema.
+Keep Command 98's original prior-22-migration/unit-migration history comparison intact when
+adding migration 24; its current last-migration/count assumptions need deliberate extension,
+not assertion removal. Add prior-23-migration comparison including stored unit facts and all
+fictional financial/settings rows before/after the new migration and policy operations.
+Extend the schema verifier without weakening existing UUID/money/UTC/seed assertions.
+
+Test empty migration, strict malformed/missing/extra/oversized input, 32-entry boundaries,
+unknown/conflicting unit versions, duplicate codes, invalid selected references, historical
+capability rules and independent flags. Test direct SQL constraints, complete-snapshot
+immutability including child inserts where applicable, exact/missing revision reads, copied
+results, canonical equivalent replay, conflicting concurrent replay, rollback and unchanged
+old revisions/unit precision/financial rows. Use authored fictional values only, no provider
+data, maintained dataset or real business policy fixtures. Preserve the secret-scanning gate.
+
+Run focused and complete package tests, guarded API/invariants and both fictional browser
+suites sequentially, without overlapping resource-heavy checks. Validate additive migration
+on fresh owned fictional scopes, Prisma generation/schema, frozen install, separate audits,
+production licences, docs/format/lint, all strict types and production builds. Record the
+unchanged mitigated full-audit exit 1 honestly; preserve assertions/deadlines/retries/guards.
+
+Update progress/decisions with actual results and limitations. After local acceptance,
+commit, reconcile canonical main without rewriting history, non-force push origin/main
+and verify exact-head CI/CodeQL. Stop for separately authorized phase review.
+
+Exclude current/selected-policy state, installation initialization/activation, authoritative
+transition/base-history/CAS services, roles/MFA/CSRF/confirmation workflows, API/UI/worker
+integration, financial provenance columns/backfills, existing localization/settings writes,
+maintained datasets/metadata lifecycle, display formatting, mixed-currency aggregate repairs,
+catalogue prices/quotes/FX/provider routes/credentials, payment/refund/renewal changes,
+WHMCS data, Command 91, Command 33 approvals, releases, deployments and production migrations.
+```
+
+**Authorization boundary:** This phase review authorizes only review/documentation delivery,
+not Command 99 implementation. An immutable stored policy is captured configuration evidence,
+not an active installation policy, approved sales/collection currency or production approval.
 
 ---
 
