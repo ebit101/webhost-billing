@@ -38,6 +38,7 @@ async function main(): Promise<void> {
       'currency-policies',
       'currency-adoption-preflight',
       'currency-coordination',
+      'currency-coordination-guards',
     ]) {
       const args = [...baseArgs, `test/${file}.integration.spec.ts`];
       execFileSync(

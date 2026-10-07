@@ -11596,7 +11596,7 @@ clean up existing scopes/cache, release or deploy without separate authorization
 
 ### Phase review — Review Command 102 coordination primitive and define the next bounded currency command
 
-- **Status:** Documentation-only phase review completed; local validation passed, focused canonical delivery and exact review-head hosted verification gate the handoff
+- **Status:** Documentation-only phase review delivered at `ac2c12d`; complete local and exact-head hosted acceptance confirmed
 - **Date:** 2026-10-07
 - **Authorization:** Owner authorized this review and next bounded command definition only.
   Command 103 implementation, trigger installation, writer adoption and activation are not authorized.
@@ -11693,6 +11693,121 @@ Stop after validated review delivery. Do not implement/install the prototype, cr
 state/guards/proofs, adopt writers, activate currency, query/import real data, approve
 operating inputs, invoke providers, clean up existing scopes/cache, release or deploy
 without new authority.
+
+### Command 103 — Build an unused SQL currency coordination guard prototype
+
+- **Status:** Implementation and complete local acceptance completed; focused canonical delivery and exact-head hosted verification gate the handoff
+- **Date:** 2026-10-08 (owner authorization/implementation began 2026-10-07)
+- **Authorization:** Owner authorized the unused renderer and mandatory fictional tests,
+  not application installation, writer adoption, currency activation or deployment.
+
+#### Scope completed
+
+- Separate pure SQL-rendering database entry with strict explicit non-system schema.
+  No executing installer/client, root/application/CLI consumer, environment/file/network
+  I/O, schema/model/migration, roles/grants/owner changes or provider.
+- Fixed VOLATILE SECURITY INVOKER, qualified catalogs/fixed path and actual schema/table/
+  OID/before-statement context. Nine ordinary targets and 18 triggers, identical Command
+  102 two-int transaction key, no-row DML included, truncate refused. No policy/history/
+  row/provenance facts, latch, staff/auth lock or state. Bounded caller-established settings,
+  Read Committed/read-write, redacted/rethrown function failure, no retry/widening/session
+  advisory locks. Native external DML/permission/read-only/fatal errors stay native.
+- Mandatory harness creates its own nonce schemas, applies 24 unchanged migrations and
+  verifies marker/model/raw/loopback ownership, exact target identities and name collisions
+  before atomic installation. Catalog assertions verify every function/trigger property.
+  Existing non-owner write role performs permitted DML on every target and real copy/plain
+  writes; it cannot disable/drop/replace guards or set replication bypass. It lacks SELECT,
+  so read-dependent conflict/merge/nested/snapshot/row-lock fixtures use fictional owner
+  without grants or membership changes. Owner/superuser bypass remains a residual power.
+- Barriers/real locks prove both wait directions, release/reentrancy, shorter settings,
+  independent schemas, decoy/attachment/mode/deadline denial. Initiating snapshot remains
+  stale; later reads see the commit. Row-first ordering safely fails without partial commit.
+- Timer counterexample proves lowering positive `transaction_timeout` does not rearm an
+  active timer. Settings do not certify internal timer history. Trusted caller establishes
+  the first active budget correctly or uses independent bounded client control; prototype
+  does not solve runtime deadline/writer/permission control. ADR-099 records these limits.
+- Existing rows in both parent and prototype scopes are compared; explicit fictional
+  probes rolled back/removed. Exactly test-installed objects are marker-verified/removed
+  before scope deletion and unchanged launcher seed/verifier. Prior history/preflight/
+  coordination gates retained. No existing scope or real customer data adopted.
+
+#### Files changed
+
+- `packages/database/src/currency-coordination-guards.ts` and two corresponding source/
+  PostgreSQL test files — pure renderer and mandatory acceptance/lifecycle.
+- `packages/database/package.json`, `apps/web/e2e/run-database-tests.ts` — separate entry,
+  mandatory source/SQL wiring through the unchanged root/CI controls.
+- `CODEX_DEVELOPMENT_COMMANDS.md`, `HOSTING_BILLING_SYSTEM_PLAN.md`,
+  `docs/MULTI_CURRENCY_DESIGN.md`, `docs/DECISIONS.md`, `docs/PROGRESS.md` — authorization,
+  engineering limits, ADR-099 and this report. No lockfile/dependency/patch/workflow/scanner
+  exception, schema/migration/seed/verifier or runtime consumer change.
+
+#### Validation performed and results
+
+- Frozen install/ten installed mitigation tests passed. Production audit found no known
+  vulnerabilities; full audit exited 1 with unchanged high braces/moderate sprintf-js.
+  Registry latest remains 3.0.3/1.1.3, suggested 3.0.4/1.1.4 unpublished, primary advisories
+  report no patched release. No suppression/upstream-closure or broader resource-risk waiver.
+- Guarded database acceptance passed 42 source and 56 SQL cases: 9 units, 10 policies,
+  11 preflight, 11 coordination, 15 prototype. Unchanged guarded seed/verifier passed.
+  Newly owned marked scopes cleaned; prior-22/23 row comparisons/24 migrations unchanged.
+- Four library builds/Prisma generation, worker build, workspace strict types/lint passed.
+  Compiled separate entry works; root excludes coordination exports. Offline docs passed;
+  rerun final formatting/whitespace/docs after report edits.
+- Guarded API integration passed 17 suites/81 tests. Invariants passed shared 93, API unit
+  12, API integration 42 and worker renewal/scheduler 2.
+- Initial source regex incorrectly matched trigger DDL; distinguish actual DML instead.
+  Initial SQL fixtures wrongly assumed the existing write role includes SELECT; corrected
+  permissible non-owner SQL and retained explicit owner/read distinction without grants.
+  Initial timer probe wrongly assumed shortening an active positive setting rearms it;
+  establish its first budget and retain an executed counterexample. Subsequent complete
+  SQL suite passed. No earlier failure relabelled as a pass or suppressed with exceptions.
+- Windows command shim truncated a multiline ephemeral launcher; corrected single-line
+  guarded root invocation without committed controls. Incorrect relative formatter command
+  rerun at repository root. First full root run failed one existing order-ledger UI wait at
+  line 221 (571/572 tests passed) while validations ran concurrently. Complete unchanged
+  root gate rerun without other heavy validations passed: all root controls/shared 93,
+  database 42 source/56 SQL/seed/verifier, queue 3, API 25 suites/107, worker 10 suites/29,
+  frontend 54 files/572. No assertion/timeout/control change; initial failure remains recorded.
+  Browser lifecycle passed 19 and administrator mock-UI checks passed four. Production
+  build passed with explicit production environment restored afterward; production licence
+  inventory parsed successfully. Formatting/whitespace/offline docs passed; rerun after
+  final report edits. Focused commit/full-history secret scan and exact-head CI/CodeQL
+  remain delivery gates; final handoff supplies actual commit/run links without a
+  self-recording follow-up commit or premature future-head pass claim.
+- Fresh prior-review-head verification at `ac2c12dc7942de12329820492028e56748ba8315`:
+  [CI 37657146027](https://github.com/ebit101/webhost-billing/actions/runs/37657146027) passed
+  all 28 Validate steps; [CodeQL 37657146240](https://github.com/ebit101/webhost-billing/actions/runs/37657146240)
+  all eight. Aggregate/jobs completed successfully. PR-only review skipped on push, not
+  passed. This is reconciled prior delivery, not future Command 103 hosted evidence.
+- Primary PostgreSQL trigger/snapshot/deadline/role/timer semantics reviewed and linked
+  in the currency design; actual runtime counterexamples additionally executed.
+
+#### Decisions made and remaining risks
+
+- Unused statement coordination only: no control/latch/selection/ledger/proof, row/unit/
+  provenance validation, adopted financial/auth/worker caller, legacy adoption/backfill,
+  registry, amounts/pricing/quotes/FX/routes or providers. Snapshot/row-first/internal timer
+  limits, owner bypass and trusted caller/body powers remain. Future adoption requires
+  guard-first reads, post-lock validation, reviewed connections/deadlines/privileges and
+  complete writer mapping/drain/legacy evidence. Unobserved commit transport can have an
+  uncertain outcome; do not promise rollback or automatically retry it.
+- Command 33 D5–D8, protected WHMCS/credit/target evidence, metadata/source/provider rights,
+  Command 91, maintenance/recovery and final launch approval remain. Retained tooling/wider
+  resource risks, direct-main bypass and skipped PR-only review remain without waiver.
+  No live query/import, operating approval, provider, release, deployment or production write.
+- Preserve incomplete unmarked fictional scope
+  `command26_e2e_8d7db6b8d0e7489a93eb26daaada1d76` and recoverable ignored Command 101
+  cache backup. No existing-scope/cache cleanup or new Docker pull. Free disk last measured
+  approximately C: 13.71 GiB / D: 17.73 GiB.
+
+#### Exact recommended next command
+
+Authorize **Phase review — Review Command 103 SQL coordination guard prototype and define
+the next bounded currency command** after validated delivery. Stop before that review;
+do not number/implement the next command, install application guards, select policy, adopt
+writers, activate currency, query/import real data, invoke providers, approve operations,
+clean existing scopes/cache, release or deploy without separate authorization.
 
 ## Report Template
 

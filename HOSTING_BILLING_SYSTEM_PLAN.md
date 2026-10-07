@@ -90,8 +90,13 @@ coverage and ordinary-SQL enforcement are not installed by cooperative coordinat
 Command 102 was delivered at `fdcaea6` with complete local and exact-head CI/CodeQL
 acceptance. Its owner-authorized phase review accepts that scope and defines Command 103's
 unused SQL coordination guard prototype: pure fixed SQL rendering with trigger installation
-only by guarded tests in newly owned fictional scopes. This needs separate implementation
-authorization; no application migration, installed policy guard or writer adoption follows.
+only by guarded tests in newly owned fictional scopes. The owner subsequently authorized
+Command 103 on 2026-10-07: its separate pure renderer and mandatory tests passed complete
+local acceptance on 2026-10-08; exact-head hosted delivery still gates the handoff.
+It verifies caller settings and coordination only, not an initiating statement's
+snapshot or internal timer state; trusted callers must establish the first active
+transaction deadline, not assume that lowering a positive setting rearms its timer.
+No application migration, installed policy guard or writer adoption follows.
 No selection/guard or application consumer is installed by the observation helper or review.
 No live registry, selected installation policy or financial backfill is included. Broader persistence,
 per-currency reads, pricing and activation remain later separately gated slices. Remaining

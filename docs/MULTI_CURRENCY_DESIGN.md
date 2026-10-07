@@ -19,7 +19,10 @@
   that helper and fictional acceptance on 2026-10-07; implementation and complete local
   and exact-head CI/CodeQL acceptance passed at `fdcaea6`. The owner-authorized phase
   review accepted its unused engineering scope and defines Command 103's unused SQL
-  coordination guard prototype only, requiring separate implementation authorization.
+  coordination guard prototype only. The owner subsequently authorized its pure renderer
+  and mandatory fictional SQL acceptance on 2026-10-07; complete local acceptance passed
+  on 2026-10-08, with canonical/exact-head hosted delivery gating the handoff.
+  Temporary test installation is not product adoption.
   The selection protocol is not implemented or activated.
   Application integration and activation remain separately gated.
 - Owner direction: BDT is the default; USD is the preferred secondary currency;
@@ -1010,7 +1013,63 @@ test scopes, not currency units, policy capabilities, history latch, provenance 
 intent. Product behavior remains legacy and uncoordinated. Selection/state/ledger/proof,
 per-row validation/privileges, full writer adoption/drain, legacy evidence and recovery
 remain required before activation. Metadata/source/provider/operating approvals, real-data
-access/import and deployment stay separate. Ask for explicit Command 103 authorization.
+access/import and deployment stay separate. The owner subsequently authorized Command 103
+as recorded below, not any application installation.
+
+### Implemented Command 103 prototype boundary
+
+The separate unused database entry
+`@webhost-billing/database/currency-coordination-guards` exports only
+`renderCurrencyCoordinationGuardPrototype`. It accepts exactly an explicit non-system
+ASCII schema identifier and produces fixed SQL, without a client or executing installer.
+No root/application/CLI consumer, migration, role, grant or provider is added.
+
+The generated VOLATILE SECURITY INVOKER function has a fixed catalog search path,
+qualified catalog calls and exact actual table/schema/OID/trigger context checks. Nine
+ordinary targets receive before-statement insert/update/delete coordination plus truncate
+refusal. Their two-int transaction key is identical to Command 102, derived from actual
+table schema and current database. Catalog identity is not policy or actor authority.
+Views, foreign/partition/inheritance contexts are rejected, not supported by assumption.
+Errors inside the function are rethrown safely; native permission/read-only/DML errors or
+fatal server disconnects outside its body retain PostgreSQL semantics. No retry or
+swallowed success, transaction/session handles or session advisory locks.
+
+Read Committed/read-write and positive lock/statement/transaction settings at most
+500/2000/10000 ms are required. Caller setup is in earlier commands, never an in-flight
+statement deadline rewrite. **Settings are not proof of the internal timer:** PostgreSQL
+[only enables an inactive transaction timer when assigning a positive value](https://github.com/postgres/postgres/blob/REL_18_STABLE/src/backend/tcop/postgres.c).
+Changing an already-positive value to a shorter value does not rearm its active timer.
+Tests demonstrate this behavior rather than claim the renderer solves it. Trusted raw
+callers must establish their first active budget correctly (or have an independent
+deadline); Command 102 also has its own bounded client transaction. The prototype cannot
+certify prior setup history, prevent a privileged caller changing settings afterward,
+refresh the initiating DML snapshot or repair a row-first lock order. Future runtime
+adoption still requires separately reviewed connection/deadline/writer/privilege controls.
+
+Only mandatory test code installs it atomically. The test process creates its own nonce
+schemas, applies all 24 unchanged migrations and verifies marker, model/raw/loopback
+identity before installation. It rejects target/name collisions before DDL and verifies
+all 18 triggers/function properties afterward. The existing `pg_write_all_data` role
+executes permitted no-row insert/update/delete on every target and real copy input; it
+cannot disable/drop/replace guards or set replication bypass. That built-in role lacks
+SELECT, so read-dependent conflict/merge/nested/snapshot/row-lock fixtures use the
+fictional owner without granting privileges. Owner/superuser bypass remains a residual
+power, not deployed-role hardening or solved ordinary-SQL writer coverage.
+
+Controlled barriers and real locks cover both helper/SQL wait directions, commit/rollback
+release, reentrancy, explicit shorter settings, independent schemas and qualified decoys.
+Ordinary writes, copy input, conflict/merge/nested/no-op paths, all-target truncation,
+wrong modes/budgets and misattachments are mandatory, with initiating-snapshot and
+reversed-order counterexamples. Baselines compare all existing rows in both the parent
+acceptance scope and the newly owned prototype scope. Explicit fictional settings probes
+are rolled back or removed. Exact installed triggers/function are marker-verified and
+removed before scope deletion and the unchanged launcher seed/verifier. No existing
+application/test scope, cache, migration history or real customer data is adopted.
+
+Stop after complete validated delivery for separately authorized **Phase review — Review
+Command 103 SQL coordination guard prototype and define the next bounded currency
+command**. No policy selection, latch/ledger/proof, row/provenance validation, writer
+adoption, registry/FX/payment route, real import, provider or deployment follows.
 
 ## 4. Price publication, quote and renewal rules
 
@@ -1315,10 +1374,12 @@ Delivery sequence, each needing separate authorization:
    entry and mandatory fictional tests passed complete local and exact-head CI/CodeQL at
    `fdcaea6`; the owner-authorized review accepted its scope. No selection state, SQL guards
    or adopted writer.
-9. **Command 103 — Build an unused SQL currency coordination guard prototype** is defined
-   only: pure fixed SQL rendering, with temporary installation solely by guarded tests in
-   new fictional scopes. It needs separate authorization and is not implemented by this
-   review. No policy/row enforcement, migration, executing installer or adopted consumer.
+9. **Command 103 — Build an unused SQL currency coordination guard prototype** was
+   subsequently authorized: pure fixed SQL rendering, with temporary installation solely
+   by guarded tests in schemas they create themselves. Complete local/canonical/exact-head
+   hosted acceptance gates delivery. No policy/row enforcement, migration, executing
+   installer, deployed privilege change or adopted consumer. Snapshot/lock-order/internal
+   timer limits remain explicit; stop for separately authorized phase review.
 10. Later additive policy/provenance services and per-currency reads; preserve legacy records and
     pass mixed BDT/USD portal/report tests before an import rehearsal.
 11. Fixed BDT/USD catalogue, ownership-bound quotes and confirmed same-currency collection

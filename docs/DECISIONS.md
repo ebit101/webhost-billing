@@ -1619,7 +1619,7 @@ current_database()), hashtext(schema)` computed by qualified PostgreSQL function
 
 ## ADR-098 — Prove statement-level SQL coordination only in fictional scopes
 
-- **Status:** Accepted for the owner-authorized Command 102 phase review; Command 103 implementation requires separate authorization
+- **Status:** Accepted for the owner-authorized Command 102 phase review; Command 103 subsequently authorized on 2026-10-07
 - **Date:** 2026-10-07
 - **Review:** Command 102 at `fdcaea6b086593260b71c198efc99f18d373f769` meets its unused
   cooperative transaction scope. Exact-head CI passed all 28 Validate steps; CodeQL all
@@ -1649,6 +1649,40 @@ current_database()), hashtext(schema)` computed by qualified PostgreSQL function
   adoption, real-data query/import, provenance/registry publication, provider, operating
   approval, cleanup or deployment. Retained tooling/governance/resource and launch risks
   remain without waiver. Ask for explicit Command 103 authorization and stop.
+
+## ADR-099 — Test-only statement coordination is not runtime policy or timer authority
+
+- **Status:** Accepted and locally validated for owner-authorized Command 103; canonical/exact-head hosted validation gates the handoff
+- **Date:** 2026-10-08 (owner authorization began 2026-10-07)
+- **Decision:** Add a separate pure fixed SQL renderer, unused by the product. Only the
+  mandatory test process may install it atomically in nonce scopes it newly creates and
+  marker/model/raw/loopback verifies. No application installer, schema/migration or
+  global roles, grants, owner changes or adopted writer. Reject collisions/unsupported
+  target contexts before installation; qualify catalog objects and actual context.
+- **Contract:** VOLATILE SECURITY INVOKER before-statement guards on nine ordinary targets,
+  Command 102's identical two-int transaction key, Read Committed/read-write, positive
+  caller-established settings bounded by 500/2000/10000 ms. No late statement-timeout
+  rewrite, widening/retry, policy/history lookup, latch or row/currency join validation.
+  Reject truncate. Reentrant locks last through commit/rollback; errors in the function
+  are redacted and rethrown, while native errors/fatal disconnects retain server semantics.
+- **Proven limits:** Statement waiting retains the initiating snapshot; later Read Committed
+  reads can see the commit. Row-first ordering can fail and must roll back, not swallow
+  failure or partially commit. Current settings do not certify an internal timer:
+  PostgreSQL does not rearm an active transaction timer when lowering its positive
+  setting. Trusted callers establish the first active deadline correctly or use independent
+  bounded client control. No claim that the SQL function certifies earlier setup or prevents
+  later privileged settings changes. Future adoption requires connection/deadline controls.
+- **Acceptance distinction:** Actual existing non-owner `pg_write_all_data` permits DML/copy
+  but lacks SELECT. Exercise its permitted writes on all nine targets without new grants;
+  owner fixtures cover read-dependent conflict/merge/nested/snapshot/row-lock cases.
+  Non-owner refusal to disable/drop/replace triggers or set replication bypass is tested;
+  owner/superuser bypass remains. This is not production runtime-role hardening.
+- **Boundary:** Keep all prior acceptance/24 migrations/seed/verifier, compare existing rows
+  and remove exactly owned test objects after marker verification. Preserve the incomplete
+  unmarked scope and recoverable ignored cache backup. Tooling/governance/resource and
+  operating/import/launch risks remain without waiver. Stop after validated delivery for
+  **Phase review — Review Command 103 SQL coordination guard prototype and define the next
+  bounded currency command**; do not define/implement the next command automatically.
 
 ## Open Decisions
 
