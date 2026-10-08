@@ -30,6 +30,9 @@
   Command 105 was delivered at `64c1713` with exact-head CI/CodeQL success. Its owner-
   authorized phase review accepts the specification and defines Command 106's isolated
   privilege acceptance harness only; implementation is not authorized by this review.
+  The owner subsequently authorized Command 106 on 2026-10-08; its P1-only test harness
+  is implemented and validated locally. Exact-head hosted delivery is separately checked
+  after commit. No production authority is installed.
   Temporary test installation is not product adoption.
   The selection protocol is not implemented or activated.
   Application integration and activation remain separately gated.
@@ -1673,6 +1676,68 @@ shape/guard opening, selected fixture, proof/ledger/row-latch implementation, cu
 database query, provider/import/operating approval, release/deploy or old-scope/cache
 cleanup. Stop and request explicit Command 106 authorization after review delivery.
 
+### Command 106 isolated P1 implementation
+
+Owner-authorized on 2026-10-08. The five new database test files provide reusable
+ownership/resource/process/connection boundaries, immutable migration pins, clearly
+fictional SQL fixtures, actual-login acceptance and injected lifecycle-failure tests.
+The package test sequence makes the new gate mandatory before the unchanged old SQL/
+seed/history launcher; ordinary root and existing CI package tests include it. No runtime
+export, dependency, product migration or workflow change is needed.
+Run `pnpm --filter @webhost-billing/database test:privileges` for the standalone mandatory
+gate with the approved local cached image; ordinary `pnpm test` includes it as well.
+
+The harness first verifies the local Docker context and cached approved digest above,
+then uses its immutable image ID with `--pull=never`. Engine 28+, Linux/amd64 and exact
+PostgreSQL server version 18.6 are required; missing prerequisites fail, never skip.
+One new nonce-labelled bridge has IP masquerading disabled and default binding
+127.0.0.1. A Docker internal-only network did not expose the host mapping during actual
+acceptance, so it is not used. This bridge is not a complete outbound-network sandbox.
+Only the newly returned full IDs are targets; no Compose/demo/production resource is adopted.
+
+One CPU, 512 MiB memory/no extra swap, 64 MiB shared memory, 256 MiB data tmpfs at the
+image's actual `/var/lib/postgresql` volume target, 128 PIDs, 16 server connections,
+no persistent container logs (`--log-driver=none`) and no restart bound the new cluster. Preflight requires 768 MiB free
+host/daemon memory and 512 MiB working-volume space. SQL connection/statement/lock/
+transaction limits are 2 s/2 s/500 ms/10 s, client queries/closure 3 s, Docker children
+15 s, readiness 60 s, whole run 10 minutes and independent cleanup 30 s. Injected tests
+can shorten, not increase, the three overridable clocks. These are trusted test-callback
+boundaries, not arbitrary JavaScript or privileged Docker-user isolation.
+
+Bootstrap credentials travel via captured child stdin into verified tmpfs only, never
+host files, Docker arguments or `Config.Env`. Role-password SQL is not logged; fixed
+error phases/codes, validated SQLSTATE and exact ownership identifiers replace raw causes.
+Database/server identity and the out-of-product nonce marker precede all product SQL and
+fictional login DDL, and are rechecked before removal. Changed mounts/labels/marker/IDs,
+uncertain creation or client/cleanup failure fail closed for owner review; no old-scope
+cleanup/adoption/prune is permitted.
+Cached close failures remain failures on repeated closure. Pending acquisitions must
+settle/close within the independent cleanup deadline; otherwise resource removal is refused.
+
+All 25 migration files are sent as read, with no rewriting. Canonical LF SHA-256 pins
+cover Git content on Windows/Linux; separate raw-byte snapshots catch any change during
+the run, including local CRLF checkout differences. Product rows begin empty; only the
+operator stages key-1 generation zero, unknown history and null selection/base. Distinct
+business/issuer/executor/temporary-attack SCRAM logins and minimal NOLOGIN owners exercise
+qualified fictional definer probes, exact EXECUTE separation, guard DDL/escalation denial,
+temporary/table/overload decoys and restrictive RLS refusal. Every denied SQL operation
+asserts its precise SQLSTATE and unchanged trusted row/object/role/membership/default/
+database ACL snapshots. Existing trigger no-ops separately assert integrity SQLSTATE.
+
+Actual acceptance exposed an important fixture correction: creator-global default
+function EXECUTE must be revoked; a schema-only revoke cannot remove a global default.
+Fixture installation is atomic, explicit PUBLIC revokes remain and default-ACL probes
+always roll back. See primary [PostgreSQL default privileges](https://www.postgresql.org/docs/18/sql-alterdefaultprivileges.html),
+[network address formatting](https://www.postgresql.org/docs/18/functions-net.html) and
+[Docker localhost port publication](https://docs.docker.com/engine/network/port-publishing/).
+Server identity uses `host(inet_server_addr())`, not mask-bearing `inet::text`.
+
+Validation and delivery evidence belongs in the Command 106 progress report. This harness
+does not install production privileges, assess/adopt history, issue human proofs, implement
+selection/ledger/latches/writers or open controls. P2–P9 remain separately gated. Exact next
+request: **Phase review — Review Command 106 isolated privilege acceptance harness and
+define the next bounded currency command**.
+
 ## 4. Price publication, quote and renewal rules
 
 ### Catalogue pricing
@@ -1995,8 +2060,9 @@ Delivery sequence, each needing separate authorization:
     tuples, transaction-local assessment, protected opening/proof/ledger/writer boundaries
     and P1–P9 fictional acceptance dependencies. Delivered at `64c1713` with exact-head
     hosted acceptance; its owner-authorized phase review accepts the documentation scope.
-    **Command 106 — Build an isolated currency privilege acceptance harness** is defined
-    for P1 only, not authorized or implemented. No selected state or deployed privilege.
+    **Command 106 — Build an isolated currency privilege acceptance harness** was subsequently
+    authorized on 2026-10-08 and implemented for P1 only; acceptance/delivery evidence is
+    recorded separately in progress. No selected state or deployed privilege.
 12. Later additive policy/provenance services and per-currency reads; preserve legacy records and
     pass mixed BDT/USD portal/report tests before an import rehearsal.
 13. Fixed BDT/USD catalogue, ownership-bound quotes and confirmed same-currency collection

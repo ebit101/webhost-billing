@@ -4073,9 +4073,9 @@ Command 105 assessed-state specification and define the next bounded currency co
 ## Command 106 — Build an isolated currency privilege acceptance harness
 
 **Defined by the owner-authorized Command 105 phase review on 2026-10-08.**
-**Not authorized or implemented by this review.** This is P1 of section 3d, a mandatory
+**Subsequently authorized by the owner on 2026-10-08; implementation and local acceptance completed.** This is P1 of section 3d, a mandatory
 test-only foundation for later privileged prototypes, not currency selection or a
-production role installer. Obtain explicit owner authorization before implementation.
+production role installer. Stop afterward for the separately authorized Command 106 phase review.
 
 ```text
 Command 106 — Build an isolated currency privilege acceptance harness

@@ -1881,6 +1881,41 @@ current_database()), hashtext(schema)` computed by qualified PostgreSQL function
   deployment. Retained tooling/resource/governance and outstanding business/activation
   approvals remain. Ask for explicit Command 106 authorization after review delivery.
 
+## ADR-105 — Keep privilege acceptance in an independently owned memory-only cluster
+
+- **Status:** Accepted and implemented for owner-authorized Command 106; local acceptance completed
+- **Date:** 2026-10-08
+- **Decision:** Implement only P1 under database test files, with installed pg/tsx tools
+  and mandatory package/root/unchanged-CI wiring. One nonce-labelled container/network,
+  approved cached Linux/amd64 PostgreSQL 18.6 digest, immutable image ID, no pull/fallback,
+  127.0.0.1 dynamic port, bounded tmpfs/CPU/memory/PIDs/logs/connections and separate
+  startup/SQL/child/whole-run/cleanup deadlines. Require Docker Engine 28+ for the documented
+  localhost publication boundary; no engine update or ceiling increase is implied.
+- **Ownership:** Verify full returned IDs, labels/image/mount/network/port manifest,
+  server version/data/database/user/address and an out-of-product nonce marker before
+  migrations/login DDL. Reverify before exact-ID cleanup; foreign/uncertain ownership
+  or failed client closure fails the gate. Never adopt leftovers or prune shared data.
+- **Secrets:** Independent generated SCRAM credentials are not inherited, returned,
+  logged, written to host files or placed in Docker arguments/Config.Env. Bootstrap
+  bytes travel through captured child stdin into the verified bounded memory-only tmpfs;
+  all captured raw Docker/SQL causes are replaced by fixed phases/codes/validated SQLSTATE.
+  Persistent container logging is disabled and inspected (`--log-driver=none`), rather
+  than relying on severity settings to prevent credential SQL from reaching host logs.
+- **Acceptance:** All 25 original migrations and raw-byte checks remain intact. Only
+  an operator-staged key-1 zero/null control is allowed. Four real fictional login
+  connections and two minimal non-login owners test precise denial versus authorized
+  fictional positive probes, default/PUBLIC ACLs, escalation, guard DDL, temporary/overload
+  decoys and restrictive RLS. Every denied query rechecks trusted facts/objects/role/ACL
+  snapshots; existing guard no-ops are separate integrity, not ACL, evidence.
+- **Correction:** PostgreSQL function PUBLIC defaults require creator-global default
+  revocation; per-schema revocation cannot remove a global default. Fixture creation and
+  explicit grants remain atomic and probe transactions always roll back.
+- **Boundary:** No dependency/workflow/runtime/export/schema/migration change, real issuer/
+  transition/latch/ledger, selected policy, shared-cluster role grant or production action.
+  SQL deadlines do not sandbox arbitrary JavaScript, Docker administrators or privileged
+  recovery. Retained development advisories, disk/governance risks and P2–P9 prerequisites
+  remain unwaived. Stop for the Command 106 phase review; no automatic P2 authorization.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

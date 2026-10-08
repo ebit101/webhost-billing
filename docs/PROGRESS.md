@@ -12415,6 +12415,142 @@ After validated review delivery, authorize **Command 106 — Build an isolated c
 privilege acceptance harness**. Stop here; do not implement it, open selected states,
 install authority records, adopt writers or begin P2 automatically.
 
+### Command 106 — Build an isolated currency privilege acceptance harness
+
+- **Status:** Implementation and local acceptance complete; delivery/hosted acceptance reported in final handoff
+- **Date:** 2026-10-08
+- **Authority:** Owner explicitly authorized Command 106, P1 only. No P2 implementation,
+  production role installation, currency selection, import/provider or deploy authority.
+
+#### Scope and files changed
+
+- Five new `packages/database/test/currency-privilege-harness.*` TypeScript files:
+  reusable fresh-cluster lifecycle, 25 migration content pins, fictional SQL fixtures,
+  actual distinct-login matrix and injected lifecycle/secret/ownership failure tests.
+- `packages/database/package.json`: mandatory source/isolated privilege/unchanged SQL
+  launcher sequence. Root `pnpm test` and unchanged CI Run package tests include it.
+- Command tracking, product plan, ADR-105, currency design and this progress report:
+  implementation boundaries, operational requirements, corrections and next review.
+- No migration/schema/runtime/export/dependency/lockfile/workflow/old launcher changes.
+  No existing container, volume, scope, cache or live data cleaned/adopted.
+
+#### Validation performed and results
+
+- Reconciled prior review head `694270bdcc40c0d11980614d71be2d97863f67c3`:
+  cached pinned full-history scan passed 211 commits/no leaks, normal non-force main push;
+  exact-head [CI 37801255845](https://github.com/ebit101/webhost-billing/actions/runs/37801255845)
+  passed all 28 Validate steps and
+  [CodeQL 37801255861](https://github.com/ebit101/webhost-billing/actions/runs/37801255861)
+  all eight steps. PR-only dependency review skipped, not passed. These are prior-review,
+  not Command 106 delivery results.
+- Frozen install passed with pinned pnpm 11.22.0 and no lockfile drift. Ten installed
+  tooling mitigation checks passed. Production audit exited 0/no known vulnerabilities;
+  full audit exited 1 for retained high braces GHSA-vfj7-8cjw-p6xm and moderate sprintf-js
+  GHSA-hp3w-g68c-fv3c development findings. No waiver or clean-full-audit claim.
+- Actual isolated harness passed its parent plus all ten SQL subtests (11/11), no skips:
+  distinct authenticated SCRAM principals, positive exact probes, precise ACL/integrity
+  denials, unchanged snapshots after each denial, default/PUBLIC ACL, escalation/DDL,
+  temporary/overload decoys, restrictive RLS and real SQL statement deadline/reuse.
+  Latest source suite passed 66/66 (51 existing plus 15 new). Final hardened-source
+  full/root acceptance is still being rerun before delivery.
+- Initial real runs failed closed on internal-network port mapping and mask-bearing
+  `inet::text` address mismatch. Used a private nonce bridge with IP masquerading off,
+  exact loopback publication and `host(inet_server_addr())`; neither identity check was
+  weakened. Default-ACL acceptance exposed schema-level revoke's inability to remove
+  global EXECUTE; corrected creator-global default revocation and guaranteed probe rollback.
+  Subsequent actual SQL acceptance passed. Owned test resources were removed by exact
+  verified IDs; label-filtered read-only inspection found no remaining Command 106 resources.
+- A preflight Docker CLI timeout under local load was not counted as a pass or used to
+  raise its 15-second budget. Initial unit fixture checks overmatched a comment/hung
+  bootstrap closure; fixed the mock scope and type-widening, not acceptance rules.
+- First complete database run passed new 66 source/11 actual harness tests and prior unit,
+  policy and preflight SQL suites, but failed an unchanged coordination 100 ms transaction
+  test: body entered once rather than twice. Later SQL/seed steps did not run and are not
+  passes. Host free memory was approximately 807 MiB; causal attribution is not proven.
+  Full unchanged guarded root/database rerun is in progress, without timeout increases.
+- Final types/lint/API/invariant/browser/build/docs/format/security/delivery results remain
+  required. No future validation/commit/scan/push/hosted result is claimed here.
+- Subsequent default root run failed Docker preflight's fixed CLI deadline before creating
+  resources. A standalone final-source harness rerun passed 11/11 and exact owned cleanup.
+  Another unchanged root run passed all 67 source/11 harness/70 prior SQL tests, guarded
+  seed/verifier, shared 93, queue 3 and API unit 107, then reproduced the existing worker
+  lifecycle five-second timeout (28/29), followed by a teardown foreign-key failure.
+  Root overall failed; no skipped/cancelled frontend result is claimed as a pass.
+  An attempted ephemeral `npm_config_*` sequencing option was ignored by pnpm 11;
+  read-only verification of the documented `pnpm_config_*` prefix returned concurrency 1.
+  Complete identical root tooling/package suites are now rerunning sequentially, with
+  explicit Jest `--runInBand` and Vitest `--maxWorkers=1`, as in the recorded Command 83
+  local validation boundary. This does not repair or establish a default parallel pass.
+  Cached close promises preserve caught closure failure so cleanup cannot misreport a
+  second end() as success; the new regression case passed (67 = 51 existing + 16 new).
+- The complete identical suite passed sequentially: all ten root tooling scripts,
+  shared 93, database 67 source/11 isolated harness/70 retained SQL plus unchanged
+  fictional seed/verifier, queue 3, API 25 suites/107, worker 10 suites/29 and frontend
+  54 files/572 (243.52 s). Fresh nonce scope ownership was verified before exact cleanup.
+  This is a complete serial execution, not a local default-parallel repair/pass.
+- Final acquisition hardening tracks pending opens through independent cleanup, preserves
+  closure failure after its promise settles, and refuses removal for unresolved opens.
+  Final database strict types passed; all 68 source tests passed (51 existing + 17 new),
+  no skips. Complete final-source database/API/invariant rerun remains in progress.
+- Final-source complete database gate passed 68 source/11 isolated harness/70 retained
+  SQL cases, all 25 migrations, prior-22/23/24 row preservation and unchanged fictional
+  seed/verifier. The first separate API integration invocation passed 80/81 but the
+  administrator ownership case returned 404: the fresh parent scope had not received
+  the ordinary seed customer expected by that existing test. This was a private launcher
+  fixture omission, not a justified source change or permission bypass. Rerun seeds and
+  verifies only a newly marked parent before unchanged API/invariant gates; no test,
+  verifier, assertion or application source is changed to hide that failure.
+- Correctly seeded/verified guarded API rerun passed all 17 suites/81 tests. Critical
+  invariants passed shared 93, API unit 12, API integration 42 and worker renewal/scheduler
+  2; verified exact parent ownership/cleanup. No earlier invocation failure is a pass.
+- Final no-persistence logging hardening uses inspected `--log-driver=none` with no
+  options, in addition to SQL statement/error-statement suppression. This avoids relying
+  on severity settings to prevent credential SQL from entering a persistent Docker log.
+  Captured child/error output remains bounded/redacted. Final complete database/types/
+  lint acceptance is rerunning after this in-scope correction; no timeout increased.
+- Final complete no-log database rerun passed all 68 source/11 real-login harness/70
+  retained SQL cases, guarded seed/verifier and all historical comparisons, no skips.
+  Fresh worker build, complete strict workspace/browser types, lint and Prisma schema
+  validation passed. All 25 migration files, root exports, application source, dependencies,
+  workflows and old launcher remain unchanged. Exact label-filtered Docker inspection
+  found no Command 106 containers/networks remaining; no unrelated resource removed.
+  Browser lifecycle/administrator checks and production build remain in progress.
+- Browser lifecycle passed all 19 tests (4.0 minutes) and administrator role mock-UI
+  checks all four (22.7 seconds), with original assertions/timeouts and zero retries.
+  Existing browser logo LCP/loading and color-environment warnings remain observations,
+  not new source repairs or a zero-warning claim. Production build passed every package
+  and app on Next.js 16.3.8 with child-only production environment restored afterward.
+- Final production JSON audit again exited 0/no known vulnerabilities. Full JSON audit
+  again exited 1 for exactly the same two retained development advisories, not passed,
+  suppressed or waived. Final source formatting/offline docs/mitigation/license checks
+  and whitespace are rechecked before focused commit, cached pinned complete-history
+  secret scan, canonical non-force push and exact-head CI/CodeQL. Final handoff supplies
+  observed delivery evidence; no future SHA, scan, push or hosted pass is claimed here.
+
+- Final workspace formatting, all four offline documentation validators, all ten installed
+  mitigation tests, parsed production license inventory and Git whitespace passed.
+  Canonical main fetch confirmed unchanged review head and 0/0 divergence before commit.
+  Final report edits receive changed-file formatting/docs/whitespace rechecks before
+  focused delivery. Retain the recorded local parallel-run constraint; exact-head hosted
+  normal root acceptance remains required, with no workflow/timeout/skip relaxation.
+
+#### Decisions, unresolved risks and exact next command
+
+- Fresh immutable cached PostgreSQL 18.6 Linux/amd64 only; Engine 28+; one capped tmpfs
+  container/private nonce bridge, dynamic loopback target and out-of-product marker.
+  No missing-cache/Docker/resource skip, pull, shared-cluster fallback or broad cleanup.
+- Bootstrap secret is memory-only via captured stdin/verified tmpfs, not Docker metadata;
+  other ephemeral SCRAM passwords remain in captured SQL/pg memory. Raw errors/config/
+  URLs/credential SQL are redacted. Cleanup/client failure or foreign ownership fails
+  the gate and retains exact identifiers for owner review, never adopts a leftover.
+- A fictional privilege pass is not production role/credential installation, human
+  approval, complete writer/proof/ledger/selection enforcement or launch readiness.
+  Trusted JavaScript, Docker administrator/privileged DDL, disk/resources, development
+  advisories, direct-main governance and all business/provider/activation gates remain.
+- Stop after validated delivery. Request **Phase review — Review Command 106 isolated
+  privilege acceptance harness and define the next bounded currency command**. Do not
+  define/implement P2 or selected/assessed product state automatically.
+
 ## Report Template
 
 Use this template after every future command:

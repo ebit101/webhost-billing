@@ -124,6 +124,13 @@ It verifies caller settings and coordination only, not an initiating statement's
 snapshot or internal timer state; trusted callers must establish the first active
 transaction deadline, not assume that lowering a positive setting rearms its timer.
 No application migration, installed policy guard or writer adoption follows this review.
+The owner subsequently authorized Command 106 on 2026-10-08. Its test-only P1 harness
+uses one newly owned, capped tmpfs PostgreSQL container and private nonce bridge, an
+immutable cached image and loopback-only derived port. Distinct ephemeral SCRAM logins
+and minimal non-login owners exercise fictional ACL/definer/DDL/temporary/RLS boundaries;
+snapshot checks follow every precise SQLSTATE denial. Mandatory package/root/CI wiring
+retains all prior migration/source/seed/history checks. This is not production role
+installation, selection, proof issuance, writer enforcement or human approval.
 No selection/guard or application consumer is installed by the observation helper or review.
 No live registry, selected installation policy or financial backfill is included. Broader persistence,
 per-currency reads, pricing and activation remain later separately gated slices. Remaining
