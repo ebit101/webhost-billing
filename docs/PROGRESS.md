@@ -12222,8 +12222,8 @@ and activation prerequisites** on 2026-10-08, documentation-only; report follows
 
 ### Command 105 — Specify assessed-state transitions and activation prerequisites
 
-- **Status:** Documentation specification completed with proportional local acceptance;
-  focused commit/secret scan/non-force delivery/exact-head hosted gates remain required
+- **Status:** Delivered at `64c1713` with local acceptance, complete-history secret scan,
+  non-force push and exact-head CI/CodeQL; owner-authorized phase review accepts its documentation scope
 - **Date:** 2026-10-08
 - **Authorization:** Owner authorized Command 105 only. No proposed implementation,
   migration/role/grant/assessed fixture/activation, live query/import/provider or deployment.
@@ -12298,6 +12298,13 @@ and activation prerequisites** on 2026-10-08, documentation-only; report follows
   focused commit/cached pinned complete-history scan/non-force push/exact-head hosted
   CI/CodeQL. Do not claim future-head scan/delivery/hosted passes in this report; final
   handoff supplies observed delivery evidence.
+- Delivery subsequently completed at `64c17136e1029ee8fd35a9883144b289a070e6f7`:
+  cached pinned complete-history secret scan passed (210 commits, no leaks), focused
+  non-force canonical push and clean 0/0 reconciliation. Exact-head
+  [CI 37799015919](https://github.com/ebit101/webhost-billing/actions/runs/37799015919)
+  passed its aggregate/all 28 Validate steps; [CodeQL 37799015817](https://github.com/ebit101/webhost-billing/actions/runs/37799015817)
+  aggregate/all eight steps. Freshly reverified during the authorized phase review.
+  PR-only dependency review skipped, not passed; direct-main governance risk remains.
 
 #### Decisions, unresolved questions and risks
 
@@ -12317,11 +12324,96 @@ and activation prerequisites** on 2026-10-08, documentation-only; report follows
 
 #### Exact recommended next command
 
-After validated delivery, separately authorize **Phase review — Review Command 105
-assessed-state specification and define the next bounded currency command**. Stop after
-Command 105; do not automatically implement P1 or define/start Command 106, open selected
-states, assess history, adopt writers, activate currency, query/import real data, invoke
-providers, approve operations, clean existing scopes/cache, release or deploy.
+The owner subsequently authorized **Phase review — Review Command 105 assessed-state
+specification and define the next bounded currency command**; review follows. It defines
+Command 106 only, not implementation authority or currency activation.
+
+### Phase review — Command 105 assessed-state specification
+
+- **Status:** Specification engineering scope accepted; Command 106 defined only;
+  review delivery/exact-head hosted gates remain required
+- **Date:** 2026-10-08
+- **Authorization:** Review Command 105 and define one next bounded currency command.
+  Do not implement P1, create PostgreSQL containers/roles/probes or activate currency in this review.
+
+#### Scope completed
+
+- Read required project instructions/product plan/current decisions/progress, complete
+  Command 105 and section 3d; reviewed control migration/entry, coordinator, existing
+  non-owner test probes, auth/staff source targets, database package/launcher and CI.
+- No blocking in-scope specification defect found. Exact state tuples/null invariants,
+  transaction-local assessment, generation versus full-state invalidation, irreversible
+  history/base, intent/assessment digests and committed replay are explicitly separated.
+  Atomic proof/CAS/ledger/audit, early deny-first prototypes, complete writer adoption
+  and atomic guarded opening/drain/recovery remain proposed requirements, not installed.
+- Confirmed `64c1713` changed five documentation files only; no runtime/package/schema/
+  test/workflow diff and all 25 migrations unchanged. Current control store/entry still
+  accepts only uncertainty, coordinator returns void and documents trusted-client limits.
+  Current predefined-role/owner-side probes are not isolated duty-login evidence.
+- Reconciled delivered Command 105 and freshly verified its exact-head CI/CodeQL.
+- Defined **Command 106 — Build an isolated currency privilege acceptance harness**, P1
+  only: mandatory database/root/CI path, one newly owned local disposable container,
+  cached immutable approved image, no shared connection/volume/role fallback, actual
+  independent fictional logins, minimal non-login owners and qualified probe ACL tests.
+  Explicit resource/deadline/secret/ownership/cleanup failure acceptance; no product
+  selected/proof/ledger fixtures, state opening or shared-role installation. Not implemented.
+
+#### Files changed
+
+- `CODEX_DEVELOPMENT_COMMANDS.md`: reconciled delivery and full bounded Command 106.
+- `HOSTING_BILLING_SYSTEM_PLAN.md`: reviewed specification and harness authority boundary.
+- `docs/DECISIONS.md`: delivered ADR-103 and phase-review/next-command ADR-104.
+- `docs/MULTI_CURRENCY_DESIGN.md`: review/source evidence and concrete P1-only handoff.
+- `docs/PROGRESS.md`: Command 105 delivery, review, risks and exact recommended command.
+- Documentation only; no runtime/schema/migration/dependency/test/workflow changes.
+
+#### Validation performed and results
+
+- Fresh `pnpm install --frozen-lockfile` passed using 11.22.0, no lockfile drift.
+  `pnpm test:tooling-security` passed all ten installed mitigation tests. Production JSON
+  audit exited 0, no known vulnerabilities. Full JSON audit exited 1 for the same retained
+  braces high/sprintf-js moderate development findings; not a clean audit or waiver.
+- Fresh `pnpm --filter @webhost-billing/database test:unit` passed all 51 source tests,
+  no skips. No new isolated SQL/role/container tests executed by this docs-only review.
+  Full local root/API/database integration/browser/build tests remain prior-delivery
+  evidence, not fresh local reruns. Hosted review-head acceptance remains required.
+- Freshly verified Command 105's exact-head hosted aggregate/required-step evidence above.
+  Git source diff has no executable/migration changes and main was clean/synchronized 0/0.
+- Read-only Docker image inspection confirmed approved PostgreSQL 18.6 bookworm cached
+  Linux/amd64 image/digest; no pull/container creation. Free disk approximately C: 13.59
+  GiB / D: 16.69 GiB, not a claim resource constraints are resolved. Current database
+  owners/history were not queried. Primary PostgreSQL/Docker documentation links accompany
+  proposed harness requirements, not executed privilege or isolation proof.
+- An initial PowerShell-escaped source-search regex failed parsing; the corrected literal
+  search succeeded. No validation pass is attributed to that failed diagnostic.
+  A mistyped read-only gitleaks digest lookup found no image; the exact workflow-pinned
+  digest lookup succeeded. No pull or acceptance is attributed to the mistyped lookup.
+- Changed-file Prettier formatting, all four offline documentation validators, all four
+  dispatcher unit tests and Git whitespace passed. Final report edits are rechecked
+  before focused commit, cached pinned complete-history secret scan, non-force delivery
+  and exact-review-head CI/CodeQL. Final handoff supplies observed delivery evidence;
+  no future gate result claimed here.
+
+#### Decisions, unresolved questions and risks
+
+- Accept documentation specification only, not installed enforcement or launch readiness.
+  Command 106 is a bounded prerequisite, not authorization for P2–P9 or a completion date.
+- Keep actual human-proof/credential revocation races, exact legacy/credit/draft lineage,
+  complete writer/consumer/provider compatibility and atomic opening/drain/recovery gates.
+  Command 33 D5–D8/Command 91, protected WHMCS/adoption evidence, metadata/provider rights,
+  production role credentials/window/owners and final launch approval remain outstanding.
+- Docker/admin compromise, trusted proof issuer, privileged DDL, raw SQL recovery,
+  initiating snapshots/row-first/internal timers, uncertain commits, retained tooling,
+  disk/resource/direct-main governance and PR-only skipped review are not waived.
+- Preserve prior incomplete unmarked scopes and recoverable ignored caches. No existing
+  scope/volume/cache cleanup, Docker pull, roles/grants/probes, live query/import/provider,
+  operating approval, release or deployment in this review.
+
+#### Exact recommended next command
+
+After validated review delivery, authorize **Command 106 — Build an isolated currency
+privilege acceptance harness**. Stop here; do not implement it, open selected states,
+install authority records, adopt writers or begin P2 automatically.
 
 ## Report Template
 

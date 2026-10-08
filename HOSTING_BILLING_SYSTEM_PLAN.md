@@ -110,8 +110,13 @@ The owner subsequently authorized Command 105 on 2026-10-08. Its documentation-o
 specification fixes exact durable tuples (no assessed-unselected row), selection versus
 first-history semantics, isolated proof/transition privileges, atomic ledger/audit/replay,
 complete writer coverage and protected opening/drain/recovery prerequisites. The smallest
-next implementation candidate is an isolated privilege acceptance harness, not an
-authorized or defined Command 106. Its proposed acceptance is not executed evidence and
+next implementation candidate was an isolated privilege acceptance harness. Command 105
+was delivered at `64c1713` with exact-head CI/CodeQL success; its owner-authorized phase
+review accepts the documentation scope and defines **Command 106 — Build an isolated
+currency privilege acceptance harness**, not its implementation. The next slice creates
+only newly owned disposable fictional infrastructure and actual distinct-login permission
+tests; it cannot use shared-cluster roles, alter product migrations or open selected states.
+Its proposed acceptance is not executed evidence and
 no transition/role/migration/writer is implemented. Unknown history remains null, never
 false, and generation zero is not authority. No application/CLI/worker consumer, history
 assessment, selected policy, live migration or existing-business-table guard is added.

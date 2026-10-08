@@ -27,6 +27,9 @@
   2026-10-08; inert storage and its unused entry were delivered at `73e31bd` with complete
   local/exact-head acceptance. Its phase review was delivered at `3fd2def`; the owner
   authorized Command 105's documentation-only implementation specification on 2026-10-08.
+  Command 105 was delivered at `64c1713` with exact-head CI/CodeQL success. Its owner-
+  authorized phase review accepts the specification and defines Command 106's isolated
+  privilege acceptance harness only; implementation is not authorized by this review.
   Temporary test installation is not product adoption.
   The selection protocol is not implemented or activated.
   Application integration and activation remain separately gated.
@@ -1562,8 +1565,8 @@ objects. Leave incomplete/unmarked scopes and recoverable caches untouched. Fixt
 functions probe permissions on explicitly fictional objects, not successful human
 approval; do not disable Command 104 guards or open selected product states. Wire mandatory
 checks without opt-out and retain every existing source/SQL/seed/history acceptance.
-This candidate is not implemented or a defined/authorized Command 106; its phase review
-must decide the next exact command.
+Command 105 did not implement or define/authorize this candidate. Its subsequently
+owner-authorized phase review defines Command 106 below, without implementation authority.
 
 Cross-slice acceptance, designed here and **not executed** by Command 105:
 
@@ -1602,6 +1605,73 @@ the P1–P9 slices are dependencies rather than a promised completion count/date
 live query/import, role/grant, assessed fixture, transition, provider, cleanup, release or
 deployment occurred. After validated delivery, stop for **Phase review — Review Command
 105 assessed-state specification and define the next bounded currency command**.
+
+### Command 105 review and Command 106 implementation boundary
+
+Owner-authorized review on 2026-10-08 accepts the documentation specification at
+`64c17136e1029ee8fd35a9883144b289a070e6f7`, not its proposed enforcement. No blocking
+in-scope specification defect was found. Complete tuple/evidence checks handle the
+unchanged-generation first-history race; separate stable intent permits original-receipt
+replay after later selection. Early prototype deny-first guards and atomic final opening
+avoid treating partial prerequisites as permission. Draft compatibility, human-proof
+revocation, exact legacy lineage and complete deployed writers remain open gates.
+
+Fresh source review confirmed the control CHECK still permits only zero/null, blanket
+mutation triggers remain, and `currency-control` accepts only absent/unassessed facts.
+Coordinator returns void after owned commit and explicitly documents trusted-client
+limits. Current tests use owner-side/predefined-role probes, not the proposed isolated
+login duties. Command 105 changed five documentation files only; all 25 migrations and
+runtime/package/CI tests were unchanged. No current-role/history query was performed.
+
+Exact-source CI passed its aggregate/all 28 Validate steps; CodeQL aggregate/all eight
+steps. PR-only dependency review skipped, not passed. Review reran 51 database source
+tests and installed mitigation/production/full audits, not new non-owner SQL or the full
+local browser suite. Evidence supports the specification scope, not installed authority.
+
+Define **Command 106 — Build an isolated currency privilege acceptance harness**, P1
+only, in [the command record](../CODEX_DEVELOPMENT_COMMANDS.md). That implementation
+requires separate authorization. It establishes reproducible actual-login privilege
+acceptance before later authority records/functions; it is not another unused production
+helper or permission to initialize currency.
+
+Concrete harness refinements: keep the existing database launcher unchanged and execute
+the new isolated runner mandatorily through the database package/root test path and CI.
+Use a fresh nonce-labelled local Docker container and automatically allocated loopback
+port, no application `.env`/DATABASE_URL, shared network/data mount or fallback server.
+Inspect the cached approved `postgres:18.6-bookworm` image and run its immutable image
+ID with `--pull=never`; this review observed Linux/amd64 repository digest
+`postgres@sha256:3725f4e2499eef5134592b3b4ab79a543ed7f8e533b05b5b637af926630f6650`.
+Same-name tag alone is insufficient. Another architecture/digest needs reviewed evidence.
+Use bounded tmpfs over the actual image data-volume target (no anonymous volume), one CPU,
+512 MiB memory, 64 MiB shared memory, 256 MiB data and 128 PIDs, sequential execution and
+a ten-minute watchdog plus bounded cleanup. Resource insufficiency denies; no automatic
+budget increase, image pull or existing-cluster role creation. Docker's
+[run reference](https://docs.docker.com/reference/cli/docker/container/run/) informs
+the proposed limits/mount/port options; none is exercised by this review.
+
+Apply the 25 unchanged migrations only after exact container/mount/marker/server proof.
+Keep product control empty or operator-staged zero/null, then compare all product facts
+and guard manifests. Separate nonce-owned fictional probe objects support actual
+business/issuer/executor logins and minimal non-login owners. Prove successful authorized
+access and precise SQLSTATE denials, PUBLIC/default ACL/membership/owner escalation,
+protected product DML and guard DDL refusal. ACL refusal is not row-policy validation.
+An intentionally untrusted TEMP-enabled attack principal probes qualification/overload
+behavior without granting any production role privileges. See PostgreSQL's
+[role membership](https://www.postgresql.org/docs/18/role-membership.html) and
+[function security](https://www.postgresql.org/docs/18/sql-createfunction.html) rules.
+Probe functions return fictional facts, never selection/proof/ledger authority.
+
+Fresh ephemeral SCRAM credentials stay in memory/bounded child environment, never raw
+logs/URLs/SQL/env dumps. Mocked process-boundary failure tests complement, not replace,
+actual authenticated SQL. Exact-ID/nonce/image/mount ownership must be reverified for
+cleanup, and only the new container/tmpfs removed. No prune, shared volume deletion or
+leftover-run adoption. Missing prerequisites, interruption or unsafe cleanup fail the
+gate with redacted identifiers; all old acceptance remains mandatory.
+
+Review changes documentation only; no harness/container/role/probe is built. No product
+shape/guard opening, selected fixture, proof/ledger/row-latch implementation, current
+database query, provider/import/operating approval, release/deploy or old-scope/cache
+cleanup. Stop and request explicit Command 106 authorization after review delivery.
 
 ## 4. Price publication, quote and renewal rules
 
@@ -1923,8 +1993,10 @@ Delivery sequence, each needing separate authorization:
 11. **Command 105 — Specify assessed-state transitions and activation prerequisites** was
     authorized on 2026-10-08 and completed as documentation only. Section 3d fixes legal
     tuples, transaction-local assessment, protected opening/proof/ledger/writer boundaries
-    and P1–P9 fictional acceptance dependencies. Isolated privilege acceptance is the
-    smallest next implementation candidate, not an authorized or defined Command 106.
+    and P1–P9 fictional acceptance dependencies. Delivered at `64c1713` with exact-head
+    hosted acceptance; its owner-authorized phase review accepts the documentation scope.
+    **Command 106 — Build an isolated currency privilege acceptance harness** is defined
+    for P1 only, not authorized or implemented. No selected state or deployed privilege.
 12. Later additive policy/provenance services and per-currency reads; preserve legacy records and
     pass mixed BDT/USD portal/report tests before an import rehearsal.
 13. Fixed BDT/USD catalogue, ownership-bound quotes and confirmed same-currency collection

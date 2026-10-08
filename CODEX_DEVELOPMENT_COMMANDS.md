@@ -3968,8 +3968,10 @@ it does not authorize its execution.
 
 **Defined by the owner-authorized Command 104 phase review on 2026-10-08.**
 **Authorized by the owner on 2026-10-08.** Completed as a source-grounded documentation-only
-implementation specification in `docs/MULTI_CURRENCY_DESIGN.md` section 3d. Local and
-exact-head delivery gates remain required. No assessed state or proposed slice is implemented.
+implementation specification in `docs/MULTI_CURRENCY_DESIGN.md` section 3d, delivered at
+`64c1713` with local documentation/security acceptance, complete-history secret scan and
+exact-head CI/CodeQL success. The owner-authorized phase review accepts the specification
+scope and defines Command 106 below. No assessed state or proposed slice is implemented.
 Command 100 established the target protocol; Commands 102–104 now expose concrete
 lock, timer, SQL-recovery and unassessed-storage constraints. Translate those into
 precise implementation dependencies before opening assessed/selected states. Do not
@@ -4065,6 +4067,129 @@ Command 105 executes no migration, SQL installer, role/grant, transition/proof/l
 history scan, application change, live query/import/provider, cleanup, release or deploy.
 After its validated delivery, stop for **Phase review — Review
 Command 105 assessed-state specification and define the next bounded currency command**.
+
+---
+
+## Command 106 — Build an isolated currency privilege acceptance harness
+
+**Defined by the owner-authorized Command 105 phase review on 2026-10-08.**
+**Not authorized or implemented by this review.** This is P1 of section 3d, a mandatory
+test-only foundation for later privileged prototypes, not currency selection or a
+production role installer. Obtain explicit owner authorization before implementation.
+
+```text
+Command 106 — Build an isolated currency privilege acceptance harness
+
+Read AGENTS.md, the product plan, decisions, progress and MULTI_CURRENCY_DESIGN.md
+section 3d and its Command 105 review. Recheck installed tooling/security exposure;
+retain all patches/gates. If a new required security repair exceeds this command,
+stop for authorization; do not upgrade, waive or suppress vulnerabilities implicitly.
+
+Build a reusable test-only disposable PostgreSQL harness and mandatory acceptance
+under packages/database/test/currency-privilege-harness.* and associated specs/runner.
+Use installed pg/tsx/Node tools; no new dependency, package installation workaround
+or runtime/root database export. Wire package test:unit and a mandatory isolated
+privilege test through packages/database/package.json so ordinary pnpm test includes
+it. Retain apps/web/e2e/run-database-tests.ts and every existing database/source/
+seed/history gate. Existing CI Run package tests must execute it without an opt-out,
+continue-on-error or missing-Docker skip. A workflow edit is allowed only if necessary
+for this mandatory wiring, not to relax tests, audits or timeouts.
+
+Inspect the local Docker endpoint and the cached approved postgres:18.6-bookworm
+image before creation. Reject remote/unverified endpoints, unexpected image identity/
+version/architecture or missing cache. Record the verified repository digest and
+create using its immutable cached image ID with --pull=never. CI may use the image
+already prepared by its unchanged infrastructure step; the harness must not pull.
+The review observed cached digest
+postgres@sha256:3725f4e2499eef5134592b3b4ab79a543ed7f8e533b05b5b637af926630f6650
+on linux/amd64. A different approved architecture/digest needs explicit reviewed
+evidence, not silently trusting a same-name tag. Missing resources are a blocker,
+never a reason to reuse Compose, demo, rehearsal or production containers/databases.
+
+Create exactly one nonce-named, labelled throwaway container per run, fresh private
+database/schema and out-of-product ownership marker. No application DATABASE_URL,
+.env loading, inherited database credentials, shared networks, host bind mounts,
+Docker socket mount, privileged mode or existing data volumes. Bind an automatically
+allocated PostgreSQL port only to 127.0.0.1; validate inspected mappings and derive
+all connection targets from the newly returned full container ID plus fresh marker.
+Use bounded tmpfs over the image's actual PostgreSQL data-volume target, no persistent
+or anonymous data volumes. Verify mounts/labels/image/nonce and database/server identity
+before migrations or role DDL. Stop on unexpected mounts, foreign marker or endpoint.
+
+Use one CPU, at most 512 MiB container memory, 64 MiB shared memory, 256 MiB data
+tmpfs and 128 PIDs; bounded connections/logs and no restart policy. Check available
+daemon/host resources before creating it and run sequentially. Bound readiness,
+SQL connection/acquisition/statement/lock/transaction and child processes, plus a
+ten-minute whole-run watchdog and separately bounded cleanup. Shorter limits are
+allowed; do not silently raise ceilings or treat a timeout as a passing assertion.
+Do not claim SQL timeouts sandbox arbitrary JavaScript or privileged Docker users.
+
+Apply all 25 product migrations byte-for-byte in their existing order, without a
+26th migration, guard relaxation or modified seed/verifier. Verify the actual
+migration/constraint/trigger/function manifest, all product rows and empty unit,
+policy and control stores. An explicit migration-operator insert may stage only the
+existing key-1 zero/null uncertainty; snapshot it and prove it remains unchanged.
+Never create selected/assessed product fixtures, money history, actual proofs,
+selection receipts, legacy sidecars or a human-approval simulation in this command.
+
+Only after verified fresh-cluster ownership create nonce-scoped fictional LOGIN
+business/issuer/executor principals and minimal NOLOGIN object/function owners.
+Bootstrap migration credentials stay in the harness only. Authenticate separate
+pg connections with independently generated ephemeral SCRAM credentials; assert
+session_user/current_user, role attributes, owners and exact grants/memberships.
+Owner-side SET ROLE or predefined pg_read_all_data/pg_write_all_data probes are not
+the new login evidence. No runtime principal may be superuser, CREATEROLE, CREATEDB,
+replication/BYPASSRLS, owner, or inherit/SET ROLE to a privileged owner/other duty.
+
+Use clearly labelled fictional probe objects in a separate nonce-owned schema to
+test private-table DML/read and exact-signature EXECUTE separation, minimal qualified
+SECURITY DEFINER ownership/search_path and PUBLIC/default ACL refusal. Include a
+positive authorized probe so denial is not merely bad authentication. Probe functions
+return fictional facts only; no transition, proof issuer, generic latch/ledger setter,
+currency CAS or selected-state SQL. Each denied query must assert its expected SQLSTATE
+and unchanged facts/manifest, not accept any connection or syntax failure as denial.
+
+Actual non-owner login tests must deny protected product control INSERT/UPDATE/DELETE/
+TRUNCATE (including no-row statements), unit/policy mutation, private probe access,
+cross-duty EXECUTE, SET ROLE/escalation, guard disable/drop/replace/reattachment and
+session_replication_role=replica. Distinguish ACL denial from existing trigger denial;
+do not mislabel the former as row-policy enforcement. A deliberately untrusted
+temporary-object attack principal may have TEMP only in this disposable cluster:
+prove temporary/table/function-overload decoys cannot redirect qualified probe reads
+or grant owner execution. Verify restrictive RLS/visibility refusal where applicable;
+do not advertise row_security=off as a bypass. Product guards remain unchanged.
+
+Add source/unit tests with injected process/inspect boundaries for missing Docker/cache,
+foreign endpoint/image/port/mount/marker, inherited-secret rejection, startup/migration/
+test failure, deadlines, interruption and cleanup refusal. Actual SQL tests must execute
+the real login matrix and record product snapshots before/after; no mocked privilege
+success or optional skip. Close all pools/processes before cleanup. Verify exact full
+container ID, nonce labels/image/mount ownership again and remove only the newly owned
+container/tmpfs. Never prune Docker, delete shared volumes, match broad name prefixes,
+clean old scopes/caches or automatically adopt a leftover failed run. Cleanup failure
+fails the gate and reports only redacted exact ownership identifiers for owner review.
+
+Never print/persist bearer credentials, password SQL, connection URLs, env dumps or
+raw container/database error causes. Keep credentials in memory/child environment
+only with bounded captured/redacted output; no command string interpolation or secret
+arguments/log inheritance. Include sentinel-secret non-disclosure tests across failure
+paths. A harness success establishes fictional privilege mechanics only, not production
+role installation, human authorization, complete writer enforcement or activation.
+
+Run frozen install, ten tooling mitigation tests, production and full audits, complete
+database source/SQL/harness/seed/history acceptance, strict types, root/API/invariant/
+browser/lint/build/documentation gates proportional to executable test wiring. Preserve
+all 25 migration hashes and prior-22/23/24 history comparisons; no failing/optional gates.
+Retained development advisories are not a passed full audit or waiver. Update report/
+decisions/design/product plan, focused commit, cached pinned full-history secret scan,
+reconcile main without history rewrite, non-force push and exact-head CI/CodeQL.
+
+Stop for Phase review — Review Command 106 isolated privilege acceptance harness and
+define the next bounded currency command. No product schema/runtime/export change,
+control opening, proof/ledger/transition/row-latch implementation, writer adoption,
+shared-cluster roles/grants, live queries/import/provider, approval, release/deploy
+or unrelated container/volume/scope/cache cleanup. Do not start P2 automatically.
+```
 
 ---
 

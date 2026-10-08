@@ -1796,7 +1796,7 @@ current_database()), hashtext(schema)` computed by qualified PostgreSQL function
 
 ## ADR-103 — Assessment is transaction-local and authority opens only with complete protection
 
-- **Status:** Specified by owner-authorized Command 105; no runtime implementation or activation
+- **Status:** Delivered at `64c1713` with local/exact-head acceptance; owner-authorized phase review accepts the documentation scope, not runtime implementation or activation
 - **Date:** 2026-10-08
 - **Baseline:** `3fd2defb54c7b3956225a0cbb1f54744b9691fcc`, 25 unchanged migrations.
   Its exact-head CI/CodeQL freshly reverified: all 28 Validate/eight CodeQL steps passed;
@@ -1843,6 +1843,43 @@ current_database()), hashtext(schema)` computed by qualified PostgreSQL function
   gates validate documentation delivery, not installed enforcement. No dependency/schema/
   runtime change, existing-scope/cache cleanup, Docker pull, live query/import/provider,
   operating approval, release or deployment. Stop for the Command 105 phase review.
+
+## ADR-104 — Prove privileges with fresh-cluster login tests before authority prototypes
+
+- **Status:** Accepted for the owner-authorized Command 105 phase review; Command 106 defined, not authorized or implemented
+- **Date:** 2026-10-08
+- **Review:** No blocking in-scope specification defect found. Exact control tuples,
+  transaction-local assessment, first-history/full-state invalidation, stable replay
+  intent versus assessment binding, atomic proof/CAS/ledger/audit, writer/drain and
+  opening dependencies are explicit. Current source still permits only zero/null;
+  all 25 migrations and runtime/tests/workflows are unchanged by Command 105. Current
+  shared connection configuration/predefined-role tests are not hardened live roles.
+- **Evidence:** Freshly verified `64c17136e1029ee8fd35a9883144b289a070e6f7` CI aggregate/
+  all 28 Validate steps and CodeQL aggregate/all eight steps. PR-only dependency review
+  skipped, not passed. Review's 51 source tests, ten mitigation tests and production
+  audit passed; full audit retains braces high/sprintf-js moderate findings, not a waiver.
+  No new SQL/production privilege proof is claimed by this documentation review.
+- **Decision:** Define **Command 106 — Build an isolated currency privilege acceptance
+  harness**, P1 only. Installed tools, one nonce-owned loopback disposable container,
+  verified cached immutable PostgreSQL image, bounded tmpfs/resources/deadlines and
+  exact ownership cleanup. Mandatory database/root/CI wiring keeps every old test.
+  Distinct authenticated fictional login roles plus non-login minimal owners test
+  actual ACL/EXECUTE/membership/DDL/temporary-shadow boundaries. Clearly fictional
+  probe functions are not currency transition/proof implementations or human approval.
+- **Preservation:** All 25 migrations remain byte-for-byte; product stores stay empty
+  or explicitly zero/null. No data-volume reuse, existing-cluster role DDL, shared
+  connection fallback, image pull, optional skip or broad cleanup. Missing cache,
+  resources, ownership or cleanup proof fails closed. No secret SQL/URLs/raw errors.
+- **Qualification:** Docker/admin compromise remains outside fictional SQL separation.
+  ACL denial is not row-policy validation; a probe success is not installed production
+  authority, provider readiness or launch approval. P2–P9 remain separately gated;
+  exact legacy lineage/draft compatibility/auth races/writers/drain/atomic opening
+  still need implementation and acceptance. No nine-command completion forecast.
+- **Boundary:** Five documentation files only. No PostgreSQL container/role/probe creation in this
+  review, no source/schema/dependency/workflow change, no current database/history
+  query, import/provider/operating approval, existing-scope/cache cleanup, release or
+  deployment. Retained tooling/resource/governance and outstanding business/activation
+  approvals remain. Ask for explicit Command 106 authorization after review delivery.
 
 ## Open Decisions
 
