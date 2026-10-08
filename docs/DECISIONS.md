@@ -1768,7 +1768,7 @@ current_database()), hashtext(schema)` computed by qualified PostgreSQL function
 
 ## ADR-102 — Specify the assessed-state enforcement boundary before relaxing storage
 
-- **Status:** Accepted for the owner-authorized Command 104 phase review; Command 105 defined only, not authorized or implemented
+- **Status:** Accepted for the owner-authorized Command 104 phase review; Command 105 subsequently authorized on 2026-10-08, documentation-only
 - **Date:** 2026-10-08
 - **Review:** No in-scope Command 104 source defect found. Fresh 51 source/70 fictional
   PostgreSQL cases and guarded seed/verifier passed, including actual COMMIT failure,
@@ -1793,6 +1793,56 @@ current_database()), hashtext(schema)` computed by qualified PostgreSQL function
   SQL recovery, initiating snapshots/internal timers/row-first order, trusted clients/
   owner DDL, uncertain commits, retained tooling and launch/governance risks remain.
   Ask for explicit Command 105 authorization after review delivery; stop.
+
+## ADR-103 — Assessment is transaction-local and authority opens only with complete protection
+
+- **Status:** Specified by owner-authorized Command 105; no runtime implementation or activation
+- **Date:** 2026-10-08
+- **Baseline:** `3fd2defb54c7b3956225a0cbb1f54744b9691fcc`, 25 unchanged migrations.
+  Its exact-head CI/CodeQL freshly reverified: all 28 Validate/eight CodeQL steps passed;
+  PR-only review skipped. Current source shares database-secret configuration and has
+  no proven hardened transition/proof role. No live privilege or history query performed.
+- **State:** Only unknown zero/null or fully selected boolean/anchor tuples are proposed
+  durable states. Assessment without selection exists only inside a trusted transaction.
+  Explicit initialize/adopt sets generation 1; replacement increments it once with CAS/
+  superseded-revision tracking. Generation exhaustion denies selection, not valid same-unit
+  history work. First committed financial insertion latches and freezes the original base
+  without incrementing selection generation; full tuple/evidence digest invalidates earlier
+  false-history proof. False latch plus observed history is inconsistent, never base-switch
+  permission. No null coercion, default metadata or preflight-based authority.
+- **Trust:** Separate minimal non-owner business/proof/executor duties and non-login
+  function owners; deny runtime direct authority DML/private proof reads/EXECUTE/escalation.
+  Narrow qualified SECURITY DEFINER boundaries where required, restricted ACLs atomic
+  with installation, actual login/temporary-shadow/owner-membership acceptance. Trusted
+  proof-issuer compromise and privileged DDL remain residual powers, not human approval.
+- **Atomicity:** Actor/session/action/body-bound five-minute-maximum opaque one-use proof,
+  transaction-bound factor consumption at issuance, locked current authorization and
+  fresh wall-clock/evidence at confirmation. CAS/ledger/activity/consumption commit together;
+  matching authenticated replay returns the original receipt, not current-selection fiction.
+  The initial implementation has no automatic retry, refining Command 100's proposed
+  three-attempt default. Recoverable outer SQL cannot persist a partial transition;
+  uncertain COMMIT acknowledgment stays unknown until authorized receipt inspection.
+- **Coverage:** Refresh all nine SQL targets and all API/worker/settings/numbering/provider
+  completion paths. Add renewal-policy localization rewrites and invoice business identity;
+  explicitly retain standalone gateway claim/failure/reconciliation writes. Preserve exact
+  legacy/new lineage and draft/issued boundaries. Draft currency-context edits need their
+  own append-only context/compatibility implementation or explicit guarded-operation gate;
+  do not claim their current behavior is already covered.
+- **Opening:** Inert records/nullable links may precede activation, but shape relaxation,
+  authorized update guard, exact anchor FK and complete row/latch/ACL manifest are one
+  later protected installation unit under approved drain and write-blocking locks. Never
+  commit an unguarded intermediate state or resume old writers. Preserve every old row;
+  live migration/roles/metadata/adoption/maintenance/recovery approvals remain separate.
+- **Sequence:** Section 3d specifies dependency slices P1–P9 with targets/acceptance/stops.
+  The smallest next implementation candidate is **Build an isolated currency privilege
+  acceptance harness**: fresh disposable loopback cluster and actual non-owner logins,
+  no roles/grants on the shared cluster or selected product state. It is not implemented,
+  numbered or authorized by Command 105; the next phase review decides the exact command.
+- **Boundary:** Five documentation files only. Proposed concurrency/security/adoption
+  scenarios are designed, not executed here. Frozen install/security/doc checks and hosted
+  gates validate documentation delivery, not installed enforcement. No dependency/schema/
+  runtime change, existing-scope/cache cleanup, Docker pull, live query/import/provider,
+  operating approval, release or deployment. Stop for the Command 105 phase review.
 
 ## Open Decisions
 

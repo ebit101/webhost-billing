@@ -24,8 +24,9 @@
   on 2026-10-08, with canonical and exact-head CI/CodeQL delivery at `2c05dce` verified.
   The owner-authorized phase review accepted its unused scope and defines Command 104's
   unselected control storage only. The owner subsequently authorized that slice on
-  2026-10-08; inert storage and its unused entry passed complete local acceptance,
-  with canonical/exact-head hosted acceptance remaining delivery gates.
+  2026-10-08; inert storage and its unused entry were delivered at `73e31bd` with complete
+  local/exact-head acceptance. Its phase review was delivered at `3fd2def`; the owner
+  authorized Command 105's documentation-only implementation specification on 2026-10-08.
   Temporary test installation is not product adoption.
   The selection protocol is not implemented or activated.
   Application integration and activation remain separately gated.
@@ -1168,7 +1169,7 @@ not a migration that opens selection or a further disconnected authority helper.
 timer, non-owner and recoverable-SQL constraints now require an implementation-ready
 dependency plan before that protocol can safely become authoritative.
 
-Command 105 is documentation-only and not yet authorized. Resolve exact legal state
+Command 105 was subsequently authorized, documentation-only. Resolve exact legal state
 tuples, whether assessed-unselected facts persist at all, NULL and permanent anchor/latch
 invariants, exact unit/exponent bindings, generation exhaustion and superseded revision
 tracking. Specify an additive opening sequence without an unguarded writer-visible state;
@@ -1189,7 +1190,418 @@ and mandatory fictional/non-owner/concurrency/security/preservation acceptance, 
 smallest later implementation candidate. Proposed test-only assessed fixtures cannot open
 product states or weaken normal launchers. No current assessment, role/grant, proof/ledger,
 executor, application/SQL writer adoption, real-data query/import/provider, approval,
-cleanup, release or deployment. Request Command 105 authorization after review delivery.
+cleanup, release or deployment. Its completed specification follows; no proposed slice
+below is authorized for implementation by Command 105.
+
+## 3d. Assessed-state implementation specification — Command 105
+
+### Authority, baseline and observed gaps
+
+Owner-authorized on 2026-10-08, source baseline
+`3fd2defb54c7b3956225a0cbb1f54744b9691fcc`. This section specifies future implementation;
+none of its states, privileges, proofs, ledger, lineage or adopted writers is installed.
+It refines Command 100 using Commands 102–104, rather than replacing their delivered
+contracts. All 25 migrations, runtime code, dependencies and mandatory tests stay unchanged.
+
+Observed source: `packages/database/prisma/schema.prisma:CurrencyControl` and migration
+`20261008090000_unselected_currency_control` allow only zero/null uncertainty. Existing
+`currency-control.ts` cannot read an assessed row; it must fail, never reinterpret that
+row as absent. `currency-coordination.ts` owns bounded transactions and returns void;
+future services must capture copied facts internally and release them only after commit,
+not return receipts through its trusted body or inject an already-open transaction.
+`currency-coordination-guards.ts` proves statement coordination, not policy/row enforcement.
+
+Production Compose passes the same `database_url` secret to migrations/API/workers.
+`client.ts:createPrismaClient` selects a schema but establishes no privilege boundary.
+No current code provisions separate non-owner transition/proof roles. Exact live ownership
+and deployed memberships were not queried; source configuration is not an attestation of
+live grants. Predefined-role probes cannot establish the proposed least-privilege model.
+
+### Exact state tuples and transitions
+
+Let `R` be an exact stored policy revision, `U` its exact base definition, `A` the base
+anchor `(code, metadataVersion, minorUnitExponent)`, and `g` the selection generation.
+All fields below refer to key 1; `created_at` remains its original staging time and is
+not an assessment/approval time. Generation is BIGINT, serialized as canonical decimal
+string, range `0`–`9223372036854775807`. No Number arithmetic or inferred ordering of R.
+
+| State                    | Durable tuple                                                                                  | Permitted future operation                                                                                                                                  |
+| ------------------------ | ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Absent                   | No row                                                                                         | Read absence; explicit constant stage. Initialization/adoption may stage within its own trusted transaction, never by GET.                                  |
+| Unassessed               | `g=0`, `R=NULL`, latch `NULL`, all A fields `NULL`                                             | Remain unknown, or trusted assess-and-select atomically after all prerequisites. No ordinary financial writes in a guarded installation.                    |
+| Assessed unselected      | **Not a legal durable tuple**                                                                  | Transaction-local evidence only. No saved latch false/true without selection; proof references a preview, not an authoritative persisted emptiness verdict. |
+| Selected history-free    | `g>=1`, R non-null, latch exactly false, complete A exactly U                                  | Confirmed replacement after fresh compatibility checks; first successful financial insertion may latch.                                                     |
+| Selected history-present | `g>=1`, R non-null, latch exactly true, complete frozen A                                      | Compatible confirmed replacement only; R base code/exponent equal A, though a reviewed metadata version may differ.                                         |
+| Invalid/unavailable      | Partial tuple, missing/inconsistent exact references, unreadable context or unsupported target | Deny new mutation/selection, expose safe review-required inspection. No fallback to latest, localization or BDT.                                            |
+
+Future shape CHECK uses explicit `IS NULL`, `IS NOT NULL`, `IS TRUE` and `IS FALSE`
+branches. Retain singleton/nonnegative checks and both existing RESTRICT foreign keys;
+add an exact three-column anchor FK to immutable `(code, metadata_version,
+minor_unit_exponent)` with the corresponding additive unique key. No unit rows change.
+Qualified SQL validates R's base against A; a CHECK cannot establish cross-table policy
+semantics. Ordinary-table/OID/raw/model/visibility checks remain mandatory.
+
+Transitions are separate typed operations, not a generic control UPDATE:
+
+- **Stage:** absent to unassessed, or identical unassessed replay; no history scan or
+  generation increment. After privilege adoption ordinary writers lose control INSERT;
+  the old staging entry cannot bypass that denial.
+- **Initialize:** fresh locked proof of zero rows in all seven money-bearing tables
+  and no payment events/unresolved adoption obligation; choose exact R and U, set g to 1,
+  latch false and A=U. Existing prices, including retired ones, block this ordinary path.
+  Even an unlinked/rejected gateway event requires reviewed classification, not automatic
+  history-free initialization. Command 101 counts cannot provide this authority.
+  Compare the preview's absent/unassessed state discriminator before any internal stage;
+  another committed stage invalidates an absent preview. Staging inside the successful
+  transition is not a new independently reusable assessment or a silent CAS relaxation.
+- **Adopt:** separately approved exact legacy/configuration/evidence manifest, fresh
+  verified coverage and no unresolved classes; g=1, R explicit, A from the approved base.
+  Any of the six financial-history tables or linked obligation makes latch true. Prices
+  or rejected/unlinked events alone do not fabricate financial history; a configuration-
+  only adoption can be false only after their exact context and absence of obligations
+  are authoritatively verified. No stored claimant boolean decides either case.
+- **Replace:** exact expected R/g, new never-before-selected R, compatible complete context,
+  one-use proof and fresh evidence. Increment g once. With latch false A follows the new
+  base only after price/obligation compatibility; no implicit rescaling. With latch true
+  retain A byte-for-byte and require candidate base code/exponent equal A. Same exponent
+  alone does not approve new metadata; compatibility evidence is required.
+  Effective history is stored latch OR fresh observed history/linked obligation. A stored
+  false latch with committed history is an integrity inconsistency: deny ordinary base
+  replacement and require reviewed repair/adoption, never freeze the proposed new base.
+- **First history:** AFTER a successful inserted row in any of the six history tables,
+  under the same key/control lock, change false to true and freeze current A. This is
+  automatic integrity enforcement, not administrator selection. Keep g unchanged: it is
+  a selection generation. No-op/conflict-nothing/failed insert cannot latch. Rollback
+  removes both insertion and latch. Linked gateway evidence also blocks replacement;
+  inconsistent event/payment links deny or quarantine, never clear history.
+- **Replay:** a completed matching actor/session/body receipt returns its original result
+  with no control/proof/audit change. It does not select an old R again. Current selection
+  is reported separately. Reject conflicting keys/bodies/bindings and superseded R reuse.
+
+At generation maximum, new selection denies before adding one; no wrap or reset.
+Valid same-unit financial work and first latching do not need another selection generation.
+Latching does invalidate a false-history preview despite unchanged g: the full control
+tuple/evidence digest is rechecked, not just expected R/g. No assessed state may transition
+back to unknown/absent, no true latch becomes false, and no delete/truncate/reset is legal.
+
+### Privilege and trusted-execution contract
+
+Role labels below are proposed duties, not installed names, memberships or credentials.
+All are installation-local duties; PostgreSQL roles themselves are cluster-wide. Runtime
+roles must not own tables/functions/schemas, inherit owner powers, use `SET ROLE` to a
+trusted duty, create triggers/objects/extensions, bypass RLS or replication guards, or
+obtain migration credentials. Owner/superuser compromise remains outside this protection.
+
+| Duty                              | Proposed permitted authority                                                                                  | Explicitly denied                                                                                          |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Offline migration operator        | Install reviewed DDL/ACL atomically during approved drain; verify owner/membership/catalog manifest           | Ordinary API/worker connection or automatic deployment/selection                                           |
+| Non-login object/function owners  | Own only reviewed objects; narrowly scoped function owners receive only required column/table privileges      | Login, superuser/role creation/RLS bypass, runtime membership, arbitrary dynamic SQL                       |
+| Business writer, including worker | Read exact public currency context; guarded DML on approved business tables; genuine draft-line deletion only | Control/proof/selection-ledger/legacy-evidence DML or private proof reads; transition/proof issuer EXECUTE |
+| Trusted proof issuer              | Isolated server-only credential/duty for locked auth/factor verification and narrow proof issuance            | Policy selection, control/ledger writes, arbitrary caller approval flags                                   |
+| Trusted transition executor       | Narrow reviewed transition function EXECUTE and authorized receipt retrieval                                  | Issue/modify proofs, direct control/ledger writes, financial/provider operations                           |
+| Trigger-only latch owner          | Validated successful-row trigger can set false to true with original A and append integrity evidence          | Select policy, clear latch, change A, issue proof or masquerade as human approval                          |
+
+API business, proof and transition pools need separately supplied credentials or equivalently
+proven isolated roles; an ambient runtime `SET ROLE` membership is not separation. The
+proof issuer is trusted server code: SQL cannot establish that it actually verified a
+human password/factor. Its compromise and theft of its isolated credential are residual
+powers. The transition executor must still verify the stored one-use proof and locked
+current auth facts, not trust its privilege as human intent. No GUC/token field/actor ID/
+creation timestamp substitutes for this boundary.
+
+Use VOLATILE narrow SECURITY DEFINER functions only where required, with minimal non-login
+owners, fully qualified catalog/application objects, fixed `search_path=pg_catalog,pg_temp`,
+explicit table/schema/OID/trigger checks and `row_security=off` visibility refusal. Revoke
+PUBLIC/default EXECUTE and restrict signatures within the same installation transaction;
+no public-access window. Deny ordinary control and selection-ledger mutation even for
+empty statements. An owner-performed staging INSERT still certifies only uncertainty.
+No callable generic latch/ledger setter. Trigger-only entry checks actual allowed target,
+timing/operation and stored row; arbitrary attachment/direct call is not accepted.
+
+These choices follow PostgreSQL's [function security](https://www.postgresql.org/docs/18/sql-createfunction.html),
+[privileges](https://www.postgresql.org/docs/18/ddl-priv.html) and
+[trigger creation](https://www.postgresql.org/docs/18/sql-createtrigger.html) rules. They
+are design requirements, not executed privilege proofs. Test actual distinct login roles,
+not just owner-side `SET ROLE`, including temporary-object/function overload attacks,
+membership/default ACLs and inability to disable/drop/recreate guards or set replica mode.
+
+### Proof, ledger, replay and atomic authorization
+
+Source targets: `apps/api/src/modules/auth/services/auth.service.ts`:
+`authenticateSession`, `verifyCurrentPassword`, `consumeEnabledFactor`; `totp.service.ts`,
+`auth-token.service.ts`, `csrf.service.ts`, `auth-rate-limit.service.ts`, `auth-audit.service.ts`;
+`guards/roles.guard.ts`; `modules/staff/staff.service.ts:lockAndAuthorize`; shared auth
+contracts; Prisma user/profile/session/TOTP/recovery models. Staff locking currently
+rechecks role/enrollment but not locked session freshness. RolesGuard does not universally
+require full administrators to enroll MFA. AuthAuditService uses its own client, not a
+caller transaction. Factor consumption in disable/regenerate flows currently precedes
+their later transaction. None is a ready currency proof or transactional selection ledger.
+
+Proposed strict confirmation request: action initialize/replace/adopt, exact proposed
+revision, expected revision explicitly null or exact, canonical generation, UUID request
+key and one opaque proof token. Schema/actor/session, history, anchors, approved/evidence
+flags and definitions are server-owned, not request fields. Unknown/nested authority
+fields reject. Existing 64-character revision, 32-entry/unit and schema limits remain.
+Technical request ceiling 4 KiB; proof token is a 32-byte random base64url token (43 ASCII
+characters); hashes/digests are 64 lowercase hex. No financial amount enters this request.
+
+Preview is advisory/read-only; it does not save assessed control. Step-up/confirmation are
+CSRF/origin-protected, rate-limited mutations using HttpOnly sessions. Require active,
+email-verified full administrator, enrolled factor and a current MFA-verified session at
+both service and trusted transaction boundary. Reuse bounded existing password/factor
+parsers; password verification occurs outside long-held locks, then its exact verified
+password/credential version is rechecked under locks. Consume the accepted TOTP step or
+recovery code atomically with proof issuance, not via the current outside-transaction helper.
+Recovery remains subject to enrollment/one-use rules, never a weaker bypass.
+
+Proof stores only token hash, actor/session/credential binding, action, request key,
+expected/proposed revisions/generation, immutable assessment/compatibility evidence IDs,
+versioned digest, issued/expiry UTC and consumption-to-ledger reference. Five minutes is
+the maximum proposed lifetime, shortened by session validity. Check expiry using fresh
+database wall-clock at the guarded decision, not transaction-start CURRENT_TIMESTAMP.
+Never persist password, factor/recovery value, bearer token or raw exports. Role demotion,
+session/password/factor change or changed assessment invalidates unconsumed proof.
+Actor/session references retain exact restricted identity. Credential/recovery binding
+uses a non-secret immutable identity/version digest, not a FK that prevents the existing
+MFA disable/recovery-regeneration deletions. Missing/replaced current credential denies
+confirmation; preserve historical proof evidence without retaining factor secrets/codes.
+
+Use two different server-owned SHA-256 digests over explicitly ordered UTF-8 JSON tuples:
+`currency-selection-request-v1` fingerprints stable intent (installation, action, actor/
+session, request key, supplied expected R/g and proposed R); it excludes the proof bearer
+and mutable current facts, so identical completed replay can still match later.
+`currency-selection-assessment-v1` binds that intent to the expected complete observed
+control tuple/state discriminator, canonical immutable policy/exact units and immutable
+evidence IDs/versions/digests. Use explicit nulls, exact string integers and ASCII-sorted
+capability entries; object/member order must not change identity. No timestamp/latest
+lookup or browser digest chooses authority. For a new operation, fresh full tuple/evidence
+must match the proof's assessment digest. For a completed replay, compare stored stable
+intent before imposing current-state equality; never recompute it from current selection.
+This prevents both false-history proof reuse after latching and broken legitimate replay.
+
+Proposed empty additive stores: `currency_transition_proofs`, `currency_selection_ledger`
+and protected adoption/compatibility evidence. Proof bindings never mutate; only narrow
+consume/expire operations may append or record consumption. Ledger has unique request
+binding, unique resulting selection generation and unique newly selected revision,
+exact previous/new R/g/A/latch, operation, actor/session, proof/evidence references, reason,
+activity ID and database time.
+Exact policy/unit/actor/session references restrict deletion; successful actor identities cannot
+be hard-deleted. Superseded selection revisions are tracked from ledger, not policy creation
+time. Ledger append alone is not selection: ordinary append is denied, and every success
+must correspond to the atomic control CAS, proof consumption and transactional activity.
+Latch integrity evidence is distinguishable from a human selection, not a forged receipt.
+
+Trusted confirmation flow: lock and reauthorize, then check a matching committed receipt
+before treating expected state as a new stale request. Matching replay needs current valid
+actor/session but not a second consumption of the completed proof, even if that proof later
+expires. Cross-session/actor/body replay denies; a different request must satisfy fresh proof.
+After success, an unchanged request can retrieve only its original receipt, never assert
+that its old selection is current. Receipt reads use the authoritative database, not cache.
+
+One function/transaction performs complete validation, CAS, ledger/activity insertion and
+proof consumption; no caller chooses which components to skip. Audit uses the transaction,
+not standalone AuthAuditService.record. All validation and writes lie inside one atomic
+function/subtransaction boundary, propagate failure and have deferred consistency checks
+where needed. Outer raw savepoint/PLpgSQL recovery may retain earlier unrelated work, but
+cannot commit a partial transition. A SQL function result is provisional until COMMIT;
+the service returns copied JSON only after its owned transaction resolves successfully.
+Unknown COMMIT transport outcome means outcome unknown, not proved rollback. No automatic
+retry initially: supersede Command 100's proposed three-attempt default for this first
+implementation. An explicit authenticated same-key receipt check resolves committed replay;
+otherwise a reviewed new attempt is required. No provider/outbox/hosting effects for selection.
+
+### Writer inventory refresh and row/lineage contract
+
+The Command 100 map was rechecked against the source baseline, using Prisma write/raw-lock
+searches and the relevant method bodies. Additions and non-obvious paths are explicit:
+
+| Source target                                                                                                                      | Required guarded boundary                                                                                                                                                                                                   |
+| ---------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `modules/products/product.service.ts`: create/definePrice                                                                          | Before active-price reads, retirement/append and audit. Pin exact units; retired prices remain readable, no rescaling.                                                                                                      |
+| `modules/orders/order.service.ts`: create/updateStatus                                                                             | Before replay/price/customer/numbering reads and order/item/invoice/status writes. Existing receipt replay does not create a new sale.                                                                                      |
+| `modules/invoices/invoice.service.ts`: create/updateDraft/applyAction/updateBusinessIdentity                                       | Before authoritative state/CAS/numbering and settings writes. Keep draft edit atomics and historical issue boundary.                                                                                                        |
+| `modules/payments/payment.service.ts`: submitManual/recordManual/review/adjust/updateSettings; `partial-payment-policy.ts`         | Before invoice locks/partial-policy lock, rejected status updates, balances, charge/adjustment append, audit/outbox.                                                                                                        |
+| `modules/payment-gateways/payment-gateway.service.ts`: createSession/processNormalizedEvent/completeBkashCallback/reconcilePayment | Cover standalone session claim, provider-result/failure and reconciliation updates as well as transactional settlement/events. Provider I/O stays outside locks; each DB completion rechecks captured exact context.        |
+| `modules/services/service.service.ts`: create/transition                                                                           | Before order-item/server/service locks and order status; inherit exact original obligation, never current browsing money.                                                                                                   |
+| `modules/hosting-panels/hosting-panel.service.ts`: executeServiceOperation/completeSuccess/completeFailure/applyServiceSuccess     | Cover preparation, service provisioning/status and completion/order changes; do not retry the external operation with a DB transaction.                                                                                     |
+| `modules/settings/settings.service.ts`: update                                                                                     | All settings DML coordinates; currency-sensitive row rules cover localization, numbering, payment policy and invoice identity; no second base pointer.                                                                      |
+| `modules/renewal-automation/renewal-automation.service.ts`: updatePolicy                                                           | Currently reads localization then array-upserts both renewal policy and localization. Move reads inside fresh guard-first callback; prevent stale currency re-emission.                                                     |
+| API `common/identifiers/invoice-number.ts`; worker `renewal/invoice-number.ts`                                                     | Currency before settings upsert/row lock/increment; preserve unique numbering/rollback.                                                                                                                                     |
+| Worker `renewal/renewal-processor.service.ts`: createRenewalInvoice/markOverdue/applyRenewalPayment                                | Before service/invoice locks and period uniqueness; retain fixed original recurring units/amounts even if new sales disabled.                                                                                               |
+| Worker `renewal/hosting-automation.service.ts`: complete                                                                           | Include status-only service completion. Scheduler/outbox/background-job code is not a currency admission proof; queued work rechecks on execution.                                                                          |
+| `packages/database/prisma/seed.ts`; `apps/web/e2e/prepare-environment.ts`; database tests; backup/restore scripts                  | No exempt writer mode. Keep legacy fixtures/25-migration launcher intact; guarded fixtures are separately owned. Restores preserve lineage/control/ledger and need recovery validation. No WHMCS importer currently exists. |
+
+API paths in this table are under `apps/api/src`; worker paths under `apps/worker/src`.
+Future importer/direct SQL/provider completion requires the same reviewed boundary.
+Searches are source evidence, not deployed-process coverage or an exhaustive proof against
+dynamic SQL. Repeat inventory at each adoption slice and before activation.
+
+Normal SQL needs all nine Command 103 targets coordinated: seven money-bearing tables,
+settings and payment_events. Row rules validate NEW/OLD exact unit, creation/operation
+policy, source/adoption evidence and parent links. New records require exact metadata;
+legacy NULL remains unknown, never default-filled. Introduce nullable exact unit-version/
+policy/origin links additively, plus append-only reviewed legacy sidecars keyed by exact
+table/record identity and digest. Sidecars validate actual parent identity; polymorphic
+labels alone are not a foreign-key guarantee. Preserve all old rows byte-for-byte.
+
+Orders/items/invoice headers/lines agree on exact unit; services inherit order-item or
+reviewed original contracts. Payments inherit invoice units; refund/reversal inherits the
+original charge. Renewals preserve service units and original lineage, recording current
+allowing policy separately from creation policy. Retired/disabled currencies stay visible.
+Keep existing quantity/totals/nonnegative/settlement/idempotency invariants. Parent/child
+aggregate validation may need deferred constraint triggers because nested inserts span
+statements; test COMMIT failure and early SET CONSTRAINTS, never a skip-validation GUC.
+
+Issued identity/unit/money and source links cannot be rewritten; issued-to-draft reversion
+cannot authorize deletion. Genuine draft-line replacement locks/verifies the actual draft
+parent and atomically replaces its lines. Existing updateDraft also accepts currency edits:
+guarded adoption must support an append-only draft-context revision recording old/new exact
+units under fresh compatibility, or explicitly gate that operation pending its separately
+reviewed implementation. Do not silently declare current draft currency behavior covered.
+Once issued, its exact context freezes. Draft history already locks the installation base.
+
+Configuration prices do not latch history. All six successful financial insert targets
+do; status-only updates do not invent an insertion but still coordinate. Financial DELETE
+and all TRUNCATE deny except genuine draft-line deletion; immutability survives cancellation,
+debt clearance, refunds, cleanup and customer soft deletion. Rejected/unlinked events stay
+reviewable; authenticated admitted payment completion validates original merchant/route/
+unit/amount even when new collection is disabled. Unresolved money is quarantined for
+reconciliation, not dropped, converted or hidden. Provider BDT/two-decimal and current
+mixed-currency portal/report gaps remain separate consumer gates, not solved here.
+
+### Lock, deadline and installation protocol
+
+Owned Read Committed/read-write transaction: correctly establish first active server
+transaction timer and independent client acquisition/transaction bound; verify actual
+backend/schema/roles/modes. Use Command 102's unchanged key. For staff selection/proof,
+staff mutex `920006` precedes currency; then control, user, profile, credential, sessions
+(sorted IDs), proof/receipt and existing business locks. Where user locks protect non-key
+auth fields, review FOR NO KEY UPDATE to avoid unnecessary audit-FK key-share blocking;
+do not assume current staff/auth writers already follow this order. Adopt their overlapping
+password reset/MFA enable-disable/recovery/staff demotion/session revocation paths and test
+both race directions. No auth row lock spans a wait for currency. Hold current auth rows
+through the decision so concurrent revocation cannot win unnoticed.
+
+Financial writers acquire currency/control before existing partial-policy/invoice/service/
+server/numbering locks and authoritative reads. Preserve relative business ordering and sort
+multi-row locks. Separate post-lock statements obtain current facts; initiating DML snapshots
+or Command 101 Repeatable Read observations never authorize selection. SQL backstops do
+not repair row-first callers. Deadlock/timeouts deny the whole owned workflow without
+swallowing errors, retrying providers or returning tentative facts.
+
+Retain 2 s acquisition, 500 ms lock, 2 s statement, 10 s transaction ceilings with shorter
+positive overrides only. COUNT/coverage work can exceed them: deny incomplete assessment,
+never turn timeout into empty history or silently raise budgets. Settings do not certify
+an already-active internal timer; establish the initial budget or enforce independent
+control. Future direct-SQL guarded connections need approved role defaults and bounded
+client/session configuration, tested with ordinary roles; role defaults alone are not
+proof a hostile caller cannot change settings. These residual limits remain explicit.
+See [PostgreSQL client deadlines](https://www.postgresql.org/docs/18/runtime-config-client.html).
+
+Proposed additive installation sequence, only in a separately approved maintenance window:
+
+1. Inert empty proof/ledger/evidence and nullable provenance storage can be delivered
+   first without opening the Command 104 shape. No defaults/backfill/authority-seeding.
+2. Test the complete functions/ACLs/row guards/latch/writers in a fresh isolated cluster
+   with deliberately labelled test-only assessed fixtures; never weaken the 25 product
+   migrations or normal fictional seed/verifier to create them. Prototype authority
+   objects belong to a separate nonce-owned prototype schema, not an altered product
+   `currency_controls` table. Early transition-only fixtures deny all business writes;
+   missing that protection denies prototype selection. P5 replaces that test-only
+   deny-first protection with complete row/latch enforcement before allowing money.
+3. Drain all deployed writers/old transactions, workers/scheduler, scripts/imports and
+   external-operation DB completions. Preserve authenticated callback evidence safely;
+   verify versioned queue handling and recovery. Source tests alone cannot prove this drain.
+4. One installation transaction takes staff/currency first, then control and deterministic
+   ACCESS EXCLUSIVE locks over the nine ordinary targets plus new authority objects.
+   Old transactions must already be drained; waiting/deadlock denies, not proof of drain.
+   Verify identity, migration hashes, privilege/guard manifest and evidence.
+   Install final guards/owners/ACLs, retain DELETE/
+   TRUNCATE denial, replace only the old blanket UPDATE guard with narrow authorized checks,
+   add the exact anchor FK, and replace zero/null shape with the legal branches above.
+   Do not drop the old protections in a separately committed migration first.
+5. Only after complete protection and guarded deployment validation permit trusted
+   initialization/adoption. Absent/unknown facts stay unchanged until that explicit action.
+   Missing evidence leaves writes blocked; no migration seed or resume of a legacy writer.
+6. Resume only the verified guarded writer set after owner review. A guarded schema has
+   no legacy escape flag/credential; environment/GUC selection cannot disable enforcement.
+   After new guarded commits, recovery is reviewed restore/forward repair, not rolling
+   back to an old binary or dropping guards. Failed installation rolls back atomically;
+   incomplete activation remains drained/blocked, preserving original rows and evidence.
+
+Independent prerequisite migrations are inert; the protection-opening transaction is a
+single later reviewed install unit, not permission to deploy now. Exact global role names,
+credential provisioning, ownership transfer and recovery owner/window require approval.
+
+### Bounded dependency sequence and acceptance
+
+Each proposed slice needs its own command, tests, delivery and phase review. No numbering
+or implementation authorization is assigned here. Existing acceptance stays mandatory.
+
+| Slice                                                  | Proposed files/deliverable                                                                                                         | Required acceptance and stop condition                                                                                                                                                                                                                                   |
+| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| P1 — Isolated privilege acceptance harness             | New test-only `packages/database/test/currency-privilege-harness.*`, mandatory package/CI launcher integration                     | Fresh disposable PostgreSQL cluster; actual login/owner/membership/ACL/temp-shadow denial. Apply all 25 unchanged migrations; control remains empty/unknown. No roles/grants on current Compose/application cluster. Stop without transition/state/proof implementation. |
+| P2 — Inert authority records                           | Future additive migrations/schema for proof/ledger/evidence; shared strict requests, database tests                                | Empty stores, exact restricted references, strict budgets/digests/immutable bindings, non-owner direct-write denial and prior-25 snapshots. No arbitrary append implying success, consumer or shape opening.                                                             |
+| P3 — Exact new/legacy money lineage                    | Future nullable model links, reviewed sidecars/draft-version contracts and exact repositories                                      | No old-row backfill/relabel; unknown legacy quarantine, exact header/line/payment/service joins, draft edits and no hidden history. Stop before consumer adoption/selection.                                                                                             |
+| P4 — Trusted transition prototype                      | Test-only fixed SQL functions using P1/P2/P3; copied result boundary tests                                                         | Complete tuples, initialize/adopt/replace/CAS/anchor/max/ABA/replay; one atomic ledger/activity/proof; raw recovery and deferred COMMIT failure. Assessed fixtures only in new isolated prototype scopes, no product migration opening.                                  |
+| P5 — Row/state enforcement and first history           | Test-only normal-SQL guards/validated trigger latching on nine targets                                                             | Actual non-owner SQL/COPY/MERGE/conflict/no-op/nested cases, draft/issued rules, first history versus replacement both orders, immutable anchors and original rows. No deployed installer.                                                                               |
+| P6 — Human proof and revocation integration            | Future auth/staff service extensions, isolated proof/executor pool wiring, shared/API tests                                        | Transaction-bound factor consumption/proof issuance; current auth recheck, demotion/reset/logout/MFA races, CSRF/rate-limit/expiry/tamper/replay denial. No provider or activation endpoint exposed prematurely.                                                         |
+| P7 — Guard-first writer adoption, bounded by family    | API settings/products/orders/invoices/payments/gateways/services/hosting, worker renewal/completion/numbering, owned test fixtures | Each writer family separately reviewed; no old row-first path or standalone status update omitted. Existing transaction/idempotency/provider boundaries preserved; no selection availability until all families pass.                                                    |
+| P8 — Protected legacy and consumer readiness           | Later owned rehearsal/manifest, per-currency portal/report/PDF/email/payment-money tests                                           | Exact mixed-unit inspection/reconciliation and credits, metadata/provider rights, original rows; no actual WHMCS query/import without separate approval. Resolve draft currency compatibility before coverage sign-off.                                                  |
+| P9 — Complete guarded install/drain/recovery rehearsal | Future fixed installer/manifest and newly owned fictional activation tests                                                         | Atomic protected opening plus runtime roles, no legacy-resume interval, versioned queue/callback recovery, prior-25/older preservation and restore refusal of incompatible binaries. Still no live install/selection authorization.                                      |
+
+**Smallest next implementation candidate: Build an isolated currency privilege acceptance
+harness.** P1 resolves the observed non-owner proof gap before privileged control changes.
+Use a uniquely owned throwaway cluster/container, loopback-only port, fresh labels/nonce/
+database marker, bounded resources/deadlines and cached approved PostgreSQL image. No
+pull, reuse of existing containers/clusters, role creation in the shared cluster or broad
+cleanup. Redact ephemeral fictional credentials. If no cached image/resources/ownership
+proof is available, stop with the actual blocker; never switch to the existing server.
+Cleanup verifies exact container/volume/database ownership and removes only newly owned
+objects. Leave incomplete/unmarked scopes and recoverable caches untouched. Fixture
+functions probe permissions on explicitly fictional objects, not successful human
+approval; do not disable Command 104 guards or open selected product states. Wire mandatory
+checks without opt-out and retain every existing source/SQL/seed/history acceptance.
+This candidate is not implemented or a defined/authorized Command 106; its phase review
+must decide the next exact command.
+
+Cross-slice acceptance, designed here and **not executed** by Command 105:
+
+- Empty/mixed/zero/cancelled/failed/terminated/draft history, prices-only and gateway-
+  evidence-only classifications; no NULL-to-false/default metadata inference.
+- Prior-25 all-row comparison, plus retained prior-22/23/24 tests; no financial/settings/
+  unit/policy/audit/outbox/event changes from inert install or failed selection.
+- Real lock barriers for two initializers/replacements, first insert versus replacement
+  in both orders, fresh post-wait reads, superseded ABA and generation exhaustion.
+- Actual distinct non-owner logins: direct control/proof/ledger DML/EXECUTE denial,
+  COPY/conflict/MERGE/nested/no-op/truncate, draft-only delete, RLS/missing privileges,
+  schema/model/OID/temp decoys and owner/trigger/replica escalation refusal.
+- Stale/tampered/expired/other-session proof, reused factor/proof, current authorization
+  and revocation races; matching committed replay versus conflicting key/body/binding.
+- Failure at CAS, activity, ledger, consumption and deferred COMMIT; savepoint/outer-handler
+  recovery never yields partial transition. Unknown commit acknowledgment stays unknown.
+- Acquisition/statement/lock/transaction/client deadlines, wrong isolation/role, row-first
+  deadlock and pooled release; no swallowed/automatic retry or repeated external effects.
+- Draft currency-context edits, issued immutability, fixed renewals/refunds and admitted
+  payment completions while sales/collection disabled; no hidden debts or inferred route.
+- Failed atomic install/drain/queue/callback/restore, missing guard manifest and stale
+  binary/credential; protected state never resumes unadopted writers.
+
+### Separate activation approvals and handoff
+
+Engineering delivery requires all relevant source/SQL/API/invariant/browser/build/audit/
+secret/CI/CodeQL gates, exact migration/guard hashes and non-owner evidence. That still
+does not authorize activation. Separately obtain verified deployed writer versions and
+roles, named operator/recovery owner, approved target/window/drain/queue/callback recovery,
+exact metadata/compatibility rights, protected WHMCS/credit/adoption coverage, catalogue/
+same-currency provider decisions, Command 33 D5–D8/Command 91 inputs and final owner launch
+approval. BDT/USD direction is not legacy-unit provenance or approved live collection.
+
+Command 105 changes documentation only. Proposed acceptance is not executed validation,
+the P1–P9 slices are dependencies rather than a promised completion count/date, and no
+live query/import, role/grant, assessed fixture, transition, provider, cleanup, release or
+deployment occurred. After validated delivery, stop for **Phase review — Review Command
+105 assessed-state specification and define the next bounded currency command**.
 
 ## 4. Price publication, quote and renewal rules
 
@@ -1508,10 +1920,11 @@ Delivery sequence, each needing separate authorization:
     Complete local and exact-head hosted acceptance passed; the owner-authorized phase
     review accepted its engineering scope and renewed database/security checks.
     Assessed history, selection transitions and writer enforcement remain later approvals.
-11. **Command 105 — Specify assessed-state transitions and activation prerequisites** is
-    defined only, not authorized or implemented. Translate the established protocol and
-    delivered unknown-state baseline into exact state/migration/privilege/proof/ledger/
-    writer dependencies and fictional acceptance before opening any selected authority.
+11. **Command 105 — Specify assessed-state transitions and activation prerequisites** was
+    authorized on 2026-10-08 and completed as documentation only. Section 3d fixes legal
+    tuples, transaction-local assessment, protected opening/proof/ledger/writer boundaries
+    and P1–P9 fictional acceptance dependencies. Isolated privilege acceptance is the
+    smallest next implementation candidate, not an authorized or defined Command 106.
 12. Later additive policy/provenance services and per-currency reads; preserve legacy records and
     pass mixed BDT/USD portal/report tests before an import rehearsal.
 13. Fixed BDT/USD catalogue, ownership-bound quotes and confirmed same-currency collection

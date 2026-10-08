@@ -3966,8 +3966,10 @@ it does not authorize its execution.
 
 ## Command 105 — Specify assessed-state transitions and activation prerequisites
 
-**Defined by the owner-authorized Command 104 phase review on 2026-10-08. Not yet
-authorized or implemented.** A source-grounded implementation specification only.
+**Defined by the owner-authorized Command 104 phase review on 2026-10-08.**
+**Authorized by the owner on 2026-10-08.** Completed as a source-grounded documentation-only
+implementation specification in `docs/MULTI_CURRENCY_DESIGN.md` section 3d. Local and
+exact-head delivery gates remain required. No assessed state or proposed slice is implemented.
 Command 100 established the target protocol; Commands 102–104 now expose concrete
 lock, timer, SQL-recovery and unassessed-storage constraints. Translate those into
 precise implementation dependencies before opening assessed/selected states. Do not
@@ -4056,11 +4058,12 @@ without history rewrite, non-force push origin/main and exact-head CI/CodeQL. St
 separately authorized phase review; do not implement the proposed next slice.
 ```
 
-**Authorization boundary:** This phase review defines only Command 105. Opening selected
-states now would contradict Command 104's protection and unadopted writer boundary.
+**Authorization boundary:** The owner subsequently authorized Command 105's specification
+only. Opening selected states now would contradict Command 104's protection and unadopted
+writer boundary.
 Command 105 executes no migration, SQL installer, role/grant, transition/proof/ledger,
 history scan, application change, live query/import/provider, cleanup, release or deploy.
-After its separately authorized and validated delivery, stop for **Phase review — Review
+After its validated delivery, stop for **Phase review — Review
 Command 105 assessed-state specification and define the next bounded currency command**.
 
 ---

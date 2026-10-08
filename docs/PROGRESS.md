@@ -12128,8 +12128,7 @@ are reconciled below. The review defines Command 105 only, not implementation au
 
 ### Phase review — Command 104 unselected currency control storage
 
-- **Status:** Engineering scope accepted; documentation-only review complete locally;
-  review commit/secret scan/non-force delivery/exact-head hosted checks remain gates
+- **Status:** Engineering scope accepted; delivered at `3fd2def` with full-history scan/non-force push/exact-head CI/CodeQL success
 - **Date:** 2026-10-08
 - **Authorization:** Review Command 104 and define one next bounded currency command only.
   Command 105 is not authorized or implemented by this review.
@@ -12190,6 +12189,13 @@ are reconciled below. The review defines Command 105 only, not implementation au
   are rechecked before the focused review commit. Then run cached pinned full-history
   scan, non-force push and exact-review-head CI/CodeQL. Do not record future scan/hosted
   passes here; final handoff supplies the observed review head.
+- Review delivery subsequently completed at `3fd2defb54c7b3956225a0cbb1f54744b9691fcc`:
+  cached pinned complete-history secret scan passed (209 commits, no leaks); non-force
+  canonical main push and clean 0/0 reconciliation. Exact-review-head
+  [CI 37753706006](https://github.com/ebit101/webhost-billing/actions/runs/37753706006)
+  passed all 28 Validate steps and aggregate; [CodeQL 37753705956](https://github.com/ebit101/webhost-billing/actions/runs/37753705956)
+  all eight steps and aggregate. Freshly reverified during Command 105. PR-only review
+  skipped, not passed; direct-main rule bypass/governance risk remains recorded.
 
 #### Decisions, unresolved questions and risks
 
@@ -12211,9 +12217,111 @@ are reconciled below. The review defines Command 105 only, not implementation au
 
 #### Exact recommended next command
 
-After this review's validated delivery, separately authorize **Command 105 — Specify
-assessed-state transitions and activation prerequisites**. Documentation-only specification;
-do not start it automatically or assess/select/adopt/activate currency. Stop after this review.
+The owner subsequently authorized **Command 105 — Specify assessed-state transitions
+and activation prerequisites** on 2026-10-08, documentation-only; report follows.
+
+### Command 105 — Specify assessed-state transitions and activation prerequisites
+
+- **Status:** Documentation specification completed with proportional local acceptance;
+  focused commit/secret scan/non-force delivery/exact-head hosted gates remain required
+- **Date:** 2026-10-08
+- **Authorization:** Owner authorized Command 105 only. No proposed implementation,
+  migration/role/grant/assessed fixture/activation, live query/import/provider or deployment.
+
+#### Scope completed
+
+- Read required instructions/product plan/current decisions/progress and delivered
+  Commands 97–104 design/source. Source baseline `3fd2def`, all 25 migrations unchanged.
+  Reconciled the delivered Command 104 phase review with exact-head hosted evidence.
+- Added implementation-ready section 3d to the existing currency design: exact legal
+  tuples/operations/NULL checks/reference/exponent/generation/base invariants. Assessment
+  without selection is transaction-local, not a stale durable emptiness flag. Ordinary
+  initialization requires empty money/configuration/event context; other facts require
+  reviewed exact adoption, not localization/default metadata or caller booleans.
+- Selection generation increments only actual initialize/adopt/replace; first successful
+  history latches without a new selection generation. Complete state/evidence comparison
+  invalidates a false-history preview. Explicit absent-preview/staging CAS, inconsistent
+  false latch plus observed history, exhaustion, anchor immutability and ABA/replay rules.
+- Specified isolated business/proof/executor/non-login-owner duties, direct DML/EXECUTE/
+  escalation denials, qualified narrow privileged functions and actual login-role tests.
+  Shared source database-secret configuration is not live ownership/grant attestation;
+  no current privilege or history queries were run.
+- Specified actor/session/action/body/evidence-bound one-use proof, transaction-bound
+  factor consumption, current locked authorization, canonical bounded request fingerprints,
+  separate stable-intent and fresh-assessment digests,
+  matching receipt replay and atomic CAS/ledger/activity/consumption. No automatic retry
+  initially, refining Command 100's proposed three-attempt default. SQL-recovery/unknown
+  COMMIT boundaries remain honest; no success receipt before actual commit.
+- Refreshed source writer inventory: all seven money-bearing tables plus settings/events,
+  all API/worker/numbering/status/provider completion paths. Explicitly added renewal-policy
+  localization rewrite and invoice business-identity settings; retained standalone gateway
+  claim/failure/reconciliation writes and auth/staff revocation-lock adoption requirements.
+- Exact-unit new/legacy lineage, draft/issued protection and deferred join/aggregate tests
+  remain required. Current draft currency edits are an explicit compatibility gate, not
+  claimed covered. Proposed installer retains unknown rows until protected selection;
+  opening checks/update authority/anchor FK and guards/ACLs are one atomic later install,
+  under owner-approved drain/locks/guarded versions and recovery, never old-writer fallback.
+- Defined dependency slices P1–P9 with source targets, mandatory fictional acceptance and
+  stop conditions, separate from real activation approvals. Smallest next implementation
+  candidate: **Build an isolated currency privilege acceptance harness**, using a fresh
+  disposable loopback cluster and actual non-owner logins, not roles/grants on the shared
+  cluster. Candidate is not implemented, numbered or authorized as Command 106.
+
+#### Files changed
+
+- `docs/MULTI_CURRENCY_DESIGN.md`: concrete section 3d and reconciled authority/roadmap.
+- `CODEX_DEVELOPMENT_COMMANDS.md`: owner authorization/completed documentation boundary.
+- `HOSTING_BILLING_SYSTEM_PLAN.md`: exact-state/authority/sequence handoff.
+- `docs/DECISIONS.md`: reconciled ADR-102 authorization and specification ADR-103.
+- `docs/PROGRESS.md`: prior review delivery, this command and exact next phase review.
+- Documentation only; no runtime/schema/migration/dependency/test/workflow edits.
+
+#### Validation performed and results
+
+- Frozen pnpm 11.22.0 install passed with no dependency/lockfile drift. All ten installed
+  development-tooling mitigation tests passed. Production JSON audit exited 0 with no
+  known vulnerabilities. Full audit exited 1 for retained braces high/sprintf-js moderate
+  development findings; not a clean audit or waiver.
+- Read-only registry probes still reject `braces@3.0.4` and `sprintf-js@1.1.4` as unpublished.
+  Current [braces advisory](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm) and
+  [sprintf-js advisory](https://github.com/advisories/GHSA-hp3w-g68c-fv3c) still list no
+  patched version. No upgrade, audit suppression or broad remediation claim.
+- Primary PostgreSQL 18 function-security/privilege/trigger/deadline documentation reviewed;
+  source links accompany design requirements. Proposed role/transition/security/concurrency/
+  adoptions are designed acceptance, **not executed** by this documentation command.
+- Prior exact-review-head CI/CodeQL freshly reverified above. Its complete application/
+  database/browser/build gates are prior-head evidence, not local reruns for Command 105.
+- All four offline documentation validators passed. Initial changed-file format check
+  reported table formatting; mechanical Prettier formatting applied without content or
+  acceptance changes. Changed-file formatting and Git whitespace passed; all four
+  documentation dispatcher unit tests passed. Final report wording is rechecked before
+  focused commit/cached pinned complete-history scan/non-force push/exact-head hosted
+  CI/CodeQL. Do not claim future-head scan/delivery/hosted passes in this report; final
+  handoff supplies observed delivery evidence.
+
+#### Decisions, unresolved questions and risks
+
+- No assessed-unselected persistence, no claimed approval from GUC/actor/timestamp/ledger
+  append, no generic privileged setter or mutation bypass, no silent draft-compatibility
+  sign-off. New guarded transitions/writers remain unavailable until complete protection.
+- Exact production roles/credentials/memberships/window/recovery owner, metadata rights,
+  protected WHMCS/credit/adoption coverage, catalogue/payment destinations, current
+  mixed-unit consumer gaps, Command 33 D5–D8/Command 91 and final launch approvals remain.
+- SQL initiating-snapshot/row-first/deadline/internal-timer/recoverable-outer-work limits,
+  trusted issuer/client/owner DDL and uncertain commits remain residual risks. Retained
+  development advisories, disk/resource/direct-main governance and PR-only skipped review
+  are not waived. No forecast that nine dependency slices equal nine remaining commands.
+- Preserve existing incomplete/unmarked test scopes and recoverable ignored cache backup;
+  no current-role grants, Docker image pull, existing-scope/cache cleanup or live operation.
+  Free disk observed approximately C: 13.61 GiB / D: 16.69 GiB, not a resolved resource issue.
+
+#### Exact recommended next command
+
+After validated delivery, separately authorize **Phase review — Review Command 105
+assessed-state specification and define the next bounded currency command**. Stop after
+Command 105; do not automatically implement P1 or define/start Command 106, open selected
+states, assess history, adopt writers, activate currency, query/import real data, invoke
+providers, approve operations, clean existing scopes/cache, release or deploy.
 
 ## Report Template
 

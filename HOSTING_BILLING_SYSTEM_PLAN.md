@@ -106,7 +106,13 @@ owner-authorized Command 104 phase review accepts this engineering scope and def
 an implementation-ready, source-grounded specification of legal states, migration/
 privilege/proof/ledger boundaries, complete writer coverage and dependency-ordered
 fictional acceptance. Command 100's protocol remains the basis, not installed authority.
-Command 105 is not yet authorized or implemented. Unknown history remains null, never
+The owner subsequently authorized Command 105 on 2026-10-08. Its documentation-only
+specification fixes exact durable tuples (no assessed-unselected row), selection versus
+first-history semantics, isolated proof/transition privileges, atomic ledger/audit/replay,
+complete writer coverage and protected opening/drain/recovery prerequisites. The smallest
+next implementation candidate is an isolated privilege acceptance harness, not an
+authorized or defined Command 106. Its proposed acceptance is not executed evidence and
+no transition/role/migration/writer is implemented. Unknown history remains null, never
 false, and generation zero is not authority. No application/CLI/worker consumer, history
 assessment, selected policy, live migration or existing-business-table guard is added.
 It verifies caller settings and coordination only, not an initiating statement's
