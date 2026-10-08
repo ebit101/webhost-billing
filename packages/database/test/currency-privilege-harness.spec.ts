@@ -264,6 +264,16 @@ test('test-only mandatory wiring retains every prior gate and has no runtime exp
     'utf8',
   );
   assert.match(ci, /name: Run package tests\s+run: pnpm test/);
+  assert.ok(
+    ci.includes(
+      `run: docker pull --platform linux/amd64 ${approvedImage.digest}`,
+    ),
+  );
+  assert.ok(
+    ci.indexOf(
+      `run: docker pull --platform linux/amd64 ${approvedImage.digest}`,
+    ) < ci.indexOf('name: Run package tests'),
+  );
   const source = readFileSync(
     resolve(__dirname, 'currency-privilege-harness.ts'),
     'utf8',
@@ -420,6 +430,10 @@ test('fresh-loopback target, private network/tmpfs and independent credentials a
     await h.installLogins();
     await (await h.connect('business')).end();
   }, f.deps);
+  assert.equal(
+    f.calls.find((c) => c[0] === 'image' && c[1] === 'inspect')?.[2],
+    approvedImage.digest,
+  );
   const create = f.calls.find(
     (c) => c[0] === 'container' && c[1] === 'create',
   )!;

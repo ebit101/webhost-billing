@@ -12431,7 +12431,8 @@ install authority records, adopt writers or begin P2 automatically.
   launcher sequence. Root `pnpm test` and unchanged CI Run package tests include it.
 - Command tracking, product plan, ADR-105, currency design and this progress report:
   implementation boundaries, operational requirements, corrections and next review.
-- No migration/schema/runtime/export/dependency/lockfile/workflow/old launcher changes.
+- No migration/schema/runtime/export/dependency/lockfile/old launcher changes. The
+  hosted correction below adds only pinned CI image preparation before package tests.
   No existing container, volume, scope, cache or live data cleaned/adopted.
 
 #### Validation performed and results
@@ -12535,6 +12536,26 @@ install authority records, adopt writers or begin P2 automatically.
   normal root acceptance remains required, with no workflow/timeout/skip relaxation.
 
 #### Decisions, unresolved risks and exact next command
+
+- Initial delivery `2d6b9daf3cbf72a406b103973268b2411b0a29c3` passed the pinned local
+  full-history secret scan (212 commits/no leaks) and normal main push. Exact-head
+  CodeQL run 37815210460 passed all eight steps. CI run 37815210660 failed at the new
+  mandatory harness's image-cache preflight after all 68 source tests passed, before
+  any new resource creation. Later gates skipped, not passed. An unchanged mutable-tag
+  Compose pull is insufficient evidence/cache preparation for the approved digest.
+  Correction inspects the exact approved digest and adds a CI preparation-only pinned
+  Linux/amd64 pull before package tests. The harness still never pulls, substitutes
+  a digest, adopts Compose or skips a missing cache; all identity/resource checks stay.
+  The existing success-case regression now asserts digest lookup; mandatory-wiring
+  coverage asserts approved CI preparation precedes ordinary package tests.
+  Correction acceptance passed all 68 source and 11 actual-login tests, database
+  strict types, ten tooling mitigations, changed-file formatting, workflow YAML/
+  pinned sequencing, all four offline docs checks and whitespace. Read-only label
+  inspection found no harness resources remaining. Focused follow-up delivery and
+  exact-head hosted checks remain required; prior complete local gate results above
+  are not replaced by a claim that the initial failed CI passed.
+  Workflow preparation is the sole additional file; no infrastructure configuration,
+  application, migration, timeout, audit or assertion is relaxed.
 
 - Fresh immutable cached PostgreSQL 18.6 Linux/amd64 only; Engine 28+; one capped tmpfs
   container/private nonce bridge, dynamic loopback target and out-of-product marker.

@@ -789,7 +789,7 @@ export async function withCurrencyPrivilegeHarness(
         await command([
           'image',
           'inspect',
-          approvedImage.tag,
+          approvedImage.digest,
           '--format',
           imageFormat,
         ]),

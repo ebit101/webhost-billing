@@ -1683,11 +1683,13 @@ ownership/resource/process/connection boundaries, immutable migration pins, clea
 fictional SQL fixtures, actual-login acceptance and injected lifecycle-failure tests.
 The package test sequence makes the new gate mandatory before the unchanged old SQL/
 seed/history launcher; ordinary root and existing CI package tests include it. No runtime
-export, dependency, product migration or workflow change is needed.
+export, dependency or product migration changes. CI explicitly prepares the approved
+digest before package tests; the harness never pulls or substitutes a same-name tag.
 Run `pnpm --filter @webhost-billing/database test:privileges` for the standalone mandatory
 gate with the approved local cached image; ordinary `pnpm test` includes it as well.
 
-The harness first verifies the local Docker context and cached approved digest above,
+The harness first verifies the local Docker context and inspects the cached approved
+digest above directly (not the mutable tag),
 then uses its immutable image ID with `--pull=never`. Engine 28+, Linux/amd64 and exact
 PostgreSQL server version 18.6 are required; missing prerequisites fail, never skip.
 One new nonce-labelled bridge has IP masquerading disabled and default binding
