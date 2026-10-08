@@ -11918,7 +11918,7 @@ operations, clean existing scopes/cache, release or deploy without separate auth
 
 ### Command 104 — Stage unselected currency control storage
 
-- **Status:** Implementation published at `e250128`; authorized Next.js repair implemented with complete renewed local acceptance; repair commit/scan/delivery and exact-head hosted checks remain gates
+- **Status:** Delivered with the authorized Next.js repair at `73e31bd`; complete local/exact-head hosted gates passed; owner-authorized phase review accepted the engineering scope on 2026-10-08
 - **Date:** 2026-10-08
 - **Authorization:** The owner authorized Command 104 only. No assessed history, selected
   policy, application writer adoption, live-data access/import or deployment.
@@ -12092,6 +12092,16 @@ operations, clean existing scopes/cache, release or deploy without separate auth
   or relaxing acceptance. Recheck final report formatting/documentation and whitespace,
   then focused commit/cached pinned full-history scan/non-force delivery/exact-head hosted
   gates. No future repair SHA, scan, push or hosted pass is claimed by this report.
+- Delivery subsequently completed at `73e31bd7942784b8f717728b484a407a902f08f7`:
+  cached pinned full-history secret scan passed (208 commits, no leaks), focused repair
+  non-force pushed, canonical main reconciled with a clean 0/0 tree. Exact-head
+  [CI 37723412847](https://github.com/ebit101/webhost-billing/actions/runs/37723412847)
+  completed successfully; Validate job `113136014018` passed all 28 steps.
+  [CodeQL 37723412819](https://github.com/ebit101/webhost-billing/actions/runs/37723412819)
+  completed successfully; JavaScript/TypeScript job `113136013856` passed all eight steps.
+  The owner-authorized phase review freshly reverified both aggregate/required jobs and
+  exact SHA. PR-only dependency review skipped, not passed. Earlier failed/cancelled
+  attempts remain recorded above and are not counted as passing delivery.
 
 #### Decisions made and remaining risks
 
@@ -12112,15 +12122,98 @@ operations, clean existing scopes/cache, release or deploy without separate auth
 
 #### Exact recommended next command
 
-Finish focused repair commit/secret scan/delivery and verify exact-head CI/CodeQL first.
-No currency activation, application feature work or deployment; do not begin the phase
-review while any required gate remains failing or unverified.
+Delivery and the subsequently owner-authorized **Phase review — Review Command 104
+unselected currency control storage and define the next bounded currency command**
+are reconciled below. The review defines Command 105 only, not implementation authority.
 
-After verified delivery, separately authorize **Phase review — Review Command 104 unselected currency
-control storage and define the next bounded currency command**. Stop after Command 104;
-do not automatically define/implement Command 105, assess/select policy, install application
-guards, adopt writers, activate currency, query/import real data, invoke providers, approve
-operations, clean existing scopes/cache, release or deploy.
+### Phase review — Command 104 unselected currency control storage
+
+- **Status:** Engineering scope accepted; documentation-only review complete locally;
+  review commit/secret scan/non-force delivery/exact-head hosted checks remain gates
+- **Date:** 2026-10-08
+- **Authorization:** Review Command 104 and define one next bounded currency command only.
+  Command 105 is not authorized or implemented by this review.
+
+#### Scope completed
+
+- Read the required project instructions/product plan/decisions/progress and current
+  currency design; reviewed the complete migration, Prisma model, unused control entry,
+  coordinator and source/SQL tests, additive verifier and mandatory database launcher.
+- No in-scope defect found. Checks enforce generation zero and explicit NULL uncertainty;
+  exact nullable references restrict update/delete. Read never stages. Stage inserts only
+  uncertainty under the existing bounded key; post-lock catalog/model/raw identity checks
+  include empty-store mismatch. Copied results wait for commit; errors disclose no cause.
+- Statement mutation denial includes no-op/conflict/MERGE/nested/truncate paths.
+  Actual non-owner, RLS, timeout, commit failure and raw recovery tests retain the honest
+  distinction between protected facts and recoverable outer work. Existing owner/DDL,
+  trusted-client and uncertain-commit powers are not advertised away.
+- Only the new 25th migration differs from the prior review baseline; the 24 older
+  migrations remain byte-for-byte. The verifier excludes only the new smallint singleton
+  from old UUID checks and its non-money generation from money enumeration, adds shape/
+  guards/empty-seed assertions, and preserves all prior financial/seed expectations.
+- Source search found only the mandatory database test launcher in apps, not a runtime
+  consumer. Root exports still omit the control entry. No application database migration,
+  history query, policy selection, writer adoption or activation was performed.
+- Reconciled delivered Command 104/security repair and exact-source-head hosted evidence.
+  Defined **Command 105 — Specify assessed-state transitions and activation prerequisites**:
+  implementation-ready documentation for legal state tuples and additive migration,
+  privileges, one-use proof/ledger/audit, complete writer/SQL coverage and bounded fictional
+  acceptance. Command 100 is its basis. The concrete unknown-state opening dependencies,
+  not another generic design or disconnected helper, are the remaining specification gap.
+
+#### Files changed
+
+- `CODEX_DEVELOPMENT_COMMANDS.md`: delivered/reviewed 104 and full bounded 105 definition.
+- `HOSTING_BILLING_SYSTEM_PLAN.md`: reconciled storage and next specification boundary.
+- `docs/DECISIONS.md`: delivered ADR-101 and review/next-command ADR-102.
+- `docs/MULTI_CURRENCY_DESIGN.md`: reviewed storage boundary and ordered next slice.
+- `docs/PROGRESS.md`: delivery evidence, review, risks and exact recommended command.
+- No source/schema/migration/dependency/test/workflow changes.
+
+#### Validation performed and results
+
+- Fresh complete `pnpm --filter @webhost-billing/database test` passed all 51 source and
+  70 PostgreSQL cases (including 14 new-control cases), all 25 migrations, guarded fictional
+  seed/verifier, prior-22/23/24 all-row preservation and marker-verified cleanup of only the
+  nonce scopes newly owned by that run. Parent data unchanged. No optional test skips.
+- Frozen pnpm 11.22.0 install passed without lockfile drift. All ten installed tooling
+  mitigation tests passed with `pnpm test:tooling-security`. An initial mistyped nonexistent
+  script `test:tooling-mitigations` failed before running tests; it is not passing evidence.
+- Fresh production JSON audit exited 0 with no known vulnerabilities. Full JSON audit
+  exited 1 for retained development-only braces high/sprintf-js moderate findings, not
+  a clean audit or waiver. No dependency/security-control changes or new release claims.
+- Exact delivered source head `73e31bd` CI/CodeQL were freshly reverified as recorded above.
+  Full local root/API/invariant/browser/build evidence remains the delivered Command 104
+  evidence, not a claim that all those checks were rerun locally for this docs-only review.
+- Review database strict types/Prisma generation passed. Changed-file Prettier check,
+  all four offline documentation validators and Git whitespace passed. Final report edits
+  are rechecked before the focused review commit. Then run cached pinned full-history
+  scan, non-force push and exact-review-head CI/CodeQL. Do not record future scan/hosted
+  passes here; final handoff supplies the observed review head.
+
+#### Decisions, unresolved questions and risks
+
+- Accept only the inert storage engineering scope. Unknown/null cannot become false,
+  selected or eligible, and preflight observations/caller booleans are not authority.
+- The next specification must resolve assessed-unselected persistence, exact tuples/
+  anchors/CAS/superseded revisions, safe opening order, owner/runtime/proof/latch powers,
+  transactional human approval and full SQL/application writer protection. No permission
+  to execute migration/role/grant/ledger/proof or populate assessed fixtures in existing scopes.
+- Snapshot/row-first/internal timer/recoverable outer SQL limits, owner DDL, trusted clients,
+  uncertain commit transport, two retained tooling advisories, resource/direct-main governance
+  and PR-only skipped review remain without waiver. Command 33 D5–D8, Command 91,
+  metadata/provider rights, protected WHMCS/credit/target evidence, maintenance/recovery and
+  final launch approvals remain open. Engineering acceptance is not launch approval.
+- Preserve the prior incomplete unmarked test scope and recoverable ignored cache backup.
+  No existing-scope/cache cleanup, Docker pull, live query/import/provider, operating
+  approval, source release or deployment. Free disk observed approximately C: 13.75 GiB /
+  D: 16.69 GiB; no claim that the wider disk/resource issue is resolved.
+
+#### Exact recommended next command
+
+After this review's validated delivery, separately authorize **Command 105 — Specify
+assessed-state transitions and activation prerequisites**. Documentation-only specification;
+do not start it automatically or assess/select/adopt/activate currency. Stop after this review.
 
 ## Report Template
 

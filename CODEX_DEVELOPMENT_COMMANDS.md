@@ -3856,9 +3856,10 @@ After validated delivery, stop for separately authorized **Phase review — Revi
 ## Command 104 — Stage unselected currency control storage
 
 **Defined by the owner-authorized Command 103 phase review on 2026-10-08.**
-**Implementation authorized by the owner on 2026-10-08.** Local implementation and
-complete mandatory acceptance passed; canonical delivery and exact-head hosted checks
-remain gates. This is the first additive control-storage
+**Implementation authorized by the owner on 2026-10-08.** Delivered, including the
+authorized security repair, at `73e31bd7942784b8f717728b484a407a902f08f7` with complete
+local acceptance, full-history secret scan and exact-head CI/CodeQL. The owner-authorized
+phase review accepted this scope on 2026-10-08. This is the first additive control-storage
 slice, not policy initialization, a history assessment or application enforcement.
 Command 103 proved statement coordination; installing a selected policy before complete
 writer/row/privilege/deadline/adoption coverage would still be unsafe.
@@ -3958,7 +3959,109 @@ and fictional acceptance only. The migration is empty; its unused entry may expl
 stage unknown facts, never assess history or select a policy. No application or live
 target adoption is authorized. After verified delivery, the next review is **Phase review —
 Review Command 104 unselected currency control storage and define the next bounded
-currency command**.
+currency command**. That review is now authorized and defines Command 105 below;
+it does not authorize its execution.
+
+---
+
+## Command 105 — Specify assessed-state transitions and activation prerequisites
+
+**Defined by the owner-authorized Command 104 phase review on 2026-10-08. Not yet
+authorized or implemented.** A source-grounded implementation specification only.
+Command 100 established the target protocol; Commands 102–104 now expose concrete
+lock, timer, SQL-recovery and unassessed-storage constraints. Translate those into
+precise implementation dependencies before opening assessed/selected states. Do not
+repeat the general currency design or add another disconnected authority helper.
+
+```text
+Command 105 — Specify assessed-state transitions and activation prerequisites
+
+Read AGENTS.md, the product plan, decisions, progress and MULTI_CURRENCY_DESIGN.md.
+Review delivered Commands 97–104 and current migration/schema/service/worker/auth code.
+Recheck tooling exposure and required gates without upgrades, suppression or cleanup;
+stop for separately authorized repair if changed exposure exceeds this design command.
+
+Produce one implementation-ready assessed-state and enforcement specification in the
+existing currency design, with source paths and tests. No runtime or migration changes.
+Build on Command 100 rather than replacing its protocol. Distinguish proposed contracts,
+observed code and executed evidence. Never label a proposed prerequisite as installed.
+
+Specify the exact legal tuples and transition matrix for absent, unassessed, assessed
+unselected, selected history-free and selected history-present states. Resolve whether
+an assessed-unselected state needs to be persisted or can exist only inside one trusted
+transaction. Define all NULL/anchor/reference/generation invariants, exact unit/exponent
+bindings, irreversible history/base protection, generation exhaustion and no A-to-B-to-A
+stale revision reuse. Separate staging, assessment, initialization, replacement, first
+committed history and reviewed legacy adoption. Absence/NULL, Command 101 counts and
+Command 97 caller-history facts can never grant assessment or activation authority.
+
+Specify the smallest additive migration sequence that can eventually relax Command
+104's zero/null shape without a writer-visible unguarded interval. State which checks,
+guards and exact foreign keys change or remain, how existing unassessed rows survive,
+and how installation failure/restore/recovery stays fail-closed. Do not edit any of the
+25 migrations, install prototypes, assess history or write selected fixtures to an
+existing scope. Selection must remain unavailable until all prerequisites are proven.
+
+Map actual database owners, runtime writers and migration/proof/transition/latch duties
+to proposed least-privilege boundaries. Current owner credentials and predefined-role
+test probes are not a hardened production role. Specify direct DML/EXECUTE denials,
+fixed qualified paths, narrow trigger targets and the security-definer trust boundary
+where required. A supplied actor, GUC, timestamp, callback or reusable step-up timestamp
+is not authorization. Define actual non-owner acceptance, safe test-only role/object
+ownership and cleanup; any later global privilege installation needs separate approval.
+
+Specify actor/session/action/body-bound one-use proof, exact expected revision/generation,
+canonical request fingerprint, matching replay/conflicting replay and superseded-revision
+tracking. Locate current staff/session/MFA/audit code and identify required extensions.
+Proof consumption, CAS, immutable transition ledger and activity audit must commit
+atomically; no arbitrary ledger append can masquerade as successful selection. Replay
+returns the original receipt only after current authorization; it does not report old
+selection as current. Audit/proof/commit failure returns no success and no automatic retry.
+
+Refresh the Command 100 writer map against current code: all seven money tables,
+product prices, relevant settings/numbering, worker/status writes, callbacks, scripts
+and imports. Specify guard-first application changes plus normal-SQL row/state/unit/join
+and lineage validation, allowed genuine draft-line replacement, successful-row history
+latching and blocking gateway/adoption obligations. No-op/failed/conflict-nothing writes
+must not fabricate history. Preserve original money and keep hidden/disabled currencies
+readable historically. Do not assume statement coordination is row validation.
+
+Make the lock/deadline/drain protocol concrete: staff mutex before currency, control
+before business/auth locks in the reviewed order, fresh subsequent Read Committed reads,
+no row-first or initiating-snapshot authority, correctly established initial transaction
+timer plus independent bounded client control. Account for savepoint/outer-handler
+recovery: denied mutations remain denied, but earlier raw work may commit. Define how
+the adopted workflow prevents partial transition/audit/proof outcomes rather than
+claiming every SQL error irrevocably aborts the outer transaction.
+
+Produce a dependency-ordered, bounded implementation sequence with file targets,
+acceptance and stop conditions for each slice. Identify one smallest next implementation
+candidate, not a bundle of automatic authorizations or a promised go-live date. Include
+fictional empty/mixed-history/prior-25 preservation, real concurrent first-history versus
+replacement, direct SQL/COPY/conflict/MERGE/no-op, restrictive RLS/privileges/decoys,
+proof replay/revocation, audit/COMMIT failure, deadlock/deadline/pool release, and guarded
+maintenance/writer-drain/adoption/recovery tests. Test-only assessed fixtures must not
+silently relax the product migration or normal database launcher. Keep prior acceptance.
+
+List activation gates separately from engineering delivery: writer coverage and deployed
+versions, non-owner roles, owner-approved maintenance/drain/recovery, exact metadata and
+legacy provenance, protected WHMCS/credit evidence, operating inputs and final launch.
+No production credentials/data queries/imports, providers, approvals, deployment or release.
+
+Update progress/decisions/product plan and offline documentation; run validation
+proportional to documentation-only changes, frozen install and security mitigation/
+production/full audit checks. Full audit's retained advisories are risks, not a passed
+audit or waiver. Focused commit, cached pinned full-history secret scan, reconcile main
+without history rewrite, non-force push origin/main and exact-head CI/CodeQL. Stop for
+separately authorized phase review; do not implement the proposed next slice.
+```
+
+**Authorization boundary:** This phase review defines only Command 105. Opening selected
+states now would contradict Command 104's protection and unadopted writer boundary.
+Command 105 executes no migration, SQL installer, role/grant, transition/proof/ledger,
+history scan, application change, live query/import/provider, cleanup, release or deploy.
+After its separately authorized and validated delivery, stop for **Phase review — Review
+Command 105 assessed-state specification and define the next bounded currency command**.
 
 ---
 

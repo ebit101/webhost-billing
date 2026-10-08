@@ -1152,9 +1152,44 @@ Mandatory owned fictional tests preserve every prior-24 row and retain prior-22/
 Command 101/102/103 acceptance. The guarded verifier recognizes the new table but still
 requires an empty control store after the unchanged fictional seed. The 24 old migrations
 remain unchanged; the chain now totals 25. No application database is migrated by local
-acceptance, and no live migration is authorized. Full local/exact-head delivery remains
-required; stop for the separately authorized Command 104 phase review, not automatic
-history assessment, selected-state migration or writer adoption.
+acceptance, and no live migration is authorized. Complete local acceptance, cached pinned
+full-history scan (208 commits, no leaks), non-force canonical delivery and exact-head
+CI/CodeQL passed at `73e31bd7942784b8f717728b484a407a902f08f7`, including the authorized
+Next.js `16.3.8` repair. The owner-authorized phase review reverified CI's 28 Validate
+steps and CodeQL's eight, and renewed 51 source/70 PostgreSQL cases plus seed/verifier.
+No in-scope source defect or runtime consumer found. PR-only review skipped; development
+advisories/mitigations, governance and launch gates remain without waiver.
+
+### Command 104 review and Command 105 specification boundary
+
+Define **Command 105 — Specify assessed-state transitions and activation prerequisites**,
+not a migration that opens selection or a further disconnected authority helper. Command
+100 already specifies the target protocol. The delivered storage and empirical snapshot,
+timer, non-owner and recoverable-SQL constraints now require an implementation-ready
+dependency plan before that protocol can safely become authoritative.
+
+Command 105 is documentation-only and not yet authorized. Resolve exact legal state
+tuples, whether assessed-unselected facts persist at all, NULL and permanent anchor/latch
+invariants, exact unit/exponent bindings, generation exhaustion and superseded revision
+tracking. Specify an additive opening sequence without an unguarded writer-visible state;
+retain the current 25 migrations and unassessed semantics until separately reviewed work.
+Map current runtime/owner powers to proposed least-privilege transition/latch boundaries,
+actor/session/action/body-bound one-use proof and atomic CAS/ledger/activity/replay behavior.
+Neither SQL-supplied claims nor arbitrary ledger appends can certify human approval.
+
+Refresh the source-grounded writer inventory and prescribe guard-first service/worker/
+settings/numbering/callback behavior alongside normal-SQL exact row/state/unit/lineage
+protection. State maintenance/drain/adoption and connection/deadline prerequisites. Account
+for raw savepoint/outer-handler recovery rather than promising irreversible outer abort;
+preserve committed-row-only history, allowed genuine draft-line replacement and historical
+money visibility. No preflight count, caller-history flag or unknown row grants eligibility.
+
+The specification must give bounded implementation slices, file targets, stop conditions
+and mandatory fictional/non-owner/concurrency/security/preservation acceptance, with one
+smallest later implementation candidate. Proposed test-only assessed fixtures cannot open
+product states or weaken normal launchers. No current assessment, role/grant, proof/ledger,
+executor, application/SQL writer adoption, real-data query/import/provider, approval,
+cleanup, release or deployment. Request Command 105 authorization after review delivery.
 
 ## 4. Price publication, quote and renewal rules
 
@@ -1467,17 +1502,23 @@ Delivery sequence, each needing separate authorization:
    installer, deployed privilege change or adopted consumer. Snapshot/lock-order/internal
    timer and raw SQL recovery limits remain explicit.
 10. **Command 104 — Stage unselected currency control storage** was subsequently
-    authorized on 2026-10-08 and implemented locally. One additive empty singleton store;
+    authorized on 2026-10-08 and delivered at `73e31bd` with the authorized security repair.
+    One additive empty singleton store;
     explicit unused staging records unknown history and no policy/anchor, never eligibility.
-    Complete local acceptance passed; canonical/exact-head hosted checks gate delivery and its phase review.
+    Complete local and exact-head hosted acceptance passed; the owner-authorized phase
+    review accepted its engineering scope and renewed database/security checks.
     Assessed history, selection transitions and writer enforcement remain later approvals.
-11. Later additive policy/provenance services and per-currency reads; preserve legacy records and
+11. **Command 105 — Specify assessed-state transitions and activation prerequisites** is
+    defined only, not authorized or implemented. Translate the established protocol and
+    delivered unknown-state baseline into exact state/migration/privilege/proof/ledger/
+    writer dependencies and fictional acceptance before opening any selected authority.
+12. Later additive policy/provenance services and per-currency reads; preserve legacy records and
     pass mixed BDT/USD portal/report tests before an import rehearsal.
-12. Fixed BDT/USD catalogue, ownership-bound quotes and confirmed same-currency collection
+13. Fixed BDT/USD catalogue, ownership-bound quotes and confirmed same-currency collection
     paths. Use fake providers; real USD payment approval is separate.
-13. Rate-adapter sandbox evaluation, reviewed terms/credentials and proposed operational
+14. Rate-adapter sandbox evaluation, reviewed terms/credentials and proposed operational
     defaults, followed by guarded derived-price publication and additional currency tests.
-14. Protected WHMCS sample/import rehearsal with reconciliation and separate owner review.
+15. Protected WHMCS sample/import rehearsal with reconciliation and separate owner review.
     Actual source export and target controls may be assessed earlier, read-only, by authority.
 
 Remaining decisions: exact supported sales currencies and payment destinations, fixed

@@ -99,8 +99,14 @@ explicit staging can record only generation zero, no selected revision/anchor an
 unknown history latch, never false or initialization eligibility. SQL protects this
 unassessed shape; no assessment/selection transition or existing-table enforcement.
 The owner subsequently authorized Command 104 on 2026-10-08. Its one additive empty
-store and separate unused read/constant-stage entry passed complete local acceptance;
-canonical and exact-head hosted delivery remain gates. Unknown history remains null, never
+store and separate unused read/constant-stage entry were delivered with the authorized
+security repair at `73e31bd`, complete local acceptance and exact-head CI/CodeQL. The
+owner-authorized Command 104 phase review accepts this engineering scope and defines
+**Command 105 — Specify assessed-state transitions and activation prerequisites** only:
+an implementation-ready, source-grounded specification of legal states, migration/
+privilege/proof/ledger boundaries, complete writer coverage and dependency-ordered
+fictional acceptance. Command 100's protocol remains the basis, not installed authority.
+Command 105 is not yet authorized or implemented. Unknown history remains null, never
 false, and generation zero is not authority. No application/CLI/worker consumer, history
 assessment, selected policy, live migration or existing-business-table guard is added.
 It verifies caller settings and coordination only, not an initiating statement's

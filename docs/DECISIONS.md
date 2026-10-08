@@ -1721,7 +1721,7 @@ current_database()), hashtext(schema)` computed by qualified PostgreSQL function
 
 ## ADR-101 — An unassessed control row records uncertainty, never selection authority
 
-- **Status:** Implemented under owner-authorized Command 104 with complete local acceptance; canonical/exact-head hosted delivery remains gated
+- **Status:** Delivered at `73e31bd` with complete local/exact-head hosted acceptance; owner-authorized Command 104 phase review accepted its scope on 2026-10-08
 - **Date:** 2026-10-08
 - **Security continuation:** The published storage head's CI subsequently failed on newly
   reported Next.js production advisories. After an explicit repair question, the owner
@@ -1729,8 +1729,11 @@ current_database()), hashtext(schema)` computed by qualified PostgreSQL function
   Preserve patches/overrides and all acceptance; no audit waiver, currency expansion or
   deployment. Complete renewed local tests/browser/build passed and production audit
   reports no known vulnerabilities. Two retained development-tooling advisories remain
-  without waiver; installed mitigation tests pass. The repair still requires focused
-  commit/secret scan/non-force delivery and exact-head hosted evidence.
+  without waiver; installed mitigation tests pass. The repair was committed, passed
+  the cached pinned full-history scan (208 commits, no leaks), and was non-force pushed.
+  Exact-head CI passed all 28 Validate steps and CodeQL all eight. PR-only review skipped,
+  not passed. The phase review reverified both hosted runs and renewed local database/
+  security acceptance; retained advisory/governance risks are not waived.
 - **Decision:** Add exactly one empty additive `currency_controls` migration and Prisma
   model. Key 1, integer generation zero, null selected revision/history latch/exact anchor
   fields are the only legal state. SQL checks use explicit null predicates; nullable exact
@@ -1762,6 +1765,34 @@ current_database()), hashtext(schema)` computed by qualified PostgreSQL function
   or existing-scope/cache cleanup. Later reviewed migration/transition/writer/drain and
   privilege/evidence controls are still required before selection. Retained tooling,
   governance/resource and launch risks are not waived. Stop for the Command 104 phase review.
+
+## ADR-102 — Specify the assessed-state enforcement boundary before relaxing storage
+
+- **Status:** Accepted for the owner-authorized Command 104 phase review; Command 105 defined only, not authorized or implemented
+- **Date:** 2026-10-08
+- **Review:** No in-scope Command 104 source defect found. Fresh 51 source/70 fictional
+  PostgreSQL cases and guarded seed/verifier passed, including actual COMMIT failure,
+  non-owner/RLS/context refusal, concurrency/deadlines, recovery and prior-24 preservation.
+  The additive verifier retains old money/seed checks and all 24 old migrations are
+  unchanged. No application consumer or selected state is introduced.
+- **Decision:** Define **Command 105 — Specify assessed-state transitions and activation
+  prerequisites**, a documentation-only implementation specification. Command 100 already
+  designed the protocol; now resolve exact legal tuples, whether assessed-unselected facts
+  persist, the ordered migration/privilege/proof/ledger/SQL/writer dependencies and concrete
+  fictional acceptance using the delivered 25-migration baseline. Identify one smallest
+  later implementation candidate; do not start it or repeat generic currency design.
+- **Reason:** Opening the zero/null storage shape alone would permit claimed history or
+  selected policy without complete guard-first writers, exact-unit/state validation,
+  current human authorization and atomic proof/ledger/audit. A second unused helper cannot
+  supply those missing guarantees. Preserve unknown semantics until the complete transition
+  boundary and maintenance/drain/recovery prerequisites are explicitly specified and tested.
+- **Boundary:** This review changes five documentation files only. No migration/runtime
+  repair, assessment/history query, selected fixture in an existing scope, role/grant,
+  proof/ledger/executor, financial guard, writer adoption, provenance/backfill, registry,
+  live query/import/provider, operating approval, cleanup, release or deployment.
+  SQL recovery, initiating snapshots/internal timers/row-first order, trusted clients/
+  owner DDL, uncertain commits, retained tooling and launch/governance risks remain.
+  Ask for explicit Command 105 authorization after review delivery; stop.
 
 ## Open Decisions
 
