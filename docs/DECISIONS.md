@@ -1723,6 +1723,14 @@ current_database()), hashtext(schema)` computed by qualified PostgreSQL function
 
 - **Status:** Implemented under owner-authorized Command 104 with complete local acceptance; canonical/exact-head hosted delivery remains gated
 - **Date:** 2026-10-08
+- **Security continuation:** The published storage head's CI subsequently failed on newly
+  reported Next.js production advisories. After an explicit repair question, the owner
+  authorized pinned Next.js/matching lint configuration `16.3.8` and full renewed gates.
+  Preserve patches/overrides and all acceptance; no audit waiver, currency expansion or
+  deployment. Complete renewed local tests/browser/build passed and production audit
+  reports no known vulnerabilities. Two retained development-tooling advisories remain
+  without waiver; installed mitigation tests pass. The repair still requires focused
+  commit/secret scan/non-force delivery and exact-head hosted evidence.
 - **Decision:** Add exactly one empty additive `currency_controls` migration and Prisma
   model. Key 1, integer generation zero, null selected revision/history latch/exact anchor
   fields are the only legal state. SQL checks use explicit null predicates; nullable exact

@@ -11918,10 +11918,13 @@ operations, clean existing scopes/cache, release or deploy without separate auth
 
 ### Command 104 — Stage unselected currency control storage
 
-- **Status:** Inert storage and unused entry implemented with complete local acceptance; canonical delivery and exact-head hosted checks remain gates
+- **Status:** Implementation published at `e250128`; authorized Next.js repair implemented with complete renewed local acceptance; repair commit/scan/delivery and exact-head hosted checks remain gates
 - **Date:** 2026-10-08
 - **Authorization:** The owner authorized Command 104 only. No assessed history, selected
   policy, application writer adoption, live-data access/import or deployment.
+  On 2026-10-08, after the explicit security-repair question, the owner authorized
+  continuation with Next.js and matching lint configuration pinned to `16.3.8` and
+  complete renewed acceptance. This does not authorize another currency slice or deployment.
 
 #### Scope completed
 
@@ -11963,13 +11966,18 @@ operations, clean existing scopes/cache, release or deploy without separate auth
   unit/preflight/coordination/prototype integration suites — additive shape and total.
 - `CODEX_DEVELOPMENT_COMMANDS.md`, `HOSTING_BILLING_SYSTEM_PLAN.md`,
   `docs/MULTI_CURRENCY_DESIGN.md`, `docs/DECISIONS.md`, `docs/PROGRESS.md` — authorization,
-  unknown-state boundary, ADR-101 and report. No dependency/lockfile/patch/workflow/scanner
-  exception, old migration, seed or root/runtime consumer change.
+  unknown-state boundary, ADR-101 and report. The initial storage implementation changed
+  no dependency/lockfile/patch/workflow/scanner exception, old migration, seed or consumer.
+- The separately authorized security continuation changes `apps/web/package.json` and
+  `pnpm-lock.yaml` only for Next.js/lint configuration and their exact matched Next packages,
+  plus authorization/report documentation. Existing overrides, patches, workflows,
+  scanners, migrations, runtime currency consumers and acceptance controls remain unchanged.
 
 #### Validation performed and results
 
-- Frozen install and ten installed mitigation tests passed. Production audit found no
-  known vulnerabilities. Full audit exited 1 with unchanged high braces
+- Frozen install and ten installed mitigation tests passed. The initial production audit
+  found no known vulnerabilities; the 2026-10-08 continuation audit below supersedes that
+  security observation. Initial full audit exited 1 with unchanged high braces
   GHSA-vfj7-8cjw-p6xm and moderate sprintf-js GHSA-hp3w-g68c-fv3c. Registry latest remains
   3.0.3/1.1.3; suggested 3.0.4/1.1.4 are unpublished. Primary advisories still say no patched
   release. No suppression, upstream-closure claim or broader resource-risk waiver.
@@ -12024,6 +12032,66 @@ operations, clean existing scopes/cache, release or deploy without separate auth
   [CodeQL 37668323384](https://github.com/ebit101/webhost-billing/actions/runs/37668323384)
   passed all eight steps at the same review SHA. PR-only review skipped, not passed.
   Prior delivery is reconciled; this is not evidence for future Command 104 CI.
+- Published implementation head `e250128b8b3a244461f205e48e4f28eacb938999` passed the
+  cached pinned complete-history secret scan (207 commits, no leaks) and was pushed
+  without force. Continuation fetch confirmed the same canonical head and 0/0 divergence.
+  [CodeQL 37677175205](https://github.com/ebit101/webhost-billing/actions/runs/37677175205)
+  passed all eight steps at that exact head. No claim of complete Command 104 delivery.
+- [CI 37677175221](https://github.com/ebit101/webhost-billing/actions/runs/37677175221)
+  attempt 1 timed out during Ubuntu Azure apt mirror requests in Chromium installation;
+  browser and later skipped steps did not pass. On 2026-10-08, retried only the cancelled
+  Validate job once without source/dependency/workflow/control changes. Attempt 2 job
+  `113124497606` passed package/API/invariant tests, Chromium installation, all 19 browser
+  lifecycle tests and all four administrator-role checks. It then failed the production
+  audit with exit 1; production license inventory/build were skipped, not passed.
+  Aggregate and Validate conclusions are failure. PR-only dependency review skipped.
+- Fresh local `pnpm audit --prod --json` and the unchanged CI-equivalent
+  `pnpm audit --prod --audit-level high` both exited 1: six Next.js findings against the
+  installed/pinned `16.3.7` (one high, four moderate, one low), all reporting `16.3.8`
+  as patched. High [GHSA-cjq9-62q9-8jv4](https://github.com/advisories/GHSA-cjq9-62q9-8jv4)
+  concerns image-optimization server-side request forgery. Other findings are
+  GHSA-3w37-wq28-93x7, GHSA-4jqv-mc3x-m676, GHSA-39w2-rjm5-chcv,
+  GHSA-f87g-xv8r-7p7x and GHSA-mcj8-r9mp-w47p. Registry read-only queries confirmed
+  `next@16.3.8` and `eslint-config-next@16.3.8` are published; no install was performed.
+  The [maintainer advisory](https://github.com/vercel/next.js/security/advisories/GHSA-cjq9-62q9-8jv4)
+  states applications without `images.remotePatterns` are not affected by that specific
+  high-severity issue. Source inspection found no remote patterns in current Next config;
+  this is a narrow applicability observation, not clearance of the other findings or
+  permission to suppress the mandatory package audit. Command 104 explicitly requires
+  separately authorized repair for changed exposure. Stopped without an audit waiver,
+  dependency upgrade, production action or additional retry and recorded the blocker
+  locally. The subsequent explicit question and owner continuation authorized the bounded
+  repair below; do not push command work while required acceptance is failing.
+- Authorized repair: pin `next` and `eslint-config-next` to `16.3.8`; lockfile review shows
+  only matched Next environment/plugin/SWC packages changed. No unrelated dependency drift
+  or security-control relaxation. Frozen install passed; an initial Windows bin-link warning
+  was followed by a clean frozen install and successful `next --version` (`16.3.8`).
+  Production audit now exits 0 with no known vulnerabilities. Full audit still exits 1
+  for the two retained development-tooling advisories only; all ten installed mitigation
+  tests passed. Registry probes still find no `braces@3.0.4` or `sprintf-js@1.1.4`;
+  primary advisories report no patched release. Workspace strict types, lint, formatting
+  and all four offline documentation validators passed. No audit suppression or broad
+  upstream-remediation claim.
+- Renewed actual root `pnpm test` passed all root controls and package tests: shared 93,
+  database 51 source/70 PostgreSQL/fictional seed/verifier, queue 3, API 25 suites/107,
+  worker 10 suites/29 and frontend 54 files/572. Its ephemeral wrapper created a fresh
+  nonce schema and verified scope ownership before dropping only that scope. An initial
+  multiline inline invocation produced no acceptance evidence and was not counted;
+  corrected encoded inline execution ran the actual root command and confirmed success
+  plus verified cleanup. No validation launcher or test configuration was changed.
+- Renewed guarded API integration passed 17 suites/81. Invariants passed shared 93,
+  API unit 12, API integration 42 and worker renewal/scheduler 2. Browser lifecycle passed
+  all 19 tests and administrator-role mock-UI checks all four, with existing assertions,
+  timeouts and zero retries. Browser dev logs emitted logo-loading performance warnings
+  and two destination-stream-closure errors; no assertion failed. These log messages are
+  retained observations, not a zero-warning claim or proof of their cause. No unrelated
+  logo/UI repair is included. Production build passed for all packages/apps on Next.js
+  `16.3.8`; temporary build environment was restored. Production license inventory parsed.
+  Local concurrency briefly left approximately 0.11 GiB available memory; remaining heavy
+  gates ran sequentially after checks finished, without terminating unrelated processes
+  or relaxing acceptance. Recheck final report formatting/documentation and whitespace,
+  then focused commit/cached pinned full-history scan/non-force delivery/exact-head hosted
+  gates. No future repair SHA, scan, push or hosted pass is claimed by this report.
 
 #### Decisions made and remaining risks
 
@@ -12044,7 +12112,11 @@ operations, clean existing scopes/cache, release or deploy without separate auth
 
 #### Exact recommended next command
 
-After verified delivery, authorize **Phase review — Review Command 104 unselected currency
+Finish focused repair commit/secret scan/delivery and verify exact-head CI/CodeQL first.
+No currency activation, application feature work or deployment; do not begin the phase
+review while any required gate remains failing or unverified.
+
+After verified delivery, separately authorize **Phase review — Review Command 104 unselected currency
 control storage and define the next bounded currency command**. Stop after Command 104;
 do not automatically define/implement Command 105, assess/select policy, install application
 guards, adopt writers, activate currency, query/import real data, invoke providers, approve

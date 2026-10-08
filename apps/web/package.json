@@ -18,7 +18,7 @@
   "dependencies": {
     "@webhost-billing/config": "workspace:*",
     "@webhost-billing/shared": "workspace:*",
-    "next": "16.3.7",
+    "next": "16.3.8",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },
@@ -35,7 +35,7 @@
     "@webhost-billing/database": "workspace:*",
     "argon2": "0.45.1",
     "eslint": "^9",
-    "eslint-config-next": "16.3.7",
+    "eslint-config-next": "16.3.8",
     "jsdom": "^26.1.0",
     "tailwindcss": "^4",
     "tsx": "^4.23.12",

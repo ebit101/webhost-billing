@@ -3863,6 +3863,12 @@ slice, not policy initialization, a history assessment or application enforcemen
 Command 103 proved statement coordination; installing a selected policy before complete
 writer/row/privilege/deadline/adoption coverage would still be unsafe.
 
+The published storage head subsequently failed its production audit on newly reported
+Next.js advisories. After the explicit repair question, the owner authorized a bounded
+continuation on 2026-10-08: pin Next.js and matching lint configuration to `16.3.8`,
+preserve installed mitigations and all mandatory checks, and renew complete local and
+exact-head hosted acceptance. No new currency slice, activation or deployment.
+
 ```text
 Command 104 — Stage unselected currency control storage
 
