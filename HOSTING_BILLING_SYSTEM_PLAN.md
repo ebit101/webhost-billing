@@ -131,6 +131,14 @@ and minimal non-login owners exercise fictional ACL/definer/DDL/temporary/RLS bo
 snapshot checks follow every precise SQLSTATE denial. Mandatory package/root/CI wiring
 retains all prior migration/source/seed/history checks. This is not production role
 installation, selection, proof issuance, writer enforcement or human approval.
+Command 106's corrected delivery at `fb86cca` passed exact-head CI/CodeQL; the
+owner-authorized phase review on 2026-10-09 accepts that P1 engineering scope only.
+A fresh full audit now reports three additional Handlebars development-tooling
+advisories (two critical), while the production audit remains clear of known findings.
+The next bounded command is **Command 107 — Repair newly disclosed Handlebars tooling
+advisories**, defined but not authorized or implemented. Currency slice P2 (inert
+authority records) remains the next dependency candidate after security acceptance
+and a separate phase review; no P2 implementation command is defined or started here.
 No selection/guard or application consumer is installed by the observation helper or review.
 No live registry, selected installation policy or financial backfill is included. Broader persistence,
 per-currency reads, pricing and activation remain later separately gated slices. Remaining

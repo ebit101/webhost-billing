@@ -12417,7 +12417,7 @@ install authority records, adopt writers or begin P2 automatically.
 
 ### Command 106 — Build an isolated currency privilege acceptance harness
 
-- **Status:** Implementation and local acceptance complete; delivery/hosted acceptance reported in final handoff
+- **Status:** Delivered at `fb86cca` with complete local/corrected-head hosted acceptance; P1 engineering scope accepted by owner-authorized phase review on 2026-10-09
 - **Date:** 2026-10-08
 - **Authority:** Owner explicitly authorized Command 106, P1 only. No P2 implementation,
   production role installation, currency selection, import/provider or deploy authority.
@@ -12535,6 +12535,23 @@ install authority records, adopt writers or begin P2 automatically.
   focused delivery. Retain the recorded local parallel-run constraint; exact-head hosted
   normal root acceptance remains required, with no workflow/timeout/skip relaxation.
 
+#### Delivery closure reconciled by the 2026-10-09 phase review
+
+- Corrected delivery `fb86ccaaab831596c76e73d899ffcb6089df6b12`: focused follow-up
+  commit, cached pinned full-history scan passed 213 commits/no leaks, canonical
+  non-force push. Freshly reverified [CI 37816251337](https://github.com/ebit101/webhost-billing/actions/runs/37816251337)
+  aggregate/all 29 Validate steps and
+  [CodeQL 37816251417](https://github.com/ebit101/webhost-billing/actions/runs/37816251417)
+  aggregate/all eight passed, first attempts at the corrected head. PR-only dependency
+  review skipped, not passed. Initial failed hosted image preflight stays recorded below.
+- Hosted ordinary root package gate includes 68 source/11 actual-login and all retained
+  SQL/seed/history suites, API unit 107, worker 29 and frontend 572. API integration 81,
+  critical invariants, browser lifecycle 19/staff 4, production audit/license/build and
+  cleanup passed. This is hosted normal execution, not a repair of local parallel limits.
+- Later audit state is separate from this delivered evidence. The review below finds
+  three new Handlebars development advisories; the earlier two-finding report describes
+  that earlier scan only, not today's security clearance.
+
 #### Decisions, unresolved risks and exact next command
 
 - Initial delivery `2d6b9daf3cbf72a406b103973268b2411b0a29c3` passed the pinned local
@@ -12571,6 +12588,77 @@ install authority records, adopt writers or begin P2 automatically.
 - Stop after validated delivery. Request **Phase review — Review Command 106 isolated
   privilege acceptance harness and define the next bounded currency command**. Do not
   define/implement P2 or selected/assessed product state automatically.
+
+### Phase review — Command 106 isolated privilege acceptance harness
+
+- **Status:** P1 engineering scope accepted; new development-security gate blocks currency continuation; Command 107 defined only
+- **Date:** 2026-10-09
+- **Authority:** Owner authorized this review and next-command definition only. No repair
+  implementation, dependency upgrade, P2, privilege/container creation or activation.
+
+#### Scope reviewed and decisions
+
+- Reconciled both Command 106 commits and corrected exact-head hosted evidence above.
+  Reviewed process/environment, image/resource/nonce/SQL identity, redaction, pending
+  opens/failed closes, independent cleanup and precise actual-login matrix. No blocking
+  in-scope source defect found. Updated stale delivery/workflow claims in ADR-105 and
+  product/design/command records; preserved historical failed runs rather than calling
+  them passes. All 25 migration content pins and old launcher/root consumer boundaries
+  remain unchanged. No local SQL/role/server-history query is performed in this review.
+- A fresh audit invalidates the assumption that only two development advisories remain.
+  Five now reported: braces high, sprintf-js moderate, Handlebars AST confusion and
+  own-property bypass critical, and unsafe inline output moderate. Installed Handlebars
+  4.7.9 is reached through ts-jest 29.4.12 in API, worker and queue, not a new application
+  dependency. No production compromise/exploitability conclusion follows; no exploit run.
+- Maintainer [4.7.10 release](https://github.com/handlebars-lang/handlebars.js/releases/tag/v4.7.10),
+  [AST advisory](https://github.com/handlebars-lang/handlebars.js/security/advisories/GHSA-8r5x-fm3f-whwj),
+  [own-property advisory](https://github.com/handlebars-lang/handlebars.js/security/advisories/GHSA-p8wg-vrv2-v86f)
+  and [inline-output advisory](https://github.com/handlebars-lang/handlebars.js/security/advisories/GHSA-xw65-4hp5-5hc7)
+  confirm the patch target. Read-only registry lookup returned version 4.7.10 and its
+  SHA-512 integrity. Braces 3.0.4/sprintf-js 1.1.4 still returned no matching version;
+  local patches/checks must remain. No package installation workaround or upgrade made.
+- Defined **Command 107 — Repair newly disclosed Handlebars tooling advisories** only:
+  narrow pinned resolution, real installed-consumer bounded regressions, all old security
+  and application acceptance. No suppression/waiver or assumed clean full audit.
+  P2 inert authority records remains the next dependency candidate after security and
+  separate phase review; its exact implementation command is not defined or authorized.
+
+#### Files changed
+
+- `CODEX_DEVELOPMENT_COMMANDS.md`: delivery reconciliation and complete bounded Command 107.
+- `HOSTING_BILLING_SYSTEM_PLAN.md`: accepted P1 scope and security prerequisite.
+- `docs/DECISIONS.md`: corrected ADR-105 and review ADR-106.
+- `docs/MULTI_CURRENCY_DESIGN.md`: source/hosted/security evidence and gated handoff.
+- `docs/PROGRESS.md`: Command 106 closure and this review.
+- Documentation only; no source/test/package/lockfile/schema/migration/workflow changes.
+
+#### Validation performed and results
+
+- Clean baseline at `fb86cca`, canonical delivery branch main. Fresh hosted verification
+  confirms aggregate and every required step, not merely a prior run or PR-only skip.
+- Frozen install passed, pnpm 11.22.0, no dependency/lockfile drift. All 68 database source
+  tests and ten installed tooling mitigation tests passed, no skips. These injected/source
+  checks do not replace actual-login evidence; that remains the reverified hosted run.
+- Production audit exited 0/no known findings. Full audit exited 1 with five findings
+  (two critical, one high, two moderate), not passed. Existing mitigation success does
+  not close the three new Handlebars advisories. No dependency repair or waiver here.
+- Changed-file formatting, all four offline documentation validators, whitespace and
+  unchanged source/test/package/lockfile/workflow/25-migration baseline checks passed.
+  Exactly five documentation files changed. Focused delivery/secret scan and review-head
+  CI/CodeQL remain required before final handoff; no unexecuted result is claimed.
+  Full local SQL/API/browser/build is not rerun merely for documentation changes;
+  unchanged complete delivered evidence is cited explicitly.
+
+#### Unresolved risks and exact next command
+
+- New Handlebars security exposure needs explicit next-command authority before further
+  currency implementation. Production-only audit/green documentation CI cannot close it.
+- Keep retained patched-but-audit-visible braces/sprintf-js risks, local disk/parallel
+  resource limits, direct-main governance, trusted Docker/DDL/JavaScript powers and all
+  business/provider/activation prerequisites. Fictional ACLs are not production roles,
+  human approval or complete selected-state/writer enforcement. No old resource cleanup.
+- After validated review delivery, authorize **Command 107 — Repair newly disclosed
+  Handlebars tooling advisories**. Stop; no upgrade or P2 implementation in this review.
 
 ## Report Template
 

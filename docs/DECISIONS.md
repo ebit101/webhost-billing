@@ -1883,10 +1883,10 @@ current_database()), hashtext(schema)` computed by qualified PostgreSQL function
 
 ## ADR-105 — Keep privilege acceptance in an independently owned memory-only cluster
 
-- **Status:** Accepted and implemented for owner-authorized Command 106; local acceptance completed
+- **Status:** Delivered at `fb86cca` with local/exact-head acceptance; owner-authorized phase review accepts P1 engineering scope on 2026-10-09
 - **Date:** 2026-10-08
 - **Decision:** Implement only P1 under database test files, with installed pg/tsx tools
-  and mandatory package/root/unchanged-CI wiring. One nonce-labelled container/network,
+  and mandatory package/root/CI wiring. One nonce-labelled container/network,
   approved cached Linux/amd64 PostgreSQL 18.6 digest, immutable image ID, no pull/fallback,
   127.0.0.1 dynamic port, bounded tmpfs/CPU/memory/PIDs/logs/connections and separate
   startup/SQL/child/whole-run/cleanup deadlines. Require Docker Engine 28+ for the documented
@@ -1910,11 +1910,51 @@ current_database()), hashtext(schema)` computed by qualified PostgreSQL function
 - **Correction:** PostgreSQL function PUBLIC defaults require creator-global default
   revocation; per-schema revocation cannot remove a global default. Fixture creation and
   explicit grants remain atomic and probe transactions always roll back.
-- **Boundary:** No dependency/workflow/runtime/export/schema/migration change, real issuer/
+  The initial hosted image-cache preflight failed before resource creation. The correction
+  inspects the approved digest directly and prepares only that pinned Linux/amd64 image
+  in CI before ordinary package tests; the harness itself never pulls or falls back.
+  Corrected exact-head CI passed all 29 Validate steps; CodeQL all eight. PR-only
+  dependency review skipped, not passed. No existing acceptance was relaxed.
+- **Boundary:** No dependency/runtime/export/schema/migration change, real issuer/
   transition/latch/ledger, selected policy, shared-cluster role grant or production action.
   SQL deadlines do not sandbox arbitrary JavaScript, Docker administrators or privileged
   recovery. Retained development advisories, disk/governance risks and P2–P9 prerequisites
   remain unwaived. Stop for the Command 106 phase review; no automatic P2 authorization.
+
+## ADR-106 — Repair new tooling advisories before extending currency authority
+
+- **Status:** Accepted for the owner-authorized Command 106 phase review; Command 107 defined only, not authorized or implemented
+- **Date:** 2026-10-09
+- **Review:** No blocking in-scope P1 source defect found. Mandatory actual-login evidence,
+  exact image/nonce/tmpfs ownership, separate cleanup deadline, cached failed closes,
+  pending acquisition refusal and secret redaction remain test-only boundaries. All 25
+  migrations and application exports/consumers remain unchanged. Docker administrator,
+  privileged DDL and detached trusted JavaScript are not sandboxed; no production grant
+  or complete writer/selection enforcement is certified by this harness.
+- **Evidence:** Freshly reverified `fb86ccaaab831596c76e73d899ffcb6089df6b12` CI aggregate/
+  all 29 Validate steps and CodeQL aggregate/all eight. Fresh 68 source and ten mitigation
+  tests passed; no new actual-login SQL run is claimed by this documentation review.
+- **Security gate:** Fresh production audit exited 0/no known findings. Full audit exited
+  1 with five development advisories: retained braces high/sprintf-js moderate plus
+  Handlebars `4.7.9` AST type confusion and own-property bypass (critical), and unsafe
+  inline precompiled output (moderate). Actual dependency paths are ts-jest in API,
+  worker and queue. Published maintainer [release 4.7.10](https://github.com/handlebars-lang/handlebars.js/releases/tag/v4.7.10)
+  addresses all three; registry version/integrity were verified read-only. This is not
+  evidence of production exploitability or compromise, nor permission to dismiss tooling.
+- **Decision:** Define **Command 107 — Repair newly disclosed Handlebars tooling advisories**:
+  narrow exact patched resolution, installed real-consumer security/compatibility tests
+  and complete renewed acceptance. Keep both exact-version local patches and all ten
+  existing mitigation checks; braces 3.0.4/sprintf-js 1.1.4 registry lookups still returned
+  no matching version. No upgrade, new patch, override, audit suppression or waiver is
+  performed by this review. A different required repair needs explicit authority.
+- **Currency handoff:** P2 inert authority records remain a dependency candidate, not
+  Command 107, a defined P2 command or an authorization. After security acceptance and
+  its phase review, define the next smallest currency slice. Do not persist proofs,
+  receipts or assessed state, relax controls, create roles, adopt writers or activate now.
+- **Boundary:** Five documentation files only. No dependency/lockfile/runtime/schema/
+  workflow change, SQL/container/role creation, live query/import/provider, broad cleanup,
+  release or deployment. The known full audit remains failed; document-only hosted success
+  cannot close it. Stop and ask for explicit Command 107 authorization after review delivery.
 
 ## Open Decisions
 

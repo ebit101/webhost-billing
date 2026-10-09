@@ -4077,6 +4077,10 @@ Command 105 assessed-state specification and define the next bounded currency co
 test-only foundation for later privileged prototypes, not currency selection or a
 production role installer. Stop afterward for the separately authorized Command 106 phase review.
 
+**Delivered at `fb86cca`; the owner-authorized phase review on 2026-10-09 accepts P1
+engineering scope.** Corrected exact-head CI passed all 29 Validate steps and CodeQL
+all eight. Fresh development-security findings require Command 107 below before P2.
+
 ```text
 Command 106 — Build an isolated currency privilege acceptance harness
 
@@ -4189,6 +4193,77 @@ define the next bounded currency command. No product schema/runtime/export chang
 control opening, proof/ledger/transition/row-latch implementation, writer adoption,
 shared-cluster roles/grants, live queries/import/provider, approval, release/deploy
 or unrelated container/volume/scope/cache cleanup. Do not start P2 automatically.
+```
+
+---
+
+## Command 107 — Repair newly disclosed Handlebars tooling advisories
+
+**Defined by the owner-authorized Command 106 phase review on 2026-10-09.
+Not authorized or implemented.** Security prerequisite only; no currency slice P2.
+
+```text
+Command 107 — Repair newly disclosed Handlebars tooling advisories
+
+Read AGENTS.md, the product plan, decisions, progress and currency design's Command
+106 review. Reconcile fb86cca's delivered evidence and recheck current production/full
+audits, actual installed paths and maintainer advisories before editing. The review
+found Handlebars 4.7.9 through ts-jest 29.4.12 in API, worker and queue, with
+GHSA-8r5x-fm3f-whwj (critical), GHSA-p8wg-vrv2-v86f (critical) and
+GHSA-xw65-4hp5-5hc7 (moderate). Maintainer release and registry verified 4.7.10 as
+the published patched target. If another required repair exceeds this bounded
+scope, stop for authorization; do not broaden upgrades or suppress findings.
+
+Resolve every installed affected Handlebars instance to exactly 4.7.10 using the
+smallest reviewed pnpm-workspace.yaml override/resolution and regenerated lockfile.
+No ts-jest/Jest/Nest/Next/Node/pnpm major upgrade, new direct runtime dependency,
+minimum-release-age/install-script workaround or unrelated override. Confirm real
+consumer resolution in all three packages; a direct mock or guessed store path is
+not proof. Verify patch provenance and registry integrity; a changed target requires
+explicit review/authorization, not silently using latest.
+
+Keep braces@3.0.3 and sprintf-js@1.0.3 registered patches/hashes, all ten installed
+mitigation checks and every container patch-copy/install gate intact. Their audit
+alerts remain unresolved, not waived. Do not remove them because metadata advertises
+unpublished patched versions; fresh registry checks and separate authority would
+be required. No broad allowlist, audit ignore, severity reduction or continue-on-error.
+
+Add mandatory installed-consumer tests under scripts/security and the existing
+test:tooling-security path. Verify each actual ts-jest consumer uses the exact patched
+package. Test the three repaired boundaries with harmless canaries: invalid/malicious
+AST values must not compile/render attacker JavaScript; dangerous own/prototype
+constructor access must not grant code execution; inline precompiled output must
+neutralize script/comment boundary sequences. Use precise safe expected outcomes,
+not any crash/error, plus positive compile/render/precompile compatibility checks
+and the existing Jest/coverage consumers. Follow maintainer fixes, not guessed defenses.
+Run adversarial probes only in sanitized bounded child processes, with no credentials,
+network, filesystem mutation, subprocess payload or raw exploit output. Retain
+existing memory/stack/deadline/output ceilings and safe capture; never increase budgets
+or relax assertions merely to pass. Tests must cover installed code, not fixture-only
+success or source-text version checks. Keep all old checks mandatory in root/CI.
+
+Run frozen install, renewed installed mitigation/security regressions, production/full
+audits and production license inventory. All three Handlebars advisories must be absent
+after the fix, and no new unresolved security finding may be hidden. The retained
+braces/sprintf-js findings are still a failed full audit, not a clean audit or waiver.
+Keep local resource/sequencing constraints explicit; do not claim a default-parallel
+pass from a serial local run. Run complete root/shared/database source/actual-login/
+retained SQL/seed/history, API integration, critical invariant, worker, browser lifecycle
+and staff browser gates, strict workspace/browser types, lint, build, formatting,
+offline docs and whitespace. Exact-head hosted ordinary pnpm test remains required.
+Preserve the 25 migration hashes, prior-22/23/24 comparisons, pinned CI image preparation
+and Command 106 ownership/secret/cleanup/deadline rules; no missing-Docker/cache skip.
+
+Update report/security decisions/design/product plan, make a focused commit, run the
+cached pinned full-history secret scan, reconcile canonical main without rewriting
+history, non-force push and verify exact-head CI/CodeQL. Do not push failing or
+unverified repairs. Report any remaining audit/compatibility/CI constraints honestly.
+
+Stop for Phase review — Review Command 107 Handlebars tooling repair and define the
+next bounded currency command. P2 remains only a later candidate. No currency contracts,
+proof/ledger/evidence storage, selected/assessed state, control relaxation, writer/role
+adoption, schema/migration change, live query/import/provider, operating approval,
+deployment/release or unrelated Docker/volume/scope/cache cleanup in this command.
 ```
 
 ---

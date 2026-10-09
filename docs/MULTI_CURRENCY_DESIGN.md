@@ -31,8 +31,12 @@
   authorized phase review accepts the specification and defines Command 106's isolated
   privilege acceptance harness only; implementation is not authorized by this review.
   The owner subsequently authorized Command 106 on 2026-10-08; its P1-only test harness
-  is implemented and validated locally. Exact-head hosted delivery is separately checked
-  after commit. No production authority is installed.
+  was delivered at `fb86cca` with complete local and corrected exact-head hosted acceptance.
+  Its owner-authorized phase review on 2026-10-09 accepts P1 engineering scope; a fresh
+  full audit found three additional Handlebars tooling advisories, including two critical.
+  Command 107's bounded security repair is defined only, not authorized or implemented.
+  P2 remains a separately gated candidate after that repair/review. No production
+  authority is installed.
   Temporary test installation is not product adoption.
   The selection protocol is not implemented or activated.
   Application integration and activation remain separately gated.
@@ -1739,6 +1743,45 @@ does not install production privileges, assess/adopt history, issue human proofs
 selection/ledger/latches/writers or open controls. P2–P9 remain separately gated. Exact next
 request: **Phase review — Review Command 106 isolated privilege acceptance harness and
 define the next bounded currency command**.
+
+### Command 106 review and security-first handoff
+
+Owner-authorized review on 2026-10-09 accepts the P1 implementation at
+`fb86ccaaab831596c76e73d899ffcb6089df6b12`, not production privileges or selection.
+Fresh hosted verification confirms CI aggregate/all 29 Validate steps and CodeQL
+aggregate/all eight steps passed. The first delivery's image-cache preflight failure
+is not a pass: corrected CI prepares the exact approved digest before tests, while
+the harness inspects that digest and creates by immutable ID with `--pull=never`.
+Runtime/migrations/old launcher remain unchanged; all prior tests are still mandatory.
+Current source review found no blocking in-scope ownership/cleanup/privilege defect.
+Temporary object/RLS/default-ACL tests establish fictional mechanics only, not a live
+role attestation, complete row protection, human proof or protected activation.
+
+Review reran 68 database source and ten installed mitigation tests, a frozen install
+and both audits. It did not create a cluster, run new actual-login SQL or rerun the
+full local browser suite. Fresh production audit reports no known vulnerabilities,
+but full audit now has five development findings: the retained braces/sprintf-js
+pair plus three Handlebars `4.7.9` findings through ts-jest in API/worker/queue.
+The maintainer's [4.7.10 release](https://github.com/handlebars-lang/handlebars.js/releases/tag/v4.7.10)
+and [AST advisory](https://github.com/handlebars-lang/handlebars.js/security/advisories/GHSA-8r5x-fm3f-whwj),
+[own-property advisory](https://github.com/handlebars-lang/handlebars.js/security/advisories/GHSA-p8wg-vrv2-v86f)
+and [inline-output advisory](https://github.com/handlebars-lang/handlebars.js/security/advisories/GHSA-xw65-4hp5-5hc7)
+identify the patched target; registry version/integrity lookup confirms its publication.
+No exploit is run here and no production-compromise claim follows from the audit.
+
+Define **Command 107 — Repair newly disclosed Handlebars tooling advisories** in
+[the command record](../CODEX_DEVELOPMENT_COMMANDS.md), not P2 implementation. That
+narrow dependency/test repair needs separate authorization and complete renewed
+validation. The existing local braces/sprintf-js patches and all acceptance stay.
+No audit suppression, skip, ceiling increase or mitigation-as-upstream-fix claim.
+The production-only CI audit does not close a newly failed development-security gate.
+
+After the repair's phase review, P2 inert proof/ledger/evidence records remain the
+next currency dependency candidate. Its exact command is not defined here; no record
+schema, generic append API, issuer/executor, lineage, selected fixture or guard opening
+is implemented or authorized. No shared-role/current-history query, provider/import,
+operating approval, old-resource cleanup, release or deployment. Stop and request
+explicit **Command 107 — Repair newly disclosed Handlebars tooling advisories** authorization.
 
 ## 4. Price publication, quote and renewal rules
 
