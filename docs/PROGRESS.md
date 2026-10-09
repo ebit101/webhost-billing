@@ -12959,7 +12959,7 @@ install authority records, adopt writers or begin P2 automatically.
 
 ### Phase review — Review Command 108 and define the next bounded currency command
 
-- **Status:** Command 108 accepted and Command 109 defined only; local review validation passed, exact-head delivery closure required before final handoff
+- **Status:** Delivered at `c3b7dff` with secret-scan/non-force push/exact-head acceptance; Command 108 accepted and Command 109 defined only by this review
 - **Date:** 2026-10-09
 - **Authority:** Owner authorized this review and next-command definition only, not
   Command 109 execution, authority storage, proof/selection or production operations.
@@ -13016,6 +13016,20 @@ install authority records, adopt writers or begin P2 automatically.
   follow-up documentation commit and renewed exact-head delivery checks.
   Focused commit, cached pinned history scan, non-force main delivery and exact-head
   hosted closure must be verified before final handoff; report actual results.
+- Reconciled actual review delivery: `ebc7887` plus definition-clarification commit
+  `c3b7dff50ae66da08275878466abc992ac9ee5d9`; no history rewrite. Both focused commits'
+  cached pinned scans passed (220 then 221 local commits/no leaks), guarded reconciliation
+  and normal non-force main pushes passed. Final exact-head
+  [CI 37937084460](https://github.com/ebit101/webhost-billing/actions/runs/37937084460)
+  all 29 Validate steps and
+  [CodeQL 37937084660](https://github.com/ebit101/webhost-billing/actions/runs/37937084660)
+  all eight passed, first attempts. Hosted full-history scan reports 215 commits/no leaks;
+  ordinary root/SQL/API/invariant/browser 19/four/build/audit/cleanup acceptance passed.
+  PR-only dependency review skipped, not passed. Superseded `ebc7887` CI 37936409763
+  was automatically cancelled by unchanged branch concurrency; its CodeQL passed, not
+  a claim of completed old-head CI. Final main matched origin/main and worktree was clean.
+  Owner direct-main PR/check bypass remains a governance risk; no rules changed. Freshly
+  reverified final and original Command 108 metadata/jobs and final review CI logs here.
 
 #### Unresolved risks and exact next command
 
@@ -13027,6 +13041,76 @@ install authority records, adopt writers or begin P2 automatically.
   The sequence is not a go-live date or remaining-command-count forecast.
 - After validated review delivery, authorize **Command 109 — Specify canonical currency
   authority bindings**. Stop; do not execute that command automatically.
+
+### Command 109 — Specify canonical currency authority bindings
+
+- **Status:** Documentation specification locally validated; delivery acceptance pending at report cutoff
+- **Date:** 2026-10-09
+- **Authority:** Owner explicitly authorized Command 109 only. No runtime implementation,
+  schema/migration, authority seeding, proof/selection or production operation.
+
+#### Scope completed
+
+- Source-grounded section 3e specifies logical installation/execution-domain identity,
+  trusted placement pin and clone/restore/relocation/replay boundaries. No identity issued.
+- Non-secret auth/recovery versions, exhaustion-safe security changes and immutable public
+  factor evidence preserve normal credential/recovery deletion and historical references.
+- Exact bounded domain-separated S/A UTF-8 tuples, full state/null/generation/unit/anchor/
+  policy/auth/evidence bindings, ASCII ordering and UUID text/SQL-slot conflict semantics.
+- Future inert proof/intent/ledger/evidence reference layout, exact one-use consumption
+  cycle/transactional activity and authorized original-receipt versus fresh proof rules.
+- Ten fictional vectors calculated and independently checked; proposed matrix and smallest
+  empty identity-storage candidate documented. No next command number or authorization.
+  Evidence payload/coverage, codecs/SQL parity, auth adoption and P3–P9 remain unimplemented.
+
+#### Files changed
+
+- `docs/MULTI_CURRENCY_DESIGN.md`: section 3e specification and fictional vectors.
+- `CODEX_DEVELOPMENT_COMMANDS.md`: owner-authorized documentation status only.
+- `HOSTING_BILLING_SYSTEM_PLAN.md`: bounded specification/prerequisite handoff.
+- `docs/DECISIONS.md`: reconciled ADR-110 and specification ADR-111.
+- `docs/PROGRESS.md`: reconciled review delivery and this report. Five documents only.
+
+#### Validation performed and results
+
+- Initial clean `c3b7dff` baseline; fresh frozen install passed, lockfile unchanged.
+  All 15 installed tooling checks and shared 112/build/types plus database source 68
+  passed, zero skips. Renewed production audit exited 0/zero known findings; full audit
+  exited 1 with exactly braces high GHSA-vfj7-8cjw-p6xm and sprintf-js moderate
+  GHSA-hp3w-g68c-fv3c. Neither finding is repaired/waived; no new security finding.
+- Fresh exact Command 108 and final review run/job metadata/steps plus final review CI
+  logs confirm reconciled prior delivery above. No new local actual-login/SQL/API/browser/
+  production-build run, database/history query or PostgreSQL/role creation; proposed
+  storage/state/auth/replay acceptance is not executed evidence.
+- Source reads cover current identity models, heartbeat/revocation/staff changes and
+  deletable factor/recovery rows, token hashing, immutable policy facts/control observer
+  and coordination key. Primary ECMAScript/Node/PostgreSQL documentation was checked for
+  serialization, UTF-8 hash, UUID/JSON representation and FK deferral behavior, with direct
+  sources in section 3e. These are basis for proposed protocols, not installed protection.
+- Ten secret-free vectors calculated in memory with Node JSON/UTF-8/SHA-256; independent
+  .NET SHA-256/UTF-8 matched every byte count/digest. No product helper/file, random identity,
+  bearer/token/proof issuance, network/provider action or assessed database fixture.
+- All ten persisted literal/table vectors match the independent calculations after format.
+  Full repository formatting and all four offline documentation validators passed;
+  whitespace and exact runtime/schema/migration/dependency/workflow baseline equality
+  passed. Five documentation files only. Fresh canonical main fetch reconciled 0/0.
+- Report cutoff precedes its immutable focused commit. Cached pinned complete-history
+  secret scan, fast-forward-only/non-force main delivery and exact-head hosted CI/CodeQL
+  remain required before final handoff; their actual delivery results belong in that
+  handoff and the subsequent review, not an assumed success in this source snapshot.
+
+#### Decisions, unresolved risks and exact next command
+
+- ADR-111: original stable intent versus fresh state/credential/evidence binding; exact
+  preservation/replay and non-secret lifecycle without creating authority. Missing versions,
+  pin, coverage or privileges deny; exhaustion cannot block ordinary security recovery.
+- Retained tooling advisories, source-only identity/epoch/manifest design, limited local
+  resources/nondeterminism and direct-main governance remain unwaived. Protected real
+  legacy/provider evidence, P2 storage and P3–P9 auth/lineage/writer/consumer/drain/recovery,
+  remaining business operating inputs and final launch approval remain separately gated.
+- After validated delivery, request **Phase review — Review Command 109 canonical currency
+  authority binding specification and define the next bounded currency command**. Stop;
+  do not number or implement the proposed candidate automatically.
 
 ## Report Template
 

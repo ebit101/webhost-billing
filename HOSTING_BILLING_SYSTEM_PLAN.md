@@ -160,6 +160,13 @@ only. Exact persistent installation identity, ordered stable-intent/assessment b
 non-secret credential evidence and immutable reference lifecycles must be resolved
 before sensitive P2 storage. No digest, authority record, identity/epoch store or next
 implementation is authorized by this review. Existing auth and zero/null controls stay intact.
+The owner subsequently authorized Command 109 on 2026-10-09. Section 3e specifies
+server-owned installation/execution identity, non-secret auth versions and immutable
+factor evidence, exact bounded stable-intent/assessment tuples and receipt/reference
+lifecycles. Fictional byte/hash vectors were independently calculated; no codec or
+authority store is implemented. Its smallest later candidate is empty inert installation
+identity storage, not identity seeding, proof issuance or selection. No next command is
+numbered or authorized by that specification; complete acceptance remains gated.
 No selection/guard or application consumer is installed by the observation helper or review.
 No live registry, selected installation policy or financial backfill is included. Broader persistence,
 per-currency reads, pricing and activation remain later separately gated slices. Remaining

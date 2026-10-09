@@ -1962,6 +1962,414 @@ No P2 store/digest, auth behavior/secret retention, shape opening, new consumer,
 adoption or live operation is authorized. P3–P9 and business/provider/launch prerequisites
 remain. Stop after review delivery and ask for explicit Command 109 authorization.
 
+## 3e. Canonical authority binding specification — Command 109
+
+Owner-authorized on 2026-10-09, clean source baseline
+`c3b7dff50ae66da08275878466abc992ac9ee5d9`. This is a documentation-only refinement of
+section 3d's P2 prerequisites. None of the identities, epochs, serializers, hashes,
+authority tables or functions below is installed. Command 108 remains an unused
+six-field syntax decoder; all 25 migrations and runtime/workflow/dependency files remain
+unchanged. Neither digest equality nor a well-formed UUID establishes authorization.
+
+### Source evidence and serialization basis
+
+`schema.prisma` has User, AdminProfile, AuthSession, AdminTotpCredential, AdminRecoveryCode
+and ActivityLog UUID identities, but no persistent installation identity or dedicated
+auth epoch. `currency-coordination.ts` derives a database/schema lock key, not a durable
+identity. `currency-control.ts` reads only absent/unassessed facts. `currency-policies.ts`
+already orders copied immutable policy facts and spells missing secondary preference as
+null. These existing helpers are not authority/digest implementations.
+`auth.service.ts` updates session heartbeat, resets passwords/revokes sessions, deletes
+MFA credentials with recovery cascade and replaces recovery rows; `staff.service.ts`
+revokes sessions on access updates. Their current locks/factor helpers are not P6 adoption.
+
+The formats below are application protocol decisions, not a universal JSON canonicalization
+standard. The serializer uses fresh dense arrays of validated primitives, explicit nulls,
+ECMAScript JSON string quoting, no replacer/indent/BOM/final newline and UTF-8 bytes.
+The two hashes are SHA-256 with lowercase hexadecimal output. This follows
+[ECMAScript array serialization](https://tc39.es/ecma262/multipage/structured-data.html#sec-serializejsonarray)
+and [Node.js hash input/output](https://nodejs.org/docs/latest-v24.x/api/crypto.html#hashupdatedata-inputencoding).
+Future SQL must reproduce these exact bytes, not hash `jsonb::text`: PostgreSQL's
+[JSON types](https://www.postgresql.org/docs/18/datatype-json.html) do not preserve all
+textual details. Store the canonical text alongside relational facts and its digest;
+validate equality through the one reviewed codec/SQL parity gate before trusted use.
+No hash of arbitrary caller objects, toJSON/getters/proxies or raw request JSON is allowed.
+
+### Installation identity, placement and recovery
+
+Use two server-owned non-secret UUIDs: **installationId** identifies the retained business
+history; **executionDomainId** identifies one approved placement/recovery incarnation.
+Both are exact lowercase standard UUID text acquired from qualified immutable storage
+and a trusted operator-owned, read-only deployment pin, never from a browser, GUC,
+localization setting, coordination hash or automatically generated per-request UUID.
+The pin supplies installation/domain IDs, exact database/schema and reviewed deployment/
+guard-manifest identity. Trusted operator verification binds it to the actual target;
+matching database names alone cannot attest the server. Missing/mismatched pin, grants,
+domain or catalog/model identity denies all future proof/selection work.
+
+Proposed minimal inert tables (names describe future objects, not migrations here):
+
+- `currency_installations`: singleton key 1; unique non-null installation UUID and UTC
+  creation time. Immutable after an explicitly approved offline initialization. An empty
+  migration is not permission to initialize it, stage controls, assess history or enable money.
+- `currency_execution_domains`: domain UUID primary key, installation UUID RESTRICT
+  FK, exact database/schema names (existing 63-character identifier grammar), UTC creation
+  time and 64-lowercase-hex reviewed placement-manifest digest. Immutable, including
+  placement; unique `(installation_id, id)` supports exact later compound references.
+  No database-selected current-domain flag: the operator's trusted pin selects the domain.
+
+No defaults, migration seed or ordinary writer can issue either identity. Non-login
+owners/offline installation duty remain section 3d privileges. Qualified reads verify the
+pin before staff/currency-first transactional rechecks. A trusted operator who deliberately
+copies both data and the original pin/credentials can defeat clone isolation; that is a
+privileged deployment compromise, not protection proved by UUIDs.
+
+| Operation                                              | Required future handling                                                                                                                                                                                                                                                      |
+| ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Process restart at the same approved target            | Preserve both IDs; never rotate on startup or invalidate replay just because the process restarted.                                                                                                                                                                           |
+| Reviewed relocation, database/schema rename or restore | Preserve installation/history, append a fresh execution domain under an approved drain/recovery procedure, replace the trusted pin and revoke old sessions/unconsumed proofs before resume. Old domains remain historical. No counter reset or automatic deployment approval. |
+| Same-business restored copy used for rehearsal         | Preserve historical installation references for inspection; use a distinct domain/pin, disable real providers and proof/selection availability. Original-domain receipts cannot mutate or replay on the copy.                                                                 |
+| Separate new business cloned from source               | Start from approved empty installation data and a new installation/domain, not relabel a copied financial ledger or silently mint an ID around old money.                                                                                                                     |
+| Backup rollback or uncertain recovery completeness     | Stay drained. A new domain does not prove no history was lost or permit reused generations/revisions; protected ledger/queue/callback/backup reconciliation remains P9.                                                                                                       |
+
+Normal matching selection replay is confined to the original active execution domain.
+After restore/relocation, old receipts remain historical audit records, not replay authority;
+a separately authorized historical inspection path must not reselect them. Logical IDs and
+all old domain/ledger references survive. No relocation/restore/pin is executed here.
+
+### Non-secret auth versions and immutable factor evidence
+
+Future `currency_authorization_versions` has User UUID primary/RESTRICT FK, positive
+BIGINT `auth_epoch` and `recovery_set_epoch`, nullable public credential UUID and boolean
+`usable`. No password hash, token hash, encrypted secret, recovery hash/value or user-agent
+enters it. Missing/unestablished rows are unavailable, never default epoch 1 or proof of
+enrollment. Explicit baseline establishment belongs to protected P6 adoption, after every
+overlapping auth writer and SQL backstop is proven. These counters are installation-local
+versions, not the user's current general updatedAt.
+
+Future immutable `currency_authorization_evidence` captures the exact ten-field tuple `H`
+below at successful step-up. Its User/AdminProfile/AuthSession ownership is verified with
+qualified locked reads and exact compound FKs (future `(id,user_id)` unique keys where
+needed), all RESTRICT. Credential/recovery IDs are copied non-secret historical identities,
+**not FKs to deletable secret-bearing rows**. The snapshot does not assert the live rows
+remain enrolled or authorized. Trusted issuer owns its creation; ordinary business writers
+cannot append approval-shaped evidence or invoke issuer/executor functions.
+
+| Existing source / event                                                                           | Future version/invalidation rule                                                                                                                                                                                                                                             |
+| ------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| User password reset/change, role/status/verification/soft-delete change; AdminProfile role change | Increment auth epoch in the same guarded security transaction and retain existing session revocation. Display-name/heartbeat changes alone do not change the epoch.                                                                                                          |
+| MFA enable, disable or re-enrollment; credential replacement                                      | Increment auth and recovery-set epochs, update/clear the public current credential ID atomically; retain ordinary credential/recovery deletion. Missing/different live credential denies a new confirmation.                                                                 |
+| Recovery regeneration                                                                             | Increment both epochs atomically with replacement; old snapshots retain only public identities. A consumed recovery code must not be reused for issuance.                                                                                                                    |
+| Logout, idle expiry, session revocation                                                           | Recheck that exact live session under the reviewed lock/order and fresh database time; a revoked/expired/missing session denies issuance, confirmation and receipt replay. Logout-all also increments auth epoch.                                                            |
+| TOTP last-used step or individual recovery consumption, ordinary login                            | Enforce factor one-use atomically with proof issuance; do not use incidental counter/usedAt movement as the general auth epoch. Other valid factor use does not silently rewrite historical evidence.                                                                        |
+| Either version at BIGINT maximum                                                                  | Security actions still commit, including logout/reset/disable. Mark `usable=false` and deny all currency proof/confirmation; never overflow/reset/wrap or block ordinary account recovery to save a currency counter. Re-establishment needs a separately reviewed protocol. |
+
+`H = [evidenceId, executionDomainId, actorUserId, adminProfileId, sessionId,
+authEpoch, credentialId, recoverySetEpoch, factorKind, recoveryCodeId]`.
+Positions 0–4/6 are exact server-owned lowercase UUIDs; positions 5/7 are canonical
+positive BIGINT strings; position 8 is `totp` or `recovery`; position 9 is explicit null
+for TOTP or the consumed public recovery-row UUID. All live owner/epoch/credential facts
+must match at issuance and new confirmation; for recovery, proof issuance records its
+atomic one-use consumption, not a requirement that usedAt remain null afterwards.
+The original factor's identity is immutable; later freshness comparison uses its stored
+evidence plus the **current** versions/credential/session, not a newly invented factor ID.
+
+Enrollment/current full-administrator/email/status/session-MFA checks remain mandatory;
+these columns/tuples alone never authorize. Password verification is outside long-held
+locks; its exact auth epoch is read before verification and rechecked under locks. All
+security writers must reliably bump it before this can substitute for comparing a secret.
+Existing reusable/outside-transaction factor helpers are not that implementation.
+Current roles/session expiry/idle age and verification facts are rechecked without hashing
+heartbeat, generic updatedAt or last-used counters. No hashing/copying of a password hash
+is proposed as a non-secret credential version.
+
+Historical successful actor/session/profile references are protected from hard deletion.
+Revocation/expiry/security updates still work. Unreferenced fictional auth teardown is
+unchanged; authority fixtures must use a newly owned scope and verified whole-scope cleanup,
+not delete immutable ledger/evidence merely to unblock an auth FK. A future session-retention
+policy must not silently cascade or null historical references. No such retention job exists
+in inspected runtime; integration teardown is not a production deletion policy.
+
+### Canonical primitives, budgets and exact UUID treatment
+
+All fields below are explicit. Validate grammar/full input and limits **before** member
+traversal, allocation/sorting or BigInt comparison. Canonical strings are ASCII only:
+revision/metadata `[A-Za-z0-9][A-Za-z0-9._:-]*`, length 1–64; currency exactly three uppercase
+ASCII letters; provenance the existing printable-ASCII grammar, length 1–256; status
+`current`/`historical`; UUID 36 characters in the already reviewed grammar. Use canonical
+decimal string integers through `9223372036854775807`; only the exponent uses a JSON integer
+number 0–4. No Number conversion of financial/generation/auth values. UTC control creation
+time is exact `YYYY-MM-DDTHH:mm:ss.sssZ`, 24 ASCII characters, with calendar validation and
+an exact round trip; it is the immutable row identity time, not an approval timestamp.
+
+Command 108 preserves requestKey text, including case and nil/max shape; do not change that
+parser or silently lowercase its output. Stable intent preserves that exact 36-character
+text. Future intent uniqueness additionally uses a PostgreSQL UUID value: uppercase and
+lowercase spellings occupy the same request slot, but have **different stable intent**.
+A spelling change at an occupied slot is conflicting replay, never a new key or matching
+receipt. SQL must compare saved text/digest byte-for-byte, not reconstruct it from UUID
+output. All server-owned identity UUIDs come from standard lowercase database output;
+their existence/ownership must be verified. Syntactic nil/max values grant no identity.
+This distinguishes request text from [PostgreSQL UUID identity/output](https://www.postgresql.org/docs/18/datatype-uuid.html).
+
+| Budget                                                    | Exact v1 ceiling                                                                                                                                      |
+| --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Existing client confirmation text                         | 4,096 UTF-8 bytes, unchanged.                                                                                                                         |
+| Future internal binding input / canonical assessment text | 65,536 UTF-8 bytes each; primitive JSON text only, code-unit bound before encoding, byte bound before parsing. No caller object graph.                |
+| Canonical stable-intent text                              | 1,024 UTF-8 bytes.                                                                                                                                    |
+| Each policy context / control / auth tuple                | 24,576 / 512 / 1,024 UTF-8 bytes respectively, also covered by the outer ceiling.                                                                     |
+| Policy entries and resolved definitions                   | At most 32 **per context**, unchanged; one proposed context and at most one prior context. Never combine them into an enlarged existing 32-entry API. |
+| Anchor definition                                         | One exact existing definition or explicit null; not a third unbounded context.                                                                        |
+| Evidence references                                       | 1–32, maximum 224 UTF-8 bytes per reference; array length checked before indexed members.                                                             |
+| Hash / revision / UUID / integer token                    | 64 lowercase hex / 64 ASCII / 36 ASCII / 19 decimal characters respectively.                                                                          |
+
+Reject sparse/extra/wrong-arity inputs or unprescribed nesting (maximum tuple depth 5),
+unsupported versions, duplicate reference
+identities, coercion/defaults and partial facts. These array codecs are future private
+server-only code, not shared/browser/root exports. JSON parsing of bounded primitive text
+provides own plain data; build fresh fixed-arity arrays after strict validation. Internal
+binding JSON has no object-member aliases; reject object-shaped replacement of tuples.
+Raw client member order is handled by Command 108, not by hashing raw JSON.
+Sort copies only, with explicit ASCII `<`/`>` comparisons, never localeCompare. Preserve
+case-sensitive revision/metadata strings. Fixed failures must not expose input, bearer,
+raw JSON/Zod/SQL issues, H, object handles or partial hashes. Canonical material contains
+restricted identities even without secrets and must not be casually logged or returned.
+
+### Exact stable-intent and assessment tuples
+
+Array positions are zero-based; brackets below are syntax specifications, not runtime code.
+
+`S = ["currency-selection-request-v1", I, action, actorUserId, sessionId,
+requestKeyText, expectedRevision, expectedGeneration, proposedRevision]` (arity 9).
+
+- Position 1: `I=[installationId,executionDomainId]`, arity 2; checked active pin/domain.
+- Positions 2/5/6/7/8: Command 108 action/exact key text/explicit expected revision/
+  canonical expected generation/proposed revision, unchanged null/zero/replace rules.
+- Positions 3/4: exact server-owned authenticated actor/session UUIDs, not request fields.
+- `stableIntentDigest = SHA256(UTF8(canonical S))`. Exclude proof bearer/hash, current
+  selection/latch, credential epoch/evidence, heartbeat and all incidental times.
+
+`A = ["currency-selection-assessment-v1", stableIntentDigest, C, proposedContext,
+priorContext, anchorDefinition, H, E]` (arity 8).
+
+`C = [state,generation,selectedRevision,historyLatch,baseCode,baseMetadataVersion,
+baseExponent,createdAt]` (arity 8):
+
+- Absent: `["absent",null,null,null,null,null,null,null]`.
+- Unassessed: `["unassessed","0",null,null,null,null,null,createdAt]`.
+- Selected: `["selected",positiveGeneration,exactRevision,booleanLatch,exactCode,
+exactVersion,exponent,createdAt]`. No partial/null selected tuple or durable
+  assessed-unselected state. Latch false/true is explicit and survives unchanged generation.
+- Initialize/adopt require observed absent/unassessed and request null/zero. Replace
+  requires selected with exact request R/g; maximum parses but new selection cannot increment.
+  Staging after an absent preview or first history after a false preview changes A and denies
+  new confirmation even without a generation change. Do not restage before comparing C.
+
+Each `Context=[P,U]` (arity 2):
+
+- `P=[revision,baseRef,defaultBrowsingRef,secondaryRefOrNull,capabilities]`, arity 5.
+  Each ref is `[code,metadataVersion]`. Each capability entry is
+  `[code,metadataVersion,display,newSales,collection]`, arity 5, sorted by code.
+  No duplicate code; all base/default/secondary membership and Command 97 rules apply.
+- `U` has exactly the required stored immutable definitions, no extras/missing entries.
+  Each is `[code,metadataVersion,minorUnitExponent,provenance,status]`, arity 5,
+  sorted by code then exact metadataVersion; duplicate `(code,version)` denies.
+  Obtain definitions by exact references, never latest metadata or inferred BDT/exponent.
+- Proposed context matches S's proposed revision. Prior context is null exactly when
+  C is absent/unassessed; otherwise it matches C's selected revision. Anchor is null in
+  those two unknown states, otherwise one exact definition matching all C anchor fields.
+  With latch false, prior base equals the whole anchor; with latch true, code/exponent
+  agree and a different reviewed metadata version needs explicit compatibility evidence.
+  Do not deduplicate a prior/proposed context or omit anchor facts because their rows match.
+
+H is the ten-field immutable auth evidence above. Domain/actor/session match S, and
+profile/credential/version ownership must pass current qualified checks, not just tuple shape.
+`E` is a sorted array of `[kind,evidenceId,version,payloadDigest]` (arity 4), sorted by
+kind, version, evidence ID with ASCII comparison. Duplicate `(kind,id)` denies even if
+versions/digests match. Exact registered kind/version pairs are `history` /
+`currency-history-assessment-v1`, `compatibility` / `currency-compatibility-v1`, and
+`adoption` / `currency-adoption-v1`. At least one fresh history root and one complete
+compatibility root are required; adopt also requires its approved adoption root. Other
+versions/kinds deny v1, not fallback. Roots identify protected immutable manifests;
+version names/digests alone do not attest completeness. Manifest acquisition, class coverage,
+legacy/draft lineage and root payload schemas still require P3/P4/P8 implementation.
+All exact referenced roots must be loaded/verified for the same installation/domain,
+action/intent and observed C/policies; incomplete/unresolved/missing roots deny authority.
+Command 101 counts are not substitutes. The codec can compute a fictional shape's hash
+without certifying these server/storage obligations.
+
+`assessmentDigest = SHA256(UTF8(canonical A))`; the different literal at index 0 separates
+the two digest domains. Include provenance/status and complete exact units, not just codes
+or their equal exponents. No query, time/default substitution or evidence issuance occurs
+inside a future codec. Fresh authorized acquisition precedes it under section 3d locks;
+output is copied facts/hashes, not permission, a transaction handle or a selected receipt.
+
+### Future inert records, references and atomic consumption
+
+All authority stores begin empty and deny ordinary DML/EXECUTE, including empty/no-op
+statements, under P1-proven distinct-login ACLs. Runtime credentials are not owners or
+issuer/executor members. No production privilege/owner installation is authorized here.
+
+| Proposed object                   | Minimal future immutable facts / keys                                                                                                                                                                                                                                                                                                                           |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `currency_selection_intents`      | Primary `(installation_id,request_key_uuid)`; exact preserved request-key text, original domain/actor/session, action, expected R/g, proposed R, canonical S text/digest. Compound domain/installation, actor/session ownership and exact policy references RESTRICT. Alias/body/actor/session/domain conflicts deny; a reserved intent alone is not a receipt. |
+| `currency_authorization_evidence` | H columns plus domain/installation and created UTC time; exact restricted actor/profile/session ownership. Public credential/recovery IDs have no FK to secret rows. Immutable after trusted issuance.                                                                                                                                                          |
+| `currency_authority_evidence`     | UUID, installation/domain, kind/version, immutable protected payload reference and digest, original intent/C/context binding and UTC creation time. Exact binding/reference checks, not an arbitrary approval JSON. Payload/coverage schema remains versioned and must pass its prerequisite gates.                                                             |
+| `currency_transition_proofs`      | UUID; restricted intent/H/E/context references; canonical A text/digest; unique opaque-token SHA-256 hash, issued/valid-until UTC. Immutable bindings. Multiple attempts may reference identical intent, but only the currently eligible issued proof can be consumed. No raw bearer, factor/password/exports.                                                  |
+| `currency_selection_ledger`       | UUID, restricted intent/proof/H/E/ActivityLog references, exact before/after C, operation and database decision time. Unique `(installation,request_key_uuid)`, `(installation,result_generation)` and `(installation,new_selected_revision)`, and unique proof ID. Original domains retained; superseded revisions cannot be selected again.                   |
+| `currency_proof_consumptions`     | Proof UUID primary key; ledger UUID unique; exact proof/ledger pairing. A separate one-use immutable link, not a generic mutable consumed flag.                                                                                                                                                                                                                 |
+
+Use exact child/join rows for E and all policy/unit/H references, not just polymorphic IDs
+inside JSON. Actor/session ownership requires corresponding compound keys; a FK to any
+unrelated session is insufficient. Policy revision FKs and unit `(code,version)` FKs are
+RESTRICT; exponent/value equality is independently validated against immutable rows.
+Where exact anchor `(code,version,exponent)` references need an additive unique key, keep
+that later protection-opening dependency explicit. No old FK/row/migration changes here.
+
+Proof token hashing later reuses the reviewed `hashOpaqueToken` convention:
+SHA-256 of the exact 43-character token's UTF-8 bytes, lowercase hex, without persisting
+that input or treating this unkeyed hash as a signature. This command does not mint/hash
+any bearer. Proof validity, five-minute maximum/session-shortened lifetime, fresh DB
+wall-clock expiry, current versions and one-use consumption remain trusted checks.
+Expiry and auth revocation are conditions, not deletion or changes to immutable bindings.
+Any explicit proof invalidation is a separately protected append-only record; reissue
+after failure cannot reuse consumed proof or change a completed intent's body.
+
+Resolve the consumption cycle as follows: proof exists first; allocate ledger/activity
+IDs inside the owned transaction; perform validated CAS/activity/ledger insertion, then
+consumption insertion. Consumption has an immediate exact `(ledgerId,proofId)` FK to a
+unique ledger pair. Ledger has a reciprocal `(proofId,ledgerId)` FK to consumption,
+`NO ACTION DEFERRABLE INITIALLY DEFERRED`, with unique referenced pair. That one deferred
+edge permits insertion ordering but refuses COMMIT without its exact consumption. All
+historical non-cycle references remain RESTRICT. This relies on
+[PostgreSQL FK actions/deferral](https://www.postgresql.org/docs/18/ddl-constraints.html#DDL-CONSTRAINTS-FK).
+Early SET CONSTRAINTS, savepoint/outer-handler recovery and deferred failure must be tested.
+The links alone do **not** prove CAS/auth/history: P4's narrow atomic function must verify
+and mutate the whole boundary; direct ledger append remains denied even with valid FKs.
+
+ActivityLog is inserted through that same transaction, with exact actor/action/ledger
+entity consistency, not standalone AuthAuditService.record or a caller-chosen activity ID.
+Reserve selection audit actions to the trusted transition duty; generic business append
+must not forge them. Add exact `(id,actor_user_id)` reference support/validation where
+needed, not a loose entityId claim. No provider/outbox effect or automatic retry follows.
+Only after successful COMMIT may copied receipt facts leave the owned transaction.
+Unknown acknowledgment remains unknown; key-based authorized receipt inspection resolves it.
+
+### Matching replay versus new confirmation
+
+Lock and reauthorize current actor/profile/session/enrollment under section 3d order;
+verify placement. Find the installation-wide UUID request slot; compare saved key text,
+original domain and complete S/digest, not current selection. A matching committed ledger
+returns only its original receipt. A token-shaped but expired/different supplied bearer
+does not authorize a write and need not be consumed/accepted again for this authenticated
+receipt read. Syntax still passes Command 108. Current revoked/expired/non-full/unverified/
+unenrolled sessions, cross-actor/session/domain or conflicting key/body deny.
+
+Completed replay does not require the original auth epoch, false latch or selected R to
+remain current: those are historic evidence, not a second transition. Current valid
+authorization is still mandatory. Show current selection separately if later supported;
+never claim the historical receipt's R is current. Later history, replacement or original
+proof expiry therefore does not break legitimate matching receipt inspection.
+
+Without a matching committed ledger, verify the supplied proof hash and original intent,
+current usable auth/recovery versions/credential/session, expiry and fresh complete A/root
+coverage under locks. Do not replace stored H with newly issued evidence or manufacture
+missing state/evidence. A false-to-true latch at the same g, a committed stage, changed
+metadata/compatibility/adoption root or credential epoch denies; re-step-up/reassessment
+is a separate explicit operation, not coercion/retry. An existing incomplete intent can
+only be resumed with an eligible newly verified proof of the **same** S; uncertain commits
+first use authenticated receipt inspection. No automatic SQL/provider retry.
+
+### Fictional canonical byte/hash vectors
+
+These are literal ASCII JSON lines: no indentation, BOM, trailing newline or surrounding
+code-fence bytes enter the hash. All IDs/manifests/times are fictional; repeated `a`/`b`/`c`
+digests are shape fixtures, not computed coverage roots. No live authority or assessed
+database fixture is created. Ten Node.js calculations were independently checked against
+.NET SHA-256 and UTF-8 byte counts on 2026-10-09; this is **format evidence only**, not an
+implemented codec, SQL/privilege/authorization/replay acceptance test.
+
+S base (267 bytes):
+
+```text
+["currency-selection-request-v1",["10000000-0000-4000-8000-000000000001","10000000-0000-4000-8000-000000000002"],"initialize","20000000-0000-4000-8000-000000000001","20000000-0000-4000-8000-000000000003","a0b1c2d3-0000-4000-8000-abcd12345678",null,"0","fictional-v1"]
+```
+
+A base (910 bytes):
+
+```text
+["currency-selection-assessment-v1","3f609e5934187609b5a5e679fa6f15fbb2d8e951653e21b672306e5fe1641426",["absent",null,null,null,null,null,null,null],[["fictional-v1",["BDT","fictional-units-v1"],["BDT","fictional-units-v1"],null,[["BDT","fictional-units-v1",true,true,true]]],[["BDT","fictional-units-v1",2,"Fictional source","current"]]],null,null,["20000000-0000-4000-8000-000000000005","10000000-0000-4000-8000-000000000002","20000000-0000-4000-8000-000000000001","20000000-0000-4000-8000-000000000002","20000000-0000-4000-8000-000000000003","1","20000000-0000-4000-8000-000000000004","1","totp",null],[["compatibility","30000000-0000-4000-8000-000000000001","currency-compatibility-v1","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"],["history","30000000-0000-4000-8000-000000000002","currency-history-assessment-v1","bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"]]]
+```
+
+For the replacement vectors, S changes only action to `replace`, expected revision to
+`fictional-v0` and generation to `9007199254740993`. A uses that new S digest; C becomes
+`["selected","9007199254740993","fictional-v0",false,"BDT","fictional-units-v1",2,"2026-01-01T00:00:00.000Z"]`;
+prior context equals proposed context with only its P revision changed to `fictional-v0`;
+anchor is the single U definition. Everything else stays exactly A base.
+
+| Vector / exact delta                                                            | UTF-8 bytes | SHA-256                                                            |
+| ------------------------------------------------------------------------------- | ----------- | ------------------------------------------------------------------ |
+| S base                                                                          | 267         | `3f609e5934187609b5a5e679fa6f15fbb2d8e951653e21b672306e5fe1641426` |
+| A base                                                                          | 910         | `de6f72e67de6d5ef8fdb0932e3aa79554bd38f41c171471e705d4b359ab48c75` |
+| S base: uppercase key text only                                                 | 267         | `bec8f8e1020a69348660b0f71a5c4f1fd0239114625bfceace6bf73720054491` |
+| S base: execution domain suffix `000000000003` only                             | 267         | `552681453a18ae4af7a62716d650aad40b6ebb5e1d25fc2528b9d42cdca23215` |
+| A base: C becomes unassessed zero/null with creation `2026-01-01T00:00:00.000Z` | 935         | `4a2569f124c682965193e639aa86d674641f362a1734e8c8c659bca1427f499c` |
+| A base: H auth epoch `1` to `2` only                                            | 910         | `6f19bc3b2cd99f762be386f76b5ebe7d84ff3d1d4f28b0ddbc2af95f44303959` |
+| S replacement as defined above                                                  | 289         | `e005a8316125fb52a2e0e9645376488d3208a260043791b334ba29cd72461acf` |
+| A replacement as defined above                                                  | 1213        | `e7c7affabac5e0f95ac8f1f8b68e0abaec5734cb358e31f98c95d26935bb6866` |
+| A replacement: latch true and history-root digest all `c` only                  | 1212        | `8f87247911a4bbb01cede22bef1dc6a52954aa2e1c59823c0d46baf7f69d911a` |
+| S replacement: generation `9223372036854775807` only                            | 292         | `d7ee4ed0a9047d5967ccb34261e66eab9a9b62d739382d69eca129594d65ee11` |
+
+For the unassessed vector C is exactly
+`["unassessed","0",null,null,null,null,null,"2026-01-01T00:00:00.000Z"]`.
+Uppercase key occupies the same SQL UUID slot but conflicts with the base's exact intent.
+Maximum is valid syntax, not increment authority. Changing only C leaves S unchanged;
+the stored proof's A must not match after staging/latching. These outputs have no bearer.
+
+### Proposed acceptance and smallest implementation candidate
+
+The following is **required future acceptance**, not tests executed by Command 109:
+
+| Boundary                                                                                | Required exact outcome                                                                                                                                                                  |
+| --------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Reordered input object members and context/reference lists                              | Fresh sorted tuples give identical canonical bytes/digests; no input mutation, locale order or dropped fields. Duplicate/unknown/extra facts deny.                                      |
+| Null/state, absent-to-stage and false-to-true latch without g change                    | S unchanged where applicable, A differs; no stale new selection, fabricated emptiness or generation-only CAS.                                                                           |
+| Case-sensitive policy/metadata; UUID aliases                                            | Policy/metadata case changes exact facts; SQL UUID slot cannot admit another alias; original request text cannot be reconstructed/lowercased into a matching replay.                    |
+| Large/max/max+1/noncanonical generation or auth epoch                                   | Above-Number precision stays exact; max parses, overflow/noncanonical denies; exhaustion blocks currency authority but security actions remain possible.                                |
+| Changed capability/unit exponent/provenance/status/anchor or evidence ID/version/digest | A differs or invalid tuple denies; no same-exponent substitution, unknown evidence version, incomplete root or latest metadata fallback.                                                |
+| Malformed, duplicate, nested, huge, proxy/getter or wrong-byte-limit input              | Pre-traversal/pre-parse bounds and fixed redaction; no getter/coercion/raw error or partial digest. 32/33 entries/roots and exact byte ceilings tested.                                 |
+| Wrong pin/domain/server ownership or clone/restore                                      | Deny before trusted work; missing identity never self-initializes. Relocation rotates only by approved recovery, preserves history and refuses lost-ledger generation reuse.            |
+| Password reset/demotion/logout/MFA disable/re-enable/recovery regeneration races        | Both lock orders tested with actual current auth facts; old proof denies. Live secret-row deletion still works; historical non-secret evidence remains.                                 |
+| Completed matching receipt after later selection/latch/expiry                           | Current authorization plus original S returns original receipt with no new CAS/audit/consume; conflicting actor/session/body/domain and revoked current auth deny.                      |
+| FK/ledger/consumption/audit/COMMIT failure or raw recovery                              | No partial transition; exact deferred link/SQL parity tested. Unknown acknowledgment not rollback fiction. Normal writers cannot forge or directly mutate authority, even with no rows. |
+
+**Smallest next implementation candidate: Stage inert currency installation identity
+storage.** Only empty immutable `currency_installations` / `currency_execution_domains`
+and their exact relationship, with no ID defaults/seed/current pin or application helper.
+Future file targets: `packages/database/prisma/schema.prisma`, one additive migration with
+an `_inert_currency_identity` suffix, and existing database source/isolated-login/owned SQL
+test launchers. Do not create those files now or assign another command number.
+
+Candidate acceptance must preserve all 25 original raw/content hashes and prior-25 all-row
+snapshots (plus retained prior-22/23/24), empty new identity tables and unchanged existing
+control/policy/unit/auth facts (other future authority stores still absent), exact relational
+FK/immutability, normal-scope decoy/visibility denial and
+P1 distinct-login direct DML/owner-membership/DDL/EXECUTE refusal. Fictional identity inserts
+are explicit fixture-owner actions in newly owned scopes only; they do not assert active
+pin/approval or authorize selection. Existing mandatory test/cleanup/resource limits and
+complete root/SQL/API/invariant/browser/build/audit/secret/exact-head CI gates remain.
+No production role DDL, staging API, migration identity minting, ordinary writer grant,
+P2 proof/ledger completion or control-shape opening. Stop for a separately authorized review.
+
+Remaining identity initialization/pin, exact digest codec/SQL parity, non-secret auth version
+adoption, evidence payload/lineage/coverage, proof/ledger/atomic transitions and P3–P9 writer/
+consumer/drain/recovery still need bounded implementation and acceptance. They are not
+automatically authorized, a fixed remaining-command count or launch-date promise. Real
+legacy/provider evidence, Command 33 operating inputs and final launch approval remain
+separate. Stop after this documentation delivery for **Phase review — Review Command 109
+canonical currency authority binding specification and define the next bounded currency
+command**. No live query/import, PostgreSQL creation, roles, implementation or activation.
+
 ## 4. Price publication, quote and renewal rules
 
 ### Catalogue pricing

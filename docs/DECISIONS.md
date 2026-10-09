@@ -2057,7 +2057,7 @@ current_database()), hashtext(schema)` computed by qualified PostgreSQL function
 
 ## ADR-110 — Resolve authority identity and canonical bindings before inert storage
 
-- **Status:** Accepted for the owner-authorized Command 108 phase review; Command 109 defined only, not authorized or implemented
+- **Status:** Accepted for the owner-authorized Command 108 phase review; Command 109 subsequently authorized on 2026-10-09, documentation only
 - **Date:** 2026-10-09
 - **Review:** No blocking in-scope Command 108 defect found. Bounded primitive JSON text,
   strict six-field action/state checks, canonical exact generations, complete-match
@@ -2091,6 +2091,49 @@ current_database()), hashtext(schema)` computed by qualified PostgreSQL function
   import/provider/operating approval, release/deploy or unrelated cleanup. Existing
   direct-main governance, tooling risks and business/activation approvals remain.
   Stop after validated delivery and ask for explicit Command 109 authorization.
+
+## ADR-111 — Bind original intent separately from fresh state and non-secret auth evidence
+
+- **Status:** Accepted for owner-authorized Command 109; documented, not runtime implementation
+- **Date:** 2026-10-09
+- **Baseline:** Clean `c3b7dff50ae66da08275878466abc992ac9ee5d9`, 25 unchanged migrations.
+  Command 108 and its final review's exact-head CI/CodeQL metadata/jobs were freshly
+  verified, all 29/eight steps and first attempts; PR-only dependency review skipped.
+  Fresh source/shared/tooling checks and production audit passed; full audit retains two
+  unwaived development findings. No current database/history/privilege query occurred.
+- **Identity:** Retained logical installation plus immutable execution-domain/placement
+  incarnation and trusted operator-owned read-only pin. Restart preserves domain; reviewed
+  restore/relocation rotates domain, preserves history and revokes old auth/proof before
+  resume. Names/coordination keys/arbitrary UUIDs do not attest identity. Privileged copying
+  of original pin/credentials and lost-history restoration remain P9/operational risks.
+- **Auth:** Future dedicated positive auth/recovery-set epochs and usable state, not
+  heartbeat/updatedAt or a hash of password material. Atomic security changes invalidate
+  proofs; exhaustion blocks currency authority, never ordinary reset/logout/disable.
+  Immutable public factor/credential/recovery identities have no FKs to deletable secret
+  rows. Actor/profile/session history remains restricted; current auth is always rechecked.
+- **Bytes:** Exactly ordered bounded UTF-8 primitive tuples S/A, domain-separated SHA-256,
+  canonical string integers/nulls and ASCII sorting. Proposed/prior contexts each retain
+  the 32-entry budget; full immutable units/anchor, ten-field auth snapshot and typed
+  immutable evidence references bind assessment. Duplicate/unsupported/incomplete authority
+  denies. Preserve request-key text but reserve one SQL UUID slot; aliases conflict rather
+  than silently normalize into replay. No jsonb::text, locale order or browser digest authority.
+- **History and replay:** Full C/state/first-history/evidence changes invalidate new proof
+  even at unchanged generation. Current authorized matching original S returns only the
+  committed receipt after later state changes/expiry; no second proof consumption/CAS.
+  Restored-domain receipts are historical only, not replay authority. Uncertain commit is
+  resolved by authorized receipt inspection, not automatic retry or assumed rollback.
+- **Records:** Future exact intent/proof/H/E/policy/unit/activity references; separate
+  immutable proof-consumption link and one deferred NO ACTION reciprocal FK resolve
+  insertion ordering. Necessary links do not prove selection; qualified atomic P4 function,
+  direct-write denial and transactional audit are still mandatory. Ordinary security
+  deletion/revocation works without retaining passwords, bearer/factor/recovery secrets.
+- **Qualification:** Ten fictional UTF-8/SHA-256 vectors independently agree in Node and
+  .NET. This proves those literal byte calculations only, not a codec/SQL/privilege/approval
+  implementation. Evidence payload/coverage, actual epochs/pin, SQL parity and P3–P9
+  runtime/legacy/drain/recovery remain separately gated. No live approval or launch forecast.
+- **Handoff:** Smallest candidate is empty inert installation/execution-domain storage
+  with preservation and P1 distinct-login acceptance, not an issuer/helper/seed/open shape.
+  No command number or implementation authorization assigned. Stop for Command 109 review.
 
 ## Open Decisions
 

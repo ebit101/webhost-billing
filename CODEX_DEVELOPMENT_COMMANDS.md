@@ -4352,7 +4352,9 @@ Docker/volume/scope/cache cleanup. P2 storage and P3–P9 need separate commands
 ## Command 109 — Specify canonical currency authority bindings
 
 **Defined by the owner-authorized Command 108 phase review on 2026-10-09;
-not authorized or implemented.** Documentation-only prerequisite for P2 authority
+subsequently authorized by the owner on 2026-10-09.** The source-grounded documentation
+specification is in `docs/MULTI_CURRENCY_DESIGN.md` section 3e; validation/delivery
+are recorded in `docs/PROGRESS.md`. Documentation-only prerequisite for P2 authority
 records. Command 105 defines the protocol; this command resolves its concrete identity,
 serialization and reference-lifecycle gaps before a digest implementation or migration.
 
