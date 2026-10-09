@@ -1956,6 +1956,43 @@ current_database()), hashtext(schema)` computed by qualified PostgreSQL function
   release or deployment. The known full audit remains failed; document-only hosted success
   cannot close it. Stop and ask for explicit Command 107 authorization after review delivery.
 
+## ADR-107 — Pin the patched Handlebars tooling release and test installed consumers
+
+- **Status:** Accepted and implemented for owner-authorized Command 107; complete local acceptance passed, hosted delivery closure required before final handoff
+- **Date:** 2026-10-09
+- **Resolution:** One exact global `handlebars: 4.7.10` override, with the regenerated
+  lockfile changing only that resolution/snapshot and the ts-jest edge. The published
+  registry integrity matches the lockfile. No new runtime dependency, major upgrade,
+  install workaround or unrelated override. Resolve through each actual API/worker/
+  queue package's ts-jest entry rather than a guessed pnpm store path.
+- **Acceptance:** Five mandatory bounded-child groups supplement the ten unchanged
+  registered-patch/container/installed-mitigation checks. Each child verifies all three
+  real consumers before testing. Precise AST validation and known-node rejection,
+  own prototype constructor denial under permissive prototype defaults, inline
+  precompiled script/comment escaping, and positive AST/render/precompile/partial/
+  escaping/Map/Set/generator behavior are tested against installed code.
+  Map iteration now yields entry pairs, as documented by the maintainer release;
+  the positive fixture records that behavior rather than restoring an old assumption.
+- **Safety:** Same sanitized environment, 128 MiB heap, 512 KiB stack, 15-second
+  child deadline, 20-second parent deadline and 64 KiB output limit. Canaries change
+  an in-memory boolean only; no probe executes a subprocess, network operation or
+  filesystem mutation. Invalid ASTs require the specific expected validation error,
+  not an arbitrary exception. Only compiler output from known positive templates
+  is evaluated in a separately time-bounded VM. Failed new probes emit fixed errors,
+  never raw templates/generated JavaScript/contexts/stacks or credentials.
+- **Security state:** Post-repair production audit exits 0 with zero known findings.
+  Full audit exits 1 with retained braces high and sprintf-js moderate findings only;
+  all three newly disclosed Handlebars findings are absent. This is not a clean
+  full audit, a waiver, evidence of compromise or a production-readiness approval.
+  Both original registered patches/hashes, all ten prior checks and every Docker
+  patch-copy/install gate remain unchanged and mandatory.
+- **Boundary:** No application behavior, currency contract/export/schema/migration,
+  proof/ledger/evidence storage, writer/role adoption, selected/assessed state, live
+  query/import/provider, release/deployment or unrelated cleanup. Complete local
+  validation is serial under host resource constraints; ordinary exact-head hosted
+  root acceptance remains required. Stop for the Command 107 phase review; P2 is
+  still only a later dependency candidate and has no implementation authority.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

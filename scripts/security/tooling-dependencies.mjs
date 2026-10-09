@@ -7,6 +7,22 @@ export const repositoryRoot = resolve(
   '../..',
 );
 
+export function resolveHandlebarsConsumers() {
+  return ['apps/api', 'apps/worker', 'packages/queue'].map((consumer) => {
+    const workspace = createRequire(
+      resolve(repositoryRoot, consumer, 'package.json'),
+    );
+    const tsJestPath = workspace.resolve('ts-jest');
+    const tsJest = createRequire(tsJestPath);
+    return {
+      consumer,
+      tsJestPath,
+      handlebarsPath: tsJest.resolve('handlebars'),
+      version: tsJest('handlebars/package.json').version,
+    };
+  });
+}
+
 // Resolve through real consumers, not a guessed pnpm store path or a test substitute.
 export function resolveToolingDependencies() {
   const web = createRequire(resolve(repositoryRoot, 'apps/web/package.json'));

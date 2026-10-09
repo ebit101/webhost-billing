@@ -1783,6 +1783,41 @@ is implemented or authorized. No shared-role/current-history query, provider/imp
 operating approval, old-resource cleanup, release or deployment. Stop and request
 explicit **Command 107 — Repair newly disclosed Handlebars tooling advisories** authorization.
 
+### Command 107 bounded tooling repair
+
+The owner authorized this security prerequisite on 2026-10-09. One exact global
+Handlebars 4.7.10 override resolves the installed ts-jest paths in API, worker and
+queue. Registry SHA-512 provenance matches the regenerated lockfile; the dependency
+diff contains no unrelated upgrade, direct runtime package or install workaround.
+The maintainer [release](https://github.com/handlebars-lang/handlebars.js/releases/tag/v4.7.10)
+and the three advisories cited above guide the regression boundaries.
+
+Five mandatory child groups extend the existing security script from ten to fifteen
+tests. Every group resolves all three real consumers and checks the exact installed
+version. Malformed AST fields and unknown node dispatch require precise rejection;
+prototype own-constructor back-references are denied even with permissive defaults,
+while ordinary own constructor data remains valid. Inline precompiled code must
+escape script/comment boundaries in content, literals, properties, data, partials,
+compat mode and source locations, while preserving expected runtime output.
+Valid ASTs, partials, escaping and Map/Set/generator behavior retain positive checks.
+The Map fixture follows the release's entry-pair iteration behavior. Existing Jest/
+coverage consumer checks and all ten prior patch/container checks stay mandatory.
+
+Probes run only with the existing stripped environment and unchanged memory/stack/
+time/output ceilings. Canary effects are in-memory only; no external-operation
+payload or raw exploit diagnostic is emitted. Only known positive compiler output
+is evaluated in a bounded VM; malformed AST output never reaches that evaluation.
+The fresh production audit reports zero known findings. The full audit now contains
+only the two retained braces/sprintf-js findings and still exits 1; neither is waived.
+All three new Handlebars advisory IDs are absent after the repair.
+
+Full renewed validation, any failed local invocation and delivery evidence belong in
+the Command 107 progress report. No test budget, migration/history assertion, cached
+image preparation or ownership/cleanup rule is relaxed. This changes tooling only,
+not currency authority or production readiness. Stop after validated delivery for
+**Phase review — Review Command 107 Handlebars tooling repair and define the next
+bounded currency command.** P2 remains a later candidate, not a started command.
+
 ## 4. Price publication, quote and renewal rules
 
 ### Catalogue pricing

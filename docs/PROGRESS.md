@@ -12660,6 +12660,113 @@ install authority records, adopt writers or begin P2 automatically.
 - After validated review delivery, authorize **Command 107 — Repair newly disclosed
   Handlebars tooling advisories**. Stop; no upgrade or P2 implementation in this review.
 
+### Command 107 — Repair newly disclosed Handlebars tooling advisories
+
+- **Status:** Local scope complete and renewed acceptance passed; focused delivery and exact-head hosted closure required before final handoff
+- **Date:** 2026-10-09
+- **Authority:** Owner explicitly authorized Command 107 only. No P2 implementation,
+  currency activation, production operation or unrelated resource cleanup.
+
+#### Scope completed
+
+- Reconciled clean baseline `247d6cea41705a4512fccd768eeed5522a6e3e21`, canonical main.
+  Fresh verification confirms its [CI 37885331055](https://github.com/ebit101/webhost-billing/actions/runs/37885331055)
+  aggregate/all 29 Validate steps and [CodeQL 37885331089](https://github.com/ebit101/webhost-billing/actions/runs/37885331089)
+  aggregate/all eight succeeded, first attempts at that exact review head. PR-only
+  dependency review skipped, not passed. These are baseline evidence, not repair-head results.
+- Fresh pre-edit full audit confirmed five development findings, including the three
+  authorized Handlebars advisories. Production audit exited 0/zero known findings.
+  Reviewed maintainer release/fixes/security specifications and registry publication/
+  SHA-512 integrity before implementing the exact 4.7.10 override. All three real
+  ts-jest consumers now resolve that patched package; lockfile diff is narrow.
+- Added five mandatory installed-consumer groups for resolution, AST type/dispatch
+  rejection, prototype own-constructor denial, inline script/comment escaping and
+  positive compile/render/precompile compatibility. All ten original tests and
+  both registered patch hashes/container gates remain unchanged and mandatory.
+- Same sanitized child environment and 128 MiB/512 KiB/15-second/64 KiB ceilings;
+  precise negative outcomes and harmless in-memory canaries only. New failures
+  never echo raw probe errors/code/context. No new application/currency/SQL change.
+
+#### Files changed
+
+- `pnpm-workspace.yaml`, `pnpm-lock.yaml`: exact patched resolution only.
+- `scripts/security/tooling-dependencies.mjs`: real ts-jest consumer resolver.
+- `scripts/security/handlebars-security-child.mjs`: bounded installed regression probes.
+- `scripts/security/tooling-mitigations.test.mjs`: five additional mandatory child groups;
+  original ten checks and root/CI path unchanged.
+- `CODEX_DEVELOPMENT_COMMANDS.md`, `HOSTING_BILLING_SYSTEM_PLAN.md`, `docs/DECISIONS.md`,
+  `docs/MULTI_CURRENCY_DESIGN.md`, `docs/PROGRESS.md`: implementation, safety and handoff.
+
+#### Validation performed and results
+
+- Ordinary install and frozen install passed with pnpm 11.22.0. Consumer inspection
+  confirms Handlebars 4.7.10 in API/worker/queue. Published registry integrity is
+  `sha512-P5VJMVM7qgBn6vjXMw8WG9uVI+ncf2pi72j4de4yz5ZULLj2RGqLYaKOYGsgyrViQ0tePOVlN1tDCCXXtFqXKg==`.
+- Tooling security passed all 15 tests, no skips. The first new positive compatibility
+  run was 14/15: the Map fixture assumed values instead of the release's entry pairs.
+  Corrected that new fixture to the documented behavior; no rejection assertion,
+  existing test or resource budget was relaxed. Read-only Windows-glob inspections
+  failed; actual require-based resolution succeeded and is mandatory in the tests.
+- Post-repair full audit exits 1 with exactly two retained findings: braces
+  GHSA-vfj7-8cjw-p6xm (high) and sprintf-js GHSA-hp3w-g68c-fv3c (moderate).
+  GHSA-8r5x-fm3f-whwj, GHSA-p8wg-vrv2-v86f and GHSA-xw65-4hp5-5hc7 are absent.
+  Production audit exits 0 with no known findings; production license inventory passed.
+  The failed full audit is not represented as passed or waived.
+- Shared-package build and changed-code formatting passed. Application, migration,
+  patches, workflow and root-package baseline diff checks and whitespace passed.
+- First guarded serial full-suite attempt passed fictional parent seed/verifier,
+  all ten root script groups, shared 93 and database source 68, then failed actual
+  privilege preflight (daemon resources) before resource creation. Host free memory
+  had fallen below the unchanged 768 MiB minimum; Docker Engine/image/daemon capacity
+  and disk were available. Verified exact parent ownership before removing only that
+  newly created fictional schema. Later package/API/browser checks were not run by
+  that failed invocation and are not claimed as passes. No budget/skip/guard change.
+- Subsequent unchanged serial root-equivalent acceptance passed all ten root script
+  groups (including 15 tooling checks), shared 93, queue 3, API 25 suites/107,
+  worker 10 suites/29 and frontend 54 files/572 (169.27 seconds). Every package/root
+  test is retained; explicit Jest `--runInBand` and Vitest `--maxWorkers=1` only
+  sequence local work. This is not a local default-parallel `pnpm test` pass.
+- With no other validation running, the ordinary complete database package test
+  passed 68 source/11 actual-login harness/70 retained SQL cases, no skips. All 25
+  migration content pins and raw-byte checks, prior-22/23/24 all-row preservation,
+  fictional seed/verifier and exact ownership-verified cleanup passed unchanged.
+  Read-only label inspection found no harness containers/networks remaining. The
+  earlier resource refusal stays a failed invocation, not a pass or hidden skip.
+- Fresh seeded/verified marked parent API integration passed 17 suites/81 cases;
+  critical invariants passed shared 93/API unit 12/API integration 42/worker 2.
+  An additional ordinary API coverage run passed 25 suites/107 tests with installed
+  ts-jest/Jest/coverage consumers. Verified exact parent ownership before cleanup.
+- Strict workspace and browser E2E types, worker artifact prerequisite, lint and
+  Prisma schema validation passed. All four offline documentation checks, complete
+  formatting and whitespace passed; final report edits receive renewed checks.
+- Browser lifecycle passed 19/19 in 3.9 minutes; staff browser checks passed 4/4 in
+  25.4 seconds, original timeouts and zero retries. Fictional loopback scopes only;
+  no live portal or production data query/mutation. Source/patch/workflow/root package
+  and all migration baseline comparisons remain unchanged.
+- Production `pnpm build` passed with `NODE_ENV=production`; ephemeral
+  `pnpm_config_workspace_concurrency=1` was read back as 1 for local sequencing.
+  Both environment overrides were restored afterwards; no default-parallel local
+  build claim. Final frozen install and production license inventory passed again.
+  Renewed production audit exited 0 with zero findings; full audit exited 1 with
+  the same two unwaived retained advisories only, not a passed full audit.
+- Final report validation, focused commit/pinned history scan/non-force push and
+  exact-head CI/CodeQL closure remain required at this cutoff.
+  Final handoff must report their actual results; the next review reconciles its
+  immutable commit/run evidence, not a claim inferred from baseline hosted success.
+
+#### Decisions, unresolved risks and exact next command
+
+- ADR-107: narrow patched pin with real installed security and positive compatibility
+  coverage. Local root-equivalent acceptance uses explicit serial Jest/Vitest/package
+  execution under limited memory; this is not a local default-parallel pass or repair.
+  Exact-head hosted ordinary root acceptance is still mandatory before final handoff.
+- Retained audit-visible braces/sprintf-js risks, local resource limits, direct-main
+  governance and all currency/business/provider/activation prerequisites remain.
+  No migration, selected policy, assessed history, proof/evidence/ledger, role/writer,
+  live import/provider, deployment or release. No unrelated Docker/cache cleanup.
+- Stop after validated delivery. Request **Phase review — Review Command 107 Handlebars
+  tooling repair and define the next bounded currency command.** Do not start P2.
+
 ## Report Template
 
 Use this template after every future command:

@@ -10,6 +10,10 @@ const child = resolve(
   repositoryRoot,
   'scripts/security/tooling-mitigation-child.mjs',
 );
+const handlebarsChild = resolve(
+  repositoryRoot,
+  'scripts/security/handlebars-security-child.mjs',
+);
 const allowedEnvironment = new Set([
   'path',
   'pathext',
@@ -104,5 +108,43 @@ for (const name of [
       result.stderr,
       /Maximum call stack|FATAL ERROR|uncaught/i,
     );
+  });
+}
+
+for (const name of [
+  'handlebars-consumers',
+  'handlebars-ast',
+  'handlebars-constructors',
+  'handlebars-inline',
+  'handlebars-compatibility',
+]) {
+  test(`installed Handlebars repair: ${name}`, { timeout: 20_000 }, () => {
+    const result = spawnSync(
+      process.execPath,
+      [
+        '--max-old-space-size=128',
+        '--stack-size=512',
+        '--unhandled-rejections=strict',
+        handlebarsChild,
+        name,
+      ],
+      {
+        cwd: repositoryRoot,
+        env: environment,
+        encoding: 'utf8',
+        timeout: 15_000,
+        maxBuffer: 64 * 1024,
+        windowsHide: true,
+      },
+    );
+    // Deliberately do not echo generated code or a failing probe's raw error.
+    assert.equal(result.error, undefined, 'Bounded child did not complete');
+    assert.equal(result.signal, null, 'Bounded child was terminated');
+    assert.equal(result.status, 0, `${name}: regression failed`);
+    assert.ok(
+      result.stdout.trim() === `${name}: passed`,
+      'Unexpected child output',
+    );
+    assert.ok(result.stderr === '', 'Unexpected child diagnostic');
   });
 }

@@ -136,7 +136,11 @@ owner-authorized phase review on 2026-10-09 accepts that P1 engineering scope on
 A fresh full audit now reports three additional Handlebars development-tooling
 advisories (two critical), while the production audit remains clear of known findings.
 The next bounded command is **Command 107 — Repair newly disclosed Handlebars tooling
-advisories**, defined but not authorized or implemented. Currency slice P2 (inert
+advisories**, subsequently authorized on 2026-10-09. Its narrow exact 4.7.10 override
+and installed-consumer security/compatibility regressions are implemented; complete
+renewed acceptance and delivery are recorded in `docs/PROGRESS.md`. The three
+Handlebars advisories are absent from the post-repair audit; the two retained local
+patch advisories remain unresolved and the full audit still fails. Currency slice P2 (inert
 authority records) remains the next dependency candidate after security acceptance
 and a separate phase review; no P2 implementation command is defined or started here.
 No selection/guard or application consumer is installed by the observation helper or review.

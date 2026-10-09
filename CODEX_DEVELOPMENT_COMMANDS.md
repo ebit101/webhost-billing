@@ -4199,8 +4199,11 @@ or unrelated container/volume/scope/cache cleanup. Do not start P2 automatically
 
 ## Command 107 — Repair newly disclosed Handlebars tooling advisories
 
-**Defined by the owner-authorized Command 106 phase review on 2026-10-09.
-Not authorized or implemented.** Security prerequisite only; no currency slice P2.
+**Authorized by the owner on 2026-10-09; implemented and locally validated.**
+Exact Handlebars 4.7.10 resolution and installed-consumer regressions passed complete
+renewed local acceptance. Delivery and exact-head hosted closure are reported in
+the final handoff and reconciled at the next review; see `docs/PROGRESS.md`.
+Security prerequisite only; no currency slice P2.
 
 ```text
 Command 107 — Repair newly disclosed Handlebars tooling advisories
