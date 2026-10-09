@@ -13010,6 +13010,10 @@ install authority records, adopt writers or begin P2 automatically.
   runtime/schema/migration/dependency/workflow baseline checks passed. Only the five
   trackers changed; no implementation correction was needed. Final report edits receive
   focused formatting and renewed offline documentation checks before committing.
+  A final definition clarification explicitly distinguishes the required network-disabled
+  secret-scanner container from forbidden PostgreSQL fixture creation; no runtime or
+  implementation authority expands. Published review history is preserved with a focused
+  follow-up documentation commit and renewed exact-head delivery checks.
   Focused commit, cached pinned history scan, non-force main delivery and exact-head
   hosted closure must be verified before final handoff; report actual results.
 

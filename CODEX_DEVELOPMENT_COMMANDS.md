@@ -4440,9 +4440,11 @@ main push and exact-head hosted CI/CodeQL remain required for documentation deli
 
 Stop for Phase review — Review Command 109 canonical currency authority binding
 specification and define the next bounded currency command. No implementation, schema/
-migration/role/container creation, authority seeding, proof issuance/selection, application
+migration/role/PostgreSQL container creation, authority seeding, proof issuance/selection, application
 consumer, live query/import/provider, operating approval, release/deploy or unrelated
-Docker/volume/scope/cache cleanup. Request syntax is not authority or production readiness.
+Docker/volume/scope/cache cleanup. The required cached, network-disabled secret-scanner
+container is delivery tooling, not permission to create a database or privilege fixture.
+Request syntax is not authority or production readiness.
 ```
 
 ---
