@@ -12843,7 +12843,7 @@ install authority records, adopt writers or begin P2 automatically.
 
 ### Command 108 — Build unused currency selection request contracts
 
-- **Status:** Implemented; complete local acceptance passed, delivery and exact-head hosted closure required before final handoff
+- **Status:** Delivered at `a1fcbb6` with local/exact-head CI/CodeQL acceptance; owner-authorized phase review accepts request-syntax scope
 - **Date:** 2026-10-09
 - **Authority:** Owner explicitly authorized Command 108 only. No P2 authority storage,
   proof/selection implementation, currency activation or production operation.
@@ -12930,6 +12930,21 @@ install authority records, adopt writers or begin P2 automatically.
   offline documentation checks before committing. Focused commit, cached pinned history
   scan/non-force main delivery and exact-head hosted closure remain before final handoff.
   Report their actual results; do not infer success from the previous review head.
+- Delivery closure reconciled by this review: focused commit
+  `a1fcbb6cf4bd364c445478338771e95f60599264`, final focused formatting/all four offline
+  documentation validators, cached pinned full-history gitleaks (219 local commits/no
+  leaks), fetch/fast-forward-only reconciliation and normal non-force main push passed.
+  Exact-head [CI 37931335199](https://github.com/ebit101/webhost-billing/actions/runs/37931335199)
+  and [CodeQL 37931335151](https://github.com/ebit101/webhost-billing/actions/runs/37931335151)
+  passed on first attempts, all 29 Validate/eight CodeQL steps. Hosted checkout secret scan
+  reports 213 commits/no leaks; local and hosted inventories are reported separately.
+  Ordinary hosted root acceptance passed all ten root script groups, shared 112, database
+  source 68/actual-login 11/retained SQL 70/seed/preservation, queue 3/API 107/worker 29/web
+  572, API integration 81 and invariants shared 112/API 12/integration 42/worker 2. Browser
+  lifecycle 19/staff four, production audit/license/build and infrastructure cleanup passed.
+  PR-only dependency review skipped, not passed. Worktree was clean and main matched
+  origin/main. Owner direct-main PR/check-rules bypass remains a governance risk; no rules
+  were changed. Freshly reverified run/job metadata and logs during this phase review.
 
 #### Decisions, unresolved risks and exact next command
 
@@ -12941,6 +12956,73 @@ install authority records, adopt writers or begin P2 automatically.
 - After validated delivery, request **Phase review — Review Command 108 unused currency
   selection request contracts and define the next bounded currency command**. Stop;
   do not define or implement another command automatically.
+
+### Phase review — Review Command 108 and define the next bounded currency command
+
+- **Status:** Command 108 accepted and Command 109 defined only; local review validation passed, exact-head delivery closure required before final handoff
+- **Date:** 2026-10-09
+- **Authority:** Owner authorized this review and next-command definition only, not
+  Command 109 execution, authority storage, proof/selection or production operations.
+
+#### Scope reviewed and decisions
+
+- Reviewed Command 108's exact nine-file diff, separate export, private bounded decoder,
+  strict actions/state pairs, revision/UUID/token/generation limits, copy/redaction and
+  hostile/duplicate/UTF-8 tests. No blocking in-scope defect or implementation correction.
+  Root/app/database/worker consumers, dependencies/patches/workflows and 25 migrations
+  are unchanged; syntax is neither human authority nor currency activation.
+- Reconciled immutable delivery and exact-head ordinary hosted acceptance above. Prior
+  failed local resource/renewal automation runs remain recorded; this review does not
+  diagnose their cause, repair them or treat the failed invocations as passed checks.
+- Define **Command 109 — Specify canonical currency authority bindings**, documentation
+  only. Resolve the specific P2 identity/ordered-byte/reference-lifecycle gaps deferred
+  by Command 108 before any digest/store implementation. Current persistent installation
+  identity/dedicated auth epoch is absent from inspected source. Auth heartbeat/general
+  timestamps and live credential deletion cannot stand in for immutable authority evidence.
+- Keep original replay intent separate from fresh complete control/policy/unit/credential/
+  evidence binding, exact null/case/UUID identity and non-secret historical references.
+  Concrete vectors and one later implementation candidate are required, not implemented
+  by this review. No additional command number or automatic authority beyond definition.
+
+#### Files changed
+
+- `CODEX_DEVELOPMENT_COMMANDS.md`: reconciled Command 108 and bounded Command 109.
+- `HOSTING_BILLING_SYSTEM_PLAN.md`: accepted syntax slice and binding-design prerequisite.
+- `docs/DECISIONS.md`: reconciled ADR-109 and review/definition ADR-110.
+- `docs/MULTI_CURRENCY_DESIGN.md`: current status and source-grounded next-slice handoff.
+- `docs/PROGRESS.md`: actual delivery closure and this review. Documentation only.
+
+#### Validation performed and results
+
+- Clean initial `a1fcbb6` baseline. Fresh frozen install passed with unchanged lockfile;
+  all 15 installed tooling checks, shared 112/build/types and 68 database source tests
+  passed, zero skips. Renewed production audit exited 0/zero known findings; full audit
+  exited 1 with exactly braces high GHSA-vfj7-8cjw-p6xm and sprintf-js moderate
+  GHSA-hp3w-g68c-fv3c. No new security finding; retained advisories are not fixed or waived.
+- Fresh exact delivered-head CI/CodeQL metadata, all job/step outcomes and CI logs
+  verified above. No new local actual-login/retained SQL/API/invariant/browser/production
+  build run or current database/history query. Prior evidence is not relabelled as new.
+- Source reads covered the existing policy facts/control observer and auth identity,
+  credential/recovery deletion, password reset/session revocation and fixture cleanup.
+  A Windows literal-glob search failed; corrected `rg -g` source search completed.
+  No runtime/migration/dependency change or database role/container creation.
+- Full formatting, all four offline documentation validators, whitespace and exact
+  runtime/schema/migration/dependency/workflow baseline checks passed. Only the five
+  trackers changed; no implementation correction was needed. Final report edits receive
+  focused formatting and renewed offline documentation checks before committing.
+  Focused commit, cached pinned history scan, non-force main delivery and exact-head
+  hosted closure must be verified before final handoff; report actual results.
+
+#### Unresolved risks and exact next command
+
+- ADR-110: source-grounded binding specification before sensitive authority storage.
+  Retained tooling findings, local nondeterminism/resource limits and direct-main
+  governance remain unwaived. P2 storage and P3–P9 auth/lineage/writers/consumer/drain/
+  recovery, protected legacy/provider evidence and operating/launch approvals remain.
+  No live query/import/provider, selection, deployment/release or unrelated cleanup.
+  The sequence is not a go-live date or remaining-command-count forecast.
+- After validated review delivery, authorize **Command 109 — Specify canonical currency
+  authority bindings**. Stop; do not execute that command automatically.
 
 ## Report Template
 

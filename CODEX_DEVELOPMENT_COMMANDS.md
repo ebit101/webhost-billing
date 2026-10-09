@@ -4274,7 +4274,9 @@ deployment/release or unrelated Docker/volume/scope/cache cleanup in this comman
 
 ## Command 108 — Build unused currency selection request contracts
 
-**Authorized by the owner on 2026-10-09; implemented and locally validated.**
+**Authorized by the owner on 2026-10-09; delivered at `a1fcbb6` and accepted by the
+owner-authorized phase review.** Complete local and exact-head CI/CodeQL acceptance
+passed; the two retained development advisories remain unwaived.
 P2a request parsing only, not P2 authority storage. The separate unused shared entry
 and strict decoder/tests are implemented; acceptance evidence and delivery are
 recorded in `docs/PROGRESS.md`. No currency selection or application integration.
@@ -4343,6 +4345,104 @@ evidence store, immutable-binding/issuer/executor/digest implementation, policy 
 assessed/selected state, control relaxation, role adoption, writer/lineage change,
 history query, live import/provider, operating approval, release/deploy or unrelated
 Docker/volume/scope/cache cleanup. P2 storage and P3–P9 need separate commands and approval.
+```
+
+---
+
+## Command 109 — Specify canonical currency authority bindings
+
+**Defined by the owner-authorized Command 108 phase review on 2026-10-09;
+not authorized or implemented.** Documentation-only prerequisite for P2 authority
+records. Command 105 defines the protocol; this command resolves its concrete identity,
+serialization and reference-lifecycle gaps before a digest implementation or migration.
+
+```text
+Command 109 — Specify canonical currency authority bindings
+
+Read AGENTS.md, the product plan, decisions, progress and currency design section 3d
+and the Command 108 review. Reconcile a1fcbb6's delivered acceptance; rerun frozen
+install, installed tooling-security checks and production/full audits. A new security
+repair outside this documentation scope requires separate authorization. Keep all
+15 tooling tests, registered patches/pins, request contracts and mandatory gates intact.
+The retained braces/sprintf-js findings are a failed full audit, not a waiver.
+
+Produce one source-grounded implementation-ready binding specification in the existing
+currency design. Do not repeat the overall currency design or implement a serializer,
+hash helper, identity service, proof/store, endpoint or migration. Resolve the concrete
+formats and lifecycle dependencies needed by Command 105's inert P2 records.
+
+Specify the authoritative installation identity and its acquisition/trust boundary,
+including database/schema placement, restore, clone, relocation and wrong-installation
+replay. Current schema/database lock identity, settings or an arbitrary supplied UUID
+are not a persistent installation identity. If additive identity/epoch storage is
+needed, specify its minimal future keys, ownership, immutability and initialization
+boundary only; no automatic seed, generated identity or live target lookup here.
+
+Map User, AdminProfile, AuthSession, AdminTotpCredential, AdminRecoveryCode and ActivityLog
+to exact server-owned actor/session/credential evidence. Existing lastSeenAt/updatedAt,
+password/factor consumption and recovery regeneration are not a dedicated authorization
+epoch. Specify exact non-secret identity/version binding and invalidation for password
+reset, logout, demotion/status change, MFA disable/re-enrollment and recovery regeneration.
+Distinguish mutable live authorization from immutable historical evidence. Preserve normal
+revocation, credential/recovery deletion and fictional fixture cleanup; never retain raw
+password hashes, encrypted factor secrets, session/bearer tokens or recovery values as
+currency evidence, nor freeze those secrets with restrictive proof foreign keys.
+
+Specify exact ordered UTF-8 JSON tuples for currency-selection-request-v1 stable intent
+and currency-selection-assessment-v1 assessment, SHA-256/64-lowercase-hex outputs and
+domain separation. Stable intent excludes bearer and mutable current state, retaining
+original request/installation/actor/session identity for completed replay. Assessment
+binds stable intent to the complete observed control discriminator/tuple, canonical
+immutable proposed and applicable prior policy/unit facts, credential evidence and
+immutable compatibility/adoption evidence references. No current/latest lookup, inferred
+null, caller approval flag or Command 101 count can complete missing authoritative facts.
+
+Give exact tuple positions, types, optional-to-null rules, string integer ranges, field/
+entry/count/UTF-8 byte ceilings and pre-traversal rejection rules. Resolve absent versus
+unassessed and all selected tuples, unchanged-generation first-history invalidation,
+case-sensitive revisions/metadata, UUID text versus PostgreSQL UUID identity, independent
+ASCII ordering for capabilities/units/evidence, duplicates and explicit evidence-kind/
+version/digest identity. Do not rely on JSON object insertion order, localeCompare,
+floating-point financial/generation arithmetic, arbitrary object traversal or raw error
+details. Describe which source fields are excluded and why (bearers, incidental activity
+timestamps, mutable session heartbeat and factor-consumption counters in particular).
+
+Specify the minimal future immutable binding/reference layout for proof, ledger and
+protected evidence: exact restricted actor/session/policy/unit references where valid,
+non-secret historical credential/recovery evidence where live rows are deleted, unique
+request/generation/selected-revision constraints, consumption-to-ledger link and audit
+identity. Resolve insertion/foreign-key cycles and expiry/revocation/retention without
+cascading away financial authority history or preventing ordinary auth operations.
+Digest equality alone grants neither human authorization nor successful selection.
+Do not relax Command 104's zero/null controls or permit arbitrary ledger success appends.
+
+Provide concrete fictional tuple/byte/hash vectors and an acceptance matrix for reordered
+facts, null/state differences, UUID aliases, exact large generations, changed policy/unit/
+evidence/credential bindings, oversized/malformed inputs and cross-installation denial.
+Explain completed matching replay after later selection/first history/proof expiry versus
+new-operation freshness checks, current authorization denial and conflicting-key replay.
+Label vectors/specification and proposed tests distinctly from executed validation; any
+independent vector calculation must be secret-free and must not add product/runtime code.
+
+Name one smallest next implementation candidate with exact files, storage/role dependencies,
+required source/isolated-login/SQL/preservation acceptance and stop conditions. It must
+advance inert P2 records, not open assessed states or bundle P3–P9. Do not assign another
+command number or authorize that candidate automatically. Keep authentication/writer/
+lineage/drain/consumer/recovery and business/provider/launch prerequisites explicit.
+
+Update the five trackers. Run fresh shared tests/build/types, database source tests,
+installed tooling checks, frozen install, renewed audits, full formatting, all four
+offline documentation validators and whitespace. Verify byte-for-byte baseline equality
+for runtime/schema/migrations/dependencies/workflows; do not rerun live/history queries
+or claim prior full SQL/API/browser suites as fresh local execution. Focused commit,
+cached pinned full-history secret scan, fetch/fast-forward-only reconciliation, non-force
+main push and exact-head hosted CI/CodeQL remain required for documentation delivery.
+
+Stop for Phase review — Review Command 109 canonical currency authority binding
+specification and define the next bounded currency command. No implementation, schema/
+migration/role/container creation, authority seeding, proof issuance/selection, application
+consumer, live query/import/provider, operating approval, release/deploy or unrelated
+Docker/volume/scope/cache cleanup. Request syntax is not authority or production readiness.
 ```
 
 ---

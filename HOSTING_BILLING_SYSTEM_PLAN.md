@@ -153,6 +153,13 @@ overflowing generation strings and contradictory action/state pairs deny. Succes
 does not validate a proof or select currency; accepted bearer-containing requests
 must not be logged. No endpoint, root/application consumer, hash/issuer/store or
 migration is added. Full acceptance and delivery are recorded in `docs/PROGRESS.md`.
+Command 108 was delivered at `a1fcbb6` with exact-head CI/CodeQL success. Its owner-
+authorized phase review on 2026-10-09 accepts the request-syntax engineering scope and
+defines **Command 109 — Specify canonical currency authority bindings**, documentation
+only. Exact persistent installation identity, ordered stable-intent/assessment bytes,
+non-secret credential evidence and immutable reference lifecycles must be resolved
+before sensitive P2 storage. No digest, authority record, identity/epoch store or next
+implementation is authorized by this review. Existing auth and zero/null controls stay intact.
 No selection/guard or application consumer is installed by the observation helper or review.
 No live registry, selected installation policy or financial backfill is included. Broader persistence,
 per-currency reads, pricing and activation remain later separately gated slices. Remaining

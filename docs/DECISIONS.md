@@ -2026,7 +2026,7 @@ current_database()), hashtext(schema)` computed by qualified PostgreSQL function
 
 ## ADR-109 — Decode selection request syntax without exposing authority or diagnostics
 
-- **Status:** Accepted, implemented and locally validated for owner-authorized Command 108
+- **Status:** Delivered at `a1fcbb6` with local/exact-head acceptance; owner-authorized phase review accepts request-syntax scope on 2026-10-09
 - **Date:** 2026-10-09
 - **Entry:** Separate unused `@webhost-billing/shared/currency-selection-request` subpath;
   no root or application export/consumer. One bounded primitive JSON-text decoder,
@@ -2054,6 +2054,43 @@ current_database()), hashtext(schema)` computed by qualified PostgreSQL function
   live query/import/provider, operating approval, deployment/release or unrelated cleanup.
   Retained advisories, local resource limits and all later activation gates remain.
   Stop after complete validated delivery for the Command 108 phase review.
+
+## ADR-110 — Resolve authority identity and canonical bindings before inert storage
+
+- **Status:** Accepted for the owner-authorized Command 108 phase review; Command 109 defined only, not authorized or implemented
+- **Date:** 2026-10-09
+- **Review:** No blocking in-scope Command 108 defect found. Bounded primitive JSON text,
+  strict six-field action/state checks, canonical exact generations, complete-match
+  revisions, duplicate/escaped-key rejection, copied frozen facts and fixed redaction
+  match the command. Root/runtime consumers and all 25 migrations are unchanged.
+  Bearer shape and UUID nil/max syntax are not authority; accepted requests must not be logged.
+- **Evidence:** Freshly reverified exact `a1fcbb6` CI aggregate/all 29 Validate steps,
+  CodeQL aggregate/all eight steps and hosted logs, first attempts. Ordinary root/shared
+  112, database source 68/actual-login 11/retained SQL 70, API 107/worker 29/web 572,
+  API integration 81, invariants and browser 19/four passed. PR-only review skipped.
+  Fresh local shared 112/build/types, source 68 and tooling 15 passed. Production audit
+  exited 0/zero known findings; full audit exited 1 with the same two unwaived findings.
+  Prior local resource/automation failures remain recorded, not diagnosed or fixed here.
+- **Decision:** Define **Command 109 — Specify canonical currency authority bindings**,
+  documentation only. Make Command 105's domain-separated stable-intent and assessment
+  tuples, identity authority, bounds, fictional vectors and future reference lifecycle
+  precise before implementation/storage. Do not repeat the overall currency protocol.
+- **Reason:** No persistent installation identifier or dedicated authorization epoch is
+  present in the inspected schema. Session heartbeat and general updatedAt are mutable;
+  password reset revokes sessions, MFA disable deletes the credential/recovery rows and
+  regeneration replaces recovery rows. Currency evidence must neither retain secrets nor
+  block those operations. Runtime logout revokes, not deletes, sessions; deletion appears
+  in fictional integration teardown. Historical references and UUID text/database aliases
+  must be specified without confusing current authorization with replay fingerprints.
+- **Qualification:** Proposed identity/version/evidence storage is not installed or
+  approved live data. Digests cannot certify human intent, empty history or successful
+  selection. Complete tuple/first-history binding and original-intent replay stay separate.
+  P2 authority records and P3–P9 adoption/activation remain gated; no count/date forecast.
+- **Boundary:** Five documentation files only. No source/schema/dependency/workflow/role/
+  PostgreSQL container/database change, new SQL/live history query, digest/proof/selection,
+  import/provider/operating approval, release/deploy or unrelated cleanup. Existing
+  direct-main governance, tooling risks and business/activation approvals remain.
+  Stop after validated delivery and ask for explicit Command 109 authorization.
 
 ## Open Decisions
 

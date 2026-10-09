@@ -39,7 +39,9 @@
   authorized review accepts tooling scope on 2026-10-09 and defines Command 108's unused
   selection request contracts only (P2a). That review was delivered at `ae067c0` with
   exact-head CI/CodeQL success. The owner subsequently authorized Command 108; its
-  unused request decoder is implemented and locally validated. P2
+  unused request decoder was delivered at `a1fcbb6` with local and exact-head hosted
+  acceptance. Its owner-authorized review accepts P2a and defines documentation-only
+  Command 109's canonical authority binding specification, not its implementation. P2
   authority storage is not implemented. No production authority is installed.
   Temporary test installation is not product adoption.
   The selection protocol is not implemented or activated.
@@ -1900,6 +1902,65 @@ Acceptance, failed resource invocations and exact delivery belong in `docs/PROGR
 No storage, digests, privilege/lineage/writer adoption, guard opening or activation follows.
 Stop after validated delivery for **Phase review — Review Command 108 unused currency
 selection request contracts and define the next bounded currency command**.
+
+### Command 108 review and canonical-authority binding handoff
+
+Owner-authorized review on 2026-10-09 accepts request-syntax delivery at
+`a1fcbb6cf4bd364c445478338771e95f60599264`. Fresh exact-head verification confirms
+[CI 37931335199](https://github.com/ebit101/webhost-billing/actions/runs/37931335199)
+aggregate/all 29 Validate steps and
+[CodeQL 37931335151](https://github.com/ebit101/webhost-billing/actions/runs/37931335151)
+aggregate/all eight passed, first attempts. Hosted ordinary root tests include shared
+112, actual-login privilege acceptance and all prior SQL/seed/preservation gates,
+API integration 81 and 19 lifecycle/four staff browser cases. PR-only dependency review
+skipped, not passed. Prior local failed invocations remain visible in the report.
+
+Source/test review found no blocking in-scope defect. Primitive-input rejection does
+not visit getters/proxies; encoder work and JSON parsing are bounded; private strict
+schemas and duplicate-key checks give either complete copied facts or fixed failure.
+The post-shape key scan is bounded ambiguity rejection, not a general JSON parser.
+Returned bearer-containing requests remain sensitive. There is no root/runtime consumer,
+hashing, clock/environment/provider/storage or selected-state change. All 25 migrations,
+patches/pins and mandatory workflow/runtime tests remain unchanged.
+
+Fresh frozen install, shared 112/build/types, database source 68 and installed tooling
+15 passed, zero skips. Production audit exited 0/zero known findings; full audit exited
+1 with exactly retained braces high GHSA-vfj7-8cjw-p6xm and sprintf-js moderate
+GHSA-hp3w-g68c-fv3c. No new security finding or waiver. This documentation review did
+not rerun complete local actual-login/SQL/API/browser/build suites or query live history.
+
+Define **Command 109 — Specify canonical currency authority bindings**, documentation
+only, in [the command record](../CODEX_DEVELOPMENT_COMMANDS.md). This resolves specific
+P2 prerequisites deferred by ADR-108/Command 108, not another overall protocol design:
+
+- Authoritative persistent installation identity and restore/clone/schema-placement
+  lifecycle, distinct from Command 102's database/schema coordination key. There is no
+  installation-identity model in the inspected product schema. A caller UUID is not authority.
+- Exact ordered, bounded UTF-8 JSON tuples for the two Command 105 digest domains:
+  stable original intent for matching replay, versus complete control/policy/unit/
+  credential/evidence binding for fresh proof checks. Resolve UUID text/database aliases,
+  absent/unassessed/null/first-history distinctions and locale-independent order.
+- Non-secret credential/version evidence and immutable proof/ledger/evidence references.
+  `schema.prisma` User/AdminProfile/AuthSession/AdminTotpCredential/AdminRecoveryCode/
+  ActivityLog have UUID identities, but no dedicated authorization epoch. `authenticateSession`
+  updates `lastSeenAt`; password reset revokes sessions. `disableTwoFactor` deletes the
+  credential (recovery cascade); `regenerateRecoveryCodes` deletes/replaces recovery rows.
+  Runtime logout revokes sessions; test teardown deletes fictional sessions. General
+  `updatedAt`, heartbeat or last-used-step movement is not a purpose-built credential epoch.
+  Do not retain password hashes, encrypted factor secrets, session tokens or recovery
+  values as authority evidence, or forbid ordinary security operations with inappropriate FKs.
+- Concrete fictional byte/hash vectors, reference/invalidation/replay acceptance and one
+  smallest later P2 implementation candidate. Proposed tests are not executed proof.
+
+Source paths: `packages/database/prisma/schema.prisma`, `packages/database/src/currency-policies.ts`
+(ordered immutable policy facts), `currency-control.ts` (only absent/unassessed observations),
+`packages/shared/src/currency-selection-request.ts`, and
+`apps/api/src/modules/auth/services/auth.service.ts` plus staff authorization and API fixture
+teardown. Canonical storage keys, auth versioning, evidence acquisition and serializer
+placement remain to be specified, not invented or implemented by this review.
+No P2 store/digest, auth behavior/secret retention, shape opening, new consumer, role/writer
+adoption or live operation is authorized. P3–P9 and business/provider/launch prerequisites
+remain. Stop after review delivery and ask for explicit Command 109 authorization.
 
 ## 4. Price publication, quote and renewal rules
 
