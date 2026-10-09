@@ -4199,10 +4199,11 @@ or unrelated container/volume/scope/cache cleanup. Do not start P2 automatically
 
 ## Command 107 — Repair newly disclosed Handlebars tooling advisories
 
-**Authorized by the owner on 2026-10-09; implemented and locally validated.**
-Exact Handlebars 4.7.10 resolution and installed-consumer regressions passed complete
-renewed local acceptance. Delivery and exact-head hosted closure are reported in
-the final handoff and reconciled at the next review; see `docs/PROGRESS.md`.
+**Delivered and accepted by the owner-authorized phase review on 2026-10-09.**
+Commit `ecfdd16005d294e4fd0dbefabfce7b11baa872a5` passed renewed local acceptance,
+normal main delivery, CI 37901445001 (all 29 Validate steps) and CodeQL 37901445054
+(all eight steps), freshly reverified at that exact head. PR-only dependency review
+skipped, not passed. No blocking in-scope defect found; see `docs/PROGRESS.md`.
 Security prerequisite only; no currency slice P2.
 
 ```text
@@ -4267,6 +4268,79 @@ next bounded currency command. P2 remains only a later candidate. No currency co
 proof/ledger/evidence storage, selected/assessed state, control relaxation, writer/role
 adoption, schema/migration change, live query/import/provider, operating approval,
 deployment/release or unrelated Docker/volume/scope/cache cleanup in this command.
+```
+
+---
+
+## Command 108 — Build unused currency selection request contracts
+
+**Defined by the owner-authorized Command 107 phase review on 2026-10-09;
+not authorized or implemented.** P2a request parsing only, not P2 authority storage.
+
+```text
+Command 108 — Build unused currency selection request contracts
+
+Read AGENTS.md, the product plan, decisions, progress and currency design's Command
+107 review. Reconcile ecfdd16's exact delivered acceptance and rerun security audits
+before implementation. A new required security repair outside this scope needs
+separate authorization. Keep the patched Handlebars resolution, both existing local
+patches, all 15 installed tooling checks and every mandatory package/CI gate intact.
+The two retained development audit findings are not a clean full audit or a waiver.
+
+Implement only the strict confirmation-request part of Command 105's P2 dependency.
+Use a new separate unused shared entry, dedicated tests and the minimal explicit
+package subpath needed to test/build it. Do not export it from the shared root or
+import it into an application, database helper, worker, browser or fixture launcher.
+There is no HTTP endpoint, UI, proof issuance or currency selection in this command.
+
+Define exactly six required fields: action (initialize/replace/adopt), proposedRevision,
+expectedRevision (explicit null or exact revision), expectedGeneration, requestKey
+and proofToken. Reuse the existing policy revision grammar/64-character ceiling and
+reviewed UUID grammar; preserve case-sensitive identifiers without silent normalization.
+Generation is a canonical decimal string from 0 through 9223372036854775807; validate
+length/grammar before bounded BigInt comparison, never coerce Number or use floating
+point. Proof token is an opaque 43-character base64url string, a shape check only.
+Initialize/adopt require null expected revision and generation 0. Replace requires
+an explicit expected revision and positive generation, and a different proposed
+revision. A syntactically valid maximum generation is not permission to increment it.
+
+Provide a bounded JSON-text decoder with a 4 KiB UTF-8 ceiling checked before JSON
+parsing, then strict flat runtime validation. Reject missing/unknown/nested fields,
+caller-supplied actor/session/schema/history/anchor/evidence/approval/definitions,
+invalid actions, noncanonical numbers, oversize identifiers, invalid keys/tokens,
+malformed JSON and non-object input. Do not accept an arbitrary caller object graph,
+silently trim/default/coerce, return a partial result or echo input in diagnostics.
+Expose copied validated request facts and fixed redacted failure outcomes. Failures
+must not echo raw Zod issues/errors or bearer values; no result contains transaction
+handles, receipts or approval flags. Accepted requests contain the bearer and must
+never be logged; success
+means syntactic decoding only, not proof validity or authorization. No token minting,
+hashing, token persistence, clock/network/environment access or external operation.
+
+Test every valid action and exact boundary, 4 KiB bytes rather than UTF-16 characters,
+malformed/authority/extra inputs, revision grammar/case, UUIDs, token shape, canonical
+generation and max/max+1 without Number rounding, contradictory action/state pairs,
+required explicit null, copied output and redaction. Use fictional tokens only.
+Assert separate-entry/root/application isolation and keep all prior acceptance.
+Do not implement stable-intent/assessment digests here: their server-owned installation,
+identity/evidence serialization and binding remain a later separately reviewed slice.
+
+Run frozen install, all shared tests/build/types, database source/preservation and
+existing complete root/database actual-login/retained SQL/seed, API integration,
+critical invariants, worker, browser lifecycle and staff browser gates, strict workspace
+and browser types, lint, production build/license/audits, tooling security, formatting,
+offline docs and whitespace. Keep all 25 original migration hashes and prior-22/23/24
+comparisons unchanged. Resource refusal is a failed run, not a skip: preserve all
+budgets and distinguish serial local acceptance from exact-head hosted ordinary tests.
+Update the five tracking documents with actual results, focused commit, pinned cached
+full-history secret scan, canonical non-force main delivery and exact-head CI/CodeQL.
+
+Stop for Phase review — Review Command 108 unused currency selection request contracts
+and define the next bounded currency command. No database migration/model, proof/ledger/
+evidence store, immutable-binding/issuer/executor/digest implementation, policy choice,
+assessed/selected state, control relaxation, role adoption, writer/lineage change,
+history query, live import/provider, operating approval, release/deploy or unrelated
+Docker/volume/scope/cache cleanup. P2 storage and P3–P9 need separate commands and approval.
 ```
 
 ---

@@ -1958,7 +1958,7 @@ current_database()), hashtext(schema)` computed by qualified PostgreSQL function
 
 ## ADR-107 — Pin the patched Handlebars tooling release and test installed consumers
 
-- **Status:** Accepted and implemented for owner-authorized Command 107; complete local acceptance passed, hosted delivery closure required before final handoff
+- **Status:** Delivered at `ecfdd16`; owner-authorized phase review accepts engineering scope on 2026-10-09
 - **Date:** 2026-10-09
 - **Resolution:** One exact global `handlebars: 4.7.10` override, with the regenerated
   lockfile changing only that resolution/snapshot and the ts-jest edge. The published
@@ -1989,9 +1989,40 @@ current_database()), hashtext(schema)` computed by qualified PostgreSQL function
 - **Boundary:** No application behavior, currency contract/export/schema/migration,
   proof/ledger/evidence storage, writer/role adoption, selected/assessed state, live
   query/import/provider, release/deployment or unrelated cleanup. Complete local
-  validation is serial under host resource constraints; ordinary exact-head hosted
-  root acceptance remains required. Stop for the Command 107 phase review; P2 is
-  still only a later dependency candidate and has no implementation authority.
+  validation is serial under host resource constraints. Freshly reverified exact-head
+  CI 37901445001 passed ordinary root acceptance and all 29 Validate steps; CodeQL
+  37901445054 passed all eight. PR-only dependency review skipped, not passed. Neither
+  hosted success nor this review waives remaining advisories or activates currency.
+
+## ADR-108 — Prepare strict selection requests before authority storage
+
+- **Status:** Accepted for the owner-authorized Command 107 phase review; Command 108 defined only, not authorized or implemented
+- **Date:** 2026-10-09
+- **Review:** No blocking in-scope Command 107 defect found. Narrow real-consumer resolution,
+  precise repaired-boundary tests, bounded sanitized child execution, positive compatibility,
+  unchanged ten original checks/patches/container gates and unchanged runtime/migrations
+  satisfy its authorized scope. The maintainer identifies 4.7.10 for all three advisories.
+  Fresh frozen install, 15 tooling and 68 database source tests passed; full audit still
+  exits 1 with the two retained findings, production audit exits 0/zero known findings.
+- **Decision:** Define **Command 108 — Build unused currency selection request contracts**,
+  P2a only: a separate unused shared entry for bounded JSON-text parsing and six strict
+  confirmation fields. Explicit null, canonical BIGINT generation, exact revision/key/
+  opaque token shape, action/state consistency, copied facts and fixed redacted failures.
+  Do not expose raw validation errors or log accepted bearer-containing requests.
+- **Reason:** P2 combines request contracts with security-sensitive proof/ledger/evidence
+  storage. Isolate the already specified input boundary first, so a later storage design
+  cannot confuse client claims with server assessment. No new authority object, session/
+  credential retention dependency, privileged mutation surface or schema opening is needed
+  for this slice. Server installation identity, ordered stable-intent/assessment digests,
+  evidence lifecycle and exact protected storage references remain separately reviewed.
+- **Qualification:** Syntactic success is not a valid proof, authorized actor, selected
+  revision, empty-history verdict or receipt. Request generation maximum can parse but
+  future selection must deny increment overflow. P2a does not complete P2 or reduce the
+  P3–P9 writer/auth/lineage/activation prerequisites. No completion-date/count promise.
+- **Boundary:** Five documentation files only in this review; no source/dependency/schema/
+  workflow/role/PostgreSQL container/database change, new actual-login SQL, live query/import/provider,
+  operating approval, release/deploy or unrelated cleanup. Fresh exact delivery evidence is
+  distinct from rerunning complete local acceptance. Stop for explicit Command 108 authority.
 
 ## Open Decisions
 

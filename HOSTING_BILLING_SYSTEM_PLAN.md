@@ -141,8 +141,11 @@ and installed-consumer security/compatibility regressions are implemented; compl
 renewed acceptance and delivery are recorded in `docs/PROGRESS.md`. The three
 Handlebars advisories are absent from the post-repair audit; the two retained local
 patch advisories remain unresolved and the full audit still fails. Currency slice P2 (inert
-authority records) remains the next dependency candidate after security acceptance
-and a separate phase review; no P2 implementation command is defined or started here.
+authority records) remains a dependency, not implemented. The owner-authorized Command
+107 review accepts `ecfdd16` with exact-head CI/CodeQL closure and defines **Command 108 —
+Build unused currency selection request contracts** only. This P2a slice prepares strict,
+bounded confirmation-request decoding before storage; syntax is never human approval.
+No request contract or P2 store is implemented or authorized by that review.
 No selection/guard or application consumer is installed by the observation helper or review.
 No live registry, selected installation policy or financial backfill is included. Broader persistence,
 per-currency reads, pricing and activation remain later separately gated slices. Remaining

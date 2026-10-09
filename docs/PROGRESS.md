@@ -12662,7 +12662,7 @@ install authority records, adopt writers or begin P2 automatically.
 
 ### Command 107 — Repair newly disclosed Handlebars tooling advisories
 
-- **Status:** Local scope complete and renewed acceptance passed; focused delivery and exact-head hosted closure required before final handoff
+- **Status:** Delivered at `ecfdd16`; engineering scope accepted by the owner-authorized phase review on 2026-10-09
 - **Date:** 2026-10-09
 - **Authority:** Owner explicitly authorized Command 107 only. No P2 implementation,
   currency activation, production operation or unrelated resource cleanup.
@@ -12749,10 +12749,17 @@ install authority records, adopt writers or begin P2 automatically.
   build claim. Final frozen install and production license inventory passed again.
   Renewed production audit exited 0 with zero findings; full audit exited 1 with
   the same two unwaived retained advisories only, not a passed full audit.
-- Final report validation, focused commit/pinned history scan/non-force push and
-  exact-head CI/CodeQL closure remain required at this cutoff.
-  Final handoff must report their actual results; the next review reconciles its
-  immutable commit/run evidence, not a claim inferred from baseline hosted success.
+- Delivery closure, reconciled by the owner-authorized review: final report validation
+  passed; focused commit `ecfdd16005d294e4fd0dbefabfce7b11baa872a5`, cached workflow-pinned
+  full-history gitleaks scan (217 commits/no leaks), fetch/fast-forward-only reconciliation
+  and normal non-force main push succeeded. Exact-head
+  [CI 37901445001](https://github.com/ebit101/webhost-billing/actions/runs/37901445001)
+  and [CodeQL 37901445054](https://github.com/ebit101/webhost-billing/actions/runs/37901445054)
+  both succeeded on first attempts: all 29 Validate/eight CodeQL steps. Hosted ordinary
+  root tests, actual-login/preservation/seed, API integration 81 and browsers 19/four
+  passed. PR-only dependency review skipped, not passed. Exact main/head matched and
+  worktree was clean. Normal owner direct-main rules bypass remains a governance risk;
+  no repository rule was changed or security finding waived.
 
 #### Decisions, unresolved risks and exact next command
 
@@ -12766,6 +12773,67 @@ install authority records, adopt writers or begin P2 automatically.
   live import/provider, deployment or release. No unrelated Docker/cache cleanup.
 - Stop after validated delivery. Request **Phase review — Review Command 107 Handlebars
   tooling repair and define the next bounded currency command.** Do not start P2.
+
+### Phase review — Review Command 107 and define the next bounded currency command
+
+- **Status:** Command 107 engineering scope accepted; Command 108 defined only
+- **Date:** 2026-10-09
+- **Authority:** Owner authorized this review and next-command definition only, not
+  Command 108 implementation, storage, currency selection or production operations.
+
+#### Scope reviewed and decisions
+
+- Reconciled Command 107's immutable commit, secret-scan/non-force delivery and exact-head
+  hosted acceptance above. Reviewed actual consumer resolution, minimal dependency diff,
+  child probes/parent isolation, precise outcomes, positive compatibility, all original
+  patch/hash/container checks and unchanged runtime/migration/CI acceptance. No blocking
+  in-scope source defect found; no implementation correction required.
+- Reviewed Command 105's P2 specification against existing shared policy contracts,
+  control/coordination boundaries and identity models. Define **Command 108 — Build unused
+  currency selection request contracts**, P2a only. Strict bounded decoding precedes
+  sensitive authority storage; a valid request cannot certify approval/evidence/history.
+  Stable-intent/assessment digests, identity/evidence serialization and P2 stores stay
+  separately gated. No implementation or automatic next-command authority.
+
+#### Files changed
+
+- `CODEX_DEVELOPMENT_COMMANDS.md`: reconciled Command 107 and exact bounded Command 108.
+- `HOSTING_BILLING_SYSTEM_PLAN.md`: accepted security prerequisite and P2a-only candidate.
+- `docs/DECISIONS.md`: delivered ADR-107 and review/definition ADR-108.
+- `docs/MULTI_CURRENCY_DESIGN.md`: corrected status and reviewed P2a handoff/boundaries.
+- `docs/PROGRESS.md`: Command 107 closure and this review. Documentation only.
+
+#### Validation performed and results
+
+- Fresh frozen install passed, unchanged lockfile/dependencies. All 15 installed tooling
+  tests and 68 database source tests passed, zero skips. Fresh registry read confirms
+  Handlebars 4.7.10 and the exact lockfile SHA-512 integrity. Maintainer release/advisories
+  identify this patched target for all three reviewed boundaries.
+- Fresh production audit exited 0, zero known findings. Full audit exited 1 with exactly
+  braces high GHSA-vfj7-8cjw-p6xm and sprintf-js moderate GHSA-hp3w-g68c-fv3c, not a pass
+  or waiver. GHSA-8r5x-fm3f-whwj/GHSA-p8wg-vrv2-v86f/GHSA-xw65-4hp5-5hc7 are absent.
+- Freshly fetched exact repair-head CI/CodeQL metadata, jobs/steps and CI logs confirm
+  the delivered acceptance above, including ordinary hosted root tests. This review
+  did not create a PostgreSQL scope or rerun local actual-login SQL, API/browser/build
+  suites; it does not relabel prior runs as new execution. Read-only wrong-path lookup
+  failed; file inventory located the actual shared policy source, subsequently reviewed.
+- All four offline documentation validators, full formatting and whitespace passed.
+  Exact baseline comparisons confirm only the five tracking documents changed: no
+  application/shared/database/script/dependency/migration/workflow edits. Final report
+  edits receive focused formatting and link checks before the review commit.
+- Focused review commit, pinned cached history scan, non-force main delivery and this
+  review's exact-head hosted closure are required before final handoff. Their actual
+  delivery results are reported in the handoff and reconciled at the next review.
+
+#### Unresolved risks and exact next command
+
+- Retained tooling findings, serial-local resource limits and direct-main governance
+  remain unwaived. P2 authority identity/storage/privileges, P3–P9 lineage/auth/writers/
+  consumers/drain/recovery, real migration/provider and outstanding business/launch
+  approvals are still prerequisites. No live operation, currency activation or unrelated
+  Docker/cache cleanup occurred. The sequence is not a completion-date/count forecast.
+- After validated review delivery, authorize **Command 108 — Build unused currency
+  selection request contracts**. Stop; implementation is not started by this review.
 
 ## Report Template
 

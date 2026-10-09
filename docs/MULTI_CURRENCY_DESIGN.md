@@ -34,9 +34,11 @@
   was delivered at `fb86cca` with complete local and corrected exact-head hosted acceptance.
   Its owner-authorized phase review on 2026-10-09 accepts P1 engineering scope; a fresh
   full audit found three additional Handlebars tooling advisories, including two critical.
-  Command 107's bounded security repair is defined only, not authorized or implemented.
-  P2 remains a separately gated candidate after that repair/review. No production
-  authority is installed.
+  The owner subsequently authorized Command 107; the narrow repair was delivered at
+  `ecfdd16` with complete renewed local and exact-head hosted acceptance. Its owner-
+  authorized review accepts tooling scope on 2026-10-09 and defines Command 108's unused
+  selection request contracts only (P2a). P2 authority storage is not implemented,
+  and this review does not authorize Command 108. No production authority is installed.
   Temporary test installation is not product adoption.
   The selection protocol is not implemented or activated.
   Application integration and activation remain separately gated.
@@ -1817,6 +1819,48 @@ image preparation or ownership/cleanup rule is relaxed. This changes tooling onl
 not currency authority or production readiness. Stop after validated delivery for
 **Phase review — Review Command 107 Handlebars tooling repair and define the next
 bounded currency command.** P2 remains a later candidate, not a started command.
+
+### Command 107 review and P2a request-contract handoff
+
+Owner-authorized review on 2026-10-09 accepts the tooling repair at
+`ecfdd16005d294e4fd0dbefabfce7b11baa872a5`. Fresh exact-head verification confirms
+[CI 37901445001](https://github.com/ebit101/webhost-billing/actions/runs/37901445001)
+aggregate/all 29 Validate steps and
+[CodeQL 37901445054](https://github.com/ebit101/webhost-billing/actions/runs/37901445054)
+aggregate/all eight succeeded on their first attempts. CI logs confirm ordinary root
+acceptance, including the actual-login harness, original preservation tests and
+19 lifecycle/four staff browser tests. PR-only dependency review skipped, not passed.
+This review did not rerun complete local SQL/API/browser/build acceptance or certify
+absence of every security alert. Command 107's local serial qualification remains.
+
+Fresh frozen install, all 15 tooling regressions and 68 database source tests passed.
+Registry version/integrity still match the exact pin. Production audit exits 0 with
+zero known findings; full audit exits 1 with only retained braces high and sprintf-js
+moderate advisories. All three Handlebars IDs are absent. They are maintainer-patched
+boundaries, not evidence of compromise; the remaining pair is neither fixed nor waived.
+Source review found no blocking in-scope defect. Real-consumer resolution, precise
+AST rejection/constructor denial/inline escaping, known positive template execution
+and sanitized bounded children remain intact; no VM security-sandbox claim follows.
+
+Define **Command 108 — Build unused currency selection request contracts**, P2a only,
+in [the command record](../CODEX_DEVELOPMENT_COMMANDS.md). P2 already proposes strict
+requests alongside inert proof/ledger/evidence stores. Split the specified input
+boundary from those storage/reference/privilege lifecycles: bounded UTF-8 JSON text,
+exact action/proposedRevision/expectedRevision/expectedGeneration/requestKey/proofToken,
+explicit null, canonical BIGINT strings and action/state consistency. Reject caller
+authority fields and return copied facts or fixed redacted failure, never raw errors.
+A token-shaped string is not an issued or valid proof; accepted requests contain the
+bearer and must not be logged. The entry stays separate and unused, with no root or
+application consumer. No schema/migration, proof generation/storage, endpoint or UI.
+
+Stable-intent and assessment digests are intentionally excluded. Their installation
+identity, ordered server/evidence serialization and historic replay bindings need a
+separate reviewed slice before P2 storage. Do not infer missing bindings from browser
+claims, local settings, a preview, current session cleanup or an arbitrary UUID.
+P2a does not complete P2, select policy, attest privileges, open assessed states or
+permit writers. All 25 migrations/control guards and P3–P9 dependencies stay unchanged.
+This review changes documentation only and does not authorize the implementation.
+Stop after review delivery and request explicit Command 108 authorization.
 
 ## 4. Price publication, quote and renewal rules
 
