@@ -1996,7 +1996,7 @@ current_database()), hashtext(schema)` computed by qualified PostgreSQL function
 
 ## ADR-108 — Prepare strict selection requests before authority storage
 
-- **Status:** Accepted for the owner-authorized Command 107 phase review; Command 108 defined only, not authorized or implemented
+- **Status:** Accepted for the owner-authorized Command 107 phase review; Command 108 subsequently authorized on 2026-10-09
 - **Date:** 2026-10-09
 - **Review:** No blocking in-scope Command 107 defect found. Narrow real-consumer resolution,
   precise repaired-boundary tests, bounded sanitized child execution, positive compatibility,
@@ -2023,6 +2023,37 @@ current_database()), hashtext(schema)` computed by qualified PostgreSQL function
   workflow/role/PostgreSQL container/database change, new actual-login SQL, live query/import/provider,
   operating approval, release/deploy or unrelated cleanup. Fresh exact delivery evidence is
   distinct from rerunning complete local acceptance. Stop for explicit Command 108 authority.
+
+## ADR-109 — Decode selection request syntax without exposing authority or diagnostics
+
+- **Status:** Accepted, implemented and locally validated for owner-authorized Command 108
+- **Date:** 2026-10-09
+- **Entry:** Separate unused `@webhost-billing/shared/currency-selection-request` subpath;
+  no root or application export/consumer. One bounded primitive JSON-text decoder,
+  private Zod schemas, copied/frozen six-field successes or one fixed frozen failure.
+  Caller object graphs are never inspected/coerced. UTF-16 length rejects huge strings
+  before encoder allocation; actual 4 KiB UTF-8 bytes are checked before JSON parsing.
+- **Syntax:** Reuse existing policy revision grammar/ceiling with full-input ASCII
+  matching; exact UUID grammar/case, 43-character base64url bearer shape, canonical
+  generation strings through PostgreSQL BIGINT maximum. Bounded grammar/length checks
+  precede BigInt comparison. Initialize/adopt require explicit null/zero; replace requires
+  non-null/positive and a different case-sensitive proposed revision. Maximum syntax
+  permits no increment. No floating-point money/generation conversion or inferred state.
+- **Ambiguity and redaction:** Strict unknown/nested/authority rejection; additionally
+  reject duplicate JSON member names, including escaped aliases, which JSON.parse would
+  otherwise overwrite. Only after valid JSON and a flat six-field shape, a bounded quoted-
+  token walk checks decoded key uniqueness; it is not a general-purpose JSON parser.
+  No raw syntax/Zod issues, inputs, causes or bearer values appear in failure results.
+  Accepted requests intentionally contain the opaque bearer and must never be logged.
+- **Qualification:** Success is syntax only, never an authenticated actor, valid/issued
+  proof, history verdict, selected revision, receipt or replay permission. No randomness,
+  clock, hashing, persistence, environment/network/provider operation or transaction handle.
+  Existing UUID nil/max shapes remain syntactically accepted, not meaningful request authority.
+- **Boundary:** No existing contract behavior, database model/migration, P2 store/digest,
+  proof/executor/role, selected/assessed state, control guard, writer/lineage, endpoint/UI,
+  live query/import/provider, operating approval, deployment/release or unrelated cleanup.
+  Retained advisories, local resource limits and all later activation gates remain.
+  Stop after complete validated delivery for the Command 108 phase review.
 
 ## Open Decisions
 

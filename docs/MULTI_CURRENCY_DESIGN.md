@@ -37,8 +37,10 @@
   The owner subsequently authorized Command 107; the narrow repair was delivered at
   `ecfdd16` with complete renewed local and exact-head hosted acceptance. Its owner-
   authorized review accepts tooling scope on 2026-10-09 and defines Command 108's unused
-  selection request contracts only (P2a). P2 authority storage is not implemented,
-  and this review does not authorize Command 108. No production authority is installed.
+  selection request contracts only (P2a). That review was delivered at `ae067c0` with
+  exact-head CI/CodeQL success. The owner subsequently authorized Command 108; its
+  unused request decoder is implemented and locally validated. P2
+  authority storage is not implemented. No production authority is installed.
   Temporary test installation is not product adoption.
   The selection protocol is not implemented or activated.
   Application integration and activation remain separately gated.
@@ -1861,6 +1863,43 @@ P2a does not complete P2, select policy, attest privileges, open assessed states
 permit writers. All 25 migrations/control guards and P3–P9 dependencies stay unchanged.
 This review changes documentation only and does not authorize the implementation.
 Stop after review delivery and request explicit Command 108 authorization.
+
+### Implemented Command 108 request-syntax boundary
+
+Owner-authorized on 2026-10-09, source baseline
+`ae067c05b34a76ec7c4aefc5b1f87a2327704ef5`. Separate unused shared subpath
+`currency-selection-request` exposes technical limits, types and one decoder, not raw
+validation schemas. Root exports and all application/database/worker/browser consumers
+stay unchanged. It accepts primitive JSON text only: code-unit screening bounds encoder
+allocation, then an actual 4 KiB UTF-8 ceiling precedes JSON parsing and strict flat
+six-field validation. No object graph, coercion/default, partial result or raw diagnostic.
+
+All six fields are explicit: action, proposedRevision, expectedRevision,
+expectedGeneration, requestKey and proofToken. Revisions reuse policy grammar/64-character
+limit with full-input matching (including rejection of trailing line breaks). UUIDs retain
+the existing grammar and exact case; nil/max UUID shapes are syntax, not valid authority.
+Generations are canonical decimal strings through `9223372036854775807`, compared with
+bounded BigInt after length/grammar checks. Initialize/adopt require null expected revision
+and zero generation; replace requires an explicit revision, positive generation and a
+different exact proposed revision. Parsing maximum does not authorize increment/selection.
+The opaque 43-character base64url token check certifies shape only, not issuance/validity.
+
+Unknown/nested/caller-authority fields deny. A bounded quoted-token walk after JSON and
+flat-shape validation also rejects duplicate keys/escaped aliases rather than accepting
+JSON.parse's last-member overwrite. Success returns fresh copied/frozen primitive facts;
+all failures return one fixed frozen error without input/token/Zod details. Accepted
+requests still contain the bearer and must never be logged. No function selects policy,
+assesses history, mints/hashes/stores proof, supplies a receipt or performs external work.
+
+Tests cover all actions, revision/UUID/token grammar, exact generations above Number
+precision and maximum/overflow, missing/contradictory/authority/nested inputs, arbitrary
+getter/proxy objects, malformed/duplicate/escaped JSON, actual UTF-8 boundaries before
+parse, copying and redaction. A mandatory boundary test checks exports, pure imports and
+absence of tracked runtime consumers. All prior gates/25 migration pins remain intact.
+Acceptance, failed resource invocations and exact delivery belong in `docs/PROGRESS.md`.
+No storage, digests, privilege/lineage/writer adoption, guard opening or activation follows.
+Stop after validated delivery for **Phase review — Review Command 108 unused currency
+selection request contracts and define the next bounded currency command**.
 
 ## 4. Price publication, quote and renewal rules
 

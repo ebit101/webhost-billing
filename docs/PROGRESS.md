@@ -12776,7 +12776,7 @@ install authority records, adopt writers or begin P2 automatically.
 
 ### Phase review — Review Command 107 and define the next bounded currency command
 
-- **Status:** Command 107 engineering scope accepted; Command 108 defined only
+- **Status:** Delivered at `ae067c0` with secret-scan/non-force push/exact-head CI/CodeQL success; Command 107 accepted and Command 108 defined only by this review
 - **Date:** 2026-10-09
 - **Authority:** Owner authorized this review and next-command definition only, not
   Command 108 implementation, storage, currency selection or production operations.
@@ -12821,9 +12821,15 @@ install authority records, adopt writers or begin P2 automatically.
   Exact baseline comparisons confirm only the five tracking documents changed: no
   application/shared/database/script/dependency/migration/workflow edits. Final report
   edits receive focused formatting and link checks before the review commit.
-- Focused review commit, pinned cached history scan, non-force main delivery and this
-  review's exact-head hosted closure are required before final handoff. Their actual
-  delivery results are reported in the handoff and reconciled at the next review.
+- Reconciled delivery: focused commit `ae067c05b34a76ec7c4aefc5b1f87a2327704ef5`, cached
+  pinned full-history scan (218 commits/no leaks), fetch/fast-forward-only reconciliation
+  and normal non-force main push passed. Exact-head
+  [CI 37924743702](https://github.com/ebit101/webhost-billing/actions/runs/37924743702)
+  passed all 29 Validate steps and
+  [CodeQL 37924743704](https://github.com/ebit101/webhost-billing/actions/runs/37924743704)
+  all eight, first attempts. PR-only dependency review skipped, not passed. Freshly
+  reverified before Command 108. Worktree was clean and main matched origin/main.
+  Direct-main owner rules bypass remains a governance risk; no rules were changed.
 
 #### Unresolved risks and exact next command
 
@@ -12834,6 +12840,107 @@ install authority records, adopt writers or begin P2 automatically.
   Docker/cache cleanup occurred. The sequence is not a completion-date/count forecast.
 - After validated review delivery, authorize **Command 108 — Build unused currency
   selection request contracts**. Stop; implementation is not started by this review.
+
+### Command 108 — Build unused currency selection request contracts
+
+- **Status:** Implemented; complete local acceptance passed, delivery and exact-head hosted closure required before final handoff
+- **Date:** 2026-10-09
+- **Authority:** Owner explicitly authorized Command 108 only. No P2 authority storage,
+  proof/selection implementation, currency activation or production operation.
+
+#### Scope completed
+
+- New separate unused shared request subpath, private strict schemas and bounded primitive
+  JSON-text decoder. Exactly six fields; explicit null/zero versus replacement pairs,
+  reused revision/UUID grammar, canonical generation through BIGINT maximum and opaque
+  43-character base64url shape. No root/application consumer or existing contract change.
+- Actual UTF-8 byte budget before parsing, with earlier code-unit bound on encoder allocation.
+  Unknown/nested/authority and duplicate/escaped-alias keys deny. Copied/frozen successful
+  facts or one fixed frozen redacted failure; no raw syntax/Zod/bearer error exposure.
+  Accepted requests contain the bearer and must never be logged. Success is syntax only.
+- No proof mint/hash/store, stable-intent/assessment digest, database/schema/migration,
+  guarded-state/role/writer/lineage, endpoint/UI/provider/import or activation work.
+
+#### Files changed
+
+- `packages/shared/src/currency-selection-request.ts`: pure unused decoder/types/limits.
+- `packages/shared/test/currency-selection-request.spec.ts`: syntax/precision/size/security cases.
+- `packages/shared/test/package-boundaries.spec.ts`: separate export/pure/import/consumer checks.
+- `packages/shared/package.json`: minimal explicit subpath only; no dependency change.
+- `CODEX_DEVELOPMENT_COMMANDS.md`, `HOSTING_BILLING_SYSTEM_PLAN.md`, `docs/DECISIONS.md`,
+  `docs/MULTI_CURRENCY_DESIGN.md`, `docs/PROGRESS.md`: implementation, evidence and handoff.
+
+#### Validation performed and results
+
+- Clean baseline `ae067c05b34a76ec7c4aefc5b1f87a2327704ef5`, canonical main. Previous
+  review's immutable delivery and exact-head hosted closure reconciled above.
+- Fresh frozen install and all 15 installed tooling checks passed. Production audit
+  exited 0/zero known findings; full audit exited 1 with exactly retained braces high
+  GHSA-vfj7-8cjw-p6xm and sprintf-js moderate GHSA-hp3w-g68c-fv3c. No new advisory or waiver.
+- Shared tests passed 112/112 (93 retained plus 19 new), no skips; shared build/types and
+  focused formatting passed. New input failures/redaction and all prior contracts passed.
+- First complete database package attempt passed all 68 source tests, then failed the
+  unchanged actual-login preflight (daemon resources) before container/network creation.
+  No later SQL/seed tests or queue checks ran in that failed invocation. No limit/guard/
+  skip change. A subsequent standalone ordinary database package test passed all 68
+  source/11 actual-login/70 retained SQL cases, no skips, plus seed/verifier and prior-
+  22/23/24 all-row comparisons. All 25 content pins/raw-byte checks remained intact.
+  Existing launchers verified ownership before removing only their new fictional scopes;
+  read-only label inspection found no harness container/network remaining.
+- Built separate subpath resolves through the actual package export, exposes only limits/
+  decoder and is absent from the built root. Frozen source/runtime/dependency/workflow/
+  migration baseline checks and whitespace passed. Multiline Windows inline-eval produced
+  no acceptance output and is not counted as validation; an ignored, owned file helper
+  executed the serial checks in a fresh marked fictional schema with guarded cleanup.
+- Complete serial root-equivalent acceptance passed all ten root script groups, shared
+  112, queue 3, API 25 suites/107, worker 10 suites/29 and frontend 54 files/572 (181.94 s).
+  Explicit Jest `--runInBand`/Vitest `--maxWorkers=1` and separate ordinary database gates
+  preserve every test; this is not a local default-parallel `pnpm test` pass.
+- Owned seeded/verified parent API integration passed 17 suites/81; critical invariants
+  passed shared 112/API unit 12/API integration 42/worker 2. Exact marker, model/raw schema
+  agreement and loopback scope were reverified before dropping only the newly owned
+  parent. Existing experimental-VM and pg queued-query deprecation warnings were visible;
+  no unrelated dependency/tooling upgrade was performed.
+- Strict workspace and browser E2E types, worker artifact prerequisite, lint and Prisma
+  validation passed. Workspace checks used an ephemeral, read-back concurrency of 1
+  for local sequencing, restored afterwards; no test deadline/budget was changed.
+- The temporary ignored acceptance helper was removed after its owned parent cleanup;
+  it is not product code or part of delivery. No unrelated dependency/cache cleanup.
+- First browser lifecycle invocation passed 18/19, then failed the renewal automation
+  child command in hosting-lifecycle (3.5 minutes). Staff browser checks did not run
+  because that command was fail-stop. No timeout/retry/assertion change; the failed run
+  is not a pass. Inspected the existing launcher and reran in a new owned scope;
+  no application/runtime change or assumed resource-cause diagnosis is claimed.
+- Subsequent complete browser launcher passed 19/19 (4.2 minutes), staff browser checks
+  4/4 (23.2 seconds), original timeouts and zero retries. Compiled prerequisites were
+  already successful/unchanged; fresh fictional schema/marker/cleanup rules were retained.
+  The first child-command failure remains an unresolved local nondeterministic diagnostic,
+  not a pass, a proved memory cause or an implemented fix. Existing LCP/color/pg warnings
+  remain visible and outside the request-contract scope. No live portal/data query.
+- Production `pnpm build` passed with `NODE_ENV=production` and read-back workspace
+  concurrency 1; both ephemeral overrides were restored afterwards. Internal framework
+  workers remain unchanged; this is not a local default-parallel workspace build claim.
+  Final frozen install and production license inventory passed. Renewed production
+  audit exited 0/zero known findings; full audit exited 1 with only the same two retained
+  unwaived development advisories. Source/runtime/lock/patch/workflow/migration comparisons
+  remain unchanged outside the four explicit shared files.
+- Full repository formatting and all four offline documentation validators passed.
+  Whitespace and exact baseline comparisons passed; only the four explicit shared files
+  and five trackers changed. Final report edits receive focused formatting and renewed
+  offline documentation checks before committing. Focused commit, cached pinned history
+  scan/non-force main delivery and exact-head hosted closure remain before final handoff.
+  Report their actual results; do not infer success from the previous review head.
+
+#### Decisions, unresolved risks and exact next command
+
+- ADR-109: strict request syntax without authority; duplicate-key rejection, exact-case
+  preservation, bounded integer/UTF-8 work and fixed redaction. No raw schemas exported.
+- Retained development advisories, limited local memory and direct-main governance remain
+  unwaived. Server identity/evidence digests, protected P2 stores and P3–P9 auth/lineage/
+  writers/consumer/drain/recovery plus business/provider/launch approvals remain gated.
+- After validated delivery, request **Phase review — Review Command 108 unused currency
+  selection request contracts and define the next bounded currency command**. Stop;
+  do not define or implement another command automatically.
 
 ## Report Template
 

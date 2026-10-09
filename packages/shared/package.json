@@ -18,6 +18,10 @@
       "types": "./src/currency-policy.ts",
       "default": "./dist/currency-policy.js"
     },
+    "./currency-selection-request": {
+      "types": "./src/currency-selection-request.ts",
+      "default": "./dist/currency-selection-request.js"
+    },
     "./observability": {
       "types": "./src/observability.ts",
       "default": "./dist/observability.js"

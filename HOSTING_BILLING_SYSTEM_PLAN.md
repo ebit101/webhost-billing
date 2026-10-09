@@ -146,6 +146,13 @@ authority records) remains a dependency, not implemented. The owner-authorized C
 Build unused currency selection request contracts** only. This P2a slice prepares strict,
 bounded confirmation-request decoding before storage; syntax is never human approval.
 No request contract or P2 store is implemented or authorized by that review.
+The owner subsequently authorized Command 108 on 2026-10-09. Its separate unused
+shared request entry decodes at most 4 KiB UTF-8 JSON into six strict copied fields,
+or a fixed redacted failure. Duplicate/unknown/authority fields, noncanonical or
+overflowing generation strings and contradictory action/state pairs deny. Success
+does not validate a proof or select currency; accepted bearer-containing requests
+must not be logged. No endpoint, root/application consumer, hash/issuer/store or
+migration is added. Full acceptance and delivery are recorded in `docs/PROGRESS.md`.
 No selection/guard or application consumer is installed by the observation helper or review.
 No live registry, selected installation policy or financial backfill is included. Broader persistence,
 per-currency reads, pricing and activation remain later separately gated slices. Remaining

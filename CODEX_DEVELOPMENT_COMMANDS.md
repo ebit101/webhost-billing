@@ -4274,8 +4274,10 @@ deployment/release or unrelated Docker/volume/scope/cache cleanup in this comman
 
 ## Command 108 — Build unused currency selection request contracts
 
-**Defined by the owner-authorized Command 107 phase review on 2026-10-09;
-not authorized or implemented.** P2a request parsing only, not P2 authority storage.
+**Authorized by the owner on 2026-10-09; implemented and locally validated.**
+P2a request parsing only, not P2 authority storage. The separate unused shared entry
+and strict decoder/tests are implemented; acceptance evidence and delivery are
+recorded in `docs/PROGRESS.md`. No currency selection or application integration.
 
 ```text
 Command 108 — Build unused currency selection request contracts
@@ -4313,8 +4315,8 @@ silently trim/default/coerce, return a partial result or echo input in diagnosti
 Expose copied validated request facts and fixed redacted failure outcomes. Failures
 must not echo raw Zod issues/errors or bearer values; no result contains transaction
 handles, receipts or approval flags. Accepted requests contain the bearer and must
-never be logged; success
-means syntactic decoding only, not proof validity or authorization. No token minting,
+never be logged; success means syntactic decoding only, not proof validity or
+authorization. No token minting,
 hashing, token persistence, clock/network/environment access or external operation.
 
 Test every valid action and exact boundary, 4 KiB bytes rather than UTF-16 characters,
