@@ -4456,11 +4456,12 @@ Request syntax is not authority or production readiness.
 ## Command 110 — Stage inert currency installation identity storage
 
 **Defined by the owner-authorized Command 109 phase review on 2026-10-10;
-subsequently authorized by the owner on 2026-10-10; inert implementation locally validated.**
+subsequently authorized, delivered at `756b02e` and engineering-scope accepted by the
+owner-authorized phase review on 2026-10-10.**
 Docker is restored and review delivery at `b7d43af` passed its scan/main/exact-head
-CI/CodeQL gates before implementation began. Command 110's renewed local gates passed;
-its own scan/main/exact-head delivery is required before handoff. See the progress report
-for actual results, failed attempts and the two retained unwaived tooling advisories.
+CI/CodeQL gates before implementation began. Command 110's own scan/main/exact-head
+CI/CodeQL also passed; the review freshly reconciles that closure. See the progress
+report for actual results, failed attempts and the retained unwaived tooling advisories.
 One additive empty storage slice of section 3e's
 P2 prerequisites. No initialization, placement pin, auth version, proof or selection.
 
@@ -4562,6 +4563,107 @@ auth epoch/evidence, digest codec, proof/intent/ledger/consumption, selected fix
 assessment/control-shape opening, writer/lineage/adoption, live query/import/provider,
 operating approval, deployment/release or unrelated Docker/disk/cache cleanup.
 Inert identity storage is neither completed P2 authority nor currency activation.
+```
+
+---
+
+## Command 111 — Build an unused private stable-intent codec
+
+**Defined only by the owner-authorized Command 110 phase review on 2026-10-10;
+not authorized or implemented.** This is one pure server-only serialization slice
+of section 3e, not assessment encoding, SQL parity, acquisition or authority storage.
+
+```text
+Command 111 — Build an unused private stable-intent codec
+
+Read AGENTS.md, the plan, decisions, progress, currency design section 3e and the
+Command 110 review. Reconcile preceding review delivery/exact-head acceptance before
+implementation. Renew frozen install, all 15 tooling-security checks and production/
+full audits. Keep existing patches/pins and retained advisories unwaived; new unrelated
+security repairs require separate authorization. Do not weaken a failed gate.
+
+Implement only a private pure Node/server module:
+packages/database/src/private/currency-selection-intent.ts, with mandatory tests at
+packages/database/test/currency-selection-intent.spec.ts. Test imports may reach this
+module directly, but no package subpath/root/shared/browser/application export or
+ordinary runtime consumer may expose or call it. No entry is added to package exports.
+Use built-in Node SHA-256; add no dependency. No Prisma/client/query/environment/time/
+filesystem/network/randomness/logging import or side effect. Do not import the existing
+unused request parser into production source or fabricate a proof token to reuse it;
+test-only differential checks must prove the existing request grammar/rules remain exact.
+
+Accept unknown input but operate only on primitive JSON text for the complete section
+3e S tuple. Reject caller objects, arrays, boxed strings, getters/proxies/iterators without
+invoking them. Enforce the existing internal-input ceiling of 65,536 UTF-8 bytes:
+code-unit guard before encoder allocation, actual byte guard before JSON parsing.
+Do not trim, normalize, coerce, supply defaults or accept object replacements of tuples.
+After bounded parse, check exact array lengths before indexed member access; reject
+extra/missing/nested/wrong-type facts and unsupported versions. S has only its one
+nested I pair, not the deeper future assessment format.
+
+S = ["currency-selection-request-v1", [installationId, executionDomainId], action,
+actorUserId, sessionId, requestKeyText, expectedRevision, expectedGeneration,
+proposedRevision]. Exact outer arity 9; I arity 2. Preserve this ordering and every
+explicit null. Installation/domain/actor/session UUIDs are standard lowercase 36-character
+text in the existing UUID grammar; no database alias acceptance or silent lowercasing.
+The 36-character request key retains the exact decoded case-sensitive text accepted by
+Command 108, including nil/max syntax. Syntax does not establish identity or approval.
+Revisions retain exact case and the existing full-input ASCII grammar/1–64 bounds.
+Generation stays a canonical decimal string bounded through 9223372036854775807;
+length/grammar checks precede bounded BigInt comparison. Never convert it to Number.
+Initialize/adopt require explicit null expected revision and exact zero generation.
+Replace requires positive generation and an exact different proposed/expected revision.
+No token/bearer/hash, auth evidence/profile/epoch, selection/latch, time or incidental
+field belongs in S. Actor/session/domain ownership and active pin checks remain future
+qualified acquisition duties; the codec cannot certify facts supplied in a tuple.
+
+Build fresh dense fixed-position arrays of validated primitive facts. Encode exactly
+with ECMAScript JSON string quoting, no replacer/indent/BOM/final newline; enforce the
+existing 1,024 UTF-8-byte canonical-S ceiling before hashing. SHA256 of those exact UTF-8
+bytes yields 64 lowercase hex characters. This is application tuple encoding, not a
+universal JSON canonicalization scheme, signature, proof or hash of raw request JSON.
+Return a copied/frozen narrow success containing canonical text and stable-intent digest,
+or one fixed redacted failure. No partial hash, raw input, JSON/Zod/SQL details, handle
+or implicit approved-state result. Canonical material contains restricted identities:
+do not log it or expose it through an API/UI. Test vectors are fictional only.
+
+Tests must reproduce all five persisted S byte/hash vectors from section 3e (base,
+uppercase request key, changed domain, replacement above Number precision and maximum).
+Also cover initialize/adopt/replace parity with Command 108, exact revision/key case,
+changed installation/domain/actor/session/action/key/revision/generation changing S,
+and whitespace/JSON escape-equivalent input producing identical canonical bytes.
+Test lowercase server UUIDs versus request key case, nil/max syntax without authority,
+wrong UUID aliases/version/arity/object/nesting/numbers, unknown/token/assessment fields,
+zero/negative/noncanonical/overflow generations, full-input newline and non-ASCII/lone-
+surrogate rejection. Assert 65,536/65,537 input boundaries and actual UTF-8 overflow before
+parse, maximum valid canonical output under 1,024, fixed redaction/copying and no caller
+getter/proxy/coercion/iterator invocation. Do not manufacture a valid oversized S by
+relaxing field rules merely to hit the output ceiling.
+
+Append mandatory source tests in packages/database/package.json. Minimally update only
+existing source/wiring/boundary assertions that must recognize the appended test;
+preserve all old gate order, request-parser behavior/exports and unused boundaries.
+Verify the private module has no runtime import/export consumer and no database effects.
+All 26 migration bytes/pins, identity emptiness/guards, control zero/null shape, seed,
+prior-22/23/24/25 preservation and actual-login limits/cleanup remain unchanged.
+
+Run full proportional acceptance: new/retained source/shared tests/build/types, complete
+ordinary root plus mandatory actual-login/owned SQL/seed/preservation tests, formatting,
+all four offline docs checks, lint/typecheck, API integration/invariants, lifecycle/staff
+browser tests, production/full audit/license checks and production build. Use newly
+verified fictional scopes/fake providers; do not repair or borrow an older local database.
+Serialize heavy local gates with the verified pnpm concurrency setting when needed,
+without changing timeouts/limits or skipping checks. Record every failed attempt honestly.
+Update the five trackers, focused commit, cached pinned full-history scan, fetch/fast-
+forward-only reconciliation, non-force main push and exact-head CI/CodeQL before handoff.
+
+Stop for Phase review — Review Command 111 private stable-intent codec and define the
+next bounded currency command. No assessment A/control/context/auth/evidence codec,
+SQL serializer/hash function/parity claim, identity/pin acquisition/init, auth version/
+evidence/store, proof minting/bearer hashing/issuer/ledger/replay consumer, selected fixture,
+policy/writer/privilege adoption, endpoint/UI/CLI/worker integration, live query/import/
+provider, operating approval, release/deployment or unrelated Docker/disk/cache cleanup.
+S encoding alone cannot approve selection or complete P2/P3–P9 activation prerequisites.
 ```
 
 ## Continuation Command

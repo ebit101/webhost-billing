@@ -2137,7 +2137,7 @@ current_database()), hashtext(schema)` computed by qualified PostgreSQL function
 
 ## ADR-112 — Stage empty identity records without initializing currency authority
 
-- **Status:** Review delivered at `b7d43af`; owner-authorized Command 110 inert scope locally validated on 2026-10-10; own delivery closure required
+- **Status:** Review delivered at `b7d43af`; Command 110 delivered at `756b02e` with exact-head acceptance; engineering scope accepted on 2026-10-10
 - **Date:** 2026-10-10
 - **Review:** No blocking in-scope specification defect found. Stable S preserves exact
   original request identity separately from full fresh C/policy/unit/H/E assessment A;
@@ -2183,7 +2183,41 @@ corrected acceptance belong in the progress report. All prior pins, control shap
 historical tests remain. Renewed local root/source/SQL/P1/API/invariant/browser/build
 and static gates passed; earlier root and staff failures are preserved in the report.
 Production audit has no known findings; the two retained development advisories remain
-unwaived. Own commit/scan/main/exact-head CI/CodeQL closure is required before handoff.
+unwaived. Own commit/scan/main/exact-head CI/CodeQL closure passed and was freshly
+reconciled by the owner-authorized review. Initial failed attempts remain failures.
+
+## ADR-113 — Keep stable-intent encoding private and separate from currency authority
+
+- **Status:** Accepted by the owner-authorized Command 110 review on 2026-10-10; Command 111 defined only, not authorized or implemented
+- **Review:** No blocking in-scope storage defect found at `756b02e`. Explicit empty
+  models, restrictive references, finite C-collated facts, six fixed invoker guards and
+  new-object PUBLIC revokes match Command 110. Existing pins/control/seed/runtime remain;
+  owner/superuser powers and shared deployed credentials do not become non-owner adoption.
+- **Evidence:** Fresh exact-head CI aggregate/all 29 Validate steps and CodeQL aggregate/
+  all eight passed, first attempts. Logs confirm source 74, actual-login 12, owned SQL 79,
+  seed/prior-25 preservation, root/API/invariant/browser 19/staff four/build/audit/cleanup.
+  Hosted scan 219/no leaks is separate from implementation's local 225/no leaks. PR-only
+  dependency review skipped. Fresh review frozen install/tooling 15/source 74/shared 112/
+  package builds/types passed; full local SQL/API/browser acceptance was inspected, not rerun.
+- **Decision:** Define **Command 111 — Build an unused private stable-intent codec**.
+  Implement only section 3e's arity-9 S from bounded primitive JSON tuples, fresh canonical
+  arrays and exact UTF-8 SHA-256. Internal input/canonical-S ceilings remain 65,536/1,024;
+  original key/revision case and canonical BIGINT text are preserved. Five persisted S
+  vectors plus parser-rule differential/budget/redaction/boundary tests are mandatory.
+- **Placement:** Future `packages/database/src/private/currency-selection-intent.ts`
+  is server-only, test-imported and unexported from every package entry. No shared/browser
+  codec or runtime request-parser consumer. This follows the existing private-codec
+  decision; it does not introduce an endpoint or trust caller-supplied actor/domain facts.
+- **Security qualification:** Full audit still fails with the same two retained unwaived
+  tooling findings; production audit has none known. Configured registry lookups of the
+  audit-suggested braces 3.0.4 / sprintf-js 1.1.4 returned package-not-found, not installable
+  repair targets. Existing patches/15 checks stay; no suppression or unrelated upgrade.
+- **Boundary:** This review changes five trackers only. S excludes token/hash, current
+  control/assessment/auth context and incidental times. Its digest is not human approval,
+  a signature, placement attestation or SQL byte parity. Initialization/pin/auth/evidence,
+  A encoding, SQL parity, proof/ledger and P3–P9 writer/privilege/adoption/activation stay
+  separately gated. No new fixture/role/query/provider/import/deployment or old cleanup.
+  Stop after review delivery and ask for explicit Command 111 authorization.
 
 ## Open Decisions
 

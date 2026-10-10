@@ -47,7 +47,9 @@
   and defines Command 110's empty identity storage only, not its execution. P2 authority
   storage remains incomplete. The owner authorized Command 110; after Docker recovery
   and review delivery at `b7d43af`, inert identity storage passed renewed local acceptance.
-  Its own commit/scan/main/exact-head delivery closure remains required before handoff.
+  It was delivered at `756b02e` with scan/main/exact-head acceptance and engineering-scope
+  accepted by the owner-authorized review on 2026-10-10. Command 111 is defined only:
+  unused private stable-intent encoding, no assessment/SQL parity/authority or consumer.
   No production authority is installed.
   Temporary test installation is not product adoption.
   The selection protocol is not implemented or activated.
@@ -2458,7 +2460,59 @@ evidence/lineage, proof/ledger and P3–P9 adoption/activation are not authorize
 slice. No live data/provider, operating approval, release/deploy or unrelated cleanup.
 Stop after validated delivery for **Phase review — Review Command 110 inert currency
 installation identity storage and define the next bounded currency command**.
-No Command 111 is defined or authorized.
+At the implementation handoff, no Command 111 was defined or authorized.
+
+### Command 110 review and private stable-intent codec boundary
+
+Owner-authorized review on 2026-10-10 accepts only the inert storage at
+`756b02e14a788942fa9b7e54fb8ec4dad0ea6098`. Fresh verification confirms
+[CI 38036023571](https://github.com/ebit101/webhost-billing/actions/runs/38036023571)
+aggregate/all 29 Validate steps and
+[CodeQL 38036023622](https://github.com/ebit101/webhost-billing/actions/runs/38036023622)
+aggregate/all eight passed, first attempts. Logs confirm all retained/new source/P1/SQL/
+seed/preservation/root/API/invariant/browser/build/audit/cleanup gates, including first-
+attempt hosted staff four. Earlier local root/staff failures are not erased or called fixed.
+The review found no blocking in-scope defect; it did not rerun full local SQL/browser
+acceptance or query a live installation. Owner/superuser INSERT/DDL powers and unproven
+deployed duties/clone/pin adoption remain; guard integrity is not production privilege proof.
+
+Fresh frozen install, tooling 15, database source 74, shared 112, package builds and
+shared/database type checks passed. Production audit has no known findings; full audit
+retains only braces high and sprintf-js moderate and exits 1, not waived. The suggested
+upstream version lookups returned package-not-found; no dependency was changed.
+The [braces advisory](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm) and
+[sprintf-js advisory](https://github.com/advisories/GHSA-hp3w-g68c-fv3c) currently list no
+patched versions; audit suggested ranges are not evidence of a published package.
+
+Define **Command 111 — Build an unused private stable-intent codec** in
+[the command record](../CODEX_DEVELOPMENT_COMMANDS.md), without implementing it.
+Split only the already specified S serializer from sensitive auth/evidence/proof stores
+and the much larger A/SQL-parity boundary. This completes neither P2 nor deployment
+identity/pin approval. A new empty auth-version row cannot substitute for adoption of
+every security writer, so auth baseline establishment remains P6, not an inferred default.
+
+Future private server-only `packages/database/src/private/currency-selection-intent.ts`
+accepts primitive JSON for exact S (arity 9, I arity 2), rejects objects/extra/nested facts,
+enforces 65,536 UTF-8 input bytes before parse and 1,024 canonical S bytes before hash,
+and constructs fresh dense arrays with the existing ECMAScript quoting/domain label.
+SHA-256 is exact UTF-8/lowercase hex, not raw JSON or a signature. Preserve original
+request-key case separately from future SQL UUID slot identity and preserve exact
+revision/canonical BIGINT text. Only server identity UUID spelling is lowercase; no
+lowercasing, actor acquisition, defaults or proof tokens are invented by encoding.
+Test-only differential checks retain Command 108 rules; no production parser consumer
+or package/shared/browser/root export. Fixed redacted failures and frozen copied narrow
+canonical text/digest successes do not authorize these restricted identities for logging.
+
+Five literal S vectors, action/key/revision/large-integer parity, changed-field identity,
+escape-equivalent canonical bytes, strict tuple/UUID/full-input/budget/redaction and
+unused-boundary tests are required proposed acceptance, not executed codec evidence.
+All 26 migration bytes/pins, existing control/identity emptiness and guards, prior
+preservation and P1 limits remain. No A/context/auth/evidence encoding, SQL hash/parity
+claim, initialization/pin/auth baseline, issuer/token/hash/store/proof/ledger/replay,
+selection/shape opening, writer/role/adoption, live query/import/provider, operating
+approval, release/deployment or old-resource cleanup. Those prerequisites still gate
+trusted digest use and activation. Stop after this review's own validated delivery and
+request explicit Command 111 authorization; do not start it or promise a go-live date.
 
 ## 4. Price publication, quote and renewal rules
 

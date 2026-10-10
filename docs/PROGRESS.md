@@ -13210,7 +13210,7 @@ install authority records, adopt writers or begin P2 automatically.
 
 ### Command 110 — Stage inert currency installation identity storage
 
-- **Status:** Owner-authorized inert scope locally validated; own scan/main/exact-head delivery closure required before handoff
+- **Status:** Delivered at `756b02e` with scan/main/exact-head CI/CodeQL success; inert engineering scope accepted by the owner-authorized review on 2026-10-10
 - **Date:** 2026-10-10
 - **Authority:** Owner explicitly selected Command 110. Authorization does not waive the
   preceding review's required secret scan/non-force main/exact-head acceptance.
@@ -13383,6 +13383,91 @@ install authority records, adopt writers or begin P2 automatically.
   no existing gate/order/export removed and no seed identity writes.
 - Five trackers: `CODEX_DEVELOPMENT_COMMANDS.md`, `HOSTING_BILLING_SYSTEM_PLAN.md`,
   `docs/DECISIONS.md`, `docs/MULTI_CURRENCY_DESIGN.md`, `docs/PROGRESS.md`.
+
+### Phase review — Command 110 inert currency installation identity storage
+
+- **Status:** Engineering scope accepted; Command 111 defined only; review delivery gates required before handoff
+- **Date:** 2026-10-10
+- **Authority:** Owner explicitly approved the proposed Command 110 phase review. This
+  does not authorize implementing the next command.
+
+#### Delivery closure and reviewed scope
+
+- Command 110 is delivered at `756b02e14a788942fa9b7e54fb8ec4dad0ea6098`. Prior local
+  pinned network-disabled full-history scan checked 225 commits/no leaks; normal main
+  push completed after fetch/fast-forward-only reconciliation. Clean main/origin matched
+  0/0. Direct-main owner rule bypass was reported; no rule or history was rewritten.
+- Fresh exact-head [CI 38036023571](https://github.com/ebit101/webhost-billing/actions/runs/38036023571)
+  aggregate/all 29 Validate steps and
+  [CodeQL 38036023622](https://github.com/ebit101/webhost-billing/actions/runs/38036023622)
+  aggregate/all eight passed, first attempts. PR-only dependency review skipped, not passed.
+  Retrieved logs independently confirm hosted scan 219/no leaks, source 74, actual-login
+  12, owned SQL 79, normal seed/verify and prior-25 all-row/guard preservation; retained
+  prior-22/23/24 cases remain. Root shared 112/API 107/web 572/worker 29/queue three,
+  API integration 81, invariants 112/12/42/two, lifecycle 19/staff four, production audit,
+  license/build and scoped/infrastructure cleanup passed. Hosted inventory differs from
+  local refs; do not relabel 219 as 225 or previous hosted runs as fresh local execution.
+- Source review found no blocking in-scope defect. Exact empty explicit models and
+  singleton/UUID/RESTRICT/compound keys, finite millisecond timestamps, bounded C-collated
+  stored facts, six fixed invoker statement guards and PUBLIC revokes match the command.
+  Native FK-before-trigger TRUNCATE refusal and owner powers remain correctly qualified.
+  Private qualification rejects model/raw/catalog/RLS/decoy contexts even when empty;
+  per-denial snapshots, rollback/COPY and all-row preservation remain mandatory.
+- Compared the delivered diff with `b7d43af`: only one new migration and the authorized
+  storage/tests/wiring/verifier/tracking files. Runtime/shared sources, old migrations,
+  seed, lockfile and workflows are unchanged; current inventory is 26 and old control
+  index/zero/null shape is intact. No identity init/pin/auth/proof/selection consumer.
+- Earlier failed Docker/root/SQL/staff invocations remain historical failures. The
+  unchanged staff rerun and first-attempt hosted four passed; local intermittent 404
+  cause is not proven fixed. Older local database drift was not repaired or migrated.
+
+#### Fresh review validation and limits
+
+- Frozen install passed without lockfile changes; all 15 installed tooling checks,
+  database source 74 and shared 112 passed with zero skips. Package builds, generated
+  Prisma client and shared/database types passed. These are fresh review execution,
+  separate from inspected predecessor SQL/API/browser acceptance.
+- Production audit exits 0/no known findings. Full audit exits 1 with exactly retained
+  braces high `GHSA-vfj7-8cjw-p6xm` and sprintf-js moderate `GHSA-hp3w-g68c-fv3c`;
+  neither is fixed or waived. Registry queries for audit-suggested 3.0.4/1.1.4 returned
+  package-not-found; advisory pages list no patched versions. No install/override or
+  audit suppression follows. Existing local patches and resource ceilings remain.
+- Review is documentation-only. No local SQL fixture/role/history query, full root/API/
+  browser rerun, identity initialization, pin, proof/selection, live provider/import or
+  deployment was performed. Existing cached scanner/engine availability was checked;
+  the review's own commit/scan/main/exact-head delivery is still required at this report
+  cutoff. Formatting, all four offline documentation checks and diff whitespace checks
+  passed after the tracker edits.
+- Initial broad read output was truncated; focused current scope/spec/source reads
+  followed. A guessed source boundary file path failed read-only lookup; it was not
+  a test result and no file was created to satisfy it. No unrelated work was changed.
+
+#### Decision, files changed and unresolved risks
+
+- Define **Command 111 — Build an unused private stable-intent codec**, not execution.
+  Its future private server-only test-imported module encodes only exact section 3e S
+  from bounded primitive JSON and hashes its fresh canonical UTF-8 bytes. No public/root/
+  shared/browser export or ordinary consumer. Input/S budgets remain 65,536/1,024;
+  original key/revision case, explicit null and exact BIGINT text stay. Five persisted
+  S vectors and strict grammar/action/budget/redaction/boundary acceptance are required.
+- Do not jump from inert identity storage to auth baseline/defaults or approval-shaped
+  records. Actor/domain/pin acquisition, security-writer epoch adoption, A encoding,
+  SQL parity, evidence/proof/ledger and P3–P9 are distinct remaining prerequisites.
+  Restricted canonical identities must not be logged; a digest is not a signature,
+  approval, SQL parity or current authorization.
+- Only five trackers changed: `CODEX_DEVELOPMENT_COMMANDS.md`,
+  `HOSTING_BILLING_SYSTEM_PLAN.md`, `docs/DECISIONS.md`,
+  `docs/MULTI_CURRENCY_DESIGN.md`, `docs/PROGRESS.md`. No proposed codec/test exists yet.
+- Owner/superuser INSERT/DDL and shared production credentials, privileged clone/pin
+  copying, unproven production duties, retained tooling findings, older local schema
+  drift/intermittent staff routing, operating inputs and final launch approval remain.
+  No remaining-command count or production-readiness/go-live promise follows.
+
+#### Exact recommended next command
+
+After this review's validated delivery, ask the owner to authorize
+**Command 111 — Build an unused private stable-intent codec**. Stop; do not implement
+it automatically or begin assessment/auth/evidence storage or activation.
 
 ## Report Template
 
