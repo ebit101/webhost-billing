@@ -4581,7 +4581,11 @@ Fresh shared 113/source 89/types passed. Corrective delivery `8f3adfd` passed it
 scan (228 commits/no leaks), normal main reconciliation and first-attempt exact-head
 CI 38043902016 (all 29 Validate steps) / CodeQL 38043902076 (all eight). Logs confirm the
 ordinary full root and retained SQL/API/invariant/browser/build gates; no retry or limit
-change. This final report-only update still requires its own exact-head delivery gate.
+change. Final report `1f4d92a` subsequently passed scan/main and first-attempt exact-head
+CI 38044593386 (29 steps) / CodeQL 38044593404 (eight). The owner-authorized phase review
+on 2026-10-10 accepts the syntax-only scope, strengthens queue/script consumer-test coverage
+and defines Command 112 only. Review delivery remains gated; no next implementation is
+authorized by the review.
 
 ```text
 Command 111 — Build an unused private stable-intent codec
@@ -4674,6 +4678,99 @@ evidence/store, proof minting/bearer hashing/issuer/ledger/replay consumer, sele
 policy/writer/privilege adoption, endpoint/UI/CLI/worker integration, live query/import/
 provider, operating approval, release/deployment or unrelated Docker/disk/cache cleanup.
 S encoding alone cannot approve selection or complete P2/P3–P9 activation prerequisites.
+```
+
+## Command 112 — Build an unused private currency policy-context codec
+
+**Defined only by the owner-authorized Command 111 review on 2026-10-10;
+not authorized or implemented.** Only the Context=[P,U] component of section 3e's
+future assessment, not the full A codec, a registry reader or currency authority.
+
+```text
+Command 112 — Build an unused private currency policy-context codec
+
+Read AGENTS.md, plan, decisions, progress and currency design section 3e/current review.
+Reconcile preceding review scan/main/exact-head CI/CodeQL before implementation. Renew
+frozen install, all 15 tooling-security checks and production/full audits. Keep findings
+unwaived and existing patches/pins; unrelated security repairs need separate approval.
+
+Implement only packages/database/src/private/currency-policy-context.ts and mandatory
+tests packages/database/test/currency-policy-context.spec.ts. No package/root/shared/
+browser export, ordinary consumer, dependency or hash. Pure production code: no Prisma,
+query, environment, clock, filesystem, network, randomness, logging, registry lookup or
+production object/request-decoder import. Existing shared policy/arithmetic schemas may
+be used for test-only semantic differential checks on fresh bounded fictional objects;
+their behavior/exports stay unchanged.
+
+Accept unknown input but process primitive JSON text only. Reject caller graphs, arrays,
+boxed strings, getters/proxies/iterators/coercion without invoking them. Retain 65,536
+UTF-8 input bytes: code-unit guard before encoder allocation, byte guard before parse.
+Exact prescribed nesting only, maximum depth four. Check arity/list bounds before
+indexed traversal, copying or sorting; reject extra/omitted/wrong-type/object tuples.
+
+Context=[P,U], arity two. P=[revision,baseRef,defaultBrowsingRef,secondaryRefOrNull,
+capabilities], arity five. Ref=[code,metadataVersion], arity two; explicit null is the
+only absent secondary. Capability=[code,metadataVersion,display,newSales,collection],
+arity five with boolean flags. U entry=[code,metadataVersion,minorUnitExponent,
+provenance,status], arity five. Each capability/definition list has 1–32 entries,
+independently checked before members; no enlarged global or third context.
+
+Full-input ASCII: code three uppercase letters; revision/version 1–64 characters
+[A-Za-z0-9][A-Za-z0-9._:-]*; provenance 1–256 printable ASCII with non-space ends;
+status current/historical. Preserve exact case, spaces, quotes/backslashes and every
+fact. Only exponent is an integral JSON number 0–4; no string/boolean coercion or
+floating-point financial calculation. No trimming/defaults/normalization/latest-unit
+fallback or inferred version/exponent.
+
+Enforce Command 97 semantics: unique capability code and U (code,version), exact base/
+default/secondary entry and definition membership, secondary different from default
+code, current/display-enabled browsing choices, no historical display/newSales.
+Historical collection is not automatically disabled; flags remain independent, not
+newSales=>display or provider-route approval. U is exactly the capability-referenced
+definition set, no extras/missing/alternate versions. Selected refs match those same
+entries. Equal exponent never substitutes for exact version/provenance/status.
+
+Construct fresh dense tuples. Sort capability copies by code and U by code then exact
+version with ASCII comparisons, never localeCompare. Preserve explicit null and all
+facts; do not stringify caller/parsed graphs directly. ECMAScript JSON quoting, no
+replacer/indent/BOM/final newline. Enforce 24,576 UTF-8 canonical Context bytes after
+escaping; 65,536 raw bytes is not an expanded canonical limit. Frozen independent
+success returns only canonicalText; failure is fixed/frozen/redacted. No raw detail,
+partial output, object handle, digest or implicit approval. No API/UI logging/exposure.
+
+Tests reproduce literal A-base Context (189 UTF-8 bytes) and its replacement prior
+context with changed revision. Cover reordered lists and whitespace/escape equivalence,
+exact case/provenance including quotes/backslashes, explicit null, every retained fact,
+all membership/current/historical/independent capability rules and test-only schema
+parity. Full-input newline/Unicode rejection is the specified stricter codec boundary,
+not permission to alter shared schemas. Test 1/32/33/zero lists, duplicate codes/units,
+missing/extra/wrong-version definitions, false/coerced flags, fractional/out-of-range/
+string exponents, all arity/nesting/object/extra-authority denials, caller traps,
+65,536/65,537 actual-byte/pre-parse/pre-allocation boundaries, output bounds after
+escaped-string expansion, redaction/copying and all unused paths. Do not relax field
+rules to manufacture oversized valid output.
+
+Append mandatory source wiring; minimally adjust old end-of-list assertions only.
+Retain all old gates/order/limits, S codec/five vectors, queue/script/application scans
+and strict shared decoder boundary. Inspect untracked source before commit too; tracked
+grep alone is insufficient. All 26 migration bytes/pins/schema/seed/identity/control,
+P1/SQL/prior-22/23/24/25 preservation and resource/deadline/cleanup duties stay unchanged.
+
+Run full proportional acceptance: source/shared/build/types, ordinary root plus P1/
+owned SQL/seed/preservation, format/four offline docs/lint/typecheck, API integration/
+invariants, lifecycle/staff browsers, audits/licenses and production build. Fresh verified
+fictional scopes/fake providers only; supported serial concurrency if needed, unchanged
+assertions/deadlines and honest failed-attempt reports. No borrowed old database or
+unrelated cleanup. Update five trackers, focused commit, pinned cached full-history scan,
+fetch/fast-forward-only reconciliation, non-force main push and exact-head CI/CodeQL.
+
+Stop for Phase review — Review Command 112 private policy-context codec and define the
+next bounded currency command. No A/C/H/E composition, S consumption, assessment hash,
+SQL/parity/function, authority/auth/evidence/proof/ledger store, identity/pin initialization,
+history assessment, selected fixture, policy/writer/privilege adoption, endpoint/UI/CLI/
+worker/provider/live query/import, operating approval, release/deploy or Docker/disk/cache
+cleanup. Shape proves no stored origin, coverage, compatibility approval, authorization
+or activation and completes neither P2 nor P3–P9 prerequisites.
 ```
 
 ## Continuation Command

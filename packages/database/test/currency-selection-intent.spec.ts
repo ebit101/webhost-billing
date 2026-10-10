@@ -576,7 +576,10 @@ test('private codec has only built-in crypto import, no export entry or ordinary
     for (const entry of readdirSync(directory, { withFileTypes: true })) {
       const path = resolve(directory, entry.name);
       if (entry.isDirectory()) visit(path);
-      else if (/\.(?:ts|tsx|json)$/.test(entry.name) && path !== sourcePath)
+      else if (
+        /\.(?:ts|tsx|js|mjs|cjs|json)$/.test(entry.name) &&
+        path !== sourcePath
+      )
         assert.doesNotMatch(readFileSync(path, 'utf8'), forbidden, path);
     }
   }
@@ -586,6 +589,8 @@ test('private codec has only built-in crypto import, no export entry or ordinary
     'apps/worker/src',
     'packages/shared/src',
     'packages/database/src',
+    'packages/queue/src',
+    'scripts',
   ])
     visit(resolve(root, directory));
   assert.doesNotMatch(

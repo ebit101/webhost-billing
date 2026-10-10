@@ -2248,6 +2248,42 @@ Logs confirm ordinary full root, P1/SQL/seed/prior preservation, API/invariants,
 19/staff four, audit/license/build and cleanup. No retained advisory is waived. This
 report-only update must pass its own delivery gate; stop for the recommended phase review.
 
+## ADR-114 — Isolate policy-context encoding before full assessment authority
+
+- **Status:** Accepted design boundary by the owner-authorized Command 111 review on
+  2026-10-10; Command 112 defined only, not authorized or implemented.
+- **Review:** No blocking codec defect or ordinary consumer at `1f4d92a`. Exact arity,
+  grammar/case/BIGINT, pre-parse budgets, fresh bytes/hash and fixed frozen results match
+  Command 111. The shared guard allows two exact private label lines only, rejects actual
+  decoder imports/calls/other hits and retains old scan targets. Widened the S test to
+  queue source/scripts and .js/.mjs/.cjs; no runtime/business-rule change.
+- **Evidence:** Fresh base-head CI 38044593386 aggregate/all 29 Validate steps and CodeQL
+  38044593404 aggregate/all eight passed, first attempts. Logs confirm full root/P1/SQL/
+  seed/preservation/API/invariant/browser/audit/build/cleanup. Hosted scan 223/no leaks
+  is separate from implementation local 229. Fresh review frozen install/tooling 15/
+  source 89/shared 113/build/types passed; full local SQL/browser was inspected, not rerun.
+- **Decision:** Define **Command 112 — Build an unused private currency policy-context
+  codec**: the already specified Context=[P,U] component, before full control/auth/evidence
+  composition. Primitive bounded text, exact arities/references, independent 1–32 lists,
+  Command 97 semantics, ASCII sorting and 24,576 canonical bytes. No hash/domain, new
+  registry, public entry or consumer; future A still owns assessment hashing/binding.
+- **Qualification:** Current/display browsing and historical display/newSales denial
+  do not approve collection routes or imply newSales=>display. Exact version/provenance/
+  status matter, not only equal exponent. Full-input ASCII is the stricter codec boundary,
+  not shared-schema modification. Separate prior/proposed contexts, anchor and qualified
+  acquisition remain future A duties, not an enlarged existing context API.
+- **Security:** Production audit exits zero/no known findings; full audit exits one with
+  the same unwaived braces high/sprintf-js moderate. Fresh configured-registry lookups of
+  3.0.4/1.1.4 return package-not-found. Primary
+  [braces](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm) and
+  [sprintf-js](https://github.com/advisories/GHSA-hp3w-g68c-fv3c) advisories list no patched
+  versions; audit-suggested ranges alone are not installable repair evidence. Existing
+  patches/15 mitigation tests stay; no waiver/dependency/unrelated repair.
+- **Boundary:** Five trackers and one widened existing test only. No next codec,
+  store/migration/role/fixture/query/SQL parity, identity/pin/auth/evidence/proof/ledger,
+  selection/adoption/consumer/provider/import, operating approval or release/deploy.
+  Review delivery gates remain required; stop and request explicit Command 112 approval.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

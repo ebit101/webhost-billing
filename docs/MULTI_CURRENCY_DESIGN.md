@@ -2576,6 +2576,50 @@ S syntax and its digest do not complete P2 or authorize activation. Stop after v
 delivery for **Phase review — Review Command 111 private stable-intent codec and define
 the next bounded currency command**; no subsequent implementation is authorized here.
 
+### Command 111 review and policy-context codec boundary
+
+Owner-authorized on 2026-10-10 accepts the syntax-only scope at `1f4d92a`. Fresh exact-head
+CI 38044593386 aggregate/all 29 Validate steps and CodeQL 38044593404 aggregate/all eight
+passed, first attempts. Retrieved logs confirm source 89/shared 113/P1 12/SQL 79/seed/prior
+preservation/root/API/invariants/lifecycle 19/staff four/audit/license/build/cleanup.
+Hosted scan 223/no leaks differs from implementation local 229. Earlier failed attempts
+remain failures, not permanent local fixes or authority proof.
+
+No blocking codec defect or ordinary consumer found. Exact two-label shared guard still
+rejects decoder imports/calls/other hits. Strengthen the private S test with queue source/
+scripts and .js/.mjs/.cjs variants; retain every old target and no runtime change. Fresh
+frozen/tooling 15/source 89/shared 113/build/types passed; full local SQL/browser was
+inspected, not rerun. Production audit is clear of known findings; full audit retains two
+unwaived tooling advisories and suggested versions remain unavailable in registry lookups.
+
+Define **Command 112 — Build an unused private currency policy-context codec** in
+[the command record](../CODEX_DEVELOPMENT_COMMANDS.md), not its implementation. Private
+`packages/database/src/private/currency-policy-context.ts` is proposed for Context=[P,U]
+only: bounded primitive JSON text, exact Context/P/ref/capability/U arities 2/5/2/5/5,
+1–32 independent lists checked before traversal/copy/sort, full ASCII grammar and exact
+case/provenance/status. U must match exactly the capability-referenced definitions,
+no extras/missing/alternate version or equal-exponent substitution. All Command 97
+membership/current-display browsing/historical-display-newSales rules apply; flags remain
+independent, not provider routes. Existing object schemas support test-only differential
+checks, not production decoder reuse or shared-schema changes.
+
+Fresh dense arrays, ASCII sorting by code and code/version, explicit secondary null and
+ECMAScript JSON quoting preserve quotes/backslashes. Input stays 65,536 UTF-8 bytes;
+canonical Context stays 24,576 after escaping. Frozen narrow canonical-text success or
+fixed redacted failure, no hash, export, ordinary consumer, query, registry/default or
+approval. Full A still binds separate proposed/prior contexts and anchor; no composition.
+The existing A-base Context is a literal 189-byte fixture for future acceptance, not an
+implemented codec. All arity/list/reference/case/capability/budget/trap/redaction/boundary
+and retained acceptance gates remain; inspect untracked new source before commit too.
+
+This review changes five trackers and one existing test only. All 26 migration bytes/pins,
+identity/control/seed, prior preservation and P1/resource/deadline/cleanup stay. No next
+Context/A/C/H/E codec, SQL/function/parity, pin/auth/evidence/proof/ledger/issuer/replay,
+selected fixture/history assessment/writer/privilege/consumer/provider/live query/import,
+operating approval or release/deployment. P2/P3–P9, protected legacy/provider evidence,
+Command 33 and final launch approvals remain. Stop after validated review delivery and
+request explicit Command 112 authorization; no automatic implementation or go-live promise.
+
 ## 4. Price publication, quote and renewal rules
 
 ### Catalogue pricing

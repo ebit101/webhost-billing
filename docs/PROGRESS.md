@@ -13657,6 +13657,85 @@ it automatically or begin assessment/auth/evidence storage or activation.
   stable-intent codec and define the next bounded currency command**. Stop; no next
   implementation command is defined or authorized here.
 
+### Command 111 phase review — Private stable-intent codec and next bounded command
+
+- **Status:** Review checks passed; consumer-test strengthening applied; Command 112
+  defined only; review delivery acceptance remains required before handoff.
+- **Date:** 2026-10-10.
+- **Authority:** Owner authorized review and next-command definition only, not Command
+  112 implementation, currency authority, live import/provider or production deployment.
+
+#### Delivery reconciliation and review findings
+
+- Implementation final report is `1f4d92a5e4535748e1b3858a6c6c6dc3d8befe00`, after
+  `b281819`/corrective `8f3adfd`. Fresh exact-head
+  [CI 38044593386](https://github.com/ebit101/webhost-billing/actions/runs/38044593386)
+  aggregate/all 29 Validate steps and
+  [CodeQL 38044593404](https://github.com/ebit101/webhost-billing/actions/runs/38044593404)
+  aggregate/all eight passed, first attempts. PR dependency review skipped, not passed.
+  Retrieved logs confirm hosted scan 223/no leaks, source 89/shared 113/P1 12/SQL 79 and
+  seed/prior preservation, queue three/API unit 107/web 572/worker 29, API integration
+  81/17 suites, invariants 113/12/42/two, lifecycle 19 (2.1 minutes)/staff four (8.7 seconds),
+  production audit/license/build and cleanup. Implementation local scan 229/no leaks is
+  a separate inventory. Final local/remote head was clean 0/0; owner direct-main bypass
+  was reported without protection changes/force-push. Earlier failed attempts remain.
+- Inspected current command/design, complete codec/tests, shared decoder, package wiring
+  and all changed paths. No blocking codec defect or runtime consumer found. Strict
+  arity/full grammar, lowercase server UUID versus preserved request-key case, canonical
+  BIGINT, pre-allocation/parse/input/output budgets, fresh arrays/hash and frozen redaction
+  match scope. All five literal S vectors remain mandatory. Exact shared two-label guard
+  still rejects real decoder imports/calls/other bodies/paths, retaining all old targets.
+- Coverage gap: private consumer scan omitted queue source/scripts and JavaScript variants.
+  Widened that existing assertion to those paths/.js/.mjs/.cjs. No codec/business rule,
+  old target or gate removed. Fresh tracked inventory and filesystem assertion find no
+  ordinary consumer; no public export added.
+- Define **Command 112 — Build an unused private currency policy-context codec** only:
+  Context=[P,U] before larger A/SQL/storage/authority boundaries. Exact complete definitions,
+  independent capabilities and canonical sorting/bytes do not attest stored origin,
+  routes, compatibility approval or history completeness. No next code/store is implemented.
+
+#### Files changed and fresh validation
+
+- `packages/database/test/currency-selection-intent.spec.ts` — broaden existing unused
+  consumer coverage; test counts remain 15 codec/89 database source cases.
+- Five trackers: `CODEX_DEVELOPMENT_COMMANDS.md`, `HOSTING_BILLING_SYSTEM_PLAN.md`,
+  `docs/DECISIONS.md`, `docs/MULTI_CURRENCY_DESIGN.md`, `docs/PROGRESS.md`.
+- Fresh frozen pnpm install, tooling-security 15/15, widened source 89/89, shared 113/113,
+  shared/database builds and types passed, zero skipped cases. Full local SQL/P1/API/browser/
+  production build was inspected in predecessor logs, not rerun by this review; own hosted
+  full pipeline remains required. No failing gate is waived.
+- Production audit exits 0/no known findings; full audit exits 1 with exactly retained
+  braces high `GHSA-vfj7-8cjw-p6xm` and sprintf-js moderate `GHSA-hp3w-g68c-fv3c`. Fresh
+  configured-registry lookups of 3.0.4/1.1.4 both return package-not-found; primary advisory
+  pages list no patched versions. No patch/dependency/lock/suppression changes or clean
+  full-audit claim; new unrelated security repairs require separate authorization.
+- Broad combined reads were truncated; focused current decisions/progress/command/design
+  and complete codec/test reads followed. An exact-context documentation patch initially
+  failed without partial edits; corrected matching context. No helper was installed.
+  Read-only extraction of existing fictional A-base Context confirms 189 UTF-8 bytes,
+  a fixture calculation, not a new encoder or authority implementation.
+- Fresh full repository formatting, all four offline documentation validators and diff/
+  scope checks passed after the tracker edits; source 89/89 passed again after formatting.
+  Runtime/migration/lock/workflow paths remain unchanged. Focused commit, pinned cached
+  full-history scan, fetch/fast-forward-only reconciliation, non-force main push and own
+  exact-head CI/CodeQL still must pass before completion is reported.
+
+#### Decisions, remaining risks and exact next command
+
+- ADR-114 fixes this next slice's exact 32-per-list bounds/references, unchanged Command
+  97 semantics, ASCII sorting and 24,576 canonical Context bytes; raw input stays 65,536.
+  Stricter full-input ASCII checks do not authorize shared-schema changes. No context hash,
+  enlarged existing context API, A/C/H/E composition or S consumer is added by the definition.
+- All 26 migration bytes/pins/schema/seed/identity emptiness/control zero/null and old
+  P1/SQL/preservation/resources/deadlines/cleanup remain untouched. No production privilege
+  proof, pin initialization, auth writer adoption, evidence/proof/ledger or selected state.
+- Retained tooling findings, privileged clone/owner powers, unproven deployed duties,
+  unrelated intermittent local timing/older schema drift, protected legacy/provider data,
+  Command 33 inputs and final launch approval remain. No release/deploy or old cleanup.
+- After this review's validated delivery, request **Command 112 — Build an unused private
+  currency policy-context codec**. Stop; no automatic implementation or remaining-command
+  count/go-live promise.
+
 ## Report Template
 
 Use this template after every future command:
