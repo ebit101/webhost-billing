@@ -4687,7 +4687,9 @@ Only the Context=[P,U] component of section 3e's future assessment, not the full
 a registry reader or currency authority. Actual checks and failed attempts are recorded
 in `docs/PROGRESS.md`. Implementation `2a9a938` passed pinned scan/main and first-attempt
 exact-head CI/CodeQL. The final report also requires its own delivery gates before handoff.
-Stop for the Command 112 phase review; no next implementation or activation authorized.
+The owner-authorized phase review accepts this syntax-only scope on 2026-10-10.
+Final report `11f552b` also passed pinned scan/main and first-attempt exact-head CI/CodeQL.
+Command 113 below is defined only; no next implementation or activation is authorized.
 
 ```text
 Command 112 — Build an unused private currency policy-context codec
@@ -4774,6 +4776,141 @@ history assessment, selected fixture, policy/writer/privilege adoption, endpoint
 worker/provider/live query/import, operating approval, release/deploy or Docker/disk/cache
 cleanup. Shape proves no stored origin, coverage, compatibility approval, authorization
 or activation and completes neither P2 nor P3–P9 prerequisites.
+```
+
+## Command 113 — Build an unused private currency assessment codec
+
+**Defined by the owner-authorized Command 112 phase review on 2026-10-10; not authorized
+or implemented.** One complete pure assessment component, consolidating C/H/E validation
+and A composition rather than separate commands for each tuple. Reuse the existing private
+S and Context codecs only within this new private component. Hashing fictional facts cannot
+attest storage, human authorization, compatibility, history coverage or currency selection.
+
+```text
+Command 113 — Build an unused private currency assessment codec
+
+Read AGENTS.md, plan, decisions, progress and currency design sections 3d/3e/current review.
+Reconcile preceding review scan/main/exact-head CI/CodeQL before implementation. Renew
+frozen install, tooling-security 15 and production/full audits; retain unwaived findings
+and exact patches/pins. Unrelated security repairs require separate authorization.
+
+Implement only packages/database/src/private/currency-selection-assessment.ts and its
+mandatory test packages/database/test/currency-selection-assessment.spec.ts, plus narrow
+test wiring/boundary changes below. No public/package/root/shared/browser export or
+ordinary consumer. Production imports may be node:crypto and the two reviewed private
+S/Context codecs only. No Prisma/query, environment, wall clock, filesystem/network,
+randomness/logging, registry, request decoder, provider or database effect.
+
+Expose one private encoder taking two unknown arguments: companion stable-intent JSON
+text and assessment JSON text. Both must be primitive strings, independently limited
+to 65,536 UTF-8 bytes with code-unit guards before encoder allocation and byte guards
+before parse. Reject caller graphs/boxed strings/proxies/getters/coercion/iterators
+without visiting them. Validate S through the existing private codec; parse its narrow
+canonical output for binding checks. Do not accept a supplied digest as proof of S.
+Existing S input/canonical limits, grammar, exact request-key case and five vectors stay.
+
+A=["currency-selection-assessment-v1",stableIntentDigest,C,proposedContext,priorContext,
+anchorDefinition,H,E], arity eight, exact prescribed nesting maximum depth five.
+Require lowercase 64-hex digest exactly equal to computed companion S digest. Reject
+missing/extra/object-shaped/authority fields, wrong types and unsupported domains.
+Check every tuple arity and list budget before indexed members/copy/sort. No generic
+recursive canonicalizer, defaults, trimming, normalization, locale order or latest unit.
+
+Reuse the existing Context encoder for each separately bounded component, retaining
+all 1–32/24,576-byte/exact-set/ASCII/capability/reference/current/historical rules.
+For composition only, bounded JSON.parse-owned plain subarrays may be serialized as
+arguments to that private text validator after prescribed arity/depth/list checks;
+never accept caller objects, stringify unchecked nesting or trust this intermediate
+text as canonical. Parse only successful canonical component outputs and build fresh
+dense final A arrays. No public object helper or broader shared schema is introduced.
+Proposed revision must equal S proposed revision. No merging contexts into a larger API.
+
+C=[state,generation,selectedRevision,historyLatch,baseCode,baseMetadataVersion,
+baseExponent,createdAt], arity eight and maximum 512 canonical UTF-8 bytes.
+Absent is ["absent",null,null,null,null,null,null,null]. Unassessed is
+["unassessed","0",null,null,null,null,null,createdAt]. Selected has positive canonical
+BIGINT generation string, exact revision, explicit boolean latch, complete code/version/
+integer exponent and createdAt. No assessed-unselected or partial/null selected shape.
+Retain full-input ASCII rules and canonical 19-digit BIGINT <=9223372036854775807;
+never Number-convert counters. UTC createdAt is exactly 24 ASCII characters
+YYYY-MM-DDTHH:mm:ss.sssZ with actual calendar validation and exact round trip. Pure
+validation of that supplied timestamp may use Date; never read current time or invent
+an approval time. Initialize/adopt require absent/unassessed and S null/zero;
+replace requires selected and S's exact R/g. Maximum generation parses as syntax only;
+no increment/transition is performed.
+
+Prior context and anchor are explicit null exactly for absent/unassessed C. For selected
+C, prior revision equals C selected revision and anchor is one exact five-field U tuple,
+matching all C code/version/exponent fields. With false latch, prior base definition
+equals the entire anchor. With true latch, prior and proposed bases retain anchor code/
+exponent; differing metadata requires the compatibility root but is not approved by its
+shape. Proposed base may change with false latch only as syntax for later compatibility
+review. Compare all facts for repeated (code,version) identities across proposed/prior/
+anchor; contradictory exponent/provenance/status cannot represent immutable definitions.
+Do not omit matching prior/anchor facts or infer null latch as false. No history scanning,
+SQL references, fresh compatibility verification or selected database fixture.
+
+H=[evidenceId,executionDomainId,actorUserId,adminProfileId,sessionId,authEpoch,
+credentialId,recoverySetEpoch,factorKind,recoveryCodeId], arity ten, maximum 1,024
+canonical UTF-8 bytes. Retain exact lowercase server UUID grammar from S, positive
+canonical BIGINT epochs, totp with explicit null recovery ID, recovery with exact
+lowercase UUID recovery ID. H domain/actor/session match S exactly. Nil/max UUID syntax
+is not existence/ownership. No password/secret/token/credential lookup or current auth
+claim; enrollment, session freshness, one-use factor and versions remain future duties.
+
+E is 1–32 entries, checked before members, each [kind,evidenceId,version,payloadDigest]
+arity four and maximum 224 canonical UTF-8 bytes. Exact registered pairs only:
+history/currency-history-assessment-v1, compatibility/currency-compatibility-v1,
+adoption/currency-adoption-v1. Evidence IDs use lowercase server UUID grammar and
+digests exactly 64 lowercase hex. Deny duplicate (kind,id), even with differing version/
+digest. ASCII sort copies by kind, version, ID. Require history and compatibility roots;
+adopt also requires adoption. Do not invent additional exclusions/counts or infer coverage
+from roots. Immutable payload/installation/domain/action/intent/C/context verification,
+root schemas, freshness and lineage remain later acquisition/storage gates.
+
+ECMAScript JSON quoting, explicit nulls, fresh dense validated tuples, no replacer/indent/
+BOM/newline. Enforce each component budget and 65,536 canonical A UTF-8 bytes after
+escaping before SHA-256. Hash only canonical A bytes; lowercase assessmentDigest.
+Independent frozen success contains only success, canonicalText, assessmentDigest;
+one fixed frozen redacted failure, no raw detail, H handle, partial hashes or authority.
+This restricted canonical material must never be logged or exposed as approval.
+
+Tests retain all five S vectors and reproduce all five assessment byte/hash vectors
+in section 3e, independently checked with a second SHA-256 implementation. Cover all
+legal C shapes/actions, unchanged-generation staging/latching changing A but not S,
+exact large/max/overflow/noncanonical counters, UTC leap/calendar/round-trip denials,
+S digest/revision/domain/actor/session mismatch, totp/recovery evidence, all exact anchors
+and cross-context immutable identities, reordered lists/escape equivalence and every
+retained fact. False-to-true latch tests are pure tuples, never product SQL selected rows.
+Cover E required/duplicate/unknown/version/id/digest rules and 1/32/33/zero, both Context
+limits independently, all tuple-position/type/arity/nesting/authority denials, caller
+traps, pre-allocation/pre-parse actual-byte guards, component/outer post-escape budgets,
+copying/frozen/redacted results and no ordinary consumers. Keep field rules to test
+limits; use explicitly documented fault injection for otherwise unreachable ceilings.
+
+Append mandatory source wiring without removing/reordering any old gate. Update old
+exact list-tail assertions minimally. Existing S/Context unused scans may allow only
+this one exact private assessment path and exact reviewed import/call patterns, with
+negative regressions for root/app/queue/script/JavaScript/other private consumers.
+Continue checking untracked files too. The strict shared decoder boundary retains its
+two exact S-label allowances, never actual decoder imports/calls or broad exemptions.
+Do not alter S/Context runtime behavior, shared schemas/exports, dependencies or locks.
+
+All 26 migration bytes/pins/schema/seed/empty identities/control zero/null and retained
+P1/SQL/prior-22/23/24/25 snapshots/resources/deadlines/cleanup remain unchanged. Run full
+proportional acceptance: source/shared/build/types, ordinary root/P1/owned SQL/seed/
+preservation, formatting/four offline docs/lint/typecheck, API integration/invariants,
+lifecycle/staff browsers, audits/licenses and production build. Fresh verified owned
+fictional scopes/fake providers only, supported serial concurrency if needed, unchanged
+assertions/deadlines and honest failed attempts. No borrowed database or old cleanup.
+
+Update five trackers, focused commit, pinned cached full-history scan, fetch/fast-forward-
+only reconciliation, non-force main push and exact-head CI/CodeQL. Stop for Phase review
+— Review Command 113 private assessment codec and define the next bounded currency command.
+No SQL/parity/function/store, proof bearer mint/hash/issuance/consumption, identity/pin/auth
+initialization, current authority/approval, history assessment, selected fixture, CAS/
+ledger/replay endpoint, policy/writer/privilege adoption, UI/API/CLI/worker/provider/live
+query/import, release/deploy or Docker/disk/cache cleanup. P2 and P3–P9 remain incomplete.
 ```
 
 ## Continuation Command

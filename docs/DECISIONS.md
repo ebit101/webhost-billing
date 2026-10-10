@@ -2316,6 +2316,45 @@ report-only update must pass its own delivery gate; stop for the recommended pha
   production privilege adoption, operating approval or deployment. Stop for the Command
   112 phase review, not another implementation. Two retained tooling advisories are unwaived.
 
+## ADR-116 — Consolidate pure assessment encoding without opening currency authority
+
+- **Status:** Accepted definition by the owner-authorized Command 112 phase review on
+  2026-10-10; Command 113 is not authorized or implemented.
+- **Review:** No blocking Command 112 defect found. Exact-set/capability/reference rules,
+  full ASCII/case, raw/canonical budgets, fresh copied tuples and frozen redacted results
+  match its scope. Private filesystem scans include untracked source/queue/scripts and
+  JavaScript variants; no ordinary consumer/export/hash/database effect. Shared extra-U
+  permissiveness and defensive ceiling fault injection are intentional, not relaxed rules.
+- **Evidence:** Final report `11f552b` local pinned scan 234/no leaks; fresh main 0/0 and
+  exact-head CI 38050900237 aggregate/all 29 Validate steps and CodeQL 38050900248
+  aggregate/all eight passed, first attempts. Retrieved full CI matrix/cleanup and hosted
+  scan 226/no leaks inspected, distinct from local inventory. Fresh review frozen install,
+  tooling 15/source 108/shared 113/build/types passed. Full local SQL/browser/build was
+  inspected in predecessor evidence, not rerun by this documentation review.
+- **Decision:** Define one complete unused private A codec with companion S text: C/H/E
+  validation, separately encoded proposed/prior Context and anchor, exact S bindings,
+  bounded canonical bytes and SHA-256. Consolidate these pure pieces instead of separate
+  per-tuple commands. Preserve all existing component contracts and no public entry.
+- **Composition:** Two independently bounded primitive text arguments; supplied A digest
+  must match computed S. Bounded parse-owned subarrays may enter the existing private
+  Context text validator only after prescribed shape/list/depth checks; final arrays are
+  fresh from successful canonical components. No caller-object helper or general serializer.
+  Same immutable unit identity cannot carry contradictory facts across components.
+- **Boundary:** Date use is supplied UTC calendar validation only, not a clock. Evidence
+  roots/UUIDs/epochs are syntax, not payload/ownership/coverage/current auth. Latched base
+  code/exponent and exact anchor facts remain; no stored selected fixture or transition.
+  Existing consumer tests may allow only the exact new private composition, with negative
+  regressions; strict shared decoder isolation remains. All 26 migrations and old gates stay.
+- **Security:** Production audit zero; full audit one with the two retained unwaived
+  braces high/sprintf-js moderate findings. Fresh suggested-version registry lookups fail;
+  primary advisory pages still list no patched versions. Existing patches/mitigation tests
+  remain; no unrelated repair/dependency/lock changes or clean full-audit claim.
+- **Stop:** Review changes five trackers only. Its scan/main/exact-head hosted gates are
+  required before handoff. No next implementation, SQL parity, authority/auth/evidence/
+  proof/ledger store, pin initialization, writer/privilege/history adoption, ordinary
+  consumer, live access/import, operating approval or release/deployment. Request explicit
+  Command 113 authorization; no fixed remaining-command count or go-live promise.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

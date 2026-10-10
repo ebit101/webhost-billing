@@ -2661,6 +2661,53 @@ authority store, pin/auth/evidence/proof/ledger, history assessment/writer/privi
 adoption, provider/live data/import, approval or deployment. Stop for the Command 112
 phase review; no next implementation is authorized and P2/P3–P9 remain incomplete.
 
+### Command 112 review and consolidated private assessment boundary
+
+Owner-authorized review on 2026-10-10 accepts isolated Context encoding at final report
+`11f552b32f84da1e96913b5ca282fe0441dbca0e`. No blocking in-scope defect found. Exact
+arity/ASCII/capability/reference/set/budget/copy/redaction rules and unused filesystem
+boundaries match Command 112. Shared extra-definition permissiveness remains unchanged;
+the exact-set component intentionally denies it. Output ceiling fault injection is
+defensive acceptance, not an oversized valid fixture or relaxed grammar.
+
+Final report local pinned scan 234/no leaks and main reconciliation passed. Fresh exact-
+head CI 38050900237 aggregate/all 29 Validate steps and CodeQL 38050900248 aggregate/all
+eight passed, first attempts; dependency review skipped, not passed. Retrieved CI logs
+confirm the complete retained matrix and cleanup, hosted scan 226/no leaks, source 108/
+shared 113/P1 12/SQL 79, lifecycle 19/staff four and production audit/license/build. Fresh
+review frozen/tooling/source/shared/build/types passed; full local runtime acceptance was
+inspected, not rerun. Two retained tooling advisories remain unwaived and their suggested
+patch versions unavailable in fresh registry lookups.
+
+Define **Command 113 — Build an unused private currency assessment codec** in
+[the command record](../CODEX_DEVELOPMENT_COMMANDS.md), not its implementation. One
+complete pure component consolidates C/H/E validation and A composition. Private companion
+S text binds computed digest, action/R/g, proposed revision and H domain/actor/session;
+both inputs are independently bounded primitive text, no caller graph or supplied-hash
+authority. Reuse existing private S/Context validators with their unchanged budgets and
+exact contracts. Only prescribed bounded parse-owned component arrays may be serialized
+for the private Context text validation; final output uses fresh successful canonical
+components, not unchecked parsed graphs. No public object helper.
+
+C keeps absent/unassessed/selected distinctions, exact positive BIGINT/case/null/latch
+and immutable UTC creation time; Date is calendar validation only, never current time.
+Separate proposed/prior contexts and exact anchor retain full immutable facts. Same
+(code,version) identity cannot contradict exponent/provenance/status across components.
+False latch requires whole prior base/anchor equality; true latch retains prior/proposed
+base code/exponent. Compatibility roots do not certify approved metadata changes. H
+retains exact ten-field non-secret syntax/factor rules; E keeps the registered pairs,
+required roots, 1–32 budget, duplicates and ASCII sorting. No acquisition/root payload
+coverage/current authorization is inferred. All five A vectors plus the retained five S
+vectors and full arity/semantic/budget/trap/boundary/retained acceptance gates are required.
+
+This definition is not implementation or permission to open selected states. All 26
+migration bytes/pins/schema/seed/empty identities/unassessed controls and P1/SQL/prior
+preservation/resources/deadlines/cleanup remain untouched. No SQL parity/function/store,
+pin/auth/evidence issuance/proof/ledger/consumer/history/writer/privilege adoption,
+provider/live query/import, operating approval or deployment. P2/P3–P9, protected legacy/
+provider evidence, Command 33 and launch approval remain incomplete. Stop after validated
+review delivery and request explicit Command 113 authorization.
+
 ## 4. Price publication, quote and renewal rules
 
 ### Catalogue pricing

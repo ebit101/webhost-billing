@@ -13859,6 +13859,83 @@ it automatically or begin assessment/auth/evidence storage or activation.
   policy-context codec and define the next bounded currency command.** Stop; no automatic
   next implementation or release/deployment.
 
+### Phase review — Review Command 112 private policy-context codec and define the next bounded currency command
+
+- **Status:** Engineering scope accepted; Command 113 defined only. Review delivery
+  requires its own scan/main/exact-head CI/CodeQL gates before handoff.
+- **Date:** 2026-10-10.
+- **Authority:** Owner authorized this review, not the next implementation or activation.
+
+#### Scope completed and findings
+
+- Reviewed complete private Context source/test, mandatory wiring, S/shared boundaries,
+  current command and design prerequisites against delivered `11f552b`. No blocking
+  in-scope defect or ordinary consumer found; no runtime correction needed.
+- Exact tuple/list/ASCII/membership/set rules, independent capabilities, fresh dense
+  copies, pre-allocation/pre-parse bounds and fixed frozen results match authorization.
+  Shared extra U remains intentionally more permissive; tests do not claim universal
+  parity. Maximum escaped fixture 22,627 and defensive output ceiling tests remain distinct.
+- Define **Command 113 — Build an unused private currency assessment codec** only:
+  consolidate pure C/H/E and complete A composition, companion S cross-binding, separate
+  proposed/prior Context and exact anchor, canonical budgets and SHA-256. No authority
+  acquisition/store/SQL/consumer/selection. This is one component, not a per-tuple series.
+- Clarify exact narrow private composition scan allowances/negative regressions, bounded
+  parse-owned subarray validation, cross-component immutable-unit consistency, supplied
+  UTC calendar validation versus clock and root shape versus actual coverage/approval.
+
+#### Files changed
+
+- Five trackers only: `CODEX_DEVELOPMENT_COMMANDS.md`, `HOSTING_BILLING_SYSTEM_PLAN.md`,
+  `docs/DECISIONS.md` (ADR-116), `docs/MULTI_CURRENCY_DESIGN.md`, `docs/PROGRESS.md`.
+- No source/test/package/workflow/dependency/lock/schema/seed/migration/resource change.
+
+#### Validation and predecessor delivery closure
+
+- Final Command 112 report commit `11f552b32f84da1e96913b5ca282fe0441dbca0e` changed
+  five trackers only, passed formatting/offline docs/diff and pinned cached full-history
+  scan 234/no leaks, normal main push and clean 0/0. No published history rewritten.
+- Fresh fetch/fast-forward-only main reconciliation is clean 0/0. A remote-owned
+  Dependabot tracking branch updated; this review did not force-push or change protection.
+- Fresh exact-head [CI 38050900237](https://github.com/ebit101/webhost-billing/actions/runs/38050900237)
+  aggregate/all 29 Validate steps and
+  [CodeQL 38050900248](https://github.com/ebit101/webhost-billing/actions/runs/38050900248)
+  aggregate/all eight passed, first attempts, matching that full SHA. PR dependency review
+  skipped, not passed. Retrieved CI logs confirm source 108/shared 113/P1 12/SQL 79/
+  seed/prior preservation/cleanup, queue three/API unit 107/web 572 across 54 files/
+  worker 29, API integration 81/17 suites, invariants 113/12/42/two, lifecycle 19
+  (1.7 minutes)/staff four (6.1 seconds), production audit/license/build and cleanup.
+  Hosted scan 226/no leaks is distinct from local 234; no inventory inferred.
+- Fresh review frozen pnpm install, installed tooling-security 15/15, source 108/108
+  (again after inspection), shared 113/113, shared/database builds and both package types
+  passed, zero skipped. Full local root/P1/SQL/API/browser/production build was inspected
+  in predecessor acceptance, not rerun by this documentation-only review; its own full
+  hosted matrix still must pass. No failed gate waived or earlier failed attempt erased.
+- Production audit exit 0/no known findings; full audit exit 1/exactly two retained:
+  braces high `GHSA-vfj7-8cjw-p6xm`, sprintf-js moderate `GHSA-hp3w-g68c-fv3c`.
+  Fresh suggested-version lookups of 3.0.4/1.1.4 fail package-not-found. Primary
+  [braces](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm) and
+  [sprintf-js](https://github.com/advisories/GHSA-hp3w-g68c-fv3c) pages still list no
+  patched versions. No waiver/unrelated repair/dependency/lock/suppression change.
+- Broad combined diagnostic reads were truncated; focused complete source/test and
+  current contract/decision/progress reads followed. No helper or resource installed.
+  Complete repository formatting, all four offline documentation validators and diff/
+  five-tracker scope checks passed. Focused commit, pinned cached scan, reconciliation/
+  non-force push and own exact-head CI/CodeQL remain delivery gates before handoff.
+
+#### Decisions, remaining risks and exact next command
+
+- ADR-116 defines full pure assessment encoding only. Shapes/digests do not prove
+  immutable stored origin, current session/auth, protected manifests, history/compatibility,
+  approved provider routes, privileges, human approval or currency selection.
+- All 26 migration bytes/pins/schema/seed/empty identities/control zero/null and old
+  P1/SQL/prior-22/23/24/25 resources/deadlines/cleanup remain. No selected SQL fixture,
+  pin initialization, auth/proof/evidence/ledger store, SQL parity or P2 completion.
+- Two retained tooling findings, privileged owner/clone powers, unproven deployed duties,
+  older local timing/schema risks, protected legacy/provider evidence, Command 33 inputs
+  and final launch approval remain. No live query/import/release/deploy or old cleanup.
+- After validated review delivery, request **Command 113 — Build an unused private
+  currency assessment codec**. Stop; no automatic implementation or go-live/count promise.
+
 ## Report Template
 
 Use this template after every future command:
