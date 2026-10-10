@@ -725,7 +725,7 @@ test('private codec has zero imports/hash/side effects/ordinary consumers and ap
   ]);
   assert.equal(
     pkg.scripts['test:unit'],
-    'tsx --test --test-concurrency=1 test/currency-units.spec.ts test/currency-policies.spec.ts test/currency-adoption-preflight.spec.ts test/currency-coordination.spec.ts test/currency-coordination-guards.spec.ts test/currency-control.spec.ts test/currency-privilege-harness.spec.ts test/currency-identity.spec.ts test/currency-selection-intent.spec.ts test/currency-policy-context.spec.ts',
+    'tsx --test --test-concurrency=1 test/currency-units.spec.ts test/currency-policies.spec.ts test/currency-adoption-preflight.spec.ts test/currency-coordination.spec.ts test/currency-coordination-guards.spec.ts test/currency-control.spec.ts test/currency-privilege-harness.spec.ts test/currency-identity.spec.ts test/currency-selection-intent.spec.ts test/currency-policy-context.spec.ts test/currency-selection-assessment.spec.ts',
   );
   assert.equal(
     pkg.scripts.test,
@@ -733,6 +733,46 @@ test('private codec has zero imports/hash/side effects/ordinary consumers and ap
   );
   const forbidden =
     /currency-policy-context|encodeCurrencyPolicyContext|CURRENCY_POLICY_CONTEXT_LIMITS/;
+  const assessmentPath = resolve(
+    db,
+    'src/private/currency-selection-assessment.ts',
+  );
+  function assertCompositionOnly(path: string, content: string) {
+    if (path !== assessmentPath)
+      return assert.doesNotMatch(content, forbidden, path);
+    assert.deepEqual(
+      content
+        .split(/\r?\n/)
+        .filter((line) => forbidden.test(line))
+        .map((line) => line.trim()),
+      [
+        "import { encodeCurrencyPolicyContext } from './currency-policy-context';",
+        'const result = encodeCurrencyPolicyContext(JSON.stringify(value));',
+      ],
+    );
+  }
+  const composition = readFileSync(assessmentPath, 'utf8');
+  assertCompositionOnly(assessmentPath, composition);
+  for (const path of [
+    'src/index.ts',
+    'src/private/other.ts',
+    '../../apps/web/src/consumer.tsx',
+    '../../packages/queue/src/consumer.cjs',
+    '../../scripts/consumer.js',
+  ])
+    assert.throws(
+      () => assertCompositionOnly(resolve(db, path), composition),
+      assert.AssertionError,
+    );
+  for (const extra of [
+    "export * from './currency-policy-context';",
+    'encodeCurrencyPolicyContext(other);',
+    'CURRENCY_POLICY_CONTEXT_LIMITS.entries;',
+  ])
+    assert.throws(
+      () => assertCompositionOnly(assessmentPath, composition + '\n' + extra),
+      assert.AssertionError,
+    );
   function visit(directory: string) {
     for (const entry of readdirSync(directory, { withFileTypes: true })) {
       const path = resolve(directory, entry.name);
@@ -741,7 +781,7 @@ test('private codec has zero imports/hash/side effects/ordinary consumers and ap
         /\.(?:ts|tsx|js|mjs|cjs|json)$/.test(entry.name) &&
         path !== sourcePath
       )
-        assert.doesNotMatch(readFileSync(path, 'utf8'), forbidden, path);
+        assertCompositionOnly(path, readFileSync(path, 'utf8'));
     }
   }
   for (const directory of [

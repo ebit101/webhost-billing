@@ -2355,6 +2355,34 @@ report-only update must pass its own delivery gate; stop for the recommended pha
   consumer, live access/import, operating approval or release/deployment. Request explicit
   Command 113 authorization; no fixed remaining-command count or go-live promise.
 
+## ADR-117 — Bind complete private assessment syntax without issuing currency authority
+
+- **Status:** Owner authorized Command 113 on 2026-10-11; private implementation and
+  full local acceptance passed. Final commit delivery gates must pass before handoff.
+  Preceding review `4d8704d` passed pinned scan/main
+  and exact-head CI/CodeQL before implementation.
+- **Decision:** Consolidate C/H/E and A composition in one unused private component,
+  with two independently bounded primitive texts and computed companion S binding.
+  Reuse only the reviewed private S/Context validators; retain their exact grammar,
+  budgets and runtime behavior. No public entry, ordinary consumer or database effect.
+- **Rules:** Absent/unassessed remain unknown; selected tuples bind exact action/R/g,
+  full anchor, prior/proposed revisions and cross-component immutable definitions.
+  False latch requires whole prior-base/anchor equality; true latch locks code/exponent.
+  H binds exact non-secret factor/epoch and domain/actor/session syntax. E has fixed
+  registered pairs, unique kind/id, required roots and copied ASCII sorting.
+- **Limits/results:** Input guards precede allocation/parse; prescribed depth/list/arity
+  checks precede private component serialization. Supplied UTC Date round trip is not
+  a clock. Component escaped bytes and final A ceiling precede canonical-only SHA-256.
+  Frozen minimal success/fixed redaction is not approval and must not be casually logged.
+- **Boundary:** All old S/Context/shared/source/P1/SQL/root/API/browser gates remain;
+  exact composition scan allowances do not admit other consumers or request decoder use.
+  All 26 migrations/pins/schema/seed/empty identities/zero-null controls are unchanged.
+  No selected SQL fixture, SQL parity, authority/auth/evidence/proof/ledger store, pin
+  initialization, history/writer/privilege adoption, provider/live access/import,
+  operating approval, release or deploy. Two retained tooling advisories remain unwaived.
+- **Next:** Stop after validated delivery and request **Phase review — Review Command
+  113 private assessment codec and define the next bounded currency command**.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

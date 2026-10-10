@@ -4780,8 +4780,10 @@ or activation and completes neither P2 nor P3–P9 prerequisites.
 
 ## Command 113 — Build an unused private currency assessment codec
 
-**Defined by the owner-authorized Command 112 phase review on 2026-10-10; not authorized
-or implemented.** One complete pure assessment component, consolidating C/H/E validation
+**Defined by the owner-authorized Command 112 phase review on 2026-10-10; owner authorized
+implementation on 2026-10-11.** Private implementation and full local acceptance are
+complete. Final commit scan/main/exact-head CI/CodeQL are mandatory before delivery is
+reported complete. One complete pure assessment component, consolidating C/H/E validation
 and A composition rather than separate commands for each tuple. Reuse the existing private
 S and Context codecs only within this new private component. Hashing fictional facts cannot
 attest storage, human authorization, compatibility, history coverage or currency selection.

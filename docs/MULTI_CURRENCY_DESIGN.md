@@ -2708,6 +2708,37 @@ provider/live query/import, operating approval or deployment. P2/P3–P9, protec
 provider evidence, Command 33 and launch approval remain incomplete. Stop after validated
 review delivery and request explicit Command 113 authorization.
 
+### Command 113 private assessment implementation — 2026-10-11
+
+The owner authorized the complete pure component, not authority acquisition or activation.
+Preceding review `4d8704d` passed its formerly blocked pinned history scan (235 commits,
+no leaks), normal main push and exact-head CI 38077221179/all 29 Validate steps and
+CodeQL 38077221180/all eight before implementation. PR dependency review skipped;
+the existing direct-main owner rule bypass remains a governance risk.
+
+`packages/database/src/private/currency-selection-assessment.ts` accepts two independently
+bounded primitive JSON texts and recomputes S through its reviewed private codec. Exact
+eight-field A binds C state/action/R/g, separate proposed/prior Context revisions, full
+anchor facts, immutable definition identities, H domain/actor/session/factor/epochs and
+registered complete E root kinds. Supplied UTC time uses pure calendar round-trip validation,
+never a clock. Prescribed shape/depth/list checks precede component serialization; final
+tuples come from copied validated facts and successful canonical Context outputs.
+
+Component post-escape ceilings and final 65,536 bytes precede assessment SHA-256. Success
+contains only frozen success/canonicalText/assessmentDigest; all failure paths share one
+fixed frozen redacted value. Restricted canonical identities must not be logged or exposed
+as approval. Maximum counters parse as syntax only, without increment/transition.
+
+Mandatory tests append to the existing source gate; exact private composition allowances
+retain negative root/app/queue/script/JavaScript/other-private regressions and filesystem
+inspection of untracked files. Shared request-decoder isolation and S/Context runtime
+behavior are unchanged. Validation results, earlier failed attempts and delivery gates
+remain in [progress](PROGRESS.md). No migration/schema/seed/pin/dependency/lock/patch or
+workflow change, selected SQL fixture, SQL parity, auth/evidence/proof/ledger store,
+identity initialization, writer/privilege/history adoption, provider/live query/import,
+release/deploy or operational approval. Stop for the owner-authorized Command 113 phase
+review; do not infer P2 completion or number/execute another slice automatically.
+
 ## 4. Price publication, quote and renewal rules
 
 ### Catalogue pricing

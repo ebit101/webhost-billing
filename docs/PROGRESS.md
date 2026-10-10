@@ -13861,8 +13861,9 @@ it automatically or begin assessment/auth/evidence storage or activation.
 
 ### Phase review — Review Command 112 private policy-context codec and define the next bounded currency command
 
-- **Status:** Engineering scope accepted; Command 113 defined only. Review delivery
-  requires its own scan/main/exact-head CI/CodeQL gates before handoff.
+- **Status:** Completed and delivered at `4d8704d4f3770d05f5180500691f5421473eb9ab`;
+  the former Docker scan blocker was resolved on 2026-10-11, with exact-head CI/CodeQL
+  success before the separately authorized Command 113 implementation began.
 - **Date:** 2026-10-10.
 - **Authority:** Owner authorized this review, not the next implementation or activation.
 
@@ -13921,6 +13922,30 @@ it automatically or begin assessment/auth/evidence storage or activation.
   Complete repository formatting, all four offline documentation validators and diff/
   five-tracker scope checks passed. Focused commit, pinned cached scan, reconciliation/
   non-force push and own exact-head CI/CodeQL remain delivery gates before handoff.
+- Focused local review commit `4d8704d4f3770d05f5180500691f5421473eb9ab` contains only
+  the five trackers. Final focused formatting/four offline docs/diff passed again before
+  commit. The exact cached, network-disabled read-only scanner invocation exited one
+  before scanning: Docker's `dockerDesktopLinuxEngine` named pipe is absent. This is
+  unavailable scanning, not a leaks finding or a successful scan. No Docker process or
+  existing native gitleaks command was found. Active context remains `desktop-linux`.
+- On 2026-10-10 no push was attempted; local main was ahead by that one focused commit. No review-head
+  CI/CodeQL has run. Requested the owner to start Docker Desktop. No engine repair,
+  pull, storage migration, cleanup, native scanner install or bypass was performed.
+  Read-only disk check found about 18 GB free on C and 17 GB on D; no disk changes.
+  Resume this same review's pinned scan/reconciliation/push/exact-head hosted gates
+  after engine restoration, not the next implementation. This blocker report changes
+  only this tracker and remains a local update until its own validation/delivery.
+- Delivery closure on 2026-10-11: Docker engine 29.8.1 available, existing PostgreSQL/
+  Redis healthy. The identical pinned cached network-disabled read-only scan passed
+  235 commits/no leaks. Fresh fetch showed main ahead one/behind zero, normal non-force
+  push succeeded and final fetch confirmed 0/0. No engine/storage/cache repair or cleanup.
+  GitHub reported existing owner PR/status-rule bypass; protection unchanged.
+- Exact-head [CI 38077221179](https://github.com/ebit101/webhost-billing/actions/runs/38077221179)
+  aggregate/all 29 Validate steps and
+  [CodeQL 38077221180](https://github.com/ebit101/webhost-billing/actions/runs/38077221180)
+  aggregate/all eight passed, first attempts, at that full review SHA. Dependency review
+  skipped, not passed. The owner subsequently authorized Command 113; no prior failed
+  scan was waived or represented as successful.
 
 #### Decisions, remaining risks and exact next command
 
@@ -13935,6 +13960,98 @@ it automatically or begin assessment/auth/evidence storage or activation.
   and final launch approval remain. No live query/import/release/deploy or old cleanup.
 - After validated review delivery, request **Command 113 — Build an unused private
   currency assessment codec**. Stop; no automatic implementation or go-live/count promise.
+
+### Command 113 — Build an unused private currency assessment codec
+
+- **Status:** Private implementation and full local acceptance passed. Final commit
+  scan/main/exact-head hosted gates are required before reporting delivery complete.
+- **Date:** 2026-10-11, owner-authorized implementation only.
+- **Prerequisite:** Closed preceding review `4d8704d` scan/main/exact-head CI/CodeQL
+  before writing implementation. Existing local blocker report is retained historically.
+
+#### Implemented scope and files changed
+
+- `packages/database/src/private/currency-selection-assessment.ts`: one private pure
+  encoder of primitive companion S and assessment A text. Exact C/H/E, independently
+  encoded Contexts, anchor and immutable-unit consistency; computed S digest and full
+  action/revision/generation/domain/actor/session bindings. Actual supplied UTC calendar
+  validation, exact BIGINT strings, component/list/input/canonical budgets, copied ASCII
+  sorting and SHA-256 of canonical A bytes. Frozen minimal success/fixed redacted failure.
+- `packages/database/test/currency-selection-assessment.spec.ts`: 23 mandatory source
+  cases, including all five literal A vectors independently checked with .NET SHA-256
+  and Web Crypto, legal/invalid tuples, unchanged-generation staging/latching, max/overflow
+  counters, real calendar, bindings/factors/roots/anchors/conflicts, two Contexts/list
+  bounds, all tuple positions/missing/extra arities/depth, caller traps/actual-byte guards,
+  defensive post-escape ceiling injection, largest valid escaped fixture, fresh dense
+  tuples, copied/frozen/redacted results and no public/ordinary consumer.
+- `packages/database/package.json`: append new source test without reordering old gates.
+  Three old exact-tail assertions updated minimally in identity/S/Context source tests;
+  S/Context boundary tests allow only exact reviewed assessment imports/calls and deny
+  root/app/queue/script/JavaScript/other-private use. Filesystem scans retain untracked files.
+- Five trackers: command/plan/design/decisions/progress, including ADR-117 and predecessor
+  closure. No other runtime module, shared schema/export, migration/schema/seed/pin,
+  dependency/lock/patch/workflow/environment/provider change.
+
+#### Validation performed and delivery protocol
+
+- Fresh frozen install and installed tooling-security 15/15 passed. Production audit
+  exit zero/no known findings. Full audit exit one with exactly retained braces high
+  `GHSA-vfj7-8cjw-p6xm` and sprintf-js moderate `GHSA-hp3w-g68c-fv3c`; no suppression,
+  dependency repair or waiver. Existing exact patches/pins preserved.
+- Initial strict type check found insufficient factor-pair narrowing; initial source
+  run passed 127/130, failing a missed identity list tail, maximum UUID grammar typo
+  and duplicate ID in the 32-root fixture. Corrected explicit typed factor branches,
+  the typo, unique fictional IDs and exact appended tail. No assertion/grammar relaxation.
+- Corrected source acceptance passed 130/130, then expanded missing-arity/dense-copy
+  acceptance passed 131/131 (23 new cases), no skips. Shared 113/113 and strict database
+  types passed. All five old S vectors remain intact. Independent .NET A vectors match
+  910/935/910/1213/1212 bytes and the five documented SHA-256 digests.
+- Library builds/Prisma generation, database/workspace/browser strict types and lint
+  passed. Compiled private A vector, absent root export and package subpath refusal
+  passed. One inline Node quoting probe failed before execution; its stdin rerun passed.
+  Protected-path diff passed: all migrations/schema/seed, S/Context runtime, shared,
+  apps/scripts, workflows, patches and lock/workspace files are unchanged.
+- Full guarded package gate passed: root tooling/demo/docs, shared 113, database source
+  131, distinct-login privilege harness 12, all seven SQL suites/79 tests with unchanged
+  26 migrations and prior snapshots, seed/verifier/preservation, queue 3, API unit 107,
+  worker 29, frontend 572 across 54 files. Serialized child commands and one frontend
+  worker are supported resource controls; newly owned fictional scopes were cleaned up.
+- Guarded API integration passed 81 tests across 17 suites; invariant gates passed
+  shared 113, API unit 12, API integration 42 across six suites and worker 2. Fresh owned
+  fictional scopes/fake providers only. Expected fake-provider rejection logs and
+  existing PostgreSQL/VM-module warnings are not repaired or represented as failures.
+- First lifecycle attempt failed at the unchanged 120-second web-server startup deadline,
+  before scenarios; cause remains unconfirmed. Its owned scope was cleaned up. After
+  heavy package/API checks ended, diagnostic-only retry passed all 19 lifecycle scenarios
+  (3.8 minutes), then all four staff scenarios (20.4 seconds). No source/assertion/deadline/
+  retry/cache changes; temporary debug environment restored and owned servers stopped.
+- Production workspace build passed with production NODE_ENV restored afterward.
+  Formatting, all four offline documentation validators, diff check and production
+  license inventory passed. Renewed frozen install and production audit passed; renewed
+  full audit retained exactly the same two unwaived findings listed above.
+- After final report formatting/docs/scoped-diff checks, create one focused command
+  commit, run the cached pinned read-only/network-isolated full-history scan, fetch and
+  reconcile without rewriting history, push normally to main, and verify exact-head CI
+  and CodeQL aggregates and every required step. Report actual commit/run outcomes in
+  the owner handoff; a skipped PR dependency-review job is not a passed check. Do not
+  claim post-commit gates passed from local acceptance or predecessor runs.
+
+#### Decisions, remaining risks and exact recommended next command
+
+- ADR-117: canonical shape/hash cannot attest stored immutable origin, complete protected
+  root payloads, history, compatibility, placement, privileges, current auth or human
+  approval. Canonical identities are restricted and must not be logged/exposed as authority.
+- All 26 migration bytes/pins/schema/seed, empty identity and zero/null control stores,
+  old P1/SQL/prior-22/23/24/25 resources/deadlines/preservation/cleanup remain unchanged.
+  No selected product SQL fixture, SQL parity/function/store, proof mint/hash/issuance/
+  consumption, identity/pin/auth initialization, CAS/ledger/replay endpoint, ordinary
+  UI/API/CLI/worker consumer, writer/privilege/history adoption or live provider/data/import.
+- Two tooling advisories, direct-main governance risk, trusted owner/clone powers,
+  unproven deployed duties, Command 33/legacy/provider/operating inputs and launch gates
+  remain. No release/deploy/operating approval or old scope/Docker/disk/cache cleanup.
+- After validated delivery, request **Phase review — Review Command 113 private
+  assessment codec and define the next bounded currency command**. Stop; P2 and P3–P9
+  remain incomplete, and no next implementation or go-live/count promise is authorized.
 
 ## Report Template
 

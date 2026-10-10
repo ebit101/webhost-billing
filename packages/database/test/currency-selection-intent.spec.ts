@@ -563,7 +563,7 @@ test('private codec has only built-in crypto import, no export entry or ordinary
   ]);
   assert.ok(
     pkg.scripts['test:unit'].endsWith(
-      'test/currency-identity.spec.ts test/currency-selection-intent.spec.ts test/currency-policy-context.spec.ts',
+      'test/currency-identity.spec.ts test/currency-selection-intent.spec.ts test/currency-policy-context.spec.ts test/currency-selection-assessment.spec.ts',
     ),
   );
   assert.equal(
@@ -572,6 +572,46 @@ test('private codec has only built-in crypto import, no export entry or ordinary
   );
   const forbidden =
     /currency-selection-intent|encodeCurrencySelectionIntent|CURRENCY_SELECTION_INTENT_LIMITS/;
+  const assessmentPath = resolve(
+    db,
+    'src/private/currency-selection-assessment.ts',
+  );
+  function assertCompositionOnly(path: string, content: string) {
+    if (path !== assessmentPath)
+      return assert.doesNotMatch(content, forbidden, path);
+    assert.deepEqual(
+      content
+        .split(/\r?\n/)
+        .filter((line) => forbidden.test(line))
+        .map((line) => line.trim()),
+      [
+        "import { encodeCurrencySelectionIntent } from './currency-selection-intent';",
+        'const intent = encodeCurrencySelectionIntent(stableIntentText);',
+      ],
+    );
+  }
+  const composition = readFileSync(assessmentPath, 'utf8');
+  assertCompositionOnly(assessmentPath, composition);
+  for (const path of [
+    'src/index.ts',
+    'src/private/other.ts',
+    '../../apps/api/src/consumer.ts',
+    '../../packages/queue/src/consumer.js',
+    '../../scripts/consumer.mjs',
+  ])
+    assert.throws(
+      () => assertCompositionOnly(resolve(db, path), composition),
+      assert.AssertionError,
+    );
+  for (const extra of [
+    "export * from './currency-selection-intent';",
+    'encodeCurrencySelectionIntent(other);',
+    'CURRENCY_SELECTION_INTENT_LIMITS.inputBytes;',
+  ])
+    assert.throws(
+      () => assertCompositionOnly(assessmentPath, composition + '\n' + extra),
+      assert.AssertionError,
+    );
   function visit(directory: string) {
     for (const entry of readdirSync(directory, { withFileTypes: true })) {
       const path = resolve(directory, entry.name);
@@ -580,7 +620,7 @@ test('private codec has only built-in crypto import, no export entry or ordinary
         /\.(?:ts|tsx|js|mjs|cjs|json)$/.test(entry.name) &&
         path !== sourcePath
       )
-        assert.doesNotMatch(readFileSync(path, 'utf8'), forbidden, path);
+        assertCompositionOnly(path, readFileSync(path, 'utf8'));
     }
   }
   for (const directory of [
