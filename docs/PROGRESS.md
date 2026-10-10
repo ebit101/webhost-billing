@@ -13469,6 +13469,140 @@ After this review's validated delivery, ask the owner to authorize
 **Command 111 — Build an unused private stable-intent codec**. Stop; do not implement
 it automatically or begin assessment/auth/evidence storage or activation.
 
+### Command 111 — Build an unused private stable-intent codec
+
+- **Status:** Private implementation locally validated with serialized complete acceptance and documented limitations; own delivery required before handoff
+- **Date:** 2026-10-10
+- **Authority:** Owner explicitly selected Command 111. This does not authorize another
+  implementation, authority storage, activation or production deployment.
+
+#### Predecessor delivery and implemented scope
+
+- Preceding review is delivered at `a4844756ba66f415363a07c50323e078d68d3a47`.
+  Its local pinned network-disabled full-history scan checked 226 commits/no leaks;
+  normal fetch/fast-forward-only reconciliation and non-force main push left clean 0/0.
+  Direct-main owner rule bypass was reported, not a protection-rule change.
+  Fresh exact-head [CI 38037573876](https://github.com/ebit101/webhost-billing/actions/runs/38037573876)
+  aggregate/all 29 Validate steps and
+  [CodeQL 38037573898](https://github.com/ebit101/webhost-billing/actions/runs/38037573898)
+  aggregate/all eight passed, first attempts. PR-only dependency review skipped. Retrieved
+  logs confirm hosted scan 220/no leaks and the retained full acceptance, separate from
+  predecessor local scan 226 or this command's own still-required delivery.
+- Added a pure private server module with only a built-in Node crypto import. It
+  accepts primitive JSON text only, bounds UTF-16 length before encoder allocation and
+  actual UTF-8 at 65,536 bytes before parsing, validates exact S/I arity 9/2 and primitive
+  grammar, builds fresh dense arrays and hashes canonical UTF-8 after the 1,024-byte
+  canonical ceiling. No raw JSON hash, BOM/indent/newline, normalization, defaults,
+  production request-parser reuse, database/clock/environment/network or logging effect.
+- Request grammar remains exact: original request-key/revision case, explicit null,
+  action/zero/positive-replacement rules and decimal generation through BIGINT maximum.
+  Server UUIDs require lowercase; request UUID v1–v8/variant/nil/max syntax matches the
+  installed parser, including its existing uppercase-max rejection. Shape grants no
+  identity, session/domain ownership, active placement, current authorization or approval.
+- Frozen independent narrow success contains only canonical text/digest and success;
+  fixed frozen failure contains no input, validation detail, partial hash or handle.
+  Restricted canonical identities must not be logged or exposed through application APIs.
+- Added 15 mandatory tests, including the five literal section 3e S vectors (267/267/
+  267/289/292 bytes), request differential matrices, changed-field/case identity,
+  exact large integers, JSON whitespace/escape equivalence, strict tuples/objects/nesting,
+  caller traps, pre-parse byte/pre-allocation bounds, 396-byte maximum valid S, defensive
+  canonical overflow and copying/redaction/private-import/export/consumer checks.
+  Appended the test to the source gate and minimally updated the old identity wiring
+  assertion; no existing gate/order/limit/assertion is removed or bypassed.
+
+#### Files changed
+
+- `packages/database/src/private/currency-selection-intent.ts`.
+- `packages/database/test/currency-selection-intent.spec.ts`.
+- `packages/database/package.json` — mandatory source test appended, no exports/dependencies.
+- `packages/database/test/currency-identity.spec.ts` — recognize the appended test only.
+- Five trackers: `CODEX_DEVELOPMENT_COMMANDS.md`, `HOSTING_BILLING_SYSTEM_PLAN.md`,
+  `docs/DECISIONS.md`, `docs/MULTI_CURRENCY_DESIGN.md`, `docs/PROGRESS.md`.
+
+#### Fresh validation, failed attempts and remaining gates
+
+- Frozen install and all 15 installed tooling-security checks passed. Production audit
+  exits 0/no known findings. Full audit exits 1 with exactly the retained unwaived braces
+  high `GHSA-vfj7-8cjw-p6xm` and sprintf-js moderate `GHSA-hp3w-g68c-fv3c`; no dependency,
+  override, patch or suppression change. This is not a clean full-audit claim.
+  Both audits renewed after production build with the same results and no new findings.
+- Initial database source run failed one new byte-counter test (88/89): its fixture
+  construction itself called the instrumented JSON parser. Moved fixture construction
+  before instrumentation; no codec/byte limit weakened. Full source rerun passed 89/89,
+  zero skips. A subsequently strengthened exact maximum assertion failed due to an
+  incorrect expected count of 398, not changed bytes. Corrected to independently .NET-
+  counted 396; the complete codec rerun passed 15/15. Both failures remain failures.
+- Shared 112, package builds, generated Prisma client and database types passed. Full
+  repository formatting, all four offline documentation checks, lint, worker build and
+  repository type checks passed. Final full formatting, all four offline documentation
+  validators, database type checking and diff whitespace checks renewed successfully
+  after the implementation/report edits.
+- Broad initial decisions/progress read output was truncated; focused current command,
+  design, predecessor report and source reads followed. A wildcard registry-source path,
+  optional guessed source paths and a root-level TSX module-resolution probe failed
+  read-only; no helper/dependency was installed to satisfy them. The existing web-package
+  TSX runtime resolves successfully. These are not test-suite pass claims.
+- Initial full root acceptance used verified package concurrency 1 and an in-memory
+  invocation of existing preparation/ownership guards: one fresh loopback nonce schema,
+  all exact 26 migrations, fictional seed/verify and fake/disabled providers. No existing
+  database was borrowed, repaired or migrated. Source 89, actual-login 12, all SQL 79,
+  guarded seed/verify, shared 112, queue three and API unit 107 passed. Frontend failed
+  two page-read waits (570/572); the root gate exited 1 before worker tests, and exact
+  owned-scope cleanup passed. No codec consumer or frontend source changed. Free memory
+  was low during failure; that observation is not a proven permanent routing/timing fix.
+- Installed Vitest source verifies `VITEST_MAX_WORKERS=1` as a supported concurrency
+  setting. The complete unchanged frontend passed 572/572 across 54 files serially,
+  in 189.60 seconds, without skipped cases, altered assertions/deadlines/retries or
+  committed runner/configuration changes.
+  Full root renewal with that setting and package concurrency 1 passed retained source/
+  P1/SQL/seed/queue/API and frontend 572/54 files (244.92 seconds), then failed worker
+  renewal lifecycle's unchanged 5,000 ms deadline (28/29). Its afterAll also reported
+  the retained hosting-operation FK while timed-out work remained, and Jest warned of
+  forced worker shutdown. Exact owned-scope cleanup completed. These are not passes or
+  a declared permanent fix. A full worker rerun with supported `--runInBand` passed
+  29/29 across all 10 suites in 12.191 seconds in another fresh owned schema. Final
+  identity counts stayed zero and exact scope cleanup passed; no assertion/deadline/
+  application/configuration change.
+  A serialized full-root matrix passed in a new owned scope: verified exact root/
+  package test inventories, ran all ten root helper scripts and all six tested packages,
+  with only supported Jest `--runInBand` and Vitest single-worker concurrency flags.
+  No repository test script or runner is changed; the two ordinary root invocations
+  above remain failed, not relabeled as passes. Results: tooling 15 and retained demo/
+  documentation mocks, shared 112, source 89, actual-login 12, owned SQL 79 and seed/
+  prior preservation, queue three, API unit 107, frontend 572/54 files (206.08 seconds)
+  and worker 29/10 suites. Both identity counts stayed zero; exact scope cleanup passed.
+  Production license inventory passed. Fresh API integration passed 81/17 suites;
+  invariants passed shared 112, API unit 12, API integration 42 and worker two.
+  Both identity counts stayed zero and exact owned API/invariant scope cleanup passed.
+  Chromium lifecycle acceptance passed 19/19 in 4.4 minutes in a new owned browser
+  schema; the existing guarded final cleanup completed. No browser assertion, timeout,
+  retry or source changed. Administrator-role browser checks passed 4/4 in 52.9 seconds,
+  first attempt, with no cache deletion/routing/fixture change. This does not establish
+  a permanent fix for earlier intermittent local routing. Production-mode full monorepo
+  build passed with verified package concurrency 1. No deployment or production migration.
+  Expected experimental-module/pg/color/image-loading and fake-error diagnostics remain;
+  no suppression or unrelated application repair. Final format/offline-doc/database-type
+  renewal passed. At this pre-commit cutoff, focused commit, cached
+  pinned full-history scan, fetch/fast-forward-only reconciliation, non-force main push
+  and own exact-head CI/CodeQL still must pass before completion is reported.
+
+#### Decisions, unresolved risks and exact next command
+
+- No application/shared runtime, schema/migration/pin, seed, lockfile, workflow or provider
+  changes. Identity emptiness, control zero/null guards, prior-22/23/24/25 preservation,
+  actual-login resource/time/cleanup limits and all old source/SQL gates remain mandatory.
+- S encoding is private syntax only, not SQL byte parity, a signature, proof, selection,
+  replay receipt, human approval or production authority. A/evidence/auth versions,
+  qualified identity/pin acquisition, complete security-writer adoption, proof/ledger,
+  currency writers, legacy adoption and P3–P9 prerequisites remain separately gated.
+- Existing tooling findings, privileged clone/pin/owner powers, unproven deployed duties,
+  older local schema drift/intermittent staff routing, Command 33 operating inputs and
+  final launch approval remain. No live data/provider/import/release/deployment or
+  unrelated Docker/disk/cache cleanup is authorized by this command.
+- After validated delivery, request **Phase review — Review Command 111 private
+  stable-intent codec and define the next bounded currency command**. Stop; no next
+  implementation command is defined or authorized here.
+
 ## Report Template
 
 Use this template after every future command:

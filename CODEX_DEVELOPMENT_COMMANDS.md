@@ -4570,8 +4570,11 @@ Inert identity storage is neither completed P2 authority nor currency activation
 ## Command 111 — Build an unused private stable-intent codec
 
 **Defined only by the owner-authorized Command 110 phase review on 2026-10-10;
-not authorized or implemented.** This is one pure server-only serialization slice
-of section 3e, not assessment encoding, SQL parity, acquisition or authority storage.
+subsequently authorized by the owner on 2026-10-10; private implementation locally
+validated with the recorded serialized acceptance and limitations.** The preceding review at `a484475` passed scan/main and
+exact-head CI/CodeQL before implementation. This is one pure server-only serialization
+slice of section 3e, not assessment encoding, SQL parity, acquisition or authority storage.
+Own scan/main/exact-head delivery is required before handoff; final tracking checks passed.
 
 ```text
 Command 111 — Build an unused private stable-intent codec

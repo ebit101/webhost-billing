@@ -2188,7 +2188,7 @@ reconciled by the owner-authorized review. Initial failed attempts remain failur
 
 ## ADR-113 — Keep stable-intent encoding private and separate from currency authority
 
-- **Status:** Accepted by the owner-authorized Command 110 review on 2026-10-10; Command 111 defined only, not authorized or implemented
+- **Status:** Accepted by the owner-authorized Command 110 review; Command 111 subsequently authorized on 2026-10-10; private implementation locally validated; own delivery required
 - **Review:** No blocking in-scope storage defect found at `756b02e`. Explicit empty
   models, restrictive references, finite C-collated facts, six fixed invoker guards and
   new-object PUBLIC revokes match Command 110. Existing pins/control/seed/runtime remain;
@@ -2218,6 +2218,19 @@ reconciled by the owner-authorized review. Initial failed attempts remain failur
   A encoding, SQL parity, proof/ledger and P3–P9 writer/privilege/adoption/activation stay
   separately gated. No new fixture/role/query/provider/import/deployment or old cleanup.
   Stop after review delivery and ask for explicit Command 111 authorization.
+
+The owner subsequently authorized Command 111. After review delivery at `a484475` and
+fresh exact-head confirmation, the private module and 15 mandatory tests implement S
+syntax/encoding only. No public export or runtime request-parser reuse. Differential
+tests preserve the installed UUID v1–v8/variant/nil/max grammar exactly, including the
+existing rejection of uppercase max UUID spelling; ordinary request-key case remains
+preserved. Server UUIDs must be lowercase. Maximum valid S is 396 bytes, independently
+checked with .NET UTF-8 counting; the defensive 1,024-byte ceiling remains enforced.
+No identities, pin, proof, approval or selected state are established. Serialized complete
+local acceptance, API/invariants/browser/build passed; two ordinary local root invocations
+failed and are not relabeled as passes or permanently fixed. Supported concurrency flags
+retain every suite/assertion/deadline. Final tracking checks passed; own delivery remains
+required. Failures and retained unwaived advisories stay in the report.
 
 ## Open Decisions
 

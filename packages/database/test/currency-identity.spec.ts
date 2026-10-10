@@ -116,7 +116,7 @@ test('mandatory source and SQL wiring append identity acceptance without changin
   const pkg = JSON.parse(readFileSync(resolve(db, 'package.json'), 'utf8'));
   assert.ok(
     pkg.scripts['test:unit'].endsWith(
-      'currency-privilege-harness.spec.ts test/currency-identity.spec.ts',
+      'currency-privilege-harness.spec.ts test/currency-identity.spec.ts test/currency-selection-intent.spec.ts',
     ),
   );
   assert.equal(

@@ -48,8 +48,10 @@
   storage remains incomplete. The owner authorized Command 110; after Docker recovery
   and review delivery at `b7d43af`, inert identity storage passed renewed local acceptance.
   It was delivered at `756b02e` with scan/main/exact-head acceptance and engineering-scope
-  accepted by the owner-authorized review on 2026-10-10. Command 111 is defined only:
+  accepted by the owner-authorized review on 2026-10-10. That review defines Command 111:
   unused private stable-intent encoding, no assessment/SQL parity/authority or consumer.
+  The owner subsequently authorized its private implementation on 2026-10-10; serialized
+  full local acceptance passed with documented limitations. Own delivery remains required.
   No production authority is installed.
   Temporary test installation is not product adoption.
   The selection protocol is not implemented or activated.
@@ -2513,6 +2515,54 @@ selection/shape opening, writer/role/adoption, live query/import/provider, opera
 approval, release/deployment or old-resource cleanup. Those prerequisites still gate
 trusted digest use and activation. Stop after this review's own validated delivery and
 request explicit Command 111 authorization; do not start it or promise a go-live date.
+
+### Command 111 private stable-intent implementation
+
+The owner authorized **Command 111 — Build an unused private stable-intent codec**
+on 2026-10-10. Preceding review `a484475` passed pinned full-history scan (226 commits,
+no leaks), normal main reconciliation and first-attempt exact-head CI/CodeQL. Hosted
+scan 220/no leaks is a separate inventory, not the same local scan. Direct-main owner
+rule bypass was reported; no rules or history were rewritten. Own serialized full local
+acceptance passed: source 89, shared 112, P1 12, SQL 79, queue three/API unit 107/web 572/
+worker 29, API integration 81, invariants 112/12/42/two, lifecycle 19/staff four, static/
+license and production build. Two ordinary local root invocations failed on frontend/
+worker timing; complete reruns with supported serial concurrency passed without changing
+tests/deadlines. This is not a permanent intermittent-failure fix. Final tracking checks
+passed; own delivery remains required and is recorded separately in the progress report.
+
+`packages/database/src/private/currency-selection-intent.ts` imports only built-in Node
+crypto. It accepts unknown input only when it is primitive bounded JSON text; code-unit
+and actual UTF-8 guards precede parsing. S has exact outer arity 9 and I arity 2. Strict
+primitive grammar and Command 108's action/null/zero/replacement rules precede construction
+of fresh dense arrays. Exact ECMAScript JSON UTF-8 bytes, no BOM/indent/final newline,
+are hashed with SHA-256 to lowercase hex only after the canonical budget passes.
+
+The installed UUID grammar is reproduced without a production parser import: ordinary
+versions 1–8/required variants plus exact nil/max alternatives. Request key text retains
+case; uppercase max spelling remains invalid under the existing parser's exact special
+alternative. The four server identity UUIDs require lowercase standard spelling. Revision
+case/1–64 full-input ASCII and generation decimal/19-digit/BIGINT bounds are unchanged;
+no Number conversion, trimming, normalization, defaults or actor/domain ownership claim.
+Input/canonical budgets remain 65,536/1,024 UTF-8 bytes. Maximum valid S is 396 bytes;
+tests do not relax field grammar to manufacture oversized valid content.
+
+The test-only import returns frozen independent narrow canonical text/digest success or
+one fixed frozen redacted failure, never raw errors, partial hashes, handles or approval.
+Canonical identities remain restricted and must not be logged or exposed by an API/UI.
+Fifteen new mandatory source tests cover all five literal persisted S vectors, unchanged
+request-rule differential matrices, exact identity/case and large generations, whitespace/
+escape equivalence, arity/nesting/object/authority denial, caller traps, byte bounds before
+parse/allocation, defensive canonical overflow and copy/redaction/private wiring. Only
+the prior identity wiring assertion changes to recognize the appended mandatory test.
+
+No package/root/shared/browser export or ordinary consumer. All 26 migration bytes/pins,
+schema, identity/control empty/unassessed shapes, seed, SQL/P1 limits and prior preservation
+remain unchanged. No A/context/auth/evidence codec, SQL byte parity, identity initialization/
+pin acquisition, token/issuer/proof/ledger/replay, policy selection, writer/privilege adoption,
+endpoint/UI/CLI/worker, provider/live query/import, operating approval or deployment/release.
+S syntax and its digest do not complete P2 or authorize activation. Stop after validated
+delivery for **Phase review — Review Command 111 private stable-intent codec and define
+the next bounded currency command**; no subsequent implementation is authorized here.
 
 ## 4. Price publication, quote and renewal rules
 
