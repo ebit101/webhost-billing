@@ -189,7 +189,8 @@ and mandatory syntax/vector/budget/boundary tests passed serialized full local a
 Initial delivery `b281819` passed scan/main but failed hosted CI on a tracked-file test
 matching the two private S protocol labels, not a runtime decoder import; CodeQL passed.
 The exact-label-only boundary correction passed shared 113/source 89/types locally;
-corrected-head delivery remains required before handoff. No package export, database effect or
+corrective delivery `8f3adfd` passed scan/main and first-attempt exact-head full CI/CodeQL.
+The final report-only update requires its own delivery gate. No package export, database effect or
 ordinary consumer is added. P2 and later activation prerequisites remain incomplete;
 actual checks and failed attempts are tracked separately in the progress report.
 No selection/guard or application consumer is installed by the observation helper or review.

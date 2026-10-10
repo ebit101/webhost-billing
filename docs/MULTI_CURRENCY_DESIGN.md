@@ -2560,6 +2560,12 @@ parser import/call exists. The test now permits only those two exact lines in th
 file, retaining all scanned paths and rejecting imports, calls and other hits. Fresh shared
 113/source 89/types passed; corrected-head delivery remains required. The initial failure
 is not relabeled, and no runtime grammar, export, consumer or gate deadline changes.
+Corrective delivery `8f3adfd` subsequently passed the pinned local scan (228/no leaks),
+normal main reconciliation and first-attempt exact-head CI 38043902016 (29 steps) and
+CodeQL 38043902076 (eight). Retrieved logs confirm source 89/shared 113/P1 12/SQL 79,
+ordinary root/API/invariants, lifecycle 19/staff four, audit/license/build and cleanup.
+Hosted scan 222/no leaks is a separate inventory. Final report-only delivery remains
+required; no new implementation, authority or activation is authorized by completion.
 
 No package/root/shared/browser export or ordinary consumer. All 26 migration bytes/pins,
 schema, identity/control empty/unassessed shapes, seed, SQL/P1 limits and prior preservation

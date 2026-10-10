@@ -13471,7 +13471,7 @@ it automatically or begin assessment/auth/evidence storage or activation.
 
 ### Command 111 — Build an unused private stable-intent codec
 
-- **Status:** Private implementation locally validated with serialized complete acceptance and documented limitations; own delivery required before handoff
+- **Status:** Completed and delivered at `8f3adfd` with exact-head acceptance and documented limitations; final report-only delivery requires its own gate
 - **Date:** 2026-10-10
 - **Authority:** Owner explicitly selected Command 111. This does not authorize another
   implementation, authority storage, activation or production deployment.
@@ -13614,6 +13614,31 @@ it automatically or begin assessment/auth/evidence storage or activation.
   Earlier shared 112 counts remain historical runs,
   not silently rewritten. Total command scope is now ten files, including five trackers.
   Corrective commit/scan/main and its own exact-head complete CI/CodeQL remain required.
+
+#### Corrective delivery acceptance and final tracking cutoff
+
+- Corrective commit `8f3adfd814d14184aeba0e52b702ee5bf3a35076` changes only the shared
+  boundary test and five trackers; published implementation/failure history is preserved.
+  Pinned cached network-disabled full-history scan passed 228 commits/no leaks. Normal
+  fetch/fast-forward-only reconciliation and non-force main push completed clean 0/0.
+  Existing owner direct-main PR/status-rule bypass was reported; no protection changes.
+- Exact-head [CI 38043902016](https://github.com/ebit101/webhost-billing/actions/runs/38043902016)
+  aggregate/all 29 Validate steps and
+  [CodeQL 38043902076](https://github.com/ebit101/webhost-billing/actions/runs/38043902076)
+  aggregate/all eight passed, first attempts. Dependency review skipped on a main push,
+  not passed. Retrieved logs confirm hosted scan 222/no leaks, frozen install/tooling 15,
+  static gates, ordinary full root with shared 113/source 89/P1 12/owned SQL 79 and all
+  prior-22/23/24/25 preservation, seed/verify, queue three/API unit 107/web 572/worker 29.
+  API integration 81/17 suites and invariants 113/12/42/two passed. Lifecycle 19/19 in
+  1.8 minutes, staff four/four in 7.6 seconds, production audit with no known findings,
+  license inventory, production monorepo build and infrastructure cleanup passed.
+  No retry, deadline/resource increase, skipped case or workflow alteration was required.
+  These hosted passes do not erase the earlier failed local root/initial hosted attempts
+  or establish a permanent fix for unrelated local intermittent behavior.
+- This final follow-up changes five trackers only to record actual acceptance and scope
+  completion. Its formatting/offline-document checks, focused commit, pinned scan/main
+  reconciliation and own exact-head CI/CodeQL must pass before final handoff. No next
+  command or production action is authorized; remaining advisories/prerequisites stay.
 
 #### Decisions, unresolved risks and exact next command
 

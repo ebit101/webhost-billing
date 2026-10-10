@@ -2188,7 +2188,7 @@ reconciled by the owner-authorized review. Initial failed attempts remain failur
 
 ## ADR-113 — Keep stable-intent encoding private and separate from currency authority
 
-- **Status:** Accepted by the owner-authorized Command 110 review; Command 111 subsequently authorized on 2026-10-10; private implementation locally validated; own delivery required
+- **Status:** Accepted by the owner-authorized Command 110 review; Command 111 subsequently authorized and completed on 2026-10-10; corrective delivery `8f3adfd` passed exact-head acceptance
 - **Review:** No blocking in-scope storage defect found at `756b02e`. Explicit empty
   models, restrictive references, finite C-collated facts, six fixed invoker guards and
   new-object PUBLIC revokes match Command 110. Existing pins/control/seed/runtime remain;
@@ -2241,7 +2241,12 @@ runtime path and allows only the two exact private protocol-label lines. Negativ
 still reject imports/calls, duplicates, other labels/paths and malformed inventories.
 Fresh tracked-source shared 113/source 89/types passed. No runtime/dependency change;
 the published failure is preserved, not amended or relabeled. Corrected-head delivery
-must pass before completion; no next implementation is authorized.
+must pass before completion; no next implementation is authorized. That corrective
+delivery subsequently passed its pinned scan (228/no leaks), normal main reconciliation
+and first-attempt exact-head CI 38043902016 / CodeQL 38043902076, all 29/eight steps.
+Logs confirm ordinary full root, P1/SQL/seed/prior preservation, API/invariants, lifecycle
+19/staff four, audit/license/build and cleanup. No retained advisory is waived. This
+report-only update must pass its own delivery gate; stop for the recommended phase review.
 
 ## Open Decisions
 
