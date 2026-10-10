@@ -2620,6 +2620,43 @@ operating approval or release/deployment. P2/P3–P9, protected legacy/provider 
 Command 33 and final launch approvals remain. Stop after validated review delivery and
 request explicit Command 112 authorization; no automatic implementation or go-live promise.
 
+### Command 112 private policy-context implementation
+
+Owner-authorized on 2026-10-10 from `a508869`. The private zero-import
+`packages/database/src/private/currency-policy-context.ts` now encodes only Context=[P,U].
+Primitive JSON text, exact tuple arities and independent 1–32 list limits precede member
+traversal/copy/sort. Full-input ASCII grammar and exact case/provenance/status are retained.
+Each capability references one exact immutable definition, U has no extra/missing/alternate
+version, and every selected reference matches that same set. Command 97 current/display
+browsing, distinct secondary code and historical display/newSales denial apply without
+inventing newSales=>display or disabling historical collection.
+
+Fresh dense copied tuples sort with ASCII comparisons and preserve every fact and explicit
+null. Raw input stays 65,536 UTF-8 bytes, guarded before allocation/parse; canonical text
+stays 24,576 bytes after quoting. The literal A-base component is 189 bytes; the maximum
+escaped fixture with 32 complete definitions is 22,627 bytes. Defensive encoder fault
+injection tests the unreachable 24,576/24,577 output boundary without relaxing grammar.
+Narrow independent frozen success carries only success/canonicalText; failure is fixed
+and redacted, without hash, object handle or authority. No logging/public exposure.
+
+Nineteen mandatory source test groups cover literal/prior fixtures, reordering/escaping,
+every retained fact, semantic differential rules, arity/list/reference/grammar/flag/exponent
+denials, caller traps, input/output budgets, copying/redaction and unused filesystem paths
+including untracked source, queue/scripts and JavaScript variants. Existing shared schemas
+also reject the tested newline cases; extra definitions remain admissible there but deny
+this stricter exact-set component. No shared schema/export is changed. Mandatory database
+test wiring appends this test; only two old list-tail assertions change. S/five vectors,
+shared decoder guard and all old acceptance duties remain.
+
+Complete local acceptance passed; source/exact-head hosted delivery gates and actual
+outcomes are recorded in `PROGRESS.md`. No activation is
+inferred. All 26 migrations/pins/schema/seed, identity emptiness/control zero/null,
+P1/SQL/prior preservation/resources/deadlines/cleanup remain. No public export, ordinary
+consumer, dependency, registry/query, A/C/H/E composition, S consumption, SQL parity,
+authority store, pin/auth/evidence/proof/ledger, history assessment/writer/privilege
+adoption, provider/live data/import, approval or deployment. Stop for the Command 112
+phase review; no next implementation is authorized and P2/P3–P9 remain incomplete.
+
 ## 4. Price publication, quote and renewal rules
 
 ### Catalogue pricing

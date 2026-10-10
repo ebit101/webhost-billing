@@ -13736,6 +13736,105 @@ it automatically or begin assessment/auth/evidence storage or activation.
   currency policy-context codec**. Stop; no automatic implementation or remaining-command
   count/go-live promise.
 
+### Command 112 — Build an unused private currency policy-context codec
+
+- **Status:** Implemented; complete local acceptance passed. Source delivery and
+  exact-head hosted acceptance remain required before completion.
+- **Date:** 2026-10-10.
+- **Authority:** Owner explicitly authorized the existing bounded Command 112. No
+  consolidation, next command, currency activation, live import or deployment authorized.
+
+#### Scope completed
+
+- Private zero-import Context=[P,U] codec accepts primitive JSON text only. Exact
+  2/5/2/5/5 arities, prescribed nesting, independent 1–32 lists and full-input ASCII
+  grammar precede member traversal/copy/sort. Exact selected references/capability codes/
+  definition identities deny duplicates, missing/extra/alternate units and equal-exponent
+  substitution. Retain Command 97 current/display browsing, different secondary code,
+  historical display/newSales denial and independent collection/newSales/display flags.
+- Fresh dense arrays sort with ASCII comparisons, preserving exact case, provenance,
+  status, exponent and explicit null. Input 65,536 UTF-8 pre-allocation/pre-parse;
+  canonical 24,576 after escaping. Frozen independent narrow canonical-text success or
+  fixed frozen redacted failure; no hash, handle, public export or runtime consumer.
+- Nineteen mandatory test groups include literal 189-byte Context and prior revision,
+  every retained fact, semantic differential checks, 1/32/33/zero and arity/grammar/
+  capability/definition/trap denials, byte budgets, dense copying and unused filesystem
+  paths. Maximum escaped valid fixture is 22,627 bytes; platform fault injection covers
+  the otherwise unreachable output ceiling. No grammar weakened to manufacture overflow.
+
+#### Files changed
+
+- `packages/database/src/private/currency-policy-context.ts` and
+  `packages/database/test/currency-policy-context.spec.ts` only new implementation/tests.
+- `packages/database/package.json` appends mandatory source test; identity and S source
+  tests update only their end-of-list assertions. No old gate/order/assertion removed.
+- Five trackers: commands, plan, decisions (ADR-115), currency design and this report.
+  No migration/schema/seed/lock/dependency/workflow/ordinary consumer changes.
+
+#### Validation and failed attempts
+
+- Reconciled clean `a50886999254323c4361c56336a43f8663254cfe`, local/remote 0/0.
+  Preceding review scan was 230 commits/no leaks; fresh exact-head CI 38047378383 and
+  CodeQL 38047378444 aggregates succeeded, first attempts, matching that SHA. Previous
+  review inspected all 29/eight steps and full hosted matrix; dependency review skipped.
+- Fresh frozen pnpm install and tooling-security 15/15 passed. Production audit exits
+  zero/no known findings; full audit exits one with exactly retained braces high
+  `GHSA-vfj7-8cjw-p6xm` and sprintf-js moderate `GHSA-hp3w-g68c-fv3c`. No waiver or
+  unrelated repair/dependency change. Full-audit failure is not called clean.
+- First codec run: 16/19 passed, three fixture assertion failures. Two incorrectly
+  assumed installed shared schemas admit final newline; both actually reject. Corrected
+  expectations, retained strict codec guards and unchanged schemas. Independent maximum
+  byte arithmetic initially miscounted punctuation/flag/status tokens; corrected to
+  22,627 and retained output/field ceilings. No codec rule changed to fit a test.
+- Initial in-memory full-root launcher failed transpilation because static imports were
+  inside an async wrapper; no scope was created. Kept imports top-level, reran the same
+  guarded serial matrix with unchanged assertions/deadlines. No helper/retry installed.
+- Fresh source 108/108 (old 89 plus new 19), shared 113/113 and shared/database build/
+  database types passed, zero skipped. Filesystem consumer tests include untracked new
+  source, queue/scripts and JavaScript variants. S/five literal vectors and strict shared
+  decoder boundary pass. Initial formatting and all four offline doc validators passed.
+- Complete ordinary root acceptance inventory passed serially: all ten root helpers and
+  all six tested packages, supported Vitest one-worker/Jest in-band settings only. Source
+  108, shared 113, P1 12, owned SQL 79 (9/10/11/11/15/14/9), queue three, API unit 107,
+  web 572 across 54 files and worker 29 passed, no skipped cases. Fresh guarded parent,
+  isolated P1 cluster and separate SQL scope retained seed/verify, all prior-22/23/24/25
+  snapshots and empty inert identities. Owned resources/schema cleanup succeeded; no
+  borrowed old database, timer/assertion/resource adjustment or unrelated cleanup.
+- Worker artifacts, root lint and complete serial monorepo type checking passed. Separate
+  freshly owned guarded API scope passed integration 81/17 suites and invariants
+  113/12/42/two; final identity emptiness and scope cleanup verified. Production license
+  inventory and complete `NODE_ENV=production` monorepo build passed.
+- Fresh guarded fake-provider lifecycle browsers passed 19/19 (4.1 minutes), staff
+  browsers four/four (28.0 seconds), no retry/skip. Browser owned-scope cleanup succeeded.
+  Existing VM-module/pg concurrent-query deprecation, color and logo-LCP warnings remain
+  nonblocking, not silently repaired. Read-only diagnostic probes initially used wrong
+  config/route paths and unsupported Windows globs; resolved via actual file inventory,
+  `.mts` config and installed symlink paths without edits. No live/provider query added.
+- Final complete formatting, all four offline documentation validators and diff/scope
+  checks passed after the five tracker updates. Focused commit/pinned scan/main
+  reconciliation/non-force push/exact-head CI/CodeQL remain delivery gates; record their
+  actual outcomes before completion. Earlier fixture/launcher failures remain.
+
+#### Decisions made and remaining risks
+
+- ADR-115: exact-set pure encoding does not attest stored origin, route availability,
+  compatibility approval, history coverage, privilege or human authorization. Shared
+  context still permits extra definitions; tests document this intentional difference.
+- All 26 original migration bytes/pins, schema/seed, empty identities, unassessed zero/
+  null controls and P1/SQL/prior-22/23/24/25 preservation/resource/deadline/cleanup remain.
+  No A/C/H/E composition/S consumption, hash, SQL parity, authority/auth/evidence/proof/
+  ledger store, pin initialization, selected fixture, history assessment, writer/privilege
+  adoption, endpoint/UI/CLI/worker/provider/live query/import, operating approval or deploy.
+- Retained tooling advisories, low local memory/intermittent historical timing, privileged
+  clone/owner powers, unproven deployed duties, protected legacy/provider evidence,
+  Command 33 inputs and final launch approval remain. No completion/go-live promise.
+
+#### Exact recommended next command
+
+- After validated delivery, request **Phase review — Review Command 112 private
+  policy-context codec and define the next bounded currency command.** Stop; no automatic
+  next implementation or release/deployment.
+
 ## Report Template
 
 Use this template after every future command:

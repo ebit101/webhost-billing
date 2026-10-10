@@ -4682,9 +4682,11 @@ S encoding alone cannot approve selection or complete P2/P3–P9 activation prer
 
 ## Command 112 — Build an unused private currency policy-context codec
 
-**Defined only by the owner-authorized Command 111 review on 2026-10-10;
-not authorized or implemented.** Only the Context=[P,U] component of section 3e's
-future assessment, not the full A codec, a registry reader or currency authority.
+**Owner-authorized on 2026-10-10; implemented with complete local acceptance.**
+Only the Context=[P,U] component of section 3e's future assessment, not the full A codec,
+a registry reader or currency authority. Actual checks and failed attempts are recorded
+in `docs/PROGRESS.md`; exact-head hosted delivery remains gated before completion.
+Stop for the Command 112 phase review after validated delivery.
 
 ```text
 Command 112 — Build an unused private currency policy-context codec

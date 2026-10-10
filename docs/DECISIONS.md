@@ -2284,6 +2284,32 @@ report-only update must pass its own delivery gate; stop for the recommended pha
   selection/adoption/consumer/provider/import, operating approval or release/deploy.
   Review delivery gates remain required; stop and request explicit Command 112 approval.
 
+## ADR-115 — Encode complete policy context without consuming or activating currency
+
+- **Status:** Owner-authorized Command 112 implementation on 2026-10-10; complete local
+  acceptance passed. Source/exact-head hosted delivery remain gated in the progress report.
+- **Decision:** One private zero-import module accepts only primitive bounded JSON text,
+  exact Context/P/reference/capability/definition tuples and independent 1–32 lists.
+  Fresh dense arrays and ASCII sorting retain revision, exact metadata case, exponent,
+  printable provenance, status, every independent capability and explicit secondary null.
+  U equals exactly the capability-referenced set. Equal exponents do not substitute units.
+- **Rules:** Retain Command 97 membership, current/display browsing, different secondary
+  code and historical display/newSales denial; historical collection remains independent.
+  The existing shared schemas/exports are unchanged, used only for fictional differential
+  tests. Installed schemas also reject tested final-newline cases; extra definitions are
+  still accepted there but intentionally rejected by this exact-set codec.
+- **Budgets/results:** UTF-16 pre-allocation and 65,536 actual UTF-8 pre-parse checks;
+  24,576 canonical bytes after escaping. Maximum valid escaped fixture is 22,627 bytes;
+  defensive platform fault injection tests the otherwise unreachable output ceiling.
+  Independently frozen successes carry only success/canonicalText; failures are one fixed
+  frozen redacted result. No hash, object handle, diagnostics, logging or implicit approval.
+- **Boundary:** Mandatory source test appended; two old list-tail assertions updated only.
+  S/five vectors, shared decoder boundary and every old source/P1/SQL/root/API/browser gate
+  remain. No dependency, migration/schema/seed/pin/role/selected fixture, query/registry,
+  A/C/H/E composition, S consumption, auth/evidence/proof/ledger, consumer/provider/import,
+  production privilege adoption, operating approval or deployment. Stop for the Command
+  112 phase review, not another implementation. Two retained tooling advisories are unwaived.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

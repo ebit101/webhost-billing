@@ -563,7 +563,7 @@ test('private codec has only built-in crypto import, no export entry or ordinary
   ]);
   assert.ok(
     pkg.scripts['test:unit'].endsWith(
-      'test/currency-identity.spec.ts test/currency-selection-intent.spec.ts',
+      'test/currency-identity.spec.ts test/currency-selection-intent.spec.ts test/currency-policy-context.spec.ts',
     ),
   );
   assert.equal(
