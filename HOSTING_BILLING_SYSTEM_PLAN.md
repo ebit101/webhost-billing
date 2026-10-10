@@ -174,6 +174,9 @@ two empty immutable identity/placement tables, one additive migration and mandat
 source/owned SQL/P1 permission/preservation acceptance. No defaults, seed, deployment
 pin, auth epoch, digest/proof/selection or application consumer. Existing production
 privilege adoption remains unproven; inert storage cannot attest placement or approve money.
+The owner subsequently authorized Command 110 on 2026-10-10. Implementation has not
+started: Docker's Linux engine is unavailable and the preceding review's secret-scan/
+main/exact-head delivery remains incomplete. Authorization does not waive those gates.
 No selection/guard or application consumer is installed by the observation helper or review.
 No live registry, selected installation policy or financial backfill is included. Broader persistence,
 per-currency reads, pricing and activation remain later separately gated slices. Remaining

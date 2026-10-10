@@ -2137,7 +2137,7 @@ current_database()), hashtext(schema)` computed by qualified PostgreSQL function
 
 ## ADR-112 — Stage empty identity records without initializing currency authority
 
-- **Status:** Accepted for owner-authorized Command 109 review; Command 110 defined only, not authorized or implemented
+- **Status:** Accepted for owner-authorized Command 109 review; Command 110 subsequently authorized on 2026-10-10, not implemented; preceding review delivery blocked
 - **Date:** 2026-10-10
 - **Review:** No blocking in-scope specification defect found. Stable S preserves exact
   original request identity separately from full fresh C/policy/unit/H/E assessment A;
