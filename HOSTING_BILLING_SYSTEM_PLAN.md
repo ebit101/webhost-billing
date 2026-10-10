@@ -167,6 +167,13 @@ lifecycles. Fictional byte/hash vectors were independently calculated; no codec 
 authority store is implemented. Its smallest later candidate is empty inert installation
 identity storage, not identity seeding, proof issuance or selection. No next command is
 numbered or authorized by that specification; complete acceptance remains gated.
+Command 109 was delivered at `3c4606c` with exact-head CI/CodeQL acceptance. The
+owner-authorized phase review on 2026-10-10 accepts its documentation scope and defines
+**Command 110 — Stage inert currency installation identity storage**, not its execution:
+two empty immutable identity/placement tables, one additive migration and mandatory
+source/owned SQL/P1 permission/preservation acceptance. No defaults, seed, deployment
+pin, auth epoch, digest/proof/selection or application consumer. Existing production
+privilege adoption remains unproven; inert storage cannot attest placement or approve money.
 No selection/guard or application consumer is installed by the observation helper or review.
 No live registry, selected installation policy or financial backfill is included. Broader persistence,
 per-currency reads, pricing and activation remain later separately gated slices. Remaining

@@ -41,8 +41,11 @@
   exact-head CI/CodeQL success. The owner subsequently authorized Command 108; its
   unused request decoder was delivered at `a1fcbb6` with local and exact-head hosted
   acceptance. Its owner-authorized review accepts P2a and defines documentation-only
-  Command 109's canonical authority binding specification, not its implementation. P2
-  authority storage is not implemented. No production authority is installed.
+  Command 109's canonical authority binding specification, not its implementation. The
+  owner subsequently authorized that documentation slice, delivered at `3c4606c` with
+  exact-head CI/CodeQL acceptance. Its phase review on 2026-10-10 accepts the specification
+  and defines Command 110's empty identity storage only, not its execution. P2 authority
+  storage is not implemented. No production authority is installed.
   Temporary test installation is not product adoption.
   The selection protocol is not implemented or activated.
   Application integration and activation remain separately gated.
@@ -2369,6 +2372,55 @@ legacy/provider evidence, Command 33 operating inputs and final launch approval 
 separate. Stop after this documentation delivery for **Phase review — Review Command 109
 canonical currency authority binding specification and define the next bounded currency
 command**. No live query/import, PostgreSQL creation, roles, implementation or activation.
+
+### Command 109 review and inert identity-storage boundary
+
+Owner-authorized review on 2026-10-10 accepts the specification at
+`3c4606c5946740d665252634c7cde72311294ff2`, not installed authority. No blocking in-scope
+specification defect found. Fresh S/A vector calculations agree with all ten persisted
+byte/hash values in Node and .NET; hashes of fictional shape facts do not establish live
+coverage. Full original-intent/current-auth receipt rules, unchanged-generation stage/latch
+invalidation, non-secret factor history and recovery-domain isolation remain requirements.
+
+Fresh exact-head CI aggregate/all 29 Validate steps and CodeQL aggregate/all eight passed
+on first attempts; PR-only dependency review skipped, not passed. Its ordinary hosted
+root/source/actual-login/retained SQL/API/invariant/browser/build/production-audit gates
+passed. This review reran frozen/tooling/source/shared checks and both audits, not new
+SQL/login/browser tests. Full audit still has the two unwaived development findings.
+
+Define **Command 110 — Stage inert currency installation identity storage** in
+[the command record](../CODEX_DEVELOPMENT_COMMANDS.md). Only CurrencyInstallation and
+CurrencyExecutionDomain, empty `currency_installations` / `currency_execution_domains`,
+exact singleton/UUID/RESTRICT relationship/compound key and bounded placement/digest/UTC
+columns; no defaults, active flag, automatic identity/time, seed, pin or consumer. One
+additive `20261010090000_inert_currency_identity` migration is proposed, not created here.
+Keep lowercase supported target names consistent with current coordination grammar;
+unsupported names need review, not normalization. Manifest shape does not attest target.
+
+Use statement-level fixed invoker mutation guards for UPDATE/DELETE/TRUNCATE, including
+no-op/empty statements, and explicit new-object PUBLIC revokes. New source/owned SQL tests
+must be mandatory through the existing database/root launcher, with P1 real non-owner
+INSERT/DML/EXECUTE/DDL/escalation denials and per-denial snapshots. Append one exact new
+migration pin without changing any of the prior 25 hashes; reconcile current 26-inventory
+assertions without weakening historical prior-22/23/24 checks. Add prior-25 all-row/guard
+preservation, empty post-migration/seed/workflow tables, raw/Prisma parity, shape/FK/UUID/
+immutability/rollback and qualified decoy/visibility checks. All existing limits and gates
+stay; no test opt-in, altered migration bytes or normal-scope guard disabling.
+
+Important qualification: explicit fixture-owner INSERTs prove constraints only. PostgreSQL
+[statement triggers](https://www.postgresql.org/docs/18/sql-createtrigger.html) cover
+zero-row mutations, while [privilege revocation](https://www.postgresql.org/docs/18/sql-revoke.html)
+does not remove owner powers. Current production Compose shares `database_url` between
+migration/API/workers; no deployed ownership or membership was queried. This inert slice
+does not install non-owner production duties, attest a pin, prevent privileged clone copying
+or grant installation initialization/domain append. Those are later activation dependencies.
+
+No schema/migration/test implementation, role/cluster creation, identity initialization,
+auth epoch/evidence/codec/proof/ledger/selection, application adoption, live data/provider,
+operating approval, release/deploy or unrelated cleanup in this review. P2 and P3–P9 plus
+protected legacy/provider/business approvals remain. Stop after validated review delivery
+and request explicit **Command 110 — Stage inert currency installation identity storage**
+authorization; do not start it automatically or promise a remaining count/go-live date.
 
 ## 4. Price publication, quote and renewal rules
 

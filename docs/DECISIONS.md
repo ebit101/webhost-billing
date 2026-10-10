@@ -2094,7 +2094,7 @@ current_database()), hashtext(schema)` computed by qualified PostgreSQL function
 
 ## ADR-111 — Bind original intent separately from fresh state and non-secret auth evidence
 
-- **Status:** Accepted for owner-authorized Command 109; documented, not runtime implementation
+- **Status:** Delivered at `3c4606c`; owner-authorized phase review accepts documentation scope on 2026-10-10, not runtime implementation
 - **Date:** 2026-10-09
 - **Baseline:** Clean `c3b7dff50ae66da08275878466abc992ac9ee5d9`, 25 unchanged migrations.
   Command 108 and its final review's exact-head CI/CodeQL metadata/jobs were freshly
@@ -2134,6 +2134,38 @@ current_database()), hashtext(schema)` computed by qualified PostgreSQL function
 - **Handoff:** Smallest candidate is empty inert installation/execution-domain storage
   with preservation and P1 distinct-login acceptance, not an issuer/helper/seed/open shape.
   No command number or implementation authorization assigned. Stop for Command 109 review.
+
+## ADR-112 — Stage empty identity records without initializing currency authority
+
+- **Status:** Accepted for owner-authorized Command 109 review; Command 110 defined only, not authorized or implemented
+- **Date:** 2026-10-10
+- **Review:** No blocking in-scope specification defect found. Stable S preserves exact
+  original request identity separately from full fresh C/policy/unit/H/E assessment A;
+  completed receipt reads still require current authorization. Domain recovery and
+  dedicated auth versions cannot be replaced by mutable heartbeat or credential secrets.
+  Ten persisted fictional vectors freshly match Node/.NET UTF-8/SHA-256 calculations;
+  this is byte evidence, not codec/SQL/proof acceptance. Runtime and 25 migrations unchanged.
+- **Evidence:** Fresh exact `3c4606c` CI aggregate/all 29 Validate steps and CodeQL
+  aggregate/all eight passed, first attempts; PR-only dependency review skipped.
+  Prior hosted root/source/actual-login/SQL/API/invariant/browser/build/audit acceptance
+  was inspected, not rerun locally by this review. Fresh frozen/tooling 15/source 68/
+  shared 112/build/types passed; production audit zero known findings, full audit still
+  fails with the same two unwaived development advisories. No live database/role query.
+- **Decision:** Define **Command 110 — Stage inert currency installation identity
+  storage** only. Two explicit empty immutable models/tables, exact singleton/UUID/FK/
+  placement grammar/digest shape, no defaults/active selector and one additive migration.
+  Mandatory new source/owned SQL checks plus P1 non-owner denials, fixed migration pins
+  and prior-25 all-row preservation retain all earlier acceptance. No runtime read/write
+  helper, public consumer, seeding, pin, auth or proof/ledger authority.
+- **Privilege qualification:** New statement guards protect UPDATE/DELETE/TRUNCATE,
+  including zero-row statements. PUBLIC revocation and fictional non-owner denials do
+  not remove owner/superuser INSERT/DDL powers or prove production role separation.
+  Explicit fixture-owner inserts in new owned scopes are not active installation approval.
+  Current shared production database credentials remain a later P3/P6/P9 adoption gate.
+- **Boundary:** Five documentation files only. No new model/migration/test code,
+  PostgreSQL fixture/role, identity/token/proof, current history query/import/provider,
+  operating approval, release/deployment or old-resource cleanup. Cached network-disabled
+  secret-scanner tooling remains required for delivery. Stop for Command 110 authorization.
 
 ## Open Decisions
 

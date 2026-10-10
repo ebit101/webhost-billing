@@ -4354,7 +4354,9 @@ Docker/volume/scope/cache cleanup. P2 storage and P3–P9 need separate commands
 **Defined by the owner-authorized Command 108 phase review on 2026-10-09;
 subsequently authorized by the owner on 2026-10-09.** The source-grounded documentation
 specification is in `docs/MULTI_CURRENCY_DESIGN.md` section 3e; validation/delivery
-are recorded in `docs/PROGRESS.md`. Documentation-only prerequisite for P2 authority
+are recorded in `docs/PROGRESS.md`. Delivered at `3c4606c` with exact-head CI/CodeQL;
+the owner-authorized phase review on 2026-10-10 accepts its documentation scope and
+defines Command 110 below, not its execution. Documentation-only prerequisite for P2 authority
 records. Command 105 defines the protocol; this command resolves its concrete identity,
 serialization and reference-lifecycle gaps before a digest implementation or migration.
 
@@ -4450,6 +4452,112 @@ Request syntax is not authority or production readiness.
 ```
 
 ---
+
+## Command 110 — Stage inert currency installation identity storage
+
+**Defined by the owner-authorized Command 109 phase review on 2026-10-10;
+not authorized or implemented.** One additive empty storage slice of section 3e's
+P2 prerequisites. No initialization, placement pin, auth version, proof or selection.
+
+```text
+Command 110 — Stage inert currency installation identity storage
+
+Read AGENTS.md, the product plan, decisions, progress and currency design sections
+3d/3e and the Command 109 review. Reconcile 3c4606c's exact-head acceptance; rerun
+frozen install, installed tooling-security checks and production/full audits. Retain
+all 15 checks and patches/pins. The two retained development advisories are not waived;
+any new security repair outside this storage scope requires separate authorization.
+
+Implement only two unused Prisma models and one additive migration:
+packages/database/prisma/schema.prisma and
+packages/database/prisma/migrations/20261010090000_inert_currency_identity/migration.sql.
+CurrencyInstallation maps to currency_installations: explicit SMALLINT primary key
+with id=1 CHECK, unique non-null installation_id UUID and non-null TIMESTAMPTZ(3)
+created_at. CurrencyExecutionDomain maps to currency_execution_domains: UUID id
+primary key, non-null installation_id UUID RESTRICT FK to the installation UUID,
+non-null database_name/schema_name VARCHAR(63), placement_manifest_digest VARCHAR(64)
+and TIMESTAMPTZ(3) created_at; unique (installation_id,id) for later exact references.
+No column defaults, updatedAt, automatic UUID/time generation, active/current flag,
+settings pointer, selection/control/auth relation or extra authority field/table.
+
+Require full-input lowercase identifier grammar [a-z_][a-z0-9_]*, length 1–63,
+no pg_ prefix or information_schema for both placement names, matching the bounded
+supported target convention; do not silently normalize unsupported real names.
+Require exactly 64 lowercase ASCII hexadecimal manifest characters. Use explicit
+NOT NULL and bounded SQL checks, not regex end-anchor acceptance of trailing newlines.
+UUID columns store SQL identity; standard lowercase presentation comes from future
+qualified acquisition, not a client-supplied text alias. Manifest shape/UUID existence
+is not proof of approved placement. Explicit timestamps are supplied by a later
+approved operator, not interpreted as human approval. Both tables migrate empty.
+
+Add fixed SECURITY INVOKER, pg_catalog-search-path statement mutation guards rejecting
+UPDATE, DELETE and TRUNCATE even with zero rows or identical values. Preserve RESTRICT
+ON UPDATE/DELETE references; no cascade, generic setter, definer/issuer/executor function,
+role-name check, caller GUC approval or unreviewed exception. Revoke PUBLIC access to
+the new tables and guard functions explicitly; grant no ordinary writer/issuer duty.
+Do not install production roles or change shared database/schema/default privileges.
+Minimal owner-only fixture INSERTs in new verified fictional scopes are permitted to
+test shapes/relations; they are not product initialization or active deployment pins.
+Keep installation initialization/domain append inaccessible through application code.
+
+Distinguish immutable-row SQL protection from privilege adoption. P1 actual non-owner
+logins must deny INSERT/UPDATE/DELETE/TRUNCATE/EXECUTE and owner/DDL escalation, including
+empty/no-op, COPY, conflict-update, MERGE and nested statements. Owner/superuser can
+insert or disable guards; revoking PUBLIC cannot remove ownership powers. Existing
+production source shares database credentials; this slice does not attest deployed
+non-owner duties, prevent privileged clone/pin copying or authorize proof/selection.
+Full isolated production privilege/pin adoption remains a later activation prerequisite.
+
+New source/SQL tests: packages/database/test/currency-identity.spec.ts and
+packages/database/test/currency-identity.integration.spec.ts. Wire them mandatorily via
+packages/database/package.json and apps/web/e2e/run-database-tests.ts without changing
+the existing test order or removing prior acceptance. Extend the existing P1 fixtures,
+integration/source tests and currency-privilege-harness.migrations.ts to pin exactly
+the new migration alongside all 25 unchanged original hashes/raw bytes. Do not replace
+the fixed inventory with dynamic trust or silently update old content pins.
+Update exact current-inventory assertions from 25 to 26 only where required; retain
+historical prior-22/23/24 snapshots and explicitly add prior-25 all-row preservation.
+Retain the old control migration's original index and zero/null semantics. Minimal
+seed/verifier changes may assert new tables empty but must never write identity rows.
+
+Actual owned SQL acceptance must cover explicit insert/Prisma/raw read parity; singleton,
+UUID/NOT NULL/name/digest boundaries, duplicate and cross-installation/missing FK denial;
+multiple immutable domains without a current selector; fixed UTC timestamps; statement
+mutation/no-op/conflict/MERGE/COPY behavior and restrictive references. Compare trusted
+rows/catalog constraints/guards after every denial. Failed transactions cannot leave
+partial records. Qualified test reads must reject unsupported/missing model/catalog
+contexts and refuse hidden-row/RLS visibility, not turn them into approved absence;
+temporary/search-path decoys never supply identity. No runtime discovery/reader is added.
+
+Apply the 26 unchanged migration bytes only in newly verified fictional test scopes.
+Preserve every prior-25 row, including policy/unit/control/auth/settings/financial/audit/
+outbox/event facts, and prior guard manifests. New tables stay empty after fresh migration,
+normal seed/verify, existing product workflows and failed ordinary operations; other P2
+stores remain absent. Fictional identity fixtures belong only in separately owned scopes.
+Retain P1 approved cached immutable image, real distinct logins, resource/time/connection
+limits, nonce/server/mount proof, per-denial snapshots and exact-ID bounded cleanup.
+No shared-cluster roles, borrowed application scopes, image fallback/pull in the harness,
+prune/volume cleanup, increased limits, SQL skips or migration/trigger disabling.
+
+Run validation serially in proportion to host limits: frozen install, tooling-security,
+production/full audits, Prisma format/validate/generate, shared tests/build/types,
+database source/actual-login/retained SQL/seed/preservation checks, complete ordinary
+root tests, formatting/all four offline documentation checks, lint/typecheck, API
+integration/invariants, customer/staff browser suites, license/security checks and build.
+Existing package/root/CI paths must include all new tests without optional opt-in.
+Do not relabel previous runs as fresh execution; record any failure/resource blocker.
+Never push failing or unverified implementation. Update the five trackers; focused
+commit, cached pinned complete-history secret scan, fetch/fast-forward-only reconciliation,
+non-force main push and exact-head hosted CI/CodeQL are required before handoff.
+
+Stop for Phase review — Review Command 110 inert currency installation identity storage
+and define the next bounded currency command. No helper/export/endpoint/UI/CLI/worker
+consumer, UUID seeding/minting, placement pin/configuration, identity initialization,
+auth epoch/evidence, digest codec, proof/intent/ledger/consumption, selected fixture,
+assessment/control-shape opening, writer/lineage/adoption, live query/import/provider,
+operating approval, deployment/release or unrelated Docker/disk/cache cleanup.
+Inert identity storage is neither completed P2 authority nor currency activation.
+```
 
 ## Continuation Command
 

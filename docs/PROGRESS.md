@@ -13044,7 +13044,7 @@ install authority records, adopt writers or begin P2 automatically.
 
 ### Command 109 — Specify canonical currency authority bindings
 
-- **Status:** Documentation specification locally validated; delivery acceptance pending at report cutoff
+- **Status:** Delivered at `3c4606c` with local/secret-scan/main/exact-head acceptance; owner-authorized review accepts specification scope on 2026-10-10
 - **Date:** 2026-10-09
 - **Authority:** Owner explicitly authorized Command 109 only. No runtime implementation,
   schema/migration, authority seeding, proof/selection or production operation.
@@ -13098,6 +13098,20 @@ install authority records, adopt writers or begin P2 automatically.
   secret scan, fast-forward-only/non-force main delivery and exact-head hosted CI/CodeQL
   remain required before final handoff; their actual delivery results belong in that
   handoff and the subsequent review, not an assumed success in this source snapshot.
+- Delivery closure reconciled by this review: focused documentation commit
+  `3c4606c5946740d665252634c7cde72311294ff2`, cached pinned network-disabled full-history
+  gitleaks (222 local commits/no leaks), fetch/fast-forward-only reconciliation and normal
+  non-force main push passed. Exact-head
+  [CI 37940941030](https://github.com/ebit101/webhost-billing/actions/runs/37940941030)
+  all 29 Validate steps and
+  [CodeQL 37940941080](https://github.com/ebit101/webhost-billing/actions/runs/37940941080)
+  all eight passed, first attempts. Hosted scan reports 216 commits/no leaks, separately
+  from local inventory. Ordinary root/shared 112/source 68/actual-login 11/retained SQL 70/
+  seed/preservation, queue 3/API 107/worker 29/web 572, API integration 81, invariant
+  shared 112/API 12/integration 42/worker two, browser 19/staff four, audit/license/build
+  and cleanup passed. PR-only dependency review skipped, not passed. Clean main matched
+  origin/main. Existing owner direct-main PR/check bypass remains a governance risk;
+  no rule changed. Exact run/job metadata and hosted CI logs freshly verified here.
 
 #### Decisions, unresolved risks and exact next command
 
@@ -13111,6 +13125,78 @@ install authority records, adopt writers or begin P2 automatically.
 - After validated delivery, request **Phase review — Review Command 109 canonical currency
   authority binding specification and define the next bounded currency command**. Stop;
   do not number or implement the proposed candidate automatically.
+
+### Phase review — Review Command 109 and define the next bounded currency command
+
+- **Status:** Specification scope accepted; Command 110 defined only; review locally validated, delivery acceptance pending at report cutoff
+- **Date:** 2026-10-10
+- **Authority:** Owner authorized this phase review and next-command definition, not
+  Command 110 execution, identity storage/init, proof/selection or production operations.
+
+#### Scope reviewed and decisions
+
+- Reviewed the exact five-document `3c4606c` diff against the authorized command and
+  source-grounded section 3e. No blocking in-scope defect or runtime correction needed.
+  Stable S versus fresh A, complete C/units/anchor/H/E, UUID text/SQL aliases, dedicated
+  non-secret versions, deletable live factors, exact historical links/deferred cycle and
+  current-authorized receipt/recovery rules remain proposed, not installed protection.
+- Reconciled Command 109's immutable delivery and exact-head hosted acceptance above.
+  Fresh vector calculations independently match ten saved byte/hash examples; they are
+  format evidence, not an implemented codec or approval/replay acceptance suite.
+- Define **Command 110 — Stage inert currency installation identity storage**, two
+  empty immutable tables and one additive migration plus mandatory source/owned SQL/P1/
+  preservation tests. Pin the 26th migration without changing prior-25 raw/content hashes
+  or weakening prior-22/23/24 acceptance. No identity defaults/seed/pin/helper/consumer.
+- Explicitly distinguish invoker statement immutability from future privilege adoption:
+  P1 fictional non-owner DML denials cannot attest shared production credentials or erase
+  owner INSERT/DDL powers. Fixture-owner shape tests are not installation authorization.
+
+#### Files changed
+
+- `CODEX_DEVELOPMENT_COMMANDS.md`: accepted Command 109 and defined bounded Command 110.
+- `HOSTING_BILLING_SYSTEM_PLAN.md`: accepted specification and storage-only handoff.
+- `docs/DECISIONS.md`: reconciled ADR-111 and review/definition ADR-112.
+- `docs/MULTI_CURRENCY_DESIGN.md`: current status and source-grounded storage boundary.
+- `docs/PROGRESS.md`: actual delivery closure and this review. Documentation only.
+
+#### Validation performed and results
+
+- Initial clean `3c4606c` baseline; canonical main fetch reconciled 0/0. Fresh frozen
+  install passed, lockfile unchanged. Tooling 15/database source 68/shared 112/build/types
+  passed with zero test skips. Production audit exited 0/zero known findings; full audit
+  exited 1 with exactly braces high GHSA-vfj7-8cjw-p6xm and sprintf-js moderate
+  GHSA-hp3w-g68c-fv3c. No new security finding and no waiver/upstream-fix claim.
+- Fresh exact delivery run/job metadata and CI logs verified above. No new local SQL/
+  actual-login/API/browser/build suite, shared-cluster role/current history query or
+  PostgreSQL fixture. Prior hosted acceptance is not relabelled fresh local execution.
+- Ten persisted fictional examples freshly recalculated in memory with Node and
+  independently checked by .NET UTF-8/SHA-256. No helper/file, random identity/bearer,
+  token/proof issuance, assessed fixture or provider/network operation from calculations.
+- Source reads checked migration guards/models, literal 25-migration pins/inventory,
+  mandatory package/root/database launcher wiring, P1 ACL/role snapshots, qualified
+  coordination grammar and production shared-credential configuration. One wrong Compose
+  path and a Windows literal-glob search failed; corrected paths/rg -g searches completed.
+  Shared build/types were separately rerun successfully after the read-only path error.
+  Primary PostgreSQL statement-trigger/FK/revocation documentation was checked; those
+  semantics inform proposed tests, not executed product storage or deployed role evidence.
+- Full repository formatting, all four offline documentation validators, whitespace
+  and exact runtime/schema/migration/dependency/workflow baseline equality passed.
+  Only five trackers changed; proposed migration/tests are absent. The local Markdown
+  validator took longer but completed successfully; no skip, timeout increase or repair.
+  Final focused report formatting/renewed offline checks precede the immutable commit.
+- Report cutoff precedes review commit/delivery. Cached pinned full-history scan,
+  fetch/fast-forward-only/non-force main delivery and exact-head CI/CodeQL closure remain
+  required before final handoff. Report actual outcomes there and reconcile them in the
+  subsequently authorized command; no assumed success or post-check history rewrite.
+
+#### Unresolved risks and exact next command
+
+- ADR-112: inert identity records before initialization/authority. Retained tooling
+  advisories, local resource/nondeterminism limits and direct-main governance remain.
+  Trusted pin/init/auth adoption, evidence coverage/SQL parity, proof/ledger/P3–P9 writer/
+  lineage/consumer/drain/recovery, operating inputs and final launch approval stay gated.
+- After validated delivery, authorize **Command 110 — Stage inert currency installation
+  identity storage**. Stop; do not implement it automatically.
 
 ## Report Template
 
