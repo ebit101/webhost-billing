@@ -2286,8 +2286,14 @@ report-only update must pass its own delivery gate; stop for the recommended pha
 
 ## ADR-115 — Encode complete policy context without consuming or activating currency
 
-- **Status:** Owner-authorized Command 112 implementation on 2026-10-10; complete local
-  acceptance passed. Source/exact-head hosted delivery remain gated in the progress report.
+- **Status:** Owner-authorized Command 112 implemented and delivered on 2026-10-10;
+  complete local and `2a9a938` exact-head CI/CodeQL acceptance passed. Final report delivery
+  also requires its own scan/main/hosted gates before handoff.
+- **Delivery evidence:** Pinned cached scan 233/no leaks; normal non-force main push with
+  existing owner PR/status-rule bypass, no protection changes. CI 38050083708 aggregate/
+  all 29 Validate steps and CodeQL 38050083717 aggregate/all eight passed, first attempts.
+  Retrieved CI logs confirm the full retained matrix and cleanup; hosted scan 225/no leaks
+  is a distinct inventory. Two retained tooling advisories remain unwaived.
 - **Decision:** One private zero-import module accepts only primitive bounded JSON text,
   exact Context/P/reference/capability/definition tuples and independent 1–32 lists.
   Fresh dense arrays and ASCII sorting retain revision, exact metadata case, exponent,

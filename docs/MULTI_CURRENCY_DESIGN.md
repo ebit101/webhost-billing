@@ -2648,9 +2648,13 @@ this stricter exact-set component. No shared schema/export is changed. Mandatory
 test wiring appends this test; only two old list-tail assertions change. S/five vectors,
 shared decoder guard and all old acceptance duties remain.
 
-Complete local acceptance passed; source/exact-head hosted delivery gates and actual
-outcomes are recorded in `PROGRESS.md`. No activation is
-inferred. All 26 migrations/pins/schema/seed, identity emptiness/control zero/null,
+Complete local acceptance and implementation `2a9a938` scan/main/exact-head CI/CodeQL
+passed. Local scan 233/no leaks and hosted 225/no leaks are separate inventories. CI
+38050083708 aggregate/all 29 Validate steps and CodeQL 38050083717 aggregate/all eight
+passed, first attempts. Retrieved CI logs confirm source 108/shared 113/P1 12/SQL 79,
+root/API/invariants, lifecycle 19/staff four, audit/license/build and cleanup. Final report
+delivery also needs its own gates; actual outcomes and earlier failures remain in
+`PROGRESS.md`. No activation is inferred. All 26 migrations/pins/schema/seed, identity emptiness/control zero/null,
 P1/SQL/prior preservation/resources/deadlines/cleanup remain. No public export, ordinary
 consumer, dependency, registry/query, A/C/H/E composition, S consumption, SQL parity,
 authority store, pin/auth/evidence/proof/ledger, history assessment/writer/privilege

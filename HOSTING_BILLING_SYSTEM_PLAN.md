@@ -201,9 +201,10 @@ actual checks and failed attempts are tracked separately in the progress report.
 The owner subsequently authorized Command 112 on 2026-10-10. Its private, zero-import
 Context codec and mandatory source tests preserve exact policy/unit facts and independent
 capabilities with fixed redacted failures. It has no hash, package export or ordinary
-consumer. Complete local acceptance passed; source/exact-head hosted delivery remains
-gated in the progress report. No full
-assessment, authority store, identity initialization or currency activation follows.
+consumer. Complete local acceptance and `2a9a938` pinned scan/main/exact-head CI/CodeQL
+passed; the final report retains its own delivery gates. No full assessment, authority
+store, identity initialization or currency activation follows. Stop for the Command 112
+phase review; actual evidence and earlier failed attempts remain in the progress report.
 No selection/guard or application consumer is installed by the observation helper or review.
 No live registry, selected installation policy or financial backfill is included. Broader persistence,
 per-currency reads, pricing and activation remain later separately gated slices. Remaining

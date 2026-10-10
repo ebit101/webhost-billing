@@ -13738,8 +13738,8 @@ it automatically or begin assessment/auth/evidence storage or activation.
 
 ### Command 112 — Build an unused private currency policy-context codec
 
-- **Status:** Implemented; complete local acceptance passed. Source delivery and
-  exact-head hosted acceptance remain required before completion.
+- **Status:** Implemented and delivered with complete local and implementation-head
+  hosted acceptance. Final report delivery also requires its own gates before handoff.
 - **Date:** 2026-10-10.
 - **Authority:** Owner explicitly authorized the existing bounded Command 112. No
   consolidation, next command, currency activation, live import or deployment authorized.
@@ -13814,6 +13814,30 @@ it automatically or begin assessment/auth/evidence storage or activation.
   checks passed after the five tracker updates. Focused commit/pinned scan/main
   reconciliation/non-force push/exact-head CI/CodeQL remain delivery gates; record their
   actual outcomes before completion. Earlier fixture/launcher failures remain.
+
+#### Implementation delivery acceptance
+
+- Focused implementation commit `2a9a93830ca226070fbaf18ff568c57ba1ddff31`, ten in-scope
+  files. After staging, shared 113/113 and source 108/108 passed again, including tracked
+  shared decoder and untracked/filesystem consumer guards. Final fresh audits still
+  report production zero/full one with exactly the same two retained advisories.
+- Approved cached immutable gitleaks scan, network disabled/read-only repository mount:
+  233 commits/no leaks. Fetch/fast-forward-only reconciliation succeeded, normal
+  non-force push to origin/main completed and fresh local/remote reconciliation was clean
+  0/0. GitHub reported the existing owner bypass of PR/two-status rules; no protection
+  changed and no history rewritten. No deployment workflow exists; only CI/CodeQL run.
+- Exact-head [CI 38050083708](https://github.com/ebit101/webhost-billing/actions/runs/38050083708)
+  aggregate/all 29 Validate steps and
+  [CodeQL 38050083717](https://github.com/ebit101/webhost-billing/actions/runs/38050083717)
+  aggregate/all eight succeeded, first attempts, matching the full implementation SHA.
+  PR dependency review skipped, not passed. Retrieved CI logs confirm tooling 15,
+  source 108/shared 113/P1 12/SQL 79/seed/prior preservation, queue three/API unit 107/
+  web 572 across 54 files/worker 29, integration 81/17 suites, invariants 113/12/42/two,
+  lifecycle 19 (2.1 minutes)/staff four (9.0 seconds), production audit/license/build and
+  cleanup. Hosted scan 225/no leaks is separate from local 233; neither count is inferred.
+- Final report changes only five trackers, not runtime/tests. Its formatting/offline
+  docs/diff, focused commit/pinned scan/reconciliation/non-force push and own exact-head
+  CI/CodeQL must also pass before completion is handed off. No next command starts.
 
 #### Decisions made and remaining risks
 
