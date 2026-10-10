@@ -13128,7 +13128,7 @@ install authority records, adopt writers or begin P2 automatically.
 
 ### Phase review — Review Command 109 and define the next bounded currency command
 
-- **Status:** Specification scope accepted; review locally committed; resumed delivery acceptance pending after Docker restoration
+- **Status:** Delivered at `b7d43af` with exact-head CI/CodeQL acceptance after Docker restoration
 - **Date:** 2026-10-10
 - **Authority:** Owner authorized this phase review and next-command definition, not
   Command 110 execution, identity storage/init, proof/selection or production operations.
@@ -13204,19 +13204,18 @@ install authority records, adopt writers or begin P2 automatically.
   advisories, local resource/nondeterminism limits and direct-main governance remain.
   Trusted pin/init/auth adoption, evidence coverage/SQL parity, proof/ledger/P3–P9 writer/
   lineage/consumer/drain/recovery, operating inputs and final launch approval stay gated.
-- First restore Docker availability and continue this review's required delivery checks;
-  do not skip the scanner or begin implementation while review delivery is incomplete.
-- After validated delivery, authorize **Command 110 — Stage inert currency installation
-  identity storage**. Stop; do not implement it automatically.
+- The initial Docker blocker and review delivery were resolved at `b7d43af`; the owner
+  subsequently authorized Command 110. Its separate acceptance and delivery are tracked
+  below. This review did not automatically authorize implementation.
 
 ### Command 110 — Stage inert currency installation identity storage
 
-- **Status:** Owner-authorized; implementation pending the resumed review delivery gate
+- **Status:** Owner-authorized inert scope locally validated; own scan/main/exact-head delivery closure required before handoff
 - **Date:** 2026-10-10
 - **Authority:** Owner explicitly selected Command 110. Authorization does not waive the
   preceding review's required secret scan/non-force main/exact-head acceptance.
 
-#### Scope, validation and blocker
+#### Initial scope and Docker blocker (historical)
 
 - Re-read project instructions, Command 110 and current plan/decision/progress handoff.
   Docker version preflight again could not connect to `dockerDesktopLinuxEngine`.
@@ -13236,6 +13235,154 @@ install authority records, adopt writers or begin P2 automatically.
   returns 29.8.1; the connection blocker is cleared. Resumed report/secret-scan/main/
   exact-head review delivery must pass before implementation. Earlier failures remain
   historical failures, not successful scans. No storage code has been changed at cutoff.
+
+#### Review recovery closure and implementation continuation
+
+- Docker recovery was verified at engine 29.8.1. Renewed frozen install/tooling 15,
+  production audit, formatting/all four offline checks and baseline equality passed.
+  Full audit still exits 1 with exactly the two retained unwaived findings above.
+- Preserve `f0fee50` history; recovery/report commit
+  `b7d43af77fb897b830c770cbedd2025905dea87c` passed cached pinned network-disabled
+  full-history scanning (224 local commits/no leaks), fetch/fast-forward-only reconciliation
+  and non-force main push. Owner direct-main rule bypass remains; no rule was changed.
+- Exact-head [CI 38032666283](https://github.com/ebit101/webhost-billing/actions/runs/38032666283)
+  aggregate/all 29 Validate steps and
+  [CodeQL 38032666259](https://github.com/ebit101/webhost-billing/actions/runs/38032666259)
+  aggregate/all eight passed, first attempts. Hosted scan counts 218 commits/no leaks,
+  separately from local inventory. Logs verify root/SQL/login/seed/API/invariant/browser
+  19/staff four/audit/license/build/cleanup acceptance. PR-only review skipped, not passed.
+  Clean main matched origin 0/0. These review gates passed before storage implementation.
+- The already-authorized Command 110 implements only two unused explicit models,
+  one additive empty migration, new source/owned SQL tests and P1 denial extensions.
+  Mandatory wiring appends tests, current inventory becomes 26, prior 25 pins/raw files
+  and old control index/zero/null shape stay unchanged. Verifier asserts new stores empty;
+  seed/runtime/lockfile/workflows stay unchanged. No authority helper/init/pin or consumer.
+- Fresh Prisma format/validate/generate, shared 112/build/types, database source 74/types,
+  package builds and actual-login 12 tests passed, zero skips. First owned SQL launch
+  passed retained 70 and eight of nine new cases, then failed one precise-code assertion:
+  installation-only TRUNCATE is refused by FK restriction (0A000) before a trigger,
+  not guard 23514. Corrected the fixture and added both-table truncation; migration,
+  guards and limits did not change for that correction. Renewed SQL/seed and remaining
+  root/API/invariant/browser/build/docs/security/delivery gates are pending or running,
+  not claimed passed at this intermediate cutoff. Final review then pinned the three
+  new text columns to pg_catalog C collation, preventing locale-dependent ASCII ranges.
+  Only the new migration hash changed, to
+  `1145733eda7b3e99bd44c13db5b9273ba3a3f86ff55d266254ed4cae6457ec50`;
+  all 25 original literal pins/bytes remain unchanged. Root validation reruns the final
+  source/actual-login/SQL/seed acceptance, not the earlier migration version alone.
+- Earlier Docker preflight failures remain historical, not passed scans. Windows literal
+  glob/path inspection errors were corrected with directory/-g searches. One tracking
+  patch failed context verification without writing files; a corrected patch was applied.
+  Early source/type/shared checks briefly overlapped the first privilege launch; renewed
+  full acceptance is scheduled serially rather than claiming all initial checks were serial.
+- No live/production query, shared-cluster role/privilege change, identity initialization,
+  pin/proof/selection/provider/import/deployment or old-resource cleanup. Cleanup targets
+  only newly verified fictional schemas and exact isolated-harness resources.
+- After complete validated delivery stop for **Phase review — Review Command 110 inert
+  currency installation identity storage and define the next bounded currency command**.
+  No Command 111 is defined or authorized; later activation/business approvals remain.
+
+#### Ordinary root rerun qualification
+
+- The first final-migration ordinary root invocation passed tooling/source/shared/queue,
+  actual-login 12, all SQL 79 and seed/verify, then exited 1: existing web tests reported
+  failures under concurrent execution; worker ticket email setup reported missing
+  `staff_role` in the older local development schema, and renewal lifecycle exceeded
+  its unchanged 5,000 ms test deadline. API unit 107 passed but emitted an existing
+  worker-shutdown warning; worker total was 27/29. Neither failure nor warning is a pass.
+- The attempted npm-prefixed workspace setting returned undefined and did not serialize
+  packages. Installed pnpm source and a read-only config probe verified the actual
+  PNPM_CONFIG_WORKSPACE_CONCURRENCY setting (1). No package/test timeout was changed.
+- Rerun uses an in-memory invocation of the existing browser scope preparation/guard,
+  not a committed runner/helper or a change to the old database. It creates one fresh
+  loopback nonce schema, applies the exact 26 migrations, marks/guards it and runs normal
+  seed/verify, then the unchanged complete root test script with package concurrency 1.
+  Fake/disabled providers, preview email and schema-derived namespaces are inherited
+  from the existing test environment. Both identity tables must stay empty after ordinary
+  work. Exact marked scope cleanup rechecks ownership; no old-scope repair or cleanup.
+- An initial multiline eval returned zero without launching validation; it is not a
+  passing root suite. The one-line --eval invocation demonstrably started owned migration,
+  seed/verify and root checks. Its completed results are recorded below, separately from
+  the failed first invocation.
+
+#### Renewed local acceptance
+
+- The unchanged complete ordinary root script passed with verified package concurrency
+  1 in a fresh marked loopback schema: tooling 15, shared 112, database source 74,
+  actual-login P1 12, retained/new SQL 79, queue three, API unit 107, web 572 and worker
+  29; existing demo/documentation mock suites also passed. SQL includes all retained
+  70 cases plus nine new identity cases and prior-25 preservation. Normal seed/verify
+  passed; both identity counts remained zero. The owned wrapper scope was rechecked
+  and cleaned. No older development database was migrated or repaired for this rerun.
+- Prisma format/validate/generate, package/shared builds/types, full formatting, all
+  four offline documentation validators, lint, worker build and repository type checks
+  passed. Renewed API integration passed 81/17 files; invariants passed shared 112,
+  API unit 12, API integration 42 and worker two. Their separately created marked
+  schema retained zero identity rows and was rechecked/cleaned.
+- Chromium lifecycle acceptance passed 19/19 in a new owned browser schema with normal
+  cleanup. Staff fixture acceptance initially failed all four cases with 404 pages;
+  a fresh unchanged full rerun passed 4/4. Read-only loopback probes returned the expected
+  fictional identity and HTTP 200 administrator page. No fixture/source/timeout/cache
+  deletion changed. The intermittent local routing cause is not proven or declared fixed.
+- Browser preparation briefly overlapped the tail of invariant checks; browser execution
+  and later staff/build gates were serial. No limits, test deadlines, checks or old gate
+  order were weakened. Expected fake payment/outbox failure diagnostics and existing
+  experimental-module, pg query-deprecation, color and image-loading warnings remain.
+- Renewed production audit reports no known findings. Full audit still exits 1 with
+  exactly braces high `GHSA-vfj7-8cjw-p6xm` and sprintf-js moderate `GHSA-hp3w-g68c-fv3c`;
+  these retained development findings are not waived or repaired by this command.
+  Production license inventory completed successfully. An initial output-filtering
+  command failed after license execution; the standalone checked rerun returned zero.
+- Scope comparison confirms no application/shared runtime, seed, dependency lockfile
+  or workflow changes. All 25 original Git/LF migration contents and literal pins remain
+  unchanged, and the final new migration hash matches. An initial raw Git-vs-working-copy
+  comparison failed on existing Windows CRLF; the existing canonical LF pin convention
+  and raw read-before/after checks were retained, not changed to accept different SQL.
+  No new identity test is skipped, focused-only or pending.
+- Production-mode complete monorepo build passed with verified package concurrency 1,
+  including API/worker and all web routes. No deployment or production migration ran.
+  Final report formatting/documentation renewal follows these edits. At this pre-commit
+  report cutoff, focused commit, cached pinned full-history scan, fetch/fast-forward-only
+  reconciliation, non-force main push and exact-head hosted CI/CodeQL must still pass
+  before completion is reported. These are not replaced by predecessor review results.
+
+#### Decisions, risks and next command
+
+- Identity storage is deliberately empty and unused: explicit finite timestamps and
+  C-collated ASCII placement/digest facts, restrictive references and six statement
+  guards are storage invariants, not operator approval, placement attestation or a pin.
+  Owner/superuser INSERT/DDL powers remain; deployed non-owner duty separation is unproven.
+- P2 remains incomplete. No initialization, pin, auth version, codec/evidence/lineage,
+  proof/ledger/selection, P3–P9 adoption/activation, business-policy approval, live
+  provider/data/import, release or deployment is included. Older local schema drift,
+  intermittent staff routing and retained tooling findings remain honestly recorded.
+  Owner direct-main rule bypass remains a governance risk; no protection rule is changed.
+- Exact recommended next command, only after this command's validated delivery:
+  **Phase review — Review Command 110 inert currency installation identity storage
+  and define the next bounded currency command**. Stop and ask for authorization;
+  no Command 111 is defined or authorized here.
+
+#### Files changed
+
+- `packages/database/prisma/schema.prisma` and the new
+  `packages/database/prisma/migrations/20261010090000_inert_currency_identity/migration.sql`:
+  only two inert models and additive empty storage/guards.
+- New `packages/database/test/currency-identity.spec.ts` and
+  `packages/database/test/currency-identity.integration.spec.ts`: mandatory unused-boundary,
+  exact SQL/Prisma/catalog/shape/immutability/rollback/decoy/visibility and preservation checks.
+- `packages/database/test/currency-privilege-harness.fixtures.ts`,
+  `currency-privilege-harness.integration.spec.ts`, `currency-privilege-harness.spec.ts`
+  and `currency-privilege-harness.migrations.ts` in that same directory: new empty-store,
+  actual-login/no-op/COPY/MERGE/EXECUTE/DDL/RLS denials and one appended fixed pin.
+- `packages/database/test/currency-units.integration.spec.ts`,
+  `currency-adoption-preflight.integration.spec.ts`, `currency-coordination.integration.spec.ts`,
+  `currency-coordination-guards.integration.spec.ts`, `currency-control.integration.spec.ts`:
+  current inventory 26 only; historical counts/old control index remain unchanged.
+- `packages/database/package.json`, `apps/web/e2e/run-database-tests.ts` and
+  `packages/database/prisma/verify.ts`: append mandatory tests and assert empty stores;
+  no existing gate/order/export removed and no seed identity writes.
+- Five trackers: `CODEX_DEVELOPMENT_COMMANDS.md`, `HOSTING_BILLING_SYSTEM_PLAN.md`,
+  `docs/DECISIONS.md`, `docs/MULTI_CURRENCY_DESIGN.md`, `docs/PROGRESS.md`.
 
 ## Report Template
 

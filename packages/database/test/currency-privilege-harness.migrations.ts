@@ -50,4 +50,6 @@ export const migrationPins: Readonly<Record<string, string>> = {
     'c6672b16eabfd060e7a3879fbfcec98a504d5b143f5141e36851f460b524847d',
   '20261008090000_unselected_currency_control':
     '48d7d8fb3dbb05e5ce08d0e63212c50dc6d5b5e119098c3ffb65bd8d594a4e8f',
+  '20261010090000_inert_currency_identity':
+    '1145733eda7b3e99bd44c13db5b9273ba3a3f86ff55d266254ed4cae6457ec50',
 };

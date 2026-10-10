@@ -10,6 +10,30 @@ datasource db {
   provider = "postgresql"
 }
 
+// Empty inert identity storage. Explicit operator fixtures are not active placement authority.
+model CurrencyInstallation {
+  id             Int                       @id @db.SmallInt
+  installationId String                    @unique(map: "currency_installations_installation_id_key") @map("installation_id") @db.Uuid
+  createdAt      DateTime                  @map("created_at") @db.Timestamptz(3)
+  domains        CurrencyExecutionDomain[]
+
+  @@map("currency_installations")
+}
+
+// Historical placement facts only: no current selector, pin, defaults or runtime consumer.
+model CurrencyExecutionDomain {
+  id                      String               @id @db.Uuid
+  installationId          String               @map("installation_id") @db.Uuid
+  databaseName            String               @map("database_name") @db.VarChar(63)
+  schemaName              String               @map("schema_name") @db.VarChar(63)
+  placementManifestDigest String               @map("placement_manifest_digest") @db.VarChar(64)
+  createdAt               DateTime             @map("created_at") @db.Timestamptz(3)
+  installation            CurrencyInstallation @relation(fields: [installationId], references: [installationId], onDelete: Restrict, onUpdate: Restrict, map: "currency_execution_domains_installation_fkey")
+
+  @@unique([installationId, id], map: "currency_execution_domains_installation_id_id_key")
+  @@map("currency_execution_domains")
+}
+
 // Complete unused policy evidence, never an active installation pointer.
 model CurrencyPolicyRevision {
   revision  String            @id @db.VarChar(64)

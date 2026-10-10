@@ -568,7 +568,7 @@ test('independent new owned schema does not wait; explicit target ignores search
     const migrations = readdirSync(resolve('prisma/migrations'))
       .filter((n) => /^\d{14}_/.test(n))
       .sort();
-    assert.equal(migrations.length, 25);
+    assert.equal(migrations.length, 26);
     for (const name of migrations)
       await pg.query(
         readFileSync(

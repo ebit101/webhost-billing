@@ -30,6 +30,8 @@ const expectedTables = [
   'auth_sessions',
   'automation_runs',
   'currency_controls',
+  'currency_execution_domains',
+  'currency_installations',
   'currency_policy_revisions',
   'currency_unit_definitions',
   'customers',
@@ -57,6 +59,12 @@ const expectedTables = [
 ] as const;
 
 const requiredCustomConstraints = [
+  'currency_installations_singleton_check',
+  'currency_installations_time_check',
+  'currency_execution_domains_database_name_check',
+  'currency_execution_domains_schema_name_check',
+  'currency_execution_domains_manifest_check',
+  'currency_execution_domains_time_check',
   'currency_controls_singleton_check',
   'currency_controls_generation_check',
   'currency_controls_unassessed_check',
@@ -172,6 +180,7 @@ async function verify(): Promise<void> {
       AND column_name = 'id'
       AND table_name <> '_prisma_migrations'
       AND table_name <> 'currency_controls'
+      AND table_name <> 'currency_installations'
     ORDER BY table_name
   `;
 
@@ -179,7 +188,8 @@ async function verify(): Promise<void> {
     (name) =>
       name !== 'currency_unit_definitions' &&
       name !== 'currency_policy_revisions' &&
-      name !== 'currency_controls',
+      name !== 'currency_controls' &&
+      name !== 'currency_installations',
   );
   assert.equal(idColumnTypes.length, uuidTables.length);
   assert.deepEqual(
@@ -309,6 +319,8 @@ async function verify(): Promise<void> {
   ]);
   // The unchanged fictional seed must not initialize authority or even uncertainty.
   assert.equal(await prisma.currencyControl.count(), 0);
+  assert.equal(await prisma.currencyInstallation.count(), 0);
+  assert.equal(await prisma.currencyExecutionDomain.count(), 0);
 
   const moneyColumns = await prisma.$queryRaw<
     Array<{ table_name: string; column_name: string }>

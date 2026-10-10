@@ -308,7 +308,7 @@ for (const priorCount of [22, 23])
         .sort();
       assert.equal(migrations[22], '20261007090000_currency_unit_definitions');
       assert.equal(migrations[23], '20261007100000_currency_policy_revisions');
-      assert.equal(migrations.length, 25);
+      assert.equal(migrations.length, 26);
       for (const name of migrations.slice(0, priorCount))
         await pg.query(
           readFileSync(resolve(directory, name, 'migration.sql'), 'utf8'),

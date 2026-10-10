@@ -45,7 +45,10 @@
   owner subsequently authorized that documentation slice, delivered at `3c4606c` with
   exact-head CI/CodeQL acceptance. Its phase review on 2026-10-10 accepts the specification
   and defines Command 110's empty identity storage only, not its execution. P2 authority
-  storage is not implemented. No production authority is installed.
+  storage remains incomplete. The owner authorized Command 110; after Docker recovery
+  and review delivery at `b7d43af`, inert identity storage passed renewed local acceptance.
+  Its own commit/scan/main/exact-head delivery closure remains required before handoff.
+  No production authority is installed.
   Temporary test installation is not product adoption.
   The selection protocol is not implemented or activated.
   Application integration and activation remain separately gated.
@@ -2421,9 +2424,41 @@ operating approval, release/deploy or unrelated cleanup in this review. P2 and P
 protected legacy/provider/business approvals remain. Stop after validated review delivery
 and request explicit **Command 110 — Stage inert currency installation identity storage**
 authorization; do not start it automatically or promise a remaining count/go-live date.
-The owner subsequently authorized Command 110 on 2026-10-10. Its preflight still found
-Docker's Linux engine unavailable; the preceding review's scan/push/exact-head closure
-must finish before implementation. No identity model, migration or test code exists yet.
+The owner subsequently authorized Command 110 on 2026-10-10. Its initial Docker
+connection failure is historical; restoration and review delivery at `b7d43af` passed
+scan/main/exact-head CI/CodeQL before implementation.
+
+### Command 110 inert identity storage
+
+Two unused Prisma models and one additive `20261010090000_inert_currency_identity`
+migration stage only empty immutable facts. Explicit singleton/UUID/RESTRICT/compound
+keys, bounded lowercase placement names, full lowercase-hex manifest and finite
+TIMESTAMPTZ(3) facts have no defaults, current flag, pin, seed or runtime consumer.
+Six fixed invoker UPDATE/DELETE/TRUNCATE guards and explicit new-object PUBLIC revokes
+do not erase owner INSERT/DDL powers or install production roles. Stored VARCHAR facts
+are checked; privileged casts can truncate input before checks, so this is not a
+request-input validation guarantee. The three text columns pin pg_catalog C collation;
+ASCII checks do not depend on the database locale.
+PostgreSQL documents [collation-sensitive ranges](https://www.postgresql.org/docs/18/functions-matching.html).
+
+Mandatory new source/owned SQL and extended actual-login P1 acceptance retain all 25
+original pins/bytes and prior-22/23/24 tests, and add prior-25 all-row/guard preservation.
+Fictional inserts are confined to verified newly owned scopes. Private test qualification
+rejects empty model/raw mismatch, missing/view/partition/RLS/catalog contexts and decoys;
+it is not exported discovery or placement approval. Renewed local root/source/SQL/P1/
+API/invariant/browser/build/static gates passed; actual failed attempts, retained tooling
+advisories and separate delivery closure belong in the progress report. The initial owner
+TRUNCATE assertion was corrected:
+PostgreSQL's [referenced-table restriction](https://www.postgresql.org/docs/18/sql-truncate.html)
+refuses installation-only truncation before the trigger, while CASCADE and explicit
+both-table truncation reach guard denial. No old migration/guard/limit was weakened.
+
+P2 authority remains incomplete. Initialization/pin, auth versions, codec/SQL parity,
+evidence/lineage, proof/ledger and P3–P9 adoption/activation are not authorized by this
+slice. No live data/provider, operating approval, release/deploy or unrelated cleanup.
+Stop after validated delivery for **Phase review — Review Command 110 inert currency
+installation identity storage and define the next bounded currency command**.
+No Command 111 is defined or authorized.
 
 ## 4. Price publication, quote and renewal rules
 

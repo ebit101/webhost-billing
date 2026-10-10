@@ -46,7 +46,7 @@
     "db:validate": "prisma validate --config prisma.config.ts",
     "db:verify": "tsx prisma/verify.ts",
     "typecheck": "pnpm db:generate && tsc -p tsconfig.json --noEmit",
-    "test:unit": "tsx --test --test-concurrency=1 test/currency-units.spec.ts test/currency-policies.spec.ts test/currency-adoption-preflight.spec.ts test/currency-coordination.spec.ts test/currency-coordination-guards.spec.ts test/currency-control.spec.ts test/currency-privilege-harness.spec.ts",
+    "test:unit": "tsx --test --test-concurrency=1 test/currency-units.spec.ts test/currency-policies.spec.ts test/currency-adoption-preflight.spec.ts test/currency-coordination.spec.ts test/currency-coordination-guards.spec.ts test/currency-control.spec.ts test/currency-privilege-harness.spec.ts test/currency-identity.spec.ts",
     "test:privileges": "tsx --test --test-concurrency=1 test/currency-privilege-harness.integration.spec.ts",
     "test": "pnpm test:unit && pnpm test:privileges && pnpm --filter @webhost-billing/web exec tsx e2e/run-database-tests.ts"
   },

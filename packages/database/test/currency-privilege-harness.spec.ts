@@ -283,10 +283,12 @@ test('test-only mandatory wiring retains every prior gate and has no runtime exp
     /from ['"]dotenv|require\(['"]dotenv|stdio:\s*['"]inherit['"]|shell:\s*true|console\.(?:log|error)/,
   );
 });
-test('canonical content pins cover all 25 original migrations without rewriting raw bytes', () => {
+test('canonical content pins retain all 25 original migrations and pin the inert identity addition without rewriting raw bytes', () => {
   const a = loadPinnedMigrations();
   const b = loadPinnedMigrations();
-  assert.equal(a.length, 25);
+  assert.equal(a.length, 26);
+  assert.equal(a[24]?.name, '20261008090000_unselected_currency_control');
+  assert.equal(a[25]?.name, '20261010090000_inert_currency_identity');
   assert.deepEqual(a, b);
 });
 test('child environment discards ambient database/provider/debug credentials and Docker redirects', () => {

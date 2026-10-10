@@ -2137,7 +2137,7 @@ current_database()), hashtext(schema)` computed by qualified PostgreSQL function
 
 ## ADR-112 — Stage empty identity records without initializing currency authority
 
-- **Status:** Accepted for owner-authorized Command 109 review; Command 110 subsequently authorized on 2026-10-10, not implemented; preceding review delivery blocked
+- **Status:** Review delivered at `b7d43af`; owner-authorized Command 110 inert scope locally validated on 2026-10-10; own delivery closure required
 - **Date:** 2026-10-10
 - **Review:** No blocking in-scope specification defect found. Stable S preserves exact
   original request identity separately from full fresh C/policy/unit/H/E assessment A;
@@ -2162,10 +2162,28 @@ current_database()), hashtext(schema)` computed by qualified PostgreSQL function
   not remove owner/superuser INSERT/DDL powers or prove production role separation.
   Explicit fixture-owner inserts in new owned scopes are not active installation approval.
   Current shared production database credentials remain a later P3/P6/P9 adoption gate.
-- **Boundary:** Five documentation files only. No new model/migration/test code,
+- **Review boundary:** Five documentation files only. No new model/migration/test code,
   PostgreSQL fixture/role, identity/token/proof, current history query/import/provider,
   operating approval, release/deployment or old-resource cleanup. Cached network-disabled
   secret-scanner tooling remains required for delivery. Stop for Command 110 authorization.
+
+### Command 110 implementation qualification
+
+The owner subsequently authorized the inert slice. Docker restoration cleared the
+connection blocker; preceding review scan/main/exact-head CI/CodeQL passed before
+implementation. Two unused explicit models, one empty additive migration, six fixed
+invoker statement guards and new-object PUBLIC revokes preserve existing authority
+boundaries. Three new text columns use explicit pg_catalog C collation for locale-independent
+ASCII checks. Finite explicit timestamps exclude PostgreSQL infinity values; no default
+or approval time is invented. Stored VARCHAR facts are checked, not text already
+truncated by an explicit privileged cast. Private test qualification and P1 actual-login
+denials are not a runtime identity reader or deployed duty attestation. The initial
+SQL assertion misclassified FK-before-trigger TRUNCATE refusal; actual failure and
+corrected acceptance belong in the progress report. All prior pins, control shape and
+historical tests remain. Renewed local root/source/SQL/P1/API/invariant/browser/build
+and static gates passed; earlier root and staff failures are preserved in the report.
+Production audit has no known findings; the two retained development advisories remain
+unwaived. Own commit/scan/main/exact-head CI/CodeQL closure is required before handoff.
 
 ## Open Decisions
 

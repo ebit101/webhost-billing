@@ -42,6 +42,9 @@ test(
         ),
       );
       await root.query(`INSERT INTO ${q}currency_controls(id) VALUES(1)`);
+      // Explicit owner-only fictional facts in this newly verified cluster, never a pin.
+      await root.query(`INSERT INTO ${q}currency_installations VALUES(1,'10000000-0000-4000-8000-000000000001','2026-01-01T00:00:00.000Z');
+        INSERT INTO ${q}currency_execution_domains VALUES('10000000-0000-4000-8000-000000000002','10000000-0000-4000-8000-000000000001','fictional_database','fictional_schema','${'a'.repeat(64)}','2026-01-01T00:00:00.000Z');`);
       const control = (
         await root.query(
           `SELECT generation::text AS generation,selected_policy_revision,history_latched,base_code,base_metadata_version,base_minor_unit_exponent FROM ${q}currency_controls`,
@@ -170,6 +173,32 @@ test(
               `TRUNCATE ${p}private_facts`,
             ])
               await denied(client, sql);
+            for (const table of [
+              'currency_installations',
+              'currency_execution_domains',
+            ]) {
+              const key =
+                table === 'currency_installations'
+                  ? '1::smallint'
+                  : "'10000000-0000-4000-8000-000000000002'::uuid";
+              for (const sql of [
+                `INSERT INTO ${q}${table} SELECT * FROM ${q}${table} WHERE false`,
+                `INSERT INTO ${q}${table} SELECT * FROM ${q}${table} ON CONFLICT(id) DO NOTHING`,
+                `INSERT INTO ${q}${table} SELECT * FROM ${q}${table} ON CONFLICT(id) DO UPDATE SET created_at=EXCLUDED.created_at WHERE false`,
+                `UPDATE ${q}${table} SET created_at=created_at`,
+                `UPDATE ${q}${table} SET created_at=created_at WHERE false`,
+                `DELETE FROM ${q}${table} WHERE false`,
+                `TRUNCATE ${q}${table}`,
+                `COPY ${q}${table} FROM STDIN`,
+                `MERGE INTO ${q}${table} t USING(SELECT ${key} AS id) s ON t.id=s.id WHEN MATCHED THEN UPDATE SET created_at=t.created_at`,
+                `WITH changed AS(DELETE FROM ${q}${table} WHERE false RETURNING id) SELECT id FROM changed`,
+              ])
+                await denied(client, sql);
+            }
+            await denied(
+              client,
+              `SELECT ${q}deny_currency_identity_mutation()`,
+            );
           }
           await denied(business, `SELECT ${p}issuer_probe('fixture'::text)`);
           await denied(business, `SELECT ${p}executor_probe()`);
@@ -213,6 +242,12 @@ test(
             `TRUNCATE ${q}currency_controls`,
             `UPDATE ${q}currency_unit_definitions SET provenance=provenance WHERE false`,
             `UPDATE ${q}currency_policy_revisions SET policy=policy WHERE false`,
+            `UPDATE ${q}currency_installations SET created_at=created_at WHERE false`,
+            `DELETE FROM ${q}currency_installations WHERE false`,
+            `TRUNCATE ${q}currency_installations CASCADE`,
+            `UPDATE ${q}currency_execution_domains SET created_at=created_at WHERE false`,
+            `DELETE FROM ${q}currency_execution_domains WHERE false`,
+            `TRUNCATE ${q}currency_execution_domains`,
           ])
             await denied(root, sql, '23514');
         },
@@ -238,6 +273,13 @@ test(
               `CREATE OR REPLACE FUNCTION ${q}deny_currency_control_mutation() RETURNS trigger LANGUAGE plpgsql AS 'BEGIN RETURN NULL; END'`,
               `CREATE TRIGGER rejected BEFORE UPDATE ON ${q}currency_controls FOR EACH STATEMENT EXECUTE FUNCTION ${q}deny_currency_control_mutation()`,
               `ALTER FUNCTION ${q}deny_currency_control_mutation() OWNER TO ${ident(h.roles.business)}`,
+              `ALTER TABLE ${q}currency_installations DISABLE TRIGGER ALL`,
+              `ALTER TABLE ${q}currency_execution_domains DISABLE TRIGGER ALL`,
+              `DROP TRIGGER currency_installations_no_update ON ${q}currency_installations`,
+              `DROP TRIGGER currency_execution_domains_no_delete ON ${q}currency_execution_domains`,
+              `CREATE OR REPLACE FUNCTION ${q}deny_currency_identity_mutation() RETURNS trigger LANGUAGE plpgsql AS 'BEGIN RETURN NULL; END'`,
+              `ALTER FUNCTION ${q}deny_currency_identity_mutation() OWNER TO ${ident(h.roles.business)}`,
+              `CREATE TRIGGER rejected BEFORE UPDATE ON ${q}currency_execution_domains FOR EACH STATEMENT EXECUTE FUNCTION ${q}deny_currency_identity_mutation()`,
               `SET session_replication_role=replica`,
             ])
               await denied(client, sql);
@@ -286,6 +328,24 @@ test(
             `CREATE FUNCTION ${p}issuer_probe(arg varchar) RETURNS text LANGUAGE sql AS 'SELECT ''Decoy function'''`,
           );
           await denied(attacker, `SELECT ${p}executor_probe()`);
+          await attacker.query(`CREATE TEMP TABLE currency_installations(id smallint); INSERT INTO currency_installations VALUES(99);
+            CREATE TEMP TABLE currency_execution_domains(id uuid); SET search_path=pg_temp,${ident(h.product)},pg_catalog;`);
+          assert.equal(
+            (
+              await attacker.query(
+                `SELECT installation_id::text AS id FROM ${q}currency_installations`,
+              )
+            ).rows[0]?.id,
+            '10000000-0000-4000-8000-000000000001',
+          );
+          assert.equal(
+            (
+              await attacker.query(
+                `SELECT count(*)::text AS count FROM ${q}currency_execution_domains`,
+              )
+            ).rows[0]?.count,
+            '1',
+          );
           for (const client of [business, issuer, executor])
             await denied(client, 'CREATE TEMP TABLE rejected_temp(id integer)');
         },
@@ -332,6 +392,49 @@ test(
             rawBefore,
           );
           await h.verifyOwnership();
+        },
+      );
+      // Last: RLS is deliberately restrictive in this new disposable cluster only.
+      // Do not disable any product mutation guard or reinterpret a hidden row as absent.
+      await t.test(
+        'actual non-owner identity reads with row_security=off refuse hidden rows',
+        async () => {
+          await root.query(`ALTER TABLE ${q}currency_installations ENABLE ROW LEVEL SECURITY;
+          ALTER TABLE ${q}currency_installations FORCE ROW LEVEL SECURITY;
+          ALTER TABLE ${q}currency_execution_domains ENABLE ROW LEVEL SECURITY;
+          ALTER TABLE ${q}currency_execution_domains FORCE ROW LEVEL SECURITY;`);
+          const rlsBaseline = await productSnapshot(root, h.product);
+          for (const client of clients.values()) {
+            await client.query('SET row_security=off');
+            for (const table of [
+              'currency_installations',
+              'currency_execution_domains',
+            ]) {
+              await preciseDenial(client, `SELECT * FROM ${q}${table}`);
+              assert.deepEqual(
+                await productSnapshot(root, h.product),
+                rlsBaseline,
+              );
+              assert.deepEqual(await privilegeSnapshot(), privilegeBaseline);
+            }
+            await client.query('RESET row_security');
+          }
+          assert.equal(
+            (
+              await root.query(
+                `SELECT count(*)::text AS count FROM ${q}currency_installations`,
+              )
+            ).rows[0]?.count,
+            '1',
+          );
+          assert.equal(
+            (
+              await root.query(
+                `SELECT count(*)::text AS count FROM ${q}currency_execution_domains`,
+              )
+            ).rows[0]?.count,
+            '1',
+          );
         },
       );
       for (const client of clients.values()) await client.end();

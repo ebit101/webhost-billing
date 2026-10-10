@@ -70,7 +70,7 @@ async function snapshot(
   }
   return rows;
 }
-async function bootstrap(target: string, count = 25) {
+async function bootstrap(target: string, count = 26) {
   await assertBrowserDatabaseScope(parent, parentUrl, parentSchema);
   const targetUrl = browserDatabaseUrl(parentUrl, target);
   await parent.$executeRawUnsafe(`CREATE SCHEMA "${target}"`);
@@ -78,7 +78,7 @@ async function bootstrap(target: string, count = 25) {
   const models = createPrismaClient(targetUrl);
   // A failure before marking is deliberately preserved, not guessed cleanup ownership.
   await pg.connect();
-  assert.equal(migrations.length, 25);
+  assert.equal(migrations.length, 26);
   for (const name of migrations.slice(0, count))
     await pg.query(readFileSync(resolve(dir, name, 'migration.sql'), 'utf8'));
   await assertBrowserDatabaseScope(models, targetUrl, target, false);

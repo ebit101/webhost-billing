@@ -174,9 +174,12 @@ two empty immutable identity/placement tables, one additive migration and mandat
 source/owned SQL/P1 permission/preservation acceptance. No defaults, seed, deployment
 pin, auth epoch, digest/proof/selection or application consumer. Existing production
 privilege adoption remains unproven; inert storage cannot attest placement or approve money.
-The owner subsequently authorized Command 110 on 2026-10-10. Implementation has not
-started: Docker's Linux engine is unavailable and the preceding review's secret-scan/
-main/exact-head delivery remains incomplete. Authorization does not waive those gates.
+The owner subsequently authorized Command 110 on 2026-10-10. After Docker restoration,
+the preceding review at `b7d43af` passed its scan/main/exact-head CI/CodeQL gates before
+implementation began. Two unused identity models and one empty additive migration passed
+renewed local acceptance, including actual SQL/non-owner denials and prior-25 preservation.
+Initialization/pin/auth/proof/selection and ordinary consumers remain absent; delivery
+closure, actual checks and failed attempts are tracked separately in the progress report.
 No selection/guard or application consumer is installed by the observation helper or review.
 No live registry, selected installation policy or financial backfill is included. Broader persistence,
 per-currency reads, pricing and activation remain later separately gated slices. Remaining
