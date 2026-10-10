@@ -2553,7 +2553,13 @@ Fifteen new mandatory source tests cover all five literal persisted S vectors, u
 request-rule differential matrices, exact identity/case and large generations, whitespace/
 escape equivalence, arity/nesting/object/authority denial, caller traps, byte bounds before
 parse/allocation, defensive canonical overflow and copy/redaction/private wiring. Only
-the prior identity wiring assertion changes to recognize the appended mandatory test.
+the prior identity wiring assertion initially changed to recognize the appended mandatory test.
+Initial delivery `b281819` passed scan/main, but hosted CI exposed the tracked-file shared
+boundary test matching the two required S protocol literals. CodeQL passed. No production
+parser import/call exists. The test now permits only those two exact lines in the private
+file, retaining all scanned paths and rejecting imports, calls and other hits. Fresh shared
+113/source 89/types passed; corrected-head delivery remains required. The initial failure
+is not relabeled, and no runtime grammar, export, consumer or gate deadline changes.
 
 No package/root/shared/browser export or ordinary consumer. All 26 migration bytes/pins,
 schema, identity/control empty/unassessed shapes, seed, SQL/P1 limits and prior preservation

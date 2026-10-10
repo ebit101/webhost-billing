@@ -4,6 +4,26 @@ import { resolve } from 'node:path';
 import { describe, it } from 'node:test';
 import { spawnSync } from 'node:child_process';
 
+// The private S codec uses the protocol label, not the shared request decoder.
+// Keep every original runtime scan target; allow only these two exact label uses.
+function assertPrivateIntentLabelOnly(output: string): void {
+  const hits = output.split(/\r?\n/).filter(Boolean);
+  const bodies = hits.map((hit) => {
+    const match = /^([^:]+):[0-9]+:(.*)$/.exec(hit);
+    assert.ok(match, 'Malformed consumer inventory');
+    assert.equal(
+      match[1],
+      'packages/database/src/private/currency-selection-intent.ts',
+      'Unexpected runtime selection request consumer',
+    );
+    return match[2]?.trim();
+  });
+  assert.deepEqual(bodies.sort(), [
+    "'currency-selection-request-v1',",
+    "if (!isTuple(input, 9) || input[0] !== 'currency-selection-request-v1')",
+  ]);
+}
+
 describe('shared package boundaries', () => {
   it('keeps selection request syntax separate, pure and unused by runtime consumers', async () => {
     const [manifestText, rootEntry, source] = await Promise.all([
@@ -65,13 +85,34 @@ describe('shared package boundaries', () => {
     );
     assert.equal(
       consumers.status,
-      1,
-      'Unexpected runtime selection request consumer',
+      0,
+      'Expected the two private S protocol labels in the tracked inventory',
     );
-    assert.ok(
-      consumers.stdout === '' && consumers.stderr === '',
-      'Unexpected consumer inventory output',
-    );
+    assert.equal(consumers.stderr, '', 'Unexpected consumer inventory output');
+    assertPrivateIntentLabelOnly(consumers.stdout);
+  });
+
+  it('allows only the exact private S label uses, never imports, parser calls or other consumers', () => {
+    const path = 'packages/database/src/private/currency-selection-intent.ts';
+    const labels = `${path}:83:    if (!isTuple(input, 9) || input[0] !== 'currency-selection-request-v1')\n${path}:124:      'currency-selection-request-v1',\n`;
+    assertPrivateIntentLabelOnly(labels);
+    assertPrivateIntentLabelOnly(labels.replaceAll('\n', '\r\n'));
+    for (const output of [
+      '',
+      labels.split('\n')[0] ?? '',
+      labels + labels,
+      labels +
+        `${path}:1:import { parseCurrencySelectionRequest } from '../../shared/src/currency-selection-request';\n`,
+      labels + `${path}:2:parseCurrencySelectionRequest(text);\n`,
+      labels + `${path}:3:'currency-selection-request-v1';\n`,
+      labels.replaceAll(path, 'apps/api/src/consumer.ts'),
+      labels.replaceAll(path, 'packages/database/src/index.ts'),
+      labels + 'malformed inventory\n',
+    ])
+      assert.throws(
+        () => assertPrivateIntentLabelOnly(output),
+        assert.AssertionError,
+      );
   });
 
   it('keeps unused currency policy behind a separate entry point', async () => {

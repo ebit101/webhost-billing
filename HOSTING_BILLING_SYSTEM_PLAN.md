@@ -186,7 +186,10 @@ nine-field S encoding and SHA-256 in a private test-imported server module, with
 export, database effect, assessment A, SQL parity, acquisition, proof or selection.
 The owner subsequently authorized Command 111 on 2026-10-10. Its unused private module
 and mandatory syntax/vector/budget/boundary tests passed serialized full local acceptance;
-own delivery remains required before handoff. No package export, database effect or
+Initial delivery `b281819` passed scan/main but failed hosted CI on a tracked-file test
+matching the two private S protocol labels, not a runtime decoder import; CodeQL passed.
+The exact-label-only boundary correction passed shared 113/source 89/types locally;
+corrected-head delivery remains required before handoff. No package export, database effect or
 ordinary consumer is added. P2 and later activation prerequisites remain incomplete;
 actual checks and failed attempts are tracked separately in the progress report.
 No selection/guard or application consumer is installed by the observation helper or review.

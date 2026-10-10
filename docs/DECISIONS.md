@@ -2232,6 +2232,17 @@ failed and are not relabeled as passes or permanently fixed. Supported concurren
 retain every suite/assertion/deadline. Final tracking checks passed; own delivery remains
 required. Failures and retained unwaived advisories stay in the report.
 
+Initial delivery `b281819` passed its pinned local scan (227 commits/no leaks) and normal
+main reconciliation, but exact-head CI failed the old tracked-file consumer grep because
+the required `currency-selection-request-v1` literals contain the decoder filename text.
+CodeQL passed. This was not a production parser import; untracked new source escaped the
+pre-commit local grep. The minimal shared boundary-test correction retains every scanned
+runtime path and allows only the two exact private protocol-label lines. Negative cases
+still reject imports/calls, duplicates, other labels/paths and malformed inventories.
+Fresh tracked-source shared 113/source 89/types passed. No runtime/dependency change;
+the published failure is preserved, not amended or relabeled. Corrected-head delivery
+must pass before completion; no next implementation is authorized.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

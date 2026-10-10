@@ -13516,6 +13516,8 @@ it automatically or begin assessment/auth/evidence storage or activation.
 - `packages/database/test/currency-selection-intent.spec.ts`.
 - `packages/database/package.json` — mandatory source test appended, no exports/dependencies.
 - `packages/database/test/currency-identity.spec.ts` — recognize the appended test only.
+- `packages/shared/test/package-boundaries.spec.ts` — recognize only the two exact private
+  S protocol-label lines, with negative tests preserving runtime-consumer denial.
 - Five trackers: `CODEX_DEVELOPMENT_COMMANDS.md`, `HOSTING_BILLING_SYSTEM_PLAN.md`,
   `docs/DECISIONS.md`, `docs/MULTI_CURRENCY_DESIGN.md`, `docs/PROGRESS.md`.
 
@@ -13585,6 +13587,33 @@ it automatically or begin assessment/auth/evidence storage or activation.
   renewal passed. At this pre-commit cutoff, focused commit, cached
   pinned full-history scan, fetch/fast-forward-only reconciliation, non-force main push
   and own exact-head CI/CodeQL still must pass before completion is reported.
+
+#### Initial delivery failure and bounded correction
+
+- Initial focused implementation commit `b2818198d68532ed6a9040e3fd196db404889cfe`
+  changed nine files. Pinned cached network-disabled full-history scan checked 227 commits,
+  no leaks. Fetch/fast-forward-only reconciliation and non-force main push completed clean
+  0/0; owner direct-main rule bypass was reported without changing protections/history.
+- Exact-head [CI 38043267189](https://github.com/ebit101/webhost-billing/actions/runs/38043267189)
+  failed Run package tests: shared 111/112 because the old tracked-file grep matched the
+  required `currency-selection-request-v1` literals at private source lines 83/124.
+  This is not a parser import/call. Untracked new source escaped the local pre-commit grep;
+  the hosted tracked inventory exposed it. Earlier setup/static gates and guarded cleanup
+  passed; later package/API/browser/build gates did not run. PR dependency review skipped,
+  not passed. [CodeQL 38043267180](https://github.com/ebit101/webhost-billing/actions/runs/38043267180)
+  aggregate/all eight steps passed, first attempt. The CI failure remains recorded.
+- Minimal in-scope correction retains all original runtime scan paths, pattern, timeout
+  and output bound; only the two exact protocol-label bodies in the private file are
+  permitted. A new negative test rejects missing/duplicate hits, actual decoder imports/
+  calls, extra labels, other paths and malformed inventories; CRLF remains accepted.
+  No file/directory exclusion, runtime/shared decoder/codec change or skipped assertion.
+- Fresh correction checks passed shared 113/113, database source 89/89, shared types and
+  database generated-client/types. Fresh full repository formatting, all four offline
+  documentation validators and diff whitespace checks passed; runtime/database/queue/
+  lockfile/workflow paths have no changes relative to the initial implementation commit.
+  Earlier shared 112 counts remain historical runs,
+  not silently rewritten. Total command scope is now ten files, including five trackers.
+  Corrective commit/scan/main and its own exact-head complete CI/CodeQL remain required.
 
 #### Decisions, unresolved risks and exact next command
 

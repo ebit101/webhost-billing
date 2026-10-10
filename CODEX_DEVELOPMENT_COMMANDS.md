@@ -4574,7 +4574,10 @@ subsequently authorized by the owner on 2026-10-10; private implementation local
 validated with the recorded serialized acceptance and limitations.** The preceding review at `a484475` passed scan/main and
 exact-head CI/CodeQL before implementation. This is one pure server-only serialization
 slice of section 3e, not assessment encoding, SQL parity, acquisition or authority storage.
-Own scan/main/exact-head delivery is required before handoff; final tracking checks passed.
+Initial delivery `b281819` passed the local pinned scan/main gates, but its exact-head
+CI failed a tracked-file boundary assertion; CodeQL passed. The in-scope test correction
+permits only the two required private S protocol-label lines and rejects all other hits.
+Fresh shared 113/source 89/types passed; corrected-head delivery is required before handoff.
 
 ```text
 Command 111 — Build an unused private stable-intent codec
