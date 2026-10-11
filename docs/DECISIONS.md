@@ -2504,6 +2504,31 @@ report-only update must pass its own delivery gate; stop for the recommended pha
   Review Command 115 closed currency selection-intent storage and define the next bounded
   currency command**; no automatic activation, import, release or deploy.
 
+## ADR-122 — Stage historical authorization evidence without certifying current access
+
+- **Status:** Defined by the owner-authorized Command 115 phase review on 2026-10-11;
+  Command 116 is not authorized or implemented.
+- **Review:** Command 115's empty closed intent storage, independently reconstructed S,
+  UUID slot and restrictive ownership/policy references match scope. Strengthen only
+  the temporary-grant acceptance branch to compare probe/product catalogs and rows,
+  global security facts, migration pins and owned resources after every denial.
+- **Next boundary:** One empty closed authorization-evidence table stores exact ten-field
+  H plus installation and explicit creation time. Compound installation/domain,
+  AdminProfile/actor and AuthSession/actor references are restrictive. Only the redundant
+  AdminProfile ownership unique key and inverse relations extend existing models.
+- **Historical factor boundary:** Credential/recovery UUIDs are non-secret copied history,
+  never foreign keys to deletable secret rows. Epochs are positive exact BIGINT facts,
+  not current versions. Recovery identity is null exactly for totp; no default enrollment,
+  usable/approval flag, secret, new digest protocol or issuer is introduced.
+- **Acceptance:** Keep the installed store closed and empty. Catalog-derived fictional
+  probes prove ownership/shape/constraints, H parity and preserved ordinary security/MFA
+  updates and deletion. Real distinct duty logins and full per-denial snapshots prove
+  refusal, not production privilege adoption or verified human intent.
+- **Stop:** Proof issuance/consumption/ledger, protected payload coverage, auth adoption,
+  lineage/writers/recovery and P2/P3–P9 remain incomplete. Keep both tooling advisories
+  unwaived and all operating/provider/launch approvals separate. Request Command 116
+  authorization only after the review's own verified source delivery.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

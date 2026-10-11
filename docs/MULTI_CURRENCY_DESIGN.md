@@ -2914,6 +2914,41 @@ privilege adoption, live query/import, provider, release or deployment. Stop for
 review — Review Command 115 closed currency selection-intent storage and define the next
 bounded currency command**.
 
+### Command 115 phase review and closed H-storage handoff — 2026-10-11
+
+The review accepts `92698f6`'s installed closed boundary: twelve S facts, exact preserved
+key text/UUID slot, independent bounded canonical reconstruction/SHA-256, restrictive
+installation/domain/actor/session/policy references and four unconditional invoker write
+refusals. All 27 product migration bytes stay unchanged in this review. A test-only gap
+in the temporary-grant branch is corrected: each denied statement now also compares the
+full fictional probe snapshot, global roles/memberships/default ACLs and raw migration
+pins, retaining product catalogs/rows, ownership and exact SQLSTATE checks.
+
+Predecessor delivery is independently closed: pinned local history scan 240/no leaks,
+canonical main synchronization and first-attempt exact-head CI 38125827974/all 29 Validate
+steps and CodeQL 38125827988/all eight successful. Hosted full logs retain all old gates;
+their scan inventory 232/no leaks is distinct from the local inventory. Fresh review
+validation and the review commit's separate delivery belong to progress/owner handoff.
+
+Define **Command 116 — Stage closed currency authorization-evidence storage**, not its
+implementation. H is the next defined historical reference prerequisite before later
+proofs; its exact public identities/epochs and profile/session ownership are already
+specified above. One empty table contains H plus installation and explicit finite UTC
+creation time. Five restrictive installation/domain/actor/profile/session references
+need only the redundant AdminProfile `(id,user_id)` key; reuse the session ownership key.
+The factor-kind/null recovery-identity rule and positive exact BIGINT epochs are shape
+checks, never current access, live enrollment or one-use consumption evidence.
+
+Credential/recovery UUIDs deliberately have no FK to deletable secret-bearing rows.
+Fictional installed-catalog-derived probes must demonstrate unchanged ordinary security
+updates and secret credential/recovery replacement while retaining copied historical
+identities. Installed product H and intent stores stay empty and unconditionally closed,
+including owner/no-op paths; no runtime repository/export/reader/issuer/seed/consumer.
+No standalone H digest protocol, auth-version establishment, identity/pin initialization,
+protected payload/coverage, proof/ledger/consumption, selection, writer/duty adoption or
+live query/import/provider/deployment. P2 and P3–P9 remain incomplete. Preserve limits,
+both tooling advisories and operating/launch approvals; request explicit Command 116.
+
 ## 4. Price publication, quote and renewal rules
 
 ### Catalogue pricing

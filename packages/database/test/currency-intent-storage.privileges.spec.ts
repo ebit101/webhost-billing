@@ -64,9 +64,9 @@ test(
           (rows) => Array.isArray(rows) && rows.length === 0,
         ),
       );
-      const unchangedProduct = async () => {
+      const unchangedProduct = async (expected = product) => {
         await admin.query(`SET search_path=${p},pg_catalog`);
-        assert.deepEqual(await productSnapshot(admin, h.product), product);
+        assert.deepEqual(await productSnapshot(admin, h.product), expected);
         assert.deepEqual(
           loadPinnedMigrations().map((m) => ({
             name: m.name,
@@ -507,15 +507,13 @@ test(
               `WITH attempted AS (DELETE FROM ${table} WHERE false RETURNING *) SELECT * FROM attempted`,
               `MERGE INTO ${table} AS d USING (SELECT * FROM ${table} WHERE false) AS s ON d.installation_id=s.installation_id WHEN MATCHED THEN DELETE`,
             ]) {
+              const probeBefore = await probeSnapshot();
               await assert.rejects(
                 c.query(sql),
                 (e) => e instanceof HarnessSqlFailure && e.code === '23514',
               );
-              assert.deepEqual(
-                await productSnapshot(admin, h.product),
-                granted,
-              );
-              await h.verifyOwnership();
+              assert.deepEqual(await probeSnapshot(), probeBefore);
+              await unchangedProduct(granted);
             }
             await c.end();
           }

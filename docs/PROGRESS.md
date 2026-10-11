@@ -14352,8 +14352,8 @@ Stop after verified review delivery; do not implement it automatically.
 
 ### Command 115 — Stage closed currency selection-intent storage
 
-- **Status:** Implemented; required local acceptance passed. Focused commit, pinned history
-  scan, non-force main delivery and exact-head hosted gates are required for final handoff.
+- **Status:** Delivered at `92698f6`; required local and exact-head hosted acceptance passed.
+  The owner-authorized phase review below reconciles post-commit source delivery evidence.
 - **Date:** 2026-10-11.
 - **Baseline:** Clean `0f19530ac016c6ab3853d2410781976e01739c03`; fresh canonical main
   reconciliation 0/0. Preceding review delivery independently closed: cached pinned
@@ -14484,6 +14484,97 @@ Stop after verified review delivery; do not implement it automatically.
 After verified delivery, request **Phase review — Review Command 115 closed currency
 selection-intent storage and define the next bounded currency command**. Stop; do not
 define or implement the next command automatically.
+
+### Phase review — Review Command 115 closed currency selection-intent storage and define the next bounded currency command
+
+- **Status:** Engineering review accepted with one test-only acceptance correction;
+  Command 116 defined only, not authorized or implemented. Review source delivery has
+  its own pinned scan/main/exact-head CI/CodeQL gate.
+- **Date:** 2026-10-11. Owner explicitly authorized review and next-command definition.
+- **Baseline:** Clean `92698f6e2b955bfa0c7e7e117675e43167125141`; fresh canonical fetch
+  confirms main/origin/main 0 ahead/0 behind. No production access or live data.
+
+#### Reviewed scope and findings
+
+- Read project instructions/plan/decisions/relevant progress, Command 115 and currency
+  sections 3d/3e. Inspected migration/schema, pure canonical helper, guards/ACLs, catalog-
+  derived probes, exact SQL/Prisma denials, source wiring, full privilege acceptance and
+  prior-26 preservation. No blocking installed-runtime defect identified.
+- Twelve S fields have no defaults or approval/auth/proof state. Request text is preserved
+  exactly while UUID aliases share the installation-wide slot. Independent bounded scalar
+  reconstruction checks action/revision/UUID/exact BIGINT rules before byte comparison
+  and SHA-256; no jsonb::text hash or current-state/clock lookup. Six restrictive references
+  bind domain/installation, actor/session ownership and exact policy revisions. Four
+  private fixed invoker statement guards always deny even empty/no-op writes.
+- Product storage stays closed and empty. LIKE-derived probe constraints redirect only
+  specified fictional parents and retain the installed canonical helper binding. Existing
+  migration/source/consumer assertions remain; exact additive count/manifest exceptions
+  do not authorize a reader, append, current authentication or selected control.
+- One test-only acceptance gap corrected in currency-intent-storage.privileges.spec.ts:
+  the temporary-grant branch previously compared product rows/catalogs and resource
+  ownership but omitted full probe/global-security/pin comparisons after each denial.
+  Reuse the existing unchanged-product helper with its explicit granted snapshot and
+  compare the complete probe before/after each statement. Global roles/memberships/default
+  ACLs, raw migration pins and ownership now run there too. Retain all exact 23514 refusals,
+  grant/revoke restoration, old cases, SQL limits/timeouts and resource checks.
+- No runtime, model, migration, private codec, seed, dependency/patch/lock/workflow or
+  authority-opening change. Historical failed attempts in Command 115 remain recorded.
+
+#### Delivery reconciliation and fresh validation
+
+- Command 115 `92698f6` was non-force pushed and remains canonical main. Its post-commit
+  cached pinned local full-history scan passed 240 commits/no leaks. Fresh exact-head
+  [CI](https://github.com/ebit101/webhost-billing/actions/runs/38125827974) aggregate/all 29
+  Validate steps and [CodeQL](https://github.com/ebit101/webhost-billing/actions/runs/38125827988)
+  aggregate/all eight succeeded, first attempts. Dependency review skipped, not passed.
+- Retrieved/inspected full hosted Validate log: scan 232/no leaks (distinct from local
+  240), database source 142, original P1 12 before parity 8 and intent privileges 9,
+  84 SQL/seed/prior-preservation, shared 113/queue 3/API unit 107/worker 29/web 572 across
+  54 files, API integration 81, invariants 113/12/42/2, lifecycle 19/staff 4, production
+  audit/license/build/cleanup passed. This is predecessor evidence, not renewed local
+  execution of every application/browser/build check in this review.
+- Fresh frozen install and tooling-security 15 passed. Database source 142/shared 113
+  passed with zero skips. Config/shared builds, Prisma 7.10.0 generation and strict
+  database types passed after the test correction. Production audit exit zero/no known
+  findings; full audit exit one retains exactly braces high GHSA-vfj7-8cjw-p6xm and
+  sprintf-js moderate GHSA-hp3w-g68c-fv3c. No dependency upgrade/suppression/waiver.
+- Fresh unchanged mandatory P1-first/parity/intent sequence passed 12/8/9 checks, zero
+  skips, including complete temporary-grant snapshots after every denial. Ordinary owned
+  SQL launcher passed all 84 cases, prior-22/23/24/25/26 preservation, seed and verifier.
+  All 27 migrations applied; installed intent storage stayed empty. No failed validation
+  attempt in this review, lowered threshold, opt-out or unrelated resource cleanup.
+  Serial execution preserved all limits and left unrelated services/processes/data intact.
+- Final repository formatting, all four offline documentation validators and diff
+  integrity passed. Read-only exact-label inspection found no remaining owned harness
+  container/network; no unrelated Docker object was cleaned up.
+- Review delivery requires focused six-file commit, cached pinned full-history scan,
+  fresh canonical reconciliation/non-force main push and this review's exact-head
+  CI/CodeQL. Actual post-commit outcomes belong to the owner handoff; predecessor green
+  runs never certify a new review head.
+
+#### Decisions, files changed and remaining risks
+
+- ADR-122 defines **Command 116 — Stage closed currency authorization-evidence storage**
+  only. One empty historical H store, exact compound installation/domain/profile/session
+  ownership and non-secret factor identities, positive exact BIGINT epochs and explicit
+  finite UTC creation time. Only redundant AdminProfile ownership key/inverse relations
+  extend old models; no FK to deletable secret credential/recovery rows, current-version
+  baseline, issuer, approval flag or standalone H digest protocol.
+- Files changed: CODEX_DEVELOPMENT_COMMANDS.md, HOSTING_BILLING_SYSTEM_PLAN.md,
+  docs/DECISIONS.md, docs/MULTI_CURRENCY_DESIGN.md, this report and the one privilege test.
+  Command 116 has no implementation; all 27 migration bytes remain unchanged.
+- Two unwaived tooling advisories, direct-main governance, privileged owner/clone powers,
+  deployed-duty adoption, protected payload/coverage, auth/lineage/writer/recovery
+  prerequisites, disk/serial limits and Command 33/provider/launch approvals remain.
+  P2 and P3–P9 are incomplete. No fixed remaining-command count or go-live date promised.
+- No identity/control initialization, current auth certification, proof issuance,
+  intent reservation, live query/WHMCS import/provider/operating approval/release/deploy
+  or Docker/disk/cache/old-scope cleanup authorized or performed by this review.
+
+#### Exact recommended next command
+
+Request **Command 116 — Stage closed currency authorization-evidence storage**.
+Stop after verified review delivery; do not implement it automatically.
 
 ## Report Template
 

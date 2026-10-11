@@ -5120,6 +5120,90 @@ WHMCS import, operating approval, release/deploy or Docker/disk/cache/old-scope 
 P2 and P3–P9 remain incomplete; an empty intent store is never a receipt or human approval.
 ```
 
+## Command 116 — Stage closed currency authorization-evidence storage
+
+**Defined by the Command 115 phase review on 2026-10-11; not authorized or implemented.**
+One empty historical H store with exact ownership references. No current authorization,
+auth-version establishment, factor consumption, proof issuance or selection.
+
+```text
+Command 116 — Stage closed currency authorization-evidence storage
+
+Read AGENTS.md, plan, decisions, progress and currency design sections 3d/3e/current review.
+Close preceding review scan/main/exact-head CI/CodeQL before implementation. Renew frozen
+install, tooling-security 15 and production/full audits. Preserve installed dependencies,
+patches and both unwaived findings; unrelated repairs require separate authorization.
+
+Add one empty CurrencyAuthorizationEvidence model/table and one atomic additive migration
+after all 27 byte-identical pinned migrations. Store only section 3e's ten H facts plus
+installation UUID and explicit finite UTC TIMESTAMPTZ(3) creation time: evidence UUID,
+execution-domain UUID, actor User UUID, AdminProfile UUID, AuthSession UUID, positive BIGINT
+auth epoch, non-secret credential UUID, positive BIGINT recovery-set epoch, exact factor
+kind and nullable non-secret recovery-code UUID. Evidence UUID is the primary key. No
+defaults, usable/approved/current/selected flags, secret/hash/ciphertext, bearer, raw factor,
+auth-version row, canonical A/S copy, new digest protocol or application consumer.
+
+Use exact existing server UUID versions/variant/nil/max grammar through canonical lowercase
+typed output. Both epochs remain exact 1..9223372036854775807; no Number conversion. Factor
+kind is exact C-collated totp or recovery: recovery-code UUID is null exactly for totp and
+non-null exactly for recovery. Non-secret historical UUID syntax is not live enrollment.
+No FK to deletable AdminTotpCredential/AdminRecoveryCode or their secret-bearing values;
+ordinary MFA disable/re-enrollment/recovery regeneration must remain possible.
+
+Five RESTRICT/RESTRICT references bind installation, compound installation/domain, actor,
+compound profile/actor ownership and compound session/actor ownership. Add only the
+redundant AdminProfile (id,user_id) unique key and required inverse Prisma relations;
+reuse existing AuthSession (id,user_id). Do not change old auth/security/retention/cascade
+behavior or current records. Independently existing but differently owned profile/session
+must deny. Deletion/key changes of referenced historical owners deny; non-key role/status,
+revocation/security updates still work. Existence is not full-administrator access or MFA.
+
+Four fixed qualified SECURITY INVOKER BEFORE statement triggers always deny INSERT,
+UPDATE, DELETE and TRUNCATE, including zero-row/no-op statements. Revoke new table/function
+PUBLIC privileges atomically. No GUC/role/token/environment switch, SECURITY DEFINER opening,
+repository, export, read/append/issuer/initializer, seed, API, worker or runtime consumer.
+No identity/control/auth-version initialization or proof/selected fixture. Owner DDL
+powers remain a trust boundary; isolated refusal is not deployed privilege adoption.
+
+Product storage remains closed and empty throughout acceptance. Derive fictional probe
+columns/CHECKs/PK/unique indexes and exact ownership FKs from the actual installed catalog;
+redirect only prescribed copied parent targets. Verify manifests and canonical bindings;
+never disable product guards or adopt an existing scope. Reconstruct H from probe columns
+using test-only parity against existing five A/H vectors and unchanged private codecs.
+No arbitrary append or probe row is a step-up, historical origin attestation or approval.
+
+Test both factor kinds, exact null ownership, UUID/epoch boundaries above Number precision
+and at BIGINT maximum, duplicates, malformed/overflow/null/extra values, missing/wrong-owner
+profile/session/domain references and parent restrictions. Prove non-key security updates,
+and secret credential/recovery deletion/replacement with immutable historical copied IDs,
+only in newly owned fictional probes. Snapshot all product/probe rows/catalogs, roles,
+memberships/default ACLs, migration pins and owned resources after every denial, including
+temporarily granted statement-refusal cases. Positive probes cannot open installed storage.
+
+Use unchanged P1 harness, cached immutable PostgreSQL image, real separate business/issuer/
+executor/attacker logins, limits/deadlines/ownership/cleanup. Test direct DML including
+COPY/MERGE/conflict/nested/no-op/TRUNCATE plus helper/DDL/owner/role/replica escalation.
+Keep mandatory old P1 first, Command 114 parity next and Command 115 intent acceptance;
+append H acceptance with no skip/opt-out. Keep all old source gates, 95 valid/1015 invalid
+parity fixtures and 84 SQL cases; exact append/count/manifest allowances only. Add prior-27
+all-row/catalog preservation alongside unchanged prior-22/23/24/25/26 cases. All 28 migrations
+apply cleanly; new H and old intent stores remain empty, old identity/control shapes unchanged.
+
+Run full required acceptance: source/shared/build/types, mandatory privileges/parity/owned
+SQL/seed/prior snapshots/root packages, API/invariants, lifecycle/staff browsers, formatting/
+four offline docs/lint/types, audits/licenses/production build. Fictional scopes/fake
+providers only; supported serial execution, unchanged assertions/deadlines. Record failed
+attempts. Update five trackers, focused commit, pinned full-history scan, fresh canonical
+reconciliation/non-force main push and exact-head CI/CodeQL.
+
+Stop for Phase review — Review Command 116 closed authorization-evidence storage and
+define the next bounded currency command. No intent reservation, H issuance, current auth
+certification, authorization-version adoption, evidence payload/coverage, proof/ledger/
+consumption, replay/CAS/selection endpoint, control opening, writer/privilege adoption,
+live query/provider/WHMCS import/operating approval/release/deploy or unrelated Docker/
+disk/cache/old-scope cleanup. P2 and P3–P9 remain incomplete; no launch date is promised.
+```
+
 ## Continuation Command
 
 If a phase encounters errors or remains incomplete, use this prompt in the same Codex task:

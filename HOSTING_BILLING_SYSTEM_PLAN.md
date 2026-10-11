@@ -248,6 +248,15 @@ a reserved intent. No runtime consumer, identity/control initialization or activ
 Required local acceptance passed, including mandatory isolated privileges, history
 preservation, browser suites and serial production build. Exact-head source delivery
 is recorded separately in progress and the owner handoff, not a live deployment.
+Command 115 source `92698f6` passed exact-head CI/CodeQL. Its owner-authorized phase
+review accepts the closed storage boundary and strengthens complete per-denial test
+snapshots in the temporary-grant branch, without changing runtime or migration bytes.
+The review defines **Command 116 — Stage closed currency authorization-evidence storage**
+only: an empty closed H snapshot store with exact installation/domain/profile/session
+ownership and non-secret factor identities, no live-secret foreign keys or issuer.
+Implementation requires separate authorization. Auth epochs remain copied facts, not
+established current versions; auth behavior, empty intent/control state and all later
+proof/evidence/writer/recovery and launch prerequisites stay unchanged.
 No selection/guard or application consumer is installed by the observation helper or review.
 No live registry, selected installation policy or financial backfill is included. Broader persistence,
 per-currency reads, pricing and activation remain later separately gated slices. Remaining
