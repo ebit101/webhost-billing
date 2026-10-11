@@ -43,3 +43,7 @@ release-artifacts/
 backups/
 !scripts/backups/
 !scripts/backups/*.sh
+
+# Owner-supplied proprietary registrar reference, for local inspection only.
+/stargate.zip
+/stargate/

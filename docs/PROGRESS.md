@@ -14895,13 +14895,14 @@ Stop after verified review delivery; do not implement it automatically.
 - **Status:** Design completed; local documentation/security acceptance passed. The
   focused commit requires its own post-commit delivery gates, reported in the owner
   handoff after execution. This is not an implemented registrar or demo acceptance.
-- **Date:** 2026-10-11.
+- **Date:** Researched on 2026-10-11; delivery finalization resumed on 2026-10-12.
 - **Authority:** The owner accepted design-first work after requesting a domain purchase
   workflow, then identified resell.biz/StarGate/UK2, provider-sourced pricing and sandbox.
   Screenshots supply context only; no masked values or private account data were copied.
 - **Latest choice:** Local fake registrar first, no external calls or charges. The owner
   intends to supply a root-level LogicBoxes folder for code-structure review. Root inventory
-  and filename inspection found no such folder yet; no supplied code was executed or copied.
+  initially found no such folder. The subsequent `stargate.zip` was inspected read-only;
+  no supplied code was extracted, executed or copied.
 - **Baseline:** Clean canonical `1eae076`; fresh fetch/reconciliation 0/0 before edits.
 
 #### Scope completed and files changed
@@ -14916,7 +14917,9 @@ Stop after verified review delivery; do not implement it automatically.
 - Updated `CODEX_DEVELOPMENT_COMMANDS.md` with the current direction and tightened
   Commands 50/51, `HOSTING_BILLING_SYSTEM_PLAN.md` with the provider boundary, and
   `docs/DECISIONS.md` with ADR-126 and narrowed remaining provider inputs.
-- Five documentation files only. No code, dependencies, lockfile, schema/migration,
+- Five documentation files plus exact owner-reference exclusions in `.gitignore`.
+  The archive and future root `stargate/` remain local-only and outside Git. No
+  application code, dependencies, lockfile, schema/migration,
   credential, fixture, deployment or existing customer/payment record changed.
 
 #### Validation and evidence
@@ -14924,6 +14927,12 @@ Stop after verified review delivery; do not implement it automatically.
 - Inspected repository order/product/service/invoice/payment models and services,
   staff grants, credential cipher/replacement and worker outbox/renewal boundaries.
   No current domain-registration module exists; hosting requestedDomain is not a purchase.
+- Inspected the supplied 19,152-byte ZIP without extraction: one directory and four
+  files (`index.php`, `stargate.php`, `whmcs.json`, `logo.gif`). Metadata declares a
+  proprietary WHMCS registrar module; both PHP files contain ionCube encoding markers,
+  with no readable function definitions. Structure inspection cannot validate encoded
+  registration logic or authenticity. Retained locally, not copied or redistributed.
+  SHA-256: `827a6559164a539a573dd98f6af464d0770d633f19562027e31e020188b29b4f`.
 - Researched public official LogicBoxes authentication, availability/cost pricing,
   register/customer/contact/lookup/details, renewal/transfer/nameserver, abuse and legal
   requirements; official WHMCS corroborates resell.biz/UK2/LogicBoxes brand and IP access.
@@ -14938,13 +14947,27 @@ Stop after verified review delivery; do not implement it automatically.
   nine local references, zero anchors and zero failures. The final tracked-inventory
   docs-check run also passed all four after staging the new document; targeted five-file
   formatting passed. No proposed runtime/fake-provider test is claimed as executed here.
+- Exact ignore checks on 2026-10-12 matched only the root archive/extracted-directory
+  rules; Git inventory contains neither. Archive SHA-256 matched the prior inspection.
+  Repository formatting, all four documentation validators, dispatcher tests 4/4,
+  tooling-security 15/15 and diff integrity passed again on 2026-10-12. Final targeted
+  Markdown formatting also passed. Delivery covers the
+  combined final head, not the unpublished predecessor in isolation.
+- An earlier attempt explicitly passed `.gitignore` to Prettier, which cannot infer a
+  parser for that file. The ordinary repository formatting check passes; ignore behavior
+  and whitespace are verified with Git rather than treating that invocation as a pass.
 - Fresh production audit exit zero/no known findings. Full audit exit one retains
   precisely braces high GHSA-vfj7-8cjw-p6xm and sprintf-js moderate GHSA-hp3w-g68c-fv3c.
   No waiver, patch change or dependency upgrade. No runtime/business-rule change in
-  this documentation-only command; full hosted validation remains mandatory.
+  this documentation-only command; full hosted validation remains mandatory. Both
+  audits were repeated on 2026-10-12 with exactly the same results.
 - The new focused commit needs its own pinned full-history secret scan,
   fresh canonical reconciliation/non-force push and exact-head first-attempt CI/CodeQL.
   Prior deployment checks cannot certify the new design commit.
+- Initial unpublished design commit `0140045` already passed its cached pinned history
+  scan (245 commits, no leaks). Resumption fetched canonical main with divergence 1/0;
+  no remote work was overwritten. The final archive-review commit requires a new scan,
+  fresh reconciliation and its own exact-head hosted evidence in the owner handoff.
 
 #### Decisions, risks and exact next command
 

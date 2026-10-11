@@ -11,6 +11,14 @@ The owner then chose **local fake registrar first, with no external calls or cha
 They intend to place a LogicBoxes folder in the project root for code-structure review;
 it was not present at inspection. Review that material without executing it, copying
 credentials or assuming a PHP/WHMCS module is a compatible TypeScript implementation.
+The owner subsequently supplied `stargate.zip`. Read-only ZIP inspection found
+`index.php`, `stargate.php`, `whmcs.json` and `logo.gif` under `stargate/`.
+The metadata declares type `whmcs-registrars`, author WHMCS and license `proprietary`;
+both PHP entries contain ionCube encoding markers and no readable function definitions
+were found. This verifies package structure, not registration logic, authenticity,
+compatibility or sandbox isolation. Nothing was extracted, executed or copied into
+the application. Root archive/extracted-directory names are excluded from Git;
+reuse/distribution would require separate licensing evidence and is not this design.
 The screenshot is context only: its masked credentials, unchecked test-mode box,
 visible TLDs and pricing-sync timestamp are not account verification or configuration
 to copy. No secret, reseller identifier or real customer record belongs in Git.

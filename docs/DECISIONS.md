@@ -2610,6 +2610,7 @@ report-only update must pass its own delivery gate; stop for the recommended pha
 
 - **Status:** Command 49 design on 2026-10-11, following owner confirmation of resell.biz
   and sandbox intent. Specification: [StarGate/UK2 registrar design](LOGICBOXES_REGISTRAR_DESIGN.md).
+  Owner resumed final design delivery on 2026-10-12; no implementation is included.
 - **Decision:** Go for one complete fake/mock-tested Command 50 vertical workflow,
   including provider-sourced availability/cost pricing, fixed separate BDT selling
   prices, ordinary one-year domain offers, existing verified-payment ledger, explicit
@@ -2628,6 +2629,12 @@ report-only update must pass its own delivery gate; stop for the recommended pha
   credentials, customer/payment records, deployment or provider resources.
 - **Next:** Command 50 requires explicit authorization after this design's verified
   delivery; Command 51 separately covers approved demo acceptance. Currency stays held.
+- **Local reference inspection:** Owner-supplied `stargate.zip` is structurally a WHMCS
+  registrar module whose metadata declares a proprietary license. Both PHP files contain
+  ionCube markers; source business logic cannot be reviewed from this archive. Do not
+  execute, decode, copy or redistribute it as our adapter. Exact root archive/directory
+  names are Git-ignored; implementation uses independently written TypeScript and public
+  official API contracts. No credential or real provider test was performed.
 
 ## Open Decisions
 
