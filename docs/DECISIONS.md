@@ -2531,8 +2531,8 @@ report-only update must pass its own delivery gate; stop for the recommended pha
 
 ## ADR-123 — Keep historical factor evidence unconditionally closed and independent of secrets
 
-- **Status:** Implemented on 2026-10-11; required local acceptance passed. Source delivery
-  is recorded separately in progress and the owner handoff, not activation approval.
+- **Status:** Delivered at `118ecc3` and phase-reviewed on 2026-10-11; local and exact-head
+  source acceptance passed. Review evidence is recorded in progress, not activation approval.
 - **Decision:** One atomic 28th migration retains all 27 old bytes. H's ten fields plus
   installation UUID and explicit finite TIMESTAMPTZ(3) time are the entire record. UUID
   grammar retains versions 1–8/variant 89ab/nil/max through typed lowercase output;
@@ -2553,6 +2553,30 @@ report-only update must pass its own delivery gate; stop for the recommended pha
   authorization-evidence storage and define the next bounded currency command**. No
   automatic next implementation, current-version establishment, proof/ledger/consumption,
   selection, live data/import/provider/release/deployment or unrelated resource cleanup.
+
+## ADR-124 — Resolve protected authority-evidence payload coverage before staging its roots
+
+- **Status:** Defined by the owner-authorized Command 116 phase review on 2026-10-11;
+  Command 117 is not authorized or implemented.
+- **Review:** Delivered `118ecc3` matches the empty closed H storage boundary. Exact
+  non-secret facts, restrictive owner references, positive epochs and factor/null rules
+  do not certify current access. Guards deny all statements and ordinary secret/security
+  replacement remains possible. No blocking in-scope defect or code correction found.
+- **Next boundary:** One documentation-only contract resolves protected history,
+  compatibility and adoption root payloads and coverage together. Existing S/Context/A/H/E
+  bytes/kind-version protocols stay unchanged. Exact payload schemas, budgets, acyclic
+  binding, bounded membership commitments, retention and restrictive references must
+  precede sensitive root storage; arbitrary JSON/digests are not approval or completeness.
+- **Source coverage:** Inspect all seven money tables plus settings/payment evidence,
+  exact units/parent lineage, existing draft edits and unsupported legacy/credit classes.
+  Separate immutable observations from fresh trusted acquisition and explicit adoption
+  approval. Current count-only preflight and cooperative locks do not certify coverage.
+- **Limits:** Protected acquisition/issuance stays unavailable until its lineage/writer/
+  SQL-duty dependencies pass. Auth-version establishment, proof/ledger/consumption and
+  P2/P3–P9 remain incomplete; no selected state or operating/provider/launch approval.
+- **Stop:** Five documentation files only. Preserve both unwaived tooling advisories;
+  request explicit Command 117 authorization after this review's verified delivery.
+  No implementation, current data inspection, import, release/deploy or resource cleanup.
 
 ## Open Decisions
 

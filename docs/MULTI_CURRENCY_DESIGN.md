@@ -2981,6 +2981,42 @@ Required local acceptance passed on 2026-10-11; progress records the failed fixt
 attempts and corrected serial results. Post-commit scan/main/exact-head hosted delivery
 is separate and reported in the owner handoff. No production authority is implied.
 
+### Command 116 review and protected authority-evidence specification boundary
+
+Owner-authorized review on 2026-10-11 accepts delivered
+`118ecc32a06f2e4e1c13e8d570311368ce153799` as closed historical H persistence only.
+Fresh canonical main reconciliation is 0/0. First-attempt exact-head CI 38145297805
+passed all 29 Validate steps and CodeQL 38145297796 all eight; dependency review skipped,
+not passed. The prior local pinned history scan covered 242 commits/no leaks. Retrieved
+hosted logs independently confirm source 148, mandatory P1/parity/intent/H 12/8/9/9,
+89 owned SQL cases/seed/preservation and complete application/browser/build acceptance;
+hosted scan inventory was 234 commits, distinct from the local 242.
+
+Review inspected the atomic migration/model, exact old-test allowances, catalog-derived
+probes, H reconstruction, actual-duty refusals and ordinary SQL/preservation tests.
+No blocking in-scope defect found and no runtime/test/migration correction needed.
+Historical IDs never imply current enrollment; deletion of secret credential/recovery
+rows and non-key security updates remain possible. Owner DDL/clone powers are a trust
+boundary, and temporary fictional grants/probes are not deployed privilege adoption.
+Fresh review execution and its own delivery gates are recorded in progress separately.
+
+The next dependency is not more H storage: section 3e still leaves protected E payload
+schemas/class coverage undefined. Define **Command 117 — Specify protected currency
+authority-evidence payloads and coverage**, one documentation-only slice, in
+[the command record](../CODEX_DEVELOPMENT_COMMANDS.md). Resolve the three registered
+root kinds together, exact bounded payload bytes/digests and references, acyclic original
+intent/control/context binding, row/parent/unit/class completeness and fresh revalidation.
+Counts, a digest or an arbitrary approval-shaped JSON cannot substitute for these facts.
+Existing protocol/codecs/vectors stay unchanged; no new implementation is authorized.
+
+Separate observed history from compatibility and explicitly approved legacy adoption;
+missing lineage, draft-edit coverage, unsupported imported credits or source rights remain
+blocking unknowns. Issuance cannot become usable before required guarded writer/SQL duties
+and trusted acquisition pass. Define subsequent storage prerequisites and fictional tests,
+not collectors or tables now. P2/P3–P9, current auth integration, both tooling findings and
+all operating/provider/launch approvals remain open. No selection, live access/import,
+provider, release/deployment or unrelated resource cleanup. Stop for Command 117 authority.
+
 ## 4. Price publication, quote and renewal rules
 
 ### Catalogue pricing

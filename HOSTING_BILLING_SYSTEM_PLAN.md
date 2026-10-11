@@ -266,7 +266,14 @@ existing models. No live credential/recovery FK blocks ordinary secret replaceme
 Four unconditional statement guards and atomic PUBLIC revocation keep the store empty;
 catalog-derived fictional probes are not approval or deployed privilege adoption.
 Required acceptance and exact-head source delivery are recorded separately in progress.
-P2 and P3–P9 remain incomplete; next is the separately authorized Command 116 phase review.
+Command 116 was delivered at `118ecc3` with pinned scan/main and first-attempt exact-head
+CI/CodeQL success. Its owner-authorized phase review on 2026-10-11 accepts the closed
+historical storage scope with no blocking in-scope defect. The review defines **Command
+117 — Specify protected currency authority-evidence payloads and coverage**, documentation
+only, not its execution. Existing E kind/version names and digests do not define protected
+payload schemas, complete class/row coverage or fresh trusted acquisition. Resolve those
+contracts together before proposing E storage; no additional unused auth table or premature
+proof issuance. P2 and P3–P9, both tooling findings and all launch approvals remain open.
 No live registry, selected installation policy or financial backfill is included. Broader persistence,
 per-currency reads, pricing and activation remain later separately gated slices. Remaining
 tooling advisories are not waived. No currency is activated by this sequence.

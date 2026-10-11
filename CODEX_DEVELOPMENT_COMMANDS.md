@@ -5122,9 +5122,9 @@ P2 and P3–P9 remain incomplete; an empty intent store is never a receipt or hu
 
 ## Command 116 — Stage closed currency authorization-evidence storage
 
-**Implemented on 2026-10-11; required local acceptance passed.** Source delivery requires
-the focused commit's own history scan, canonical reconciliation and exact-head CI/CodeQL;
-actual post-commit outcomes are reported in the owner handoff. No activation or deployment.
+**Delivered and phase-reviewed on 2026-10-11 at `118ecc3`.** Required local acceptance,
+pinned history scan, canonical reconciliation and first-attempt exact-head CI/CodeQL passed;
+the owner-authorized review found no blocking in-scope defect. No activation or deployment.
 One empty historical H store with exact ownership references. No current authorization,
 auth-version establishment, factor consumption, proof issuance or selection.
 
@@ -5204,6 +5204,80 @@ certification, authorization-version adoption, evidence payload/coverage, proof/
 consumption, replay/CAS/selection endpoint, control opening, writer/privilege adoption,
 live query/provider/WHMCS import/operating approval/release/deploy or unrelated Docker/
 disk/cache/old-scope cleanup. P2 and P3–P9 remain incomplete; no launch date is promised.
+```
+
+## Command 117 — Specify protected currency authority-evidence payloads and coverage
+
+**Defined only by the owner-authorized Command 116 phase review on 2026-10-11.**
+Not authorized or implemented. Documentation only: resolve the missing protected E-root
+payload/coverage contract before proposing its storage. H persistence is not E coverage.
+
+```text
+Command 117 — Specify protected currency authority-evidence payloads and coverage
+
+Read AGENTS.md, plan, decisions, progress and currency design sections 3a/3d/3e/current
+review. Close the preceding review's own scan/main/exact-head CI/CodeQL first. Renew
+frozen install, tooling-security 15 and production/full audits; preserve dependencies,
+patches and both unwaived findings. Unrelated security repairs need separate authorization.
+
+Documentation only in the five existing trackers. Inspect actual schema, count-only
+preflight, coordination/guard prototypes, private S/Context/A codecs, request contracts
+and relevant financial/security writer bodies. Resolve one implementation-ready contract
+for protected currency_authority_evidence roots and their immutable payload/coverage
+references. Keep existing S/A/H/E tuple protocols, kind/version pairs and canonical
+fixtures unchanged. Do not build another codec, table, collector or authority function.
+
+Specify exact versioned payload schemas for history/currency-history-assessment-v1,
+compatibility/currency-compatibility-v1 and adoption/currency-adoption-v1. Define required
+fields, scalar grammars, explicit nulls, exact integers, sorting/duplicate rules, UTF-8
+byte/count/depth budgets, canonical payload bytes and payloadDigest calculation. Resolve
+root ID/reference/digest binding to installation/domain, original intent S, observed C,
+complete proposed/prior contexts and anchor without circular dependence on A, E or proof.
+Digest consistency is not trusted origin, human approval, complete coverage or freshness.
+
+Map coverage to all seven money tables, sensitive settings and normalized gateway evidence,
+including exact row/parent identities and units, creation versus allowing policy, inherited
+obligations, legacy unknowns and draft context changes. Cover prices-only, zero/draft/
+cancelled/paid/failed/terminated history, refunds/reversals, linked or orphaned payment
+evidence, unlinked/rejected events, source mapping and any unsupported imported credits.
+Do not hide a class, infer metadata/exponent from BDT/latest/locale/FX or mark an unsupported
+class covered. Define completeness versus unresolved/blocking outcomes for initialize,
+adopt and replace; counts or an all-empty claim alone cannot certify authority.
+
+Resolve bounded row-set commitments/chunk references and exact covered membership, not
+unbounded approval JSON or polymorphic IDs without ownership/integrity guarantees. Specify
+restricted reference/key requirements, protected payload retention and redacted summaries;
+no customer/credential/provider data or manifests in Git. Fictional examples only.
+Distinguish immutable observation facts, trusted acquisition and separately approved adoption.
+
+Specify freshness/revalidation under the existing staff-before-currency lock/deadline
+contract, including changed rows/settings/events/lineage without generation movement,
+first-history races and current draft edits. Do not assume a reusable timestamp, count,
+generic updatedAt or digest prevents stale coverage. Protected issuance remains unavailable
+until required lineage, all relevant writer/SQL backstops and acquisition duties are adopted.
+Timeout, truncation, missing rights/rows/parents, stale placement or unknown coverage denies;
+no default false, automatic retry, fallback base or current-auth certification.
+
+Provide a dependency-ordered fictional acceptance matrix and precise later closed-storage
+candidate, not another authorized command. Separate structural SQL CHECK/FK validation
+from trusted semantic/coverage/owner approval. Preserve P2 and P3–P9 dependency order;
+document remaining prerequisites explicitly rather than declaring them implemented.
+
+Validate documentation against inspected source and unchanged codecs/vectors; independently
+check any authored fictional canonical byte/hash examples without saving scripts/artifacts.
+Run installed security/audits, existing shared/database source tests, relevant package/types,
+formatting, four offline documentation validators and diff/protected-path checks. Use
+proportional validation for documentation only; any SQL probes must use the unchanged owned
+harness and fictional scopes, never shared roles/live data. Record what was executed versus
+predecessor evidence and failed attempts. Five trackers, focused commit, pinned full-history
+scan, fresh canonical reconciliation/non-force main push and own exact-head CI/CodeQL.
+
+Stop for Phase review — Review Command 117 protected authority-evidence specification and
+define the next bounded currency command. No migration/model/code/test/dependency change,
+evidence collection/issuance, auth-version establishment, proof/ledger/consumption, intent
+reservation, selected fixture, control opening, writer/duty adoption, live query/WHMCS
+import/provider/operating approval/release/deployment or unrelated Docker/disk/cache/
+old-scope cleanup. No fixed remaining-command count or go-live date is promised.
 ```
 
 ## Continuation Command
