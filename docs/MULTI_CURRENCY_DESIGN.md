@@ -2842,6 +2842,42 @@ writer/history/privilege adoption, ordinary consumer, live query/import, release
 or unrelated cleanup. Two tooling advisories, P2/P3–P9 and operating approvals remain.
 Stop for the Command 114 phase review after verified delivery; parity is not authority.
 
+### Command 114 phase review and closed intent-storage handoff — 2026-10-11
+
+The owner-authorized review accepts Command 114 at `49105c3`: independent SQL canonical
+bytes/SHA-256 and bindings, read-only success/denial calls, qualified invoker/private
+ACLs and exact owned cleanup match scope. All 26 product migrations and private codecs
+remain unchanged. Fresh delivery evidence closes its pre-commit checkpoint: local history
+scan 238/no leaks, main 0/0, exact-head CI 38110135055/all 29 Validate and CodeQL
+38110135042/all eight successful, first attempts; PR-only dependency review skipped.
+Full hosted log confirms mandatory old P1 before parity and all old acceptance gates.
+Its scan 230/no leaks is distinct from the local full-history inventory.
+
+Define **Command 115 — Stage closed currency selection-intent storage** in the command
+record, not its implementation. Section 3e already prescribes the intent row's stable
+ownership/slot/policy references; these no longer need new digest or request codecs.
+Add one empty closed store with exact scalar S facts/canonical text/digest, checked
+case-preserving request-key text plus UUID uniqueness, compound installation/domain
+and actor/session ownership, and RESTRICT exact policy references. The redundant
+AuthSession `(id,user_id)` key is additive structural support, not auth adoption.
+Missing references must deny, not initialize identity, synthesize sessions or infer BDT.
+
+SQL checks must independently reconstruct the fixed S from bounded validated columns,
+compare exact UTF-8 bytes and its computed SHA-256; arbitrary/raw JSON hashing and
+promotion of the whole A probe are excluded. Ordinary statement writes remain always
+blocked, even on empty/no-op paths. There is no reservation or permitted append yet.
+Positive CHECK/FK/slot behavior belongs to an exact installed-catalog-derived fictional
+probe, with the product table closed and empty. Compound references cannot substitute
+for active pin, current full-administrator/session/factor checks or human approval.
+
+The future command must retain all old gates and add prior-26 row preservation; no old
+migration/control opening or auth behavior/retention change. Owners retain DDL powers;
+isolated non-owner refusal does not establish deployed privilege adoption. Actual
+protected insertion/issuance, H/E payloads/coverage, proof/ledger/consumption and P3–P9
+stay separately gated. No new SQL/model/test implementation, seed, live provider/query/
+WHMCS import, operating approval, release/deploy or cleanup follows this review.
+Stop after verified review delivery and request explicit Command 115 authorization.
+
 ## 4. Price publication, quote and renewal rules
 
 ### Catalogue pricing

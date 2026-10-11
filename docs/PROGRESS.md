@@ -14259,6 +14259,97 @@ it automatically or begin assessment/auth/evidence storage or activation.
 - Stop after verified delivery. Request **Phase review — Review Command 114 isolated
   PostgreSQL canonical parity and define the next bounded currency command**.
 
+### Phase review — Review Command 114 isolated PostgreSQL canonical parity and define the next bounded currency command
+
+- **Status:** Engineering review accepted; Command 115 defined only, not authorized
+  or implemented. Review commit has its own scan/main/exact-head CI/CodeQL gate.
+- **Date:** 2026-10-11. Owner explicitly authorized review and next-command definition.
+- **Baseline:** Clean `49105c310c0a41e2f5e8566be0b29a683fc105e5`; fresh canonical fetch
+  confirms main/origin/main 0 ahead/0 behind. No production access or live data.
+
+#### Reviewed scope and findings
+
+- Read project instructions/plan/decisions/relevant progress, Command 114 and currency
+  sections 3d/3e. Inspected fixed SQL atom/piece/verify, atomic fixture ACLs, mandatory
+  source wiring, vectors and full isolated integration acceptance. No blocking in-scope
+  defect identified; no runtime/test correction required by this review.
+- Bounds and byte-index lexical depth checks precede PostgreSQL parsing; field/list/
+  shape checks precede reconstruction. Exact ASCII/calendar/UUID/BIGINT rules, explicit
+  nulls, capability/immutable-unit/anchor/latch bindings, H/S ownership syntax and
+  registered E membership match the specified domain. SQL compares canonical UTF-8
+  bytes and recomputes S/digests rather than trusting Node or hashing jsonb::text.
+- Each comparison runs in its own bounded read-only transaction. SQL representation
+  errors alone receive fixed redaction; actual transport/cancellation failures escape.
+  Qualified invoker functions, minimal owner, explicit PUBLIC/default ACLs, real
+  separate-login denials/TEMP shadowing and all-row/catalog/role/pin snapshots match
+  test-only scope. Old P1 runs first via unchanged command followed by serial parity.
+- Selected C values remain arguments, never product rows. Canonical parity is not stored
+  origin, current authentication, coverage/compatibility, confirmation or selection.
+  All 26 migrations, source/private codecs/shared/apps/scripts/dependencies/workflows
+  remain unchanged by Command 114; existing failed attempts remain in its report.
+
+#### Delivery reconciliation and fresh validation
+
+- Command 114 source `49105c3` was non-force pushed and remains canonical main. Its
+  post-commit pinned local scan passed 238 commits/no leaks. Fresh exact-head checks
+  confirmed [CI](https://github.com/ebit101/webhost-billing/actions/runs/38110135055)
+  aggregate/all 29 Validate steps and
+  [CodeQL](https://github.com/ebit101/webhost-billing/actions/runs/38110135042)
+  aggregate/all eight successful, first attempts. Dependency review skipped, not passed.
+- Retrieved and inspected full hosted Validate log: scan 230/no leaks (not local 238),
+  database source 135, original P1 12 before parity 8, retained SQL/seed/preservation,
+  shared 113/queue 3/API unit 107/worker 29/web 572 across 54 files, API integration 81,
+  invariants 113/12/42/2, lifecycle 19/staff 4, audit/license/build/cleanup passed.
+  This closes predecessor delivery wording without deleting historical failed attempts.
+- Fresh review frozen install and tooling-security 15 passed. Database source 135 and
+  shared 113 passed, zero skips. Production audit exit zero/no known findings; full
+  audit exit one retains exactly braces high GHSA-vfj7-8cjw-p6xm and sprintf-js moderate
+  GHSA-hp3w-g68c-fv3c. No dependency/patch change, suppression or full-audit waiver.
+- Fresh config/shared builds, Prisma generation and strict database types passed.
+  Repository formatting, all four offline documentation validators and whitespace
+  checks passed; scoped diff contains only the five trackers.
+- First fresh mandatory privilege run passed original P1 12/12, then parity stopped
+  before SQL setup with PREFLIGHT at daemon resources. No container/network was created
+  by that failed invocation; read-only exact-label inspection found no harness resources.
+  Docker reported Linux/29.8.1/four CPUs/3.77 GiB with two unrelated development services;
+  later host free memory measured 827 MiB, near the unchanged 768 MiB minimum. The exact
+  failed threshold was not separately reported, so do not assert a proven root cause.
+  Left both services/user processes/data untouched, retained all limits and waited for
+  this review's formatting/type checks to finish. Host free memory then measured 1,231
+  MiB. One unchanged complete P1-first/parity retry passed original P1 12/12 first
+  (47.24 seconds), then parity 8/8 (103.39 seconds), zero skips. All 95 valid/1,015
+  negative fixtures, goldens, ACL/TEMP/transport/deadline and snapshot checks passed;
+  original resources/timeouts/assertions and exact cleanup remained intact. Read-only
+  label-filtered final inspection checks for leftover owned resources before commit.
+  Full SQL/API/browser/build acceptance above is inspected predecessor evidence, not
+  a claim of renewed local execution in this review.
+- Delivery requires focused five-file commit, cached pinned complete-history scan,
+  fresh canonical reconciliation/non-force main push and this review's exact-head
+  CI/CodeQL. Actual post-commit outcomes are reported in the owner handoff; preceding
+  green runs cannot certify a new review SHA. No pending result is assumed passed.
+
+#### Decisions, files changed and remaining risks
+
+- ADR-120 defines **Command 115 — Stage closed currency selection-intent storage**.
+  One empty immutable closed intent table, exact S/digest/UUID slot and compound
+  ownership/policy references, with unconditional statement-write refusal. Redundant
+  AuthSession ownership key only; no auth behavior, epoch, issuer/receipt or selection.
+  Catalog-derived fictional probe tests constraints without opening the product store.
+- Five documentation trackers only: CODEX_DEVELOPMENT_COMMANDS.md,
+  HOSTING_BILLING_SYSTEM_PLAN.md, docs/DECISIONS.md, docs/MULTI_CURRENCY_DESIGN.md and
+  this report. No source/model/migration/test/workflow/lock/dependency implementation.
+- Two unwaived tooling advisories, direct-main governance, privileged owner/clone powers,
+  deployed-duty adoption, protected evidence payload/coverage, auth/lineage/writer/
+  recovery prerequisites, disk/serial limits and Command 33/provider/launch approvals
+  remain. P2 and P3–P9 remain incomplete. No fixed remaining-command count or go-live date.
+- No production access, WHMCS import, provider action, release/deploy, operating-policy
+  approval or Docker/disk/cache/old-scope cleanup authorized by this review.
+
+#### Exact recommended next command
+
+Request **Command 115 — Stage closed currency selection-intent storage**.
+Stop after verified review delivery; do not implement it automatically.
+
 ## Report Template
 
 Use this template after every future command:

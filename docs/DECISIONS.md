@@ -2446,6 +2446,38 @@ report-only update must pass its own delivery gate; stop for the recommended pha
   After delivery request **Phase review — Review Command 114 isolated PostgreSQL
   canonical parity and define the next bounded currency command**; no automatic next slice.
 
+## ADR-120 — Persist closed intent facts before enabling authority operations
+
+- **Status:** Accepted next-command definition by the owner-authorized Command 114
+  phase review on 2026-10-11; Command 115 is not authorized or implemented.
+- **Review:** No blocking in-scope canonical parity defect found. Independent qualified
+  invoker reconstruction/SHA-256, canonical-only input, bounded pre-parser scan, exact
+  S/C/Context/H/E bindings, fixed redaction and real private-ACL/TEMP/deadline denials
+  match the authorized scope. Product stores/migrations/runtime consumers remain unchanged.
+- **Delivery evidence:** `49105c3` reconciled with canonical main; local pinned scan
+  238 commits/no leaks. Exact-head CI 38110135055 aggregate/all 29 Validate steps and
+  CodeQL 38110135042 aggregate/all eight passed on first attempts. PR-only dependency
+  review skipped, not passed. Full CI log inspected; hosted scan 230/no leaks is a
+  different inventory. Fresh review acceptance is recorded in progress.
+- **Decision:** Define one closed empty intent table rather than more codecs or full
+  authority activation. Preserve exact S text/digest and UUID request-slot identity,
+  original domain, actor/session ownership and exact policy references. A redundant
+  AuthSession `(id,user_id)` key permits the required compound ownership FK. Use SQL
+  equality against independently reconstructed S; no jsonb::text/raw-input hashing.
+- **Closed boundary:** Statement INSERT/UPDATE/DELETE/TRUNCATE always deny, including
+  no-op statements; new-object PUBLIC privileges are revoked. Positive constraints
+  are exercised on an exact catalog-derived fictional probe, never by opening the
+  installed product table. No issuer/executor bypass, source write API, seed, record,
+  receipt, auth epoch, current placement/MFA check or control transition. Historical
+  RESTRICT references become consequential only after separately approved issuance;
+  ordinary security updates remain required and owner DDL powers are not prevented.
+- **Limits:** This completes only another P2 prerequisite, not P2 or P3–P9. Evidence
+  payload/coverage, auth adoption, proof/ledger/atomic consumption and guarded writer/
+  installation/recovery remain separate. Two tooling advisories remain unwaived.
+- **Stop:** Five documentation trackers only in this review. Review delivery needs
+  its own scan/main/exact-head hosted acceptance. Request explicit Command 115 authority;
+  no store/code/test/migration implementation, production access or deployment here.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

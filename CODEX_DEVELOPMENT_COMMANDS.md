@@ -5028,6 +5028,97 @@ consumer, provider/live query/import, release/deploy or operating approval. P2/P
 incomplete. Test byte parity is not a stored-origin, coverage, current-auth or human proof.
 ```
 
+## Command 115 — Stage closed currency selection-intent storage
+
+**Defined by the owner-authorized Command 114 phase review on 2026-10-11; not authorized
+or implemented.** One empty durable intent store and its exact ownership/canonical binding
+constraints. This moves P2 persistence forward, not proof issuance or policy selection.
+
+```text
+Command 115 — Stage closed currency selection-intent storage
+
+Read AGENTS.md, plan, decisions, progress and currency design sections 3d/3e/current review.
+Close preceding review scan/main/exact-head CI/CodeQL before implementation. Renew frozen
+install, installed tooling-security 15 and production/full audits. Preserve exact installed
+dependencies/patches and both unwaived findings; unrelated repairs need separate authority.
+
+Add one empty CurrencySelectionIntent model/table and one atomic additive migration after
+the 26 byte-identical pinned migrations. No source repository, export, initializer, API,
+worker, seed or runtime consumer. No identity/control initialization or selected fixture.
+The table is closed to INSERT/UPDATE/DELETE/TRUNCATE, including zero-row statements, by
+fixed qualified SECURITY INVOKER statement triggers that always reject. No GUC/role/token/
+environment bypass or SECURITY DEFINER opening. Explicitly revoke new-object PUBLIC
+privileges. Migration owners retain DDL powers; do not claim deployed role adoption.
+
+Store only section 3e's S facts: installation UUID, original execution-domain UUID, actor
+User UUID, AuthSession UUID, exact preserved request-key text and UUID slot, action,
+nullable expected revision, exact nonnegative BIGINT expected generation, proposed
+revision, canonical S text and lowercase SHA-256 digest. No approval/status/selected flag,
+default UUID/epoch, incidental timestamp in S, bearer/hash, auth H or assessment A.
+Primary key is (installation_id,request_key_uuid). Keep request text case byte-for-byte;
+its checked UUID value identifies the slot, not a lowercase reconstruction of its text.
+
+Add RESTRICT/RESTRICT installation/domain compound, actor/session ownership and exact
+expected/proposed policy references. AuthSession presently lacks unique (id,user_id):
+add only that redundant composite key and the required inverse Prisma relations, not
+auth service behavior, current sessions, retention/cascade rules or a general auth epoch.
+The composite session FK must reject another user's session; independent scalar FKs
+alone are insufficient. Installation/domain and actor IDs are server lowercase UUID
+facts; slot text retains the existing UUID versions/variants/nil/max grammar. Existence
+is not active placement, full-administrator status, current MFA or confirmation.
+
+Use exact full-value ASCII revision/UUID/key checks, canonical counter limits through
+9223372036854775807, unchanged initialize/adopt null/zero and replace positive/different
+revision rules, and UTF-8 canonical S <=1024 bytes. SQL independently reconstructs the
+fixed nine-field S from checked scalar columns and compares stored text byte-for-byte;
+compute SHA-256 from that reconstruction and require exact digest equality. Bound values
+before cast/serialization. Do not hash jsonb::text, trust Node success, accept raw JSON
+aliases, normalize request-key case, or promote the entire test-only A verifier into a
+product function. New-object fixed private helper functions are allowed only if strictly
+needed for these S constraints, with qualified built-ins and explicit PUBLIC revocation.
+
+Keep the installed product table closed and empty in all acceptance. Prove positive and
+negative CHECK/FK/uniqueness behavior on a test-only probe table derived from the actual
+installed column/constraint definitions, with explicitly fictional referenced fixtures
+in a newly owned scope. Document exactly what is copied and verified; do not weaken or
+disable installed product guards, use real sessions, borrow an existing scope or imply
+that a probe insertion is a reserved production intent. Exercise all five literal S
+byte/hash vectors, independent Node parity, alias/body/domain/actor/session conflicts,
+missing/wrong-owner references, malformed/null/overflow/oversized values, whitespace/
+escape/noncanonical numeric aliases, and text/digest/scalar mismatches. UUID aliases share
+one slot and cannot both insert; every denial must leave complete snapshots unchanged.
+
+Use unchanged P1 harness/ownership/logins/resources/deadlines/cleanup and cached immutable
+PostgreSQL image. Actual distinct business/issuer/executor/attacker logins must fail closed
+on direct closed-table DML (including empty/no-op), COPY/MERGE/conflict/TRUNCATE and guard/
+owner/role/replica escalation. Trusted offline ownership is not an ordinary duty. Check
+new-table emptiness, installed guards, ACLs and model/raw schema identity afterward.
+
+Append mandatory source/SQL/privilege acceptance without removing/reordering old gates:
+old P1 first, Command 114 parity next, then new acceptance, with no opt-out. Old fixtures/
+source scans may receive only exact append/count/manifest allowances necessary for the
+new model/migration/composite key; retain every original assertion/pin, negative consumer
+check, 95 valid/1015 invalid parity fixtures and 79 retained SQL cases. Add prior-26
+all-row preservation alongside unchanged prior-22/23/24/25 cases. All 27 migrations must
+apply cleanly, new intent storage remain empty, and old identity/control/history facts
+retain their exact empty or original zero/null/immutable shape. No old migration rewrite.
+
+Run full proportional acceptance: source/shared/build/types, mandatory P1/parity/new
+privileges/owned SQL/seed/prior snapshots, ordinary root packages, API integration,
+critical invariants, lifecycle/staff browsers, formatting/four offline docs/lint/types,
+production/full audits, licenses and production build. Owned fictional scopes and fake
+providers only; supported serial execution and unchanged assertions/deadlines. Record
+failed attempts honestly. Update five trackers, focused commit, cached pinned full-history
+scan, fresh remote reconciliation/non-force main push and exact-head CI/CodeQL.
+
+Stop for Phase review — Review Command 115 closed currency selection-intent storage and
+define the next bounded currency command. No identity/pin/auth initialization, proof/
+evidence/ledger/consumption store, issuance/reservation/replay/CAS/selection endpoint,
+control opening, live history assessment, writer/privilege adoption, provider/live query/
+WHMCS import, operating approval, release/deploy or Docker/disk/cache/old-scope cleanup.
+P2 and P3–P9 remain incomplete; an empty intent store is never a receipt or human approval.
+```
+
 ## Continuation Command
 
 If a phase encounters errors or remains incomplete, use this prompt in the same Codex task:

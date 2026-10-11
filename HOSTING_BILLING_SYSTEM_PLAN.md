@@ -231,6 +231,14 @@ renewed local checks. Exact-head source delivery is verified separately after co
 reported in the owner handoff. All 26 product migrations, private
 runtime codecs and application behavior stay unchanged. Product authority/history stores
 remain empty in this new probe cluster; selected tuples are JSON arguments only.
+Command 114 was delivered at `49105c3` with complete local acceptance, pinned history
+scan/main reconciliation and first-attempt exact-head CI/CodeQL success. The owner-
+authorized phase review on 2026-10-11 accepts its isolated engineering scope and defines
+**Command 115 — Stage closed currency selection-intent storage** only: one empty immutable
+intent table, exact S/UUID-slot/ownership/policy bindings and unconditional statement-write
+refusal. AuthSession's redundant ownership key is the only proposed existing-table addition;
+auth behavior and current records stay unchanged. No implementation, proof issuance,
+reservation, deployed privilege adoption or currency activation is authorized by this review.
 No selection/guard or application consumer is installed by the observation helper or review.
 No live registry, selected installation policy or financial backfill is included. Broader persistence,
 per-currency reads, pricing and activation remain later separately gated slices. Remaining
