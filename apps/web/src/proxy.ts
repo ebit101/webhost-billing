@@ -1,4 +1,9 @@
 import type { NextRequest } from 'next/server';
+import {
+  DOMAIN_INTENT_HEADER,
+  domainEntryHref,
+  readDomainIntent,
+} from './lib/domain-intent';
 import { NextResponse } from 'next/server';
 import {
   CHECKOUT_INTENT_HEADER,
@@ -13,6 +18,16 @@ export function proxy(request: NextRequest) {
       ? readCheckoutIntent(request.nextUrl.searchParams)
       : undefined;
   const requestHeaders = new Headers(request.headers);
+  const domainIntent =
+    request.nextUrl.pathname === '/portal/domains'
+      ? readDomainIntent(request.nextUrl.searchParams)
+      : undefined;
+  requestHeaders.delete(DOMAIN_INTENT_HEADER);
+  if (domainIntent)
+    requestHeaders.set(
+      DOMAIN_INTENT_HEADER,
+      new URLSearchParams(domainIntent).toString(),
+    );
   requestHeaders.delete(CHECKOUT_INTENT_HEADER);
   if (intent) {
     requestHeaders.set(CHECKOUT_INTENT_HEADER, checkoutIntentQuery(intent));
@@ -28,7 +43,9 @@ export function proxy(request: NextRequest) {
 
     const destination = request.nextUrl.pathname.startsWith('/admin/')
       ? '/admin'
-      : checkoutEntryHref('/login', intent);
+      : domainIntent
+        ? domainEntryHref('/login', domainIntent)
+        : checkoutEntryHref('/login', intent);
     return NextResponse.redirect(new URL(destination, request.url));
   }
 

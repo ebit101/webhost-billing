@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { DomainModule } from './modules/domains/domain.module';
 import { APP_FILTER } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -24,6 +25,7 @@ import { StaffModule } from './modules/staff/staff.module';
 
 @Module({
   imports: [
+    DomainModule,
     EnvironmentModule,
     AuthModule,
     StaffModule,

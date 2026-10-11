@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { addCurrentHostingDiscriminators } from './currency-privilege-harness.fixtures';
 import { before, after, test } from 'node:test';
 import { randomUUID } from 'node:crypto';
 import { readFileSync, readdirSync } from 'node:fs';
@@ -304,7 +305,9 @@ for (const priorCount of [22, 23])
       assert.deepEqual(live.rows, [{ schema: owned, path: owned }]);
       const directory = resolve('prisma/migrations');
       const migrations = readdirSync(directory)
-        .filter((n) => /^\d{14}_/.test(n))
+        .filter(
+          (n) => /^\d{14}_/.test(n) && n !== '20261012000100_domain_registrar',
+        )
         .sort();
       assert.equal(migrations[22], '20261007090000_currency_unit_definitions');
       assert.equal(migrations[23], '20261007100000_currency_policy_revisions');
@@ -313,6 +316,7 @@ for (const priorCount of [22, 23])
         await pg.query(
           readFileSync(resolve(directory, name, 'migration.sql'), 'utf8'),
         );
+      await addCurrentHostingDiscriminators(pg);
       await assertBrowserDatabaseScope(client, ownedUrl, owned, false);
       await client.$executeRaw`CREATE TABLE __browser_e2e_scope (owner text NOT NULL)`;
       await client.$executeRaw`INSERT INTO __browser_e2e_scope (owner) VALUES (${owned})`;

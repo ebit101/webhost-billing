@@ -14988,6 +14988,118 @@ Stop after verified review delivery; do not implement it automatically.
   recovery and final production approval remain. No customer created, invoice paid,
   domain registered or existing WHMCS setting changed. No fixed go-live date promised.
 
+### Command 50 — Implement the UK2Group registrar module
+
+- Status: Implemented and locally validated, fake/mock only. Source delivery requires
+  successful exact-head CI and CodeQL; no genuine-demo or production approval.
+- Date: 2026-10-12.
+
+#### Scope implemented
+
+- Complete fictional domain offer/quote/order/issued invoice, existing verified manual
+  receipt review, explicit enrolled full-administrator approval, durable register-once
+  claim, dedicated outbox/BullMQ worker and ownership-bound read-only reconciliation.
+  Invoice, order, domain and contact-verification states remain independent.
+- Strict shared inputs and runtime domain responses; authenticated customer ownership,
+  restricted-staff denial, protected credential/contact snapshots, immutable approved
+  budget and append-only code-only evidence. SQL guards preserve history, enforce
+  ownership and stop generic completion/claimed cancellation and hosting-service crossover.
+- Separate nine-table registrar migration; existing products/items default to hosting.
+  Prior migration contents remain unchanged. Historical currency tests retain their exact
+  original pins, with only fixture compatibility for the new hosting discriminator.
+  No currency feature, selection, conversion, privilege transition or backfill added.
+- Fake adapter and official-contract HTTP-mocked adapter, with no network client,
+  real credential reader, live mode or provider fallback. Bounded lossless financial
+  parsing, malformed/duplicate/unknown/ownership rejection, independent status/expiry
+  lookup and bound customer/contact reconciliation. No proprietary encoded source reused.
+  Production mode closes all simulated write routes/offers and keeps the registrar
+  consumer stopped; existing history remains readable. Reconciliation reserves its
+  bounded attempt before provider work, so lookup failures cannot bypass the budget.
+- Truthful responsive administrator/customer views, safe selection through sign-in,
+  customer/order/invoice links, contact review, native cost and separate simulated
+  financial attention. Owner screenshot influenced grouping only; no real values copied.
+  No renewal/transfer/delete/authorization code/nameserver editor or invented billing dates.
+- [Evaluation guide](LOGICBOXES_REGISTRAR_IMPLEMENTATION.md) and ADR-127 record operational
+  limits, ambiguous recovery, actual-demo prerequisites and the unchanged production no-go.
+
+#### Files changed
+
+- API domain module, app wiring and existing order/product/service boundaries; new API
+  acceptance plus updated background-queue assertion.
+- Shared domain/background-job contracts; private reusable database registrar package,
+  Prisma schema/migration/verifier and new provider/migration acceptance. Existing pinned
+  currency fixtures changed only for historical Prisma compatibility and exact inventory.
+- Worker registrar consumer/module wiring; web pages/navigation, domain manager,
+  sanitized sign-in intent, isolated test launcher and mobile/outbox/consumer coverage.
+  Web test-only queue dependency adds one workspace link, no external version update.
+  Clean-build CI prepares both backend artifacts; the development web image includes
+  the queue manifest. Package builds/tests and worker tests run serially without
+  relaxed deadlines or omitted checks.
+- Staging route template adds the domains prefix only; no server config reload/deployment.
+  Decisions, this report and implementation guide. Generated logs/artifacts stay ignored.
+
+#### Validation and constraints
+
+- Fresh frozen install and installed tooling-security mitigations passed (15/15).
+  Shared contracts passed 113/113, database units 154/154, all four isolated actual-login
+  privilege suites 12/12, 8/8, 9/9 and 9/9; all ten database integration files passed.
+  The new registrar preservation test retained every prior row (including exact large
+  money) and left all nine new stores empty. Fictional seed/schema verification passed.
+- Config/queue package acceptance passed. API units passed 25 suites/107 tests;
+  frontend passed 56 files/576 tests; worker passed 11 suites/30 tests, including the
+  production-closed consumer. Expanded API acceptance passed 18 suites/94 tests,
+  including ownership/history, full-payment eligibility, concurrent claim, ambiguous
+  contact/registration outcomes, refund attention and failure-consuming read budgets.
+- Full invariant gate passed: shared 113, API units 12, financial/service API 42 and
+  worker renewal/scheduler 2. Full Chromium lifecycle passed 20/20, including the mobile
+  domain path through actual outbox/consumer and duplicate delivery without a second
+  simulated registration. Administrator-role browser acceptance passed 4/4.
+- Strict monorepo/web/browser type checks, lint and the complete production build passed.
+  Development and production-template Compose rendering passed; no image build,
+  environment deployment, normal public database adoption or provider connection occurred.
+  Offline documentation, formatting, diff integrity and secret scans are delivery gates;
+  exact-head hosted checks and the ignored command50 delivery receipt close source delivery.
+- Production audit passed with no known vulnerabilities; production license inventory
+  passed. Full audit exited 1 for the unchanged, unwaived braces high
+  `GHSA-vfj7-8cjw-p6xm` and sprintf-js moderate `GHSA-hp3w-g68c-fv3c` findings. Installed
+  mitigations passed; these advisories are not waived or claimed fixed upstream.
+- Fixed fixture errors (MFA timestamps, customer identifier length, price/TLD selection,
+  JSON input typing and expired-quote setup), the advisory-lock return projection,
+  synthetic contact ID length and compiled-artifact/test-loader import issues.
+  Added queue requires an expected-count change from seven to eight.
+- Initial full API runner lacked standard fictional seed; corrected only its disposable
+  scope. A later 90/91 run failed because a partial-payment fixture ignored the default
+  disabled policy; corrected to enable it through the guarded administrator route in
+  its owned test scope. These failed runs are not passes; the complete final API retry passed.
+- Initial broad package run passed three prior privilege suites but the fourth refused
+  Docker-resource preflight; one frontend test timed out under concurrent load. No Docker
+  limits changed, apps closed, unrelated data removed or failed work pushed.
+  A second broad run passed database/privilege/history checks but hit the existing
+  hosting-renewal test's five-second deadline under concurrent frontend/worker load;
+  timed-out teardown also reported its service FK. Serial acceptance passed those suites.
+  The serial combined package invocation then found a new test's browser-scheme file URL;
+  corrected the test path and reran all frontend and worker cases separately rather than
+  claiming that failed combined invocation passed. No case was skipped or deadline relaxed.
+  The first failed-read-budget fixture was blocked by another deliberately unresolved
+  account mutation; the corrected recovered-claim fixture passed in the full API retry.
+  Existing pg query/VM-module and logo loading warnings are non-fatal, not fixes in this scope.
+
+#### Decisions, risks and exact next command
+
+- Currency hold and both unwaived development-tooling advisories remain. No real customer,
+  payment, external registrar action, provider credential or production deployment occurred.
+  The normal development/public database was not adopted as an acceptance test scope.
+- Fake success is not genuine resell.biz acceptance. Demo identity, account-specific cost
+  currency/taxes/status/agreements, wallet/NoInvoice effect, signup/contact obligations and
+  an enforceable charge boundary remain unproven. Preflight is not an atomic cost cap.
+- Network and live modes remain closed. Transfer, renewal, deletion, import, nameserver
+  changes and production rollout need separate exact authority; no additional currency work.
+- Exact recommended next command after verified delivery:
+  **Command 51 — Run credentialed UK2Group test acceptance**, only after protected genuine
+  demo isolation, credentials/IP access, disposable identities/domains, actual agreements,
+  approved all-in budget/charge controls, operator window and explicit mutation approval.
+  If genuine demo access is unavailable, keep local simulation and stop.
+
 ## Report Template
 
 Use this template after every future command:

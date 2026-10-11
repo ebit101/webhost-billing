@@ -8,6 +8,7 @@ import type {
   TwoFactorRequiredResponse,
 } from '@webhost-billing/shared';
 import { authMutation } from '../../lib/auth-api';
+import { domainEntryHref, type DomainIntent } from '../../lib/domain-intent';
 import {
   checkoutEntryHref,
   customerLandingHref,
@@ -18,9 +19,11 @@ import { AuthForm, Field, FormNotice, SubmitButton } from './form-controls';
 export function LoginForm({
   audience = 'customer',
   checkoutIntent,
+  domainIntent,
 }: {
   audience?: 'admin' | 'customer';
   checkoutIntent?: CheckoutIntent;
+  domainIntent?: DomainIntent;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -48,7 +51,9 @@ export function LoginForm({
       router.push(
         result.identity.role === 'ADMIN'
           ? '/admin'
-          : customerLandingHref(checkoutIntent),
+          : domainIntent
+            ? domainEntryHref('/portal/domains', domainIntent)
+            : customerLandingHref(checkoutIntent),
       );
       router.refresh();
     } catch (caught) {
@@ -75,7 +80,9 @@ export function LoginForm({
       router.push(
         result.identity.role === 'ADMIN'
           ? '/admin'
-          : customerLandingHref(checkoutIntent),
+          : domainIntent
+            ? domainEntryHref('/portal/domains', domainIntent)
+            : customerLandingHref(checkoutIntent),
       );
       router.refresh();
     } catch (caught) {

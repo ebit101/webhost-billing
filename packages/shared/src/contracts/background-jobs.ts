@@ -8,6 +8,7 @@ export const backgroundQueueNames = [
   'hosting-status-reconciliation',
   'payment-reconciliation',
   'renewal-invoice-generation',
+  'domain-registration',
 ] as const;
 
 export const backgroundQueueNameSchema = z.enum(backgroundQueueNames);
@@ -47,6 +48,7 @@ export interface BackgroundQueuePolicy {
 export const backgroundQueuePolicies: Readonly<
   Record<BackgroundQueueName, BackgroundQueuePolicy>
 > = {
+  'domain-registration': { attempts: 1, backoffMilliseconds: 0 },
   emails: { attempts: 5, backoffMilliseconds: 2_000 },
   'hosting-provisioning': { attempts: 1, backoffMilliseconds: 0 },
   'hosting-suspension': { attempts: 1, backoffMilliseconds: 0 },
@@ -71,6 +73,14 @@ export interface OutboxQueueRoute {
 }
 
 const exactOutboxRoutes: Readonly<Record<string, OutboxQueueRoute>> = {
+  DOMAIN_REGISTRATION_REQUESTED: {
+    queueName: 'domain-registration',
+    jobName: 'register-domain-once',
+  },
+  DOMAIN_REGISTRATION_RECONCILE: {
+    queueName: 'domain-registration',
+    jobName: 'reconcile-domain',
+  },
   AUTH_EMAIL_VERIFICATION_REQUESTED: {
     queueName: 'emails',
     jobName: 'send-auth-email',

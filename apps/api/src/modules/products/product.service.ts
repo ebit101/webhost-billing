@@ -127,7 +127,7 @@ export class ProductService {
 
   async listAdmin(): Promise<Product[]> {
     const products = await this.prisma.product.findMany({
-      where: { deletedAt: null },
+      where: { deletedAt: null, kind: 'HOSTING' },
       orderBy: [{ displayOrder: 'asc' }, { name: 'asc' }],
       include: {
         prices: { orderBy: [{ isActive: 'desc' }, { createdAt: 'desc' }] },
@@ -145,6 +145,7 @@ export class ProductService {
     const now = new Date();
     const products = await this.prisma.product.findMany({
       where: {
+        kind: 'HOSTING',
         deletedAt: null,
         status: ProductStatus.ACTIVE,
         publicVisible: true,
@@ -201,7 +202,7 @@ export class ProductService {
     context: SecurityRequestContext,
   ): Promise<Product> {
     const current = await this.prisma.product.findFirst({
-      where: { id: productId, deletedAt: null },
+      where: { id: productId, deletedAt: null, kind: 'HOSTING' },
       include: {
         _count: {
           select: {
@@ -259,7 +260,7 @@ export class ProductService {
     context: SecurityRequestContext,
   ): Promise<Product> {
     const product = await this.prisma.product.findFirst({
-      where: { id: productId, deletedAt: null },
+      where: { id: productId, deletedAt: null, kind: 'HOSTING' },
       include: {
         _count: {
           select: {
@@ -318,7 +319,7 @@ export class ProductService {
     context: SecurityRequestContext,
   ): Promise<Product> {
     const product = await this.prisma.product.findFirst({
-      where: { id: productId, deletedAt: null },
+      where: { id: productId, deletedAt: null, kind: 'HOSTING' },
       select: { id: true, status: true },
     });
     if (!product) throw this.notFound();
@@ -383,7 +384,7 @@ export class ProductService {
 
   private async findProduct(productId: string) {
     const product = await this.prisma.product.findFirst({
-      where: { id: productId, deletedAt: null },
+      where: { id: productId, deletedAt: null, kind: 'HOSTING' },
       include: {
         prices: { orderBy: [{ isActive: 'desc' }, { createdAt: 'desc' }] },
       },

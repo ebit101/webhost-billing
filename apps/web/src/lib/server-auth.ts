@@ -10,6 +10,11 @@ import {
   checkoutEntryHref,
   readCheckoutIntent,
 } from './checkout-intent';
+import {
+  DOMAIN_INTENT_HEADER,
+  domainEntryHref,
+  readDomainIntent,
+} from './domain-intent';
 
 const API_URL =
   process.env.INTERNAL_API_URL ??
@@ -76,7 +81,19 @@ export async function requireWorkspaceRole(
       context && context.length <= 128
         ? readCheckoutIntent(new URLSearchParams(context))
         : undefined;
-    redirect(checkoutEntryHref('/login', intent));
+    const domainContext =
+      requiredRole === 'CUSTOMER'
+        ? (await headers()).get(DOMAIN_INTENT_HEADER)
+        : null;
+    const domainIntent =
+      domainContext && domainContext.length <= 200
+        ? readDomainIntent(new URLSearchParams(domainContext))
+        : undefined;
+    redirect(
+      domainIntent
+        ? domainEntryHref('/login', domainIntent)
+        : checkoutEntryHref('/login', intent),
+    );
   }
 
   if (identity.role !== requiredRole) {

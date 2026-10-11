@@ -214,6 +214,9 @@ importers:
       '@webhost-billing/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@webhost-billing/queue':
+        specifier: workspace:*
+        version: link:../../packages/queue
       argon2:
         specifier: 0.45.1
         version: 0.45.1

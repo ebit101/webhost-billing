@@ -103,7 +103,7 @@ async function bootstrap(target: string) {
     const migrations = readdirSync(resolve('prisma/migrations'))
       .filter((n) => /^\d{14}_/.test(n))
       .sort();
-    assert.equal(migrations.length, 28);
+    assert.equal(migrations.length, 29);
     for (const name of migrations)
       await pg.query(
         readFileSync(

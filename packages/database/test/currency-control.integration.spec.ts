@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { addCurrentHostingDiscriminators } from './currency-privilege-harness.fixtures';
 import { before, after, afterEach, test } from 'node:test';
 import { randomUUID } from 'node:crypto';
 import { readFileSync, readdirSync } from 'node:fs';
@@ -32,7 +33,7 @@ const table = `"${schema}"."currency_controls"`;
 const input = { schema, staffMutex: 'not_required' };
 const dir = resolve('prisma/migrations');
 const migrations = readdirSync(dir)
-  .filter((n) => /^\d{14}_/.test(n))
+  .filter((n) => /^\d{14}_/.test(n) && n !== '20261012000100_domain_registrar')
   .sort();
 let parent: PrismaClient;
 let prisma: PrismaClient;
@@ -81,6 +82,7 @@ async function bootstrap(target: string, count = 28) {
   assert.equal(migrations.length, 28);
   for (const name of migrations.slice(0, count))
     await pg.query(readFileSync(resolve(dir, name, 'migration.sql'), 'utf8'));
+  await addCurrentHostingDiscriminators(pg);
   await assertBrowserDatabaseScope(models, targetUrl, target, false);
   await pg.query(
     `CREATE TABLE "${target}".__browser_e2e_scope(owner text NOT NULL)`,

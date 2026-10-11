@@ -9,6 +9,7 @@ import { appendCurrencyUnit } from '../src/currency-units';
 import { appendCurrencyPolicyRevision } from '../src/currency-policies';
 import {
   loadPinnedMigrations,
+  addCurrentHostingDiscriminators,
   productSnapshot,
 } from './currency-privilege-harness.fixtures';
 import type { TestConnection } from './currency-privilege-harness';
@@ -61,6 +62,7 @@ async function bootstrap(count = 28) {
     [{ schema }],
   );
   for (const m of migrations.slice(0, count)) await raw.query(m.sql);
+  await addCurrentHostingDiscriminators(raw);
   await assertBrowserDatabaseScope(traced.prisma, url, schema, false);
   await raw.query(
     `CREATE TABLE "${schema}".__browser_e2e_scope(owner text NOT NULL)`,

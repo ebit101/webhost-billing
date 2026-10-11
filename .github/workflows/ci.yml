@@ -75,8 +75,10 @@ jobs:
       - name: Lint
         run: pnpm lint
 
-      - name: Prepare worker artifacts for E2E type imports
-        run: pnpm --filter @webhost-billing/worker build
+      - name: Prepare backend artifacts for E2E type imports
+        run: |
+          pnpm --filter @webhost-billing/api build
+          pnpm --filter @webhost-billing/worker build
 
       - name: Type check
         run: pnpm typecheck

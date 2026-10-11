@@ -2636,6 +2636,39 @@ report-only update must pass its own delivery gate; stop for the recommended pha
   names are Git-ignored; implementation uses independently written TypeScript and public
   official API contracts. No credential or real provider test was performed.
 
+## ADR-127 — Keep the initial registrar workflow fictional and register-once
+
+- **Status:** Authorized Command 50 implementation, 2026-10-12. Delivery requires
+  the validation recorded in [progress](PROGRESS.md).
+- **Decision:** Implement one complete local customer quote, immutable order/invoice,
+  verified manual payment, full-administrator approval, dedicated outbox/worker,
+  ownership-bound registration observation and truthful mobile UI. Keep nine registrar
+  tables separate from hosting services and preserve all 28 prior migration contents.
+  [Implementation guide](LOGICBOXES_REGISTRAR_IMPLEMENTATION.md) records the flow and limits.
+- **Safety:** SQL ownership/history guards, authenticated encrypted account/mode/version
+  bindings, a durable single dispatch claim, immutable contact mappings and code-only
+  append-only evidence. Before dispatch, recheck customer, approver and verified payment;
+  after dispatch, refunds retain financial attention without pretending to undo registration.
+  Redelivery, ambiguous contact creation and lost responses never retry mutations.
+  Production mode closes simulated offers/write routes and does not start the registrar
+  consumer; readable history is not authority to execute simulated purchases in production.
+- **Official adapter:** Injected HTTP mock only, no socket client, real credentials or
+  production fallback. Reconcile explicitly bound fictional customer/contact IDs; do not
+  implement unapproved real signup or adopt existing accounts by email. `NoInvoice`,
+  HTTP success, the test hostname and price preflight are not account/registration/charge
+  guarantees. Native USD cost convention is fictional, independent of BDT sale snapshots.
+- **Interface:** The owner's administrator domain screenshot is a layout reference, not
+  consent to copy its real customer data, business prices or enable all visible actions.
+  Show request/registration/expiry/financial outcomes separately; no invented renewal
+  price, registration date or next billing date. Use sentence-case app-authored labels.
+- **Limits:** Latest 100 authenticated requests, .com/.net, ordinary ASCII, one year,
+  fixed fictional nameservers and explicit fictional consent. No renewal, transfer,
+  authorization code, nameserver/contact editor, delete, privacy, import, production
+  promotion or currency development. Existing tooling advisories remain unwaived.
+- **Next:** Stop after verified Command 50 delivery. Command 51 requires separate
+  protected genuine-demo identity/isolation, credentials/IP access, contracts/contact
+  policy, all-in charge controls and exact operator/mutation authorization.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

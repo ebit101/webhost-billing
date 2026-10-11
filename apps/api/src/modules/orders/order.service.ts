@@ -107,6 +107,7 @@ export class OrderService {
               { OR: [{ validUntil: null }, { validUntil: { gt: now } }] },
             ],
             product: {
+              kind: 'HOSTING',
               deletedAt: null,
               status: ProductStatus.ACTIVE,
               ...(source === 'CUSTOMER' ? { publicVisible: true } : {}),
@@ -390,6 +391,37 @@ export class OrderService {
     }
     const now = new Date();
     await this.prisma.$transaction(async (transaction) => {
+      const domain = await transaction.domain.findFirst({
+        where: {
+          orderItemId: {
+            in: (
+              await transaction.orderItem.findMany({
+                where: { orderId },
+                select: { id: true },
+              })
+            ).map((item) => item.id),
+          },
+        },
+      });
+      if (domain) {
+        await transaction.$queryRaw`SELECT id FROM invoices WHERE id=${domain.invoiceId}::uuid FOR UPDATE`;
+        await transaction.$queryRaw`SELECT id FROM domains WHERE id=${domain.id}::uuid FOR UPDATE`;
+        const operation = await transaction.registrarOperation.findUnique({
+          where: { domainId: domain.id },
+        });
+        if (
+          input.status === 'COMPLETED' ||
+          (operation?.claimedAt &&
+            ['CANCELLED', 'REJECTED', 'FAILED'].includes(input.status))
+        ) {
+          throw new ApplicationException({
+            status: HttpStatus.CONFLICT,
+            code: 'CONFLICT',
+            message:
+              'Use the domain registration review; a claimed registration requires reconciliation.',
+          });
+        }
+      }
       await transaction.order.update({
         where: { id: orderId },
         data: {

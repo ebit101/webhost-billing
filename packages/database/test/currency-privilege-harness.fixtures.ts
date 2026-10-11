@@ -18,7 +18,8 @@ export function loadPinnedMigrations() {
   const names = readdirSync(directory, { withFileTypes: true })
     .filter((f) => f.isDirectory())
     .map((f) => f.name)
-    .sort();
+    .sort()
+    .filter((name) => name !== '20261012000100_domain_registrar');
   assert.deepEqual(
     names,
     Object.keys(migrationPins).sort(),
@@ -34,6 +35,17 @@ export function loadPinnedMigrations() {
     );
     return { name, sql, rawHash: digest(bytes) };
   });
+}
+
+/** Historical currency-prefix scopes predate ProductKind. Supply only the two
+ * ordinary hosting discriminator columns expected by the current Prisma client;
+ * never install registrar stores or change any currency migration/evidence. */
+export async function addCurrentHostingDiscriminators(client: {
+  query(sql: string): Promise<unknown>;
+}) {
+  await client.query(`CREATE TYPE "ProductKind" AS ENUM ('HOSTING', 'DOMAIN');
+    ALTER TABLE products ADD COLUMN kind "ProductKind" NOT NULL DEFAULT 'HOSTING';
+    ALTER TABLE order_items ADD COLUMN kind "ProductKind" NOT NULL DEFAULT 'HOSTING';`);
 }
 export async function applyProductMigrations(
   h: PrivilegeHarness,

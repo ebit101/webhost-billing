@@ -130,7 +130,12 @@ describe('Background job administration (e2e)', () => {
     const overview = apiSuccessResponseSchema(operationalOverviewSchema).parse(
       overviewResponse.body,
     ).data;
-    expect(overview.queues).toHaveLength(7);
+    expect(overview.queues).toHaveLength(8);
+    expect(
+      overview.queues.some(
+        (queue) => queue.queueName === 'domain-registration',
+      ),
+    ).toBe(true);
     expect(overview.failedOutboxEvents).toBeGreaterThanOrEqual(1);
     expect(JSON.stringify(overviewResponse.body)).not.toMatch(
       /(?:password|cookie|apiKey|signature|payload)/i,

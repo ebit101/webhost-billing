@@ -22,6 +22,15 @@ const testScope = process.env.WEBHOST_BROWSER_E2E_SCHEMA;
 const schema = testScope ?? 'public';
 
 const expectedTables = [
+  'domain_offers',
+  'domain_quotes',
+  'domains',
+  'fake_registrar_registrations',
+  'registrar_accounts',
+  'registrar_credentials',
+  'registrar_evidence',
+  'registrar_mappings',
+  'registrar_operations',
   'activity_logs',
   'admin_login_challenges',
   'admin_profiles',
@@ -134,6 +143,9 @@ const requiredCustomConstraints = [
 ] as const;
 
 const expectedMoneyColumns = [
+  'domain_quotes.cost_amount',
+  'domain_quotes.selling_amount',
+  'registrar_operations.cost_ceiling',
   'invoice_items.discount_amount',
   'invoice_items.line_total',
   'invoice_items.tax_amount',
@@ -177,7 +189,7 @@ async function verify(): Promise<void> {
 
   assert.deepEqual(
     tables.map(({ table_name: tableName }) => tableName),
-    [...expectedTables],
+    [...expectedTables].sort(),
   );
 
   const idColumnTypes = await prisma.$queryRaw<
@@ -204,7 +216,7 @@ async function verify(): Promise<void> {
   assert.equal(idColumnTypes.length, uuidTables.length);
   assert.deepEqual(
     idColumnTypes.map((row) => row.table_name),
-    uuidTables,
+    [...uuidTables].sort(),
   );
   assert.ok(
     idColumnTypes.every(({ data_type: dataType }) => dataType === 'uuid'),
@@ -356,7 +368,7 @@ async function verify(): Promise<void> {
       ({ table_name: tableName, column_name: columnName }) =>
         `${tableName}.${columnName}`,
     ),
-    [...expectedMoneyColumns],
+    [...expectedMoneyColumns].sort(),
   );
 
   const timezoneUnsafeTimestamps = await prisma.$queryRaw<

@@ -173,6 +173,7 @@ live installation or authorize staff creation/deployment.
 - `docs/PAYMENT_GATEWAYS.md` — bKash/SSLCOMMERZ sandbox setup, gateway contracts, callbacks, reconciliation, replay protection, and outbox handoff
 - `docs/SERVICES.md` — service creation, snapshots, lifecycle, authorization, and administrator/customer workflows
 - `docs/HOSTING_PANELS.md` — real cPanel/WHM API-token setup, encrypted credentials, operation safety, manual verification, and separate UK2Group scope
+- `docs/LOGICBOXES_REGISTRAR_IMPLEMENTATION.md` — complete fictional StarGate/UK2 registration workflow, mocked official contracts, recovery and genuine-demo prerequisites
 - `docs/BACKGROUND_JOBS.md` — BullMQ queues, transactional outbox dispatch, retries, failure visibility, and worker shutdown
 - `docs/EMAIL_NOTIFICATIONS.md` — queued SMTP delivery, templates, preview files, retries, secret boundaries, and operations
 - `docs/RENEWAL_AUTOMATION.md` — renewal policy, scheduler locking, invoice/reminder lifecycle, and safe cPanel suspension/reactivation

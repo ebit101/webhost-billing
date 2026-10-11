@@ -489,6 +489,7 @@ model EmailVerificationToken {
 }
 
 model Product {
+  kind                     ProductKind    @default(HOSTING)
   id                       String         @id @default(uuid()) @db.Uuid
   slug                     String         @unique(map: "products_slug_key") @db.VarChar(120)
   name                     String         @db.VarChar(160)
@@ -566,6 +567,7 @@ model Order {
 }
 
 model OrderItem {
+  kind                 ProductKind   @default(HOSTING)
   id                   String        @id @default(uuid()) @db.Uuid
   orderId              String        @map("order_id") @db.Uuid
   productId            String        @map("product_id") @db.Uuid
@@ -1006,4 +1008,139 @@ model OutboxEvent {
   @@index([status, availableAt], map: "outbox_events_dispatch_idx")
   @@index([aggregateType, aggregateId, createdAt], map: "outbox_events_aggregate_idx")
   @@map("outbox_events")
+}
+
+enum ProductKind {
+  HOSTING
+  DOMAIN
+}
+
+model RegistrarAccount {
+  id        String   @id @default(uuid()) @db.Uuid
+  provider  String   @default("stargate") @db.VarChar(32)
+  mode      String   @default("FAKE") @db.VarChar(16)
+  enabled   Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@map("registrar_accounts")
+}
+
+model RegistrarCredential {
+  id         String   @id @default(uuid()) @db.Uuid
+  accountId  String   @map("account_id") @db.Uuid
+  version    Int
+  ciphertext String   @db.Text
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@unique([accountId, version])
+  @@map("registrar_credentials")
+}
+
+model DomainOffer {
+  id          String @id @default(uuid()) @db.Uuid
+  accountId   String @map("account_id") @db.Uuid
+  productId   String @unique @map("product_id") @db.Uuid
+  priceId     String @unique @map("price_id") @db.Uuid
+  tld         String @db.VarChar(8)
+  nameservers Json
+
+  @@unique([accountId, tld])
+  @@unique([id, accountId])
+  @@map("domain_offers")
+}
+
+model DomainQuote {
+  id                String   @id @default(uuid()) @db.Uuid
+  customerId        String   @map("customer_id") @db.Uuid
+  accountId         String   @map("account_id") @db.Uuid
+  offerId           String   @map("offer_id") @db.Uuid
+  domainName        String   @map("domain_name") @db.VarChar(253)
+  sellingAmount     BigInt   @map("selling_amount")
+  costAmount        BigInt   @map("cost_amount")
+  costCurrency      String   @map("cost_currency") @db.Char(3)
+  contactCiphertext String   @map("contact_ciphertext") @db.Text
+  fingerprint       String   @db.Char(64)
+  nameservers       Json
+  agreement         String   @db.VarChar(64)
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  expiresAt         DateTime @map("expires_at") @db.Timestamptz(3)
+
+  @@unique([id, customerId, accountId])
+  @@index([customerId, createdAt])
+  @@map("domain_quotes")
+}
+
+model Domain {
+  id              String    @id @default(uuid()) @db.Uuid
+  quoteId         String    @unique @map("quote_id") @db.Uuid
+  customerId      String    @map("customer_id") @db.Uuid
+  accountId       String    @map("account_id") @db.Uuid
+  orderItemId     String    @unique @map("order_item_id") @db.Uuid
+  invoiceId       String    @unique @map("invoice_id") @db.Uuid
+  domainName      String    @unique @map("domain_name") @db.VarChar(253)
+  submissionKey   String    @unique @map("submission_key") @db.Uuid
+  state           String    @default("AWAITING_PAYMENT") @db.VarChar(32)
+  verification    String    @default("Pending") @db.VarChar(32)
+  providerOrderId String?   @map("provider_order_id") @db.VarChar(64)
+  expiresAt       DateTime? @map("expires_at") @db.Timestamptz(3)
+  autoRenew       Boolean   @default(false) @map("auto_renew")
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@unique([accountId, providerOrderId])
+  @@unique([id, customerId, accountId])
+  @@index([customerId, createdAt])
+  @@map("domains")
+}
+
+model RegistrarOperation {
+  id           String    @id @default(uuid()) @db.Uuid
+  domainId     String    @unique @map("domain_id") @db.Uuid
+  customerId   String    @map("customer_id") @db.Uuid
+  accountId    String    @map("account_id") @db.Uuid
+  credentialId String    @map("credential_id") @db.Uuid
+  actorUserId  String    @map("actor_user_id") @db.Uuid
+  costCeiling  BigInt    @map("cost_ceiling")
+  claimedAt    DateTime? @map("claimed_at") @db.Timestamptz(3)
+  nextPollAt   DateTime  @default(now()) @map("next_poll_at") @db.Timestamptz(3)
+  pollCount    Int       @default(0) @map("poll_count")
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@map("registrar_operations")
+}
+
+model RegistrarEvidence {
+  id          String   @id @default(uuid()) @db.Uuid
+  operationId String   @map("operation_id") @db.Uuid
+  code        String   @db.VarChar(64)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([operationId, createdAt])
+  @@map("registrar_evidence")
+}
+
+model RegistrarMapping {
+  id               String @id @default(uuid()) @db.Uuid
+  accountId        String @map("account_id") @db.Uuid
+  customerId       String @map("customer_id") @db.Uuid
+  fingerprint      String @db.Char(64)
+  remoteCustomerId String @map("remote_customer_id") @db.VarChar(64)
+  remoteContactId  String @map("remote_contact_id") @db.VarChar(64)
+
+  @@unique([accountId, customerId, fingerprint])
+  @@unique([accountId, remoteCustomerId, remoteContactId])
+  @@map("registrar_mappings")
+}
+
+// Fictional provider-side ledger survives lost responses; never stores real credentials.
+model FakeRegistrarRegistration {
+  id          String   @id @default(uuid()) @db.Uuid
+  accountId   String   @map("account_id") @db.Uuid
+  customerId  String   @map("customer_id") @db.Uuid
+  domainName  String   @map("domain_name") @db.VarChar(253)
+  operationId String   @unique @map("operation_id") @db.Uuid
+  state       String   @db.VarChar(32)
+  expiresAt   DateTime @map("expires_at") @db.Timestamptz(3)
+
+  @@unique([accountId, domainName])
+  @@map("fake_registrar_registrations")
 }

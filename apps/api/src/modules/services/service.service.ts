@@ -144,6 +144,7 @@ export class ServiceService {
       }),
       this.prisma.orderItem.findMany({
         where: {
+          kind: 'HOSTING',
           requestedDomain: { not: null },
           billingPeriod: { in: ['MONTHLY', 'QUARTERLY', 'ANNUAL'] },
           service: { is: null },
@@ -201,7 +202,7 @@ export class ServiceService {
           where: { id: input.orderItemId },
           include: { order: true, service: true },
         });
-        if (!item || item.service) {
+        if (!item || item.service || item.kind !== 'HOSTING') {
           throw this.conflict(
             'This order item already has a service or is unavailable.',
           );

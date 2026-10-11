@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { readDomainIntent } from '../../lib/domain-intent';
 import { AuthShell } from '../../components/auth/auth-shell';
 import { LoginForm } from '../../components/auth/login-form';
 import {
@@ -19,7 +20,11 @@ export default async function LoginPage({
       title="Customer sign in"
       description="Manage your hosting services, invoices, payments, and support."
     >
-      <LoginForm audience="customer" checkoutIntent={intent} />
+      <LoginForm
+        audience="customer"
+        checkoutIntent={intent}
+        domainIntent={readDomainIntent(await searchParams)}
+      />
     </AuthShell>
   );
 }
