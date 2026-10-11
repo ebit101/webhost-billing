@@ -62,9 +62,9 @@ async function snapshot(scope: Scope) {
   await assertBrowserDatabaseScope(scope.models, scope.url, scope.schema);
   return productSnapshot(connection(scope.raw), scope.schema);
 }
-async function bootstrap(count = 26) {
+async function bootstrap(count = 27) {
   await assertBrowserDatabaseScope(parent, parentUrl, parentSchema);
-  assert.equal(migrations.length, 26);
+  assert.equal(migrations.length, 27);
   const schema = `command26_e2e_${randomUUID().replaceAll('-', '')}`;
   const url = browserDatabaseUrl(parentUrl, schema);
   await parent.$executeRawUnsafe(`CREATE SCHEMA "${schema}"`);
@@ -92,7 +92,7 @@ async function bootstrap(count = 26) {
   await assertBrowserDatabaseScope(traced.models, url, schema);
   return { schema, url, raw, ...traced };
 }
-async function withScope(body: (scope: Scope) => Promise<void>, count = 26) {
+async function withScope(body: (scope: Scope) => Promise<void>, count = 27) {
   const scope = await bootstrap(count);
   try {
     await body(scope);
@@ -284,12 +284,18 @@ test('fresh migration is empty, has no other authority stores and explicit model
       domains: [],
     });
     assert.ok(
-      !(await snapshot(scope)).objects.some((row) =>
-        /currency_(?:selection|transition|authorization|authority|proof)/.test(
-          String(row.relname),
-        ),
+      !(await snapshot(scope)).objects.some(
+        (row) =>
+          ![
+            'currency_selection_intents',
+            'currency_selection_intents_pkey',
+          ].includes(String(row.relname)) &&
+          /currency_(?:selection|transition|authorization|authority|proof)/.test(
+            String(row.relname),
+          ),
       ),
     );
+    assert.equal(await scope.models.currencySelectionIntent.count(), 0);
     await fixtures(scope);
     await scope.raw.query(
       `INSERT INTO ${q(scope, names[1])} VALUES($1,$2,$3,$4,$5,$6)`,
@@ -603,16 +609,15 @@ test('owner statement guards deny empty/identical/nested/conflict/MERGE/delete/t
           // PostgreSQL refuses a referenced-table-only TRUNCATE before triggers,
           // even if empty. CASCADE reaches the immutable statement guard instead.
           const code =
-            name === names[0] && sql === `TRUNCATE ${table}`
-              ? '0A000'
-              : '23514';
+            // Both identities are now referenced by the closed intent table.
+            sql === `TRUNCATE ${table}` ? '0A000' : '23514';
           await denied(scope, () => scope.raw.query(sql), code);
         }
         await denied(
           scope,
           () =>
             scope.raw.query(
-              `TRUNCATE ${q(scope, names[0])},${q(scope, names[1])}`,
+              `TRUNCATE ${q(scope, names[0])},${q(scope, names[1])},${q(scope, 'currency_selection_intents')}`,
             ),
           '23514',
         );

@@ -247,9 +247,16 @@ test(
             `TRUNCATE ${q}currency_installations CASCADE`,
             `UPDATE ${q}currency_execution_domains SET created_at=created_at WHERE false`,
             `DELETE FROM ${q}currency_execution_domains WHERE false`,
-            `TRUNCATE ${q}currency_execution_domains`,
+            // Include the newly referencing table so the original guard assertion
+            // still reaches BEFORE TRUNCATE rather than FK preflight refusal.
+            `TRUNCATE ${q}currency_execution_domains,${q}currency_selection_intents`,
           ])
             await denied(root, sql, '23514');
+          await denied(
+            root,
+            `TRUNCATE ${q}currency_execution_domains`,
+            '0A000',
+          );
         },
       );
       await t.test(

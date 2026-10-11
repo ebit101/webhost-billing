@@ -5030,8 +5030,9 @@ incomplete. Test byte parity is not a stored-origin, coverage, current-auth or h
 
 ## Command 115 — Stage closed currency selection-intent storage
 
-**Defined by the owner-authorized Command 114 phase review on 2026-10-11; not authorized
-or implemented.** One empty durable intent store and its exact ownership/canonical binding
+**Implemented on 2026-10-11; required local acceptance passed.**
+Focused source delivery and exact-head hosted acceptance are recorded in the owner handoff.
+One empty durable intent store and its exact ownership/canonical binding
 constraints. This moves P2 persistence forward, not proof issuance or policy selection.
 
 ```text

@@ -33,6 +33,7 @@ const expectedTables = [
   'currency_execution_domains',
   'currency_installations',
   'currency_policy_revisions',
+  'currency_selection_intents',
   'currency_unit_definitions',
   'customers',
   'email_attempts',
@@ -59,6 +60,9 @@ const expectedTables = [
 ] as const;
 
 const requiredCustomConstraints = [
+  'currency_selection_intents_key_check',
+  'currency_selection_intents_canonical_check',
+  'currency_selection_intents_digest_check',
   'currency_installations_singleton_check',
   'currency_installations_time_check',
   'currency_execution_domains_database_name_check',
@@ -189,7 +193,8 @@ async function verify(): Promise<void> {
       name !== 'currency_unit_definitions' &&
       name !== 'currency_policy_revisions' &&
       name !== 'currency_controls' &&
-      name !== 'currency_installations',
+      name !== 'currency_installations' &&
+      name !== 'currency_selection_intents',
   );
   assert.equal(idColumnTypes.length, uuidTables.length);
   assert.deepEqual(
@@ -321,6 +326,7 @@ async function verify(): Promise<void> {
   assert.equal(await prisma.currencyControl.count(), 0);
   assert.equal(await prisma.currencyInstallation.count(), 0);
   assert.equal(await prisma.currencyExecutionDomain.count(), 0);
+  assert.equal(await prisma.currencySelectionIntent.count(), 0);
 
   const moneyColumns = await prisma.$queryRaw<
     Array<{ table_name: string; column_name: string }>
@@ -334,6 +340,7 @@ async function verify(): Promise<void> {
         AND column_name = 'last_used_time_step'
       )
       AND NOT (table_name = 'currency_controls' AND column_name = 'generation')
+      AND NOT (table_name = 'currency_selection_intents' AND column_name = 'expected_generation')
     ORDER BY table_name, column_name
   `;
 

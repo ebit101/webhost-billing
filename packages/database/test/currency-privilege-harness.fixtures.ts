@@ -22,7 +22,7 @@ export function loadPinnedMigrations() {
   assert.deepEqual(
     names,
     Object.keys(migrationPins).sort(),
-    'Exactly the 25 baseline migrations and the inert identity migration are required.',
+    'Exactly the 25 baseline migrations, inert identity and closed intent additions are required.',
   );
   return names.map((name) => {
     const bytes = readFileSync(resolve(directory, name, 'migration.sql'));
@@ -75,6 +75,7 @@ export async function applyProductMigrations(
     'currency_controls',
     'currency_installations',
     'currency_execution_domains',
+    'currency_selection_intents',
   ]) {
     assert.equal(
       (

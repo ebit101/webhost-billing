@@ -14350,6 +14350,141 @@ it automatically or begin assessment/auth/evidence storage or activation.
 Request **Command 115 — Stage closed currency selection-intent storage**.
 Stop after verified review delivery; do not implement it automatically.
 
+### Command 115 — Stage closed currency selection-intent storage
+
+- **Status:** Implemented; required local acceptance passed. Focused commit, pinned history
+  scan, non-force main delivery and exact-head hosted gates are required for final handoff.
+- **Date:** 2026-10-11.
+- **Baseline:** Clean `0f19530ac016c6ab3853d2410781976e01739c03`; fresh canonical main
+  reconciliation 0/0. Preceding review delivery independently closed: cached pinned
+  full-history scan 239 commits/no leaks; exact-head CI 38120741074 aggregate/all 29
+  Validate steps and CodeQL 38120741043 aggregate/all eight passed, first attempts.
+  Dependency review skipped, not passed.
+
+#### Implemented scope and files
+
+- One empty CurrencySelectionIntent model and atomic 27th migration, after 26 unchanged
+  content pins. Twelve exact S fields; no defaults, timestamps, auth/proof/receipt/status
+  facts. Installation/request UUID primary key preserves original case-sensitive key
+  text. Six RESTRICT/RESTRICT references bind installation/domain, actor/session ownership
+  and exact expected/proposed policy revision. Only AuthSession's redundant ownership
+  unique key and required inverse Prisma relations extend old models.
+- Pure bounded private immutable SECURITY INVOKER S reconstruction shares scalar grammar
+  across CHECKs before cast/serialization. Qualified built-ins, fixed path, exact UTF-8
+  equality and SHA-256; no jsonb::text hashing or supplied digest authority. Four fixed
+  BEFORE statement triggers always reject INSERT/UPDATE/DELETE/TRUNCATE, including empty
+  statements. New table/functions revoke PUBLIC access atomically; no opening switch.
+- Catalog-derived fictional probe copies installed columns/CHECKs/PK/unique indexes and
+  defaults; actual FKs redirect only exact prescribed fictional parent targets. Full
+  manifests compare, original canonical helper binding remains. Product table never opens
+  or receives a row. SQL/RLS/model/raw identity and all prior-26 row preservation tests
+  append alongside retained prior-22/23/24/25 cases. Distinct real P1 duty logins test ACL,
+  DML/helper/DDL/role/replica rejection and narrowly granted statement refusal.
+- Files: new migration and schema; database verifier/package script; four new fixture/
+  source/privilege/SQL test files; migration pin and exact prior source/count/catalog
+  allowances in existing database tests; SQL launcher append; five documentation trackers.
+  Old harness runtime, codecs/parity fixtures, root exports/scripts, apps' runtime sources,
+  dependencies, patches, lockfile and workflows are unchanged.
+
+#### Validation and failed attempts
+
+- Fresh frozen install, tooling-security 15, Prisma formatting/validation/generation,
+  package builds, database strict types after correction and source tests 142 passed.
+  Production audit exit zero/no known findings; full audit exit one retains exactly
+  braces high GHSA-vfj7-8cjw-p6xm and sprintf-js moderate GHSA-hp3w-g68c-fv3c. No waiver,
+  dependency/patch repair or suppression.
+- Initial isolated new privilege run stopped before setup at PREFLIGHT/daemon resources;
+  no owned container/network created. Kept unchanged limits and unrelated Docker/user
+  resources. A subsequent SQL run exercised catalog/goldens/denials successfully but one
+  RESTRICT parent-key UPDATE expected foreign_key_violation 23503 instead of actual
+  restrict_violation 23001. A diagnostic retry confirmed that exact mismatch. Corrected
+  the UPDATE expectation initially; a complete serial retry confirmed parent DELETE also
+  reports 23001. PostgreSQL 18's
+  [referential-integrity implementation](https://github.com/postgres/postgres/blob/REL_18_STABLE/src/backend/utils/adt/ri_triggers.c)
+  independently confirms RESTRICT parent DELETE/UPDATE uses restrict_violation, while
+  missing-reference INSERT uses foreign_key_violation. Pin all parent restrictions to
+  exact 23001; missing-reference INSERT remains exact 23503. No SQL constraint changed.
+- Initial database types found a fixture array inferred too narrowly for unknown negative
+  inputs; made its test-only value array explicitly unknown[]. Subsequent types passed.
+- First ordinary SQL launcher reached all old suites but identity truncation expected
+  23514 where the new referencing FK caused PostgreSQL 0A000 before triggers. Exact old
+  catalog allowances now retain parent-only refusal and include the new referenced table
+  in the multi-table trigger test. All 79 old SQL cases passed on retry.
+- The first full package gate also exposed that same new referencing-table preflight
+  in original P1's domain TRUNCATE assertion. Appended the intent table to the exact
+  truncation target manifest so the original 23514 guard assertion remains, and added
+  standalone parent-only 0A000 refusal. No original role/permission/ownership assertion
+  or harness limit changed. The next original P1 run passed all 12 checks.
+- That package retry then stopped before parity setup at PREFLIGHT/daemon resources;
+  no new container/network was created. The concurrent independent API/invariant and
+  documentation checks were allowed to finish. Retry the whole unchanged P1-first
+  sequence serially with no other heavy check running; do not reduce safeguards or
+  terminate unrelated processes/services.
+- New SQL retry passed empty storage, real empty/nonempty COPY, namespace mismatch and RLS
+  refusals. Two new fixture expectations needed correction: installed Prisma maps the
+  explicit trigger error to P2039 (underlying SQLSTATE 23514), and a fixed revocation date
+  preceded a default current session creation timestamp. Now assert exact adapter/SQL
+  codes and supply fictional creation/last-seen timestamps before revocation. No product
+  guard/auth behavior was weakened or replaced.
+- At that checkpoint, mandatory privileges/SQL/package/browser/build and delivery were
+  still pending. Later completed results below supersede that checkpoint, not its failed
+  attempt evidence; no pending check was represented as passed.
+- Fresh lint and serial strict workspace/browser types passed after the package builds.
+  API integration passed 81 tests/17 suites. Critical invariants passed shared 113,
+  API money/invoice unit 12, API integration 42 and worker lifecycle/scheduler 2. Four
+  offline documentation validators and current formatting passed; production license
+  inventory succeeded. Renewed production/full audits retain the same results above.
+  Latest complete-package retry began with 2,112 MiB host free memory and no other heavy
+  check running; original P1 passed 12/12 before canonical parity started successfully.
+- The corrected serial run passed P1 12/parity 8/new privileges 9 and all 84 SQL cases,
+  including prior-26 all-row preservation/security updates, then seeded its owned scope.
+  The verifier exposed one additive manifest omission: its generic UUID `id` count
+  treated the new composite-key-only table as having an `id`. Exclude that exact table
+  from the old scalar-id manifest, without removing any old UUID/table assertion.
+  Also exclude exactly its non-monetary expected_generation from the generic BIGINT
+  money-column inventory, alongside the existing control counter exception.
+  Seed verification and the complete remaining package gate must be rerun.
+- The next full rerun passed P1 12/parity 8 and the first seven intent privilege children,
+  then Docker inspection failed during the narrowly granted last child's ownership check
+  (DOCKER, then parent ACCEPTANCE). Local host free memory measured 646 MiB afterward.
+  Earlier identical intent acceptance passed 9/9; no limit/assertion was relaxed and
+  this later failure is not a pass. Correct-label container/network inspection found no
+  remaining harness resources after its owned cleanup. Leave unrelated services/processes
+  intact and allow completed processes to exit before another resource-qualified retry.
+- After the owner closed unused apps/chats, the standalone owned SQL launcher passed
+  all 84 cases, seed and corrected verifier; final serial strict workspace/browser types
+  passed. The subsequent complete serial packages gate exited zero: all ten tooling
+  groups, shared 113, database source 142, original P1 12, parity 8, intent privileges 9,
+  SQL 84/seed/verifier, queue 3, API unit 107, worker 29 and web 572/54 files passed.
+  No skips, opt-outs, relaxed assertions/limits or unrelated resource cleanup were used.
+  Browser suites and production build were still pending at that checkpoint.
+- Lifecycle browsers passed 19/19 with a freshly marked fictional scope; staff UI mock
+  browsers passed 4/4 (not a substitute for actual API authorization acceptance).
+  Production-mode serial full workspace build exited zero, including all 30 generated
+  Next.js pages and both Nest applications. Browser notices include logo LCP guidance,
+  NO_COLOR/FORCE_COLOR and pg concurrent-query deprecation; no unrelated repair claimed.
+- Final repository formatting, all four offline documentation checks and diff integrity
+  passed after the report updates. Delivery uses the unchanged cached pinned full-history
+  scanner, fresh canonical reconciliation, non-force origin/main push, then exact-head
+  CI/CodeQL verification. The commit's actual hash/scan/runs are recorded in the owner
+  handoff after they exist; predecessor results never certify this new head.
+
+#### Decisions and remaining risks
+
+- ADR-121 documents a closed persistence prerequisite, not reservation, current auth,
+  human confirmation or selected policy. Probe insertion is fictional engineering evidence.
+  Trusted owner DDL powers, deployed duty adoption, protected assessment evidence and
+  P2/P3–P9 remain incomplete. Two tooling advisories remain unwaived.
+- Preserve disk/serial constraints, direct-main governance, Command 33/provider/import/
+  launch approvals. No identity/control initialization, operating approval, live query,
+  provider action, WHMCS import, release/deploy or unrelated resource cleanup performed.
+
+#### Exact recommended next command
+
+After verified delivery, request **Phase review — Review Command 115 closed currency
+selection-intent storage and define the next bounded currency command**. Stop; do not
+define or implement the next command automatically.
+
 ## Report Template
 
 Use this template after every future command:

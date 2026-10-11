@@ -2878,6 +2878,42 @@ stay separately gated. No new SQL/model/test implementation, seed, live provider
 WHMCS import, operating approval, release/deploy or cleanup follows this review.
 Stop after verified review delivery and request explicit Command 115 authorization.
 
+### Command 115 — Closed selection-intent storage
+
+Owner authorized on 2026-10-11. The additive 27th migration is atomic and leaves a new
+12-column table empty. Its primary key is installation/request UUID, while original
+request-key text retains case. Six restrictive references bind installation, original
+domain within installation, actor, session owned by actor, and exact prior/proposed
+policy revision. The only existing-table addition is a redundant AuthSession ownership
+key; existence does not prove placement, active administrator access or current MFA.
+
+One private immutable invoker helper bounds scalar grammar before serialization and
+reconstructs the fixed nine-field S using qualified built-ins. CHECKs bind exact UTF-8
+text and recomputed SHA-256, not jsonb::text or caller-supplied digest authority. It reads
+no product state. BIGINT generations retain exact string canonicalization through the
+signed maximum. Four invoker statement triggers always reject INSERT/UPDATE/DELETE/
+TRUNCATE, including no-ops; table/functions revoke PUBLIC access within the same migration.
+No role/GUC/token/environment opening exists. Owner DDL powers remain a trust boundary.
+
+Positive acceptance uses a newly owned fictional probe: LIKE INCLUDING ALL copies the
+actual installed columns, CHECKs, PK/unique indexes and defaults; actual catalog FKs are
+installed with only prescribed parent namespaces redirected. Manifests compare types,
+nullability, collation/defaults and normalized constraint definitions/actions. No product
+guard is copied, removed or disabled. Fixed canonical helper OID stays product-owned.
+Probe facts are fabricated, not live identities/authentication or reserved intents.
+Negative acceptance snapshots all product/probe rows and catalogs; distinct real duty
+logins test private ACL and unconditional statement refusal. Normal acceptance retains
+old P1 first, canonical parity next, and appends intent checks and prior-26 preservation.
+
+Required local acceptance passed, including the unchanged mandatory P1-first sequence,
+84 SQL cases/seed/verifier, full packages, API/invariants, both browser suites and serial
+production build. Complete validation, failed attempts and post-commit delivery belong to the
+progress report/owner handoff. P2 and P3–P9 are not complete. No new runtime consumer,
+identity/control initialization, issuer, proof, receipt, reservation, selection, deployed
+privilege adoption, live query/import, provider, release or deployment. Stop for **Phase
+review — Review Command 115 closed currency selection-intent storage and define the next
+bounded currency command**.
+
 ## 4. Price publication, quote and renewal rules
 
 ### Catalogue pricing

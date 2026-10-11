@@ -12,23 +12,25 @@ datasource db {
 
 // Empty inert identity storage. Explicit operator fixtures are not active placement authority.
 model CurrencyInstallation {
-  id             Int                       @id @db.SmallInt
-  installationId String                    @unique(map: "currency_installations_installation_id_key") @map("installation_id") @db.Uuid
-  createdAt      DateTime                  @map("created_at") @db.Timestamptz(3)
-  domains        CurrencyExecutionDomain[]
+  id               Int                       @id @db.SmallInt
+  installationId   String                    @unique(map: "currency_installations_installation_id_key") @map("installation_id") @db.Uuid
+  createdAt        DateTime                  @map("created_at") @db.Timestamptz(3)
+  domains          CurrencyExecutionDomain[]
+  selectionIntents CurrencySelectionIntent[]
 
   @@map("currency_installations")
 }
 
 // Historical placement facts only: no current selector, pin, defaults or runtime consumer.
 model CurrencyExecutionDomain {
-  id                      String               @id @db.Uuid
-  installationId          String               @map("installation_id") @db.Uuid
-  databaseName            String               @map("database_name") @db.VarChar(63)
-  schemaName              String               @map("schema_name") @db.VarChar(63)
-  placementManifestDigest String               @map("placement_manifest_digest") @db.VarChar(64)
-  createdAt               DateTime             @map("created_at") @db.Timestamptz(3)
-  installation            CurrencyInstallation @relation(fields: [installationId], references: [installationId], onDelete: Restrict, onUpdate: Restrict, map: "currency_execution_domains_installation_fkey")
+  id                      String                    @id @db.Uuid
+  installationId          String                    @map("installation_id") @db.Uuid
+  databaseName            String                    @map("database_name") @db.VarChar(63)
+  schemaName              String                    @map("schema_name") @db.VarChar(63)
+  placementManifestDigest String                    @map("placement_manifest_digest") @db.VarChar(64)
+  createdAt               DateTime                  @map("created_at") @db.Timestamptz(3)
+  installation            CurrencyInstallation      @relation(fields: [installationId], references: [installationId], onDelete: Restrict, onUpdate: Restrict, map: "currency_execution_domains_installation_fkey")
+  selectionIntents        CurrencySelectionIntent[]
 
   @@unique([installationId, id], map: "currency_execution_domains_installation_id_id_key")
   @@map("currency_execution_domains")
@@ -36,10 +38,12 @@ model CurrencyExecutionDomain {
 
 // Complete unused policy evidence, never an active installation pointer.
 model CurrencyPolicyRevision {
-  revision  String            @id @db.VarChar(64)
-  policy    Json              @db.JsonB
-  createdAt DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
-  controls  CurrencyControl[] @relation("SelectedCurrencyPolicy")
+  revision        String                    @id @db.VarChar(64)
+  policy          Json                      @db.JsonB
+  createdAt       DateTime                  @default(now()) @map("created_at") @db.Timestamptz(3)
+  controls        CurrencyControl[]         @relation("SelectedCurrencyPolicy")
+  expectedIntents CurrencySelectionIntent[] @relation("ExpectedIntentPolicy")
+  proposedIntents CurrencySelectionIntent[] @relation("ProposedIntentPolicy")
 
   @@map("currency_policy_revisions")
 }
@@ -72,6 +76,31 @@ model CurrencyControl {
   baseUnit               CurrencyUnitDefinition? @relation("CurrencyControlBaseUnit", fields: [baseCode, baseMetadataVersion], references: [code, metadataVersion], onDelete: Restrict, onUpdate: Restrict)
 
   @@map("currency_controls")
+}
+
+// Empty and unconditionally write-blocked. Facts are not a reservation or approval.
+model CurrencySelectionIntent {
+  installationId     String                  @map("installation_id") @db.Uuid
+  requestKeyUuid     String                  @map("request_key_uuid") @db.Uuid
+  executionDomainId  String                  @map("execution_domain_id") @db.Uuid
+  actorUserId        String                  @map("actor_user_id") @db.Uuid
+  sessionId          String                  @map("session_id") @db.Uuid
+  requestKeyText     String                  @map("request_key_text") @db.Text
+  action             String                  @db.VarChar(10)
+  expectedRevision   String?                 @map("expected_revision") @db.VarChar(64)
+  expectedGeneration BigInt                  @map("expected_generation")
+  proposedRevision   String                  @map("proposed_revision") @db.VarChar(64)
+  canonicalText      String                  @map("canonical_text") @db.Text
+  stableIntentDigest String                  @map("stable_intent_digest") @db.VarChar(64)
+  installation       CurrencyInstallation    @relation(fields: [installationId], references: [installationId], onDelete: Restrict, onUpdate: Restrict, map: "currency_selection_intents_installation_fkey")
+  executionDomain    CurrencyExecutionDomain @relation(fields: [installationId, executionDomainId], references: [installationId, id], onDelete: Restrict, onUpdate: Restrict, map: "currency_selection_intents_domain_fkey")
+  actor              User                    @relation(fields: [actorUserId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "currency_selection_intents_actor_fkey")
+  session            AuthSession             @relation(fields: [sessionId, actorUserId], references: [id, userId], onDelete: Restrict, onUpdate: Restrict, map: "currency_selection_intents_session_owner_fkey")
+  expectedPolicy     CurrencyPolicyRevision? @relation("ExpectedIntentPolicy", fields: [expectedRevision], references: [revision], onDelete: Restrict, onUpdate: Restrict, map: "currency_selection_intents_expected_policy_fkey")
+  proposedPolicy     CurrencyPolicyRevision  @relation("ProposedIntentPolicy", fields: [proposedRevision], references: [revision], onDelete: Restrict, onUpdate: Restrict, map: "currency_selection_intents_proposed_policy_fkey")
+
+  @@id([installationId, requestKeyUuid], map: "currency_selection_intents_pkey")
+  @@map("currency_selection_intents")
 }
 
 enum UserRole {
@@ -255,28 +284,29 @@ enum OutboxStatus {
 }
 
 model User {
-  id                            String                   @id @default(uuid()) @db.Uuid
-  email                         String                   @unique(map: "users_email_key") @db.VarChar(320)
-  passwordHash                  String?                  @map("password_hash") @db.VarChar(255)
+  id                            String                    @id @default(uuid()) @db.Uuid
+  email                         String                    @unique(map: "users_email_key") @db.VarChar(320)
+  passwordHash                  String?                   @map("password_hash") @db.VarChar(255)
   role                          UserRole
-  status                        UserStatus               @default(PENDING_VERIFICATION)
-  emailVerifiedAt               DateTime?                @map("email_verified_at") @db.Timestamptz(3)
-  lastLoginAt                   DateTime?                @map("last_login_at") @db.Timestamptz(3)
-  createdAt                     DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt                     DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(3)
-  deletedAt                     DateTime?                @map("deleted_at") @db.Timestamptz(3)
+  status                        UserStatus                @default(PENDING_VERIFICATION)
+  emailVerifiedAt               DateTime?                 @map("email_verified_at") @db.Timestamptz(3)
+  lastLoginAt                   DateTime?                 @map("last_login_at") @db.Timestamptz(3)
+  createdAt                     DateTime                  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                     DateTime                  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt                     DateTime?                 @map("deleted_at") @db.Timestamptz(3)
   customer                      Customer?
   adminProfile                  AdminProfile?
-  paymentsCreated               Payment[]                @relation("PaymentCreatedBy")
-  paymentsReviewed              Payment[]                @relation("PaymentReviewedBy")
-  ticketsAssigned               Ticket[]                 @relation("TicketAssignedAdmin")
+  paymentsCreated               Payment[]                 @relation("PaymentCreatedBy")
+  paymentsReviewed              Payment[]                 @relation("PaymentReviewedBy")
+  ticketsAssigned               Ticket[]                  @relation("TicketAssignedAdmin")
   ticketMessages                TicketMessage[]
-  activityLogs                  ActivityLog[]            @relation("ActivityActor")
-  settingsUpdated               Setting[]                @relation("SettingUpdatedBy")
-  integrationCredentialsUpdated IntegrationCredential[]  @relation("IntegrationCredentialUpdatedBy")
-  servicesTerminated            Service[]                @relation("ServiceTerminatedBy")
-  hostingPanelOperations        HostingPanelOperation[]  @relation("HostingOperationRequestedBy")
+  activityLogs                  ActivityLog[]             @relation("ActivityActor")
+  settingsUpdated               Setting[]                 @relation("SettingUpdatedBy")
+  integrationCredentialsUpdated IntegrationCredential[]   @relation("IntegrationCredentialUpdatedBy")
+  servicesTerminated            Service[]                 @relation("ServiceTerminatedBy")
+  hostingPanelOperations        HostingPanelOperation[]   @relation("HostingOperationRequestedBy")
   authSessions                  AuthSession[]
+  currencySelectionIntents      CurrencySelectionIntent[]
   adminTotpCredential           AdminTotpCredential?
   adminLoginChallenges          AdminLoginChallenge[]
   passwordResetTokens           PasswordResetToken[]
@@ -346,6 +376,9 @@ model AuthSession {
   createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
   user                User      @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
+  currencySelectionIntents CurrencySelectionIntent[]
+
+  @@unique([id, userId], map: "auth_sessions_id_user_id_key")
   @@index([userId, revokedAt, expiresAt], map: "auth_sessions_user_active_idx")
   @@index([expiresAt], map: "auth_sessions_expires_at_idx")
   @@map("auth_sessions")

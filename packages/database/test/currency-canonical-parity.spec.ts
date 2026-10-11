@@ -58,12 +58,12 @@ test('mandatory append wiring preserves every old gate and serial isolated infra
   ) as { scripts: Record<string, string> };
   assert.ok(
     pkg.scripts['test:unit']!.endsWith(
-      'test/currency-selection-assessment.spec.ts test/currency-canonical-parity.spec.ts',
+      'test/currency-selection-assessment.spec.ts test/currency-canonical-parity.spec.ts test/currency-intent-storage.spec.ts',
     ),
   );
   assert.equal(
     pkg.scripts['test:privileges'],
-    'tsx --test --test-concurrency=1 test/currency-privilege-harness.integration.spec.ts && tsx --test --test-concurrency=1 test/currency-canonical-parity.integration.spec.ts',
+    'tsx --test --test-concurrency=1 test/currency-privilege-harness.integration.spec.ts && tsx --test --test-concurrency=1 test/currency-canonical-parity.integration.spec.ts && tsx --test --test-concurrency=1 test/currency-intent-storage.privileges.spec.ts',
   );
   assert.equal(
     pkg.scripts.test,

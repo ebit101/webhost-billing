@@ -2478,6 +2478,32 @@ report-only update must pass its own delivery gate; stop for the recommended pha
   its own scan/main/exact-head hosted acceptance. Request explicit Command 115 authority;
   no store/code/test/migration implementation, production access or deployment here.
 
+## ADR-121 — Keep durable selection-intent storage unconditionally closed
+
+- **Status:** Implemented on 2026-10-11; required local acceptance passed. Exact-head
+  source delivery belongs to the owner handoff; this is not activation approval.
+- **Decision:** One atomic additive migration after 26 unchanged pinned migrations stores
+  only stable S scalar facts, exact case-preserved request text, UUID slot, canonical text
+  and SHA-256. Six RESTRICT/RESTRICT foreign keys bind installation/domain, actor/session
+  ownership and expected/proposed revisions. The existing AuthSession receives only a
+  redundant `(id,user_id)` key and inverse relations; security behavior is unchanged.
+- **Canonical boundary:** One private immutable SECURITY INVOKER helper is strictly needed
+  to share bounded scalar validation before UUID cast/S reconstruction across CHECKs.
+  Qualified built-ins and fixed search path; no state reads, dynamic SQL, time, auth or
+  entire assessment verifier. Exact UTF-8 reconstruction and SHA-256 reject JSON aliases.
+- **Closed boundary:** Four unconditional BEFORE statement triggers reject all writes,
+  including no-ops; PUBLIC privileges on table/functions are revoked atomically. Trusted
+  migration owners retain DDL powers. No application repository/export/initializer/seed,
+  proof, receipt, current-auth certification, deployed privilege adoption or selection.
+- **Acceptance:** Fictional probe clones actual catalog columns/CHECKs/unique indexes and
+  redirects actual FKs only to its own copied fictional parents. Catalog manifests are
+  compared; no product trigger is disabled and the product table remains empty. Positive
+  probe insertion is never an operational reservation or owner approval.
+- **Stop:** P2 and P3–P9 remain incomplete. Preserve both unwaived tooling advisories and
+  all launch/provider/operating approvals. After verified delivery request **Phase review —
+  Review Command 115 closed currency selection-intent storage and define the next bounded
+  currency command**; no automatic activation, import, release or deploy.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:
