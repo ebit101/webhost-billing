@@ -42,6 +42,7 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --filter @webhost
 COPY . .
 RUN pnpm --filter @webhost-billing/config build \
   && pnpm --filter @webhost-billing/shared build \
+  && pnpm --filter @webhost-billing/database db:generate \
   && pnpm --filter @webhost-billing/web build
 
 FROM node:24-bookworm-slim AS web

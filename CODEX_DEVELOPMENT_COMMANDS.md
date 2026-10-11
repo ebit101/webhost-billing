@@ -8,6 +8,12 @@ This document contains an ordered sequence of copy-paste prompts for developing 
 
 Run one command at a time and do not advance while required checks are failing. The prompts follow the outcome-focused structure recommended by the [official OpenAI model guidance](https://developers.openai.com/api/docs/guides/latest-model#prompting-best-practices): state the goal, constraints, authorization boundaries, evidence, and success criteria.
 
+**Owner direction — 2026-10-11:** Further currency development is on hold. Command 117
+and subsequent currency proposals are not authorized; historical next-command references
+below are superseded by this hold. Preserve existing inactive foundations and current billing
+behavior. The separate request to deploy all changes authorizes an update of the existing
+isolated Speed Host staging installation, not currency activation or production promotion.
+
 ## Target Architecture
 
 ```text
@@ -5207,6 +5213,9 @@ disk/cache/old-scope cleanup. P2 and P3–P9 remain incomplete; no launch date i
 ```
 
 ## Command 117 — Specify protected currency authority-evidence payloads and coverage
+
+**On hold:** The owner stopped further currency development on 2026-10-11. Retained as
+historical planning only; do not execute without explicit renewed authorization.
 
 **Defined only by the owner-authorized Command 116 phase review on 2026-10-11.**
 Not authorized or implemented. Documentation only: resolve the missing protected E-root

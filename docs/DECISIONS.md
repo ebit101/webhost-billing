@@ -2578,6 +2578,34 @@ report-only update must pass its own delivery gate; stop for the recommended pha
   request explicit Command 117 authorization after this review's verified delivery.
   No implementation, current data inspection, import, release/deploy or resource cleanup.
 
+## ADR-125 — Hold further currency development and retain the staging deployment boundary
+
+- **Status:** Owner-directed on 2026-10-11. The owner stopped further currency development
+  and separately requested deployment of all completed changes.
+- **Decision:** Command 117 and later currency proposals remain on hold unless explicitly
+  reopened. Earlier next-command recommendations are historical, not authorization. Keep
+  existing foundations inactive and preserve current billing behavior; no new currency
+  implementation, selection, conversion, adoption or history backfill belongs to deployment.
+- **Deployment scope:** Update only the established isolated `my.speedhost.bd` staging
+  installation from verified canonical source. Review pending additive migrations, verify a
+  fresh encrypted backup, retain the prior application release/config, and check business-row
+  preservation, provider safety, both roles, browser behavior and unrelated-service isolation.
+  Preserve approved Speed Host branding. No real customers, WHMCS import, provider activation,
+  production promotion, host-wide reconfiguration or Docker/disk/cache cleanup is authorized.
+- **Required edge correction:** The existing staging API-prefix allowlist omitted the
+  newly implemented `/staff` family. Add only that prefix in the owned staging site/template,
+  with a route-boundary regression, protected prior configuration, full syntax validation
+  and graceful reload. Preserve the Nginx master and every unrelated configuration file;
+  do not restart Nginx or replace other sites. Application-image source remains separately
+  identified from this operational routing correction.
+- **Clean-build correction:** The web container recipe must generate existing Prisma
+  client types before its ordinary TypeScript gate. Add that prerequisite and a regression
+  test; retain frozen dependencies and validation. This is build repair, not new currency
+  behavior. Record the base source and the small deployment-repair overlay separately.
+- **Next focus:** Core hosting operations and protected migration rehearsal/launch readiness,
+  only after a separately authorized bounded command. Command 33 inputs, sandbox/provider
+  acceptance, off-site recovery and final production approval remain unresolved.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

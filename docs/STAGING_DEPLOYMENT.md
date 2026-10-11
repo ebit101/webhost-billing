@@ -4,17 +4,19 @@
 
 - Environment: staging only
 - URL: `https://my.speedhost.bd`
-- Deployed application version: `6085629` (source `608562903cd2adbd3b70b8ace5c92259c2ba4c4b`)
+- Deployed application version: `5445877` (source `5445877b8b4a64cd8b70bf7f41a84c609568a7ba`
+  plus the explicit two-file deployment-repair overlay described below)
 - Compose project: `webhost-billing-staging`
 - Host root: `/srv/webhost-billing-staging`
-- Current release: `/srv/webhost-billing-staging/releases/6085629`
-- API image: `webhost-billing-api:6085629`
-- Web image: `webhost-billing-web:6085629`
-- Worker and scheduler image: `webhost-billing-worker:6085629`
-- Migration image: `webhost-billing-migration:6085629`
+- Current release: `/srv/webhost-billing-staging/releases/5445877`
+- API image: `webhost-billing-api:5445877`
+- Web image: `webhost-billing-web:5445877`
+- Worker and scheduler image: `webhost-billing-worker:5445877`
+- Migration image: `webhost-billing-migration:5445877`
 - Web listener: `127.0.0.1:19500`
 - API listener: `127.0.0.1:19600`
-- Edge: the existing host Nginx instance; unchanged during the latest rollout
+- Edge: the existing host Nginx instance; only the owned staging site's `/staff` API
+  prefix was added during the latest rollout, using a validated graceful reload
 - TLS: Let's Encrypt certificate for `my.speedhost.bd`; automatic Certbot renewal is installed
 
 This is a side-by-side deployment on a shared server. It must not manage, restart, prune,
@@ -143,9 +145,148 @@ If Nginx rollback is required, inspect the timestamped archive in
 `my.speedhost.bd`, run `nginx -t`, and use a graceful reload. Do not replace the complete
 Nginx configuration without a separate shared-host review.
 
-### 2026-10-05 current-main staging deployment
+### 2026-10-11 staging deployment and currency hold
 
-Source `608562903cd2adbd3b70b8ace5c92259c2ba4c4b` is the current isolated staging
+The owner requested deployment of completed changes and stopped further currency
+development. This updates the established fictional-data staging installation only.
+It does not authorize production promotion, WHMCS import, real providers or currency
+activation. Command 117 and later currency work remain on hold.
+
+The switch completed at **23:06:28 Asia/Dhaka on 2026-10-11**
+(`2026-10-11T17:06:28Z`). Application feature source is
+`5445877b8b4a64cd8b70bf7f41a84c609568a7ba`, whose first-attempt
+[CI](https://github.com/ebit101/webhost-billing/actions/runs/38148091306)
+and [CodeQL](https://github.com/ebit101/webhost-billing/actions/runs/38148091304)
+passed: all 29 Validate steps and all eight CodeQL steps. Dependency review was
+skipped on the main push, not passed. The source-delivery commit containing the
+deployment repairs requires its own full-history scan and exact-head hosted gates;
+base-source success does not certify that new commit.
+
+Clean Git archives supplied the source, with the separately approved Speed Host logo
+kept outside Git. Two small, separately identified deployment repairs were required:
+
+- Generate existing Prisma client types before the web container's ordinary build.
+  The first clean build compiled successfully but failed TypeScript because those
+  generated types were absent. The corrected recipe retains frozen dependencies and
+  TypeScript validation; compilation, TypeScript and all 30 static pages then passed.
+- Add only `/staff` to the staging API-prefix allowlist. A regression checks both
+  `/staff` and its children without intercepting administrator pages or `/staffing`.
+  The deployed site changed by that single prefix, passed full `nginx -t`, and was
+  gracefully reloaded. The master PID and every other Nginx file hash were unchanged.
+
+The API, worker and migration images use clean base feature source. The web image
+uses the same source with the corrected Dockerfile. The server source directory
+includes both repairs. Do not describe the entire deployed directory as an unmodified
+base archive. The overlay SHA-256 is
+`f981105883c7c097e19ce0ac83512eadd2301f2c6fbf483a037996cfb053633c`;
+corrected Dockerfile SHA-256 is
+`98cb17752ce429d1facdcbf5c674b251339ba472fe8538fb2a9f1a9559668ae3`.
+
+All four Linux/amd64 images use UID/GID `10001:10001`, Node `v24.21.0`, and the
+declared base resolved to
+`node:24-bookworm-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20`.
+Installed dependency inventories matched the source lockfile with no unknown versions:
+migration 167, API 309, worker 281 and standalone web 14. Local and remote image
+index IDs matched exactly:
+
+- API: `sha256:9198ac0fa0fba11c8eb5de24ec0121110bbdc23efdf53680d02d171766361945`
+- Web: `sha256:4e901fe8321bfb8a5b4e94940b69d29cfb6912bb9081f685526b589c0b9c9ebe`
+- Worker/scheduler: `sha256:456c6c8e2c2f63579b499f313602b0dedbdf663e6378d9711432289c721cf35b`
+- Migration: `sha256:2c002edf7ef2f6872a6b9d900bc075dbe54861a3f4b0436f4e9126930ef38c40`
+
+Images were streamed through gzip directly to the protected server artifact directory,
+without a large local image-export file. The 407,362,260-byte transfer passed matching
+local/remote SHA-256
+`2e9bcdb14cc3d12322f30abf1b995531b429b696a51bf386942b665c55dc4ff3`.
+The operator paused for a PC reboot after builds and before transfer; the old portal
+remained active throughout the pause.
+
+#### Backup, migration and rollback evidence
+
+Immediately before stopping writers, a fresh encrypted backup passed checksum,
+OpenPGP integrity, PostgreSQL archive structure and required-table checks:
+
+- Backup: `/srv/webhost-billing-staging/backups/webhost-billing-webhost_billing_staging-20261011T170528Z.dump.gpg`
+- SHA-256: `7e0de16ed708f7d4ce6aa7dd694b392f5b5c4e1df3b25b007c50f48fffe125b2`
+- Prior release/tag: `6085629`, with its images retained
+- Protected rollback directory: `/srv/webhost-billing-staging/rollback/deploy-5445877`
+- Prior environment: `.env.prior` in that directory, mode `0600`
+- Prior owned site: `my.speedhost.bd.conf.prior` in that directory
+- Protected backup path, service inventories and row fingerprints are retained there
+
+Backup metadata reports application commit `unknown` because the source directory is
+a Git archive without `.git`; the independently recorded prior source is
+`608562903cd2adbd3b70b8ace5c92259c2ba4c4b`. Do not interpret `unknown` as a verified SHA.
+
+The staging API, worker and scheduler were stopped before the one-shot migration;
+PostgreSQL, Redis and Mailpit were not recreated. Seven reviewed additive migrations
+advanced completed inventory from 21 to 28 with no unfinished migration. Existing
+administrators received the full-administrator role. No seed, reset, currency
+initialization, history backfill or import ran. All seven currency tables remain
+empty, with closed/unselected behavior retained. All 29 legacy-table row fingerprints
+were unchanged after migration, excluding only the new administrator-role column.
+
+Only API, web, worker and scheduler were recreated using `--no-deps`. Their health
+checks passed with zero restarts. All three staging infrastructure IDs and all 21
+unrelated running-container IDs were unchanged. Exactly one scheduler remains active.
+
+Application rollback requires restoring the protected prior environment, atomically
+repointing `current` to the retained `6085629` directory, and recreating only those
+four services with `--no-deps`, followed by the role/origin/browser/email checks. If
+necessary restore only the protected prior staging site, run `nginx -t`, then gracefully
+reload Nginx. The reviewed additive schema can remain for application rollback; do
+not run down migrations or overwrite the active database. A database restore or
+connection cutover needs separate explicit authorization.
+
+#### Operational acceptance and failed attempts
+
+- CSP/client API-origin verification passed for `https://my.speedhost.bd`.
+- Both fixture roles logged in; customer access to admin customer/staff APIs was
+  denied. Anonymous `/staff` returned 401. Legacy staff listing returned 200 with
+  full-administrator roles; invitation controls remain MFA-gated, without staff writes.
+- Owned invoice detail/PDF and support detail, dashboard/customer reads, logout and
+  revoked-session rejection passed. No financial mutation was performed.
+- Packaged fake payment/hosting adapters passed their contracts. Real payment
+  gateways remained disabled; no hosting credential or real provider was contacted.
+- A fictional password-reset message was queued, sent by the worker over the existing
+  required STARTTLS path, and received with Speed Host branding in isolated Mailpit.
+  This is sandbox delivery, not public SMTP acceptance. No credentials or message/reset
+  payloads were printed.
+- Clean Chromium checks passed storefront/logo, preserved plan selection through
+  sign-in, 375 px hosting layout, nine administrator routes and five customer routes.
+  There were zero page, console or failed-request errors.
+- Final fingerprints of 15 customer/catalogue/order/invoice/payment/service/support/
+  settings/hosting-operation tables matched the pre-migration baseline. Expected auth,
+  audit and sandbox email activity is not classified as a financial write. All four
+  applications had zero error-level log lines and zero restarts; health/readiness passed.
+- A first switch attempt stopped at a read-only inventory check because Docker rejects
+  `label!=` on `docker ps`. No backup, writer stop or migration began in that attempt.
+  It was corrected to explicit label-field filtering; prior attempt artifacts remain
+  protected separately. The corrected switch exited zero.
+- A smoke container initially resolved the public domain to Mailpit's existing private
+  SMTP alias and failed before authentication. The retry mapped only that temporary
+  test container's public hostname to the verified server address, retained TLS
+  verification, and passed. No runtime network, SMTP alias or DNS change was made.
+- One local Docker build retry reported a closed engine pipe; a later retry passed
+  without changing resource limits, restarting services or pruning data. No root cause
+  is claimed. Earlier test-runner path assumptions were corrected without weakening
+  assertions. The pre-existing unrelated Nginx IPv6 warning remains outside scope.
+
+Fresh tooling-security tests passed all 15 cases. The production dependency audit
+had no known findings; the full development audit still exits one for braces high
+`GHSA-vfj7-8cjw-p6xm` and sprintf-js moderate `GHSA-hp3w-g68c-fv3c`. Existing mitigations
+remain; no waiver, dependency upgrade or suppression is claimed. The server retained
+76 GiB available after deployment; local C:/D: retained approximately 19.44/7.64 GiB.
+No Docker, cache or disk cleanup was performed.
+
+Production remains no-go: remaining operating inputs, actual catalogue/payment/provider
+acceptance, protected WHMCS rehearsal, off-site recovery evidence and final owner launch
+approval are still required. Next request: **Review Speed Host staging deployment and
+define one bounded WHMCS migration rehearsal**. Do not resume currency work automatically.
+
+### 2026-10-05 prior-main staging deployment
+
+Source `608562903cd2adbd3b70b8ace5c92259c2ba4c4b` was the prior isolated staging
 release. It includes all implemented work through Command 90 and the Command 91
 definition only. The user's request to deploy all changes updated the existing
 staging installation; it did not authorize production promotion or real providers.

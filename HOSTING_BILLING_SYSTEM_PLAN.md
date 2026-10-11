@@ -8,6 +8,12 @@
 
 **Technical identifier:** `webhost-billing`
 
+**Owner direction — 2026-10-11:** Further currency development is on hold. Existing
+foundations remain inactive; no selection, conversion, adoption or financial-history
+backfill is approved. Resume focus on the core hosting workflow and migration/launch
+readiness through separately authorized bounded work. Deploying the existing staging
+portal is not production approval or authorization to import WHMCS data.
+
 ---
 
 ## 1. Executive Summary

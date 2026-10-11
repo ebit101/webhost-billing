@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Phase review — Review Command 116 closed authorization-evidence storage and define the next bounded currency command
-- **Current status:** Delivered Command 116 accepted with no blocking in-scope defect. Documentation-only Command 117 defined, not authorized or implemented. Fresh review validation and this review's own delivery are tracked below. No currency activation or deployment; both tooling findings remain unwaived.
+- **Current command:** Owner-directed staging deployment of completed changes and currency-development hold
+- **Current status:** Staging rollout completed and operational checks passed. Source provenance, two deployment repairs, failed attempts and required delivery gates are recorded below. Further currency work is on hold; no currency activation, WHMCS import or production approval. Both tooling findings remain unwaived.
 - **Last updated:** 2026-10-11
-- **Next command:** Command 117 — Specify protected currency authority-evidence payloads and coverage
+- **Next command:** Review Speed Host staging deployment and define one bounded WHMCS migration rehearsal
 - **Next command authorized:** No
 
 ## Command Reports
@@ -14769,6 +14769,126 @@ Stop after verified review delivery; do not implement it automatically.
   selected fixture, intent reservation or Docker/disk/cache/old-scope cleanup performed.
 - Request **Command 117 — Specify protected currency authority-evidence payloads and
   coverage** only after this review's own verified delivery. Stop; do not execute it here.
+
+### Owner-directed staging deployment of completed changes and currency-development hold
+
+- **Status:** Staging rollout completed; operational acceptance passed. The focused
+  source commit requires its own post-commit scan and exact-head hosted acceptance,
+  reported in the owner handoff after they exist, not inferred from predecessor runs.
+- **Date:** 2026-10-11. Switched at 23:06:28 Asia/Dhaka (`17:06:28Z`).
+- **Authorization:** Owner stopped further currency development, requested deployment
+  of completed changes, paused for a PC reboot, then explicitly resumed.
+- **Baseline:** Clean canonical `5445877b8b4a64cd8b70bf7f41a84c609568a7ba` with
+  fresh main reconciliation 0/0; prior staging source/tag `6085629`.
+
+#### Scope completed and files changed
+
+- Updated only the existing isolated `my.speedhost.bd` staging installation, preserving
+  approved Speed Host branding and all fixture business records. Production promotion,
+  real providers, WHMCS import and currency activation remain unauthorized.
+- Recorded the owner currency hold at the top of the playbook/plan and in ADR-125.
+  Command 117 and later currency proposals are held; historical next-command advice
+  is not continuing authorization. No new currency functionality was developed.
+- Repaired two actual deployment prerequisites: existing Prisma type generation before
+  the clean web container build, and `/staff` in the staging API-prefix allowlist.
+  Added regression tests for both, without bypassing TypeScript or weakening route
+  boundaries. API/worker application logic, migrations, dependencies and lockfile are
+  unchanged. Images/source/repair overlay are separately identified.
+- Files: `CODEX_DEVELOPMENT_COMMANDS.md`, `HOSTING_BILLING_SYSTEM_PLAN.md`,
+  `docs/DECISIONS.md`, `docs/PROGRESS.md`, `docs/STAGING_DEPLOYMENT.md`,
+  `apps/web/Dockerfile`, `apps/web/src/lib/admin-access.test.ts`, new
+  `apps/web/src/lib/container-build.test.ts`, and
+  `deploy/staging/nginx/my.speedhost.bd.conf.template`.
+- Ignored operational helpers/checkpoint/build source and protected server material
+  remain outside Git; no real customer, credential, logo or backup artifact is committed.
+
+#### Validation and deployment evidence
+
+- Base feature source's exact-head first-attempt CI `38148091306` passed aggregate/all
+  29 Validate steps; CodeQL `38148091304` passed aggregate/all eight. Dependency review
+  skipped, not passed. These certify base source only, not the new repair/report commit.
+- Fresh focused web tests passed 3/3 in two files; targeted ESLint and strict web
+  TypeScript passed. Tooling-security passed 15/15. Production audit exit zero/no known
+  findings; full development audit exit one retains precisely braces high
+  GHSA-vfj7-8cjw-p6xm and sprintf-js moderate GHSA-hp3w-g68c-fv3c. No waiver or upgrade.
+- Clean sequential Linux/amd64 images passed frozen install/supply-chain checks and
+  ordinary builds. Corrected web build passed compile, TypeScript and all 30 static
+  pages. All images use UID/GID 10001:10001 and Node v24.21.0; actual base digest,
+  complete image IDs and overlay hashes are in the staging report. Dependency-version
+  inventories matched the source lockfile: migration 167/API 309/worker 281/web 14,
+  zero unknown versions. Transfer hash and local/remote image IDs matched exactly;
+  no large local export archive was written.
+- Pinned SSH/server identity, candidate Compose config, fixture-only source posture,
+  disabled real providers and backup-secret permissions were verified. Seven pending
+  additive migrations were fully reviewed; original 21 migration bytes were retained.
+- Fresh protected encrypted backup passed checksum, OpenPGP integrity, archive structure
+  and required-table verification. Backup SHA-256:
+  `7e0de16ed708f7d4ce6aa7dd694b392f5b5c4e1df3b25b007c50f48fffe125b2`.
+  Exact path, retained prior release/config and rollback controls are in the staging report.
+  Archive metadata's application commit is `unknown` because Git archives omit `.git`;
+  prior source is independently recorded, not fabricated in metadata.
+- Stopped only staging API/worker/scheduler, then applied the seven migrations once.
+  Completed inventory is 28, unfinished zero. All 29 pre-existing table fingerprints
+  matched after migration, excluding only the added staff-role column. Existing staff
+  defaults to full administrator; seven currency tables remain empty and inactive.
+  No seed/reset/import/backfill/selection was run.
+- Recreated only API/web/worker/scheduler with `--no-deps`; all healthy, zero restarts,
+  exactly one scheduler. PostgreSQL/Redis/Mailpit and all 21 unrelated running-container
+  IDs were unchanged. Changed only the owned Nginx site's staff prefix; syntax passed,
+  graceful reload preserved master PID and every unrelated Nginx file hash.
+- Public health/readiness and CSP/client origin passed. Both roles, invoice PDF,
+  customer authorization, logout rejection and packaged fake providers passed. New
+  fictional password-reset delivery reached isolated Mailpit with Speed Host branding
+  over the existing required STARTTLS path. No real-provider contact or public SMTP
+  acceptance is claimed; secrets/message/reset payloads were not printed.
+- Clean Chromium passed storefront/logo, plan selection through sign-in, mobile
+  375 px layout, nine administrator and five customer routes, staff list/legacy role,
+  MFA-gated invitation controls and customer staff denial. Zero console/page/failed
+  requests. Anonymous staff returned 401; customer staff 403; administrator staff 200.
+  No staff or financial mutation was made.
+- Final 15 business-table fingerprints matched the baseline. All four applications
+  had zero error-level log lines/restarts; health/readiness and unrelated-container
+  comparison passed. Auth/audit/sandbox email activity is explicitly separate.
+- Final repository formatting, all four offline documentation validators and diff
+  integrity passed after the deployment report was added. Cached pinned full-history
+  scan of the delivery commit, fresh canonical reconciliation/non-force main push and
+  that commit's first-attempt exact-head CI/CodeQL are mandatory. Actual post-commit
+  evidence belongs in the owner handoff. No predecessor run certifies a new head.
+
+#### Failed attempts and constraints
+
+- Initial clean web build compiled but failed missing generated Prisma types. Added
+  the existing generation prerequisite, retained all ordinary validation, and rebuilt
+  successfully. One later Docker client attempt reported a closed engine pipe; retry
+  passed without resource-limit changes/restarts/pruning. Root cause is not claimed.
+- A route test initially used import.meta.url under JSDOM, which resolved an HTTP URL;
+  repository-relative cwd reading corrected the runner assumption. Actual new assertions
+  passed on retry; no route/security condition was relaxed.
+- First switch preflight failed because `docker ps` rejects the proposed negative label
+  filter. It stopped before backup/migration/writer shutdown. Corrected explicit label
+  filtering; preserved failed-attempt artifacts, prior env/site unchanged. The full
+  corrected switch exited zero.
+- First API sidecar smoke resolved the public domain to the existing private Mailpit
+  SMTP alias and failed before authentication. Public DNS/IP was independently verified;
+  only the temporary test container received an address mapping with normal HTTPS/TLS
+  validation. The complete retry passed; no application network/SMTP/DNS change.
+- Initial Windows/SSH read-only quoting/path checks were corrected without financial
+  or service mutation. The pre-existing unrelated Nginx IPv6 warning remains out of
+  scope. No unrelated application was stopped or repaired.
+- Server retained 76 GiB free; C:/D: approximately 19.44/7.64 GiB after reboot/transfer.
+  No Docker/cache/disk cleanup, daemon resource-limit change or unrelated termination.
+
+#### Decisions, risks and exact next command
+
+- ADR-125 preserves the owner currency hold and staging-only boundary. Existing currency
+  engineering storage is not activated accounting or an approved migration mapping.
+- Off-site immutable backup/timed production-like restore, Command 33 operating inputs,
+  catalogue/payment/provider acceptance, protected WHMCS rehearsal, direct-main governance,
+  both tooling findings and final owner go-live approval remain unresolved. Same-server
+  backup verification is rollback evidence, not complete production recovery acceptance.
+- Request **Review Speed Host staging deployment and define one bounded WHMCS migration
+  rehearsal** only after verified source delivery. Stop; no automatic import, activation,
+  production promotion, additional currency implementation or next command execution.
 
 ## Report Template
 
