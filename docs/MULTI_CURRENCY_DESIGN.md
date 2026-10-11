@@ -2799,6 +2799,49 @@ approvals. No runtime SQL verifier/store, live query/import, provider, release/d
 old-scope/cache/disk cleanup or next implementation follows. Stop after review delivery
 and request explicit Command 114 authorization; parity alone will not complete P2.
 
+### Command 114 test-only canonical parity implementation — 2026-10-11
+
+Owner authorized this isolated acceptance slice after the preceding review's exact-head
+CI/CodeQL and cached pinned scan/main closure. Three fixed private probe functions
+independently validate S/Context/C/H/E/A and reconstruct minimal printable ASCII JSON.
+Qualified built-in UTF-8 conversion/SHA-256/hex encoding and byte comparison preserve
+literal protocol vectors. No raw unchecked or jsonb textual representation is hashed.
+
+The unchanged P1 harness owns a separate fresh PostgreSQL 18.6 cluster after old privilege
+acceptance. All 26 unchanged pinned migrations apply with empty product stores; selected
+C is fictional JSON only. Invoker execution needs no product SELECT. Explicit global
+default function EXECUTE revocation for creation/function owners and per-signature grants
+are atomic inside this disposable cluster, not production privilege adoption.
+Read-only calls, actual duties/permission/TEMP/DDL denials, roles/default/database ACLs,
+all product rows/catalog/guards and migration byte pins are compared without helper edits.
+
+Both text budgets precede parsing. A bounded UTF-8 byte scan refuses non-prescribed depth
+before the PostgreSQL parser; it is not an arbitrary raw JSON normalizer. Per-component
+escaped-byte guards and 32-per-list/root bounds remain. Conservative field-derived upper
+bounds are S 396, Context 22,635, C 209, H 329, E 151 and A 51,386 bytes, below defensive
+ceilings 1,024/24,576/512/1,024/224/65,536. These bounds can combine incompatible maximal
+facts and are not claimed as accepted duplicate-identity fixtures. The valid largest
+escaped fixture is 50,956 bytes with two independently bounded 32-entry contexts and
+32 roots. No field widening or production limit injection is needed or allowed.
+
+Five literal S/five prescribed A vectors, canonical Contexts, 95 valid fixtures and
+1,015 invalid semantic/shape fixtures compare with unchanged private Node codecs. Raw
+whitespace/escape/order/numeric aliases normalize there; SQL receives their canonical
+outputs and rejects the aliases themselves. Exact year 0000/leap-century calendars,
+immutable identity conflicts, key case, capabilities/history and mandatory roots remain.
+Escaped NUL/unpaired surrogates return fixed redaction; actual NUL transport and deadlines
+throw redacted harness failures, never ordinary validation success. Complete renewed local
+acceptance passed, including original P1 before parity, all old SQL/preservation/seed,
+package/API/invariant/browser/types/lint/production build gates. Production audit is clear;
+full audit still exits one for exactly the two retained unwaived tooling findings.
+Post-commit delivery is checked at its own exact source head and reported in the owner
+handoff; no future result is assumed. Failed attempts remain in the progress report.
+
+No production SQL verifier/store, protected evidence/proof/ledger/pin/auth establishment,
+writer/history/privilege adoption, ordinary consumer, live query/import, release/deploy
+or unrelated cleanup. Two tooling advisories, P2/P3–P9 and operating approvals remain.
+Stop for the Command 114 phase review after verified delivery; parity is not authority.
+
 ## 4. Price publication, quote and renewal rules
 
 ### Catalogue pricing

@@ -2415,6 +2415,37 @@ report-only update must pass its own delivery gate; stop for the recommended pha
   auth/proof/ledger/pin initialization, writer/privilege/history adoption, ordinary
   consumer, live access/import or release/deploy. Request explicit Command 114 authority.
 
+## ADR-119 — Independently verify canonical currency bytes in disposable SQL probes
+
+- **Status:** Owner authorized Command 114 on 2026-10-11; test-only implementation and
+  complete local acceptance passed. Post-commit scan/main/exact-head CI/CodeQL are
+  verified before owner handoff, not assumed here. Preceding review `b1e6d89` freshly
+  verified: pinned history scan 237/no leaks, main 0/0, CI 38106967664/all 29 Validate
+  and CodeQL 38106967686/all eight successful at that exact full SHA.
+- **Decision:** Three fixed immutable SECURITY INVOKER functions in one newly owned
+  P1 probe schema, one atomic private/default ACL installation and minimal non-login
+  owner. Existing P1 ownership/login/migration/snapshot/cleanup helpers are unchanged.
+  No product reads, writes, registry, clock, extension, dynamic SQL or authority.
+- **Domain:** Canonical S/A only; independently validate every component/binding and
+  reconstruct printable ASCII quoting/C ordering, then compare exact UTF-8 bytes.
+  Built-in SHA-256 recomputes S and binds A; Node hashes are comparison oracles only.
+  Raw aliases normalize in unchanged Node codecs before SQL. Gregorian year 0000,
+  request key case, null/false distinctions and string BIGINT maximum remain exact.
+- **Safety:** Bounded byte-index nesting scan precedes JSON conversion; prescribed
+  grammar/list/arity/field checks precede reconstruction. Cancellation/transport errors
+  escape as failures; only representation errors receive fixed no-hash redaction.
+  Each comparison uses a separate bounded read-only transaction without increased limits.
+- **Evidence boundary:** Actual login/ACL/TEMP/DDL tests and product/role/guard snapshots
+  are fictional engineering evidence, not deployed privileges/current auth, coverage,
+  compatibility, human confirmation or production readiness. Executed local source/P1/
+  parity/SQL/preservation/package/API/invariant/browser/build acceptance is recorded in
+  progress; delivery has its own exact-head gates. Failed attempts and both unwaived
+  tooling advisories remain explicitly recorded.
+- **Stop:** No runtime SQL/store/migration/export/consumer, identity/auth/proof/ledger,
+  selected product state, live query/import, provider, release/deploy or cleanup expansion.
+  After delivery request **Phase review — Review Command 114 isolated PostgreSQL
+  canonical parity and define the next bounded currency command**; no automatic next slice.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

@@ -1021,7 +1021,7 @@ test('assessment imports only reviewed private codecs/crypto and has no entry, s
   const pkg = JSON.parse(readFileSync(resolve(db, 'package.json'), 'utf8'));
   assert.ok(
     pkg.scripts['test:unit'].endsWith(
-      'test/currency-policy-context.spec.ts test/currency-selection-assessment.spec.ts',
+      'test/currency-policy-context.spec.ts test/currency-selection-assessment.spec.ts test/currency-canonical-parity.spec.ts',
     ),
   );
   assert.doesNotMatch(JSON.stringify(pkg.exports), /assessment|private/);

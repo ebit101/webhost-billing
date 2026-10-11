@@ -4918,8 +4918,10 @@ query/import, release/deploy or Docker/disk/cache cleanup. P2 and P3–P9 remain
 
 ## Command 114 — Prove canonical currency bindings in isolated PostgreSQL tests
 
-**Defined by the owner-authorized Command 113 phase review on 2026-10-11; not authorized
-or implemented.** One test-only SQL parity gate for canonical S, Context and A, consolidating
+**Owner authorized on 2026-10-11; test-only implementation and complete local acceptance
+passed.** Focused source delivery must pass scan/main/exact-head CI/CodeQL before handoff;
+post-commit evidence is reported in the owner handoff, not assumed by this report.
+One SQL parity gate for canonical S, Context and A, consolidating
 their database byte/binding acceptance. This is not a new raw-text application codec,
 authority migration, protected-store implementation or currency activation.
 

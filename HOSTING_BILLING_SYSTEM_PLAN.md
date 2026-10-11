@@ -225,6 +225,12 @@ PostgreSQL tests** only: a mandatory test-only independent SQL verifier for cano
 S/Context/A bytes and bindings in a fresh P1-owned cluster. Raw JSON normalization remains
 in the unchanged TypeScript codecs. No parity function is implemented by the review,
 and no product migration, authority store, privilege adoption or activation is authorized.
+The owner subsequently authorized Command 114 on 2026-10-11. Its test-only canonical
+PostgreSQL verifier and mandatory isolated acceptance are implemented and passed complete
+renewed local checks. Exact-head source delivery is verified separately after commit and
+reported in the owner handoff. All 26 product migrations, private
+runtime codecs and application behavior stay unchanged. Product authority/history stores
+remain empty in this new probe cluster; selected tuples are JSON arguments only.
 No selection/guard or application consumer is installed by the observation helper or review.
 No live registry, selected installation policy or financial backfill is included. Broader persistence,
 per-currency reads, pricing and activation remain later separately gated slices. Remaining

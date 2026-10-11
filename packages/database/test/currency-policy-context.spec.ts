@@ -725,7 +725,7 @@ test('private codec has zero imports/hash/side effects/ordinary consumers and ap
   ]);
   assert.equal(
     pkg.scripts['test:unit'],
-    'tsx --test --test-concurrency=1 test/currency-units.spec.ts test/currency-policies.spec.ts test/currency-adoption-preflight.spec.ts test/currency-coordination.spec.ts test/currency-coordination-guards.spec.ts test/currency-control.spec.ts test/currency-privilege-harness.spec.ts test/currency-identity.spec.ts test/currency-selection-intent.spec.ts test/currency-policy-context.spec.ts test/currency-selection-assessment.spec.ts',
+    'tsx --test --test-concurrency=1 test/currency-units.spec.ts test/currency-policies.spec.ts test/currency-adoption-preflight.spec.ts test/currency-coordination.spec.ts test/currency-coordination-guards.spec.ts test/currency-control.spec.ts test/currency-privilege-harness.spec.ts test/currency-identity.spec.ts test/currency-selection-intent.spec.ts test/currency-policy-context.spec.ts test/currency-selection-assessment.spec.ts test/currency-canonical-parity.spec.ts',
   );
   assert.equal(
     pkg.scripts.test,

@@ -14136,6 +14136,129 @@ it automatically or begin assessment/auth/evidence storage or activation.
 - After validated review delivery, request **Command 114 — Prove canonical currency
   bindings in isolated PostgreSQL tests**. Stop; no automatic implementation.
 
+### Command 114 — Prove canonical currency bindings in isolated PostgreSQL tests
+
+- **Status:** Test-only implementation and complete local acceptance passed. Source
+  delivery is verified after this report's commit; exact scan/main/CI/CodeQL evidence
+  is supplied in the owner handoff and reconciled by a separately authorized phase review.
+- **Date:** 2026-10-11. Owner explicitly authorized Command 114 only.
+- **Baseline:** Clean `b1e6d89e33728a79e00067ed6950ae7cfa2ffd24`, canonical main,
+  fresh fetch 0/0. Preceding review closure freshly verified before edits: local cached
+  pinned scan 237 commits/no leaks; CI 38106967664 aggregate/all 29 Validate and
+  CodeQL 38106967686 aggregate/all eight successful. Dependency review skipped, not passed.
+
+#### Scope implemented and files changed
+
+- `packages/database/test/currency-canonical-parity.sql`: fixed invoker atom/piece/verify
+  functions, strict independent canonical grammar/binding/reconstruction/SHA-256, bounded
+  byte nesting scan and fixed redaction. No product queries/writes or authority claim.
+- Test-only parity fixtures/vectors/source/integration files: atomic probe ACLs, golden
+  vectors, cross-language valid/invalid fixtures, read-only comparisons, real distinct
+  duties, precise SQLSTATE/TEMP/DDL denials and product/role/guard/migration preservation.
+- Database package appends only; old identity/S/Context/A exact-tail assertions append
+  only the new source test. Old P1/helpers/exports/26 migrations/seed/shared/apps/scripts/
+  dependencies/patches/workflows unchanged. Five documentation trackers updated.
+
+#### Validation and failed attempts
+
+- Frozen install and 15 tooling mitigations passed. Production audit zero/no known
+  findings; full audit exit one retains exactly braces high GHSA-vfj7-8cjw-p6xm and
+  sprintf-js moderate GHSA-hp3w-g68c-fv3c. No waiver or unrelated repair.
+- Initial new source checks passed 3/3. First SQL attempt passed golden/valid/alias/
+  invalid/permission groups, but TEMP and final preservation comparisons failed because
+  catalog deparsing used a different caller search path after reset. Fixed comparison
+  presentation in the new test, not guards/objects/assertions. Initial strict types
+  failed CommonJS import.meta and unknown row typing; corrected test-only path loading
+  and narrowing. Database strict types then passed.
+- Added pre-parser nesting guard; a setup acceptance attempt failed before subtests.
+  Parenthesized its CASE expression. Next run passed golden/permissions/TEMP/transport
+  groups but largest fixture hit unchanged statement deadline (57014); later calls in
+  the aborted transaction failed 25P02. Replaced quadratic UTF-8 substring indexing
+  with constant-time bytea indexing and isolated each comparison in its own bounded
+  read-only transaction. No deadline/resource/assertion increase or hidden skip.
+- Corrected standalone parity passed all eight top-level/subtests, no skips; product
+  rows/catalog/guards and role/ACL manifests remained unchanged, exact owned cleanup.
+  Extended fixtures to 95 valid/1,015 semantic denials, including independent prior/
+  proposed list budgets, action/control contradictions and alternate latched metadata.
+  All 135 source cases passed (131 retained plus four new).
+- First broad package invocation showed the runner scheduling parity before the old
+  P1 file despite its appended argument order. Narrow append now uses the unchanged old
+  privilege command followed by `&&` and the new identically capped serial command,
+  guaranteeing old P1 completion first. No suite/assertion/root/old-SQL order removed.
+  Final-source database execution is required after this wiring correction.
+- The fixed fictional SQL fixture matches the existing blanket dump exclusion `*.sql`;
+  explicitly staged that exact authored test fixture only, preserving the exclusion.
+  It is not generated SQL, a database dump or real business data.
+- Broad guarded serial package acceptance passed all ten root tooling groups (including
+  15 mitigation cases), shared 113, database 135 source/20 isolated P1-parity checks,
+  all seven retained SQL suites/79 cases, 26 migrations/prior-22/23/24/25 preservation
+  and unchanged seed/verifier; queue 3/API unit 107/worker 29/frontend 572 across
+  54 files passed. Exact marked parent cleanup succeeded. This invocation used the
+  initial file-list scheduling; the final enforced old-P1-first database rerun remains
+  required. Final source now additionally checks explicit PUBLIC/default ACLs/minimal
+  owner capabilities and direct verifier cancellation at the unchanged 1 ms probe.
+- Workspace formatting and four offline documentation validators passed; strict
+  database types passed again. Protected-path diff remains empty for production source,
+  shared/apps/scripts, schema/migrations/seed, lock/dependencies/patches/workflows.
+- Final mandatory privilege sequencing passed original P1 12/12 first, then parity
+  8/8 (49.24 seconds); zero skips. The then-current 95 valid/1,006 semantic denials, all golden
+  vectors/aliases/maximal escaped bytes, explicit default/PUBLIC and minimal owner
+  manifests, exact permissions/TEMP/purity, direct verifier deadline/transport handling
+  and unchanged product/migration/role snapshots passed with exact owned cleanup.
+- Final self-review adds nine valid-primitive semantic contradictions for digest,
+  generation/revision, legal S versus wrong C, and latched base code/exponent. No SQL
+  behavior changed; extended 1,015 denial corpus requires renewed source/parity acceptance.
+- Final complete database script passed 135 source, original P1 12 before parity 8,
+  seven retained SQL suites/79, unchanged seed/verifier and all prior migration/row
+  preservation. Guarded API integration passed 17 suites/81 in 81.44 seconds; critical
+  invariants passed shared 113/API unit 12/API integration 42/worker renewal 2. Exact
+  newly marked parent cleanup succeeded. No local default-parallel test claim.
+- Expanded source rerun passed 135/135 with all 1,015 negative fixtures independently
+  rejected by Node; final original-P1-first SQL parity rerun and remaining gates are
+  ongoing. Existing pg future-concurrency/experimental VM warnings remain observations,
+  not a zero-warning claim or authorized dependency/application repair.
+- Final extended mandatory privilege rerun passed original P1 12 first, then parity
+  8 (49.02 seconds), zero skips; all 95 positive/1,015 negative fixtures passed their
+  independent SQL/Node expectations. New role/default/PUBLIC ACL assertions and actual
+  verifier cancellation passed. Label-filtered read-only inspection found no harness
+  containers or networks left; no unrelated resource was removed.
+- Worker artifact prerequisite, complete strict workspace/browser E2E types, lint and
+  Prisma schema validation passed. Ephemeral pnpm workspace concurrency 1 was restored
+  after types; no default-parallel local pass is asserted. Browser gates are in progress.
+- Browser lifecycle passed 19/19 in 3.6 minutes and administrator role/browser checks
+  4/4 in 21.7 seconds, original assertions/timeouts and zero retries. Fresh fictional
+  scopes/fake providers only; existing logo LCP/loading and color-environment warnings
+  remain observations. Production build/final audit/license/delivery gates are ongoing.
+- Production build passed every package and app, Next.js 16.3.8; child-only production
+  environment and workspace concurrency 1 were restored afterward (read-back was 1).
+  This is local serial acceptance, not a default-parallel build claim or deployment.
+- Final frozen install/tooling 15/production audit/license inventory passed. Parsed full
+  audit explicitly exited one with exactly braces high and sprintf-js moderate above;
+  no new finding, suppression, changed dependency/patch or clean-full-audit claim.
+- Final report/formatting/four offline docs/whitespace/protected-path checks are renewed
+  before focused commit, cached pinned full-history scan, fresh canonical fetch/non-force
+  main push and exact-head CI/CodeQL. These post-commit results belong to the actual owner
+  handoff; this pre-commit record never claims a future SHA/run/scan passed. No next
+  implementation, authority adoption, live query/import, release or deploy is authorized.
+- Full final-source source/P1/parity/old SQL/seed/history/package/API/invariant/browser,
+  formatting/four offline docs/lint/types/audit/license/build and focused scan/main/
+  exact-head CI/CodeQL remain required. No pending check is claimed passed.
+
+#### Decisions, remaining risks and exact next command
+
+- Canonical SQL domain is intentionally narrower than arbitrary Node raw input; every
+  accepted raw Node fixture's canonical outputs must pass. No Node success/digest is
+  input authority. Syntax parity is not stored origin, current auth, root coverage,
+  compatibility, deployed duty adoption or human approval.
+- Defensive ceilings exceed conservative field-derived maxima; maximal valid escaped
+  fixture is 50,956 bytes. No field widening/production override. Empty product stores,
+  immutable pins and all old harness ownership/cleanup/deadline safeguards stay intact.
+- Retain two unwaived tooling findings, trusted Docker/owner powers, disk/serial limits,
+  direct-main governance, Command 33/provider/migration/launch approvals and incomplete
+  P2/P3–P9. No live data/provider/import/release/deploy or old-resource cleanup.
+- Stop after verified delivery. Request **Phase review — Review Command 114 isolated
+  PostgreSQL canonical parity and define the next bounded currency command**.
+
 ## Report Template
 
 Use this template after every future command:
