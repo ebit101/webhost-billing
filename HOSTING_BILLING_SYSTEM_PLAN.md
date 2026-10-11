@@ -14,6 +14,15 @@ backfill is approved. Resume focus on the core hosting workflow and migration/la
 readiness through separately authorized bounded work. Deploying the existing staging
 portal is not production approval or authorization to import WHMCS data.
 
+**Registrar direction — 2026-10-11:** The owner identified resell.biz (StarGate/UK2,
+LogicBoxes) and requested sandbox integration. Command 49's
+[registrar design](docs/LOGICBOXES_REGISTRAR_DESIGN.md) recommends one complete
+fake/mock-tested registration workflow in Command 50, with provider-sourced availability
+and cost pricing, separate BDT selling prices and existing verified-payment accounting.
+Genuine demo identity/access is not yet established. No credentials, provider calls,
+customer/payment records or domain mutations are authorized by the design. Live mode,
+automatic renewal, WHMCS domain import and further currency development remain closed.
+
 ---
 
 ## 1. Executive Summary

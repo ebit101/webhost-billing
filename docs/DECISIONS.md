@@ -2606,6 +2606,29 @@ report-only update must pass its own delivery gate; stop for the recommended pha
   only after a separately authorized bounded command. Command 33 inputs, sandbox/provider
   acceptance, off-site recovery and final production approval remain unresolved.
 
+## ADR-126 — Design resell.biz sandbox registration as one complete guarded workflow
+
+- **Status:** Command 49 design on 2026-10-11, following owner confirmation of resell.biz
+  and sandbox intent. Specification: [StarGate/UK2 registrar design](LOGICBOXES_REGISTRAR_DESIGN.md).
+- **Decision:** Go for one complete fake/mock-tested Command 50 vertical workflow,
+  including provider-sourced availability/cost pricing, fixed separate BDT selling
+  prices, ordinary one-year domain offers, existing verified-payment ledger, explicit
+  enrolled full-administrator approval and ownership-bound register-once reconciliation.
+  Domain state and credentials are separate from hosting/WHM. No automatic renewal,
+  FX, live mode, generic provider proxy or WHMCS import.
+- **Safety:** A test URL is not a demo account. Persist the dispatch claim before remote
+  work; unknown outcomes reconcile instead of retrying mutations. NoInvoice omits some
+  identity/money evidence. A read-before-write cost check is not an atomic charge ceiling.
+  Contact/consent/account ownership and fresh payment eligibility must be independently
+  proven; no screenshot or generic status setter supplies that proof.
+- **Limits:** No-go for credentialed sandbox/live execution until genuine demo identity,
+  protected credentials/IP access, agreements/contacts, TLD/prices/currency/charge controls
+  and exact operation/window approval are supplied. Official-contract transport is
+  mocked and network-disabled in Command 50. This design changes no runtime, schema,
+  credentials, customer/payment records, deployment or provider resources.
+- **Next:** Command 50 requires explicit authorization after this design's verified
+  delivery; Command 51 separately covers approved demo acceptance. Currency stays held.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:
@@ -2613,7 +2636,10 @@ The following decisions are intentionally unresolved and must be selected before
 1. Production approval, credentials, and go-live runbook for bKash and/or SSLCOMMERZ after sandbox acceptance.
 2. Dedicated cPanel development reseller/token, hostname, outbound-IP allowlist, disposable packages/account/domain, and explicitly approved manual mutation window. WHM API-token authentication is selected and implemented.
 3. SMTP delivery provider for staging and production.
-4. UK2Group API product/brand, current official documentation, test environment, contact policy, supported TLDs, pricing/renewal behavior, and the separately authorized registrar-command position.
+4. Resell.biz/StarGate/UK2 is the owner-selected LogicBoxes brand (ADR-126). Genuine
+   demo identity and API/IP access, account-specific contracts/status vocabulary,
+   contact/registrant agreements, TLD/prices/charge controls and exact sandbox acceptance
+   inputs remain open. Command 49 is design only; no credentialed or live acceptance.
 5. Remaining Speed Host operating inputs and `DRAFT-OPS-1` D5–D8 decisions in
    `docs/PRODUCTION_BUSINESS_POLICIES.md`. Existing identity, currency, optional-tax,
    renewal defaults and D1–D4 rules are owner-approved; actual catalogue/legacy mapping,

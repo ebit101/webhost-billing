@@ -14890,6 +14890,81 @@ Stop after verified review delivery; do not implement it automatically.
   rehearsal** only after verified source delivery. Stop; no automatic import, activation,
   production promotion, additional currency implementation or next command execution.
 
+### Command 49 — Discover and design the UK2Group registrar integration
+
+- **Status:** Design completed; local documentation/security acceptance passed. The
+  focused commit requires its own post-commit delivery gates, reported in the owner
+  handoff after execution. This is not an implemented registrar or demo acceptance.
+- **Date:** 2026-10-11.
+- **Authority:** The owner accepted design-first work after requesting a domain purchase
+  workflow, then identified resell.biz/StarGate/UK2, provider-sourced pricing and sandbox.
+  Screenshots supply context only; no masked values or private account data were copied.
+- **Latest choice:** Local fake registrar first, no external calls or charges. The owner
+  intends to supply a root-level LogicBoxes folder for code-structure review. Root inventory
+  and filename inspection found no such folder yet; no supplied code was executed or copied.
+- **Baseline:** Clean canonical `1eae076`; fresh fetch/reconciliation 0/0 before edits.
+
+#### Scope completed and files changed
+
+- Added `docs/LOGICBOXES_REGISTRAR_DESIGN.md`: official-primary-source findings,
+  remaining demo/account/legal/cost gaps, source-grounded adapter/data/credential design,
+  independent finance/domain states, one complete fake/mock-tested registration path,
+  persistent dispatch claims, ownership-bound reconciliation, UI/migration/test acceptance
+  and bounded follow-up. Existing verified-payment accounting must be reused.
+- Provider cost/TLD availability come from the resell.biz LogicBoxes adapter; Speed Host
+  selling prices remain separately approved fixed BDT values. No FX or currency activation.
+- Updated `CODEX_DEVELOPMENT_COMMANDS.md` with the current direction and tightened
+  Commands 50/51, `HOSTING_BILLING_SYSTEM_PLAN.md` with the provider boundary, and
+  `docs/DECISIONS.md` with ADR-126 and narrowed remaining provider inputs.
+- Five documentation files only. No code, dependencies, lockfile, schema/migration,
+  credential, fixture, deployment or existing customer/payment record changed.
+
+#### Validation and evidence
+
+- Inspected repository order/product/service/invoice/payment models and services,
+  staff grants, credential cipher/replacement and worker outbox/renewal boundaries.
+  No current domain-registration module exists; hosting requestedDomain is not a purchase.
+- Researched public official LogicBoxes authentication, availability/cost pricing,
+  register/customer/contact/lookup/details, renewal/transfer/nameserver, abuse and legal
+  requirements; official WHMCS corroborates resell.biz/UK2/LogicBoxes brand and IP access.
+  Linked primary sources inline in the design. No authenticated provider API request.
+- Public resell.biz homepage fetch failed; one later details-page refresh timed out.
+  Existing retrieved official details evidence was retained; neither failure is claimed
+  as account/provider unavailability. Relative KB links that resolved to duplicate
+  answer paths were corrected to their canonical documentation URLs.
+- Repository Prettier check passed; docs-check dispatcher tests 4/4 and retained
+  tooling-security regressions 15/15 passed. Diff integrity passed. All four actual
+  offline documentation validators passed; a focused new-design check also passed
+  nine local references, zero anchors and zero failures. The final tracked-inventory
+  docs-check run also passed all four after staging the new document; targeted five-file
+  formatting passed. No proposed runtime/fake-provider test is claimed as executed here.
+- Fresh production audit exit zero/no known findings. Full audit exit one retains
+  precisely braces high GHSA-vfj7-8cjw-p6xm and sprintf-js moderate GHSA-hp3w-g68c-fv3c.
+  No waiver, patch change or dependency upgrade. No runtime/business-rule change in
+  this documentation-only command; full hosted validation remains mandatory.
+- The new focused commit needs its own pinned full-history secret scan,
+  fresh canonical reconciliation/non-force push and exact-head first-attempt CI/CodeQL.
+  Prior deployment checks cannot certify the new design commit.
+
+#### Decisions, risks and exact next command
+
+- ADR-126 recommends go for **Command 50 — Implement the UK2Group registrar module**
+  as one complete fictional workflow plus mocked official-contract sandbox transport,
+  not a chain of unused foundations. Request explicit implementation authority after
+  this design's delivery; stop after the command.
+- Credentialed sandbox/live remains no-go: genuine demo identity/access is unproven,
+  protected credentials and account-specific agreements, contacts, TLD/cost/status/charge
+  controls and operation approval are missing. An async non-secret demo-access question
+  was answered with the intended local code-folder review, not demo-account proof;
+  no API key/password was requested in chat.
+- Test URLs with live credentials can execute production actions. NoInvoice omits some
+  identity/cost evidence; a fresh price preflight cannot guarantee an atomic charge cap.
+  Ambiguous mutations must reconcile rather than repeat. General 30-day refund wording
+  does not establish domain-fee refundability; owner approval remains required.
+- Currency hold, both unwaived tooling findings, Command 33/provider/WHMCS rehearsal,
+  recovery and final production approval remain. No customer created, invoice paid,
+  domain registered or existing WHMCS setting changed. No fixed go-live date promised.
+
 ## Report Template
 
 Use this template after every future command:

@@ -14,6 +14,17 @@ below are superseded by this hold. Preserve existing inactive foundations and cu
 behavior. The separate request to deploy all changes authorizes an update of the existing
 isolated Speed Host staging installation, not currency activation or production promotion.
 
+**Current registrar direction — 2026-10-11:** The owner selected resell.biz/StarGate/UK2
+and sandbox, not live registration. Command 49's
+[registrar design](docs/LOGICBOXES_REGISTRAR_DESIGN.md) is the bounded specification.
+Command 50 is one complete fake/mock-tested registration workflow; genuine credentialed
+demo acceptance stays behind Command 51. Provider pricing is fetched through the adapter,
+not inferred from WHMCS screenshots; selling prices remain explicit and separate.
+The owner subsequently chose local fake registrar first (no external calls or charges)
+and plans to supply a root-level LogicBoxes folder for non-executing structure review.
+No such folder was present at the Command 49 inspection; never commit its credentials
+or unlicensed provider/WHMCS source.
+
 ## Target Architecture
 
 ```text
@@ -1182,9 +1193,13 @@ Do not trust screenshots as specifications, copy visible values, use credentials
 ```text
 Implement only the approved Command 49 UK2Group registrar scope behind the registrar-neutral adapter.
 
+Use docs/LOGICBOXES_REGISTRAR_DESIGN.md as the specification for resell.biz/StarGate/UK2. Deliver one complete fictional vertical path: customer and domain offer, provider availability/cost quote, order and immutable invoice, existing verified payment, explicit full-administrator registration approval, register-once evidence and read-only reconciliation. Include separate domain state and truthful simulated administrator/customer UI. Do not split this into additional unused foundation commands.
+
 Add reviewed Prisma migrations, strict shared contracts, encrypted provider-bound credentials, administrator/customer authorization and ownership, append-only/idempotent operation evidence, safe reconciliation, fake adapter, official test-mode adapter, service/domain separation, UI, logs, documentation, and tests. Preserve integer-money snapshots and UTC dates. Never mix WHM tokens or hosting state with registrar credentials/domain state.
 
 Use mocked/fake boundaries only. Do not configure credentials, call UK2Group, mutate a real/test domain, or enable automatic domain renewal until separately authorized. Run full relevant validation, update docs/PROGRESS.md, commit, reconcile, push main, stop, and request Command 51 authorization.
+
+The sandbox transport must be HTTP-mocked in this command, disabled for network use and without a production fallback. Preserve existing hosting behavior and the currency-development hold. Account-specific pricing/consent/status/charge-control gaps must remain explicit; fake success is not provider acceptance.
 ```
 
 ## Command 51 — Run Credentialed UK2Group Test Acceptance
@@ -1193,6 +1208,8 @@ Use mocked/fake boundaries only. Do not configure credentials, call UK2Group, mu
 Run credentialed UK2Group acceptance only in the confirmed official test environment using the exact approved reseller identity and disposable test domains/contacts.
 
 Require protected credentials, source-IP approval, test-mode proof, supported TLDs, exact expected charges, mutation sequence, contact/designated-agent policy, operator/window, and rollback/cleanup plan. Begin with read-only connection, availability, pricing, and account-balance/status checks.
+
+Require provider confirmation of a genuinely separate demo reseller identity. test.httpapi.com with live credentials can execute production actions; neither that hostname nor a WHMCS checkbox proves isolation. Follow the design's ownership, NoInvoice/cost-evidence and charge-ceiling prerequisites; stop if demo identity or an approved charge boundary cannot be established. Never substitute the existing live WHMCS account.
 
 Under explicit mutation authorization, test idempotent registration, status, nameservers, contact handling, renewal, failure/duplicate/replay behavior, and reconciliation only where the test environment supports them safely. Transfer, deletion, restore, or real-domain/name-server changes need separate exact approval.
 
