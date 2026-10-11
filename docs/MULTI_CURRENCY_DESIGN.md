@@ -2949,6 +2949,38 @@ protected payload/coverage, proof/ledger/consumption, selection, writer/duty ado
 live query/import/provider/deployment. P2 and P3–P9 remain incomplete. Preserve limits,
 both tooling advisories and operating/launch approvals; request explicit Command 116.
 
+### Command 116 — Closed authorization-evidence storage
+
+Owner-authorized on 2026-10-11 from clean `2762aefd2d4d71bea54119477090dba07cfb39d0`.
+The additive 28th migration retains all 27 old bytes and installs only an empty H table.
+Prisma `id` represents H's evidenceId; its other nine fields retain the exact specified
+order/meaning. Installation and explicit finite UTC millisecond creation time are record
+provenance, not extra H fields or a new hash protocol. Both epochs use exact positive
+BIGINT; all typed UUID output has the existing server grammar. Factor kind is C-collated
+totp/recovery with null recovery identity exactly for totp.
+
+Five restrictive installation/domain/actor/profile/session references use the existing
+session ownership key and one new redundant profile key. No credential/recovery FK
+retains secret-bearing rows or blocks their normal deletion/replacement. Historical
+existence/epochs do not certify current role, enrollment, session validity or factor use.
+Four fixed SECURITY INVOKER statement guards always reject INSERT/UPDATE/DELETE/TRUNCATE,
+including owner/no-op paths, with atomic new table/function PUBLIC revocation. No opening
+switch, repository/export/reader/issuer/seed/API/worker/ordinary runtime consumer.
+
+Acceptance appends after unchanged P1/parity/intent gates. Newly owned catalog-derived
+fictional probes copy columns/CHECKs/PK/unique indexes and redirect exact allowed parent
+FKs, compare manifests, reconstruct H into the five unchanged A literal vectors and
+prove secret replacement/non-key security updates without losing copied historical IDs.
+Per-denial product/probe/security/raw-pin/ownership checks include temporary grants.
+All prior SQL cases remain; prior-27 preservation is additive. Exact results and failed
+attempts belong to progress. Installed H/intent stores remain empty and control/identity
+shapes unchanged. No current versions, proof, protected payload/coverage, selection,
+writer/duty adoption or launch is established. P2/P3–P9 remain incomplete. Stop for the
+separately authorized Command 116 phase review, not Command 117 implementation.
+Required local acceptance passed on 2026-10-11; progress records the failed fixture/type
+attempts and corrected serial results. Post-commit scan/main/exact-head hosted delivery
+is separate and reported in the owner handoff. No production authority is implied.
+
 ## 4. Price publication, quote and renewal rules
 
 ### Catalogue pricing

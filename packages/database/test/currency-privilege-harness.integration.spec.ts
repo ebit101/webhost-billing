@@ -249,7 +249,7 @@ test(
             `DELETE FROM ${q}currency_execution_domains WHERE false`,
             // Include the newly referencing table so the original guard assertion
             // still reaches BEFORE TRUNCATE rather than FK preflight refusal.
-            `TRUNCATE ${q}currency_execution_domains,${q}currency_selection_intents`,
+            `TRUNCATE ${q}currency_execution_domains,${q}currency_selection_intents,${q}currency_authorization_evidence`,
           ])
             await denied(root, sql, '23514');
           await denied(

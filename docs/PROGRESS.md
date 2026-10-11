@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Phase review — Review Command 102 coordination primitive and define the next bounded currency command
-- **Current status:** Command 102 delivered at fdcaea6 with exact-head CI/CodeQL passed. Its unused engineering scope is accepted; fresh 39 source/41 SQL cases, seed/verifier, builds/database types, 93 shared, ten mitigation tests and documentation/format checks passed. This documentation-only review defines Command 103's unused SQL coordination guard prototype, requiring separate implementation authorization. Focused canonical delivery and exact review-head hosted verification gate the handoff. No prototype, application guard/migration, writer adoption, selection, live-data access, provider or deployment. Production audit clean; full audit retains two tooling findings without waiver
-- **Last updated:** 2026-10-07
-- **Next command:** Command 103 — Build an unused SQL currency coordination guard prototype
+- **Current command:** Command 116 — Stage closed currency authorization-evidence storage
+- **Current status:** Closed historical storage implemented; required local acceptance passed. Focused source delivery needs its own scan/main/exact-head hosted verification; actual post-commit results belong to the owner handoff. No live authorization, proof, selection, import or deployment. Production audit clear; two development-tooling findings remain unwaived.
+- **Last updated:** 2026-10-11
+- **Next command:** Phase review — Review Command 116 closed authorization-evidence storage and define the next bounded currency command
 - **Next command authorized:** No
 
 ## Command Reports
@@ -14575,6 +14575,121 @@ define or implement the next command automatically.
 
 Request **Command 116 — Stage closed currency authorization-evidence storage**.
 Stop after verified review delivery; do not implement it automatically.
+
+### Command 116 — Stage closed currency authorization-evidence storage
+
+- **Status:** Implemented; required local acceptance passed. Focused source delivery and
+  exact-head hosted results are recorded in the owner handoff after they exist.
+- **Date:** 2026-10-11.
+- **Baseline:** Clean `2762aefd2d4d71bea54119477090dba07cfb39d0`, canonical main 0/0.
+  Predecessor cached pinned history scan 241 commits/no leaks; exact-head first-attempt
+  CI 38139469298 aggregate/all 29 Validate steps and CodeQL 38139469277 aggregate/all
+  eight successful. Dependency review skipped, not passed.
+
+#### Implemented scope and files
+
+- One empty CurrencyAuthorizationEvidence table/model and atomic 28th migration after
+  all 27 unchanged pins/raw bytes. Exactly H's ten fields plus installation/explicit
+  finite UTC millisecond creation time; evidence `id` primary key. Positive exact BIGINT
+  epochs, typed server UUID grammar, C-collated factor/null rule, no defaults or secrets.
+- Five RESTRICT/RESTRICT references bind installation/domain, actor, profile/session
+  ownership. Add only redundant AdminProfile `(id,user_id)` unique and inverse relations;
+  reuse the existing session key. No FK to deletable secret rows or auth behavior change.
+- Four fixed SECURITY INVOKER BEFORE statement guards always deny INSERT/UPDATE/DELETE/
+  TRUNCATE including empty/owner statements; new table/function PUBLIC privileges revoke
+  atomically. No issuer/read/append/initializer/seed/consumer, current auth versions,
+  proof/ledger/consumption/selection, canonical A/S copy or standalone H digest protocol.
+- Four new test/fixture files derive fictional probe columns/CHECKs/PK/unique indexes
+  and allowed copied parent FKs from installed catalog, compare manifests, reconstruct
+  H into unchanged five A vectors, preserve security updates and secret replacement.
+  Append mandatory acceptance after P1/parity/intent and prior-27 all-row/catalog checks
+  alongside every retained prior-22/23/24/25/26 case. Exact count/manifests only extend
+  old tests; unchanged harness/runtime, codecs/vectors, ordinary app sources/providers,
+  root exports/scripts, dependencies/patches/lockfile and 27 old migration files.
+- Files: new migration/schema; database package/verifier; four new source/fixture/
+  privilege/ordinary SQL files; exact old test and pin allowances; SQL launcher append;
+  CODEX_DEVELOPMENT_COMMANDS.md, HOSTING_BILLING_SYSTEM_PLAN.md, docs/DECISIONS.md,
+  docs/MULTI_CURRENCY_DESIGN.md and this report.
+- New files: packages/database/prisma/migrations/20261011100000_closed_currency_authorization_evidence/migration.sql;
+  packages/database/test/currency-authorization-storage.fixtures.ts,
+  currency-authorization-storage.spec.ts, currency-authorization-storage.privileges.spec.ts
+  and currency-authorization-storage.integration.spec.ts in that same test directory.
+
+#### Validation and failed attempts
+
+- Frozen install, tooling-security 15, Prisma format/validate/generate, package build,
+  strict database types and source 148 passed. Production audit exit zero/no findings;
+  full audit exit one retains exactly braces high GHSA-vfj7-8cjw-p6xm and sprintf-js
+  moderate GHSA-hp3w-g68c-fv3c. No upgrade, suppression, waiver or lockfile change.
+- Owned ordinary SQL launcher passed all 89 cases (old 84 plus five H cases), prior
+  preservation, fictional seed and verifier. Product H/intent empty; identity/control
+  shape unchanged. Lint and production license inventory passed.
+- First mandatory sequence passed P1 12/parity 8/intent 9, then new H stopped at
+  PREFLIGHT/daemon resources before any new container/network creation. Independent
+  ordinary SQL/lint processes completed; exact-label inspection showed no remaining
+  harness resource. Retry serially without weakening limits/assertions or terminating
+  unrelated apps/services. Required complete packages/API/invariants/browsers/production
+  build and current-head delivery remain pending at this checkpoint.
+- First isolated H retry exposed a probe manifest naming assumption: PostgreSQL LIKE
+  copies standalone unique-index semantics with generated physical names (for example
+  users_email_key becomes users_email_idx). The atomic probe install rolled back;
+  subsequent positive children failed on absent probe tables. Product guard/duty/COPY
+  refusals passed. Compare full index bodies/validity/unique/primary flags after removing
+  only generated physical names and intentional namespace differences; no CHECK/FK/key
+  behavior or installed product object changes. Required H and full gates must rerun.
+- The next isolated H retry passed catalog/column/index semantics, all five literal
+  A/H vectors, every accepted UUID form in every bound slot, exact large/max epochs and
+  malformed/null/overflow/extra/wrong-owner denials. A parent-owner update fixture then
+  collided with the second profile's existing unique user slot before reaching the
+  intended restrictive FK. Use a third independently existing fictional user without a
+  profile to exercise the exact historical ownership restriction. No product migration,
+  unique key or foreign-key action changes; complete serial acceptance still required.
+- The corrected complete serial packages gate exited zero: all ten tooling/documentation
+  test groups, shared contracts 113, database source 148, original P1 12, canonical parity
+  8, intent privileges 9 and H privileges 9, all 89 SQL cases/seed/verifier, queue 3,
+  API unit 107/25 suites, worker 29/10 suites and web 572/54 files passed. No skips,
+  opt-outs, relaxed limits/assertions, other-app termination or unrelated cleanup.
+  H acceptance includes both factors, every UUID slot/form, exact large/max epochs,
+  full per-denial snapshots including granted COPY, owner/role/replica refusals and
+  secret credential/recovery replacement retaining historical IDs. The installed
+  product store never opened or received a row. API/invariants/browser/build/types and
+  final current-head delivery are pending at this checkpoint.
+- The unchanged canonical parity vectors retain all 95 valid/1015 invalid fixtures;
+  old 84 SQL cases and prior-22/23/24/25/26 checks remain alongside five new H cases.
+- API integration passed 81/17 suites; critical invariants passed shared 113, API unit
+  12, API integration 42 and worker 2. The subsequent strict workspace type gate exposed
+  TS2339 in the new fixture: TypeScript inferred only the explicit definition property
+  from the catalog normalization spread. Add its precise Record<string, unknown>[]
+  return annotation, retaining all index fields and runtime behavior; no any or weakened
+  compiler option. Rerun strict workspace types/source and remaining browser/build gates.
+- The annotated fixture passed strict serial workspace/browser types and all 148 source
+  cases on retry; no runtime/index comparison changed. Lifecycle browsers passed 19/19
+  in a freshly marked fictional scope, followed by staff UI browser mocks 4/4 (not live
+  API authorization evidence). Existing notices include VM Modules, pg concurrent-query
+  deprecation, NO_COLOR/FORCE_COLOR and logo LCP guidance; no unrelated repair claimed.
+  Production-mode serial workspace build and final documentation/delivery remain pending.
+- Production-mode serial full workspace build exited zero, including both Nest apps,
+  Prisma generation and all 30 Next.js static pages. NODE_ENV was restored afterward.
+  Final repository formatting, all four offline documentation validators and diff integrity
+  passed after report updates. Exact-label inspection found no remaining owned harness
+  container/network; no unrelated object was cleaned. No old migration/runtime/dependency/
+  patch/lockfile change, authority activation or unrelated cleanup is included.
+- Delivery requires cached pinned full-history scan of the new commit, fresh canonical
+  main reconciliation/non-force push and this commit's first-attempt exact-head CI/CodeQL.
+  Predecessor hosted results never certify the new head; actual hashes/scan inventory/
+  hosted runs are reported in the owner handoff after they exist. Dependency review is
+  skipped on main pushes, not passed. Owner direct-main bypass remains a governance risk.
+
+#### Decisions, risks and exact next command
+
+- ADR-123 records closed historical persistence, not human intent/current enrollment or
+  production privilege adoption. Positive fake probe insertion is not product issuance.
+  Owner DDL/clone powers, P2/P3–P9, protected evidence/lineage/writers/recovery, direct-main
+  governance, both tooling findings and Command 33/provider/import/launch approvals remain.
+- No live query/provider/WHMCS import/identity or control initialization/operating approval/
+  release/deployment or unrelated Docker/disk/cache/old-scope cleanup authorized/performed.
+- After verified delivery request **Phase review — Review Command 116 closed authorization-evidence storage and define the next bounded currency command**. Stop; do not define or
+  implement Command 117 automatically.
 
 ## Report Template
 

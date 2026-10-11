@@ -107,7 +107,7 @@ test(
       await t.test(
         'installed catalog is exact, empty, private and unconditionally closed',
         async () => {
-          assert.equal(pins.length, 27);
+          assert.equal(pins.length, 28);
           const cols = (
             await admin.query(
               `SELECT column_name,data_type,is_nullable,column_default,collation_name FROM information_schema.columns WHERE table_schema=$1 AND table_name=$2 ORDER BY ordinal_position`,

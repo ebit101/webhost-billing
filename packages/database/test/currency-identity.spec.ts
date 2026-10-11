@@ -44,7 +44,7 @@ test('the two inert models have explicit facts and only their restricted relatio
 
 test('one additive pinned migration retains all 25 original content pins and the old control index', () => {
   const migrations = loadPinnedMigrations();
-  assert.equal(migrations.length, 27);
+  assert.equal(migrations.length, 28);
   assert.equal(
     migrations[24]?.name,
     '20261008090000_unselected_currency_control',
@@ -116,7 +116,7 @@ test('mandatory source and SQL wiring append identity acceptance without changin
   const pkg = JSON.parse(readFileSync(resolve(db, 'package.json'), 'utf8'));
   assert.ok(
     pkg.scripts['test:unit'].endsWith(
-      'currency-privilege-harness.spec.ts test/currency-identity.spec.ts test/currency-selection-intent.spec.ts test/currency-policy-context.spec.ts test/currency-selection-assessment.spec.ts test/currency-canonical-parity.spec.ts test/currency-intent-storage.spec.ts',
+      'currency-privilege-harness.spec.ts test/currency-identity.spec.ts test/currency-selection-intent.spec.ts test/currency-policy-context.spec.ts test/currency-selection-assessment.spec.ts test/currency-canonical-parity.spec.ts test/currency-intent-storage.spec.ts test/currency-authorization-storage.spec.ts',
     ),
   );
   assert.equal(

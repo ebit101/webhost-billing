@@ -62,9 +62,9 @@ async function snapshot(scope: Scope) {
   await assertBrowserDatabaseScope(scope.models, scope.url, scope.schema);
   return productSnapshot(connection(scope.raw), scope.schema);
 }
-async function bootstrap(count = 27) {
+async function bootstrap(count = 28) {
   await assertBrowserDatabaseScope(parent, parentUrl, parentSchema);
-  assert.equal(migrations.length, 27);
+  assert.equal(migrations.length, 28);
   const schema = `command26_e2e_${randomUUID().replaceAll('-', '')}`;
   const url = browserDatabaseUrl(parentUrl, schema);
   await parent.$executeRawUnsafe(`CREATE SCHEMA "${schema}"`);
@@ -92,7 +92,7 @@ async function bootstrap(count = 27) {
   await assertBrowserDatabaseScope(traced.models, url, schema);
   return { schema, url, raw, ...traced };
 }
-async function withScope(body: (scope: Scope) => Promise<void>, count = 27) {
+async function withScope(body: (scope: Scope) => Promise<void>, count = 28) {
   const scope = await bootstrap(count);
   try {
     await body(scope);
@@ -289,6 +289,8 @@ test('fresh migration is empty, has no other authority stores and explicit model
           ![
             'currency_selection_intents',
             'currency_selection_intents_pkey',
+            'currency_authorization_evidence',
+            'currency_authorization_evidence_pkey',
           ].includes(String(row.relname)) &&
           /currency_(?:selection|transition|authorization|authority|proof)/.test(
             String(row.relname),
@@ -296,6 +298,7 @@ test('fresh migration is empty, has no other authority stores and explicit model
       ),
     );
     assert.equal(await scope.models.currencySelectionIntent.count(), 0);
+    assert.equal(await scope.models.currencyAuthorizationEvidence.count(), 0);
     await fixtures(scope);
     await scope.raw.query(
       `INSERT INTO ${q(scope, names[1])} VALUES($1,$2,$3,$4,$5,$6)`,
@@ -617,7 +620,7 @@ test('owner statement guards deny empty/identical/nested/conflict/MERGE/delete/t
           scope,
           () =>
             scope.raw.query(
-              `TRUNCATE ${q(scope, names[0])},${q(scope, names[1])},${q(scope, 'currency_selection_intents')}`,
+              `TRUNCATE ${q(scope, names[0])},${q(scope, names[1])},${q(scope, 'currency_selection_intents')},${q(scope, 'currency_authorization_evidence')}`,
             ),
           '23514',
         );

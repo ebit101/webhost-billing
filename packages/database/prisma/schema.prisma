@@ -12,25 +12,27 @@ datasource db {
 
 // Empty inert identity storage. Explicit operator fixtures are not active placement authority.
 model CurrencyInstallation {
-  id               Int                       @id @db.SmallInt
-  installationId   String                    @unique(map: "currency_installations_installation_id_key") @map("installation_id") @db.Uuid
-  createdAt        DateTime                  @map("created_at") @db.Timestamptz(3)
-  domains          CurrencyExecutionDomain[]
-  selectionIntents CurrencySelectionIntent[]
+  id                    Int                             @id @db.SmallInt
+  installationId        String                          @unique(map: "currency_installations_installation_id_key") @map("installation_id") @db.Uuid
+  createdAt             DateTime                        @map("created_at") @db.Timestamptz(3)
+  domains               CurrencyExecutionDomain[]
+  selectionIntents      CurrencySelectionIntent[]
+  authorizationEvidence CurrencyAuthorizationEvidence[]
 
   @@map("currency_installations")
 }
 
 // Historical placement facts only: no current selector, pin, defaults or runtime consumer.
 model CurrencyExecutionDomain {
-  id                      String                    @id @db.Uuid
-  installationId          String                    @map("installation_id") @db.Uuid
-  databaseName            String                    @map("database_name") @db.VarChar(63)
-  schemaName              String                    @map("schema_name") @db.VarChar(63)
-  placementManifestDigest String                    @map("placement_manifest_digest") @db.VarChar(64)
-  createdAt               DateTime                  @map("created_at") @db.Timestamptz(3)
-  installation            CurrencyInstallation      @relation(fields: [installationId], references: [installationId], onDelete: Restrict, onUpdate: Restrict, map: "currency_execution_domains_installation_fkey")
+  id                      String                          @id @db.Uuid
+  installationId          String                          @map("installation_id") @db.Uuid
+  databaseName            String                          @map("database_name") @db.VarChar(63)
+  schemaName              String                          @map("schema_name") @db.VarChar(63)
+  placementManifestDigest String                          @map("placement_manifest_digest") @db.VarChar(64)
+  createdAt               DateTime                        @map("created_at") @db.Timestamptz(3)
+  installation            CurrencyInstallation            @relation(fields: [installationId], references: [installationId], onDelete: Restrict, onUpdate: Restrict, map: "currency_execution_domains_installation_fkey")
   selectionIntents        CurrencySelectionIntent[]
+  authorizationEvidence   CurrencyAuthorizationEvidence[]
 
   @@unique([installationId, id], map: "currency_execution_domains_installation_id_id_key")
   @@map("currency_execution_domains")
@@ -76,6 +78,29 @@ model CurrencyControl {
   baseUnit               CurrencyUnitDefinition? @relation("CurrencyControlBaseUnit", fields: [baseCode, baseMetadataVersion], references: [code, metadataVersion], onDelete: Restrict, onUpdate: Restrict)
 
   @@map("currency_controls")
+}
+
+// Closed historical public factor identities, never current enrollment or approval.
+model CurrencyAuthorizationEvidence {
+  id                String                  @id @db.Uuid
+  executionDomainId String                  @map("execution_domain_id") @db.Uuid
+  actorUserId       String                  @map("actor_user_id") @db.Uuid
+  adminProfileId    String                  @map("admin_profile_id") @db.Uuid
+  sessionId         String                  @map("session_id") @db.Uuid
+  authEpoch         BigInt                  @map("auth_epoch")
+  credentialId      String                  @map("credential_id") @db.Uuid
+  recoverySetEpoch  BigInt                  @map("recovery_set_epoch")
+  factorKind        String                  @map("factor_kind") @db.VarChar(8)
+  recoveryCodeId    String?                 @map("recovery_code_id") @db.Uuid
+  installationId    String                  @map("installation_id") @db.Uuid
+  createdAt         DateTime                @map("created_at") @db.Timestamptz(3)
+  installation      CurrencyInstallation    @relation(fields: [installationId], references: [installationId], onDelete: Restrict, onUpdate: Restrict, map: "currency_authorization_evidence_installation_fkey")
+  executionDomain   CurrencyExecutionDomain @relation(fields: [installationId, executionDomainId], references: [installationId, id], onDelete: Restrict, onUpdate: Restrict, map: "currency_authorization_evidence_domain_fkey")
+  actor             User                    @relation(fields: [actorUserId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "currency_authorization_evidence_actor_fkey")
+  adminProfile      AdminProfile            @relation(fields: [adminProfileId, actorUserId], references: [id, userId], onDelete: Restrict, onUpdate: Restrict, map: "currency_authorization_evidence_profile_owner_fkey")
+  session           AuthSession             @relation(fields: [sessionId, actorUserId], references: [id, userId], onDelete: Restrict, onUpdate: Restrict, map: "currency_authorization_evidence_session_owner_fkey")
+
+  @@map("currency_authorization_evidence")
 }
 
 // Empty and unconditionally write-blocked. Facts are not a reservation or approval.
@@ -284,29 +309,30 @@ enum OutboxStatus {
 }
 
 model User {
-  id                            String                    @id @default(uuid()) @db.Uuid
-  email                         String                    @unique(map: "users_email_key") @db.VarChar(320)
-  passwordHash                  String?                   @map("password_hash") @db.VarChar(255)
+  id                            String                          @id @default(uuid()) @db.Uuid
+  email                         String                          @unique(map: "users_email_key") @db.VarChar(320)
+  passwordHash                  String?                         @map("password_hash") @db.VarChar(255)
   role                          UserRole
-  status                        UserStatus                @default(PENDING_VERIFICATION)
-  emailVerifiedAt               DateTime?                 @map("email_verified_at") @db.Timestamptz(3)
-  lastLoginAt                   DateTime?                 @map("last_login_at") @db.Timestamptz(3)
-  createdAt                     DateTime                  @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt                     DateTime                  @updatedAt @map("updated_at") @db.Timestamptz(3)
-  deletedAt                     DateTime?                 @map("deleted_at") @db.Timestamptz(3)
+  status                        UserStatus                      @default(PENDING_VERIFICATION)
+  emailVerifiedAt               DateTime?                       @map("email_verified_at") @db.Timestamptz(3)
+  lastLoginAt                   DateTime?                       @map("last_login_at") @db.Timestamptz(3)
+  createdAt                     DateTime                        @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                     DateTime                        @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt                     DateTime?                       @map("deleted_at") @db.Timestamptz(3)
   customer                      Customer?
   adminProfile                  AdminProfile?
-  paymentsCreated               Payment[]                 @relation("PaymentCreatedBy")
-  paymentsReviewed              Payment[]                 @relation("PaymentReviewedBy")
-  ticketsAssigned               Ticket[]                  @relation("TicketAssignedAdmin")
+  paymentsCreated               Payment[]                       @relation("PaymentCreatedBy")
+  paymentsReviewed              Payment[]                       @relation("PaymentReviewedBy")
+  ticketsAssigned               Ticket[]                        @relation("TicketAssignedAdmin")
   ticketMessages                TicketMessage[]
-  activityLogs                  ActivityLog[]             @relation("ActivityActor")
-  settingsUpdated               Setting[]                 @relation("SettingUpdatedBy")
-  integrationCredentialsUpdated IntegrationCredential[]   @relation("IntegrationCredentialUpdatedBy")
-  servicesTerminated            Service[]                 @relation("ServiceTerminatedBy")
-  hostingPanelOperations        HostingPanelOperation[]   @relation("HostingOperationRequestedBy")
+  activityLogs                  ActivityLog[]                   @relation("ActivityActor")
+  settingsUpdated               Setting[]                       @relation("SettingUpdatedBy")
+  integrationCredentialsUpdated IntegrationCredential[]         @relation("IntegrationCredentialUpdatedBy")
+  servicesTerminated            Service[]                       @relation("ServiceTerminatedBy")
+  hostingPanelOperations        HostingPanelOperation[]         @relation("HostingOperationRequestedBy")
   authSessions                  AuthSession[]
   currencySelectionIntents      CurrencySelectionIntent[]
+  currencyAuthorizationEvidence CurrencyAuthorizationEvidence[]
   adminTotpCredential           AdminTotpCredential?
   adminLoginChallenges          AdminLoginChallenge[]
   passwordResetTokens           PasswordResetToken[]
@@ -349,16 +375,18 @@ model Customer {
 }
 
 model AdminProfile {
-  id           String    @id @default(uuid()) @db.Uuid
-  userId       String    @unique(map: "admin_profiles_user_id_key") @map("user_id") @db.Uuid
-  displayName  String    @map("display_name") @db.VarChar(150)
-  jobTitle     String?   @map("job_title") @db.VarChar(100)
-  isSuperAdmin Boolean   @default(false) @map("is_super_admin")
-  staffRole    StaffRole @default(FULL_ADMINISTRATOR) @map("staff_role")
-  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
-  user         User      @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  id                            String                          @id @default(uuid()) @db.Uuid
+  userId                        String                          @unique(map: "admin_profiles_user_id_key") @map("user_id") @db.Uuid
+  displayName                   String                          @map("display_name") @db.VarChar(150)
+  jobTitle                      String?                         @map("job_title") @db.VarChar(100)
+  isSuperAdmin                  Boolean                         @default(false) @map("is_super_admin")
+  staffRole                     StaffRole                       @default(FULL_ADMINISTRATOR) @map("staff_role")
+  createdAt                     DateTime                        @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                     DateTime                        @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user                          User                            @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  currencyAuthorizationEvidence CurrencyAuthorizationEvidence[]
 
+  @@unique([id, userId], map: "admin_profiles_id_user_id_key")
   @@map("admin_profiles")
 }
 
@@ -376,7 +404,8 @@ model AuthSession {
   createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
   user                User      @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
-  currencySelectionIntents CurrencySelectionIntent[]
+  currencySelectionIntents      CurrencySelectionIntent[]
+  currencyAuthorizationEvidence CurrencyAuthorizationEvidence[]
 
   @@unique([id, userId], map: "auth_sessions_id_user_id_key")
   @@index([userId, revokedAt, expiresAt], map: "auth_sessions_user_active_idx")

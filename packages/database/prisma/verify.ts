@@ -29,6 +29,7 @@ const expectedTables = [
   'admin_totp_credentials',
   'auth_sessions',
   'automation_runs',
+  'currency_authorization_evidence',
   'currency_controls',
   'currency_execution_domains',
   'currency_installations',
@@ -60,6 +61,10 @@ const expectedTables = [
 ] as const;
 
 const requiredCustomConstraints = [
+  'currency_authorization_evidence_uuid_check',
+  'currency_authorization_evidence_epoch_check',
+  'currency_authorization_evidence_factor_check',
+  'currency_authorization_evidence_time_check',
   'currency_selection_intents_key_check',
   'currency_selection_intents_canonical_check',
   'currency_selection_intents_digest_check',
@@ -327,6 +332,7 @@ async function verify(): Promise<void> {
   assert.equal(await prisma.currencyInstallation.count(), 0);
   assert.equal(await prisma.currencyExecutionDomain.count(), 0);
   assert.equal(await prisma.currencySelectionIntent.count(), 0);
+  assert.equal(await prisma.currencyAuthorizationEvidence.count(), 0);
 
   const moneyColumns = await prisma.$queryRaw<
     Array<{ table_name: string; column_name: string }>
@@ -341,6 +347,7 @@ async function verify(): Promise<void> {
       )
       AND NOT (table_name = 'currency_controls' AND column_name = 'generation')
       AND NOT (table_name = 'currency_selection_intents' AND column_name = 'expected_generation')
+      AND NOT (table_name = 'currency_authorization_evidence' AND column_name IN ('auth_epoch', 'recovery_set_epoch'))
     ORDER BY table_name, column_name
   `;
 

@@ -9,11 +9,11 @@ import { stableVectors } from './currency-canonical-parity.vectors';
 const db = resolve(__dirname, '..');
 const root = resolve(db, '../..');
 const schema = readFileSync(resolve(db, 'prisma/schema.prisma'), 'utf8');
-const migration = loadPinnedMigrations().at(-1)!;
+const migration = loadPinnedMigrations()[26]!;
 const sql = migration.sql;
 test('one pinned atomic closed-store migration follows all 26 retained migrations', () => {
   const all = loadPinnedMigrations();
-  assert.equal(all.length, 27);
+  assert.equal(all.length, 28);
   assert.equal(all[25]?.name, '20261010090000_inert_currency_identity');
   assert.equal(
     migration.name,
@@ -122,12 +122,12 @@ test('mandatory test appends retain root, P1-first, parity and all old SQL accep
   };
   assert.ok(
     pkg.scripts['test:unit']!.endsWith(
-      'test/currency-canonical-parity.spec.ts test/currency-intent-storage.spec.ts',
+      'test/currency-canonical-parity.spec.ts test/currency-intent-storage.spec.ts test/currency-authorization-storage.spec.ts',
     ),
   );
   assert.equal(
     pkg.scripts['test:privileges'],
-    'tsx --test --test-concurrency=1 test/currency-privilege-harness.integration.spec.ts && tsx --test --test-concurrency=1 test/currency-canonical-parity.integration.spec.ts && tsx --test --test-concurrency=1 test/currency-intent-storage.privileges.spec.ts',
+    'tsx --test --test-concurrency=1 test/currency-privilege-harness.integration.spec.ts && tsx --test --test-concurrency=1 test/currency-canonical-parity.integration.spec.ts && tsx --test --test-concurrency=1 test/currency-intent-storage.privileges.spec.ts && tsx --test --test-concurrency=1 test/currency-authorization-storage.privileges.spec.ts',
   );
   assert.equal(
     pkg.scripts.test,

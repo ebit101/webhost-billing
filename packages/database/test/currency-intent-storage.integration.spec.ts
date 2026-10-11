@@ -44,9 +44,9 @@ function models(url: string, schema: string) {
   return { prisma, queries };
 }
 type Scope = Awaited<ReturnType<typeof bootstrap>>;
-async function bootstrap(count = 27) {
+async function bootstrap(count = 28) {
   await assertBrowserDatabaseScope(parent, parentUrl, parentSchema);
-  assert.equal(migrations.length, 27);
+  assert.equal(migrations.length, 28);
   const schema = `command26_e2e_${randomUUID().replaceAll('-', '')}`;
   const url = browserDatabaseUrl(parentUrl, schema);
   await parent.$executeRawUnsafe(`CREATE SCHEMA "${schema}"`);
@@ -68,7 +68,7 @@ async function bootstrap(count = 27) {
   await assertBrowserDatabaseScope(traced.prisma, url, schema);
   return { schema, url, raw, ...traced };
 }
-async function withScope(body: (s: Scope) => Promise<void>, count = 27) {
+async function withScope(body: (s: Scope) => Promise<void>, count = 28) {
   const s = await bootstrap(count);
   try {
     await body(s);
@@ -187,7 +187,7 @@ after(async () => {
   }
 });
 
-test('all 27 migrations leave exact model/raw intent storage closed and empty', async () => {
+test('all 28 migrations leave exact model/raw intent storage closed and empty', async () => {
   await withScope(async (s) => {
     assert.deepEqual(await qualified(s), []);
     assert.ok(

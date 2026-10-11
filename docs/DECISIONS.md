@@ -2529,6 +2529,31 @@ report-only update must pass its own delivery gate; stop for the recommended pha
   unwaived and all operating/provider/launch approvals separate. Request Command 116
   authorization only after the review's own verified source delivery.
 
+## ADR-123 — Keep historical factor evidence unconditionally closed and independent of secrets
+
+- **Status:** Implemented on 2026-10-11; required local acceptance passed. Source delivery
+  is recorded separately in progress and the owner handoff, not activation approval.
+- **Decision:** One atomic 28th migration retains all 27 old bytes. H's ten fields plus
+  installation UUID and explicit finite TIMESTAMPTZ(3) time are the entire record. UUID
+  grammar retains versions 1–8/variant 89ab/nil/max through typed lowercase output;
+  epochs are positive exact BIGINT, not current auth versions. Factor kind/null recovery
+  identity is exact. No secrets, defaults, approval flags or standalone H digest.
+- **References:** Five RESTRICT/RESTRICT edges bind installation/domain, actor and
+  compound profile/session ownership. Only the redundant AdminProfile key is added;
+  the existing session key is reused. Credential/recovery IDs deliberately have no
+  secret-row FK, so normal revocation, MFA disable/re-enrollment and recovery replacement
+  can proceed while historical public identities remain retained.
+- **Boundary:** Four fixed invoker statement triggers deny all product writes, including
+  owner/no-op paths; PUBLIC revocations are atomic. Product storage stays empty. Only
+  fresh owned catalog-derived fictional probes exercise positive CHECK/FK/key cases and
+  reconstruct H into the unchanged A codec/golden vectors. No issuer, reader, initializer,
+  API/worker/seed/consumer, enrollment certification or production privilege adoption.
+- **Stop:** P2/P3–P9, both unwaived tooling findings and operating/provider/launch approvals
+  remain open. After verified delivery request **Phase review — Review Command 116 closed
+  authorization-evidence storage and define the next bounded currency command**. No
+  automatic next implementation, current-version establishment, proof/ledger/consumption,
+  selection, live data/import/provider/release/deployment or unrelated resource cleanup.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

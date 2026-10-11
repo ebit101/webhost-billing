@@ -5122,7 +5122,9 @@ P2 and P3–P9 remain incomplete; an empty intent store is never a receipt or hu
 
 ## Command 116 — Stage closed currency authorization-evidence storage
 
-**Defined by the Command 115 phase review on 2026-10-11; not authorized or implemented.**
+**Implemented on 2026-10-11; required local acceptance passed.** Source delivery requires
+the focused commit's own history scan, canonical reconciliation and exact-head CI/CodeQL;
+actual post-commit outcomes are reported in the owner handoff. No activation or deployment.
 One empty historical H store with exact ownership references. No current authorization,
 auth-version establishment, factor consumption, proof issuance or selection.
 
