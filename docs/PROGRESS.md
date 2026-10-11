@@ -13963,8 +13963,8 @@ it automatically or begin assessment/auth/evidence storage or activation.
 
 ### Command 113 — Build an unused private currency assessment codec
 
-- **Status:** Private implementation and full local acceptance passed. Final commit
-  scan/main/exact-head hosted gates are required before reporting delivery complete.
+- **Status:** Completed and delivered at `120038d`; accepted by its owner-authorized
+  phase review below. Initial failed attempts remain recorded.
 - **Date:** 2026-10-11, owner-authorized implementation only.
 - **Prerequisite:** Closed preceding review `4d8704d` scan/main/exact-head CI/CodeQL
   before writing implementation. Existing local blocker report is retained historically.
@@ -14035,6 +14035,11 @@ it automatically or begin assessment/auth/evidence storage or activation.
   and CodeQL aggregates and every required step. Report actual commit/run outcomes in
   the owner handoff; a skipped PR dependency-review job is not a passed check. Do not
   claim post-commit gates passed from local acceptance or predecessor runs.
+- Delivery closure: focused commit `120038d361f1b365b2ae7cca14b98b34fc261b83`, cached
+  pinned read-only/network-disabled scan 236/no leaks, normal main push and fresh fetch
+  0/0 with clean working tree. Exact-head CI 38079601663 aggregate/all 29 Validate and
+  CodeQL 38079601655 aggregate/all eight passed, first attempts. PR-only dependency
+  review skipped. Existing owner PR/status-rule bypass reported; protection unchanged.
 
 #### Decisions, remaining risks and exact recommended next command
 
@@ -14052,6 +14057,84 @@ it automatically or begin assessment/auth/evidence storage or activation.
 - After validated delivery, request **Phase review — Review Command 113 private
   assessment codec and define the next bounded currency command**. Stop; P2 and P3–P9
   remain incomplete, and no next implementation or go-live/count promise is authorized.
+
+### Phase review — Review Command 113 private assessment codec and define the next bounded currency command
+
+- **Status:** Review accepted; Command 114 defined only, not authorized or implemented.
+  Review commit scan/main/exact-head CI/CodeQL are required before completed handoff.
+- **Date:** 2026-10-11. Baseline `120038d361f1b365b2ae7cca14b98b34fc261b83`, clean main
+  and fresh remote fetch 0/0 before edits. No live provider/customer/database query.
+
+#### Review scope and findings
+
+- Read authorized Command 113, rules/plan/decisions/progress and sections 3d/3e/current
+  currency boundaries. Inspected private S/Context/A runtime and all 23 assessment cases,
+  mandatory package wiring/negative consumer regressions, P1 reusable boundaries and
+  deployed-role gaps. No blocking in-scope defect found; no runtime/test repair required.
+- Exact computed S digest and action/R/g/revision/domain/actor/session bindings, legal
+  C/null/latch/UTC calendar, separate Context limits/semantics, full anchor/immutable-unit
+  consistency and registered E roots/unique kind-ID sorting match scope. Shape/hash
+  cannot establish stored origin, coverage, privileges, current auth or human approval.
+- Input/code-unit/byte guards, prescribed shape/depth before component serialization,
+  defensive post-escape ceilings, fresh dense arrays and frozen minimal/redacted results
+  are retained. Test-only global fault injection is explicit, restored and serialized;
+  it does not widen fields. No ordinary consumer/root/public entry or shared decoder use.
+- Protected-path commit diff passed: all 26 migrations/pins/schema/seed, runtime S/Context,
+  shared/apps/scripts, dependencies/patches/workflows unchanged. Old P1/SQL/assertions/
+  resource/watchdog/preservation/cleanup contracts remain. Selected C is fictional syntax.
+- Closed the stale predecessor delivery wording with actual commit/run evidence, retaining
+  all initial failed attempts. Five trackers only: CODEX_DEVELOPMENT_COMMANDS.md,
+  HOSTING_BILLING_SYSTEM_PLAN.md, docs/MULTI_CURRENCY_DESIGN.md, docs/DECISIONS.md and this
+  report. ADR-118 defines the next boundary; no next-code/test/SQL file created.
+
+#### Validation performed and delivery evidence
+
+- Fresh frozen install passed; installed tooling-security 15/15, database source 131/131,
+  shared 113/113, config/shared/database builds/Prisma generation and strict database
+  type check passed, no skips. Compiled private vectors/root absence and real package
+  subpath ERR_PACKAGE_PATH_NOT_EXPORTED passed. A preliminary root-context import probe
+  allowed MODULE_NOT_FOUND, so only the database self-reference rerun counts as export
+  refusal evidence. Compiled probes also preserve raw exponent normalization to canonical
+  integer literals, including -0/2.0/2e0/rounded integer/underflow-to-zero.
+- Production audit exit zero/no known findings; full audit exit one with exactly retained
+  braces high GHSA-vfj7-8cjw-p6xm and sprintf-js moderate GHSA-hp3w-g68c-fv3c. Fresh registry
+  probes for braces@3.0.4 and sprintf-js@1.1.4 both returned not found/exit one. Primary
+  advisory pages still list no patched release. No waiver/suppression/security repair.
+- Fresh exact-source REST checks confirmed predecessor CI 38079601663/all 29 Validate
+  steps and CodeQL 38079601655/all eight, aggregates success, first attempts at full SHA
+  `120038d361f1b365b2ae7cca14b98b34fc261b83`; PR dependency review skipped, not passed.
+  Retrieved and inspected full hosted CI log: history scan 228/no leaks (local 236 is a
+  different inventory), tooling/source/shared, P1 12, seven SQL suites/79, queue 3,
+  API unit 107/worker 29/web 572 across 54 files, API integration 81, invariant 113/12/42/2,
+  lifecycle 19/staff 4, audit/license/build/cleanup passed. Full local SQL/API/browser/
+  production matrix was inspected in predecessor report/logs, not rerun by this review.
+- Final repository formatting, all four offline documentation validators and diff check
+  passed. Five-file scoped diff confirms no runtime/test/schema/dependency/workflow change.
+  Review delivery uses its own focused commit, cached pinned scan, fresh fetch/non-force
+  push and exact-head CI/CodeQL protocol. Actual post-commit outcomes are required in the
+  owner handoff; predecessor green checks cannot certify this review commit.
+
+#### Decisions, remaining risks and exact next command
+
+- Define **Command 114 — Prove canonical currency bindings in isolated PostgreSQL tests**.
+  One consolidated test-only canonical S/Context/A verifier/parity gate before protected
+  database use. Independently validate/reconstruct SQL bytes and hashes; never hash
+  jsonb::text, trust Node success or issue authority. Canonical-only SQL input deliberately
+  excludes raw parser/IEEE754 alias equivalence while accepting every Node canonical result.
+- Reuse unchanged P1 ownership/login/migration helpers in a fresh disposable cluster;
+  fixed private-ACL SECURITY INVOKER functions live only in its nonce probe schema, with
+  read-only calls, actual permission/TEMP/DDL denials and product/role/guard preservation.
+  Mandatory source/privilege appends retain all old gates, ceilings and no opt-out.
+- No parity prototype/test implementation in this review, production SQL migration/store,
+  selected product fixture, pin/auth/epoch establishment, protected root payload, proof/
+  ledger/CAS/replay endpoint, writer/history/privilege adoption, ordinary application
+  consumer, provider/live query/import, release/deploy or old scope/Docker/disk/cache cleanup.
+- Two tooling findings, direct-main governance, privileged owner/clone powers, unproven
+  deployed duties, source-vs-live writer coverage, protected legacy/provider evidence,
+  Command 33 operating inputs and final launch approval remain. P2 and P3–P9 are incomplete;
+  no fixed remaining-command count or launch date is promised.
+- After validated review delivery, request **Command 114 — Prove canonical currency
+  bindings in isolated PostgreSQL tests**. Stop; no automatic implementation.
 
 ## Report Template
 

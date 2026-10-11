@@ -2383,6 +2383,38 @@ report-only update must pass its own delivery gate; stop for the recommended pha
 - **Next:** Stop after validated delivery and request **Phase review — Review Command
   113 private assessment codec and define the next bounded currency command**.
 
+## ADR-118 — Prove canonical SQL bindings without duplicating raw request authority
+
+- **Status:** Accepted next-command definition by the owner-authorized Command 113
+  phase review on 2026-10-11. Command 114 is not authorized or implemented.
+- **Review:** No blocking private assessment defect found. Computed S binding, exact
+  C/H/E, separately validated Contexts, anchors/immutable identities, budgets/calendar,
+  copied ASCII sorting and frozen redaction match scope. Existing S/Context runtime,
+  shared isolation, migrations/pins/seed/workflows/dependencies and ordinary consumers
+  remain unchanged. Defensive ceiling injection does not widen valid fields.
+- **Evidence:** `120038d` local pinned scan 236/no leaks and main 0/0; exact-head CI
+  38079601663 aggregate/all 29 Validate and CodeQL 38079601655 aggregate/all eight passed,
+  first attempts. Full CI log inspected, including hosted scan 228/no leaks and all old
+  SQL/P1/package/API/browser/build gates. Hosted inventory is distinct from local history.
+  Fresh review frozen install/tooling 15/source 131/shared 113/build/types passed.
+- **Decision:** Consolidate test-only canonical S/Context/A SQL validation/reconstruction
+  and SHA-256 parity before any protected authority use. Reuse P1's fresh disposable
+  cluster/logins unchanged; install fixed SECURITY INVOKER functions only in its probe
+  schema, with private ACLs and no product data query/write or authority objects.
+- **Domain:** SQL input must already be canonical, and SQL independently verifies it.
+  Node raw whitespace/escape/order/number aliases normalize first; their canonical
+  outputs must pass SQL. This does not change existing codecs or assert identical
+  arbitrary raw-JSON parser behavior. Exact canonical exponents avoid IEEE754/numeric
+  representation disagreement; supplied calendar year 0000 needs explicit parity.
+- **Security:** Production audit clear; full audit exit one retains braces high and
+  sprintf-js moderate. Fresh exact suggested-version registry lookups returned not found;
+  both primary advisory pages still list no patched version. Mitigations/patches remain,
+  with no suppression, dependency repair or full-audit waiver.
+- **Stop:** Five documentation trackers only. Review delivery has its own scan/main/
+  exact-head hosted gates. No new SQL/test implementation, product migration/store,
+  auth/proof/ledger/pin initialization, writer/privilege/history adoption, ordinary
+  consumer, live access/import or release/deploy. Request explicit Command 114 authority.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

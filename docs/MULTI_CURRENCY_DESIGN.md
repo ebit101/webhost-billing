@@ -2739,6 +2739,66 @@ identity initialization, writer/privilege/history adoption, provider/live query/
 release/deploy or operational approval. Stop for the owner-authorized Command 113 phase
 review; do not infer P2 completion or number/execute another slice automatically.
 
+### Command 113 review and canonical PostgreSQL parity boundary — 2026-10-11
+
+The owner-authorized review accepts private codec `120038d361f1b365b2ae7cca14b98b34fc261b83`.
+No blocking in-scope defect found. Both primitive guards precede parse, S is recomputed,
+all C/H/E/Context/anchor bindings are exact, supplied Date validation does not read a clock,
+and fixed redaction/fresh tuples cannot confer approval. Five S/five A vectors and all
+old boundaries remain; source exclusions confirm migrations, runtime S/Context/shared,
+apps/scripts, dependencies/patches/pins/workflows unchanged. All 26 migrations stay intact.
+
+Delivery evidence: local pinned scan 236/no leaks, main 0/0 and exact-head
+[CI 38079601663](https://github.com/ebit101/webhost-billing/actions/runs/38079601663)
+aggregate/all 29 Validate steps and
+[CodeQL 38079601655](https://github.com/ebit101/webhost-billing/actions/runs/38079601655)
+aggregate/all eight passed, first attempts. Full hosted CI log includes scan 228/no leaks,
+distinct from local history, all package/P1/SQL/preservation/API/invariant/browser/build
+checks; PR dependency review skipped. Fresh review tooling 15/source 131/shared 113,
+builds/types and compiled private vectors/boundaries passed; no new SQL/browser acceptance
+was executed locally by this documentation review. Prior failed local attempts remain.
+
+Define **Command 114 — Prove canonical currency bindings in isolated PostgreSQL tests**,
+not implementation. Section 3e requires independent SQL equality before trusted use.
+[PostgreSQL JSON representation](https://www.postgresql.org/docs/18/datatype-json.html)
+can change whitespace/numeric spelling; hash reconstructed exact bytes, not `jsonb::text`.
+Qualified built-in [SHA-256 and UTF-8 conversion](https://www.postgresql.org/docs/18/functions-binarystring.html)
+avoid an extension dependency. Use fixed private-ACL SECURITY INVOKER probe functions,
+not trusted-definer state mutation. Those are proposed constraints, not tested SQL parity.
+
+This verifier's input domain is **canonical S/A text only**, independently validated:
+every successful Node raw fixture is normalized by the unchanged codecs and its canonical
+outputs must pass SQL byte/hash equality. SQL directly rejects noncanonical whitespace,
+escapes, reordered lists and exponent token spellings. Node accepts valid `-0`, `2.0`,
+`2e0`, IEEE754-rounded integers and tiny-number underflow at the bounded exponent field;
+its canonical output is a literal 0–4. The review's compiled probes confirmed those
+normalizations. Do not narrow Node grammar or promise arbitrary raw parser equivalence.
+Canonical component/type/state/binding/required-root rules still need independent SQL
+validation, not a supplied digest or trusted Node-success flag. Preserve request-key
+text case, year 0000/Gregorian calendar and string BIGINTs; no UUID/timezone cast may
+silently replace those exact bytes. Unrepresentable SQL transport stays a denied condition.
+
+Candidate implementation is test fixtures/source/integration only under
+`packages/database/test/currency-canonical-parity*`, using a separately owned invocation
+of the unchanged P1 cluster/ACL/migration/snapshot helpers. Probe functions need no product
+read privilege; product stores remain empty and control zero/null protection is unchanged.
+Canonical selected C is only fictional JSON. Mandatorily append source and actual-login
+parity tests without weakening old unit/P1/SQL order, private consumer scans or deadlines.
+Prove all ten golden vectors, extra/duplicate/type/semantic/budget denials, independent
+ASCII/quoting/digest bindings, read-only purity, actual ACL/TEMP/DDL denials and unchanged
+product/role/guard snapshots. No opt-out or optional-only test.
+
+Fresh production audit is clear; full audit retains two unwaived tooling advisories.
+Suggested patched-version registry lookups still fail; primary
+[braces advisory](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm) and
+[sprintf-js advisory](https://github.com/advisories/GHSA-hp3w-g68c-fv3c) list no patched
+release. No unrelated repair or dependency/lock/patch change. Trusted owners/clones,
+deployed duties, identity/pin/auth establishment, protected root payloads/legacy lineage,
+proof/ledger/atomic transitions and P3–P9 remain open, as do Command 33/provider/launch
+approvals. No runtime SQL verifier/store, live query/import, provider, release/deploy,
+old-scope/cache/disk cleanup or next implementation follows. Stop after review delivery
+and request explicit Command 114 authorization; parity alone will not complete P2.
+
 ## 4. Price publication, quote and renewal rules
 
 ### Catalogue pricing

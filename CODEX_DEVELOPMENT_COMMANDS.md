@@ -4781,9 +4781,10 @@ or activation and completes neither P2 nor P3–P9 prerequisites.
 ## Command 113 — Build an unused private currency assessment codec
 
 **Defined by the owner-authorized Command 112 phase review on 2026-10-10; owner authorized
-implementation on 2026-10-11.** Private implementation and full local acceptance are
-complete. Final commit scan/main/exact-head CI/CodeQL are mandatory before delivery is
-reported complete. One complete pure assessment component, consolidating C/H/E validation
+implementation on 2026-10-11.** Delivered at `120038d` with full local acceptance,
+pinned scan/main/exact-head CI/CodeQL, and accepted by its owner-authorized phase review.
+The review defines Command 114 only; its implementation requires separate authorization.
+One complete pure assessment component, consolidating C/H/E validation
 and A composition rather than separate commands for each tuple. Reuse the existing private
 S and Context codecs only within this new private component. Hashing fictional facts cannot
 attest storage, human authorization, compatibility, history coverage or currency selection.
@@ -4913,6 +4914,116 @@ No SQL/parity/function/store, proof bearer mint/hash/issuance/consumption, ident
 initialization, current authority/approval, history assessment, selected fixture, CAS/
 ledger/replay endpoint, policy/writer/privilege adoption, UI/API/CLI/worker/provider/live
 query/import, release/deploy or Docker/disk/cache cleanup. P2 and P3–P9 remain incomplete.
+```
+
+## Command 114 — Prove canonical currency bindings in isolated PostgreSQL tests
+
+**Defined by the owner-authorized Command 113 phase review on 2026-10-11; not authorized
+or implemented.** One test-only SQL parity gate for canonical S, Context and A, consolidating
+their database byte/binding acceptance. This is not a new raw-text application codec,
+authority migration, protected-store implementation or currency activation.
+
+```text
+Command 114 — Prove canonical currency bindings in isolated PostgreSQL tests
+
+Read AGENTS.md, plan, decisions, progress and currency design sections 3d/3e/current review.
+Close preceding review scan/main/exact-head CI/CodeQL before implementation. Renew frozen
+install, installed tooling-security 15 and production/full audits. Keep exact dependencies,
+patches/pins and unwaived findings; unrelated security repairs need separate authorization.
+
+Implement test-only SQL fixtures and mandatory source/integration acceptance under
+packages/database/test/currency-canonical-parity*. Use the existing P1 ownership/login/
+migration/snapshot helpers unchanged. No packages/database/src, shared/application/script
+consumer, package export, Prisma model/migration, seed, lock/dependency/patch or workflow
+change. Narrow package test appends and exact old wiring assertions are permitted below.
+
+Use one separately owned invocation of withCurrencyPrivilegeHarness after the existing
+privilege suite. Fresh nonce-labelled private bridge/loopback-only PostgreSQL 18.6 cluster,
+cached approved immutable image, exact ID/mount/marker/encoding proof and existing resource,
+connection/statement/watchdog/cleanup ceilings. No image pull/fallback/shared cluster,
+environment database credentials or adoption of existing resources. Apply all 26 unchanged
+pinned migrations through the existing helper; leave product identities/control/history
+empty. Selected C values are JSON arguments only, never selected product rows.
+
+Install functions only in that harness's nonce-owned probe schema, not the product schema.
+Fixed qualified PostgreSQL/PLpgSQL SECURITY INVOKER functions, minimal existing non-login
+function owner, fixed search_path=pg_catalog,pg_temp, explicitly revoked PUBLIC/default
+EXECUTE and narrowly granted executor/helper signatures in one installation transaction.
+No SECURITY DEFINER, extension/language install, dynamic input SQL, table reads/writes,
+stateful registry, clock, random ID, auth/provider query or approval/proof operation.
+The isolated executor is a fictional test principal, not deployed privilege adoption.
+
+Verify server and client UTF8. SQL entry receives canonical S text and canonical A text,
+not a browser object, supplied digest or trusted Node success flag. Bound each text before
+JSON conversion and canonical reconstruction: S at most 1,024 UTF-8 bytes, A at most 65,536.
+Reject SQL NULL, malformed/object-shaped/extra/deep tuples and oversized lists. Component
+limits remain Context 24,576, C 512, H 1,024, each E 224 bytes and 32 per list/root array.
+Check exact arities/list bounds before members, bounded counters before casts, and bytes
+after string escaping before hashing. No generic recursive arbitrary-JSON canonicalizer.
+
+Independently validate all current S/Context/A semantic rules in SQL: exact ASCII grammar,
+UUID versions/variants/nil/max (server lowercase, original request-key text case preserved),
+action/R/g, positive BIGINT epochs/generation and maximum/overflow; explicit null/boolean
+states, exact supplied UTC calendar including year 0000 and leap-century cases; complete
+Context reference/capability/current/historical/exact-definition rules; prior/anchor/base
+latch and cross-context immutable facts; H domain/actor/session/factor binding; registered
+E kind/version pairs, duplicate kind/id and mandatory history/compatibility/adoption roots.
+No latest metadata/default BDT, inferred null=false, counter increment, history scan,
+identity lookup or root-shape claim of coverage/compatibility/auth/approval.
+
+Reconstruct dense prescribed arrays with ECMAScript minimal printable-ASCII quoting,
+explicit nulls and bytewise C-collation ordering. Preserve exact case/text, provenance and
+all facts. Never hash jsonb::text or raw unvalidated input. Compare reconstructed S/A with
+both supplied canonical texts byte-for-byte; only then return canonical texts and computed
+lowercase SHA-256 from qualified built-in sha256/UTF8 conversion/hex encoding. Recompute
+S in SQL and bind A[1] to that digest. No Node-produced hash is an input authority.
+Return one minimal fixed redacted invalid result, no raw SQL/JSON/input/partial hashes.
+Deadline/transport failures fail the harness, never masquerade as a completed validation.
+
+Canonical-only is intentional: SQL denies whitespace/escape/list-order/numeric-token aliases
+of canonical text, while the unchanged TypeScript codecs may accept and normalize raw JSON.
+For every valid raw Node fixture, feed its canonical outputs to SQL and require equality.
+Canonical exponents are only literal 0..4; retain Node normalization of -0, 2.0, 2e0,
+precision-rounded integers and underflow-to-zero without implementing an arbitrary IEEE754
+JSON parser in SQL. Do not narrow the existing Node codecs to make SQL tests easier.
+Malformed/unrepresentable SQL text must fail closed, with transport limitations explicit.
+
+Reproduce all five S and all five A literal byte/hash vectors plus canonical Contexts.
+Add independent PostgreSQL-vs-Node byte/hash comparisons for legal actions/C shapes,
+same-generation staging/latching, exact request-key aliases, all bindings/retained facts,
+quoted/backslash/max printable provenance, historical units, null secondary, two independent
+32-entry contexts, 32 roots, sorted/reordered raw equivalents and largest escaped fixture.
+Cover canonical semantic corruption, missing/extra/type/depth/duplicate/required roots,
+all exact list/component/input limits, max/overflow counters, real calendar, conflicting
+immutable identities, fixed failures and no digest returned for invalid input. Document
+unreachable field-derived ceilings; no field widening or production limit override.
+
+Prove actual executor success and precise SQLSTATE permission denials for other duties,
+PUBLIC/helper exposure and owner/DDL escalation. TEMP overload/search-path attempts cannot
+change qualified results. Run pure calls in read-only transactions after fixture setup;
+compare product rows/catalog/guards and role/ACL manifests before/after success and denials.
+No product SELECT privileges are needed by the pure functions. Foreign scope/ownership,
+timeout or cleanup uncertainty fails, never skips. Preserve all original P1 assertions.
+
+Append the new source test to test:unit and integration test to test:privileges after each
+old list; keep test's unit/privilege/old-SQL sequence exact. Update old exact-tail assertions
+only for these appends; retain private-runtime/untracked filesystem consumer denials and
+strict shared decoder isolation. No opt-out or standalone-only optional parity test.
+
+Run complete acceptance: source/shared/build/types, original P1 plus new isolated parity,
+all old owned SQL/seed/prior-22/23/24/25 preservation, formatting/four offline docs/lint/
+typecheck, guarded API/invariants/lifecycle/staff browsers, audits/licenses and production
+build. Fresh owned fictional scopes/fake providers only; supported serial resources and
+honest failed attempts, no relaxed assertions/deadlines or old-scope/disk/cache cleanup.
+Update five trackers, focused commit, cached pinned full-history scan, fetch/non-force main
+delivery and exact-head CI/CodeQL. Stop for Phase review — Review Command 114 isolated
+PostgreSQL canonical parity and define the next bounded currency command.
+
+No production SQL verifier/store/DDL, protected intent/auth/evidence/proof/ledger records,
+identity/pin/epoch initialization, proof bearer mint/hash/issuance/consumption, selected
+fixture/transition/CAS/replay endpoint, writer/history/privilege adoption, UI/API/worker/CLI
+consumer, provider/live query/import, release/deploy or operating approval. P2/P3–P9 remain
+incomplete. Test byte parity is not a stored-origin, coverage, current-auth or human proof.
 ```
 
 ## Continuation Command

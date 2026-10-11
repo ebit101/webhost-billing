@@ -218,6 +218,13 @@ The private assessment component composes existing S/Context syntax with exact C
 cross-binding and immutable-unit consistency, bounded canonical bytes and SHA-256.
 Acceptance and delivery evidence are recorded in progress. It has no public export,
 ordinary consumer, SQL/store or current authority; P2 and P3–P9 remain incomplete.
+Command 113's `120038d` passed full local and exact-head hosted acceptance; its owner-
+authorized phase review on 2026-10-11 accepts the private syntax scope with no blocking
+in-scope defect. It defines **Command 114 — Prove canonical currency bindings in isolated
+PostgreSQL tests** only: a mandatory test-only independent SQL verifier for canonical
+S/Context/A bytes and bindings in a fresh P1-owned cluster. Raw JSON normalization remains
+in the unchanged TypeScript codecs. No parity function is implemented by the review,
+and no product migration, authority store, privilege adoption or activation is authorized.
 No selection/guard or application consumer is installed by the observation helper or review.
 No live registry, selected installation policy or financial backfill is included. Broader persistence,
 per-currency reads, pricing and activation remain later separately gated slices. Remaining
