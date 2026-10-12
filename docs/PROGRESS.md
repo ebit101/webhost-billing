@@ -15614,6 +15614,70 @@ require explicit approval.
   the mockup; then separately authorize any staging rollout or live-provider
   adaptation after legal/operational acceptance.
 
+### Owner-directed Command 120 staging deployment — Deploy all updates
+
+- **Status:** Completed guarded staging deployment and postflight. The admin
+  order form and customer portal UI are deployed; live registrar and public
+  customer launch remain **NO-GO**.
+- **Date:** 2026-10-12 (Asia/Dhaka); application cutover around 19:23.
+- **Authorization:** Owner requested “deploy all updates” after Command 120
+  source delivery. This followed the prior staging-UI/local-fake-flow choice
+  and retained the fake-provider-only, no-live-registrar boundary.
+- **Source:** Clean synchronized `main` at
+  `a516f6ea5d1279abe27f1131899d490cdb8c4cb1`. Exact-head GitHub
+  Validate and CodeQL succeeded; PR-only Dependency review was skipped.
+  The new local Linux/amd64 API, web, worker and migration image IDs matched
+  the loaded host IDs. The exact Git archive and existing public logo were
+  checksummed. The 404,865,272-byte image bundle passed matching SHA-256
+  `82fac746e088a750e7b0aee6e0fa0f1b2c9058fc0c33d10efb24210396ce8139`
+  and gzip verification before load.
+- **Preflight:** Trusted pinned SSH observed the previous `238359af` release,
+  seven healthy services, 31 finished/zero unfinished migrations, no registrar
+  accounts, credentials, operations or domains, disabled live registrar flag
+  and 65 GiB available. Six business-table fingerprints and unrelated
+  container IDs were recorded. The new Compose configuration validated.
+- **Change:** Retained the previous release, images and protected environment
+  copy at `/srv/webhost-billing-staging/rollback/command120-20261012T132124Z`.
+  Stopped only this application's API, worker and scheduler. A fresh encrypted
+  pre-migration backup at
+  `/srv/webhost-billing-staging/backups/webhost-billing-webhost_billing_staging-20261012T132148Z.dump.gpg`
+  passed checksum, OpenPGP integrity, archive structure and required-table
+  verification; SHA-256
+  `b599ecc76ca39285d6216a33b1cad55ec0f81dfd13c512dc7c34b2313a8d44ac`,
+  mode `0600`, metadata with 31 completed migrations. Applied only
+  `20261012000400_admin_domain_offline_consent` once, then switched API,
+  worker, scheduler and web to the new images. No Nginx edit, seed, order,
+  invoice, customer email, WHMCS import, registrar configuration, call or
+  purchase was performed.
+- **Postflight:** All seven owned services healthy with zero restarts; old
+  PostgreSQL, Redis and Mailpit containers persisted. Database: 32 finished
+  and zero unfinished migrations; no registrar account, credential,
+  operation, domain, quote or catalogue TLD. Existing order/invoice/payment
+  counts stayed 1/2/1, six business-table fingerprints and unrelated
+  container IDs matched preflight, and the API/worker/scheduler live flags
+  stayed false. Direct-to-host certificate-verified HTTPS returned 200 for
+  `/`, `/health`, `/ready` and the brand asset. Anonymous admin and portal
+  pages redirected; protected order/domain API routes returned 401. The
+  browser-bundle API origin check passed.
+- **Limitations:** The home PC's router DNS resolver failed to resolve
+  `my.speedhost.bd`. Both authoritative Cloudflare nameservers, 1.1.1.1,
+  9.9.9.9 and OpenDNS returned `46.250.239.221`, while 8.8.8.8 reported
+  NXDOMAIN. Public checks used `curl --resolve` with that verified address
+  and normal certificate validation. Wider DNS consistency needs
+  investigation. Production-mode staging blocks fake registrar writes and
+  has no offers/account, so no staging order or fake end-to-end registration
+  was attempted. Command 120's fictional local domain/order and web tests
+  remain the flow evidence; credentialed administrator UI acceptance is still
+  pending. The verified backup is same-host rollback evidence, not off-site
+  recovery acceptance.
+- **Files changed:** `docs/PROGRESS.md` and `docs/STAGING_DEPLOYMENT.md` for
+  this deployment record only. No application, migration, dependency or
+  environment source changed in Git.
+- **Exact next:** Owner review the admin order form with a fully enrolled
+  administrator and investigate the DNS discrepancy. Continue fictional
+  fake-provider flow testing locally. Any genuine registrar operation,
+  provider setup, charge or public launch needs separate authorization.
+
 ## Future report template
 
 Use this template after every future command:

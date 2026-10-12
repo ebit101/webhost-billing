@@ -1,11 +1,49 @@
 # Staging Deployment
 
-## Current staging release (2026-10-12)
+## Current staging release (2026-10-12, admin-assisted domain orders)
+
+- URL: `https://my.speedhost.bd`
+- Source and four application image tags: `a516f6ea5d1279abe27f1131899d490cdb8c4cb1`
+- Prior retained release: `238359af6e2ccfee3e4db898d6c74efd0b417c57`
+- Current release: `/srv/webhost-billing-staging/releases/a516f6ea5d1279abe27f1131899d490cdb8c4cb1`
+- Database: 32 completed migrations, zero unfinished; the additive
+  `20261012000400_admin_domain_offline_consent` migration applied once.
+- Registrar network flag: `RESELLBIZ_LIVE_ENABLED=false` in the protected
+  environment and API, worker and scheduler containers. Registrar accounts,
+  credentials, operations, domains, quotes and catalogue TLDs remain at zero.
+- Rollback inventory: `/srv/webhost-billing-staging/rollback/command120-20261012T132124Z`.
+  The fresh pre-migration encrypted backup is
+  `/srv/webhost-billing-staging/backups/webhost-billing-webhost_billing_staging-20261012T132148Z.dump.gpg`;
+  SHA-256 `b599ecc76ca39285d6216a33b1cad55ec0f81dfd13c512dc7c34b2313a8d44ac`.
+  Its checksum, OpenPGP integrity, PostgreSQL archive structure and required
+  tables passed verification. It is mode `0600` and records 31 completed
+  migrations before the change. Retain this backup, the protected environment
+  copy and prior release/images for rollback.
+
+All seven owned services were healthy with zero restarts after cutover; the
+existing PostgreSQL, Redis and Mailpit containers stayed running. Six business
+table fingerprints and unrelated container IDs matched preflight. Direct-to-host
+HTTPS checks returned 200 for `/`, `/health`, `/ready` and the brand asset;
+anonymous admin and portal pages redirected, and protected API routes returned 401. The browser API-origin check passed for `https://my.speedhost.bd`.
+The home PC's router resolver failed to resolve the hostname during the check:
+both authoritative Cloudflare nameservers, 1.1.1.1, 9.9.9.9 and OpenDNS
+returned its expected A record, while 8.8.8.8 returned NXDOMAIN.
+The HTTPS checks therefore pinned the already verified host address with
+`curl --resolve` and still validated the certificate. Public DNS consistency
+needs separate follow-up.
+
+The admin order form and customer portal are deployed as UI. This installation
+has no registrar offers or configured account, and production-mode staging
+blocks fake registrar writes. Fictional fake-provider order/registration tests
+run locally; this rollout did not create a staging order, send customer email,
+configure or call a live registrar, or authorize public launch.
+
+## Prior staging release (2026-10-12, Command 118)
 
 - URL: `https://my.speedhost.bd`
 - Source and four application image tags: `238359af6e2ccfee3e4db898d6c74efd0b417c57`
 - Prior retained release: `ce5a062be58648fb5332e968dd907c513c24a9d0`
-- Current release: `/srv/webhost-billing-staging/releases/238359af6e2ccfee3e4db898d6c74efd0b417c57`
+- Release path: `/srv/webhost-billing-staging/releases/238359af6e2ccfee3e4db898d6c74efd0b417c57`
 - Database: 31 completed migrations, zero unfinished; Command 118's additive
   `20261012000300_domain_catalogue_registrar_selection` migration applied once.
 - Registrar network flag: `RESELLBIZ_LIVE_ENABLED=false` in the protected staging
