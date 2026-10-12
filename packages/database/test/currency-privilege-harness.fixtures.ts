@@ -15,22 +15,20 @@ function digest(value: Buffer | string): string {
   return createHash('sha256').update(value).digest('hex');
 }
 export function loadPinnedMigrations() {
+  const pinnedNames = Object.keys(migrationPins).sort();
+  const lastPinnedName = pinnedNames.at(-1);
+  assert.ok(lastPinnedName, 'Currency migration pins are required.');
   const names = readdirSync(directory, { withFileTypes: true })
     .filter((f) => f.isDirectory())
     .map((f) => f.name)
     .sort()
-    .filter(
-      (name) =>
-        ![
-          '20261012000100_domain_registrar',
-          '20261012000200_resellbiz_live_registration',
-          '20261012000300_domain_catalogue_registrar_selection',
-        ].includes(name),
-    );
+    // This harness replays the historical currency prefix only. Later domain
+    // migrations must not change its pinned SQL or enter its isolated schema.
+    .filter((name) => name <= lastPinnedName);
   assert.deepEqual(
     names,
-    Object.keys(migrationPins).sort(),
-    'Exactly the 25 baseline migrations, inert identity, closed intent and closed authorization evidence additions are required.',
+    pinnedNames,
+    'The pinned historical currency migration prefix must remain unchanged.',
   );
   return names.map((name) => {
     const bytes = readFileSync(resolve(directory, name, 'migration.sql'));

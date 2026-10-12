@@ -15563,7 +15563,8 @@ require explicit approval.
 
 ### Owner-directed Command 120 — Admin-created domain orders with recorded offline consent
 
-- **Status:** Source implemented and locally validated; not deployed.
+- **Status:** Source implemented and focused local checks passed; corrective
+  hosted CI pending. Not deployed.
 - **Date:** 2026-10-12 (Asia/Dhaka).
 - **Scope:** Added a manual domain section at the top of the admin order page.
   Staff select a customer and simulated one-year offer, enter the discussed
@@ -15577,7 +15578,8 @@ require explicit approval.
   separate full-administrator MFA approval. No customer email is sent.
 - **Files changed:** Shared domain/order contracts, DomainController/Service,
   OrderService, admin order/domain UI, Prisma schema and one additive migration,
-  domain and order e2e tests, test-fixture email cleanup, plan, decisions,
+  domain and order e2e tests, test-fixture email cleanup, historical currency
+  migration-prefix fixture, plan, decisions,
   command register and this progress report. A conceptual form image was saved
   outside the repository for review.
 - **Validation:** Prisma schema validation, package build, API and web typechecks,
@@ -15585,7 +15587,13 @@ require explicit approval.
   (603/603), full monorepo build, lint, formatting and four offline docs
   validators, and `git diff --check` passed. The order e2e suite initially
   reached a stale test-fixture email foreign key during cleanup; scoped cleanup
-  was corrected, then the suite passed. No real provider call was made.
+  was corrected, then the suite passed. The first hosted CI package gate failed
+  because its currency fixture treated every future migration as part of a
+  pinned historical prefix. The fixture now pins only through its last recorded
+  currency migration; all 164 local database unit tests passed after that fix.
+  Local privilege integration could not start because the approved Docker image
+  was absent from the local cache; hosted CI has the prepared image and remains
+  the required integration gate. No real provider call was made.
 - **Decision:** Admin-assisted domain ordering is manual-first and fake-only in
   this command. Customer self-service remains available but is not required for
   staff-entered orders. Staff may record previously discussed consent, and the
