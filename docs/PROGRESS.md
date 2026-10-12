@@ -15507,6 +15507,60 @@ require explicit approval.
   staging rollout. No registrar call, paid purchase, WHMCS import or deployment
   was performed in this review.
 
+### Owner-directed Command 118 staging deployment for fake-flow testing
+
+- **Status:** Guarded staging deployment completed; local simulated registration
+  test passed. Real registrar acceptance and public customer launch remain **NO-GO**.
+- **Date:** 2026-10-12 (Asia/Dhaka); staging cutover at approximately 17:03.
+- **Authorization:** The owner requested deployment to test domain registration,
+  then selected staging UI plus a local fake-provider flow. The earlier fake-only
+  and no-live-registrar boundary remained in force.
+- **Baseline:** Clean synchronized `main` at
+  `238359af6e2ccfee3e4db898d6c74efd0b417c57`; exact-head CI passed 29/29
+  Validate steps and CodeQL passed. Trusted pinned SSH established the actual
+  prior release `ce5a062be58648fb5332e968dd907c513c24a9d0`, seven healthy
+  services, 30 completed migrations, zero registrar accounts/credentials/operations
+  and 68 GiB available. `RESELLBIZ_LIVE_ENABLED` was true but inert with no account.
+- **Scope:** Prepared four images serially from a checksummed Git archive of the
+  exact source head. Stopped only this application's API, worker and scheduler;
+  created and verified a fresh encrypted PostgreSQL backup; applied only the
+  reviewed additive Command 118 migration once; disabled
+  `RESELLBIZ_LIVE_ENABLED`; switched only API, web, worker and scheduler to the new
+  tag. The prior release, images and protected environment copy were retained.
+  No Nginx edit, seed, provider credential, registrar request, purchase, customer
+  send, WHMCS import, other-app action or production deployment occurred.
+- **Protected evidence:** Host rollback inventory is
+  `/srv/webhost-billing-staging/rollback/command118-20261012T110258Z`. The fresh
+  backup is
+  `/srv/webhost-billing-staging/backups/webhost-billing-webhost_billing_staging-20261012T110304Z.dump.gpg`;
+  SHA-256 `497b576c64b11055824e4d7972ffa48a29d5d9f627750e17242a38a646a397b5`.
+  Its checksum, OpenPGP integrity, archive structure and required tables passed
+  verification. This is same-host rollback evidence, not off-site recovery.
+- **Postflight:** 31 completed and zero unfinished migrations; all pre-existing
+  business-row fingerprints matched. Seven owned services were healthy with zero
+  restarts, and unrelated container IDs matched the baseline. API, worker and
+  scheduler container flags were false. Registrar account, credential, operation,
+  domain, catalogue and profile counts remained zero. Public `/`, `/health` and
+  `/ready` returned 200; protected administration routes returned 401 anonymously;
+  login-protected pages redirected; the web bundle's staging API origin passed.
+- **Local fake acceptance:** Installed the missing Playwright Chromium binary and
+  reran the isolated `domain-registration.spec.ts` browser scenario: **1 passed**.
+  It exercised fictional customer/admin consent, payment/approval, simulated
+  worker dispatch and replay and removed its temporary database schema. The
+  initial browser attempt failed solely because Chromium was not installed; no
+  business-rule check was waived. The normal local development database and
+  staging business data were not used for this test.
+- **Limit:** Production-mode staging blocks fake registrar writes by design.
+  Its new UI can be reviewed there, while a fake end-to-end flow runs locally.
+  There are no staging registrar connections or TLD catalogue records to enable
+  public registration. Real provider contract/cost acceptance, policy inputs,
+  customer email and off-site recovery remain launch gates.
+- **Files changed:** `docs/PROGRESS.md` and `docs/STAGING_DEPLOYMENT.md` for this
+  deployment report only; no application, migration or dependency source changed.
+- **Exact next:** Review the staging UI with an enrolled full administrator and
+  continue fictional local flow testing. Any genuine registrar configuration,
+  charge-bearing purchase or public launch needs its own explicit authorization.
+
 ## Future report template
 
 Use this template after every future command:

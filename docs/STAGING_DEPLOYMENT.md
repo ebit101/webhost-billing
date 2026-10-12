@@ -1,5 +1,30 @@
 # Staging Deployment
 
+## Current staging release (2026-10-12)
+
+- URL: `https://my.speedhost.bd`
+- Source and four application image tags: `238359af6e2ccfee3e4db898d6c74efd0b417c57`
+- Prior retained release: `ce5a062be58648fb5332e968dd907c513c24a9d0`
+- Current release: `/srv/webhost-billing-staging/releases/238359af6e2ccfee3e4db898d6c74efd0b417c57`
+- Database: 31 completed migrations, zero unfinished; Command 118's additive
+  `20261012000300_domain_catalogue_registrar_selection` migration applied once.
+- Registrar network flag: `RESELLBIZ_LIVE_ENABLED=false` in the protected staging
+  environment and API, worker and scheduler containers. There are no configured
+  registrar accounts or credentials and no registrar operations or domains.
+- Rollout evidence: `/srv/webhost-billing-staging/rollback/command118-20261012T110258Z`.
+  The fresh encrypted backup is
+  `/srv/webhost-billing-staging/backups/webhost-billing-webhost_billing_staging-20261012T110304Z.dump.gpg`;
+  its SHA-256 is `497b576c64b11055824e4d7972ffa48a29d5d9f627750e17242a38a646a397b5`.
+  Verification covered its checksum, OpenPGP integrity, archive structure and
+  required tables. Retain this backup and the prior release for rollback.
+
+Public health/readiness, the browser API origin, seven service health checks,
+unchanged existing business-row fingerprints and unchanged unrelated container
+IDs passed. The simulated registration flow passed in an isolated local browser
+test. Production-mode staging deliberately blocks fake registrar writes, so its
+domain registration flow is not an end-to-end fake-provider test surface. No real
+registrar request, purchase, credential setup, or public launch acceptance occurred.
+
 ## Historical deployment snapshot (2026-10-11)
 
 The fixed release and image values below record the 2026-10-11 rollout. Later
