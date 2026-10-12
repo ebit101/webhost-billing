@@ -3,7 +3,7 @@
 ## Status Summary
 
 - **Current command:** Command 118 — Separate the TLD catalogue and multi-registrar execution choice
-- **Current status:** Command 118 source implementation and local acceptance complete. Separate registrar/TLD/default pages, consent-scoped immutable execution choice, selected-account management/renewal and additive historical preservation passed the recorded gates. Git delivery confirmation is pending below. No live domain purchase or deployment. Currency remains held.
+- **Current status:** Command 118 source implementation and local acceptance complete; delivered to canonical main as `85ba0ea`. Separate registrar/TLD/default pages, consent-scoped immutable execution choice, selected-account management/renewal and additive historical preservation passed the recorded gates. Hosted checks were still running at the delivery snapshot; not claimed passed. No live domain purchase or deployment. Currency remains held.
 - **Last updated:** 2026-10-12
 - **Next command:** Phase review — Review Command 118 TLD catalogue and multi-registrar execution selection and decide deployment readiness. Command 53 MFA enforcement and requested email-template polishing remain distinct tasks.
 - **Next command authorized:** Command 53's earlier source authorization is retained but not started in Command 118. No automatic deployment, purchase or next-command execution.
@@ -15361,7 +15361,7 @@ Stop after verified review delivery; do not implement it automatically.
 
 ### Command 118 — Separate the TLD catalogue and multi-registrar execution choice
 
-- **Status:** Source implementation and local validation complete; final Git delivery confirmation pending. Not deployed.
+- **Status:** Completed source implementation/local validation and non-force delivery as `85ba0ea2cb3a85d3dac316547a872c400b8a6245`. Hosted acceptance pending; not deployed.
 - **Date:** 2026-10-12 (Asia/Dhaka).
 - **Authorization:** Owner explicitly requested the TLD page, separate registrar settings,
   multiple registrars/default and choice before registration execution. WHMCS screenshot
@@ -15426,11 +15426,20 @@ Stop after verified review delivery; do not implement it automatically.
 - **Exact next:** **Phase review — Review Command 118 TLD catalogue and multi-registrar
   execution selection and decide deployment readiness**. Stop for owner authorization;
   no automatic deployment, genuine provider acceptance or paid purchase.
+- **Delivery:** Fresh canonical reconciliation was 1/0 before source push and 0/0 after
+  confirmed non-force push, with a clean checkout. Pinned full-history scanner passed
+  257 commits/8.23 MB with no leaks. GitHub accepted the existing owner bypass of PR/two
+  required-check rules; no branch rule was edited, waived or disabled. Exact runtime-head
+  [CI run](https://github.com/ebit101/webhost-billing/actions/runs/38231091176) and
+  [CodeQL run](https://github.com/ebit101/webhost-billing/actions/runs/38231091285) were
+  in progress at the delivery snapshot. A report-only follow-up may supersede the CI run;
+  inspect the final main head's checks on the home PC before deployment. No hosted pass
+  or final security acceptance is inferred from a queued/running/superseded check.
 
 #### Home PC continuation
 
 Use the canonical repository `https://github.com/ebit101/webhost-billing.git`, branch
-`main`, after final delivery is confirmed. On an existing clean checkout use
+`main`; implementation commit is `85ba0ea` plus any report-only follow-up. On an existing clean checkout use
 `git pull --ff-only`; on a new PC clone it. Use Node.js 24 and the source-pinned
 pnpm 11.22.0, then `pnpm install --frozen-lockfile`. Read `AGENTS.md`, the product plan,
 decisions and this report before work. Set up fresh local development configuration
