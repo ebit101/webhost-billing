@@ -2703,8 +2703,9 @@ report-only update must pass its own delivery gate; stop for the recommended pha
 
 ## ADR-129 — Configure SMTP privately and activate it separately from saving
 
-- **Status:** Owner-authorized Command 52 source locally accepted, 2026-10-12;
-  delivery/deployment pending and inactive credential saving requires owner MFA.
+- **Status:** Owner-authorized Command 52 accepted, delivered and deployed as `ce5a062`,
+  2026-10-12; inactive credential/sender saving and requested owner-administrator creation
+  remain pending owner MFA enrollment. Custom SMTP not activated.
 - **Decision:** Add a separate settings panel/API for a single custom SMTP transport.
   Store the entire host/TLS/auth/enabled bundle in the existing integration-credential
   store using a server-only AES-256-GCM cipher and dedicated key domain/version. No schema

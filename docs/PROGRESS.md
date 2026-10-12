@@ -3,9 +3,9 @@
 ## Status Summary
 
 - **Current command:** Command 52 — Add guarded SMTP configuration to administrator settings
-- **Current status:** SMTP settings source passed local acceptance; source delivery/deployment in progress. Credentials are encrypted/write-only, inactive on save, require full-administrator MFA and are read by workers per attempt. Owner approved deployment and inactive saving with the supplied sender. One requested SMTP test passed TLS/authentication and the owner confirmed receipt. Credentials have not been persisted and live sender remains unchanged. Owner MFA enrollment is required before protected credential saving. Runtime remains `1e51be0`, WHMCS separate and currency held.
+- **Current status:** SMTP settings source delivered and deployed as `ce5a062`; exact-head CI/CodeQL and live health/preservation checks passed. Inactive credential/sender saving and the requested owner administrator remain blocked by absent full-administrator MFA enrollment. No credentials were persisted, sender changed, account created or customer email resent. The direct requested SMTP test reached the owner's inbox; portal email still uses Mailpit. WHMCS separate and currency held.
 - **Last updated:** 2026-10-12
-- **Next command:** Finish Command 52 source acceptance/deployment; owner enrolls MFA before protected inactive credential/sender saving. Custom SMTP activation needs separate authorization.
+- **Next command:** Owner signs in with the existing administrator and enrolls MFA; then complete Command 52 protected inactive credential/sender saving and the requested owner-administrator invitation. Public invitation delivery/custom SMTP activation needs separate approval. Owner also requested polishing the existing 12 email templates for Speed Host; recorded, not started.
 - **Next command authorized:** Yes — Command 53 authenticator-app MFA and remembered-device scope, after completing Command 52. Its live rollout remains separate.
 
 ## Command Reports
@@ -15256,7 +15256,7 @@ Stop after verified review delivery; do not implement it automatically.
 
 ### Command 52 — Add guarded SMTP configuration to administrator settings
 
-- **Status:** Source locally accepted; delivery/deployment in progress, not yet deployed.
+- **Status:** Source accepted, delivered and deployed; protected credential/sender saving and requested owner-administrator creation awaiting owner MFA enrollment.
 - **Date:** 2026-10-12 (Asia/Dhaka).
 - **Authorization:** Owner requested an SMTP configuration option; separately supplied
   a private root credential file for testing and one test recipient/sender. Owner then
@@ -15304,26 +15304,55 @@ Stop after verified review delivery; do not implement it automatically.
   all currency source/import/no-consumer guards intact. Full database units repeated
   successfully, 164/164. The failed source was not selected on the live installation;
   corrected exact-head CI/CodeQL and a newly pinned release are required before cutover.
+- Corrected source `ce5a062be58648fb5332e968dd907c513c24a9d0` subsequently passed
+  [CI 38211711115](https://github.com/ebit101/webhost-billing/actions/runs/38211711115)
+  and [CodeQL 38211711157](https://github.com/ebit101/webhost-billing/actions/runs/38211711157).
+  Delivery used non-force `main` pushes. GitHub reported the existing owner's direct-main
+  required-check/pull-request bypass; repository rules were not changed. Live selection
+  waited for both corrected exact-head hosted checks, not the failed initial source.
+- **Deployment acceptance:** Pinned corrected archive SHA-256
+  `c59dc2010a693d9cbc26233c86cd57f849befdaf21ef140ac7c15e4b99e9a67c`
+  verified before extraction. Four owned images prepared serially and selected on
+  `my.speedhost.bd`; fresh encrypted backup verified checksum, OpenPGP integrity,
+  PostgreSQL archive structure and required tables. Private rollback evidence is under
+  `/srv/webhost-billing-staging/rollback/command52-20261012T063326Z`.
+  All public-table counts/row hashes matched while writers were stopped; published
+  migrations were byte-identical, with 30 applied and no migrations/seeding. Owner logo,
+  environment/integration flags and every unrelated/data-container identity preserved.
+  Only API/web/worker/scheduler replaced; all seven portal services healthy. Public
+  storefront, login, account, ready, health and logo returned 200. Unauthenticated new
+  SMTP status returned 401. No authenticated save/activation acceptance was claimed.
 - **Additional owner request:** Create a genuine full-administrator account for the
   supplied owner email. Existing staff creation requires an enrolled full-administrator
   actor and uses verification/password-setup invitations, not a disclosed shared password.
   No owner account/credential has been created. Existing owner enrollment and separately
   accepted invitation delivery must precede it; no synthetic MFA or direct SQL bypass.
 - **Private credential test:** The owner's file is ignored and values were never printed.
-  One direct TLS/certificate/authentication check passed through a checked public IP;
-  no message sent or credentials persisted. An API-style username is not a sender email;
-  supplied sender was used for exactly one requested test email; the SMTP server accepted
+  An authentication-only TLS/certificate check passed through a checked public IP without
+  sending a message. A later separately authorized test used the supplied sender for
+  exactly one email; an API-style username is not a sender email. The SMTP server accepted
   one recipient, rejected none, and the owner confirmed inbox receipt. This was a direct
   connection test, not the deployed worker/portal pipeline. No automatic resend/retry.
 - **Limits:** Saved/activated status is not connection or inbox verification. Required
-  public sender/provider/SPF/DKIM acceptance remains. Deployment is now approved but not
-  completed; no DNS modification,
+  public sender/provider/SPF/DKIM acceptance remains. Source deployment completed; no DNS modification,
   public customer resend, registrar purchase, cPanel action or currency implementation.
 - Read-only live inspection found one full administrator and zero enrolled MFA credentials;
   SMTP credential count is zero. Owner enrollment is required before protected saving.
   No synthetic session/MFA identity or direct SQL credential bypass is permitted.
-- **Exact next:** Complete Command 52 acceptance/delivery/deployment; owner enrolls MFA
-  before saving credentials inactive with the approved sender. Request separate custom
+- Post-deployment read-only checks still found one active full administrator, zero enrolled
+  full administrators, zero custom SMTP records and zero accounts for the requested owner
+  email. The owner repeated the administrator-creation request after reporting no reset
+  email. The reset response is deliberately generic; a nonexistent account cannot receive
+  a reset, and deployment transport still captures portal messages in Mailpit. Reported
+  the account as not created, not falsely completed. Owner must perform sign-in/factor
+  enrollment; computer-use guidance prohibits automating authentication/security settings.
+- **Additional template request:** Owner selected polishing the existing 12 transactional
+  templates for Speed Host rather than adding an administrator template editor. Catalog
+  inspection confirmed verification, password reset, order receipt/approval, payment,
+  invoice, renewal/overdue, service provisioning/suspension/reactivation and ticket reply
+  templates already exist. No template changes or extra email sends in Command 52.
+- **Exact next:** Owner enrolls MFA using the existing administrator before protected
+  inactive credential/sender saving and the requested owner-account invitation. Request separate custom
   SMTP activation and deployed-worker email acceptance before customer delivery. The
   owner separately authorized **Command 53 — Enforce administrator MFA and offer customer
   MFA with remembered devices**: authenticator apps, mandatory administrator enrollment,
