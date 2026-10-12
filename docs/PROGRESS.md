@@ -15659,12 +15659,14 @@ require explicit approval.
   `/`, `/health`, `/ready` and the brand asset. Anonymous admin and portal
   pages redirected; protected order/domain API routes returned 401. The
   browser-bundle API origin check passed.
-- **Limitations:** The home PC's router DNS resolver failed to resolve
-  `my.speedhost.bd`. Both authoritative Cloudflare nameservers, 1.1.1.1,
-  9.9.9.9 and OpenDNS returned `46.250.239.221`, while 8.8.8.8 reported
-  NXDOMAIN. Public checks used `curl --resolve` with that verified address
-  and normal certificate validation. Wider DNS consistency needs
-  investigation. Production-mode staging blocks fake registrar writes and
+- **Limitations:** The home PC's router DNS resolver initially failed to
+  resolve `my.speedhost.bd`. Both authoritative Cloudflare nameservers,
+  1.1.1.1, 9.9.9.9 and OpenDNS returned `46.250.239.221`, while 8.8.8.8
+  reported NXDOMAIN. Initial public checks used `curl --resolve` with that
+  verified address and normal certificate validation. The router later
+  resolved the site and ordinary HTTPS returned 200; 8.8.8.8 still reported
+  NXDOMAIN. Wider DNS consistency needs investigation. Production-mode staging
+  blocks fake registrar writes and
   has no offers/account, so no staging order or fake end-to-end registration
   was attempted. Command 120's fictional local domain/order and web tests
   remain the flow evidence; credentialed administrator UI acceptance is still

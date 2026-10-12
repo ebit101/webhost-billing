@@ -25,12 +25,12 @@ existing PostgreSQL, Redis and Mailpit containers stayed running. Six business
 table fingerprints and unrelated container IDs matched preflight. Direct-to-host
 HTTPS checks returned 200 for `/`, `/health`, `/ready` and the brand asset;
 anonymous admin and portal pages redirected, and protected API routes returned 401. The browser API-origin check passed for `https://my.speedhost.bd`.
-The home PC's router resolver failed to resolve the hostname during the check:
-both authoritative Cloudflare nameservers, 1.1.1.1, 9.9.9.9 and OpenDNS
-returned its expected A record, while 8.8.8.8 returned NXDOMAIN.
-The HTTPS checks therefore pinned the already verified host address with
-`curl --resolve` and still validated the certificate. Public DNS consistency
-needs separate follow-up.
+The home PC's router resolver initially failed to resolve the hostname; both
+authoritative Cloudflare nameservers, 1.1.1.1, 9.9.9.9 and OpenDNS returned
+its expected A record, while 8.8.8.8 returned NXDOMAIN. The first HTTPS
+checks therefore used `curl --resolve` with normal certificate validation.
+The router later resolved the hostname and ordinary HTTPS returned 200, but
+8.8.8.8 still returned NXDOMAIN. Public DNS consistency needs follow-up.
 
 The admin order form and customer portal are deployed as UI. This installation
 has no registrar offers or configured account, and production-mode staging
