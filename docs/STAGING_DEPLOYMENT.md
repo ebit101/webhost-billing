@@ -1,6 +1,13 @@
 # Staging Deployment
 
-## Current deployment
+## Historical deployment snapshot (2026-10-11)
+
+The fixed release and image values below record the 2026-10-11 rollout. Later
+registrar and SMTP deployments are recorded in `docs/PROGRESS.md`; this snapshot
+does not identify the current host release. Verify the live `current` symlink,
+image tags, database migration state and protected rollback material before a
+new deployment. The 2026-10-12 Command 118 phase review did not obtain that
+host inventory.
 
 - Environment: staging only
 - URL: `https://my.speedhost.bd`

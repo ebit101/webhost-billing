@@ -5369,6 +5369,27 @@ Owner-authorized on 2026-10-12: implement a WHMCS-inspired, sentence-case TLD pr
 Preserve existing immutable accounts, offers, quotes, invoices, payments, mappings and dispatch claims. New catalogue prices are integer BDT revisions; native USD provider costs remain independent and require existing cost/risk acceptance. Snapshot customer consent covering the eligible registrar accounts and DNS/policies. Bind the actual selected account/credential at approval, prove availability/payment/ownership and dispatch once; never reroute a claimed or uncertain request. Renewals and management use the executed account, not the current default. Add reviewed forward-only storage and SQL guards, full-admin MFA/CSRF/audit boundaries, backend/worker integration and responsive UI/tests. Validate in owned fictional scopes, document actual results, commit/reconcile/non-force-push main and stop. No production deployment, real purchase, credential configuration, WHMCS connection, currency implementation, cPanel mutation or unrelated cleanup. Command 53 MFA/template work remains separate.
 ```
 
+## Command 119 — Verify the staging baseline before a Command 118 rollout
+
+```text
+Defined by the owner-authorized Command 118 phase review on 2026-10-12; not yet
+authorized for execution. Perform a read-only preflight of the owned Speed Host
+staging project through an already trusted, protected host connection. Identify
+the actual current release and image tags, seven service states, PostgreSQL
+migration baseline, registrar account/credential/operation counts and disabled
+or pending work, live-networking flags without revealing values or credentials,
+free disk, verified backup inventory, and retained rollback release. Preserve
+other applications and report any drift from the last recorded deployment.
+
+Verify public TLS, health/readiness and web API origin. Review the additive
+Command 118 migration against the observed database and write a bounded rollout
+and rollback plan that requires a fresh verified encrypted backup before a
+one-shot migration. If host access or any safety fact is unavailable, stop and
+report the missing evidence. Make no host or database changes, provider calls,
+credential changes, registrar operations, deployment, import or customer sends.
+Stop after reporting the preflight; deployment needs a separate owner command.
+```
+
 ## Operating Guidance
 
 1. Run commands in order.

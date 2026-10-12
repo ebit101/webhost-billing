@@ -15459,6 +15459,54 @@ received Command 118; mandatory administrator enrollment/remembered-device work 
 the separate unfinished Command 53, and live provider acceptance/launch policies still
 require explicit approval.
 
+### Phase review — Review Command 118 and decide deployment readiness
+
+- **Status:** Source accepted for a separately authorized guarded staging rollout;
+  staging cutover deferred pending read-only host preflight. Public customer launch
+  and genuine registrar acceptance remain **NO-GO**.
+- **Date:** 2026-10-12 (Asia/Dhaka).
+- **Scope:** Reviewed Command 118 against its owner command, `AGENTS.md`, the
+  product plan, ADR-130, migration and selection/worker boundaries, local
+  acceptance record, final-head GitHub gates and the staging runbook. No source
+  defect requiring an in-scope application correction was found in this review.
+- **Source evidence:** `main` and `origin/main` matched at `38f989f` with a clean
+  checkout before review edits. Final-head CI `38231418972` passed all 29 Validate
+  steps; CodeQL `38231419000` passed all eight steps. PR-only dependency review
+  was skipped. Command 118's documented local package/API/browser, preservation,
+  production audit, build and secret-scan results remain predecessor evidence,
+  not tests rerun by this phase review. The implementation commit's cancelled CI
+  run was superseded by the successful final report-head run.
+- **Runtime evidence:** Public `/health` and `/ready` each returned HTTP 200 with
+  certificate verification through the independently resolved public address.
+  The home PC's default resolver returned DNS server failure for
+  `my.speedhost.bd`; explicit 1.1.1.1 resolution succeeded. A strict-host-key,
+  batch-mode SSH attempt to the matching host was denied, so no current release,
+  Compose/registrar/database inventory, fresh backup, disk or rollback claim is
+  made. `docs/STAGING_DEPLOYMENT.md` had a stale 2026-10-11 "current deployment"
+  heading; it is now labeled as a historical snapshot.
+- **Review validation:** `git diff --check`, pinned-pnpm `format:check`, and all
+  four offline `docs:check` validators passed. Application and provider tests
+  were not rerun for these documentation-only changes.
+- **Decision:** The additive migration and consent-bound, immutable registrar
+  selection are supported by local preservation tests and final-head hosted CI.
+  That suffices for source acceptance, not a cutover. Before staging deployment,
+  verify the actual host baseline and that no configured live registrar or
+  unresolved operation would be affected; require a fresh verified encrypted
+  backup, reviewed one-shot migration, retained prior images/release and explicit
+  rollback plan. Keep real registrar operations disabled during the rollout.
+  Actual provider behavior, native all-in costs, reviewed policies, bank/catalogue
+  inputs, customer email and off-site recovery remain separate launch gates.
+  Mandatory administrator MFA enrollment for every administrator remains the
+  separate unfinished Command 53.
+- **Files changed:** `CODEX_DEVELOPMENT_COMMANDS.md`,
+  `docs/STAGING_DEPLOYMENT.md` and this progress report only. No application,
+  migration, dependency, secret or local environment file changed.
+- **Exact next:** Owner may authorize **Command 119 — Verify the staging baseline
+  before a Command 118 rollout**. This is a read-only host preflight, not
+  deployment. Its outcome determines whether to request a separate bounded
+  staging rollout. No registrar call, paid purchase, WHMCS import or deployment
+  was performed in this review.
+
 ## Future report template
 
 Use this template after every future command:
