@@ -25,6 +25,7 @@ packages/database/src/generated
 *.dump.gpg.metadata.json
 backups
 release-artifacts
+mc-credential.txt
 .env
 .env.*
 **/.env

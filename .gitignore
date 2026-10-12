@@ -13,6 +13,7 @@ packages/database/src/generated/
 .env.*
 !.env.example
 webhost-billing.txt
+/mc-credential.txt
 
 # Logs and runtime files
 *.log

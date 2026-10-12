@@ -24,7 +24,7 @@ async function main() {
     const args =
       process.argv[2] === 'packages'
         ? ['test']
-        : process.argv[2] === 'domains'
+        : process.argv[2] === 'domains' || process.argv[2] === 'smtp'
           ? [
               '--filter',
               '@webhost-billing/api',
@@ -36,7 +36,9 @@ async function main() {
               './test/jest-e2e.json',
               '--runInBand',
               '--runTestsByPath',
-              'test/domains.e2e-spec.ts',
+              process.argv[2] === 'smtp'
+                ? 'test/smtp-settings.e2e-spec.ts'
+                : 'test/domains.e2e-spec.ts',
             ]
           : process.argv[2] === 'invariants'
             ? ['test:invariants']

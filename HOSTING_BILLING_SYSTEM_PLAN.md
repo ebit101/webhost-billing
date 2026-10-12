@@ -36,6 +36,17 @@ core nameserver/lock/contact management, secure authorization-code access and se
 paid manual one-year renewal for the supported domain path. WHMCS-style actionability
 is the reference, not full TLD/feature parity or authority for real agent purchases.
 
+**Email configuration direction — 2026-10-12:** The owner requested an administrator
+SMTP settings option after inspection confirmed that deployment SMTP captures email in
+Mailpit rather than delivering to public inboxes. Command 52 adds encrypted write-only
+custom SMTP configuration with required TLS, full-administrator MFA and separate explicit
+activation. Preserve deployment transport until activation and email history/idempotency.
+The owner supplied a private local credential file for connection testing and one test
+recipient. The owner subsequently authorized deployment and saving these credentials
+inactive with the approved sender; full-administrator MFA is still required by the
+credential API. Custom SMTP activation and customer-email resends remain unauthorized.
+Public delivery and verified sender acceptance remain distinct operating gates.
+
 ---
 
 ## 1. Executive Summary

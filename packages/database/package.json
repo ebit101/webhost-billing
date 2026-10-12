@@ -6,6 +6,10 @@
   "type": "commonjs",
   "types": "./src/index.ts",
   "exports": {
+    "./smtp-settings": {
+      "types": "./src/smtp-settings.ts",
+      "default": "./dist/smtp-settings.js"
+    },
     "./registrar": {
       "types": "./src/registrar/index.ts",
       "default": "./dist/registrar/index.js"

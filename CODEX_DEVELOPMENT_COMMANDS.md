@@ -1218,7 +1218,15 @@ Validate authorization, encryption/redaction, fake/live isolation, provider cont
 Update progress with executed evidence and unresolved gates. Stop after the registrar command and deployment report. Next bounded focus is review/configuration/acceptance of the existing cPanel/WHM adapter; cPanel mutations and a real domain purchase require their exact separate inputs and confirmation. No credentialed acceptance or production-readiness claim follows from mocked source tests.
 ```
 
-## Command 52 — Complete Accepted Interface and Alerting Gaps
+## Command 52 — Add guarded SMTP configuration to administrator settings
+
+```text
+Owner replacement on 2026-10-12: add an SMTP configuration option to administrator settings after confirming the deployed sender uses a test mail catcher. Implement secure host/port/TLS/auth configuration, write-only encrypted credentials, masked status, explicit activation and audit, and worker consumption without restart. Preserve deployment transport when unconfigured/inactive and fail closed on corrupt protected configuration. Saving must leave custom SMTP inactive; activation must bind to the reviewed revision and require full-administrator MFA. No plaintext/certificate-bypass options, internal-network destinations or arbitrary service ports through this form. Keep branding separate and preserve email idempotency/history.
+
+Add runtime, authorization, encryption/redaction, worker selection/failure and responsive UI regressions. Use fake transports in automated tests. Owner-supplied mc-credential.txt is private and must never enter Git/logs/job payloads. The owner separately supplied a test recipient and verified sender for one clearly labeled SMTP test message; test no customer/billing events. The owner subsequently approved deploying validated source and saving credentials as inactive with the supplied sender. This does not authorize custom SMTP activation or customer-email resends. Do not bypass full-administrator MFA to save credentials; request owner enrollment if absent. Validate source, document honest results and limits, commit/reconcile/non-force-push main and then deploy only this installation with a fresh verified backup, preserved images/environment/logo, no migrations/seeding or unrelated resources. Save only through the protected authenticated portal boundary after enrollment. Stop with honest operational acceptance and any remaining owner action.
+```
+
+### Earlier Command 52 candidate — Interface and alerting gaps (not authorized)
 
 ```text
 Implement only the release-checklist gaps the owner explicitly selected: a recent-payments dashboard section, a searchable/paginated administrator activity-log page, and/or direct external administrator alert delivery.
@@ -1228,7 +1236,17 @@ Keep transaction-sourced financial semantics, administrator authorization, metad
 Add tests and documentation, run full relevant validation, update docs/PROGRESS.md, commit, reconcile, push main, and stop.
 ```
 
-## Command 53 — Expand Resilience and Browser Coverage
+## Command 53 — Enforce administrator MFA and offer customer MFA with remembered devices
+
+```text
+Owner-authorized next task on 2026-10-12, after completing Command 52: support authenticator-app TOTP for all account types. Require enrolled MFA for every administrator's operational access, allowing only a tightly bounded self-enrollment/sign-out/recovery path before enrollment. Customer MFA is optional; once enabled, require it for sign-in. Preserve existing single-use recovery codes, encrypted secrets, replay prevention, session revocation, CSRF and role/ownership checks. Do not enroll factors, fabricate verified sessions or supply credentials on the owner's behalf.
+
+Add “Remember this device” as a bounded, revocable MFA trust token, not an indefinitely trusted login. Use secure HttpOnly cookie transport and hashed server-side evidence, expiry, per-user/per-factor binding and rotation. Invalidate remembered trust on password reset, MFA replacement/disable, recovery/security events and access/role changes; retain explicit recent-auth requirements for high-risk actions. Do not use localStorage, fingerprint-only trust, plaintext TOTP secrets, fake OTPs or bypass tokens. Define and disclose the trust lifetime and logout/device-revocation behavior before accepting it.
+
+Test enrollment, first-login mandatory administrator restrictions, optional customer enrollment/login, bad/replayed/expired codes, recovery, remembered-device expiry/revocation and concurrent/session transitions. All automated identities are fictional. Preserve prior migrations and histories; any additive storage must have preservation acceptance. Validate and deliver the focused security command, then stop. Its live deployment and credential saving must be explicitly authorized and cannot weaken MFA to work around un-enrolled accounts.
+```
+
+### Earlier Command 53 candidate — Resilience and browser coverage (not authorized)
 
 ```text
 Expand only the owner-approved resilience or quality scope justified by production evidence.

@@ -21,6 +21,7 @@ export * from './contracts/renewal-automation';
 export * from './contracts/responses';
 export * from './contracts/services';
 export * from './contracts/settings';
+export * from './contracts/smtp-settings';
 export * from './contracts/hosting-panels';
 export * from './contracts/states';
 export * from './contracts/tickets';

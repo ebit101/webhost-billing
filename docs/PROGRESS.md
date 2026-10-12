@@ -2,11 +2,11 @@
 
 ## Status Summary
 
-- **Current command:** Command 51 — Implement and deploy guarded live resell.biz registration
-- **Current status:** Supported registrar scope completed, locally/hosted validated and deployed to my.speedhost.bd at `1e51be0`. Core registration, automatic customer/contact preparation, management and paid renewal are delivered for the supported ordinary one-year .com path. Registrar credentials remain unconfigured; no real registration or external customer/contact operation occurred. WHMCS remains separate, payment manual, currency held and both tooling findings unwaived. Genuine provider and production-launch acceptance remain required.
+- **Current command:** Command 52 — Add guarded SMTP configuration to administrator settings
+- **Current status:** SMTP settings source passed local acceptance; source delivery/deployment in progress. Credentials are encrypted/write-only, inactive on save, require full-administrator MFA and are read by workers per attempt. Owner approved deployment and inactive saving with the supplied sender. One requested SMTP test passed TLS/authentication and the owner confirmed receipt. Credentials have not been persisted and live sender remains unchanged. Owner MFA enrollment is required before protected credential saving. Runtime remains `1e51be0`, WHMCS separate and currency held.
 - **Last updated:** 2026-10-12
-- **Next command:** Owner configuration and explicit paid registrar pilot acceptance; then phase review the completed registrar delivery and define the bounded cPanel/WHM configuration/acceptance phase.
-- **Next command authorized:** No
+- **Next command:** Finish Command 52 source acceptance/deployment; owner enrolls MFA before protected inactive credential/sender saving. Custom SMTP activation needs separate authorization.
+- **Next command authorized:** Yes — Command 53 authenticator-app MFA and remembered-device scope, after completing Command 52. Its live rollout remains separate.
 
 ## Command Reports
 
@@ -15253,6 +15253,71 @@ Stop after verified review delivery; do not implement it automatically.
   then **Phase review — Review completed registrar delivery and define the bounded
   cPanel/WHM configuration and acceptance phase**. No additional currency work, transfer,
   deletion, automatic renewal or agent-executed purchase is authorized by this delivery.
+
+### Command 52 — Add guarded SMTP configuration to administrator settings
+
+- **Status:** Source locally accepted; delivery/deployment in progress, not yet deployed.
+- **Date:** 2026-10-12 (Asia/Dhaka).
+- **Authorization:** Owner requested an SMTP configuration option; separately supplied
+  a private root credential file for testing and one test recipient/sender. Owner then
+  authorized deployment and inactive credential saving with the supplied sender.
+  No custom SMTP activation or real customer email resend authorized.
+- **Scope and files:** New shared strict SMTP contracts/tests; server-only database cipher
+  entry; settings service/controller/module and isolated API acceptance; dynamic worker
+  adapter/public destination guard/tests; SMTP settings panel/page wiring/component and
+  mobile/desktop browser tests. Existing credential storage is reused without migrations.
+  `.gitignore` and `.dockerignore` exclude the private owner file. CI uses the same
+  marked isolated API test runner; its new SMTP-only mode aids focused regression.
+  Command 52, the next authorized Command 53, plan and ADR-129 track scope.
+- Full-administrator MFA, CSRF, no-store masked status, complete encrypted bundle and
+  safe audits. Save/rotate defaults inactive; revision-bound activation and explicit
+  deployment-transport restore. Public IPv4/TLS/port constraints prevent arbitrary
+  internal service access. Existing sent/ambiguous emails and financial histories unchanged.
+- **Executed so far:** Package/backend strict types and worker build passed. Shared
+  contracts 116/116; serial settings component repeat 12/12; corrected worker provider
+  repeat 8/8. The first UI run timed out under parallel compiler load; no deadline change
+  or case skip. The initial cipher test exposed noncanonical base64url aliases accepted
+  by Node decoding; strict byte re-encoding now rejects those aliases and the repeat passed.
+  Initial formatter included `.gitignore`, which has no parser; only supported source
+  files were formatted. Two full API attempts failed new MFA fixture timestamp constraints
+  (factor creation, then session creation); explicit consistent timestamps fixed only
+  the fixtures, without changing SQL guards. Final full API acceptance passed 19 suites/
+  100 tests, plus focused SMTP 5/5. Existing API unit acceptance passed 25 suites/107.
+- Full isolated worker acceptance passed 12 suites/35 tests; final provider-focused
+  repeat passed 8/8. Full frontend passed 60 files/592 tests; final settings-focused
+  repeat passed 13/13, including a new authorized unreadable-credential repair path.
+  Actual mobile/desktop SMTP browser flow passed 2/2 without sending email. No skipped
+  tests or relaxed deadlines. Initial lint caught fixture require-await/formatting and
+  an unnecessary assertion; corrected and complete lint repeat passed.
+- Complete strict package/API/worker/web/browser types, production monorepo build,
+  formatting, all four offline documentation validators, production dependency audit
+  and license inventory passed. Staged-source and full 253-commit history secret scans
+  found no leaks. Installed tooling mitigations passed 15/15. Full audit still exits 1
+  for the unchanged, unwaived braces high and sprintf-js moderate advisories only.
+- Corrupt configuration stops custom delivery, not silently switches transport. A fixed
+  authorized API error permits a fresh replacement form without claiming deployment
+  fallback or offering activation of unreadable credentials. Unauthorized/network status
+  failures remain closed and offer an account-security enrollment link.
+- **Private credential test:** The owner's file is ignored and values were never printed.
+  One direct TLS/certificate/authentication check passed through a checked public IP;
+  no message sent or credentials persisted. An API-style username is not a sender email;
+  supplied sender was used for exactly one requested test email; the SMTP server accepted
+  one recipient, rejected none, and the owner confirmed inbox receipt. This was a direct
+  connection test, not the deployed worker/portal pipeline. No automatic resend/retry.
+- **Limits:** Saved/activated status is not connection or inbox verification. Required
+  public sender/provider/SPF/DKIM acceptance remains. Deployment is now approved but not
+  completed; no DNS modification,
+  public customer resend, registrar purchase, cPanel action or currency implementation.
+- Read-only live inspection found one full administrator and zero enrolled MFA credentials;
+  SMTP credential count is zero. Owner enrollment is required before protected saving.
+  No synthetic session/MFA identity or direct SQL credential bypass is permitted.
+- **Exact next:** Complete Command 52 acceptance/delivery/deployment; owner enrolls MFA
+  before saving credentials inactive with the approved sender. Request separate custom
+  SMTP activation and deployed-worker email acceptance before customer delivery. The
+  owner separately authorized **Command 53 — Enforce administrator MFA and offer customer
+  MFA with remembered devices**: authenticator apps, mandatory administrator enrollment,
+  optional customer MFA and bounded/revocable remembered-device trust. It is recorded,
+  not implemented or included in this deployment.
 
 ## Future report template
 

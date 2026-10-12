@@ -90,7 +90,7 @@ jobs:
         run: pnpm test
 
       - name: Run API integration tests
-        run: pnpm --filter @webhost-billing/api test:e2e --runInBand
+        run: pnpm --filter @webhost-billing/web exec tsx e2e/run-api-tests.ts
 
       - name: Run critical invariant tests
         run: pnpm test:invariants

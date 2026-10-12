@@ -7,6 +7,7 @@ import {
   type OnApplicationShutdown,
 } from '@nestjs/common';
 import type { WorkerEnvironment } from '@webhost-billing/config';
+import type { PrismaClient } from '@webhost-billing/database';
 import { BackgroundWorker } from '@webhost-billing/queue';
 import {
   WORKER_ENVIRONMENT,
@@ -16,10 +17,8 @@ import { EmailDeliveryService } from './email-delivery.service';
 import { EMAIL_ADAPTER } from './email.module.tokens';
 import { EmailMessageResolver } from './email-message.resolver';
 import { EmailTemplateCatalog } from './email-template.catalog';
-import {
-  PreviewEmailAdapter,
-  SmtpEmailAdapter,
-} from './nodemailer-email.adapter';
+import { ConfiguredEmailAdapter } from './configured-email.adapter';
+import { WORKER_PRISMA } from '../infrastructure/database.module';
 import type { EmailAdapter } from './email.types';
 
 const EMAIL_BACKGROUND_WORKER = Symbol('EMAIL_BACKGROUND_WORKER');
@@ -58,11 +57,11 @@ class EmailConsumerLifecycle
     EmailDeliveryService,
     {
       provide: EMAIL_ADAPTER,
-      inject: [WORKER_ENVIRONMENT],
-      useFactory: (environment: WorkerEnvironment): EmailAdapter =>
-        environment.EMAIL_TRANSPORT === 'smtp'
-          ? new SmtpEmailAdapter(environment)
-          : new PreviewEmailAdapter(environment),
+      inject: [WORKER_ENVIRONMENT, WORKER_PRISMA],
+      useFactory: (
+        environment: WorkerEnvironment,
+        prisma: PrismaClient,
+      ): EmailAdapter => new ConfiguredEmailAdapter(environment, prisma),
     },
     {
       provide: EMAIL_BACKGROUND_WORKER,

@@ -15,7 +15,10 @@ export class SmtpEmailAdapter implements EmailAdapter {
   readonly key = 'smtp';
   private readonly transporter: Transporter<SMTPTransport.SentMessageInfo>;
 
-  constructor(private readonly environment: WorkerEnvironment) {
+  constructor(
+    private readonly environment: WorkerEnvironment,
+    serverName?: string,
+  ) {
     this.transporter = nodemailer.createTransport({
       host: environment.SMTP_HOST,
       port: environment.SMTP_PORT,
@@ -24,7 +27,13 @@ export class SmtpEmailAdapter implements EmailAdapter {
       connectionTimeout: environment.SMTP_CONNECTION_TIMEOUT_MS,
       greetingTimeout: environment.SMTP_CONNECTION_TIMEOUT_MS,
       socketTimeout: environment.SMTP_SOCKET_TIMEOUT_MS,
-      tls: { rejectUnauthorized: true, minVersion: 'TLSv1.2' },
+      tls: {
+        rejectUnauthorized: true,
+        minVersion: 'TLSv1.2',
+        ...(serverName ? { servername: serverName } : {}),
+      },
+      logger: false,
+      debug: false,
       ...(environment.SMTP_USERNAME && environment.SMTP_PASSWORD
         ? {
             auth: {

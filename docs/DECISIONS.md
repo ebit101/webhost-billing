@@ -2701,6 +2701,43 @@ report-only update must pass its own delivery gate; stop for the recommended pha
 - **Next:** Finish Command 51 and report deployment. cPanel/WHM is next, separately
   bounded and confirmed; do not automatically create a hosting account.
 
+## ADR-129 — Configure SMTP privately and activate it separately from saving
+
+- **Status:** Owner-authorized Command 52 source locally accepted, 2026-10-12;
+  delivery/deployment pending and inactive credential saving requires owner MFA.
+- **Decision:** Add a separate settings panel/API for a single custom SMTP transport.
+  Store the entire host/TLS/auth/enabled bundle in the existing integration-credential
+  store using a server-only AES-256-GCM cipher and dedicated key domain/version. No schema
+  migration or plaintext password setting. Only full administrators with enrolled MFA
+  can read masked status or mutate it; session/CSRF protections remain in place.
+- Saving/replacing credentials always leaves custom SMTP inactive. Activation requires
+  an explicit confirmation and the exact reviewed ciphertext revision under row locking.
+  Restore the deployment transport explicitly, not by silently clearing secrets. Neither
+  saving nor activation sends a test message or certifies authentication/inbox delivery.
+- Workers select the protected transport afresh for each eligible send. Existing queued
+  attempts can use it after activation, but sent/ambiguous histories are not replayed or
+  rewritten. In-flight sends retain their chosen transport. Missing/inactive configuration
+  uses the existing environment; corruption/read failure never silently changes destination.
+- Only public IPv4 DNS SMTP hosts and the fixed encrypted pairs STARTTLS/587 or TLS/465
+  are supported by this form. Reject private/reserved/mixed DNS answers, pin the checked
+  IP for connection, and validate certificates against the original hostname. No debug
+  logging, certificate bypass, URL/proxy/custom port or plaintext connection options.
+  Existing deployment transport can still use a protected internal Mailpit boundary.
+- Branding remains the separate existing sender/reply-to source. A transport login is
+  not a verified sender identity; SMTP acceptance is not evidence of inbox placement.
+  SMTP API acceptance refuses an unmarked/normal database; CI uses the same fresh,
+  loopback, marker-verified API test runner rather than the ordinary CI schema.
+  Follow [Nodemailer's transport contract](https://nodemailer.com/smtp) for required TLS,
+  certificate servername on pinned IPs, timeouts and disabled diagnostic logging.
+- The owner's local credential file is ignored, never copied into code/history/logs.
+  Connection authentication and one owner-addressed test email are separately requested
+  tests, not permission to activate these credentials for customer email. The owner
+  subsequently approved source deployment and saving these credentials inactive with
+  the supplied sender. Saving must still pass authenticated full-administrator MFA;
+  initial live read-only inspection found no enrolled full administrator. Do not create
+  a synthetic MFA/session approval or bypass the service with direct credential SQL.
+  No currency, registrar, WHMCS, cPanel, DNS or unrelated infrastructure changes.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:
