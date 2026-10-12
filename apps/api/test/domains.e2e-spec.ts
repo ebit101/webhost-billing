@@ -310,6 +310,105 @@ describe('complete simulated registrar in isolated PostgreSQL (e2e)', () => {
       403,
     );
   });
+  it('lets a full administrator record offline consent and create an unpaid domain order for a customer', async () => {
+    const identity = await customer.get('/auth/me').expect(200);
+    const customerId = (identity.body as Success<{ customerId: string }>).data
+      .customerId;
+    const domainName = `manual-${randomUUID()}.com`;
+    const requestBody = {
+      customerId,
+      offerId,
+      domainName,
+      contact: {
+        name: 'Fictional registrant',
+        company: 'Fictional company',
+        address: '1 Test Street',
+        city: 'Dhaka',
+        region: 'Dhaka',
+        postalCode: '1000',
+        country: 'BD',
+        email: 'fictional@example.test',
+        phoneCountryCode: '880',
+        phone: '1700000000',
+      },
+      agreement: 'fictional-registration-v1',
+      offlineConsent: {
+        method: 'WRITTEN',
+        reference: `fictional-ticket-${randomUUID()}`,
+        consentedAt: new Date().toISOString(),
+        attestation: true,
+      },
+    };
+    await mutation(billing, '/domains/admin/quotes', requestBody, 403);
+    await mutation(unenrolled, '/domains/admin/quotes', requestBody, 403);
+    await mutation(
+      owner,
+      '/domains/admin/quotes',
+      {
+        ...requestBody,
+        offlineConsent: { ...requestBody.offlineConsent, attestation: false },
+      },
+      400,
+    );
+    const response = await mutation(
+      owner,
+      '/domains/admin/quotes',
+      requestBody,
+      201,
+    );
+    const quoteId = (response.body as Success<{ id: string }>).data.id;
+    const storedQuote = await prisma.domainQuote.findUniqueOrThrow({
+      where: { id: quoteId },
+    });
+    expect(storedQuote.customerId).toBe(customerId);
+    expect(storedQuote.offlineConsent).toMatchObject({
+      method: 'WRITTEN',
+      reference: requestBody.offlineConsent.reference,
+      recordedBy: expect.any(String) as string,
+    });
+    const input = { customerId, quoteId, submissionKey: randomUUID() };
+    await mutation(
+      customer,
+      '/domains/orders',
+      { quoteId, submissionKey: input.submissionKey },
+      403,
+    );
+    await mutation(billing, '/domains/admin/orders', input, 403);
+    await mutation(unenrolled, '/domains/admin/orders', input, 403);
+    const created = await mutation(owner, '/domains/admin/orders', input, 201);
+    const domain = (created.body as Success<DomainResult>).data;
+    expect(domain.state).toBe('AWAITING_PAYMENT');
+    expect(
+      JSON.stringify((await owner.get(`/domains/${domain.id}`)).body),
+    ).toContain(requestBody.offlineConsent.reference);
+    expect(
+      JSON.stringify((await customer.get(`/domains/${domain.id}`)).body),
+    ).not.toContain(requestBody.offlineConsent.reference);
+    expect(
+      (await mutation(owner, '/domains/admin/orders', input, 201)).body,
+    ).toEqual(created.body);
+    await customer.get(`/orders/${domain.orderId}`).expect(200);
+    await customer.get(`/invoices/${domain.invoiceId}`).expect(200);
+    const invoice = await prisma.invoice.findUniqueOrThrow({
+      where: { id: domain.invoiceId },
+    });
+    expect(invoice.status).toBe('UNPAID');
+    expect(
+      await prisma.registrarOperation.count({ where: { domainId: domain.id } }),
+    ).toBe(0);
+    await approve(domain, 409);
+    await pay(domain);
+    const statusCsrf = await owner.get('/auth/csrf').expect(200);
+    await owner
+      .patch(`/orders/${domain.orderId}/status`)
+      .set(
+        'X-CSRF-Token',
+        (statusCsrf.body as Success<{ csrfToken: string }>).data.csrfToken,
+      )
+      .send({ status: 'PROCESSING' })
+      .expect(409);
+    await approve(domain);
+  });
   it('fails closed before database mutation when production simulation is attempted', async () => {
     const production = new DomainService(
       prisma,
@@ -482,6 +581,7 @@ describe('complete simulated registrar in isolated PostgreSQL (e2e)', () => {
       data: {
         ...quote,
         selectionSnapshot: Prisma.DbNull,
+        offlineConsent: Prisma.DbNull,
         nameservers: ['ns1.example.test', 'ns2.example.test'],
         id: randomUUID(),
         createdAt: new Date(Date.now() - 600000),

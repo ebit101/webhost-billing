@@ -817,6 +817,25 @@ describe('Order creation (e2e)', () => {
         select: { id: true },
       });
       const invoiceIds = invoices.map((invoice) => invoice.id);
+      const outboxEvents = await prisma.outboxEvent.findMany({
+        where: {
+          OR: [
+            { aggregateType: 'ORDER', aggregateId: { in: orderIds } },
+            { aggregateType: 'INVOICE', aggregateId: { in: invoiceIds } },
+          ],
+        },
+        select: { id: true },
+      });
+      const emailLogs = await prisma.emailLog.findMany({
+        where: { outboxEventId: { in: outboxEvents.map((event) => event.id) } },
+        select: { id: true },
+      });
+      await prisma.emailAttempt.deleteMany({
+        where: { emailLogId: { in: emailLogs.map((log) => log.id) } },
+      });
+      await prisma.emailLog.deleteMany({
+        where: { outboxEventId: { in: outboxEvents.map((event) => event.id) } },
+      });
       await prisma.outboxEvent.deleteMany({
         where: {
           OR: [

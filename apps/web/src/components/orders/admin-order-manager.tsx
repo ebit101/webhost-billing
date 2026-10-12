@@ -29,6 +29,8 @@ import { StatusBadge } from '../ui/status-badge';
 import { errorMessage, formatMinor, orderTone } from './order-ui';
 import { AdminOrderReview } from './admin-order-review';
 import { AdminOrderLedger } from './admin-order-ledger';
+import { AdminDomainOrderForm } from './admin-domain-order-form';
+import Link from 'next/link';
 import {
   adminOrderHref,
   adminOrderQueryString,
@@ -200,7 +202,11 @@ export function AdminOrderManager({
         header: 'Actions',
         align: 'right',
         render: (order) =>
-          order.status === 'PAID' ? (
+          order.items[0]?.kind === 'DOMAIN' ? (
+            <Link href="/admin/domains" className="text-blue-700 underline">
+              Review domain
+            </Link>
+          ) : order.status === 'PAID' ? (
             <Button
               size="sm"
               disabled={saving}
@@ -320,9 +326,12 @@ export function AdminOrderManager({
       />
       {error ? <Message tone="error">{error}</Message> : null}
       {notice ? <Message tone="success">{notice}</Message> : null}
+      <AdminDomainOrderForm
+        onCreated={() => setReadRevision((current) => current + 1)}
+      />
       <Card
-        title="Create an order"
-        description="The API revalidates the customer, product, active price, domain, and every total before creating the order and unpaid invoice."
+        title="Create a hosting order"
+        description="Create a hosting order and unpaid invoice for a customer. The API revalidates the customer, product, active price, domain, and every total."
       >
         <form
           onSubmit={createOrder}

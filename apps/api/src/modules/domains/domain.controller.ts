@@ -12,6 +12,10 @@ import {
   createApiSuccessResponse,
   domainQuoteRequestSchema,
   domainPurchaseRequestSchema,
+  adminDomainQuoteRequestSchema,
+  adminDomainPurchaseRequestSchema,
+  type AdminDomainQuoteRequest,
+  type AdminDomainPurchaseRequest,
   domainApprovalRequestSchema,
   fakeRegistrarSetupSchema,
   registrarToggleSchema,
@@ -165,6 +169,26 @@ export class DomainController {
     @CurrentAuth() auth: AuthRequestContext,
   ) {
     return createApiSuccessResponse(await this.domains.quote(input, auth));
+  }
+  @Post('admin/quotes')
+  @Roles('ADMIN')
+  async adminQuote(
+    @Body(new ZodValidationPipe(adminDomainQuoteRequestSchema))
+    input: AdminDomainQuoteRequest,
+    @CurrentAuth() auth: AuthRequestContext,
+  ) {
+    return createApiSuccessResponse(await this.domains.adminQuote(input, auth));
+  }
+  @Post('admin/orders')
+  @Roles('ADMIN')
+  async adminPurchase(
+    @Body(new ZodValidationPipe(adminDomainPurchaseRequestSchema))
+    input: AdminDomainPurchaseRequest,
+    @CurrentAuth() auth: AuthRequestContext,
+  ) {
+    return createApiSuccessResponse(
+      await this.domains.adminPurchase(input, auth),
+    );
   }
   @Post('orders')
   @Roles('CUSTOMER')

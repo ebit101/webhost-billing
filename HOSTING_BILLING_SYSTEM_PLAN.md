@@ -36,6 +36,13 @@ core nameserver/lock/contact management, secure authorization-code access and se
 paid manual one-year renewal for the supported domain path. WHMCS-style actionability
 is the reference, not full TLD/feature parity or authority for real agent purchases.
 
+**Manual-first domain ordering — 2026-10-12:** Staff usually receive the
+customer's domain request through a prior conversation, record the customer and
+offline consent, then create an unpaid order and invoice. The customer views
+both in the portal and may pay later. Verified payment and separate administrator
+approval remain prerequisites for registration. Keep online customer ordering
+available as a secondary path.
+
 **Email configuration direction — 2026-10-12:** The owner requested an administrator
 SMTP settings option after inspection confirmed that deployment SMTP captures email in
 Mailpit rather than delivering to public inboxes. Command 52 adds encrypted write-only

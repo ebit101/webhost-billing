@@ -21,6 +21,8 @@ import {
   domainQuoteSchema,
   type DomainQuoteRequest,
   type DomainPurchaseRequest,
+  type AdminDomainQuoteRequest,
+  type AdminDomainPurchaseRequest,
   type DomainApprovalRequest,
   resellbizSetupSchema,
   resellbizSettingsSchema,
@@ -29,6 +31,7 @@ import {
   domainContactSchema,
   resellbizContactSchema,
   domainNameSchema,
+  adminOfflineConsentEvidenceSchema,
   type ResellbizSetup,
   domainSelectionSnapshotSchema,
   registrarConnectionIdentitySchema,
@@ -739,6 +742,34 @@ export class DomainService {
   async quote(input: DomainQuoteRequest, auth: AuthRequestContext) {
     this.requireRuntime();
     const customerId = this.customer(auth);
+    return this.quoteForCustomer(input, auth, customerId);
+  }
+  async adminQuote(input: AdminDomainQuoteRequest, auth: AuthRequestContext) {
+    this.administrator(auth);
+    this.requireSimulation();
+    const consentedAt = new Date(input.offlineConsent.consentedAt);
+    if (consentedAt > new Date())
+      this.deny('The recorded customer consent cannot be dated in the future.');
+    const { customerId, offlineConsent, ...quoteInput } = input;
+    return this.quoteForCustomer(
+      { ...quoteInput, consent: true },
+      auth,
+      customerId,
+      {
+        method: offlineConsent.method,
+        reference: offlineConsent.reference,
+        consentedAt: offlineConsent.consentedAt,
+        recordedAt: new Date().toISOString(),
+        recordedBy: auth.identity.userId,
+      },
+    );
+  }
+  private async quoteForCustomer(
+    input: DomainQuoteRequest,
+    auth: AuthRequestContext,
+    customerId: string,
+    offlineConsent?: Prisma.InputJsonValue,
+  ) {
     const offer = await this.prisma.domainOffer.findUnique({
       where: { id: input.offerId },
     });
@@ -747,6 +778,10 @@ export class DomainService {
     const account = await this.prisma.registrarAccount.findUniqueOrThrow({
       where: { id: offer.accountId },
     });
+    if (offlineConsent && account.mode !== 'FAKE')
+      this.deny(
+        'Admin-assisted orders currently support simulated registrar offers only.',
+      );
     this.requireAccount(account);
     const catalogueContext = await this.administration.catalogueContext(
       offer.tld,
@@ -828,7 +863,7 @@ export class DomainService {
         where: { customerId, createdAt: { gt: new Date(Date.now() - 600000) } },
       });
       if (recent >= 10) this.deny('Please wait before requesting more quotes.');
-      return tx.domainQuote.create({
+      const stored = await tx.domainQuote.create({
         data: {
           customerId,
           accountId: account.id,
@@ -843,6 +878,7 @@ export class DomainService {
           ...(catalogueContext
             ? { selectionSnapshot: catalogueContext.snapshot }
             : {}),
+          ...(offlineConsent ? { offlineConsent } : {}),
           contactCiphertext: this.cipher.encrypt(
             contactBinding(account.id, customerId, account.mode),
             input.contact,
@@ -856,6 +892,17 @@ export class DomainService {
           expiresAt: new Date(now.getTime() + 300000),
         },
       });
+      if (offlineConsent)
+        await tx.activityLog.create({
+          data: {
+            actorUserId: auth.identity.userId,
+            action: 'DOMAIN_OFFLINE_CONSENT_RECORDED',
+            entityType: 'DOMAIN_QUOTE',
+            entityId: stored.id,
+            metadata: { customerId },
+          },
+        });
+      return stored;
     });
     return domainQuoteSchema.parse({
       id: quote.id,
@@ -875,9 +922,38 @@ export class DomainService {
   async purchase(input: DomainPurchaseRequest, auth: AuthRequestContext) {
     this.requireRuntime();
     const customerId = this.customer(auth);
+    return this.purchaseForCustomer(input, auth, customerId, false);
+  }
+  async adminPurchase(
+    input: AdminDomainPurchaseRequest,
+    auth: AuthRequestContext,
+  ) {
+    this.administrator(auth);
+    this.requireSimulation();
+    return this.purchaseForCustomer(input, auth, input.customerId, true);
+  }
+  private async purchaseForCustomer(
+    input: DomainPurchaseRequest,
+    auth: AuthRequestContext,
+    customerId: string,
+    adminAssisted: boolean,
+  ) {
     try {
       const id = await this.prisma.$transaction(async (tx) => {
         await tx.$queryRaw`SELECT id FROM domain_quotes WHERE id=${input.quoteId}::uuid FOR UPDATE`;
+        const quote = await tx.domainQuote.findUnique({
+          where: { id: input.quoteId },
+        });
+        if (!quote || quote.customerId !== customerId)
+          this.deny(
+            'This quote is not available to your account.',
+            HttpStatus.FORBIDDEN,
+          );
+        if (Boolean(quote.offlineConsent) !== adminAssisted)
+          this.deny(
+            'This quote cannot be ordered through this route.',
+            HttpStatus.FORBIDDEN,
+          );
         const prior = await tx.domain.findUnique({
           where: { submissionKey: input.submissionKey },
         });
@@ -889,14 +965,6 @@ export class DomainService {
             this.deny('This submission key belongs to a different request.');
           return prior.id;
         }
-        const quote = await tx.domainQuote.findUnique({
-          where: { id: input.quoteId },
-        });
-        if (!quote || quote.customerId !== customerId)
-          this.deny(
-            'This quote is not available to your account.',
-            HttpStatus.FORBIDDEN,
-          );
         if (quote.expiresAt <= new Date())
           this.deny('The quote expired. Request a new quote explicitly.');
         const offer = await tx.domainOffer.findUniqueOrThrow({
@@ -933,6 +1001,10 @@ export class DomainService {
           include: { user: true },
         });
         this.requireAccount(account);
+        if (adminAssisted && account.mode !== 'FAKE')
+          this.deny(
+            'Admin-assisted orders currently support simulated registrar offers only.',
+          );
         if (
           !account.enabled ||
           (!selection && !price.isActive) ||
@@ -1044,8 +1116,9 @@ export class DomainService {
         await tx.activityLog.create({
           data: {
             actorUserId: auth.identity.userId,
-            action:
-              account.mode === 'LIVE'
+            action: adminAssisted
+              ? 'SIMULATED_ADMIN_DOMAIN_ORDER_CREATED'
+              : account.mode === 'LIVE'
                 ? 'LIVE_DOMAIN_ORDER_CREATED'
                 : 'SIMULATED_DOMAIN_ORDER_CREATED',
             entityType: 'DOMAIN',
@@ -1063,7 +1136,16 @@ export class DomainService {
         const prior = await this.prisma.domain.findUnique({
           where: { submissionKey: input.submissionKey },
         });
-        if (prior?.customerId === customerId && prior.quoteId === input.quoteId)
+        const replayQuote = prior
+          ? await this.prisma.domainQuote.findUnique({
+              where: { id: prior.quoteId },
+            })
+          : null;
+        if (
+          prior?.customerId === customerId &&
+          prior.quoteId === input.quoteId &&
+          Boolean(replayQuote?.offlineConsent) === adminAssisted
+        )
           return this.detail(prior.id, auth);
         this.deny('The domain or quote already has a registration request.');
       }
@@ -1182,6 +1264,13 @@ export class DomainService {
               contactBinding(domain.accountId, domain.customerId, account.mode),
               quote.contactCiphertext,
             ),
+            ...(quote.offlineConsent
+              ? {
+                  offlineConsent: adminOfflineConsentEvidenceSchema.parse(
+                    quote.offlineConsent,
+                  ),
+                }
+              : {}),
             operationId: operation?.id ?? null,
             dispatchClaimed: Boolean(operation?.claimedAt),
             ...(catalogue

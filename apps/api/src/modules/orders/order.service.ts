@@ -409,6 +409,13 @@ export class OrderService {
         const operation = await transaction.registrarOperation.findUnique({
           where: { domainId: domain.id },
         });
+        if (input.status === OrderStatus.PROCESSING)
+          throw new ApplicationException({
+            status: HttpStatus.CONFLICT,
+            code: 'CONFLICT',
+            message:
+              'Use the domain registration review to approve this order.',
+          });
         if (
           input.status === 'COMPLETED' ||
           (operation?.claimedAt &&
@@ -539,6 +546,7 @@ export class OrderService {
       cancelledAt: order.cancelledAt?.toISOString() ?? null,
       items: order.items.map((item) => ({
         id: item.id,
+        kind: item.kind,
         productId: item.productId,
         productPriceId: item.productPriceId,
         productName: item.productNameSnapshot,

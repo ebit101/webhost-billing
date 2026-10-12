@@ -2767,6 +2767,25 @@ report-only update must pass its own delivery gate; stop for the recommended pha
   link/revision snapshots, not an archive or certification of remote legal content.
   Command 53 mandatory administrator enrollment remains a separate unfinished task.
 
+## ADR-131 — Manual-first administrator domain orders
+
+- **Status:** Owner-directed, 2026-10-12; Command 120 source implemented.
+- **Decision:** Most customers discuss a domain request with staff before any
+  order exists. A full administrator with MFA may enter the customer's registrant
+  details and record prior phone, in-person or written consent with a timestamp,
+  internal reference and staff actor on the immutable domain quote. The admin
+  then creates an unpaid one-year domain order and invoice for that customer.
+  Online customer ordering remains available as a secondary route.
+- The customer views the resulting order and invoice in the portal. No automatic
+  email is sent by this path. Payment can follow later; only verified payment
+  permits the separate domain approval that leads to registration dispatch.
+  Generic order approval cannot bypass domain review.
+- **Current implementation limit:** The admin-assisted path accepts only
+  simulated registrar offers in non-production environments. This phase does
+  not authorize real registrar reads/writes, transfer, deployment or price
+  override. The consent record is administrative evidence of a prior customer
+  discussion, not a claim that the customer used the online form.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

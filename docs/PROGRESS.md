@@ -15561,6 +15561,46 @@ require explicit approval.
   continue fictional local flow testing. Any genuine registrar configuration,
   charge-bearing purchase or public launch needs its own explicit authorization.
 
+### Owner-directed Command 120 — Admin-created domain orders with recorded offline consent
+
+- **Status:** Source implemented and locally validated; not deployed.
+- **Date:** 2026-10-12 (Asia/Dhaka).
+- **Scope:** Added a manual domain section at the top of the admin order page.
+  Staff select a customer and simulated one-year offer, enter the discussed
+  domain and registrant details, record the prior consent method, timestamp,
+  internal reference and attestation, inspect a server-priced quote, then create
+  the customer's unpaid order and invoice. The immutable quote stores server-side
+  staff provenance. Admin domain review displays that evidence; the customer
+  response omits it. Generic order approval cannot bypass domain review.
+  Existing online ordering and portal order/invoice views remain available.
+  Payment may arrive later; registration still requires verified payment and
+  separate full-administrator MFA approval. No customer email is sent.
+- **Files changed:** Shared domain/order contracts, DomainController/Service,
+  OrderService, admin order/domain UI, Prisma schema and one additive migration,
+  domain and order e2e tests, test-fixture email cleanup, plan, decisions,
+  command register and this progress report. A conceptual form image was saved
+  outside the repository for review.
+- **Validation:** Prisma schema validation, package build, API and web typechecks,
+  full domain e2e suite (20/20), order e2e suite (7/7), full web unit suite
+  (603/603), full monorepo build, lint, formatting and four offline docs
+  validators, and `git diff --check` passed. The order e2e suite initially
+  reached a stale test-fixture email foreign key during cleanup; scoped cleanup
+  was corrected, then the suite passed. No real provider call was made.
+- **Decision:** Admin-assisted domain ordering is manual-first and fake-only in
+  this command. Customer self-service remains available but is not required for
+  staff-entered orders. Staff may record previously discussed consent, and the
+  customer receives the order and unpaid invoice through the portal. Payment
+  must be verified before approval and activation.
+- **Open risks:** Production-mode staging deliberately blocks fake registrar
+  writes, so this flow runs only in isolated local tests until a separately
+  authorized provider and deployment plan exists. The visual mockup illustrates
+  the agreed workflow and is not a screenshot of the deployed app. No email
+  delivery, live registrar, provider credential, transfer, payment override or
+  production/staging deployment was performed.
+- **Exact next:** Review the admin form locally with fictional customers and
+  the mockup; then separately authorize any staging rollout or live-provider
+  adaptation after legal/operational acceptance.
+
 ## Future report template
 
 Use this template after every future command:

@@ -5390,6 +5390,23 @@ credential changes, registrar operations, deployment, import or customer sends.
 Stop after reporting the preflight; deployment needs a separate owner command.
 ```
 
+## Command 120 — Admin-created domain orders with recorded offline consent
+
+```text
+Owner-directed on 2026-10-12 after reviewing a WHMCS Add New Order form:
+make the administrator's manually entered domain request the primary workflow.
+The customer may agree by phone, in person or written message before staff entry;
+record the method, time, internal evidence reference and administrator actor
+against the immutable quote. Staff select the customer, enter the domain and
+registrant details, review a server-priced quote, then create an unpaid order
+and invoice. The customer sees the order and invoice in the portal and may pay
+later. Registration remains separately approved only after verified payment.
+Keep online customer ordering available. Use fictional data and simulated
+providers only for implementation and tests. Do not deploy, send customer email,
+configure or call a live registrar, import WHMCS data or enable transfers.
+Validate, document, commit and push the focused source command to main.
+```
+
 ## Operating Guidance
 
 1. Run commands in order.

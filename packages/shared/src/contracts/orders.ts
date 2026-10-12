@@ -55,6 +55,7 @@ export const orderListQuerySchema = paginationQuerySchema.extend({
 export const orderItemSchema = z
   .object({
     id: z.uuid(),
+    kind: z.enum(['HOSTING', 'DOMAIN']).optional(),
     productId: z.uuid(),
     productPriceId: z.uuid(),
     productName: z.string().min(1).max(160),

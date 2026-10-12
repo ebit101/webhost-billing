@@ -1064,6 +1064,7 @@ model DomainQuote {
   nameservers       Json
   agreement         String   @db.VarChar(64)
   selectionSnapshot Json?    @map("selection_snapshot")
+  offlineConsent    Json?    @map("offline_consent")
   createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   expiresAt         DateTime @map("expires_at") @db.Timestamptz(3)
 

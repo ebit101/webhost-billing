@@ -46,6 +46,38 @@ export const domainPurchaseRequestSchema = z
     submissionKey: z.uuid(),
   })
   .strict();
+export const adminDomainQuoteRequestSchema = domainQuoteRequestSchema
+  .omit({ consent: true })
+  .extend({
+    customerId: z.uuid(),
+    offlineConsent: z
+      .object({
+        method: z.enum(['PHONE', 'IN_PERSON', 'WRITTEN']),
+        reference: z.string().trim().min(3).max(160),
+        consentedAt: z.iso.datetime(),
+        attestation: z.literal(true),
+      })
+      .strict(),
+  })
+  .strict();
+export const adminDomainPurchaseRequestSchema = domainPurchaseRequestSchema
+  .extend({ customerId: z.uuid() })
+  .strict();
+export type AdminDomainQuoteRequest = z.infer<
+  typeof adminDomainQuoteRequestSchema
+>;
+export type AdminDomainPurchaseRequest = z.infer<
+  typeof adminDomainPurchaseRequestSchema
+>;
+export const adminOfflineConsentEvidenceSchema = z
+  .object({
+    method: z.enum(['PHONE', 'IN_PERSON', 'WRITTEN']),
+    reference: z.string().min(3).max(160),
+    consentedAt: z.iso.datetime(),
+    recordedAt: z.iso.datetime(),
+    recordedBy: z.uuid(),
+  })
+  .strict();
 export const domainApprovalRequestSchema = z
   .object({
     confirmation: domainNameSchema,
@@ -268,6 +300,7 @@ export const domainDetailSchema = z
     costAmount: amount.optional(),
     costCurrency: z.literal('USD').optional(),
     contact: domainContactSchema.optional(),
+    offlineConsent: adminOfflineConsentEvidenceSchema.optional(),
     operationId: z.uuid().nullable().optional(),
     dispatchClaimed: z.boolean().optional(),
     renewalSellingAmount: positiveAmount.nullable().optional(),
