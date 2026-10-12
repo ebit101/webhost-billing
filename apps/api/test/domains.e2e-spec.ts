@@ -15,6 +15,8 @@ import {
   RegistrarProcessor,
   FakeDomainRegistrar,
   ResellbizHttpsTransport,
+  RegistrarCipher,
+  credentialBinding,
 } from '@webhost-billing/database/registrar';
 import {
   PARTIAL_PAYMENT_POLICY_CONFIRMATION,
@@ -28,6 +30,7 @@ import { PRISMA_CLIENT } from '../src/infrastructure/database/database.module';
 import { hashOpaqueToken } from '../src/modules/auth/services/auth-token.service';
 import { TotpService } from '../src/modules/auth/services/totp.service';
 import { DomainService } from '../src/modules/domains/domain.service';
+import { DomainAdministrationService } from '../src/modules/domains/domain-administration.service';
 import type { AuthRequestContext } from '../src/modules/auth/auth.types';
 
 interface DomainResult {
@@ -308,11 +311,15 @@ describe('complete simulated registrar in isolated PostgreSQL (e2e)', () => {
     );
   });
   it('fails closed before database mutation when production simulation is attempted', async () => {
-    const production = new DomainService(prisma, {
-      ...app.get<ApiEnvironment>(API_ENVIRONMENT),
-      NODE_ENV: 'production',
-      RESELLBIZ_LIVE_ENABLED: false,
-    });
+    const production = new DomainService(
+      prisma,
+      {
+        ...app.get<ApiEnvironment>(API_ENVIRONMENT),
+        NODE_ENV: 'production',
+        RESELLBIZ_LIVE_ENABLED: false,
+      },
+      app.get(DomainAdministrationService),
+    );
     // Deliberately absent identity: the production gate must not reach identity or DB work.
     const absent = undefined as unknown as AuthRequestContext;
     const before = await prisma.registrarAccount.count();
@@ -474,6 +481,7 @@ describe('complete simulated registrar in isolated PostgreSQL (e2e)', () => {
     const expired = await prisma.domainQuote.create({
       data: {
         ...quote,
+        selectionSnapshot: Prisma.DbNull,
         nameservers: ['ns1.example.test', 'ns2.example.test'],
         id: randomUUID(),
         createdAt: new Date(Date.now() - 600000),
@@ -1377,6 +1385,774 @@ describe('complete simulated registrar in isolated PostgreSQL (e2e)', () => {
           where: { entityId: accountId, action: 'RESELLBIZ_READ_RESERVED' },
         }),
       ).toBe(5);
+    } finally {
+      wire.mockRestore();
+    }
+  });
+  it('protects independent registrar/catalogue/default APIs with MFA and ownership roles', async () => {
+    for (const path of [
+      '/domains/administration/registrars',
+      '/domains/administration/tlds',
+      '/domains/administration/defaults',
+    ]) {
+      await request(app.getHttpServer()).get(path).expect(401);
+      await customer.get(path).expect(403);
+      await billing.get(path).expect(403);
+      await unenrolled.get(path).expect(403);
+      await owner.get(path).expect(200);
+    }
+  });
+  it('saves multiple encrypted connections without requiring or creating products/DNS/policies', async () => {
+    const beforeProducts = await prisma.product.count();
+    const beforeDomains = await prisma.domain.count();
+    for (const resellerId of ['22345', '32345']) {
+      const response = await mutation(
+        owner,
+        '/domains/administration/registrars',
+        {
+          name: `Fictional LogicBoxes ${resellerId}`,
+          module: 'logicboxes',
+          resellerId,
+          apiKey: 'fake'.repeat(8),
+          confirmation: 'Save registrar connection',
+        },
+        201,
+      );
+      expect(JSON.stringify(response.body)).not.toContain('fake'.repeat(8));
+    }
+    expect(await prisma.product.count()).toBe(beforeProducts);
+    expect(await prisma.domain.count()).toBe(beforeDomains);
+    expect(
+      await prisma.registrarAccount.count({ where: { mode: 'LIVE' } }),
+    ).toBe(3);
+    await mutation(
+      owner,
+      '/domains/administration/registrars',
+      {
+        name: 'Duplicate',
+        module: 'logicboxes',
+        resellerId: '22345',
+        apiKey: 'fake'.repeat(8),
+        confirmation: 'Save registrar connection',
+      },
+      409,
+    );
+  });
+  it('executes through a consent-scoped non-default registrar, retaining prices and the original quote binding', async () => {
+    const administration = app.get(DomainAdministrationService);
+    const origin = await prisma.registrarAccount.findFirstOrThrow({
+      where: { mode: 'FAKE' },
+    });
+    await prisma.registrarAccount.update({
+      where: { id: origin.id },
+      data: { enabled: true },
+    });
+    const second = await prisma.registrarAccount.create({
+      data: { mode: 'FAKE', enabled: true },
+    });
+    const cipher = new RegistrarCipher(
+      app.get<ApiEnvironment>(API_ENVIRONMENT).CREDENTIAL_ENCRYPTION_KEY,
+    );
+    await prisma.registrarCredential.create({
+      data: {
+        accountId: second.id,
+        version: 1,
+        ciphertext: cipher.encrypt(credentialBinding(second.id, 1, 'FAKE'), {
+          fictional: true,
+        }),
+      },
+    });
+    await prisma.registrarProfile.create({
+      data: {
+        accountId: second.id,
+        name: 'Fictional secondary',
+        nativeCostConfirmed: true,
+      },
+    });
+    const auth = (await owner.get('/auth/me')).body as Success<
+      AuthRequestContext['identity']
+    >;
+    const actor = { identity: auth.data } as AuthRequestContext;
+    await administration.setDefault(origin.id, actor);
+    await administration.saveDefaults(
+      'dns',
+      { nameservers: ['ns1.fictional-host.com', 'ns2.fictional-host.com'] },
+      actor,
+    );
+    await administration.saveDefaults(
+      'policies',
+      {
+        agreementUrl: 'https://fictional-host.com/domain-policy',
+        customerTermsUrl: 'https://fictional-host.com/terms',
+        customerPrivacyUrl: 'https://fictional-host.com/privacy',
+      },
+      actor,
+    );
+    await administration.saveTld(
+      {
+        tld: 'com',
+        registrationAmount: '150000',
+        renewalAmount: '160000',
+        enabled: true,
+        featured: true,
+        displayOrder: 1,
+        preferredRegistrarId: null,
+        revision: 0,
+      },
+      actor,
+    );
+    const offers = (await customer.get('/domains/offers').expect(200))
+      .body as Success<
+      {
+        id: string;
+        tld: string;
+        selectionConsentRevision?: string;
+        eligibleRegistrars?: { id: string }[];
+      }[]
+    >;
+    const selectedOffer = offers.data.find((entry) => entry.tld === 'com')!;
+    expect(selectedOffer.eligibleRegistrars?.map((entry) => entry.id)).toEqual(
+      expect.arrayContaining([origin.id, second.id]),
+    );
+    const name = `catalogue-${randomUUID()}.com`;
+    const contact = {
+      name: 'Fictional registrant',
+      company: 'Fictional company',
+      address: '1 Test Street',
+      city: 'Dhaka',
+      region: 'Dhaka',
+      postalCode: '1000',
+      country: 'BD',
+      email: 'fictional@example.test',
+      phoneCountryCode: '880',
+      phone: '1700000000',
+    };
+    await mutation(
+      customer,
+      '/domains/quotes',
+      {
+        offerId: selectedOffer.id,
+        domainName: name,
+        contact,
+        agreement: 'fictional-registration-v1',
+        consent: true,
+      },
+      409,
+    );
+    const quoteResponse = await mutation(
+      customer,
+      '/domains/quotes',
+      {
+        offerId: selectedOffer.id,
+        domainName: name,
+        contact,
+        agreement: 'fictional-registration-v1',
+        consent: true,
+        selectionConsentRevision: selectedOffer.selectionConsentRevision,
+      },
+      201,
+    );
+    const quoteId = (quoteResponse.body as Success<{ id: string }>).data.id;
+    const response = await mutation(
+      customer,
+      '/domains/orders',
+      { quoteId, submissionKey: randomUUID() },
+      201,
+    );
+    const domain = (response.body as Success<DomainResult>).data;
+    await pay(domain);
+    await mutation(
+      owner,
+      `/domains/${domain.id}/approve`,
+      {
+        confirmation: name,
+        costCeiling: '1000',
+        costCurrency: 'USD',
+        registrarAccountId: randomUUID(),
+      },
+      409,
+    );
+    await mutation(
+      owner,
+      `/domains/${domain.id}/registration-check`,
+      { registrarAccountId: second.id },
+      201,
+    );
+    const approval = await mutation(
+      owner,
+      `/domains/${domain.id}/approve`,
+      {
+        confirmation: name,
+        costCeiling: '1000',
+        costCurrency: 'USD',
+        registrarAccountId: second.id,
+      },
+      201,
+    );
+    const operationId = (approval.body as Success<DomainResult>).data
+      .operationId!;
+    const beforeInvoice = await prisma.invoice.findUniqueOrThrow({
+      where: { id: domain.invoiceId },
+    });
+    await administration.setDefault(second.id, actor);
+    await processor.process(operationId);
+    await processor.process(operationId);
+    const stored = await prisma.domain.findUniqueOrThrow({
+      where: { id: domain.id },
+    });
+    expect(stored.state).toBe('REGISTERED');
+    expect(stored.accountId).toBe(origin.id);
+    expect(stored.executionAccountId).toBe(second.id);
+    expect(
+      (
+        await prisma.fakeRegistrarRegistration.findUniqueOrThrow({
+          where: { operationId },
+        })
+      ).accountId,
+    ).toBe(second.id);
+    expect(
+      await prisma.fakeRegistrarRegistration.count({ where: { operationId } }),
+    ).toBe(1);
+    await expect(
+      prisma.registrarOperation.update({
+        where: { id: operationId },
+        data: { selectedAccountId: origin.id },
+      }),
+    ).rejects.toThrow();
+    await expect(
+      prisma.domain.update({
+        where: { id: domain.id },
+        data: { executionAccountId: origin.id },
+      }),
+    ).rejects.toThrow();
+    await expect(
+      prisma.domainQuote.update({
+        where: { id: quoteId },
+        data: { selectionSnapshot: {} },
+      }),
+    ).rejects.toThrow();
+    const catalogue = await prisma.domainCatalogueTld.findUniqueOrThrow({
+      where: { tld: 'com' },
+    });
+    await administration.saveTld(
+      {
+        tld: 'com',
+        registrationAmount: '250000',
+        renewalAmount: '260000',
+        enabled: true,
+        featured: false,
+        displayOrder: 1,
+        preferredRegistrarId: origin.id,
+        revision: catalogue.revision,
+      },
+      actor,
+    );
+    await expect(
+      prisma.productPrice.update({
+        where: { id: catalogue.registrationPriceId! },
+        data: { amount: 999n },
+      }),
+    ).rejects.toThrow();
+    expect(
+      (
+        await prisma.invoice.findUniqueOrThrow({
+          where: { id: domain.invoiceId },
+        })
+      ).total,
+    ).toBe(beforeInvoice.total);
+    expect(
+      (await prisma.domainQuote.findUniqueOrThrow({ where: { id: quoteId } }))
+        .sellingAmount,
+    ).toBe(150000n);
+    await administration.setDefault(origin.id, actor);
+    const observed = (await owner.get(`/domains/${domain.id}`).expect(200))
+      .body as Success<{ registrar: string; selectedRegistrarId: string }>;
+    expect(observed.data.registrar).toBe('Fictional secondary');
+    expect(observed.data.selectedRegistrarId).toBe(second.id);
+    await mutation(
+      owner,
+      `/domains/${domain.id}/approve`,
+      {
+        confirmation: name,
+        costCeiling: '1000',
+        costCurrency: 'USD',
+        registrarAccountId: origin.id,
+      },
+      409,
+    );
+    await expect(
+      administration.saveTld(
+        {
+          tld: 'com',
+          registrationAmount: '1',
+          renewalAmount: null,
+          enabled: true,
+          featured: false,
+          displayOrder: 1,
+          preferredRegistrarId: null,
+          revision: catalogue.revision,
+        },
+        actor,
+      ),
+    ).rejects.toThrow();
+  });
+  it('rejects stale policy and DNS consent, stale checkout and partial bulk writes', async () => {
+    const administration = app.get(DomainAdministrationService);
+    const auth = (await owner.get('/auth/me')).body as Success<
+      AuthRequestContext['identity']
+    >;
+    const actor = { identity: auth.data } as AuthRequestContext;
+    const fakeAccounts = await prisma.registrarAccount.findMany({
+      where: { mode: 'FAKE', enabled: true },
+    });
+    expect(fakeAccounts.length).toBeGreaterThanOrEqual(2);
+    await Promise.all(
+      fakeAccounts
+        .slice(0, 2)
+        .map((entry) => administration.setDefault(entry.id, actor)),
+    );
+    expect(
+      await prisma.registrarProfile.count({ where: { isDefault: true } }),
+    ).toBe(1);
+    const previous = await prisma.domainCatalogueTld.findUniqueOrThrow({
+      where: { tld: 'com' },
+    });
+    const input = {
+      tld: 'com',
+      registrationAmount: '250000',
+      renewalAmount: '260000',
+      enabled: true,
+      featured: false,
+      displayOrder: 1,
+      preferredRegistrarId: null,
+      revision: previous.revision,
+    };
+    await administration.saveTld(input, actor);
+    const offer = (await customer.get('/domains/offers').expect(200))
+      .body as Success<{ id: string; selectionConsentRevision: string }[]>;
+    const request = {
+      offerId: offer.data[0].id,
+      domainName: `stale-${randomUUID()}.com`,
+      contact: {
+        name: 'Fictional registrant',
+        company: 'Fictional company',
+        address: '1 Test Street',
+        city: 'Dhaka',
+        region: 'Dhaka',
+        postalCode: '1000',
+        country: 'BD',
+        email: 'fictional@example.test',
+        phoneCountryCode: '880',
+        phone: '1700000000',
+      },
+      agreement: 'fictional-registration-v1',
+      consent: true,
+      selectionConsentRevision: offer.data[0].selectionConsentRevision,
+    };
+    await administration.saveDefaults(
+      'dns',
+      { nameservers: ['ns3.fictional-host.com', 'ns4.fictional-host.com'] },
+      actor,
+    );
+    await mutation(customer, '/domains/quotes', request, 409);
+    const dnsOffer = (await customer.get('/domains/offers').expect(200))
+      .body as typeof offer;
+    await administration.saveDefaults(
+      'policies',
+      {
+        agreementUrl: 'https://fictional-host.com/domain-policy',
+        customerTermsUrl: 'https://fictional-host.com/terms',
+        customerPrivacyUrl: 'https://fictional-host.com/privacy',
+      },
+      actor,
+    );
+    await mutation(
+      customer,
+      '/domains/quotes',
+      {
+        ...request,
+        selectionConsentRevision: dnsOffer.data[0].selectionConsentRevision,
+      },
+      409,
+    );
+    const freshOffer = (await customer.get('/domains/offers').expect(200))
+      .body as typeof offer;
+    const quoted = await mutation(
+      customer,
+      '/domains/quotes',
+      {
+        ...request,
+        selectionConsentRevision: freshOffer.data[0].selectionConsentRevision,
+      },
+      201,
+    );
+    const quoteId = (quoted.body as Success<{ id: string }>).data.id;
+    const current = await prisma.domainCatalogueTld.findUniqueOrThrow({
+      where: { tld: 'com' },
+    });
+    await administration.saveTld(
+      { ...input, registrationAmount: '260000', revision: current.revision },
+      actor,
+    );
+    const invoiceCount = await prisma.invoice.count();
+    await mutation(
+      customer,
+      '/domains/orders',
+      { quoteId, submissionKey: randomUUID() },
+      409,
+    );
+    expect(await prisma.invoice.count()).toBe(invoiceCount);
+    expect(await prisma.domain.count({ where: { quoteId } })).toBe(0);
+    await administration.saveTld(
+      { ...input, tld: 'net', enabled: false, revision: 0 },
+      actor,
+    );
+    const batchRows = await prisma.domainCatalogueTld.findMany({
+      where: { tld: { in: ['com', 'net'] } },
+      orderBy: { id: 'asc' },
+    });
+    await expect(
+      administration.bulk(
+        {
+          entries: batchRows.map((row, index) => ({
+            id: row.id,
+            revision: row.revision + index,
+          })),
+          enabled: false,
+          confirmation: 'Apply TLD changes',
+        },
+        actor,
+      ),
+    ).rejects.toThrow();
+    expect(
+      await prisma.domainCatalogueTld.findMany({
+        where: { id: { in: batchRows.map((row) => row.id) } },
+        orderBy: { id: 'asc' },
+      }),
+    ).toEqual(batchRows);
+    await administration.saveDefaults(
+      'dns',
+      { nameservers: ['ns1.fictional-host.com', 'ns2.fictional-host.com'] },
+      actor,
+    );
+  });
+  it('prepares live contacts and management on the selected account through HTTP mocks only', async () => {
+    const administration = app.get(DomainAdministrationService);
+    const auth = (await owner.get('/auth/me')).body as Success<
+      AuthRequestContext['identity']
+    >;
+    const actor = { identity: auth.data } as AuthRequestContext;
+    const accounts = await prisma.registrarAccount.findMany({
+      where: { mode: 'LIVE' },
+      orderBy: { createdAt: 'asc' },
+    });
+    const origin = accounts.find(
+      (entry) =>
+        (entry.configuration as { resellerId?: string })?.resellerId ===
+        '22345',
+    )!;
+    const selected = accounts.find(
+      (entry) =>
+        (entry.configuration as { resellerId?: string })?.resellerId ===
+        '32345',
+    )!;
+    for (const account of [origin, selected]) {
+      await prisma.registrarAccount.update({
+        where: { id: account.id },
+        data: { enabled: true },
+      });
+      await prisma.registrarProfile.update({
+        where: { accountId: account.id },
+        data: { nativeCostConfirmed: true },
+      });
+    }
+    await administration.setDefault(origin.id, actor);
+    const catalogue = await prisma.domainCatalogueTld.findUniqueOrThrow({
+      where: { tld: 'com' },
+    });
+    await administration.saveTld(
+      {
+        tld: 'com',
+        registrationAmount: '250000',
+        renewalAmount: '260000',
+        enabled: true,
+        featured: false,
+        displayOrder: 1,
+        preferredRegistrarId: origin.id,
+        revision: catalogue.revision,
+      },
+      actor,
+    );
+    const name = `selected-live-${randomUUID()}.com`;
+    const contact = {
+      name: 'Fictional registrant',
+      company: 'Fictional company',
+      address: '1 Test Street',
+      city: 'Dhaka',
+      region: 'Dhaka',
+      postalCode: '1000',
+      country: 'BD',
+      email: 'fictional@example.test',
+      phoneCountryCode: '880',
+      phone: '1700000000',
+      publishOrganization: false,
+    };
+    let registered = false;
+    let selectedExpiry = 1900000000n;
+    const wire = jest
+      .spyOn(ResellbizHttpsTransport.prototype, 'request')
+      .mockImplementation(async (path, parameters) => {
+        await new Promise<void>((resolve) => queueMicrotask(resolve));
+        switch (path) {
+          case '/api/domains/available.json':
+            return JSON.stringify({
+              [`${String(parameters['domain-name'])}.com`]: {
+                status: registered ? 'regthroughus' : 'available',
+              },
+            });
+          case '/api/products/reseller-cost-price.json':
+            return '{"domcno":{"addnewdomain":{"1":10.99},"renewdomain":{"1":10.99}}}';
+          case '/api/customers/search.json':
+            return '{"recsonpage":0,"recsindb":0}';
+          case '/api/customers/v2/signup.json':
+            return '23456';
+          case '/api/contacts/add.json':
+            return '34567';
+          case '/api/customers/details-by-id.json':
+            return JSON.stringify({
+              customerid: '23456',
+              resellerid: '32345',
+              customerstatus: 'Active',
+              username: contact.email,
+              useremail: contact.email,
+              name: contact.name,
+              company: contact.company,
+              address1: contact.address,
+              city: contact.city,
+              state: contact.region,
+              zip: contact.postalCode,
+              country: contact.country,
+              telnocc: contact.phoneCountryCode,
+              telno: contact.phone,
+            });
+          case '/api/contacts/details.json':
+            return JSON.stringify({
+              entityid: '34567',
+              customerid: '23456',
+              type: 'Contact',
+              currentstatus: 'Active',
+              name: contact.name,
+              company: contact.company,
+              address1: contact.address,
+              city: contact.city,
+              state: contact.region,
+              zip: contact.postalCode,
+              country: contact.country,
+              emailaddr: contact.email,
+              telnocc: contact.phoneCountryCode,
+              telno: contact.phone,
+            });
+          case '/api/domains/register.json':
+            registered = true;
+            throw new Error('Fictional lost response; reconciliation only');
+          case '/api/domains/orderid.json':
+            return '45678';
+          case '/api/domains/details.json':
+            return JSON.stringify({
+              entityid: '45678',
+              domainname: name,
+              customerid: '23456',
+              isImmediateReseller: 'true',
+              currentstatus: 'Active',
+              endtime: selectedExpiry.toString(),
+              noOfNameServers: '2',
+              ns1: 'ns1.fictional-host.com',
+              ns2: 'ns2.fictional-host.com',
+              registrantcontactid: '34567',
+              admincontactid: '34567',
+              techcontactid: '34567',
+              billingcontactid: '34567',
+              raaVerificationStatus: 'Verified',
+            });
+          case '/api/domains/locks.json':
+            return '{"transferlock":true}';
+          case '/api/domains/renew.json':
+            selectedExpiry += 31536000n;
+            throw new Error(
+              'Fictional lost renewal response; reconciliation only',
+            );
+          default:
+            throw new Error('Unexpected HTTP-mocked operation');
+        }
+      });
+    try {
+      const offers = (await customer.get('/domains/offers').expect(200))
+        .body as Success<
+        {
+          id: string;
+          tld: string;
+          simulated: boolean;
+          selectionConsentRevision: string;
+        }[]
+      >;
+      const offer = offers.data.find((entry) => entry.tld === 'com')!;
+      expect(offer.simulated).toBe(false);
+      const quoted = await mutation(
+        customer,
+        '/domains/quotes',
+        {
+          offerId: offer.id,
+          domainName: name,
+          contact,
+          agreement: 'resellbiz-registration-v1',
+          consent: true,
+          customerPolicyConsent: true,
+          selectionConsentRevision: offer.selectionConsentRevision,
+        },
+        201,
+      );
+      const ordered = await mutation(
+        customer,
+        '/domains/orders',
+        {
+          quoteId: (quoted.body as Success<{ id: string }>).data.id,
+          submissionKey: randomUUID(),
+        },
+        201,
+      );
+      const domain = (ordered.body as Success<DomainResult>).data;
+      await pay(domain, '250000');
+      await mutation(
+        owner,
+        `/domains/${domain.id}/approve`,
+        {
+          confirmation: name,
+          costCeiling: '1100',
+          costCurrency: 'USD',
+          acceptPriceChangeRisk: true,
+          registrarAccountId: selected.id,
+        },
+        201,
+      );
+      const operation = await prisma.registrarOperation.findUniqueOrThrow({
+        where: { domainId: domain.id },
+      });
+      const live = new RegistrarProcessor(
+        prisma,
+        app.get<ApiEnvironment>(API_ENVIRONMENT).CREDENTIAL_ENCRYPTION_KEY,
+        undefined,
+        { simulationAllowed: false, liveAllowed: true },
+      );
+      await live.process(operation.id);
+      await live.process(operation.id);
+      expect(
+        (await prisma.domain.findUniqueOrThrow({ where: { id: domain.id } }))
+          .state,
+      ).toBe('REGISTERED');
+      const mutationCalls = wire.mock.calls.filter(([path]) =>
+        [
+          '/api/customers/v2/signup.json',
+          '/api/contacts/add.json',
+          '/api/domains/register.json',
+        ].includes(path),
+      );
+      expect(mutationCalls).toHaveLength(3);
+      expect(
+        mutationCalls.every(
+          ([, parameters]) => parameters['auth-userid'] === '32345',
+        ),
+      ).toBe(true);
+      const preparation = await prisma.registrarPreparation.findFirstOrThrow({
+        where: { operationId: operation.id },
+      });
+      expect(preparation.accountId).toBe(selected.id);
+      await administration.setDefault(origin.id, actor);
+      const refreshed = await mutation(
+        owner,
+        `/domains/${domain.id}/management/refresh`,
+        {},
+        201,
+      );
+      expect(
+        (refreshed.body as Success<{ nameservers: string[] }>).data.nameservers,
+      ).toEqual(['ns1.fictional-host.com', 'ns2.fictional-host.com']);
+      const beforeRenewal = await prisma.invoice.count();
+      await mutation(
+        owner,
+        `/domains/${domain.id}/actions`,
+        {
+          confirmation: name,
+          request: {
+            kind: 'RENEW',
+            sellingAmount: '1',
+            costCeiling: '1100',
+            acceptPriceChangeRisk: true,
+          },
+        },
+        409,
+      );
+      expect(await prisma.invoice.count()).toBe(beforeRenewal);
+      const currentCatalogue =
+        await prisma.domainCatalogueTld.findUniqueOrThrow({
+          where: { tld: 'com' },
+        });
+      await mutation(
+        owner,
+        `/domains/${domain.id}/actions`,
+        {
+          confirmation: name,
+          request: {
+            kind: 'RENEW',
+            sellingAmount: '260000',
+            catalogueRevision: currentCatalogue.revision,
+            costCeiling: '1100',
+            acceptPriceChangeRisk: true,
+          },
+        },
+        201,
+      );
+      const action = await prisma.domainAction.findFirstOrThrow({
+        where: { domainId: domain.id, kind: 'RENEW' },
+      });
+      expect(action.accountId).toBe(selected.id);
+      expect(
+        (
+          await prisma.invoice.findUniqueOrThrow({
+            where: { id: action.invoiceId! },
+          })
+        ).total,
+      ).toBe(260000n);
+      await pay({ ...domain, invoiceId: action.invoiceId! }, '260000');
+      const renewalUrl = `/domains/${domain.id}/actions/${action.id}/execute`;
+      await mutation(owner, renewalUrl, { confirmation: name }, 201);
+      await mutation(owner, renewalUrl, { confirmation: name }, 201);
+      const renewCalls = wire.mock.calls.filter(
+        ([path]) => path === '/api/domains/renew.json',
+      );
+      expect(renewCalls).toHaveLength(1);
+      expect(renewCalls[0][1]['auth-userid']).toBe('32345');
+      expect(
+        (
+          await prisma.domainAction.findUniqueOrThrow({
+            where: { id: action.id },
+          })
+        ).state,
+      ).toBe('SUCCEEDED');
+      expect(
+        (
+          await prisma.invoice.findUniqueOrThrow({
+            where: { id: domain.invoiceId },
+          })
+        ).total,
+      ).toBe(250000n);
+      // Settings checks and operational checks share one account read budget.
+      for (let index = 0; index < 3; index++)
+        await administration.check(selected.id, 'ordinary-example.com', actor);
+      const readCalls = wire.mock.calls.length;
+      await expect(
+        administration.check(selected.id, 'ordinary-example.com', actor),
+      ).rejects.toThrow();
+      expect(wire.mock.calls.length).toBe(readCalls);
     } finally {
       wire.mockRestore();
     }

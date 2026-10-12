@@ -5361,6 +5361,14 @@ Update docs/PROGRESS.md with:
 Do not claim completion for unverified behavior. Leave the repository in a buildable state when possible.
 ```
 
+## Command 118 — Separate the TLD catalogue and multi-registrar execution choice
+
+```text
+Owner-authorized on 2026-10-12: implement a WHMCS-inspired, sentence-case TLD pricing page and separate registrar settings. Support multiple connections using the supported LogicBoxes module, one installation default, TLD preference and explicit administrator selection before registration execution. Credentials alone configure a disabled connection; pricing, DNS defaults and centrally reviewed policies are independent. Do not claim unsupported provider/TLD/add-on/transfer capabilities or automatic registration.
+
+Preserve existing immutable accounts, offers, quotes, invoices, payments, mappings and dispatch claims. New catalogue prices are integer BDT revisions; native USD provider costs remain independent and require existing cost/risk acceptance. Snapshot customer consent covering the eligible registrar accounts and DNS/policies. Bind the actual selected account/credential at approval, prove availability/payment/ownership and dispatch once; never reroute a claimed or uncertain request. Renewals and management use the executed account, not the current default. Add reviewed forward-only storage and SQL guards, full-admin MFA/CSRF/audit boundaries, backend/worker integration and responsive UI/tests. Validate in owned fictional scopes, document actual results, commit/reconcile/non-force-push main and stop. No production deployment, real purchase, credential configuration, WHMCS connection, currency implementation, cPanel mutation or unrelated cleanup. Command 53 MFA/template work remains separate.
+```
+
 ## Operating Guidance
 
 1. Run commands in order.

@@ -1040,8 +1040,8 @@ model RegistrarCredential {
 model DomainOffer {
   id          String @id @default(uuid()) @db.Uuid
   accountId   String @map("account_id") @db.Uuid
-  productId   String @unique @map("product_id") @db.Uuid
-  priceId     String @unique @map("price_id") @db.Uuid
+  productId   String @map("product_id") @db.Uuid
+  priceId     String @map("price_id") @db.Uuid
   tld         String @db.VarChar(8)
   nameservers Json
 
@@ -1063,6 +1063,7 @@ model DomainQuote {
   fingerprint       String   @db.Char(64)
   nameservers       Json
   agreement         String   @db.VarChar(64)
+  selectionSnapshot Json?    @map("selection_snapshot")
   createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   expiresAt         DateTime @map("expires_at") @db.Timestamptz(3)
 
@@ -1076,6 +1077,7 @@ model Domain {
   quoteId                  String    @unique @map("quote_id") @db.Uuid
   customerId               String    @map("customer_id") @db.Uuid
   accountId                String    @map("account_id") @db.Uuid
+  executionAccountId       String?   @map("execution_account_id") @db.Uuid
   orderItemId              String    @unique @map("order_item_id") @db.Uuid
   invoiceId                String    @unique @map("invoice_id") @db.Uuid
   domainName               String    @unique @map("domain_name") @db.VarChar(253)
@@ -1089,7 +1091,8 @@ model Domain {
   currentContactCiphertext String?   @map("current_contact_ciphertext") @db.Text
   createdAt                DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
 
-  @@unique([accountId, providerOrderId])
+  @@index([accountId, providerOrderId])
+  @@unique([executionAccountId, providerOrderId])
   @@unique([id, customerId, accountId])
   @@index([customerId, createdAt])
   @@map("domains")
@@ -1101,6 +1104,9 @@ model RegistrarOperation {
   customerId              String    @map("customer_id") @db.Uuid
   accountId               String    @map("account_id") @db.Uuid
   credentialId            String    @map("credential_id") @db.Uuid
+  selectedAccountId       String?   @map("selected_account_id") @db.Uuid
+  selectedCredentialId    String?   @map("selected_credential_id") @db.Uuid
+  selectionFingerprint    String?   @map("selection_fingerprint") @db.Char(64)
   actorUserId             String    @map("actor_user_id") @db.Uuid
   costCeiling             BigInt    @map("cost_ceiling")
   priceChangeRiskAccepted Boolean   @default(false) @map("price_change_risk_accepted")
@@ -1188,4 +1194,28 @@ model FakeRegistrarRegistration {
 
   @@unique([accountId, domainName])
   @@map("fake_registrar_registrations")
+}
+
+model RegistrarProfile {
+  accountId           String  @id @map("account_id") @db.Uuid
+  name                String  @db.VarChar(100)
+  isDefault           Boolean @default(false) @map("is_default")
+  nativeCostConfirmed Boolean @default(false) @map("native_cost_confirmed")
+
+  @@map("registrar_profiles")
+}
+
+model DomainCatalogueTld {
+  id                   String  @id @default(uuid()) @db.Uuid
+  tld                  String  @unique @db.VarChar(50)
+  productId            String  @map("product_id") @db.Uuid
+  registrationPriceId  String? @map("registration_price_id") @db.Uuid
+  renewalAmount        BigInt? @map("renewal_amount")
+  preferredRegistrarId String? @map("preferred_registrar_id") @db.Uuid
+  enabled              Boolean @default(false)
+  featured             Boolean @default(false)
+  displayOrder         Int     @default(0) @map("display_order")
+  revision             Int     @default(1)
+
+  @@map("domain_catalogue_tlds")
 }

@@ -5,6 +5,7 @@ import {
   E2E_DATABASE_URL,
   E2E_SCHEMA,
   E2E_WEB_ORIGIN,
+  E2E_ENCRYPTION_KEY,
   e2eApiEnvironment,
 } from '../environment';
 import { assertBrowserDatabaseScope } from '../database-scope';
@@ -16,6 +17,10 @@ import { parseWorkerEnvironment } from '@webhost-billing/config';
 import { backgroundQueueNames } from '@webhost-billing/shared';
 import { TotpService } from '../../../api/dist/modules/auth/services/totp.service';
 import { parseApiEnvironment } from '@webhost-billing/config';
+import {
+  RegistrarCipher,
+  credentialBinding,
+} from '@webhost-billing/database/registrar';
 
 test.use({
   viewport: { width: 390, height: 844 },
@@ -104,26 +109,73 @@ test('mobile customer and administrator complete a clearly simulated domain work
     await session(customerContext, false);
     const admin = await adminContext.newPage();
     const customer = await customerContext.newPage();
+    const cipher = new RegistrarCipher(E2E_ENCRYPTION_KEY);
+    const fictionalAccounts = [];
+    for (const name of ['Workflow origin', 'Workflow selected registrar']) {
+      const account = await e2ePrisma.registrarAccount.create({
+        data: { mode: 'FAKE', enabled: true },
+      });
+      await e2ePrisma.registrarCredential.create({
+        data: {
+          accountId: account.id,
+          version: 1,
+          ciphertext: cipher.encrypt(credentialBinding(account.id, 1, 'FAKE'), {
+            fictional: true,
+          }),
+        },
+      });
+      await e2ePrisma.registrarProfile.create({
+        data: { accountId: account.id, name, nativeCostConfirmed: true },
+      });
+      fictionalAccounts.push(account);
+    }
+    const originAccount = fictionalAccounts[0]!,
+      selectedAccount = fictionalAccounts[1]!;
+    await admin.goto('/admin/settings/domain-defaults');
+    await admin
+      .getByLabel('Nameservers, separated by commas')
+      .fill('ns1.fictional-host.com, ns2.fictional-host.com');
+    await admin.getByRole('button', { name: 'Save DNS defaults' }).click();
+    await expect(admin.getByRole('status')).toContainText('Defaults saved');
+    await admin
+      .getByLabel('Domain-registration policy')
+      .fill('https://fictional-host.com/domain-policy');
+    await admin
+      .getByLabel('Customer terms')
+      .fill('https://fictional-host.com/terms');
+    await admin
+      .getByLabel('Privacy policy')
+      .fill('https://fictional-host.com/privacy');
+    await admin.getByRole('button', { name: 'Save reviewed policies' }).click();
+    await expect(admin.getByRole('status')).toContainText('Defaults saved');
+    const catalogue = await e2ePrisma.domainCatalogueTld.findUnique({
+      where: { tld: 'com' },
+    });
+    await admin.goto('/admin/domain-pricing');
+    if (catalogue)
+      await admin.getByRole('button', { name: 'Pricing for .com' }).click();
+    else {
+      await admin.getByRole('button', { name: 'Add TLD', exact: true }).click();
+      await admin.getByLabel('TLD', { exact: true }).fill('com');
+    }
+    await admin.getByLabel('One-year registration price (BDT)').fill('1500.00');
+    await admin.getByLabel('One-year renewal price (BDT)').fill('1600.00');
+    await admin
+      .getByLabel('Preferred registrar', { exact: true })
+      .selectOption(originAccount.id);
+    await admin.getByLabel('Offer registration', { exact: true }).check();
+    await admin.getByRole('button', { name: 'Save TLD pricing' }).click();
+    await expect(admin.getByRole('status')).toContainText('TLD revision saved');
     await admin.goto('/admin/domains');
-    await admin
-      .getByLabel('Fixed one-year selling price in BDT minor units')
-      .fill('150000');
-    await admin
-      .getByLabel('Type Enable simulated registrar')
-      .fill('Enable simulated registrar');
-    await admin
-      .getByRole('button', { name: 'Create simulated offers' })
-      .click();
-    await expect(
-      admin.getByRole('button', { name: 'Disable registrar' }),
-    ).toBeVisible();
     await customer.goto('/portal/domains');
-    await expect(
-      customer.getByLabel('Domain offer').locator('option'),
-    ).toHaveCount(3);
     const offer = (
-      await e2ePrisma.domainOffer.findFirstOrThrow({ where: { tld: 'com' } })
+      await e2ePrisma.domainOffer.findUniqueOrThrow({
+        where: { accountId_tld: { accountId: originAccount.id, tld: 'com' } },
+      })
     ).id;
+    await expect(
+      customer.getByLabel('Domain offer').locator(`option[value="${offer}"]`),
+    ).toHaveCount(1);
     const signInContext = await browser.newContext();
     try {
       const signIn = await signInContext.newPage();
@@ -226,6 +278,17 @@ test('mobile customer and administrator complete a clearly simulated domain work
     ).toBeVisible();
     await admin.getByLabel('Type exact domain name').fill(domainName);
     await admin
+      .getByLabel('Registrar', { exact: true })
+      .selectOption(selectedAccount.id);
+    await admin
+      .getByRole('button', { name: 'Check selected registrar' })
+      .click();
+    await expect(
+      admin
+        .getByRole('status')
+        .filter({ hasText: 'Simulated read-only check' }),
+    ).toContainText('no registration was submitted');
+    await admin
       .getByLabel('Approved USD preflight threshold in minor units')
       .fill('1000');
     await admin
@@ -239,6 +302,8 @@ test('mobile customer and administrator complete a clearly simulated domain work
     const operation = await e2ePrisma.registrarOperation.findUniqueOrThrow({
       where: { domainId: domain.id },
     });
+    expect(operation.accountId).toBe(originAccount.id);
+    expect(operation.selectedAccountId).toBe(selectedAccount.id);
     const environment = parseWorkerEnvironment({
       ...e2eApiEnvironment,
       DATABASE_URL: E2E_DATABASE_URL,
@@ -315,6 +380,13 @@ test('mobile customer and administrator complete a clearly simulated domain work
           where: { operationId: operation.id },
         }),
       ).toBe(1);
+      expect(
+        (
+          await e2ePrisma.fakeRegistrarRegistration.findUniqueOrThrow({
+            where: { operationId: operation.id },
+          })
+        ).accountId,
+      ).toBe(selectedAccount.id);
     } finally {
       await consumer.onApplicationShutdown();
       // Only this test's random prefix, never application queues.

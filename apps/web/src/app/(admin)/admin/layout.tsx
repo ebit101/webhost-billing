@@ -22,7 +22,17 @@ const navigation: WorkspaceNavigationItem[] = [
   { href: '/admin/products', label: 'Products', icon: 'product' },
   { href: '/admin/orders', label: 'Orders', icon: 'order', badge: '4' },
   { href: '/admin/services', label: 'Services', icon: 'server' },
-  { href: '/admin/domains', label: 'Simulated domains', icon: 'server' },
+  { href: '/admin/domains', label: 'Domains', icon: 'server' },
+  {
+    href: '/admin/domain-pricing',
+    label: 'Domain pricing and TLDs',
+    icon: 'product',
+  },
+  {
+    href: '/admin/settings/registrars',
+    label: 'Domain registrars',
+    icon: 'settings',
+  },
   { href: '/admin/invoices', label: 'Invoices', icon: 'invoice', badge: '7' },
   { href: '/admin/payments', label: 'Payments', icon: 'payment' },
   { href: '/admin/support', label: 'Support', icon: 'support', badge: '3' },

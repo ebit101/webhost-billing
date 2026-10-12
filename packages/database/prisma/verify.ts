@@ -24,6 +24,7 @@ const schema = testScope ?? 'public';
 const expectedTables = [
   'domain_offers',
   'domain_actions',
+  'domain_catalogue_tlds',
   'domain_quotes',
   'domains',
   'fake_registrar_registrations',
@@ -33,6 +34,7 @@ const expectedTables = [
   'registrar_mappings',
   'registrar_operations',
   'registrar_preparations',
+  'registrar_profiles',
   'activity_logs',
   'admin_login_challenges',
   'admin_profiles',
@@ -146,6 +148,7 @@ const requiredCustomConstraints = [
 ] as const;
 
 const expectedMoneyColumns = [
+  'domain_catalogue_tlds.renewal_amount',
   'domain_quotes.cost_amount',
   'domain_quotes.selling_amount',
   'registrar_operations.cost_ceiling',
@@ -214,6 +217,7 @@ async function verify(): Promise<void> {
       name !== 'currency_policy_revisions' &&
       name !== 'currency_controls' &&
       name !== 'currency_installations' &&
+      name !== 'registrar_profiles' &&
       name !== 'currency_selection_intents',
   );
   assert.equal(idColumnTypes.length, uuidTables.length);
@@ -348,6 +352,36 @@ async function verify(): Promise<void> {
   assert.equal(await prisma.currencyExecutionDomain.count(), 0);
   assert.equal(await prisma.currencySelectionIntent.count(), 0);
   assert.equal(await prisma.currencyAuthorizationEvidence.count(), 0);
+  assert.equal(await prisma.registrarProfile.count(), 0);
+  assert.equal(await prisma.domainCatalogueTld.count(), 0);
+  const registrarProfileKey = await prisma.$queryRaw<{ column_name: string }[]>`
+    SELECT column_name FROM information_schema.key_column_usage
+    WHERE constraint_schema = ${schema} AND constraint_name = 'registrar_profiles_pkey'
+    ORDER BY ordinal_position
+  `;
+  assert.deepEqual(registrarProfileKey, [{ column_name: 'account_id' }]);
+  const registrarDefaultIndex = await prisma.$queryRaw<{ count: bigint }[]>`
+    SELECT count(*) AS count FROM pg_indexes
+    WHERE schemaname = ${schema} AND indexname = 'registrar_one_default'
+      AND indexdef LIKE 'CREATE UNIQUE INDEX % WHERE is_default'
+  `;
+  assert.equal(registrarDefaultIndex[0]?.count, 1n);
+  const actualAccountIndex = await prisma.$queryRaw<{ count: bigint }[]>`
+    SELECT count(*) AS count FROM pg_indexes
+    WHERE schemaname = ${schema} AND indexname = 'domains_actual_account_provider_order_key'
+      AND indexdef LIKE 'CREATE UNIQUE INDEX %COALESCE(execution_account_id, account_id)%'
+  `;
+  assert.equal(actualAccountIndex[0]?.count, 1n);
+  const selectionGuards = await prisma.$queryRaw<{ name: string }[]>`
+    SELECT t.tgname AS name FROM pg_trigger t
+    JOIN pg_class c ON c.oid = t.tgrelid JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = ${schema} AND NOT t.tgisinternal AND t.tgenabled = 'O'
+      AND t.tgname IN ('registrar_profile_guard', 'domain_catalogue_guard',
+        'domain_catalogue_price_guard', 'domain_quote_selection_guard',
+        'registrar_selection_guard', 'domain_execution_account_guard',
+        'domain_action_execution_owner_guard')
+  `;
+  assert.equal(selectionGuards.length, 7);
 
   const moneyColumns = await prisma.$queryRaw<
     Array<{ table_name: string; column_name: string }>

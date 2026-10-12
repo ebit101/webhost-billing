@@ -2,6 +2,8 @@ import {
   domainContactSchema,
   resellbizConfigurationSchema,
   resellbizCredentialSchema,
+  registrarConnectionIdentitySchema,
+  domainSelectionSnapshotSchema,
 } from '@webhost-billing/shared';
 import type { Prisma, PrismaClient } from '../index';
 import { RegistrarCipher, contactBinding, credentialBinding } from './cipher';
@@ -91,7 +93,15 @@ export class RegistrarProcessor {
       await lockDomainInvoice(tx, locatedDomain.invoiceId);
       await tx.$queryRaw`SELECT id FROM domains WHERE id=${locator.domainId}::uuid FOR UPDATE`;
       await tx.$queryRaw`SELECT id FROM registrar_operations WHERE id=${operationId}::uuid FOR UPDATE`;
-      await tx.$queryRaw`SELECT id FROM registrar_accounts WHERE id=${locator.accountId}::uuid FOR UPDATE`;
+      // Cross-account selections must acquire account locks in a stable order.
+      for (const accountId of [
+        ...new Set([
+          locator.accountId,
+          locator.selectedAccountId ?? locator.accountId,
+        ]),
+      ].sort()) {
+        await tx.$queryRaw`SELECT id FROM registrar_accounts WHERE id=${accountId}::uuid FOR UPDATE`;
+      }
       const operation = await tx.registrarOperation.findUniqueOrThrow({
         where: { id: operationId },
       });
@@ -99,8 +109,17 @@ export class RegistrarProcessor {
         where: { id: operation.domainId },
       });
       const account = await tx.registrarAccount.findUniqueOrThrow({
+        where: { id: operation.selectedAccountId ?? operation.accountId },
+      });
+      const origin = await tx.registrarAccount.findUniqueOrThrow({
         where: { id: operation.accountId },
       });
+      if (
+        account.mode !== origin.mode ||
+        (operation.selectedAccountId &&
+          domain.executionAccountId !== account.id)
+      )
+        return null;
       if (
         !account.enabled ||
         (account.mode === 'FAKE'
@@ -121,15 +140,16 @@ export class RegistrarProcessor {
         where: { id: domain.quoteId },
       });
       const credential = await tx.registrarCredential.findUniqueOrThrow({
-        where: { id: operation.credentialId },
+        where: { id: operation.selectedCredentialId ?? operation.credentialId },
       });
+      if (credential.accountId !== account.id) return null;
       const credentials = this.cipher.decrypt(
         credentialBinding(account.id, credential.version, account.mode),
         credential.ciphertext,
       );
       const contact = domainContactSchema.parse(
         this.cipher.decrypt(
-          contactBinding(account.id, domain.customerId, account.mode),
+          contactBinding(origin.id, domain.customerId, origin.mode),
           quote.contactCiphertext,
         ),
       );
@@ -152,23 +172,44 @@ export class RegistrarProcessor {
       };
       let provider = this.provider ?? new FakeDomainRegistrar(this.prisma);
       if (account.mode === 'LIVE') {
-        const config = resellbizConfigurationSchema.parse(
+        const modern = registrarConnectionIdentitySchema.safeParse(
           account.configuration,
         );
+        const config = modern.success
+          ? modern.data
+          : resellbizConfigurationSchema.parse(account.configuration);
+        if (
+          modern.success &&
+          !(
+            await tx.registrarProfile.findUnique({
+              where: { accountId: account.id },
+            })
+          )?.nativeCostConfirmed
+        )
+          return null;
+        const selection = quote.selectionSnapshot
+          ? domainSelectionSnapshotSchema.parse(quote.selectionSnapshot)
+          : null;
         const payload = resellbizCredentialSchema.parse(credentials);
         const mapping = await tx.registrarMapping.findUnique({
           where: {
             accountId_customerId_fingerprint: {
               accountId: account.id,
               customerId: domain.customerId,
-              fingerprint: quote.fingerprint,
+              fingerprint: operation.selectionFingerprint ?? quote.fingerprint,
             },
           },
         });
         if (
           payload.resellerId !== config.resellerId ||
           quote.agreement !== 'resellbiz-registration-v1' ||
-          JSON.stringify(nameservers) !== JSON.stringify(config.nameservers)
+          (selection
+            ? !selection.eligibleRegistrars.some(
+                (entry) => entry.id === account.id,
+              ) || !operation.selectedAccountId
+            : !('nameservers' in config) ||
+              JSON.stringify(nameservers) !==
+                JSON.stringify(config.nameservers))
         )
           return null;
         provider =
@@ -241,9 +282,22 @@ export class RegistrarProcessor {
           return null;
         }
         // Only one outstanding mutation per account. Redelivery is reconciliation only.
+        if (
+          await tx.domainAction.findFirst({
+            where: {
+              accountId: account.id,
+              claimedAt: { not: null },
+              state: { notIn: ['SUCCEEDED', 'CANCELLED', 'FAILED'] },
+            },
+          })
+        )
+          return null;
         const busy = await tx.registrarOperation.findMany({
           where: {
-            accountId: account.id,
+            OR: [
+              { selectedAccountId: account.id },
+              { selectedAccountId: null, accountId: account.id },
+            ],
             id: { not: operationId },
             claimedAt: { not: null },
           },
@@ -303,11 +357,13 @@ export class RegistrarProcessor {
           await this.evidence(operationId, 'PRE_DISPATCH_CONFLICT');
           return;
         }
-        const fingerprint = (
-          await this.prisma.domainQuote.findUniqueOrThrow({
-            where: { id: locatedDomain.quoteId },
-          })
-        ).fingerprint;
+        const fingerprint =
+          locator.selectionFingerprint ??
+          (
+            await this.prisma.domainQuote.findUniqueOrThrow({
+              where: { id: locatedDomain.quoteId },
+            })
+          ).fingerprint;
         await provider.ensureContacts(intent, fingerprint);
         await provider.registerOnce(intent);
         await this.evidence(operationId, 'MUTATION_RESPONSE_RECEIVED');

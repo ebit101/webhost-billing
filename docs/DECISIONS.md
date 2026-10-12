@@ -2739,6 +2739,34 @@ report-only update must pass its own delivery gate; stop for the recommended pha
   a synthetic MFA/session approval or bypass the service with direct credential SQL.
   No currency, registrar, WHMCS, cPanel, DNS or unrelated infrastructure changes.
 
+## ADR-130 — Separate domain catalogue pricing from immutable registrar execution
+
+- **Status:** Owner-authorized Command 118 source implemented and locally validated,
+  2026-10-12; Git delivery recorded in progress. No live deployment or purchase authorized.
+- **Decision:** Credentials-only disabled LogicBoxes connections are independent of
+  integer BDT TLD price revisions, installation DNS defaults and reviewed central policy
+  links. Multiple upstream accounts belong to one business, not a multi-tenant reseller
+  platform. One SQL-enforced installation default and optional TLD preference only
+  preselect the administrator's registrar; payment never dispatches registration.
+- New quotes retain their original account provenance and snapshot catalogue revision,
+  immutable price reference, nameservers, central policy revision and exact eligible
+  account identities disclosed during customer consent. A stale/unreviewed scope denies
+  quote/order creation. Legacy requests remain limited to their originally accepted account.
+- At approval, fresh native cost/payment/ownership/MFA checks precede immutable actual
+  account, credential and contact-fingerprint selection. Registered-domain management,
+  customer/contact preparation, cost checks and renewals follow that executed account.
+  No changed default, rotation, disabled account or uncertain response reroutes a purchase.
+- Existing account configurations, offers, quotes and invoices are not rewritten. New
+  catalogue prices use the existing ProductPrice store as immutable inactive versions
+  selected by an explicit catalogue pointer, preserving the global one-active-price
+  rule and hosting pricing. Additive SQL guards retain ownership and history while
+  distinguishing quote provenance from executed provider ownership.
+- **Limits:** Supported live ordinary .com/one year only; transfers, premium domains,
+  additional provider modules/TLDs, paid privacy/DNS/email add-ons, auto-registration,
+  FX, WHMCS connection and cPanel work are not enabled. Policies are operator-reviewed
+  link/revision snapshots, not an archive or certification of remote legal content.
+  Command 53 mandatory administrator enrollment remains a separate unfinished task.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

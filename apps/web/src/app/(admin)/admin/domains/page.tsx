@@ -1,11 +1,21 @@
 import { DomainManager } from '../../../../components/domains/domain-manager';
 import { authorizeAdminPage } from '../../../../lib/server-admin-access';
-import { ResellbizSettingsPanel } from '../../../../components/domains/resellbiz-settings';
+import Link from 'next/link';
 export default async function Page() {
-  await authorizeAdminPage('/admin/domains');
+  const identity = await authorizeAdminPage('/admin/domains');
+  if (!identity) return null;
   return (
     <div className="space-y-6">
-      <ResellbizSettingsPanel />
+      <nav
+        className="flex flex-wrap gap-4 text-sm underline"
+        aria-label="Domain configuration"
+      >
+        <Link href="/admin/domain-pricing">Domain pricing and TLDs</Link>
+        <Link href="/admin/settings/registrars">Registrar connections</Link>
+        <Link href="/admin/settings/domain-defaults">
+          DNS defaults and policies
+        </Link>
+      </nav>
       <DomainManager administrator />
     </div>
   );

@@ -32,11 +32,13 @@ export function DomainManagementPanel({
   domainName,
   administrator,
   contact,
+  renewalPricing,
 }: {
   domainId: string;
   domainName: string;
   administrator: boolean;
   contact?: DomainContact;
+  renewalPricing?: { amount: string | null; revision: number };
 }) {
   const [observed, setObserved] = useState<DomainManagement | null>(null);
   const [actions, setActions] = useState<DomainAction[]>([]);
@@ -140,6 +142,9 @@ export function DomainManagementPanel({
             : {
                 kind,
                 sellingAmount: data.get('sellingAmount'),
+                ...(renewalPricing
+                  ? { catalogueRevision: renewalPricing.revision }
+                  : {}),
                 costCeiling: data.get('costCeiling'),
                 acceptPriceChangeRisk:
                   data.get('acceptPriceChangeRisk') === 'on',
@@ -255,7 +260,14 @@ export function DomainManagementPanel({
                 <option value="NAMESERVERS">Change nameservers</option>
                 <option value="LOCK">Change transfer protection</option>
                 <option value="CONTACT">Change registrant contact</option>
-                <option value="RENEW">Prepare paid one-year renewal</option>
+                <option
+                  value="RENEW"
+                  disabled={Boolean(renewalPricing && !renewalPricing.amount)}
+                >
+                  {renewalPricing && !renewalPricing.amount
+                    ? 'Renewal price unavailable'
+                    : 'Prepare paid one-year renewal'}
+                </option>
               </select>
             </label>
             <label>
@@ -333,6 +345,8 @@ export function DomainManagementPanel({
                   <input
                     name="sellingAmount"
                     className={fieldClass}
+                    defaultValue={renewalPricing?.amount ?? ''}
+                    readOnly={Boolean(renewalPricing)}
                     required
                     pattern="[1-9][0-9]*"
                   />

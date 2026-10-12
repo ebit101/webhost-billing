@@ -15,6 +15,7 @@ export function Field({
   autoComplete,
   placeholder,
   maxLength,
+  readOnly,
 }: {
   label: string;
   name: string;
@@ -26,6 +27,7 @@ export function Field({
   autoComplete?: string;
   placeholder?: string;
   maxLength?: number;
+  readOnly?: boolean;
 }) {
   return (
     <label className="block text-sm font-semibold text-slate-700">
@@ -41,6 +43,7 @@ export function Field({
         autoComplete={autoComplete}
         placeholder={placeholder}
         maxLength={maxLength}
+        readOnly={readOnly}
       />
     </label>
   );

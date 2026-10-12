@@ -583,7 +583,7 @@ test('qualified source ignores a newly owned search-path decoy and missing table
     const migrations = readdirSync(resolve('prisma/migrations'))
       .filter((n) => /^\d{14}_/.test(n))
       .sort();
-    assert.equal(migrations.length, 30);
+    assert.equal(migrations.length, 31);
     for (const name of migrations)
       await pg.query(
         readFileSync(

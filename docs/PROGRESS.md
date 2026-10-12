@@ -2,11 +2,11 @@
 
 ## Status Summary
 
-- **Current command:** Command 52 — Add guarded SMTP configuration to administrator settings
-- **Current status:** SMTP settings source delivered and deployed as `ce5a062`; exact-head CI/CodeQL and live health/preservation checks passed. Inactive credential/sender saving and the requested owner administrator remain blocked by absent full-administrator MFA enrollment. No credentials were persisted, sender changed, account created or customer email resent. The direct requested SMTP test reached the owner's inbox; portal email still uses Mailpit. WHMCS separate and currency held.
+- **Current command:** Command 118 — Separate the TLD catalogue and multi-registrar execution choice
+- **Current status:** Command 118 source implementation and local acceptance complete. Separate registrar/TLD/default pages, consent-scoped immutable execution choice, selected-account management/renewal and additive historical preservation passed the recorded gates. Git delivery confirmation is pending below. No live domain purchase or deployment. Currency remains held.
 - **Last updated:** 2026-10-12
-- **Next command:** Owner signs in with the existing administrator and enrolls MFA; then complete Command 52 protected inactive credential/sender saving and the requested owner-administrator invitation. Public invitation delivery/custom SMTP activation needs separate approval. Owner also requested polishing the existing 12 email templates for Speed Host; recorded, not started.
-- **Next command authorized:** Yes — Command 53 authenticator-app MFA and remembered-device scope, after completing Command 52. Its live rollout remains separate.
+- **Next command:** Phase review — Review Command 118 TLD catalogue and multi-registrar execution selection and decide deployment readiness. Command 53 MFA enforcement and requested email-template polishing remain distinct tasks.
+- **Next command authorized:** Command 53's earlier source authorization is retained but not started in Command 118. No automatic deployment, purchase or next-command execution.
 
 ## Command Reports
 
@@ -15358,6 +15358,97 @@ Stop after verified review delivery; do not implement it automatically.
   MFA with remembered devices**: authenticator apps, mandatory administrator enrollment,
   optional customer MFA and bounded/revocable remembered-device trust. It is recorded,
   not implemented or included in this deployment.
+
+### Command 118 — Separate the TLD catalogue and multi-registrar execution choice
+
+- **Status:** Source implementation and local validation complete; final Git delivery confirmation pending. Not deployed.
+- **Date:** 2026-10-12 (Asia/Dhaka).
+- **Authorization:** Owner explicitly requested the TLD page, separate registrar settings,
+  multiple registrars/default and choice before registration execution. WHMCS screenshot
+  is a workflow reference, not authority to copy assets/data or claim all capabilities.
+- **Scope completed:** Strict shared contracts/exact BDT entry; catalogue/profile metadata and
+  consent/execution-selection migration; administrator APIs and independent connections,
+  TLD, DNS/policy pages; customer consent scope and execution selector; actual-account
+  worker preparation/mapping/management, renewal catalogue checks and preservation tests.
+- **Validation passed:** Guarded full package run: shared 121 tests, database 164 unit tests,
+  all four isolated privilege groups, all ordinary database integration groups and schema/
+  seed verification; queue 3 tests; API unit 107 tests; web 603 tests/61 files; worker
+  35 tests/12 suites. Separate guarded full API acceptance: 105/105 tests in 19 suites,
+  including 19 domain cases. Chromium 3/3: new administration at 390/1280 px and mobile
+  customer quote/order/manual verified payment/secondary-registrar execution with BullMQ
+  redelivery proving one purchase. HTTP-mocked live preparation, management and renewal
+  stay on the selected account; lost registration/renewal responses do not cause a second
+  submission. Concurrent defaults retain one winner; stale DNS/policy/price/bulk state
+  denies without partial invoices or batch writes. Settings and operational reads share
+  the same account budget. Populated legacy domain/approval and exact financial history
+  survive the additive migration. Final strict workspace/browser type checking, lint,
+  production build and formatting passed. All four offline documentation validators
+  passed. Production audit: no known vulnerabilities; production license inventory passed.
+  Full audit still reports the two existing unwaived development-tooling advisories.
+  Pinned staged secret scan passed after the fixture correction described below.
+- **Failed attempts and repairs:** Initial new active-price revision violated the retained
+  one-active-price index; use inactive immutable catalogue versions with an explicit pointer.
+  A live-offer projection included an internal policy revision; restrict its public fields.
+  Renewal creation initially used quote-origin ownership; bind management actions to the
+  executed account. Repair older migration-count/schema-verifier assumptions without
+  changing the 28 pinned currency baseline migrations or opening held stores. A direct
+  frontend zod import lacked a declared dependency; use shared runtime contracts instead.
+  Fix unused import/apostrophe/formatting and unavailable DOM test matcher issues. Browser
+  fixtures needed valid fake configuration/key syntax and an explicit selector label;
+  rerun successfully without increasing deadlines. Concurrent test runs hit Prisma's
+  migration lock and Docker resource guards; serial guarded repetition passed. Four
+  clearly fictional key literals triggered the secret scanner; replace them with obvious
+  repeated dummy values, not an allowlist or suppression. No skipped tests, weakened
+  resource/deadline/security checks, Docker limit changes or unrelated cleanup.
+- **Files:** Shared domain contracts/tests, Prisma schema/new migration/registrar processor
+  and preservation acceptance; domain services/controllers/API tests; domain administration
+  components/routes/navigation, component/browser tests and readonly field support;
+  schema verifier and six migration-harness compatibility updates; canonical command/
+  plan/ADR/progress and `docs/LOGICBOXES_REGISTRAR_IMPLEMENTATION.md`. Exact changed paths
+  are in the focused Command 118 commit; generated files/logs/dependencies are not staged.
+- **Decisions:** No automatic purchase; legacy bindings retained. New approved execution
+  account/credential is immutable and customer-consent scoped. Supported LogicBoxes
+  connections only; unsupported TLDs/features stay disabled. Catalogue BDT prices and
+  provider USD costs remain independent. Administrator configuration and approval writes
+  require full-admin MFA. The effective-account unique index covers legacy and selected
+  provider-order namespaces together. Stable account lock order avoids cross-selection
+  deadlocks; unresolved account registration/management work blocks another mutation.
+- **Risks/open:** Actual provider acceptance, additional registrar modules/TLD capabilities,
+  reviewed public policy content, bank/catalogue/launch inputs and existing tooling advisories
+  remain. Mandatory MFA enrollment for every administrator is still unfinished Command 53.
+- **Operating follow-up to Command 52:** Owner enrolled the setup administrator, configured
+  and activated SMTP in the protected portal, invited the requested full administrator,
+  corrected the sender to the previously tested approved address and resent. Read-only
+  checks found both latest messages accepted by SMTP and the new account active/verified
+  with password setup complete; its MFA enrollment remained absent. No agent-created
+  authentication bypass, factor enrollment or extra message was performed. Earlier Command
+  52 reports describe the state at their report time, not these later owner actions.
+- **Exact next:** **Phase review — Review Command 118 TLD catalogue and multi-registrar
+  execution selection and decide deployment readiness**. Stop for owner authorization;
+  no automatic deployment, genuine provider acceptance or paid purchase.
+
+#### Home PC continuation
+
+Use the canonical repository `https://github.com/ebit101/webhost-billing.git`, branch
+`main`, after final delivery is confirmed. On an existing clean checkout use
+`git pull --ff-only`; on a new PC clone it. Use Node.js 24 and the source-pinned
+pnpm 11.22.0, then `pnpm install --frozen-lockfile`. Read `AGENTS.md`, the product plan,
+decisions and this report before work. Set up fresh local development configuration
+from `.env.example`, keep real registrar/payment flags disabled, and verify PostgreSQL/
+Redis target only the local Docker installation before migrations/seed/development.
+Do not copy `node_modules`, `.next`, generated clients, Docker virtual disks, production
+data/dumps, `.env` files, private keys, `mc-credential.txt` or the proprietary registrar
+archive through Git. No production credential is needed to run the fictional tests.
+
+For a reproducible guarded regression run, use
+`pnpm --filter @webhost-billing/web exec tsx e2e/run-api-tests.ts packages`, then the
+same launcher without `packages` for API acceptance. Build API/worker before the
+guarded browser launcher. Run expensive groups sequentially; retain all resource and
+owned-scope checks. The next owner prompt on the home PC is the phase review above,
+not another currency implementation or a production purchase. The live portal has not
+received Command 118; mandatory administrator enrollment/remembered-device work remains
+the separate unfinished Command 53, and live provider acceptance/launch policies still
+require explicit approval.
 
 ## Future report template
 

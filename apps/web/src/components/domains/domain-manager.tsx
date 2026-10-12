@@ -35,6 +35,7 @@ import { Card, fieldClass } from '../customers/customer-fields';
 import { Button } from '../ui/button';
 import { PageHeader } from '../ui/page-header';
 import { DomainManagementPanel } from './domain-management';
+import { RegistrationApproval } from './registration-approval';
 
 type Offer = DomainOffer;
 type Account = FakeRegistrarSettings;
@@ -206,6 +207,14 @@ export function DomainManager({
           ? 'resellbiz-registration-v1'
           : 'fictional-registration-v1',
       consent: form.get('consent') === 'on',
+      ...(offers.find((offer) => offer.id === form.get('offerId'))
+        ?.selectionConsentRevision
+        ? {
+            selectionConsentRevision: offers.find(
+              (offer) => offer.id === form.get('offerId'),
+            )?.selectionConsentRevision,
+          }
+        : {}),
       ...(offers.find((offer) => offer.id === form.get('offerId'))
         ?.simulated === false
         ? { customerPolicyConsent: form.get('customerPolicyConsent') === 'on' }
@@ -452,6 +461,18 @@ export function DomainManager({
                 </>
               )}
             </label>
+            {offers.find((offer) => offer.id === selectedOffer)
+              ?.eligibleRegistrars && (
+              <p className="text-sm sm:col-span-2">
+                By accepting the registration policy, I authorize Speed Host to
+                select one of these registrar connections before execution:{' '}
+                {offers
+                  .find((offer) => offer.id === selectedOffer)
+                  ?.eligibleRegistrars?.map((entry) => entry.name)
+                  .join(', ')}
+                . No other registrar is covered by this acceptance.
+              </p>
+            )}
             {offers.find((offer) => offer.id === selectedOffer)?.simulated ===
               false && (
               <label className="text-sm sm:col-span-2">
@@ -623,6 +644,14 @@ export function DomainManager({
                 domainName={domain.domainName}
                 administrator={administrator}
                 contact={domain.contact}
+                {...(domain.renewalCatalogueRevision
+                  ? {
+                      renewalPricing: {
+                        amount: domain.renewalSellingAmount ?? null,
+                        revision: domain.renewalCatalogueRevision,
+                      },
+                    }
+                  : {})}
               />
             )}
             {administrator && (
@@ -709,64 +738,20 @@ export function DomainManager({
                   </details>
                 )}
                 {!domain.dispatchClaimed && (
-                  <form
-                    className="my-4 grid gap-3 sm:grid-cols-2"
-                    onSubmit={(event) => {
-                      event.preventDefault();
-                      const data = new FormData(event.currentTarget);
+                  <RegistrationApproval
+                    key={`${domain.id}:${domain.selectedRegistrarId ?? 'unapproved'}`}
+                    domain={domain}
+                    busy={busy}
+                    onApprove={(body) =>
                       void perform(() =>
-                        authMutation(`/domains/${domain.id}/approve`, 'POST', {
-                          confirmation: data.get('confirmation'),
-                          costCeiling: data.get('costCeiling'),
-                          costCurrency: 'USD',
-                          ...(!domain.simulated
-                            ? {
-                                acceptPriceChangeRisk:
-                                  data.get('acceptPriceChangeRisk') === 'on',
-                              }
-                            : {}),
-                        }),
-                      );
-                    }}
-                  >
-                    <Field label="Type exact domain name">
-                      <input
-                        className={fieldClass}
-                        name="confirmation"
-                        required
-                      />
-                    </Field>
-                    <Field label="Approved USD preflight threshold in minor units">
-                      <input
-                        className={fieldClass}
-                        name="costCeiling"
-                        required
-                        pattern="[1-9][0-9]*"
-                      />
-                    </Field>
-                    {!domain.simulated && (
-                      <label className="sm:col-span-2">
-                        <input
-                          name="acceptPriceChangeRisk"
-                          type="checkbox"
-                          required
-                        />{' '}
-                        I approve a real paid purchase of this exact domain,
-                        consent/contact and nameserver snapshot for one year.
-                        The provider has no verified atomic price cap; its final
-                        charge may differ from the checked price. No API
-                        cancellation or automatic refund is available.
-                      </label>
-                    )}
-                    <Button
-                      disabled={busy || domain.invoiceStatus !== 'PAID'}
-                      type="submit"
-                    >
-                      {domain.simulated
-                        ? 'Approve simulated registration'
-                        : 'Approve real paid registration'}
-                    </Button>
-                  </form>
+                        authMutation(
+                          `/domains/${domain.id}/approve`,
+                          'POST',
+                          body,
+                        ),
+                      )
+                    }
+                  />
                 )}
                 {domain.dispatchClaimed && domain.state !== 'REGISTERED' && (
                   <Button

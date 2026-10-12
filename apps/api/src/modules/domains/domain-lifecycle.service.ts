@@ -196,6 +196,19 @@ export class DomainLifecycleService {
       });
       let invoiceId: string | undefined;
       if (request.kind === 'RENEW') {
+        await tx.$queryRaw`SELECT pg_advisory_xact_lock(510118)::text`;
+        const catalogue = await tx.domainCatalogueTld.findUnique({
+          where: { tld: current.domainName.split('.').at(-1) ?? '' },
+        });
+        if (
+          catalogue &&
+          (!catalogue.renewalAmount ||
+            request.catalogueRevision !== catalogue.revision ||
+            request.sellingAmount !== catalogue.renewalAmount.toString())
+        )
+          this.deny(
+            'Renewal pricing changed or is unavailable. Refresh the catalogue price before creating a renewal invoice.',
+          );
         const amount = BigInt(request.sellingAmount);
         if (
           amount > 999999999999999n ||
@@ -257,7 +270,7 @@ export class DomainLifecycleService {
           id,
           domainId,
           customerId: current.customerId,
-          accountId: current.accountId,
+          accountId: context.account.id,
           credentialId: credential.id,
           actorUserId: auth.identity.userId,
           kind: request.kind,
@@ -365,7 +378,13 @@ export class DomainLifecycleService {
         if (busy)
           this.deny('Another registrar action needs reconciliation first.');
         const registrations = await tx.registrarOperation.findMany({
-          where: { accountId: action.accountId, claimedAt: { not: null } },
+          where: {
+            claimedAt: { not: null },
+            OR: [
+              { selectedAccountId: action.accountId },
+              { selectedAccountId: null, accountId: action.accountId },
+            ],
+          },
         });
         for (const registration of registrations) {
           const registered = await tx.domain.findUniqueOrThrow({

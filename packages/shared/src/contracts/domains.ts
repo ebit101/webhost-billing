@@ -34,6 +34,10 @@ export const domainQuoteRequestSchema = z
     ]),
     consent: z.literal(true),
     customerPolicyConsent: z.literal(true).optional(),
+    selectionConsentRevision: z
+      .string()
+      .regex(/^[a-f0-9]{64}$/)
+      .optional(),
   })
   .strict();
 export const domainPurchaseRequestSchema = z
@@ -48,6 +52,7 @@ export const domainApprovalRequestSchema = z
     costCeiling: z.string().regex(/^[1-9][0-9]{0,14}$/),
     costCurrency: z.literal('USD'),
     acceptPriceChangeRisk: z.literal(true).optional(),
+    registrarAccountId: z.uuid().optional(),
   })
   .strict();
 export const fakeRegistrarSetupSchema = z
@@ -199,6 +204,17 @@ export const domainOfferSchema = z
     costAmount: positiveAmount.optional(),
     costCurrency: z.literal('USD').optional(),
     observedAt: z.iso.datetime().optional(),
+    eligibleRegistrars: z
+      .array(
+        z.object({ id: z.uuid(), name: z.string().min(1).max(100) }).strict(),
+      )
+      .max(32)
+      .optional(),
+    featured: z.boolean().optional(),
+    selectionConsentRevision: z
+      .string()
+      .regex(/^[a-f0-9]{64}$/)
+      .optional(),
   })
   .strict();
 export const domainQuoteSchema = z
@@ -230,7 +246,7 @@ export const domainDetailSchema = z
     expiresAt: z.iso.datetime().nullable(),
     simulated: z.boolean(),
     autoRenew: z.literal(false),
-    registrar: z.literal('StarGate/UK2 (resell.biz)'),
+    registrar: z.string().min(1).max(100),
     registrationYears: z.literal(1),
     requestedAt: z.iso.datetime(),
     sellingAmount: amount,
@@ -254,6 +270,21 @@ export const domainDetailSchema = z
     contact: domainContactSchema.optional(),
     operationId: z.uuid().nullable().optional(),
     dispatchClaimed: z.boolean().optional(),
+    renewalSellingAmount: positiveAmount.nullable().optional(),
+    renewalCatalogueRevision: z.number().int().positive().optional(),
+    selectedRegistrarId: z.uuid().nullable().optional(),
+    eligibleRegistrars: z
+      .array(
+        z
+          .object({
+            id: z.uuid(),
+            name: z.string().min(1).max(100),
+            isDefault: z.boolean(),
+          })
+          .strict(),
+      )
+      .max(32)
+      .optional(),
     evidence: z
       .array(
         z
@@ -289,6 +320,7 @@ export const domainActionRequestSchema = z.discriminatedUnion('kind', [
     .object({
       kind: z.literal('RENEW'),
       sellingAmount: positiveAmount,
+      catalogueRevision: z.number().int().positive().optional(),
       costCeiling: positiveAmount,
       acceptPriceChangeRisk: z.literal(true),
     })

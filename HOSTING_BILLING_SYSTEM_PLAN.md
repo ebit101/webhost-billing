@@ -47,6 +47,18 @@ inactive with the approved sender; full-administrator MFA is still required by t
 credential API. Custom SMTP activation and customer-email resends remain unauthorized.
 Public delivery and verified sender acceptance remain distinct operating gates.
 
+**Domain administration direction — 2026-10-12:** The owner authorized Command 118:
+separate TLD selling prices, registrar connections, installation DNS defaults and
+centrally reviewed policies. Support multiple upstream LogicBoxes connections for
+this single hosting business, an installation default, TLD preference and explicit
+registrar selection at paid administrator approval. This is not multi-tenant reseller
+functionality. Preserve legacy account/quote/invoice bindings; consent-scoped new
+requests pin the executed account/credential without rerouting after approval or
+uncertain dispatch. Existing supported .com/one-year capabilities remain bounded;
+unsupported TLDs/add-ons/transfers must stay unavailable. No deployment or purchase
+is authorized by this source implementation request. Currency and Command 53 remain
+separate; new registrar/configuration mutations still require full-administrator MFA.
+
 ---
 
 ## 1. Executive Summary

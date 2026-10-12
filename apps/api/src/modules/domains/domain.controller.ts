@@ -45,6 +45,22 @@ export class DomainController {
   async liveSettings(@CurrentAuth() auth: AuthRequestContext) {
     return createApiSuccessResponse(await this.domains.liveSettings(auth));
   }
+  @Post(':id/registration-check')
+  @Roles('ADMIN')
+  async registrationCheck(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body(
+      new ZodValidationPipe(
+        z.object({ registrarAccountId: z.uuid() }).strict(),
+      ),
+    )
+    body: { registrarAccountId: string },
+    @CurrentAuth() auth: AuthRequestContext,
+  ) {
+    return createApiSuccessResponse(
+      await this.domains.checkRegistration(id, body.registrarAccountId, auth),
+    );
+  }
   @Post('registrar/live')
   @Roles('ADMIN')
   async liveSetup(

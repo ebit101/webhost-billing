@@ -269,6 +269,57 @@ deletion, privacy purchases, automatic renewal, unsupported TLD/IDN rules and cu
 conversion remain outside Command 51. The supported scope is delivered; securely
 configure and accept the paid pilot before moving to the separately bounded cPanel phase.
 
+## Separate catalogue and registrar administration (Command 118)
+
+The new source separates three full-administrator, MFA-protected pages:
+
+- `/admin/settings/registrars`: named LogicBoxes connections, encrypted reseller ID/API
+  key versions, independent read-only checks, enable/disable and installation default.
+  Saving credentials alone leaves a connection disabled. The form has no selling prices,
+  nameservers or repeated policy links. Enabling requires independently confirming native
+  USD cost units and a successful read-only check; a default change makes no provider call.
+- `/admin/domain-pricing`: searchable, paginated TLD catalogue, exact BDT registration and
+  renewal prices, preferred registrar (or installation default), featured flag/display
+  order, sale status and reviewed bulk activation/preference changes. Blank means unavailable,
+  not free. Ordinary .com/one year is the supported live registration scope. Other extensions
+  can be recorded as disabled drafts; transfer, premium and add-on support is not advertised.
+  Stale edits/batches fail atomically. Existing extensions cannot be renamed or deleted.
+- `/admin/settings/domain-defaults`: independent registration DNS defaults and central
+  owner-reviewed registration/terms/privacy links. These are configured once, not for each
+  credential. Saving them never changes a registered domain or hosting server. A new policy
+  revision invalidates old unpurchased consent even if the links stay the same; this is not
+  an archive or legal approval of remote content.
+
+After configuration, customer offers disclose the eligible same-mode registrar accounts
+and policies. A consent revision binds those identities, catalogue price and nameservers;
+changed consent or price before checkout requires a new quote. A disabled/missing preferred
+registrar does not silently fall back. Legacy quotes without this disclosure can only use
+their original account.
+
+On `/admin/domains`, a paid request preselects its currently eligible TLD/default registrar.
+The administrator can choose a different account already disclosed during customer consent,
+explicitly check availability/native cost without purchasing, then approve the exact domain,
+native USD threshold and purchase risk. Payment alone never starts registration. Approval
+immutably pins the actual account, credential and contact fingerprint; changing the default
+or rotating credentials never switches an approved or uncertain purchase. Disabled connections
+block work rather than cause failover. Resolve uncertain results on that original account
+using the existing bounded reconciliation workflow.
+
+Contact/customer preparation and subsequent state checks, contact/lock/nameserver changes
+and renewals use the executed account, not the quote origin or installation default. A new
+renewal request uses the current configured renewal price/revision and creates a separate
+invoice. Existing renewal requests and historical invoice prices remain unchanged. No
+automatic conversion, auto-renewal, cancellation or refund is introduced.
+
+Migration `20261012000300_domain_catalogue_registrar_selection` adds empty profile/catalogue
+stores and nullable immutable selection fields without backfilling old requests. It removes
+the one-live-account restriction, retains quote provenance and account-specific provider
+order ownership, and protects new catalogue price versions, execution/contact preparation
+and management ownership with SQL guards. Prior migration bytes remain unchanged. Tests
+prove populated legacy financial/domain/approval preservation and selected-account routing
+using isolated fictional PostgreSQL data and HTTP mocks. This source change does not deploy
+the migration, configure credentials or prove genuine provider acceptance.
+
 Primary contracts: [customer search](https://cp.us2.net/kb/answer/1270),
 [signup](https://cp.us2.net/kb/answer/804), [contact creation](https://cp.us2.net/kb/answer/790),
 [password rules](https://cp.us2.net/kb/servlet/KBServlet/faq489.html#password),

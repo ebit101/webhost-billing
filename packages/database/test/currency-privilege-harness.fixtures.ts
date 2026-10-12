@@ -24,6 +24,7 @@ export function loadPinnedMigrations() {
         ![
           '20261012000100_domain_registrar',
           '20261012000200_resellbiz_live_registration',
+          '20261012000300_domain_catalogue_registrar_selection',
         ].includes(name),
     );
   assert.deepEqual(

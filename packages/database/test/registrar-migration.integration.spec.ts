@@ -163,12 +163,119 @@ test('registrar migration preserves all historical hosting and financial rows an
       ).rows[0]?.row,
       credentialBefore,
     );
+    // A populated legacy request/approval proves nullable additions do not
+    // silently adopt the catalogue, change ownership or reset an old intent.
+    const legacyProduct = randomUUID(),
+      legacyPrice = randomUUID(),
+      legacyOffer = randomUUID(),
+      legacyQuote = randomUUID(),
+      legacyOrder = randomUUID(),
+      legacyItem = randomUUID(),
+      legacyInvoice = randomUUID(),
+      legacyDomain = randomUUID();
+    await raw.query(
+      "INSERT INTO products(id,slug,name,kind,updated_at) VALUES($1,'fictional-legacy-domain','Fictional domain','DOMAIN',now())",
+      [legacyProduct],
+    );
+    await raw.query(
+      "INSERT INTO product_prices(id,product_id,billing_period,currency,amount,updated_at) VALUES($1,$2,'ANNUAL','BDT',150000,now())",
+      [legacyPrice, legacyProduct],
+    );
+    await raw.query(
+      'INSERT INTO domain_offers(id,account_id,product_id,price_id,tld,nameservers) VALUES($1,$2,$3,$4,\'com\',\'["ns1.example.test","ns2.example.test"]\')',
+      [legacyOffer, fakeId, legacyProduct, legacyPrice],
+    );
+    await raw.query(
+      "INSERT INTO domain_quotes(id,customer_id,account_id,offer_id,domain_name,selling_amount,cost_amount,cost_currency,contact_ciphertext,fingerprint,nameservers,agreement,expires_at) VALUES($1,$2,$3,$4,'fictional-legacy.com',150000,1000,'USD','fictional-retained-ciphertext',$5,'[\"ns1.example.test\",\"ns2.example.test\"]','fictional-registration-v1',now()+interval '10 minutes')",
+      [legacyQuote, customer, fakeId, legacyOffer, 'a'.repeat(64)],
+    );
+    await raw.query(
+      "INSERT INTO orders(id,order_number,submission_key,customer_id,currency,subtotal,total,customer_email_snapshot,updated_at) VALUES($1,'FICTIONAL-LEGACY-118','fictional-legacy-118',$2,'BDT',150000,150000,'historical@example.test',now())",
+      [legacyOrder, customer],
+    );
+    await raw.query(
+      "INSERT INTO order_items(id,order_id,product_id,product_price_id,product_name_snapshot,kind,requested_domain,billing_period,currency,unit_amount,line_total) VALUES($1,$2,$3,$4,'Fictional domain','DOMAIN','fictional-legacy.com','ANNUAL','BDT',150000,150000)",
+      [legacyItem, legacyOrder, legacyProduct, legacyPrice],
+    );
+    await raw.query(
+      `INSERT INTO invoices(id,invoice_number,submission_key,customer_id,order_id,status,currency,subtotal,total,balance_due,customer_name_snapshot,customer_email_snapshot,customer_address_snapshot,business_identity_snapshot,issued_at,due_at,updated_at)
+      VALUES($1,'FICTIONAL-LEGACY-INVOICE-118','fictional-legacy-invoice-118',$2,$3,'UNPAID','BDT',150000,150000,150000,'Fictional History','historical@example.test','{"city":"Dhaka"}','{"name":"Fictional business"}',now(),now()+interval '7 days',now())`,
+      [legacyInvoice, customer, legacyOrder],
+    );
+    await raw.query(
+      "INSERT INTO domains(id,quote_id,customer_id,account_id,order_item_id,invoice_id,domain_name,submission_key) VALUES($1,$2,$3,$4,$5,$6,'fictional-legacy.com',$7)",
+      [
+        legacyDomain,
+        legacyQuote,
+        customer,
+        fakeId,
+        legacyItem,
+        legacyInvoice,
+        randomUUID(),
+      ],
+    );
+    await raw.query(
+      'INSERT INTO registrar_operations(id,domain_id,customer_id,account_id,credential_id,actor_user_id,cost_ceiling) VALUES($1,$2,$3,$4,$5,$6,1000)',
+      [randomUUID(), legacyDomain, customer, fakeId, credentialId, user],
+    );
+    const priorTables = (
+      await raw.query<{ table_name: string }>(
+        "SELECT table_name FROM information_schema.tables WHERE table_schema=$1 AND table_type='BASE TABLE' ORDER BY table_name",
+        [schema],
+      )
+    ).rows.map((row) => row.table_name);
+    const beforeCatalogue: Record<string, string[]> = {};
+    for (const table of priorTables) {
+      assert.match(table, /^[a-z_][a-z0-9_]*$/);
+      beforeCatalogue[table] = (
+        await raw.query<{ row: string }>(
+          `SELECT to_jsonb(t)::text AS row FROM "${table}" t ORDER BY to_jsonb(t)::text`,
+        )
+      ).rows.map((row) => row.row);
+    }
+    await raw.query(
+      readFileSync(
+        resolve(
+          'prisma/migrations/20261012000300_domain_catalogue_registrar_selection/migration.sql',
+        ),
+        'utf8',
+      ),
+    );
+    for (const table of priorTables) {
+      const added =
+        table === 'domain_quotes'
+          ? "-'selection_snapshot'"
+          : table === 'domains'
+            ? "-'execution_account_id'"
+            : table === 'registrar_operations'
+              ? "-'selected_account_id'-'selected_credential_id'-'selection_fingerprint'"
+              : '';
+      const projection = `to_jsonb(t)${added}`;
+      const after = (
+        await raw.query<{ row: string }>(
+          `SELECT (${projection})::text AS row FROM "${table}" t ORDER BY (${projection})::text`,
+        )
+      ).rows.map((row) => row.row);
+      assert.deepEqual(
+        after,
+        beforeCatalogue[table],
+        `Catalogue migration preserved ${table}`,
+      );
+    }
+    for (const table of ['registrar_profiles', 'domain_catalogue_tlds'])
+      assert.equal(
+        (await raw.query(`SELECT count(*)::text AS count FROM ${table}`))
+          .rows[0]?.count,
+        '0',
+      );
     assert.equal(
-      (await raw.query('SELECT kind FROM products')).rows[0]?.kind,
+      (await raw.query('SELECT kind FROM products WHERE id=$1', [product]))
+        .rows[0]?.kind,
       'HOSTING',
     );
     assert.equal(
-      (await raw.query('SELECT kind FROM order_items')).rows[0]?.kind,
+      (await raw.query('SELECT kind FROM order_items WHERE id=$1', [item]))
+        .rows[0]?.kind,
       'HOSTING',
     );
     for (const table of [
@@ -187,7 +294,14 @@ test('registrar migration preserves all historical hosting and financial rows an
       assert.equal(
         (await raw.query(`SELECT count(*)::text AS count FROM "${table}"`))
           .rows[0]?.count,
-        ['registrar_accounts', 'registrar_credentials'].includes(table)
+        [
+          'registrar_accounts',
+          'registrar_credentials',
+          'domain_offers',
+          'domain_quotes',
+          'domains',
+          'registrar_operations',
+        ].includes(table)
           ? '1'
           : '0',
       );
