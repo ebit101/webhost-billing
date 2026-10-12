@@ -8,11 +8,13 @@ import {
 } from '@webhost-billing/config';
 import {
   createPrismaClient,
+  Prisma,
   type PrismaClient,
 } from '@webhost-billing/database';
 import {
   RegistrarProcessor,
   FakeDomainRegistrar,
+  ResellbizHttpsTransport,
 } from '@webhost-billing/database/registrar';
 import {
   PARTIAL_PAYMENT_POLICY_CONFIRMATION,
@@ -86,6 +88,7 @@ describe('complete simulated registrar in isolated PostgreSQL (e2e)', () => {
       BULLMQ_PREFIX: schema,
       BKASH_ENABLED: 'false',
       SSLCOMMERZ_ENABLED: 'false',
+      RESELLBIZ_LIVE_ENABLED: 'true',
     });
     const module = await Test.createTestingModule({ imports: [AppModule] })
       .overrideProvider(API_ENVIRONMENT)
@@ -197,7 +200,7 @@ describe('complete simulated registrar in isolated PostgreSQL (e2e)', () => {
     agent: ReturnType<typeof request.agent>,
     path: string,
     body: object,
-    expected: number,
+    expected: number | readonly number[],
   ) {
     const csrf = await agent.get('/auth/csrf').expect(200);
     return agent
@@ -208,7 +211,11 @@ describe('complete simulated registrar in isolated PostgreSQL (e2e)', () => {
       )
       .send(body)
       .expect((response) => {
-        if (response.status !== expected)
+        if (
+          !(typeof expected === 'number' ? [expected] : expected).includes(
+            response.status,
+          )
+        )
           throw new Error(
             `Unexpected response ${response.status}: ${JSON.stringify(response.body)}`,
           );
@@ -304,6 +311,7 @@ describe('complete simulated registrar in isolated PostgreSQL (e2e)', () => {
     const production = new DomainService(prisma, {
       ...app.get<ApiEnvironment>(API_ENVIRONMENT),
       NODE_ENV: 'production',
+      RESELLBIZ_LIVE_ENABLED: false,
     });
     // Deliberately absent identity: the production gate must not reach identity or DB work.
     const absent = undefined as unknown as AuthRequestContext;
@@ -485,6 +493,7 @@ describe('complete simulated registrar in isolated PostgreSQL (e2e)', () => {
       prisma.domain.create({
         data: {
           ...stored,
+          managementSnapshot: stored.managementSnapshot ?? Prisma.DbNull,
           id: randomUUID(),
           customerId: otherOwner.id,
           domainName: `different-${randomUUID()}.com`,
@@ -762,5 +771,614 @@ describe('complete simulated registrar in isolated PostgreSQL (e2e)', () => {
         where: { operationId: op.id },
       }),
     ).toBe(0);
+  });
+  it('configures disabled live credentials, verifies ownership/payment/risk and registers once through an injected live transport', async () => {
+    const key = 'fake'.repeat(8);
+    const input = {
+      resellerId: '12345',
+      apiKey: key,
+      confirmation: 'Configure live resell.biz',
+      sellingAmount: '150000',
+      nameservers: ['ns1.fictional-host.com', 'ns2.fictional-host.com'],
+      agreementUrl: 'https://fictional-host.com/domain-agreement',
+      customerTermsUrl: 'https://fictional-host.com/customer-terms',
+      customerPrivacyUrl: 'https://fictional-host.com/privacy',
+      confirmNativeUsdCosts: true,
+    };
+    const name = `live-${randomUUID()}.com`;
+    const contact = {
+      name: 'Fictional registrant',
+      company: 'Fictional company',
+      address: '1 Test Street',
+      city: 'Dhaka',
+      region: 'Dhaka',
+      postalCode: '1000',
+      country: 'BD',
+      email: 'fictional@example.test',
+      phoneCountryCode: '880',
+      phone: '1700000000',
+    };
+    let registered = false;
+    let managedNs = [...input.nameservers],
+      locked = true,
+      expiry = '1900000000';
+    let contactId = '34567',
+      replacementId = '34567';
+    let managementOffline = false;
+    const wire = jest
+      .spyOn(ResellbizHttpsTransport.prototype, 'request')
+      .mockImplementation(async (path, parameters) => {
+        await new Promise<void>((resolve) => queueMicrotask(resolve));
+        switch (path) {
+          case '/api/domains/available.json':
+            return JSON.stringify({
+              [`${String(parameters['domain-name'])}.com`]: {
+                status: registered ? 'regthroughus' : 'available',
+              },
+            });
+          case '/api/products/reseller-cost-price.json':
+            return '{"domcno":{"addnewdomain":{"1":10.99},"renewdomain":{"1":10.99}}}';
+          case '/api/customers/search.json':
+            return '{"recsonpage":0,"recsindb":0}';
+          case '/api/customers/v2/signup.json':
+            return '23456';
+          case '/api/contacts/add.json':
+            replacementId = registered ? '34568' : '34567';
+            return replacementId;
+          case '/api/customers/details-by-id.json':
+            return JSON.stringify({
+              customerid: '23456',
+              resellerid: '12345',
+              customerstatus: 'Active',
+              username: contact.email,
+              useremail: contact.email,
+              name: contact.name,
+              company: contact.company,
+              address1: contact.address,
+              city: contact.city,
+              state: contact.region,
+              zip: contact.postalCode,
+              country: contact.country,
+              telnocc: contact.phoneCountryCode,
+              telno: contact.phone,
+              pin: 'never-export-this',
+            });
+          case '/api/contacts/details.json':
+            return JSON.stringify({
+              entityid: replacementId,
+              customerid: '23456',
+              type: 'Contact',
+              currentstatus: 'Active',
+              name: contact.name,
+              company: contact.company,
+              address1: contact.address,
+              city: contact.city,
+              state: contact.region,
+              zip: contact.postalCode,
+              country: contact.country,
+              emailaddr: contact.email,
+              telnocc: contact.phoneCountryCode,
+              telno: contact.phone,
+            });
+          case '/api/domains/register.json':
+            registered = true;
+            throw new Error(
+              'Simulated lost response including fictionalApiKey123456789',
+            );
+          case '/api/domains/orderid.json':
+            return '45678';
+          case '/api/domains/details.json':
+            if (managementOffline)
+              throw new Error('Simulated management read error with secret');
+            return JSON.stringify({
+              entityid: '45678',
+              domainname: name,
+              customerid: '23456',
+              isImmediateReseller: 'true',
+              currentstatus: 'Active',
+              endtime: expiry,
+              domsecret: 'never-export-this',
+              noOfNameServers: String(managedNs.length),
+              ns1: managedNs[0],
+              ns2: managedNs[1],
+              registrantcontactid: contactId,
+              admincontactid: contactId,
+              techcontactid: contactId,
+              billingcontactid: contactId,
+              raaVerificationStatus: 'Verified',
+            });
+          case '/api/domains/locks.json':
+            return JSON.stringify({ transferlock: locked });
+          case '/api/domains/modify-ns.json':
+            managedNs = [...(parameters.ns as readonly string[])];
+            throw new Error(
+              'Simulated lost nameserver response containing fictionalApiKey123456789',
+            );
+          case '/api/domains/enable-theft-protection.json':
+            locked = true;
+            return '{"entityid":"45678"}';
+          case '/api/domains/disable-theft-protection.json':
+            locked = false;
+            return '{"entityid":"45678"}';
+          case '/api/domains/modify-contact.json':
+            contactId = String(parameters['reg-contact-id']);
+            return '{"entityid":"45678","irtp_status":"Pending"}';
+          case '/api/domains/renew.json':
+            expiry = String(BigInt(expiry) + 31536000n);
+            throw new Error('Simulated lost renewal response');
+          default:
+            throw new Error('Unexpected fictional endpoint');
+        }
+      });
+    async function patch(path: string, body: object, status = 200) {
+      const csrf = await owner.get('/auth/csrf').expect(200);
+      return owner
+        .patch(path)
+        .set(
+          'X-CSRF-Token',
+          (csrf.body as Success<{ csrfToken: string }>).data.csrfToken,
+        )
+        .send(body)
+        .expect(status);
+    }
+    try {
+      await customer.get('/domains/registrar/live').expect(403);
+      await billing.get('/domains/registrar/live').expect(403);
+      await unenrolled.get('/domains/registrar/live').expect(403);
+      await mutation(unenrolled, '/domains/registrar/live', input, 403);
+      await mutation(
+        owner,
+        '/domains/registrar/live',
+        { ...input, confirmNativeUsdCosts: false },
+        400,
+      );
+      const configured = await mutation(
+        owner,
+        '/domains/registrar/live',
+        input,
+        201,
+      );
+      const accountId = (configured.body as Success<{ id: string }>).data.id;
+      expect(JSON.stringify(configured.body)).not.toMatch(
+        /fictionalApiKey|ciphertext|"resellerId"/,
+      );
+      expect(JSON.stringify(configured.body)).not.toContain(key);
+      expect(
+        (configured.body as Success<{ enabled: boolean }>).data.enabled,
+      ).toBe(false);
+      expect(wire).not.toHaveBeenCalled();
+      const secret = await prisma.registrarCredential.findFirstOrThrow({
+        where: { accountId },
+      });
+      expect(secret.ciphertext).not.toContain(key);
+      await expect(
+        prisma.registrarAccount.update({
+          where: { id: accountId },
+          data: { mode: 'FAKE', configuration: Prisma.JsonNull },
+        }),
+      ).rejects.toThrow();
+      await patch(`/domains/registrar/live/${accountId}`, { enabled: true });
+      const before = wire.mock.calls.length;
+      const available = await customer.get('/domains/offers').expect(200);
+      const liveOffer = (
+        available.body as Success<
+          { id: string; simulated: boolean; costAmount?: string }[]
+        >
+      ).data.find((offer) => !offer.simulated);
+      expect(liveOffer).toBeDefined();
+      expect(liveOffer?.costAmount).toBeUndefined();
+      expect(wire.mock.calls.length).toBe(before);
+      await mutation(
+        customer,
+        '/domains/quotes',
+        {
+          offerId: liveOffer?.id,
+          domainName: name,
+          contact,
+          consent: true,
+          agreement: 'fictional-registration-v1',
+        },
+        409,
+      );
+      const quote = await mutation(
+        customer,
+        '/domains/quotes',
+        {
+          offerId: liveOffer?.id,
+          domainName: name,
+          contact,
+          consent: true,
+          agreement: 'resellbiz-registration-v1',
+          customerPolicyConsent: true,
+        },
+        201,
+      );
+      const order = await mutation(
+        customer,
+        '/domains/orders',
+        {
+          quoteId: (quote.body as Success<{ id: string }>).data.id,
+          submissionKey: randomUUID(),
+        },
+        201,
+      );
+      const domain = (order.body as Success<DomainResult>).data;
+      await other.get(`/domains/${domain.id}`).expect(403);
+      await unenrolled.get(`/domains/${domain.id}`).expect(403);
+      const customerView = await customer
+        .get(`/domains/${domain.id}`)
+        .expect(200);
+      expect(JSON.stringify(customerView.body)).not.toMatch(
+        /contactCiphertext|operationId|costAmount|remoteCustomerId|remoteContactId|never-export/,
+      );
+      const approval = {
+        confirmation: name,
+        costCeiling: '1099',
+        costCurrency: 'USD',
+        acceptPriceChangeRisk: true,
+      };
+      await mutation(
+        owner,
+        `/domains/${domain.id}/approve`,
+        { confirmation: name, costCeiling: '1099', costCurrency: 'USD' },
+        409,
+      );
+      await mutation(owner, `/domains/${domain.id}/approve`, approval, 409);
+      await pay(domain);
+      const approved = await mutation(
+        owner,
+        `/domains/${domain.id}/approve`,
+        approval,
+        201,
+      );
+      const opId =
+        (approved.body as Success<DomainResult>).data.operationId ?? '';
+      // Default/production-disabled processor cannot dispatch a live operation.
+      const blocked = new RegistrarProcessor(
+        prisma,
+        app.get<ApiEnvironment>(API_ENVIRONMENT).CREDENTIAL_ENCRYPTION_KEY,
+        undefined,
+        { simulationAllowed: false, liveAllowed: false },
+      );
+      await blocked.process(opId);
+      expect(registered).toBe(false);
+      const actual = new RegistrarProcessor(
+        prisma,
+        app.get<ApiEnvironment>(API_ENVIRONMENT).CREDENTIAL_ENCRYPTION_KEY,
+        undefined,
+        { simulationAllowed: false, liveAllowed: true },
+      );
+      await Promise.all([actual.process(opId), actual.process(opId)]);
+      await actual.process(opId);
+      expect(
+        wire.mock.calls.filter(
+          ([path]) => path === '/api/domains/register.json',
+        ),
+      ).toHaveLength(1);
+      expect(
+        wire.mock.calls.filter(
+          ([path]) => path === '/api/customers/v2/signup.json',
+        ),
+      ).toHaveLength(1);
+      expect(
+        wire.mock.calls.filter(([path]) => path === '/api/contacts/add.json'),
+      ).toHaveLength(1);
+      const prepared = await prisma.registrarPreparation.findFirstOrThrow({
+        where: { accountId },
+      });
+      expect(prepared.remoteCustomerId).toBe('23456');
+      expect(prepared.remoteContactId).toBe('34567');
+      await expect(
+        prisma.registrarPreparation.update({
+          where: { id: prepared.id },
+          data: { customerClaimedAt: null },
+        }),
+      ).rejects.toThrow();
+      const final = await prisma.domain.findUniqueOrThrow({
+        where: { id: domain.id },
+      });
+      expect(final.state).toBe('REGISTERED');
+      expect(final.providerOrderId).toBe('45678');
+      expect(
+        await prisma.fakeRegistrarRegistration.count({ where: { accountId } }),
+      ).toBe(0);
+      expect(
+        await prisma.service.count({
+          where: { orderItemId: final.orderItemId },
+        }),
+      ).toBe(0);
+      expect(
+        (
+          await prisma.order.findUniqueOrThrow({
+            where: { id: domain.orderId },
+          })
+        ).status,
+      ).toBe('COMPLETED');
+      const evidence = await prisma.registrarEvidence.findMany({
+        where: { operationId: opId },
+      });
+      expect(
+        evidence.some((event) => event.code === 'MUTATION_OUTCOME_UNCERTAIN'),
+      ).toBe(true);
+      expect(JSON.stringify(evidence)).not.toMatch(
+        /fictionalApiKey|never-export/,
+      );
+      const risk = await prisma.registrarOperation.findUniqueOrThrow({
+        where: { id: opId },
+      });
+      await expect(
+        prisma.registrarOperation.update({
+          where: { id: opId },
+          data: { priceChangeRiskAccepted: false },
+        }),
+      ).rejects.toThrow();
+      expect(risk.priceChangeRiskAccepted).toBe(true);
+      // Management operates from its own durable claims; reads stay separately bounded.
+      const managementBase = `/domains/${domain.id}`;
+      const readsBefore = wire.mock.calls.length;
+      await customer.get(`${managementBase}/management`).expect(200);
+      await customer.get(`${managementBase}/actions`).expect(200);
+      expect(wire.mock.calls.length).toBe(readsBefore);
+      await other.get(`${managementBase}/actions`).expect(403);
+      await mutation(
+        customer,
+        `${managementBase}/actions`,
+        { confirmation: name, request: { kind: 'LOCK', locked: false } },
+        403,
+      );
+      const financialSnapshot = (value: unknown) =>
+        JSON.stringify(value, (_key, entry: unknown) =>
+          typeof entry === 'bigint' ? entry.toString() : entry,
+        );
+      const initialInvoice = financialSnapshot(
+        await prisma.invoice.findUniqueOrThrow({
+          where: { id: final.invoiceId },
+        }),
+      );
+      const newNames = ['ns3.fictional-host.com', 'ns4.fictional-host.com'];
+      async function action(request: object) {
+        const result = await mutation(
+          owner,
+          `${managementBase}/actions`,
+          { confirmation: name, request },
+          201,
+        );
+        return (
+          result.body as Success<{ id: string; invoiceId: string | null }[]>
+        ).data[0];
+      }
+      const abandoned = await action({
+        kind: 'RENEW',
+        sellingAmount: '170000',
+        costCeiling: '1099',
+        acceptPriceChangeRisk: true,
+      });
+      const beforeCancel = wire.mock.calls.length;
+      await mutation(
+        owner,
+        `${managementBase}/actions/${abandoned.id}/cancel-unsent`,
+        { confirmation: name },
+        201,
+      );
+      expect(wire.mock.calls.length).toBe(beforeCancel);
+      expect(
+        (
+          await prisma.invoice.findUniqueOrThrow({
+            where: { id: abandoned.invoiceId! },
+          })
+        ).status,
+      ).toBe('CANCELLED');
+      expect(
+        (
+          await prisma.domainAction.findUniqueOrThrow({
+            where: { id: abandoned.id },
+          })
+        ).state,
+      ).toBe('CANCELLED');
+      const preflightFailed = await action({
+        kind: 'NAMESERVERS',
+        nameservers: newNames,
+      });
+      managementOffline = true;
+      await mutation(
+        owner,
+        `${managementBase}/actions/${preflightFailed.id}/execute`,
+        { confirmation: name },
+        201,
+      );
+      managementOffline = false;
+      expect(
+        (
+          await prisma.domainAction.findUniqueOrThrow({
+            where: { id: preflightFailed.id },
+          })
+        ).state,
+      ).toBe('FAILED');
+      expect(
+        wire.mock.calls.some(
+          ([path]) => path === '/api/domains/modify-ns.json',
+        ),
+      ).toBe(false);
+      const nsAction = await action({
+        kind: 'NAMESERVERS',
+        nameservers: newNames,
+      });
+      await mutation(
+        owner,
+        `${managementBase}/actions`,
+        { confirmation: name, request: { kind: 'LOCK', locked: false } },
+        409,
+      );
+      const parallel = await Promise.all([
+        mutation(
+          owner,
+          `${managementBase}/actions/${nsAction.id}/execute`,
+          { confirmation: name },
+          [201, 409],
+        ),
+        mutation(
+          owner,
+          `${managementBase}/actions/${nsAction.id}/execute`,
+          { confirmation: name },
+          [201, 409],
+        ),
+      ]);
+      expect(parallel.some((response) => response.status === 201)).toBe(true);
+      expect(
+        wire.mock.calls.filter(
+          ([path]) => path === '/api/domains/modify-ns.json',
+        ),
+      ).toHaveLength(1);
+      expect(
+        (
+          await prisma.domainAction.findUniqueOrThrow({
+            where: { id: nsAction.id },
+          })
+        ).state,
+      ).toBe('SUCCEEDED');
+      await mutation(
+        owner,
+        `${managementBase}/actions/${nsAction.id}/cancel-unsent`,
+        { confirmation: name },
+        409,
+      );
+      await expect(
+        prisma.domainAction.update({
+          where: { id: nsAction.id },
+          data: { submittedAt: null },
+        }),
+      ).rejects.toThrow();
+      const lockAction = await action({ kind: 'LOCK', locked: false });
+      await mutation(
+        owner,
+        `${managementBase}/actions/${lockAction.id}/execute`,
+        { confirmation: name },
+        201,
+      );
+      expect(locked).toBe(false);
+      const contactAction = await action({
+        kind: 'CONTACT',
+        contact,
+        consent: true,
+        acceptRegistrantChange: true,
+      });
+      await mutation(
+        owner,
+        `${managementBase}/actions/${contactAction.id}/execute`,
+        { confirmation: name },
+        201,
+      );
+      const change = wire.mock.calls.find(
+        ([path]) => path === '/api/domains/modify-contact.json',
+      )![1];
+      expect(change['designated-agent']).toBe('false');
+      expect(change['sixty-day-lock-optout']).toBe('false');
+      expect(change['attr-name1']).toBe('registrant-org-consent');
+      expect(change['attr-value1']).toBe('false');
+      expect(
+        (
+          await prisma.domainAction.findUniqueOrThrow({
+            where: { id: contactAction.id },
+          })
+        ).state,
+      ).toBe('SUCCEEDED');
+      const renewal = await action({
+        kind: 'RENEW',
+        sellingAmount: '170000',
+        costCeiling: '1099',
+        acceptPriceChangeRisk: true,
+      });
+      expect(renewal.invoiceId).not.toBe(final.invoiceId);
+      const renewUrl = `${managementBase}/actions/${renewal.id}/execute`;
+      await mutation(owner, renewUrl, { confirmation: name }, 409);
+      expect(
+        wire.mock.calls.some(([path]) => path === '/api/domains/renew.json'),
+      ).toBe(false);
+      await pay({ ...domain, invoiceId: renewal.invoiceId! }, '170000');
+      await mutation(owner, renewUrl, { confirmation: name }, 201);
+      await mutation(owner, renewUrl, { confirmation: name }, 201);
+      expect(
+        wire.mock.calls.filter(([path]) => path === '/api/domains/renew.json'),
+      ).toHaveLength(1);
+      expect(
+        (
+          await prisma.domainAction.findUniqueOrThrow({
+            where: { id: renewal.id },
+          })
+        ).state,
+      ).toBe('SUCCEEDED');
+      expect(
+        financialSnapshot(
+          await prisma.invoice.findUniqueOrThrow({
+            where: { id: final.invoiceId },
+          }),
+        ),
+      ).toBe(initialInvoice);
+      const actionRow = await prisma.domainAction.findUniqueOrThrow({
+        where: { id: renewal.id },
+      });
+      await expect(
+        prisma.domainAction.update({
+          where: { id: renewal.id },
+          data: { payloadCiphertext: 'changed' },
+        }),
+      ).rejects.toThrow();
+      await expect(
+        prisma.domainAction.delete({ where: { id: renewal.id } }),
+      ).rejects.toThrow();
+      expect(actionRow.payloadCiphertext).not.toContain('170000');
+      const code = await mutation(
+        owner,
+        `${managementBase}/authorization-code`,
+        { confirmation: name },
+        201,
+      );
+      expect(code.headers['cache-control']).toContain('no-store');
+      expect((code.body as Success<{ code: string }>).data.code).toBe(
+        'never-export-this',
+      );
+      expect(
+        JSON.stringify(
+          await prisma.domainAction.findMany({
+            where: { domainId: domain.id },
+          }),
+        ),
+      ).not.toContain('never-export-this');
+      // Five independently reserved reads consume the budget; an extra check is denied before network.
+      const calls = wire.mock.calls.length;
+      await mutation(
+        owner,
+        `/domains/registrar/live/${accountId}/check`,
+        { domainName: name },
+        409,
+      );
+      expect(wire.mock.calls.length).toBe(calls);
+      await patch(
+        `/domains/registrar/live/${accountId}/credential`,
+        { resellerId: '99999', apiKey: key },
+        409,
+      );
+      await patch(`/domains/registrar/live/${accountId}/credential`, {
+        resellerId: '12345',
+        apiKey: 'fake2'.repeat(8),
+      });
+      expect(
+        (
+          await prisma.registrarAccount.findUniqueOrThrow({
+            where: { id: accountId },
+          })
+        ).enabled,
+      ).toBe(false);
+      expect(
+        await prisma.registrarCredential.count({ where: { accountId } }),
+      ).toBe(2);
+      expect(
+        await prisma.activityLog.count({
+          where: { entityId: accountId, action: 'RESELLBIZ_READ_RESERVED' },
+        }),
+      ).toBe(5);
+    } finally {
+      wire.mockRestore();
+    }
   });
 });

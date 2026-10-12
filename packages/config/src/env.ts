@@ -110,6 +110,7 @@ const apiEnvironmentObjectSchema = serverEnvironmentSchema
       .min(1_000)
       .max(30_000)
       .default(10_000),
+    RESELLBIZ_LIVE_ENABLED: environmentBooleanSchema,
     BKASH_ENABLED: environmentBooleanSchema,
     BKASH_SANDBOX_BASE_URL: z
       .url()
@@ -255,6 +256,7 @@ const emailHeaderValueSchema = z
 const workerEnvironmentObjectSchema = baseEnvironmentSchema
   .extend(infrastructureEnvironmentSchema.shape)
   .extend({
+    RESELLBIZ_LIVE_ENABLED: environmentBooleanSchema,
     CREDENTIAL_ENCRYPTION_KEY:
       secretEnvironmentSchema.shape.CREDENTIAL_ENCRYPTION_KEY,
     OUTBOX_POLL_INTERVAL_MS: z.coerce

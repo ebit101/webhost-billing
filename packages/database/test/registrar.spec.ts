@@ -13,7 +13,21 @@ import {
   registrarDecimalMinor,
   type MockLogicBoxesTransport,
   type RegistrarIntent,
+  ResellbizLiveRegistrar,
+  ResellbizHttpsTransport,
+  type ResellbizPath,
+  type ResellbizTransport,
+  type ResellbizPreparationStore,
+  type ResellbizBinding,
 } from '../src/registrar';
+import {
+  resellbizSetupSchema,
+  registrarNameserversSchema,
+} from '@webhost-billing/shared';
+import { EventEmitter } from 'node:events';
+import { PassThrough } from 'node:stream';
+import type { IncomingMessage } from 'node:http';
+import type { request as httpsRequest, RequestOptions } from 'node:https';
 
 test('ordinary names and consent fail closed', () => {
   assert.equal(domainNameSchema.parse('Example.COM'), 'example.com');
@@ -55,6 +69,517 @@ test('ordinary names and consent fail closed', () => {
       .success,
     false,
   );
+});
+
+const liveContact = {
+  name: 'Fictional registrant',
+  company: 'Fictional company',
+  address: '1 Test Street',
+  city: 'Dhaka',
+  region: 'Dhaka',
+  postalCode: '1000',
+  country: 'BD',
+  email: 'fictional@example.test',
+  phoneCountryCode: '880',
+  phone: '1700000000',
+};
+const liveIntent: RegistrarIntent = {
+  operationId: randomUUID(),
+  accountId: randomUUID(),
+  customerId: randomUUID(),
+  domainName: 'fictional-live.com',
+  nameservers: ['ns1.fictional-host.com', 'ns2.fictional-host.com'],
+  contact: liveContact,
+  costCeiling: 1099n,
+};
+const liveCredentials = {
+  resellerId: '12345',
+  apiKey: 'fake'.repeat(8),
+};
+function liveFixture() {
+  const calls: {
+    path: ResellbizPath;
+    parameters: Readonly<Record<string, string | readonly string[]>>;
+  }[] = [];
+  let status = 'available';
+  let modifier: (path: ResellbizPath, value: unknown) => unknown = (
+    _path,
+    value,
+  ) => value;
+  const transport: ResellbizTransport = {
+    async request(path, parameters) {
+      calls.push({ path, parameters });
+      const values: Partial<Record<ResellbizPath, unknown>> = {
+        '/api/domains/available.json': { [liveIntent.domainName]: { status } },
+        '/api/products/reseller-cost-price.json': {
+          domcno: { addnewdomain: { '1': '10.99' } },
+        },
+        '/api/customers/details-by-id.json': {
+          customerid: '23456',
+          resellerid: '12345',
+          customerstatus: 'Active',
+          username: liveContact.email,
+          useremail: liveContact.email,
+          name: liveContact.name,
+          company: liveContact.company,
+          address1: liveContact.address,
+          city: liveContact.city,
+          state: liveContact.region,
+          zip: liveContact.postalCode,
+          country: liveContact.country,
+          telnocc: liveContact.phoneCountryCode,
+          telno: liveContact.phone,
+          pin: 'never-export-this',
+        },
+        '/api/customers/search.json': { recsonpage: '0', recsindb: '0' },
+        '/api/customers/v2/signup.json': '23456',
+        '/api/contacts/add.json': '34567',
+        '/api/contacts/details.json': {
+          entityid: '34567',
+          customerid: '23456',
+          type: 'Contact',
+          currentstatus: 'Active',
+          name: liveContact.name,
+          company: liveContact.company,
+          address1: liveContact.address,
+          city: liveContact.city,
+          state: liveContact.region,
+          zip: liveContact.postalCode,
+          country: liveContact.country,
+          emailaddr: liveContact.email,
+          telnocc: liveContact.phoneCountryCode,
+          telno: liveContact.phone,
+        },
+        '/api/domains/register.json': {
+          entityid: '45678',
+          actionstatus: 'Pending',
+        },
+        '/api/domains/orderid.json': '45678',
+        '/api/domains/details.json': {
+          domainname: liveIntent.domainName,
+          customerid: '23456',
+          isImmediateReseller: 'true',
+          currentstatus: 'Active',
+          endtime: '1900000000',
+          domainsecret: 'never-export-this',
+          registrantcontactid: '34567',
+          admincontactid: '34567',
+          techcontactid: '34567',
+          billingcontactid: '34567',
+        },
+      };
+      return JSON.stringify(modifier(path, values[path]));
+    },
+  };
+  return {
+    calls,
+    transport,
+    setStatus(value: string) {
+      status = value;
+    },
+    modify(value: typeof modifier) {
+      modifier = value;
+    },
+    registrar: new ResellbizLiveRegistrar(liveCredentials, transport, {
+      accountId: liveIntent.accountId,
+      localCustomerId: liveIntent.customerId,
+      remoteCustomerId: '23456',
+      remoteContactId: '34567',
+    }),
+  };
+}
+test('live quote is exact, isolated from mock mode and rejects unsupported/premium/claims/unknown values', async () => {
+  const fixture = liveFixture();
+  assert.equal(
+    (await fixture.registrar.quote(liveIntent.domainName)).costAmount,
+    1099n,
+  );
+  assert.equal(
+    (await fixture.registrar.quote(liveIntent.domainName)).simulated,
+    false,
+  );
+  await assert.rejects(fixture.registrar.quote('fictional-live.net'));
+  for (const extra of [
+    { costHash: {} },
+    { 'tm-claims-key': '' },
+    { isPremium: true },
+    { unknownFlag: true },
+    { status: 'unknown' },
+  ]) {
+    fixture.modify((path, value) =>
+      path === '/api/domains/available.json'
+        ? { [liveIntent.domainName]: { status: 'available', ...extra } }
+        : value,
+    );
+    await assert.rejects(fixture.registrar.quote(liveIntent.domainName));
+  }
+});
+function memoryPreparation() {
+  const claims = new Set<string>();
+  let binding: ResellbizBinding | undefined;
+  const store: ResellbizPreparationStore = {
+    async load() {
+      return binding;
+    },
+    async claim(_intent, _fingerprint, step) {
+      if (claims.has(step)) throw new Error('Already claimed');
+      claims.add(step);
+    },
+    async customer() {},
+    async complete(intent, _fingerprint, customerId, contactId) {
+      binding = {
+        accountId: intent.accountId,
+        localCustomerId: intent.customerId,
+        remoteCustomerId: customerId,
+        remoteContactId: contactId,
+      };
+    },
+  };
+  return { store, claims };
+}
+test('automatic preparation creates customer/contact once with independent random password and explicit non-marketing policy consent', async () => {
+  const fixture = liveFixture(),
+    preparation = memoryPreparation();
+  const provider = new ResellbizLiveRegistrar(
+    liveCredentials,
+    fixture.transport,
+    undefined,
+    preparation.store,
+  );
+  await provider.ensureContacts(liveIntent, 'a'.repeat(64));
+  await provider.ensureContacts(liveIntent, 'a'.repeat(64));
+  assert.equal(
+    fixture.calls.filter(
+      (call) => call.path === '/api/customers/v2/signup.json',
+    ).length,
+    1,
+  );
+  assert.equal(
+    fixture.calls.filter((call) => call.path === '/api/contacts/add.json')
+      .length,
+    1,
+  );
+  const signup = fixture.calls.find(
+    (call) => call.path === '/api/customers/v2/signup.json',
+  )!.parameters;
+  const password = String(signup.passwd);
+  assert.equal(password.length, 16);
+  assert.match(password, /^[a-zA-Z0-9~*!@$#%_+.?:,{}]+$/);
+  for (const pattern of [/[a-z]/, /[A-Z]/, /[0-9]/, /[~*!@$#%_+.?:,{}]/])
+    assert.match(password, pattern);
+  assert.equal(signup['accept-policy'], 'true');
+  assert.equal(signup['marketing-email-consent'], 'false');
+  assert.deepEqual([...preparation.claims], ['customer', 'contact']);
+});
+test('automatic preparation reuses only a fully matching directly owned customer', async () => {
+  const fixture = liveFixture();
+  fixture.modify((path, value) =>
+    path === '/api/customers/search.json'
+      ? {
+          recsonpage: '1',
+          recsindb: '1',
+          '0': {
+            'customer.customerid': '23456',
+            'customer.username': liveContact.email,
+            'customer.resellerid': liveCredentials.resellerId,
+            'customer.customerstatus': 'Active',
+          },
+        }
+      : value,
+  );
+  await new ResellbizLiveRegistrar(
+    liveCredentials,
+    fixture.transport,
+    undefined,
+    memoryPreparation().store,
+  ).ensureContacts(liveIntent, 'a'.repeat(64));
+  assert.equal(
+    fixture.calls.some((call) => call.path.includes('signup')),
+    false,
+  );
+  assert.equal(
+    fixture.calls.filter((call) => call.path === '/api/contacts/add.json')
+      .length,
+    1,
+  );
+  fixture.modify((path, value) =>
+    path === '/api/customers/search.json'
+      ? {
+          recsonpage: '1',
+          recsindb: '1',
+          '0': {
+            'customer.customerid': '23456',
+            'customer.username': liveContact.email,
+            'customer.resellerid': '9999',
+            'customer.customerstatus': 'Active',
+          },
+        }
+      : value,
+  );
+  const before = fixture.calls.length;
+  await assert.rejects(
+    new ResellbizLiveRegistrar(
+      liveCredentials,
+      fixture.transport,
+      undefined,
+      memoryPreparation().store,
+    ).ensureContacts(liveIntent, 'a'.repeat(64)),
+  );
+  assert.equal(
+    fixture.calls
+      .slice(before)
+      .some(
+        (call) => call.path.includes('signup') || call.path.includes('/add'),
+      ),
+    false,
+  );
+});
+test('unknown/incomplete customer searches and lost creation responses never trigger duplicate creation', async () => {
+  for (const search of [
+    { status: 'ERROR', message: 'Not found' },
+    {},
+    { recsonpage: '0', recsindb: '1' },
+    { recsonpage: '0', recsindb: '0', hidden: {} },
+  ]) {
+    const fixture = liveFixture();
+    fixture.modify((path, value) =>
+      path === '/api/customers/search.json' ? search : value,
+    );
+    await assert.rejects(
+      new ResellbizLiveRegistrar(
+        liveCredentials,
+        fixture.transport,
+        undefined,
+        memoryPreparation().store,
+      ).ensureContacts(liveIntent, 'a'.repeat(64)),
+    );
+    assert.equal(
+      fixture.calls.some(
+        (call) => call.path.includes('signup') || call.path.includes('/add'),
+      ),
+      false,
+    );
+  }
+  for (const lostPath of [
+    '/api/customers/v2/signup.json',
+    '/api/contacts/add.json',
+  ]) {
+    const fixture = liveFixture(),
+      preparation = memoryPreparation();
+    fixture.modify((path, value) => {
+      if (path === lostPath) throw new Error('secret lost response');
+      return value;
+    });
+    for (let attempt = 0; attempt < 2; attempt++)
+      await assert.rejects(
+        new ResellbizLiveRegistrar(
+          liveCredentials,
+          fixture.transport,
+          undefined,
+          preparation.store,
+        ).ensureContacts(liveIntent, 'a'.repeat(64)),
+        (error: Error) => !error.message.includes('secret'),
+      );
+    assert.equal(
+      fixture.calls.filter((call) => call.path === lostPath).length,
+      1,
+    );
+  }
+});
+test('live contacts must match account ownership and every immutable registrant field', async () => {
+  const fixture = liveFixture();
+  await fixture.registrar.ensureContacts(liveIntent, 'a'.repeat(64));
+  for (const path of [
+    '/api/customers/details-by-id.json',
+    '/api/contacts/details.json',
+  ] as const) {
+    fixture.modify((current, value) =>
+      current === path
+        ? {
+            ...(value as object),
+            ...(path.includes('customers')
+              ? { resellerid: '99999' }
+              : { emailaddr: 'other@example.test' }),
+          }
+        : value,
+    );
+    await assert.rejects(
+      fixture.registrar.ensureContacts(liveIntent, 'a'.repeat(64)),
+    );
+  }
+  assert.equal(
+    fixture.calls.some(
+      (call) => call.path.includes('signup') || call.path.includes('/add'),
+    ),
+    false,
+  );
+});
+test('live registration uses POST projection and never treats a response as registered', async () => {
+  const fixture = liveFixture();
+  await fixture.registrar.registerOnce(liveIntent);
+  const call = fixture.calls.find(
+    (entry) => entry.path === '/api/domains/register.json',
+  );
+  assert.ok(call);
+  assert.equal(call.parameters['invoice-option'], 'NoInvoice');
+  assert.equal(call.parameters['auto-renew'], 'false');
+  assert.equal(call.parameters.years, '1');
+  assert.equal(call.parameters['customer-id'], '23456');
+  assert.deepEqual(call.parameters.ns, liveIntent.nameservers);
+  assert.equal(await fixture.registrar.lookup(liveIntent), null);
+  fixture.setStatus('regthroughus');
+  const observed = await fixture.registrar.lookup(liveIntent);
+  assert.equal(observed?.state, 'Active');
+  assert.equal(JSON.stringify(observed).includes('never-export-this'), false);
+});
+test('live price increases, wrong intents, malformed ownership and ambiguous errors deny without retry', async () => {
+  const fixture = liveFixture();
+  await assert.rejects(
+    fixture.registrar.registerOnce({ ...liveIntent, costCeiling: 1098n }),
+  );
+  assert.equal(
+    fixture.calls.some((call) => call.path === '/api/domains/register.json'),
+    false,
+  );
+  await assert.rejects(
+    fixture.registrar.registerOnce({ ...liveIntent, customerId: randomUUID() }),
+  );
+  fixture.setStatus('regthroughus');
+  fixture.modify((path, value) =>
+    path === '/api/domains/details.json'
+      ? { ...(value as object), customerid: '99999' }
+      : value,
+  );
+  await assert.rejects(fixture.registrar.lookup(liveIntent));
+  fixture.modify(() => {
+    throw new Error('api-key=fictional-secret-provider-url');
+  });
+  await assert.rejects(
+    fixture.registrar.lookup(liveIntent),
+    (error: Error) => !error.message.includes('fictional-secret'),
+  );
+});
+test('live configuration requires independent native-unit confirmation and valid public nameservers', () => {
+  const setup = {
+    ...liveCredentials,
+    confirmation: 'Configure live resell.biz',
+    sellingAmount: '150000',
+    nameservers: liveIntent.nameservers,
+    agreementUrl: 'https://fictional-host.com/legal/domain-agreement',
+    customerTermsUrl: 'https://fictional-host.com/legal/customer-terms',
+    customerPrivacyUrl: 'https://fictional-host.com/legal/privacy',
+    confirmNativeUsdCosts: true,
+  };
+  assert.equal(resellbizSetupSchema.safeParse(setup).success, true);
+  assert.equal(
+    resellbizSetupSchema.safeParse({ ...setup, confirmNativeUsdCosts: false })
+      .success,
+    false,
+  );
+  assert.equal(
+    resellbizSetupSchema.safeParse({
+      ...setup,
+      endpoint: 'https://evil.example',
+    }).success,
+    false,
+  );
+  for (const names of [
+    ['ns1.example.test', 'ns2.example.test'],
+    ['127.0.0.1', 'ns1.fictional-host.com'],
+    ['ns1.fictional-host.com', 'ns1.fictional-host.com'],
+  ])
+    assert.equal(registrarNameserversSchema.safeParse(names).success, false);
+});
+test('HTTPS transport pins host/verb/TLS, encodes arrays and rejects redirects and oversized responses', async () => {
+  const captured: RequestOptions[] = [];
+  const bodies: (string | undefined)[] = [];
+  let status = 200,
+    body = '{}',
+    destroyed = 0;
+  const send = ((
+    options: RequestOptions,
+    callback: (message: IncomingMessage) => void,
+  ) => {
+    captured.push(options);
+    const req = Object.assign(new EventEmitter(), {
+      destroy() {
+        destroyed++;
+      },
+      end(value?: string) {
+        bodies.push(value);
+        queueMicrotask(() => {
+          const response = Object.assign(new PassThrough(), {
+            statusCode: status,
+          });
+          callback(response as unknown as IncomingMessage);
+          response.end(body);
+        });
+      },
+    });
+    return req;
+  }) as unknown as typeof httpsRequest;
+  const transport = new ResellbizHttpsTransport(send);
+  await transport.request('/api/domains/available.json', {
+    'domain-name': 'fictional',
+    tlds: 'com',
+  });
+  await transport.request('/api/domains/register.json', {
+    ns: liveIntent.nameservers,
+    'api-key': liveCredentials.apiKey,
+  });
+  assert.equal(captured[0]?.hostname, 'domaincheck.httpapi.com');
+  assert.equal(captured[1]?.hostname, 'httpapi.com');
+  assert.equal(captured[1]?.method, 'POST');
+  assert.equal(captured[1]?.path, '/api/domains/register.json');
+  assert.equal(captured[1]?.rejectUnauthorized, true);
+  assert.equal(captured[1]?.family, 4);
+  assert.deepEqual(
+    new URLSearchParams(bodies[1]).getAll('ns'),
+    liveIntent.nameservers,
+  );
+  status = 302;
+  await assert.rejects(transport.request('/api/domains/register.json', {}));
+  status = 200;
+  body = 'x'.repeat(262145);
+  await assert.rejects(transport.request('/api/contacts/details.json', {}));
+  assert.equal(captured.length, 4);
+  assert.equal(destroyed, 2);
+  await assert.rejects(
+    transport.request('/api/domains/delete.json' as ResellbizPath, {}),
+  );
+  assert.equal(captured.length, 4);
+});
+
+test('HTTPS total deadline destroys the request once and never exposes request errors', async (context) => {
+  context.mock.timers.enable({ apis: ['setTimeout'] });
+  let destroyed = 0,
+    calls = 0;
+  const req = Object.assign(new EventEmitter(), {
+    destroy() {
+      destroyed++;
+    },
+    end() {},
+  });
+  const send = (() => {
+    calls++;
+    return req;
+  }) as unknown as typeof httpsRequest;
+  const transport = new ResellbizHttpsTransport(send);
+  const pending = transport.request('/api/domains/register.json', {
+    'api-key': liveCredentials.apiKey,
+  });
+  const rejected = assert.rejects(
+    pending,
+    (error: Error) => !error.message.includes(liveCredentials.apiKey),
+  );
+  context.mock.timers.tick(10000);
+  await rejected;
+  req.emit(
+    'error',
+    new Error(`private-provider-url?api-key=${liveCredentials.apiKey}`),
+  );
+  assert.equal(calls, 1);
+  assert.equal(destroyed, 1);
 });
 test('exact decimal tokens never round financial values', () => {
   assert.equal(registrarDecimalMinor('9007199254740.99'), 900719925474099n);

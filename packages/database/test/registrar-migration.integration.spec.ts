@@ -115,6 +115,54 @@ test('registrar migration preserves all historical hosting and financial rows an
       ),
     );
     assert.deepEqual(await snapshot(true), before);
+    // Additive live rollout must leave every prior business row unchanged too.
+    const fakeId = randomUUID(),
+      credentialId = randomUUID();
+    await raw.query(
+      'INSERT INTO registrar_accounts(id,enabled) VALUES($1,true)',
+      [fakeId],
+    );
+    await raw.query(
+      "INSERT INTO registrar_credentials(id,account_id,version,ciphertext) VALUES($1,$2,1,'fictional-historical-ciphertext')",
+      [credentialId, fakeId],
+    );
+    const fakeBefore = (
+      await raw.query(
+        'SELECT to_jsonb(t)::text AS row FROM registrar_accounts t',
+      )
+    ).rows[0]?.row;
+    const credentialBefore = (
+      await raw.query(
+        'SELECT to_jsonb(t)::text AS row FROM registrar_credentials t',
+      )
+    ).rows[0]?.row;
+    const beforeLive = await snapshot(true);
+    await raw.query(
+      readFileSync(
+        resolve(
+          process.cwd(),
+          'prisma/migrations/20261012000200_resellbiz_live_registration/migration.sql',
+        ),
+        'utf8',
+      ),
+    );
+    assert.deepEqual(await snapshot(true), beforeLive);
+    assert.equal(
+      (
+        await raw.query(
+          "SELECT (to_jsonb(t)-'configuration')::text AS row FROM registrar_accounts t",
+        )
+      ).rows[0]?.row,
+      fakeBefore,
+    );
+    assert.equal(
+      (
+        await raw.query(
+          'SELECT to_jsonb(t)::text AS row FROM registrar_credentials t',
+        )
+      ).rows[0]?.row,
+      credentialBefore,
+    );
     assert.equal(
       (await raw.query('SELECT kind FROM products')).rows[0]?.kind,
       'HOSTING',
@@ -127,17 +175,21 @@ test('registrar migration preserves all historical hosting and financial rows an
       'registrar_accounts',
       'registrar_credentials',
       'domain_offers',
+      'domain_actions',
       'domain_quotes',
       'domains',
       'registrar_operations',
       'registrar_evidence',
       'registrar_mappings',
+      'registrar_preparations',
       'fake_registrar_registrations',
     ])
       assert.equal(
         (await raw.query(`SELECT count(*)::text AS count FROM "${table}"`))
           .rows[0]?.count,
-        '0',
+        ['registrar_accounts', 'registrar_credentials'].includes(table)
+          ? '1'
+          : '0',
       );
   } finally {
     await raw.end();

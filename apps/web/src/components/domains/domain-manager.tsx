@@ -1,7 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+  type ReactNode,
+} from 'react';
 import {
   domainQuoteRequestSchema,
   domainDetailSchema,
@@ -13,7 +19,12 @@ import {
   type DomainQuote,
   type FakeRegistrarSettings,
   sentenceCaseLabel,
+  customerDetailSchema,
+  authenticatedIdentitySchema,
+  type AuthenticatedIdentity,
+  type DomainContact,
 } from '@webhost-billing/shared';
+import { domainContactDraft } from '../../lib/domain-contact-draft';
 import { authenticatedGet, authMutation } from '../../lib/auth-api';
 import {
   domainEntryHref,
@@ -23,6 +34,7 @@ import {
 import { Card, fieldClass } from '../customers/customer-fields';
 import { Button } from '../ui/button';
 import { PageHeader } from '../ui/page-header';
+import { DomainManagementPanel } from './domain-management';
 
 type Offer = DomainOffer;
 type Account = FakeRegistrarSettings;
@@ -32,6 +44,7 @@ const contactFields = [
   'name',
   'company',
   'address',
+  'addressLine2',
   'city',
   'region',
   'postalCode',
@@ -44,6 +57,7 @@ const labels: Record<(typeof contactFields)[number], string> = {
   name: 'Registrant name',
   company: 'Company',
   address: 'Address',
+  addressLine2: 'Address line 2',
   city: 'City',
   region: 'Region',
   postalCode: 'Postal code',
@@ -83,6 +97,31 @@ export function DomainManager({
   const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
   const [submissionKey, setSubmissionKey] = useState('');
+  const [contactDraft, setContactDraft] = useState<Partial<DomainContact>>({});
+  const contactEdited = useRef(false);
+  useEffect(() => {
+    if (administrator) return;
+    let active = true;
+    void authenticatedGet<AuthenticatedIdentity>('/auth/me')
+      .then(async (identity) => {
+        identity = authenticatedIdentitySchema.parse(identity);
+        if (identity.role !== 'CUSTOMER') return;
+        const profile = customerDetailSchema.parse(
+          await authenticatedGet(`/customers/${identity.customerId}`),
+        );
+        if (active && !contactEdited.current)
+          setContactDraft(domainContactDraft(profile));
+      })
+      .catch(() => {
+        if (active)
+          setNotice(
+            'Customer details could not be prefilled. Enter and review the registrant details below.',
+          );
+      });
+    return () => {
+      active = false;
+    };
+  }, [administrator]);
   async function refresh() {
     const [records, prices] = await Promise.all([
       authenticatedGet<Domain[]>('/domains'),
@@ -154,13 +193,27 @@ export function DomainManager({
     const input = domainQuoteRequestSchema.safeParse({
       offerId: form.get('offerId'),
       domainName: form.get('domainName'),
-      contact,
-      agreement: 'fictional-registration-v1',
+      contact: {
+        ...contact,
+        ...(offers.find((offer) => offer.id === form.get('offerId'))
+          ?.simulated === false
+          ? { publishOrganization: form.get('publishOrganization') === 'on' }
+          : {}),
+      },
+      agreement:
+        offers.find((offer) => offer.id === form.get('offerId'))?.simulated ===
+        false
+          ? 'resellbiz-registration-v1'
+          : 'fictional-registration-v1',
       consent: form.get('consent') === 'on',
+      ...(offers.find((offer) => offer.id === form.get('offerId'))
+        ?.simulated === false
+        ? { customerPolicyConsent: form.get('customerPolicyConsent') === 'on' }
+        : {}),
     });
     if (!input.success) {
       setNotice(
-        'Complete all registrant fields, select a supported ordinary domain and accept the fictional agreement.',
+        'Complete all registrant fields, select a supported ordinary domain and accept its agreement.',
       );
       return;
     }
@@ -176,15 +229,15 @@ export function DomainManager({
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Simulated domain registration"
-        description="StarGate/UK2 (resell.biz) evaluation workflow. No external calls, real registrations or provider charges."
+        title="Domain registration"
+        description="Domain requests, separate invoice/payment states and explicit administrator approval."
       />
       <p className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
-        Simulation only. Auto-renewal is off. Paying an invoice does not
-        register a domain. A full administrator with two-factor authentication
-        must approve registration separately. Real provider access and
-        customer-facing domain sales remain closed. Simulation writes are
-        disabled in production.
+        Offers and records marked simulated make no external calls. Live offers
+        are real purchases, not a sandbox. Auto-renewal is off. Paying an
+        invoice does not register a domain. A full administrator with two-factor
+        authentication must approve registration separately. Simulated writes
+        are disabled in production.
       </p>
       <p role="status" className="text-sm">
         {notice}
@@ -193,89 +246,99 @@ export function DomainManager({
         Refresh read-only status
       </Button>
       {administrator ? (
-        <Card title="Registrar settings">
-          <ul className="mb-4 space-y-2 text-sm">
-            {offers.map((offer) => (
-              <li key={offer.id}>
-                .{offer.tld} · One year · Selling price{' '}
-                {money(offer.sellingAmount, offer.currency)} · Simulated
-                provider cost {money(offer.costAmount, offer.costCurrency)} ·
-                Observed {offer.observedAt}. Exact domain cost is checked again
-                at approval.
-              </li>
-            ))}
-          </ul>
-          <p className="mb-4 text-sm">
-            Networking disabled. No external credentials configured. Create
-            fictional customers in the customer manager; customers must accept
-            their own registration agreement.
-          </p>
-          <Link href="/admin/customers" className="text-blue-700 underline">
-            Customer manager
-          </Link>
-          {accounts.length === 0 ? (
-            <form
-              className="mt-4 space-y-3"
-              onSubmit={(event) => {
-                event.preventDefault();
-                const data = new FormData(event.currentTarget);
-                void perform(() =>
-                  authMutation('/domains/registrar', 'POST', {
-                    confirmation: data.get('confirmation'),
-                    sellingAmount: data.get('sellingAmount'),
-                  }),
-                );
-              }}
-            >
-              <Field label="Fixed one-year selling price in BDT minor units">
-                <input
-                  name="sellingAmount"
-                  className={fieldClass}
-                  required
-                  pattern="[1-9][0-9]*"
-                />
-              </Field>
-              <Field label="Type Enable simulated registrar">
-                <input name="confirmation" className={fieldClass} required />
-              </Field>
-              <Button type="submit" disabled={busy}>
-                Create simulated offers
-              </Button>
-            </form>
-          ) : (
-            accounts.map((account) => (
-              <div
-                key={account.id}
-                className="mt-4 flex flex-wrap items-center gap-3"
+        process.env.NODE_ENV !== 'production' && (
+          <Card title="Registrar settings">
+            <ul className="mb-4 space-y-2 text-sm">
+              {offers
+                .filter((offer) => offer.simulated)
+                .map((offer) => (
+                  <li key={offer.id}>
+                    .{offer.tld} · One year · Selling price{' '}
+                    {money(offer.sellingAmount, offer.currency)} · Simulated
+                    provider cost{' '}
+                    {offer.costAmount && offer.costCurrency
+                      ? money(offer.costAmount, offer.costCurrency)
+                      : 'Unavailable'}{' '}
+                    · Observed {offer.observedAt}. Exact domain cost is checked
+                    again at approval.
+                  </li>
+                ))}
+            </ul>
+            <p className="mb-4 text-sm">
+              These settings control simulation only. Create fictional customers
+              in the customer manager; customers must accept their own
+              registration agreement.
+            </p>
+            <Link href="/admin/customers" className="text-blue-700 underline">
+              Customer manager
+            </Link>
+            {accounts.length === 0 ? (
+              <form
+                className="mt-4 space-y-3"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  const data = new FormData(event.currentTarget);
+                  void perform(() =>
+                    authMutation('/domains/registrar', 'POST', {
+                      confirmation: data.get('confirmation'),
+                      sellingAmount: data.get('sellingAmount'),
+                    }),
+                  );
+                }}
               >
-                <p>
-                  {account.brand} · {account.mode} ·{' '}
-                  {account.enabled ? 'Enabled' : 'Disabled'}
-                </p>
-                <Button
-                  disabled={busy}
-                  onClick={() =>
-                    void perform(() =>
-                      authMutation(
-                        `/domains/registrar/${account.id}`,
-                        'PATCH',
-                        { enabled: !account.enabled },
-                      ),
-                    )
-                  }
-                >
-                  {account.enabled ? 'Disable registrar' : 'Enable simulation'}
+                <Field label="Fixed one-year selling price in BDT minor units">
+                  <input
+                    name="sellingAmount"
+                    className={fieldClass}
+                    required
+                    pattern="[1-9][0-9]*"
+                  />
+                </Field>
+                <Field label="Type Enable simulated registrar">
+                  <input name="confirmation" className={fieldClass} required />
+                </Field>
+                <Button type="submit" disabled={busy}>
+                  Create simulated offers
                 </Button>
-              </div>
-            ))
-          )}
-        </Card>
+              </form>
+            ) : (
+              accounts.map((account) => (
+                <div
+                  key={account.id}
+                  className="mt-4 flex flex-wrap items-center gap-3"
+                >
+                  <p>
+                    {account.brand} · {account.mode} ·{' '}
+                    {account.enabled ? 'Enabled' : 'Disabled'}
+                  </p>
+                  <Button
+                    disabled={busy}
+                    onClick={() =>
+                      void perform(() =>
+                        authMutation(
+                          `/domains/registrar/${account.id}`,
+                          'PATCH',
+                          { enabled: !account.enabled },
+                        ),
+                      )
+                    }
+                  >
+                    {account.enabled
+                      ? 'Disable registrar'
+                      : 'Enable simulation'}
+                  </Button>
+                </div>
+              ))
+            )}
+          </Card>
+        )
       ) : (
-        <Card title="Request a fictional quote">
+        <Card title="Request a domain quote">
           <p className="mb-4 text-sm">
             Only ordinary ASCII .com and .net names, one year, one domain. Fixed
-            fictional nameservers: ns1.example.test and ns2.example.test.
-            Provider cost is independent of the BDT selling price.
+            fictional nameservers apply only to simulation. Live nameservers are
+            displayed below. Provider cost is independent of the BDT selling
+            price.
           </p>
           <form
             onSubmit={(event) => void requestQuote(event)}
@@ -306,7 +369,8 @@ export function DomainManager({
                 {offers.map((offer) => (
                   <option key={offer.id} value={offer.id}>
                     .{offer.tld} · {money(offer.sellingAmount, offer.currency)}{' '}
-                    · One year
+                    · One year ·{' '}
+                    {offer.simulated ? 'Simulated' : 'Live purchase'}
                   </option>
                 ))}
               </select>
@@ -340,27 +404,110 @@ export function DomainManager({
                   name={key}
                   type={key === 'email' ? 'email' : 'text'}
                   className={fieldClass}
-                  required
+                  required={key !== 'addressLine2'}
+                  value={contactDraft[key] ?? ''}
+                  onChange={(event) => {
+                    contactEdited.current = true;
+                    setContactDraft((previous) => ({
+                      ...previous,
+                      [key]: event.target.value,
+                    }));
+                    setQuote(undefined);
+                  }}
                   maxLength={key === 'email' ? 320 : 160}
                 />
               </Field>
             ))}
             <label className="text-sm sm:col-span-2">
-              <input name="consent" type="checkbox" required /> I authorize use
-              of this fictional registrant data for the local simulation and
-              accept fictional-registration-v1: no domain is registered, no
-              external data is sent and no provider charge occurs. I am not
-              accepting a real registry agreement.
+              <input name="consent" type="checkbox" required />{' '}
+              {offers.find((offer) => offer.id === selectedOffer)?.simulated ===
+              false ? (
+                <>
+                  I am authorized to provide this registrant data and consent to
+                  its disclosure to the registrar and registry, including
+                  possible public registration data. I accept the{' '}
+                  <a
+                    href={
+                      offers.find((offer) => offer.id === selectedOffer)
+                        ?.agreementUrl
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline"
+                  >
+                    configured registrar agreement
+                  </a>{' '}
+                  for this one-year paid registration. This is not a sandbox.
+                  Nameservers:{' '}
+                  {offers
+                    .find((offer) => offer.id === selectedOffer)
+                    ?.nameservers.join(', ')}
+                  .
+                </>
+              ) : (
+                <>
+                  I authorize use of this fictional data for the local
+                  simulation and accept fictional-registration-v1. No real
+                  registration, external disclosure or provider charge occurs.
+                </>
+              )}
             </label>
+            {offers.find((offer) => offer.id === selectedOffer)?.simulated ===
+              false && (
+              <label className="text-sm sm:col-span-2">
+                <input name="publishOrganization" type="checkbox" /> I
+                explicitly consent to publication of the registrant organization
+                in registration data. Leave unchecked to withhold
+                organization-publication consent.
+              </label>
+            )}
+            {offers.find((offer) => offer.id === selectedOffer)?.simulated ===
+              false && (
+              <label className="text-sm sm:col-span-2">
+                <input name="customerPolicyConsent" type="checkbox" required />{' '}
+                I authorize creation of a registrar customer account and contact
+                when needed, and accept the{' '}
+                <a
+                  href={
+                    offers.find((offer) => offer.id === selectedOffer)
+                      ?.customerTermsUrl
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline"
+                >
+                  customer terms
+                </a>{' '}
+                and{' '}
+                <a
+                  href={
+                    offers.find((offer) => offer.id === selectedOffer)
+                      ?.customerPrivacyUrl
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline"
+                >
+                  privacy policy
+                </a>
+                . No marketing consent is given.
+              </label>
+            )}
             <Button type="submit" disabled={busy || !offers.length}>
-              Get simulated quote
+              Get domain quote
             </Button>
           </form>
           {quote && (
             <div className="mt-5 space-y-3">
               <p>
                 {quote.domainName}: {money(quote.sellingAmount, 'BDT')} selling
-                price; {money(quote.costAmount, 'USD')} simulated provider cost.
+                price.
+                {quote.costAmount && (
+                  <>
+                    {' '}
+                    {money(quote.costAmount, 'USD')} simulated provider cost.
+                  </>
+                )}
                 Quote expires {quote.expiresAt}.
               </p>
               <Button
@@ -391,7 +538,9 @@ export function DomainManager({
             <dl className="mb-4 grid gap-3 text-sm sm:grid-cols-2">
               <div>
                 <dt>Registrar</dt>
-                <dd>{domain.registrar} · Simulated</dd>
+                <dd>
+                  {domain.registrar} · {domain.simulated ? 'Simulated' : 'Live'}
+                </dd>
               </div>
               <div>
                 <dt>Registration period</dt>
@@ -407,8 +556,9 @@ export function DomainManager({
               </div>
             </dl>
             <p>
-              Simulated · {sentenceCaseLabel(domain.state)} · Contact
-              verification {sentenceCaseLabel(domain.verification)}
+              {domain.simulated ? 'Simulated' : 'Live'} ·{' '}
+              {sentenceCaseLabel(domain.state)} · Contact verification{' '}
+              {sentenceCaseLabel(domain.verification)}
             </p>
             <p>
               Invoice {sentenceCaseLabel(domain.invoiceStatus)} · Balance{' '}
@@ -421,18 +571,23 @@ export function DomainManager({
               </p>
             )}
             {domain.expiresAt && (
-              <p>Observed simulated expiry: {domain.expiresAt}</p>
+              <p>
+                Observed {domain.simulated ? 'simulated ' : ''}expiry:{' '}
+                {domain.expiresAt}
+              </p>
             )}
             {!domain.expiresAt && <p>Registry expiry not yet confirmed.</p>}
             {administrator && (
               <p className="my-2 text-sm text-slate-600">
                 Registration date, renewal price and next billing date are not
-                established by this simulation. Renewal, transfer, authorization
-                codes, deletion and nameserver editing are unavailable.
+                established by the original registration snapshot. Use the
+                management section for current state and separately paid
+                renewals.
               </p>
             )}
             <p>
-              Nameservers: {domain.nameservers.join(', ')} · Auto-renewal off
+              Registration nameserver snapshot: {domain.nameservers.join(', ')}{' '}
+              · Auto-renewal off
             </p>
             <div className="my-3 flex flex-wrap gap-4">
               <Link
@@ -462,6 +617,14 @@ export function DomainManager({
                 </>
               )}
             </div>
+            {!domain.simulated && domain.state === 'REGISTERED' && (
+              <DomainManagementPanel
+                domainId={domain.id}
+                domainName={domain.domainName}
+                administrator={administrator}
+                contact={domain.contact}
+              />
+            )}
             {administrator && (
               <>
                 <p>
@@ -472,17 +635,78 @@ export function DomainManager({
                   · {domain.agreement}
                 </p>
                 {domain.contact && (
-                  <dl className="my-3 grid gap-2 text-sm sm:grid-cols-2">
-                    {Object.entries(domain.contact).map(([key, value]) => (
-                      <div key={key}>
-                        <dt>
-                          {labels[key as (typeof contactFields)[number]] ??
-                            sentenceCaseLabel(key)}
-                        </dt>
-                        <dd className="break-words">{value}</dd>
-                      </div>
-                    ))}
-                  </dl>
+                  <div>
+                    <h3 className="text-sm font-semibold">
+                      Registration contact snapshot
+                    </h3>
+                    <dl className="my-3 grid gap-2 text-sm sm:grid-cols-2">
+                      {Object.entries(domain.contact).map(([key, value]) => (
+                        <div key={key}>
+                          <dt>
+                            {labels[key as (typeof contactFields)[number]] ??
+                              sentenceCaseLabel(key)}
+                          </dt>
+                          <dd className="break-words">
+                            {typeof value === 'boolean'
+                              ? value
+                                ? 'Consented'
+                                : 'Not consented'
+                              : value}
+                          </dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </div>
+                )}
+                {!domain.simulated && !domain.contactMappingVerified && (
+                  <details>
+                    <summary className="cursor-pointer text-sm">
+                      Advanced: verify existing registrar IDs
+                    </summary>
+                    <form
+                      className="my-4 grid gap-3 sm:grid-cols-2"
+                      onSubmit={(event) => {
+                        event.preventDefault();
+                        const data = new FormData(event.currentTarget);
+                        void perform(() =>
+                          authMutation(
+                            `/domains/${domain.id}/registrar-contact`,
+                            'POST',
+                            {
+                              remoteCustomerId: data.get('remoteCustomerId'),
+                              remoteContactId: data.get('remoteContactId'),
+                            },
+                          ),
+                        );
+                      }}
+                    >
+                      <p className="sm:col-span-2">
+                        Customer and contact preparation normally runs
+                        automatically after paid registration approval. This
+                        optional check verifies known existing IDs without
+                        creating contacts or registering.
+                      </p>
+                      <Field label="Registrar customer ID">
+                        <input
+                          name="remoteCustomerId"
+                          className={fieldClass}
+                          required
+                          pattern="[1-9][0-9]*"
+                        />
+                      </Field>
+                      <Field label="Registrar contact ID">
+                        <input
+                          name="remoteContactId"
+                          className={fieldClass}
+                          required
+                          pattern="[1-9][0-9]*"
+                        />
+                      </Field>
+                      <Button type="submit" disabled={busy}>
+                        Verify registrar customer and contact
+                      </Button>
+                    </form>
+                  </details>
                 )}
                 {!domain.dispatchClaimed && (
                   <form
@@ -495,6 +719,12 @@ export function DomainManager({
                           confirmation: data.get('confirmation'),
                           costCeiling: data.get('costCeiling'),
                           costCurrency: 'USD',
+                          ...(!domain.simulated
+                            ? {
+                                acceptPriceChangeRisk:
+                                  data.get('acceptPriceChangeRisk') === 'on',
+                              }
+                            : {}),
                         }),
                       );
                     }}
@@ -506,7 +736,7 @@ export function DomainManager({
                         required
                       />
                     </Field>
-                    <Field label="Approved USD provider cost ceiling in minor units">
+                    <Field label="Approved USD preflight threshold in minor units">
                       <input
                         className={fieldClass}
                         name="costCeiling"
@@ -514,11 +744,27 @@ export function DomainManager({
                         pattern="[1-9][0-9]*"
                       />
                     </Field>
+                    {!domain.simulated && (
+                      <label className="sm:col-span-2">
+                        <input
+                          name="acceptPriceChangeRisk"
+                          type="checkbox"
+                          required
+                        />{' '}
+                        I approve a real paid purchase of this exact domain,
+                        consent/contact and nameserver snapshot for one year.
+                        The provider has no verified atomic price cap; its final
+                        charge may differ from the checked price. No API
+                        cancellation or automatic refund is available.
+                      </label>
+                    )}
                     <Button
                       disabled={busy || domain.invoiceStatus !== 'PAID'}
                       type="submit"
                     >
-                      Approve simulated registration
+                      {domain.simulated
+                        ? 'Approve simulated registration'
+                        : 'Approve real paid registration'}
                     </Button>
                   </form>
                 )}

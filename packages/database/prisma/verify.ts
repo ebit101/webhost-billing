@@ -23,6 +23,7 @@ const schema = testScope ?? 'public';
 
 const expectedTables = [
   'domain_offers',
+  'domain_actions',
   'domain_quotes',
   'domains',
   'fake_registrar_registrations',
@@ -31,6 +32,7 @@ const expectedTables = [
   'registrar_evidence',
   'registrar_mappings',
   'registrar_operations',
+  'registrar_preparations',
   'activity_logs',
   'admin_login_challenges',
   'admin_profiles',
@@ -70,6 +72,7 @@ const expectedTables = [
 ] as const;
 
 const requiredCustomConstraints = [
+  'registrar_mode',
   'currency_authorization_evidence_uuid_check',
   'currency_authorization_evidence_epoch_check',
   'currency_authorization_evidence_factor_check',

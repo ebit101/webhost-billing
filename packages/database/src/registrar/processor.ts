@@ -1,4 +1,8 @@
-import { domainContactSchema } from '@webhost-billing/shared';
+import {
+  domainContactSchema,
+  resellbizConfigurationSchema,
+  resellbizCredentialSchema,
+} from '@webhost-billing/shared';
 import type { Prisma, PrismaClient } from '../index';
 import { RegistrarCipher, contactBinding, credentialBinding } from './cipher';
 import {
@@ -6,6 +10,11 @@ import {
   type DomainRegistrar,
   type RegistrarIntent,
 } from './provider';
+import {
+  ResellbizLiveRegistrar,
+  type ResellbizTransport,
+} from './resellbiz-live';
+import { DatabaseRegistrarPreparation } from './preparation';
 
 export async function lockDomainInvoice(
   tx: Prisma.TransactionClient,
@@ -56,14 +65,19 @@ export async function verifiedDomainInvoice(
 
 export class RegistrarProcessor {
   private readonly cipher: RegistrarCipher;
-  private readonly provider: DomainRegistrar;
+  private readonly provider: DomainRegistrar | undefined;
   constructor(
     private readonly prisma: PrismaClient,
     secret: string,
     provider?: DomainRegistrar,
+    private readonly options: {
+      simulationAllowed?: boolean;
+      liveAllowed?: boolean;
+      liveTransport?: ResellbizTransport;
+    } = {},
   ) {
     this.cipher = new RegistrarCipher(secret);
-    this.provider = provider ?? new FakeDomainRegistrar(prisma);
+    this.provider = provider;
   }
   async process(operationId: string): Promise<void> {
     const locator = await this.prisma.registrarOperation.findUnique({
@@ -89,7 +103,11 @@ export class RegistrarProcessor {
       });
       if (
         !account.enabled ||
-        account.mode !== 'FAKE' ||
+        (account.mode === 'FAKE'
+          ? this.options.simulationAllowed === false
+          : account.mode !== 'LIVE' ||
+            this.options.liveAllowed !== true ||
+            !operation.priceChangeRiskAccepted) ||
         account.provider !== 'stargate' ||
         ['REGISTERED', 'FAILED'].includes(domain.state)
       )
@@ -105,13 +123,13 @@ export class RegistrarProcessor {
       const credential = await tx.registrarCredential.findUniqueOrThrow({
         where: { id: operation.credentialId },
       });
-      this.cipher.decrypt(
-        credentialBinding(account.id, credential.version),
+      const credentials = this.cipher.decrypt(
+        credentialBinding(account.id, credential.version, account.mode),
         credential.ciphertext,
       );
       const contact = domainContactSchema.parse(
         this.cipher.decrypt(
-          contactBinding(account.id, domain.customerId),
+          contactBinding(account.id, domain.customerId, account.mode),
           quote.contactCiphertext,
         ),
       );
@@ -132,7 +150,55 @@ export class RegistrarProcessor {
         contact,
         costCeiling: operation.costCeiling,
       };
+      let provider = this.provider ?? new FakeDomainRegistrar(this.prisma);
+      if (account.mode === 'LIVE') {
+        const config = resellbizConfigurationSchema.parse(
+          account.configuration,
+        );
+        const payload = resellbizCredentialSchema.parse(credentials);
+        const mapping = await tx.registrarMapping.findUnique({
+          where: {
+            accountId_customerId_fingerprint: {
+              accountId: account.id,
+              customerId: domain.customerId,
+              fingerprint: quote.fingerprint,
+            },
+          },
+        });
+        if (
+          payload.resellerId !== config.resellerId ||
+          quote.agreement !== 'resellbiz-registration-v1' ||
+          JSON.stringify(nameservers) !== JSON.stringify(config.nameservers)
+        )
+          return null;
+        provider =
+          this.provider ??
+          new ResellbizLiveRegistrar(
+            payload,
+            this.options.liveTransport,
+            mapping
+              ? {
+                  accountId: account.id,
+                  localCustomerId: domain.customerId,
+                  remoteCustomerId: mapping.remoteCustomerId,
+                  remoteContactId: mapping.remoteContactId,
+                }
+              : undefined,
+            new DatabaseRegistrarPreparation(this.prisma),
+          );
+      }
       if (!operation.claimedAt) {
+        if (
+          account.mode === 'LIVE' &&
+          (await tx.domainAction.findFirst({
+            where: {
+              accountId: account.id,
+              claimedAt: { not: null },
+              state: { notIn: ['SUCCEEDED', 'CANCELLED', 'FAILED'] },
+            },
+          }))
+        )
+          return null;
         const approver = await tx.user.findUnique({
           where: { id: operation.actorUserId },
           include: { adminProfile: true, adminTotpCredential: true },
@@ -156,6 +222,7 @@ export class RegistrarProcessor {
           customer.status !== 'ACTIVE' ||
           customer.deletedAt ||
           customer.user.status !== 'ACTIVE' ||
+          (account.mode === 'LIVE' && !customer.user.emailVerifiedAt) ||
           customer.user.deletedAt ||
           !['PAID', 'PROCESSING'].includes(item.order.status) ||
           !(await verifiedDomainInvoice(
@@ -212,18 +279,24 @@ export class RegistrarProcessor {
           },
         });
       }
-      return { intent, dispatch: !operation.claimedAt };
+      return {
+        intent,
+        provider,
+        mode: account.mode,
+        dispatch: !operation.claimedAt,
+      };
     });
     if (!preparation) return;
-    const { intent } = preparation;
+    const { intent, provider } = preparation;
     if (preparation.dispatch) {
       try {
-        const cost = await this.provider.quote(intent.domainName);
-        const existing = await this.provider.lookup(intent);
+        const cost = await provider.quote(intent.domainName);
+        const existing = await provider.lookup(intent);
         if (
           existing ||
           !cost.available ||
           cost.costCurrency !== 'USD' ||
+          cost.simulated !== (preparation.mode === 'FAKE') ||
           cost.costAmount > intent.costCeiling ||
           cost.costAmount <= 0n
         ) {
@@ -235,8 +308,8 @@ export class RegistrarProcessor {
             where: { id: locatedDomain.quoteId },
           })
         ).fingerprint;
-        await this.provider.ensureContacts(intent, fingerprint);
-        await this.provider.registerOnce(intent);
+        await provider.ensureContacts(intent, fingerprint);
+        await provider.registerOnce(intent);
         await this.evidence(operationId, 'MUTATION_RESPONSE_RECEIVED');
       } catch {
         await this.evidence(operationId, 'MUTATION_OUTCOME_UNCERTAIN');
@@ -244,7 +317,7 @@ export class RegistrarProcessor {
     }
     let observation;
     try {
-      observation = await this.provider.lookup(intent);
+      observation = await provider.lookup(intent);
     } catch {
       await this.evidence(operationId, 'READ_OUTCOME_UNCERTAIN');
       return;

@@ -26,11 +26,13 @@ export class RegistrarConsumer
   private readonly worker: BackgroundWorker;
   private readonly processor: RegistrarProcessor;
   private readonly simulationAllowed: boolean;
+  private readonly liveAllowed: boolean;
   constructor(
     @Inject(WORKER_ENVIRONMENT) environment: WorkerEnvironment,
     @Inject(WORKER_PRISMA) private readonly prisma: PrismaClient,
   ) {
     this.simulationAllowed = environment.NODE_ENV !== 'production';
+    this.liveAllowed = environment.RESELLBIZ_LIVE_ENABLED;
     const logger = new Logger('RegistrarConsumer');
     this.worker = new BackgroundWorker(
       environment.REDIS_URL,
@@ -40,10 +42,15 @@ export class RegistrarConsumer
     this.processor = new RegistrarProcessor(
       prisma,
       environment.CREDENTIAL_ENCRYPTION_KEY,
+      undefined,
+      {
+        simulationAllowed: this.simulationAllowed,
+        liveAllowed: this.liveAllowed,
+      },
     );
   }
   onApplicationBootstrap() {
-    if (!this.simulationAllowed) return;
+    if (!this.simulationAllowed && !this.liveAllowed) return;
     this.worker.register('domain-registration', async (data) => {
       const event = await this.prisma.outboxEvent.findUnique({
         where: { id: data.outboxEventId },

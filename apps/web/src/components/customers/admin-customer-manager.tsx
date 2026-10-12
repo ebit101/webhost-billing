@@ -103,15 +103,17 @@ export function AdminCustomerManager({
 
   async function createCustomer(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    // React clears currentTarget after dispatch, before the network request settles.
+    const form = event.currentTarget;
     setSaving(true);
     setError('');
     try {
-      const raw = valuesFromForm(event.currentTarget);
+      const raw = valuesFromForm(form);
       const body = Object.fromEntries(
         Object.entries(raw).filter(([, value]) => value !== ''),
       );
       await authMutation<CustomerDetail>('/customers', 'POST', body);
-      event.currentTarget.reset();
+      form.reset();
       setCreateOpen(false);
       setPage(1);
       await load();
@@ -346,7 +348,13 @@ export function AdminCustomerManager({
                   autoComplete="new-password"
                 />
               </div>
-              <ProfileFields />
+              <ProfileFields registrantReady />
+              <p className="text-sm text-slate-600 sm:col-span-2">
+                These fields can prefill a domain registrant contact. For
+                automatic phone prefill, enter +country code.number; missing
+                registrant fields are reviewed at domain checkout. Creating a
+                portal customer does not create a registrar account.
+              </p>
               <div className="sm:col-span-2">
                 <Field
                   label="Tax identifier (administrator only)"

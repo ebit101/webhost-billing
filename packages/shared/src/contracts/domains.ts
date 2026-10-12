@@ -12,6 +12,7 @@ export const domainContactSchema = z
     name: text,
     company: text,
     address: text,
+    addressLine2: z.string().trim().max(64).optional(),
     city: text,
     region: text,
     postalCode: text,
@@ -19,6 +20,7 @@ export const domainContactSchema = z
     email: z.email().max(320),
     phoneCountryCode: z.string().regex(/^[1-9][0-9]{0,3}$/),
     phone: z.string().regex(/^[0-9]{5,15}$/),
+    publishOrganization: z.boolean().optional(),
   })
   .strict();
 export const domainQuoteRequestSchema = z
@@ -26,8 +28,12 @@ export const domainQuoteRequestSchema = z
     offerId: z.uuid(),
     domainName: domainNameSchema,
     contact: domainContactSchema,
-    agreement: z.literal('fictional-registration-v1'),
+    agreement: z.enum([
+      'fictional-registration-v1',
+      'resellbiz-registration-v1',
+    ]),
     consent: z.literal(true),
+    customerPolicyConsent: z.literal(true).optional(),
   })
   .strict();
 export const domainPurchaseRequestSchema = z
@@ -41,6 +47,7 @@ export const domainApprovalRequestSchema = z
     confirmation: domainNameSchema,
     costCeiling: z.string().regex(/^[1-9][0-9]{0,14}$/),
     costCurrency: z.literal('USD'),
+    acceptPriceChangeRisk: z.literal(true).optional(),
   })
   .strict();
 export const fakeRegistrarSetupSchema = z
@@ -62,6 +69,15 @@ export const domainStates = [
 ] as const;
 export type DomainQuoteRequest = z.infer<typeof domainQuoteRequestSchema>;
 export type DomainContact = z.infer<typeof domainContactSchema>;
+// Ordinary Contact constraints; historical simulated snapshots remain readable.
+export const resellbizContactSchema = domainContactSchema.extend({
+  address: text.max(64),
+  city: text.max(64),
+  region: text.max(64),
+  postalCode: text.max(10),
+  phoneCountryCode: z.string().regex(/^[1-9][0-9]{0,2}$/),
+  phone: z.string().regex(/^[0-9]{4,12}$/),
+});
 export type DomainPurchaseRequest = z.infer<typeof domainPurchaseRequestSchema>;
 export type DomainApprovalRequest = z.infer<typeof domainApprovalRequestSchema>;
 const amount = z.string().regex(/^(0|[1-9][0-9]{0,18})$/);
@@ -70,6 +86,93 @@ const fictionalNameservers = z.tuple([
   z.literal('ns1.example.test'),
   z.literal('ns2.example.test'),
 ]);
+export const registrarNameserversSchema = z
+  .array(
+    z
+      .string()
+      .trim()
+      .toLowerCase()
+      .max(253)
+      .regex(/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/)
+      .refine(
+        (value) =>
+          !value.endsWith('.test') &&
+          !value.endsWith('.localhost') &&
+          !value.endsWith('.invalid') &&
+          !value.endsWith('.example'),
+      ),
+  )
+  .min(2)
+  .max(5)
+  .refine((values) => new Set(values).size === values.length);
+export const resellbizCredentialSchema = z
+  .object({
+    resellerId: z.string().regex(/^[1-9][0-9]{0,18}$/),
+    apiKey: z.string().regex(/^[a-zA-Z0-9]{16,512}$/),
+  })
+  .strict();
+export const resellbizSetupSchema = resellbizCredentialSchema
+  .extend({
+    confirmation: z.literal('Configure live resell.biz'),
+    sellingAmount: z.string().regex(/^[1-9][0-9]{0,14}$/),
+    nameservers: registrarNameserversSchema,
+    agreementUrl: z
+      .url()
+      .max(1000)
+      .refine((value) => {
+        const url = new URL(value);
+        return url.protocol === 'https:' && !url.username && !url.password;
+      }),
+    confirmNativeUsdCosts: z.literal(true),
+    customerTermsUrl: z
+      .url()
+      .max(1000)
+      .refine((value) => {
+        const url = new URL(value);
+        return url.protocol === 'https:' && !url.username && !url.password;
+      }),
+    customerPrivacyUrl: z
+      .url()
+      .max(1000)
+      .refine((value) => {
+        const url = new URL(value);
+        return url.protocol === 'https:' && !url.username && !url.password;
+      }),
+  })
+  .strict();
+export const resellbizMappingSchema = z
+  .object({
+    remoteCustomerId: z.string().regex(/^[1-9][0-9]{0,18}$/),
+    remoteContactId: z.string().regex(/^[1-9][0-9]{0,18}$/),
+  })
+  .strict();
+export const resellbizConfigurationSchema = z
+  .object({
+    resellerId: resellbizCredentialSchema.shape.resellerId,
+    nameservers: registrarNameserversSchema,
+    agreementUrl: resellbizSetupSchema.shape.agreementUrl,
+    confirmNativeUsdCosts: z.literal(true),
+    customerTermsUrl: resellbizSetupSchema.shape.customerTermsUrl,
+    customerPrivacyUrl: resellbizSetupSchema.shape.customerPrivacyUrl,
+  })
+  .strict();
+export const resellbizSettingsSchema = z
+  .object({
+    id: z.uuid(),
+    enabled: z.boolean(),
+    networkEnabled: z.boolean(),
+    mode: z.literal('Live'),
+    maskedResellerId: z.string().max(30),
+    credentialVersion: z.number().int().positive(),
+    agreementUrl: resellbizSetupSchema.shape.agreementUrl,
+    customerTermsUrl: resellbizSetupSchema.shape.customerTermsUrl,
+    customerPrivacyUrl: resellbizSetupSchema.shape.customerPrivacyUrl,
+    nameservers: registrarNameserversSchema,
+    sellingAmount: z.string().regex(/^[1-9][0-9]{0,18}$/),
+  })
+  .strict();
+export type ResellbizSetup = z.infer<typeof resellbizSetupSchema>;
+export type ResellbizSettings = z.infer<typeof resellbizSettingsSchema>;
 export const fakeRegistrarSettingsSchema = z
   .object({
     id: z.uuid(),
@@ -87,11 +190,15 @@ export const domainOfferSchema = z
     years: z.literal(1),
     sellingAmount: positiveAmount,
     currency: z.literal('BDT'),
-    nameservers: fictionalNameservers,
-    simulated: z.literal(true),
-    costAmount: positiveAmount,
-    costCurrency: z.literal('USD'),
-    observedAt: z.iso.datetime(),
+    nameservers: z.union([fictionalNameservers, registrarNameserversSchema]),
+    simulated: z.boolean(),
+    agreementUrl: resellbizSetupSchema.shape.agreementUrl.optional(),
+    customerTermsUrl: resellbizSetupSchema.shape.customerTermsUrl.optional(),
+    customerPrivacyUrl:
+      resellbizSetupSchema.shape.customerPrivacyUrl.optional(),
+    costAmount: positiveAmount.optional(),
+    costCurrency: z.literal('USD').optional(),
+    observedAt: z.iso.datetime().optional(),
   })
   .strict();
 export const domainQuoteSchema = z
@@ -100,12 +207,17 @@ export const domainQuoteSchema = z
     domainName: domainNameSchema,
     sellingAmount: positiveAmount,
     currency: z.literal('BDT'),
-    costAmount: positiveAmount,
-    costCurrency: z.literal('USD'),
+    costAmount: positiveAmount.optional(),
+    costCurrency: z.literal('USD').optional(),
     expiresAt: z.iso.datetime(),
-    simulated: z.literal(true),
+    simulated: z.boolean(),
   })
-  .strict();
+  .strict()
+  .refine(
+    (quote) =>
+      !quote.simulated || Boolean(quote.costAmount && quote.costCurrency),
+    { message: 'Simulated cost evidence is required' },
+  );
 export type FakeRegistrarSettings = z.infer<typeof fakeRegistrarSettingsSchema>;
 export type DomainOffer = z.infer<typeof domainOfferSchema>;
 export type DomainQuote = z.infer<typeof domainQuoteSchema>;
@@ -116,7 +228,7 @@ export const domainDetailSchema = z
     state: z.enum(domainStates),
     verification: z.enum(['Unknown', 'Pending', 'Verified']),
     expiresAt: z.iso.datetime().nullable(),
-    simulated: z.literal(true),
+    simulated: z.boolean(),
     autoRenew: z.literal(false),
     registrar: z.literal('StarGate/UK2 (resell.biz)'),
     registrationYears: z.literal(1),
@@ -128,8 +240,13 @@ export const domainDetailSchema = z
     orderId: z.uuid(),
     balanceDue: amount,
     currency: z.literal('BDT'),
-    nameservers: fictionalNameservers,
-    agreement: z.literal('fictional-registration-v1'),
+    nameservers: z.union([fictionalNameservers, registrarNameserversSchema]),
+    agreement: z.enum([
+      'fictional-registration-v1',
+      'resellbiz-registration-v1',
+    ]),
+    agreementUrl: resellbizSetupSchema.shape.agreementUrl.optional(),
+    contactMappingVerified: z.boolean().optional(),
     customerId: z.uuid().optional(),
     accountId: z.uuid().optional(),
     costAmount: amount.optional(),
@@ -151,3 +268,59 @@ export const domainDetailSchema = z
   })
   .strict();
 export type DomainDetail = z.infer<typeof domainDetailSchema>;
+
+export const domainActionRequestSchema = z.discriminatedUnion('kind', [
+  z
+    .object({
+      kind: z.literal('NAMESERVERS'),
+      nameservers: registrarNameserversSchema,
+    })
+    .strict(),
+  z.object({ kind: z.literal('LOCK'), locked: z.boolean() }).strict(),
+  z
+    .object({
+      kind: z.literal('CONTACT'),
+      contact: resellbizContactSchema,
+      consent: z.literal(true),
+      acceptRegistrantChange: z.literal(true),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal('RENEW'),
+      sellingAmount: positiveAmount,
+      costCeiling: positiveAmount,
+      acceptPriceChangeRisk: z.literal(true),
+    })
+    .strict(),
+]);
+export type DomainActionRequest = z.infer<typeof domainActionRequestSchema>;
+export const domainActionSchema = z
+  .object({
+    id: z.uuid(),
+    kind: z.enum(['NAMESERVERS', 'LOCK', 'CONTACT', 'RENEW']),
+    state: z.enum([
+      'REQUESTED',
+      'NEEDS_RECONCILIATION',
+      'SUCCEEDED',
+      'CANCELLED',
+      'FAILED',
+    ]),
+    createdAt: z.iso.datetime(),
+    claimed: z.boolean(),
+    invoiceId: z.uuid().nullable(),
+    financialAttention: z.boolean(),
+  })
+  .strict();
+export type DomainAction = z.infer<typeof domainActionSchema>;
+export const domainManagementSchema = z
+  .object({
+    contact: resellbizContactSchema.optional(),
+    nameservers: registrarNameserversSchema,
+    locked: z.boolean(),
+    observedAt: z.iso.datetime(),
+    expiresAt: z.iso.datetime(),
+    verification: z.enum(['Pending', 'Verified']),
+  })
+  .strict();
+export type DomainManagement = z.infer<typeof domainManagementSchema>;

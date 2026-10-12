@@ -45,7 +45,13 @@ export class RegistrarCipher {
     }
   }
 }
-export const credentialBinding = (accountId: string, version: number) =>
-  `stargate:${accountId}:FAKE:credential:${version}`;
-export const contactBinding = (accountId: string, customerId: string) =>
-  `stargate:${accountId}:FAKE:contact:${customerId}`;
+export const credentialBinding = (
+  accountId: string,
+  version: number,
+  mode = 'FAKE',
+) => `stargate:${accountId}:${mode}:credential:${version}`;
+export const contactBinding = (
+  accountId: string,
+  customerId: string,
+  mode = 'FAKE',
+) => `stargate:${accountId}:${mode}:contact:${customerId}`;

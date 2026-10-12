@@ -14,6 +14,7 @@ export function Field({
   onChange,
   autoComplete,
   placeholder,
+  maxLength,
 }: {
   label: string;
   name: string;
@@ -24,6 +25,7 @@ export function Field({
   onChange?: ChangeEventHandler<HTMLInputElement>;
   autoComplete?: string;
   placeholder?: string;
+  maxLength?: number;
 }) {
   return (
     <label className="block text-sm font-semibold text-slate-700">
@@ -38,17 +40,25 @@ export function Field({
         onChange={onChange}
         autoComplete={autoComplete}
         placeholder={placeholder}
+        maxLength={maxLength}
       />
     </label>
   );
 }
 
-export function ProfileFields({ customer }: { customer?: CustomerDetail }) {
+export function ProfileFields({
+  customer,
+  registrantReady = false,
+}: {
+  customer?: CustomerDetail;
+  registrantReady?: boolean;
+}) {
   return (
     <>
       <Field
         label="First name"
         name="firstName"
+        maxLength={registrantReady ? 79 : 100}
         required
         defaultValue={customer?.firstName}
         autoComplete="given-name"
@@ -56,6 +66,7 @@ export function ProfileFields({ customer }: { customer?: CustomerDetail }) {
       <Field
         label="Last name"
         name="lastName"
+        maxLength={registrantReady ? 79 : 100}
         required
         defaultValue={customer?.lastName}
         autoComplete="family-name"
@@ -63,12 +74,16 @@ export function ProfileFields({ customer }: { customer?: CustomerDetail }) {
       <Field
         label="Company"
         name="companyName"
+        maxLength={registrantReady ? 160 : 200}
         defaultValue={customer?.companyName ?? ''}
         autoComplete="organization"
       />
       <Field
         label="Phone"
         name="phone"
+        placeholder={
+          registrantReady ? '+880.1700000000 (country code.number)' : undefined
+        }
         defaultValue={customer?.phone ?? ''}
         autoComplete="tel"
       />
@@ -76,6 +91,7 @@ export function ProfileFields({ customer }: { customer?: CustomerDetail }) {
         <Field
           label="Address"
           name="addressLine1"
+          maxLength={registrantReady ? 64 : 200}
           required
           defaultValue={customer?.addressLine1}
           autoComplete="address-line1"
@@ -85,6 +101,7 @@ export function ProfileFields({ customer }: { customer?: CustomerDetail }) {
         <Field
           label="Address line 2"
           name="addressLine2"
+          maxLength={registrantReady ? 64 : 200}
           defaultValue={customer?.addressLine2 ?? ''}
           autoComplete="address-line2"
         />
@@ -92,6 +109,7 @@ export function ProfileFields({ customer }: { customer?: CustomerDetail }) {
       <Field
         label="City"
         name="city"
+        maxLength={registrantReady ? 64 : 100}
         required
         defaultValue={customer?.city}
         autoComplete="address-level2"
@@ -99,12 +117,14 @@ export function ProfileFields({ customer }: { customer?: CustomerDetail }) {
       <Field
         label="Region"
         name="region"
+        maxLength={registrantReady ? 64 : 100}
         defaultValue={customer?.region ?? ''}
         autoComplete="address-level1"
       />
       <Field
         label="Postal code"
         name="postalCode"
+        maxLength={registrantReady ? 10 : 32}
         defaultValue={customer?.postalCode ?? ''}
         autoComplete="postal-code"
       />

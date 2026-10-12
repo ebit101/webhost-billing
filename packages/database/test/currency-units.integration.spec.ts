@@ -306,7 +306,12 @@ for (const priorCount of [22, 23])
       const directory = resolve('prisma/migrations');
       const migrations = readdirSync(directory)
         .filter(
-          (n) => /^\d{14}_/.test(n) && n !== '20261012000100_domain_registrar',
+          (n) =>
+            /^\d{14}_/.test(n) &&
+            ![
+              '20261012000100_domain_registrar',
+              '20261012000200_resellbiz_live_registration',
+            ].includes(n),
         )
         .sort();
       assert.equal(migrations[22], '20261007090000_currency_unit_definitions');

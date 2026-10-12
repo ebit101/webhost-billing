@@ -24,11 +24,25 @@ async function main() {
     const args =
       process.argv[2] === 'packages'
         ? ['test']
-        : process.argv[2] === 'invariants'
-          ? ['test:invariants']
-          : process.argv[2] === 'worker'
-            ? ['--filter', '@webhost-billing/worker', 'test']
-            : ['--filter', '@webhost-billing/api', 'test:e2e', '--runInBand'];
+        : process.argv[2] === 'domains'
+          ? [
+              '--filter',
+              '@webhost-billing/api',
+              'exec',
+              'cross-env',
+              'NODE_OPTIONS=--experimental-vm-modules',
+              'jest',
+              '--config',
+              './test/jest-e2e.json',
+              '--runInBand',
+              '--runTestsByPath',
+              'test/domains.e2e-spec.ts',
+            ]
+          : process.argv[2] === 'invariants'
+            ? ['test:invariants']
+            : process.argv[2] === 'worker'
+              ? ['--filter', '@webhost-billing/worker', 'test']
+              : ['--filter', '@webhost-billing/api', 'test:e2e', '--runInBand'];
     execFileSync(
       process.platform === 'win32'
         ? (process.env.ComSpec ?? 'cmd.exe')

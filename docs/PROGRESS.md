@@ -2,10 +2,10 @@
 
 ## Status Summary
 
-- **Current command:** Owner-directed staging deployment of completed changes and currency-development hold
-- **Current status:** Staging rollout completed and operational checks passed. Source provenance, two deployment repairs, failed attempts and required delivery gates are recorded below. Further currency work is on hold; no currency activation, WHMCS import or production approval. Both tooling findings remain unwaived.
+- **Current command:** Command 51 — Implement and deploy guarded live resell.biz registration
+- **Current status:** Source implementation and validation in progress. No deployment or real registrar operation has occurred. The owner confirmed my.speedhost.bd as the final independent Speed Host portal, with WHMCS separate and manual bank payment. Currency remains held and both tooling findings unwaived.
 - **Last updated:** 2026-10-11
-- **Next command:** Review Speed Host staging deployment and define one bounded WHMCS migration rehearsal
+- **Next command:** Finish Command 51 validation/delivery/deployment, then review the existing cPanel/WHM adapter and define its bounded configuration/acceptance command.
 - **Next command authorized:** No
 
 ## Command Reports
@@ -15101,6 +15101,122 @@ Stop after verified review delivery; do not implement it automatically.
   If genuine demo access is unavailable, keep local simulation and stop.
 
 ## Report Template
+
+### Command 51 — Implement and deploy guarded live resell.biz registration
+
+- **Status:** Local source acceptance passed; source delivery and protected deployment in progress.
+- **Date:** 2026-10-12 (Asia/Dhaka).
+- **Authorization:** Owner requests live module/deployment on my.speedhost.bd, then
+  cPanel. WHMCS stays separate. Manual bank payments only; no API cancellation.
+
+#### Implemented scope and files
+
+- Independent live HTTPS adapter and strict runtime projections in private database
+  registrar entry; fixed hosts/verbs, no redirects/retries, bounded lossless prices.
+- Shared configuration/consent/purchase-risk/masked-state contracts, encrypted immutable
+  credentials and additive 30th migration; preserve all prior migration contents.
+- Domain API/service configuration, explicit read-only checks, automatic verified
+  customer/contact preparation, real quote/order/invoice/payment/MFA approval and
+  register-once worker path. Separate durable creation claims and private contact
+  snapshots prevent duplicate creation after lost responses; unknown/ambiguous search
+  is not absence. Customer-policy/privacy consent and a provider-policy-compliant
+  independent random password are required; portal passwords are never reused.
+- Customer form reset repair and compatible new-customer field limits, explicit phone
+  boundary guidance, preserved second address line and authenticated editable registrant
+  prefill without guessing missing details or overwriting a user's in-progress edits.
+- Owner-expanded core management draft: nameservers, transfer lock, domain-scoped contact
+  replacement, transient administrator-only authorization code, separate unpaid renewal
+  invoice/verified bank-payment/one-year dispatch and independent expiry confirmation.
+  Local unsent cancellation retains history and never calls registrar cancellation.
+  Immutable submission markers distinguish proven unsent failures from unknown writes.
+  Read-only replacement-contact recovery cannot create or resend association.
+- Administrator configuration form and separate truthful live/simulated customer/admin
+  records. Whole-sale live costs remain administrator-only; no provider call on GET.
+- Config/production Compose flags default false; tests use injected fictional responses.
+- Canonical Command 51/plan/ADR-128/implementation guide updated for owner replacement.
+
+#### Executed validation so far
+
+- Package build/Prisma generation succeeded. New registrar unit cases passed 12/12.
+- Configuration UI cases passed 5/5 after correcting unsupported DOM matchers and
+  closing the credential form when its authenticated status read fails.
+- Full isolated API acceptance passed 18 suites/95 cases, including live configuration,
+  ownership/consent/payment/risk, concurrent duplicate dispatch and lost-response recovery.
+- Initial strict type checks found missing explicit false flags in payment-test fixtures
+  and an HTTP-versus-HTTPS test option type; corrected, full repeat pending.
+- Initial Prettier invocation included Prisma source, for which no parser is installed;
+  Prisma's own formatter was used instead. Further lint/build/browser/history/audit/
+  secret/hosted delivery gates are pending and are not claimed passed.
+- Read-only strict-pinned SSH confirmed the existing owned staging root/release and
+  approximately 75 GiB server availability. Direct hostname SSH lacked a saved key;
+  no verification was bypassed. The already trusted matching-IP host entry was used.
+
+#### Risks and remaining work
+
+- **Owner scope update:** The owner requested completing, not removing or leaving pending,
+  the registrar work, using a WHMCS-style manageable/actionable workflow. The supported
+  core above is now implemented in the draft; WHMCS remains separate and is not a
+  dependency or full feature/TLD parity claim. Final validation/delivery/deployment
+  are still required. No external customer/contact/domain operation ran.
+- **Customer form repair:** Owner reported a create-form reset exception after saving.
+  Source confirmed access to React event.currentTarget after an awaited POST. Capture the
+  form before awaiting, then reset that captured element. Added a deferred-success
+  regression proving one POST, reset, modal close and directory refresh; the customer
+  component file passed all five tests locally. Not deployed. Screenshot identity/password
+  data was not copied into code/tests or used to create another real customer.
+- **Latest validation:** Strict monorepo/browser types passed; lint passed on the earlier
+  draft; frozen install, tooling mitigations 15/15, offline docs 4/4 and production audit
+  passed. Full audit retains only the two known unwaived findings. Full package attempt
+  one failed four pinned-prefix tests because the new 30th migration was not excluded
+  from the deliberately historical 28-migration fixtures; explicit registrar-only
+  exclusions preserve all pinned baseline assertions. Attempt two passed database units
+  161/161 and actual-login privilege suites 12/12, 8/8, 9/9, 9/9, then found a historical
+  decoy test's stale ordinary migration count (29 instead of 30). Three exact ordinary
+  count assertions were updated to 30; full repeated acceptance remains pending.
+  Neither failed combined attempt is a pass; no skip, relaxed deadline or force push.
+- No genuine provider acceptance, credentials, purchase, contact mutation, cPanel
+  operation or deployment yet. Account currency/all-in charges/provider contract details
+  need protected acceptance after configuration. Price preflight is not an atomic cap.
+- .com only, one year. The automatic preparation and core lifecycle source paths are
+  implemented but not deployed/accepted against the real provider. Transfer, deletion,
+  privacy purchase, automatic renewal and additional TLD/IDN contracts remain out of
+  this command, not silently advertised as WHMCS parity.
+- **Final local acceptance:** Full package invocation passed: shared contracts 113,
+  database units 164, all four actual-login privilege suites 12/8/9/9, all ten database
+  integration files, config/queue checks, API units 25 suites/107, frontend 59 files/587,
+  and worker 11 suites/30. The final API run passed 18 suites/95, and a further focused
+  domain repeat passed 14/14 after strengthening independent contact-ID confirmation.
+  Invariants passed shared 113, API units 12, financial/service API 42 and worker 2.
+  Full Chromium lifecycle passed 20/20, including mobile domain/outbox/consumer flow;
+  administrator-role browser checks passed 4/4. Tests remain fictional/mocked.
+- Strict monorepo/web/browser types, full lint, formatting, four offline documentation
+  checks, backend and production web builds, development and production-template Compose
+  rendering, production audit and production license inventory passed. Full history
+  secret scanning passed (251 commits); staged-source scanning passed without weakening
+  scanner rules. Four findings were explicitly fictional test keys; replaced their
+  literals with generated low-entropy fake strings and retained actual-key redaction
+  assertions. Full audit still fails for exactly the two known unwaived advisories.
+- Earlier full API retries failed a stale read-budget fixture and a renewal fixture
+  paying the initial 150000 instead of the renewal's 170000; corrected only fixtures,
+  never payment guards. Pre-format lint, one unnecessary assertion and formatting of the
+  delayed-response customer test failed; corrected and final repeated gates passed.
+  One transient formatter file-open error succeeded on retry without deleting a file.
+- The first complete package repeat reached a third historical fixture excluding only
+  registrar migration 29, not 30. Fixed the exact two-name exclusion, kept the historical
+  28-migration assertion and moved it before schema creation. Its failed before-hook
+  leaked an open client; verified and stopped only the owned failed test leaf process.
+  Failed unmarked test scope is deliberately preserved, not guessed/deleted. The helper
+  now closes its clients on bootstrap failure. The complete repeated package run passed.
+  No deadline relaxed, case skipped, normal database adopted, real customer copied,
+  failing work pushed or production/registrar action performed during these checks.
+- New-customer production operation remains subject to operating, actual bank/catalogue/
+  provider, public email and off-site recovery gates; final hostname is not launch evidence.
+- Two existing unwaived tooling advisories remain. No currency work, WHMCS connection/
+  import, unrelated host/cache/Docker cleanup or real purchase is part of this command.
+- **Exact next:** Finish Command 51 verified source delivery and protected deployment;
+  then request the cPanel/WHM configuration/acceptance phase review.
+
+## Future report template
 
 Use this template after every future command:
 

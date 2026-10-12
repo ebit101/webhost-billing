@@ -1016,11 +1016,12 @@ enum ProductKind {
 }
 
 model RegistrarAccount {
-  id        String   @id @default(uuid()) @db.Uuid
-  provider  String   @default("stargate") @db.VarChar(32)
-  mode      String   @default("FAKE") @db.VarChar(16)
-  enabled   Boolean  @default(false)
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  id            String   @id @default(uuid()) @db.Uuid
+  provider      String   @default("stargate") @db.VarChar(32)
+  mode          String   @default("FAKE") @db.VarChar(16)
+  enabled       Boolean  @default(false)
+  configuration Json?
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
 
   @@map("registrar_accounts")
 }
@@ -1071,20 +1072,22 @@ model DomainQuote {
 }
 
 model Domain {
-  id              String    @id @default(uuid()) @db.Uuid
-  quoteId         String    @unique @map("quote_id") @db.Uuid
-  customerId      String    @map("customer_id") @db.Uuid
-  accountId       String    @map("account_id") @db.Uuid
-  orderItemId     String    @unique @map("order_item_id") @db.Uuid
-  invoiceId       String    @unique @map("invoice_id") @db.Uuid
-  domainName      String    @unique @map("domain_name") @db.VarChar(253)
-  submissionKey   String    @unique @map("submission_key") @db.Uuid
-  state           String    @default("AWAITING_PAYMENT") @db.VarChar(32)
-  verification    String    @default("Pending") @db.VarChar(32)
-  providerOrderId String?   @map("provider_order_id") @db.VarChar(64)
-  expiresAt       DateTime? @map("expires_at") @db.Timestamptz(3)
-  autoRenew       Boolean   @default(false) @map("auto_renew")
-  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  id                       String    @id @default(uuid()) @db.Uuid
+  quoteId                  String    @unique @map("quote_id") @db.Uuid
+  customerId               String    @map("customer_id") @db.Uuid
+  accountId                String    @map("account_id") @db.Uuid
+  orderItemId              String    @unique @map("order_item_id") @db.Uuid
+  invoiceId                String    @unique @map("invoice_id") @db.Uuid
+  domainName               String    @unique @map("domain_name") @db.VarChar(253)
+  submissionKey            String    @unique @map("submission_key") @db.Uuid
+  state                    String    @default("AWAITING_PAYMENT") @db.VarChar(32)
+  verification             String    @default("Pending") @db.VarChar(32)
+  providerOrderId          String?   @map("provider_order_id") @db.VarChar(64)
+  expiresAt                DateTime? @map("expires_at") @db.Timestamptz(3)
+  autoRenew                Boolean   @default(false) @map("auto_renew")
+  managementSnapshot       Json?     @map("management_snapshot")
+  currentContactCiphertext String?   @map("current_contact_ciphertext") @db.Text
+  createdAt                DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
 
   @@unique([accountId, providerOrderId])
   @@unique([id, customerId, accountId])
@@ -1093,17 +1096,18 @@ model Domain {
 }
 
 model RegistrarOperation {
-  id           String    @id @default(uuid()) @db.Uuid
-  domainId     String    @unique @map("domain_id") @db.Uuid
-  customerId   String    @map("customer_id") @db.Uuid
-  accountId    String    @map("account_id") @db.Uuid
-  credentialId String    @map("credential_id") @db.Uuid
-  actorUserId  String    @map("actor_user_id") @db.Uuid
-  costCeiling  BigInt    @map("cost_ceiling")
-  claimedAt    DateTime? @map("claimed_at") @db.Timestamptz(3)
-  nextPollAt   DateTime  @default(now()) @map("next_poll_at") @db.Timestamptz(3)
-  pollCount    Int       @default(0) @map("poll_count")
-  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  id                      String    @id @default(uuid()) @db.Uuid
+  domainId                String    @unique @map("domain_id") @db.Uuid
+  customerId              String    @map("customer_id") @db.Uuid
+  accountId               String    @map("account_id") @db.Uuid
+  credentialId            String    @map("credential_id") @db.Uuid
+  actorUserId             String    @map("actor_user_id") @db.Uuid
+  costCeiling             BigInt    @map("cost_ceiling")
+  priceChangeRiskAccepted Boolean   @default(false) @map("price_change_risk_accepted")
+  claimedAt               DateTime? @map("claimed_at") @db.Timestamptz(3)
+  nextPollAt              DateTime  @default(now()) @map("next_poll_at") @db.Timestamptz(3)
+  pollCount               Int       @default(0) @map("poll_count")
+  createdAt               DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
 
   @@map("registrar_operations")
 }
@@ -1116,6 +1120,47 @@ model RegistrarEvidence {
 
   @@index([operationId, createdAt])
   @@map("registrar_evidence")
+}
+
+// A claimed creation without a verified ID is unresolved, never permission to retry.
+model DomainAction {
+  id                String    @id @default(uuid()) @db.Uuid
+  domainId          String    @map("domain_id") @db.Uuid
+  accountId         String    @map("account_id") @db.Uuid
+  customerId        String    @map("customer_id") @db.Uuid
+  credentialId      String    @map("credential_id") @db.Uuid
+  actorUserId       String    @map("actor_user_id") @db.Uuid
+  kind              String    @db.VarChar(16)
+  payloadCiphertext String    @map("payload_ciphertext") @db.Text
+  invoiceId         String?   @map("invoice_id") @db.Uuid
+  state             String    @default("REQUESTED") @db.VarChar(32)
+  claimedAt         DateTime? @map("claimed_at") @db.Timestamptz(3)
+  contactClaimedAt  DateTime? @map("contact_claimed_at") @db.Timestamptz(3)
+  submittedAt       DateTime? @map("submitted_at") @db.Timestamptz(3)
+  remoteContactId   String?   @map("remote_contact_id") @db.VarChar(64)
+  nextPollAt        DateTime  @default(now()) @map("next_poll_at") @db.Timestamptz(3)
+  pollCount         Int       @default(0) @map("poll_count")
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([domainId, createdAt])
+  @@map("domain_actions")
+}
+
+model RegistrarPreparation {
+  id                String    @id @default(uuid()) @db.Uuid
+  accountId         String    @map("account_id") @db.Uuid
+  customerId        String    @map("customer_id") @db.Uuid
+  fingerprint       String    @db.Char(64)
+  operationId       String    @map("operation_id") @db.Uuid
+  customerClaimedAt DateTime? @map("customer_claimed_at") @db.Timestamptz(3)
+  remoteCustomerId  String?   @map("remote_customer_id") @db.VarChar(64)
+  contactClaimedAt  DateTime? @map("contact_claimed_at") @db.Timestamptz(3)
+  remoteContactId   String?   @map("remote_contact_id") @db.VarChar(64)
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@unique([accountId, customerId, fingerprint])
+  @@index([accountId, customerId])
+  @@map("registrar_preparations")
 }
 
 model RegistrarMapping {

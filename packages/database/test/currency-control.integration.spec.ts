@@ -33,7 +33,14 @@ const table = `"${schema}"."currency_controls"`;
 const input = { schema, staffMutex: 'not_required' };
 const dir = resolve('prisma/migrations');
 const migrations = readdirSync(dir)
-  .filter((n) => /^\d{14}_/.test(n) && n !== '20261012000100_domain_registrar')
+  .filter(
+    (n) =>
+      /^\d{14}_/.test(n) &&
+      ![
+        '20261012000100_domain_registrar',
+        '20261012000200_resellbiz_live_registration',
+      ].includes(n),
+  )
   .sort();
 let parent: PrismaClient;
 let prisma: PrismaClient;
@@ -72,27 +79,34 @@ async function snapshot(
   return rows;
 }
 async function bootstrap(target: string, count = 28) {
+  assert.equal(migrations.length, 28);
   await assertBrowserDatabaseScope(parent, parentUrl, parentSchema);
   const targetUrl = browserDatabaseUrl(parentUrl, target);
   await parent.$executeRawUnsafe(`CREATE SCHEMA "${target}"`);
   const pg = new Client({ connectionString: targetUrl });
   const models = createPrismaClient(targetUrl);
   // A failure before marking is deliberately preserved, not guessed cleanup ownership.
-  await pg.connect();
-  assert.equal(migrations.length, 28);
-  for (const name of migrations.slice(0, count))
-    await pg.query(readFileSync(resolve(dir, name, 'migration.sql'), 'utf8'));
-  await addCurrentHostingDiscriminators(pg);
-  await assertBrowserDatabaseScope(models, targetUrl, target, false);
-  await pg.query(
-    `CREATE TABLE "${target}".__browser_e2e_scope(owner text NOT NULL)`,
-  );
-  await pg.query(
-    `INSERT INTO "${target}".__browser_e2e_scope(owner) VALUES($1)`,
-    [target],
-  );
-  await assertBrowserDatabaseScope(models, targetUrl, target);
-  return { pg, models, targetUrl, target };
+  try {
+    await pg.connect();
+    for (const name of migrations.slice(0, count))
+      await pg.query(readFileSync(resolve(dir, name, 'migration.sql'), 'utf8'));
+    await addCurrentHostingDiscriminators(pg);
+    await assertBrowserDatabaseScope(models, targetUrl, target, false);
+    await pg.query(
+      `CREATE TABLE "${target}".__browser_e2e_scope(owner text NOT NULL)`,
+    );
+    await pg.query(
+      `INSERT INTO "${target}".__browser_e2e_scope(owner) VALUES($1)`,
+      [target],
+    );
+    await assertBrowserDatabaseScope(models, targetUrl, target);
+    return { pg, models, targetUrl, target };
+  } catch (error) {
+    // Preserve an unmarked scope, but do not leak its client and hang acceptance.
+    await pg.end();
+    await models.$disconnect();
+    throw error;
+  }
 }
 async function cleanup(scope: Awaited<ReturnType<typeof bootstrap>>) {
   await scope.pg.query('ROLLBACK');

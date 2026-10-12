@@ -3,7 +3,13 @@ import {
   type CustomerDetail,
   type CustomerSummary,
 } from '@webhost-billing/shared';
-import { render, screen, waitFor } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AdminCustomerManager } from './admin-customer-manager';
 import { AdminCustomerDetail } from './admin-customer-detail';
@@ -112,6 +118,74 @@ const populatedDetail: CustomerDetail = {
 afterEach(() => vi.unstubAllGlobals());
 
 describe('customer management interfaces', () => {
+  it('resets the captured form after delayed creation succeeds, closes the modal and refreshes once', async () => {
+    let created = false;
+    let release: ((response: Response) => void) | undefined;
+    const fetchMock = vi.fn(
+      (input: RequestInfo | URL, options?: RequestInit) => {
+        const url = String(input);
+        if (url.endsWith('/auth/csrf'))
+          return Promise.resolve(
+            jsonResponse({
+              success: true,
+              data: { csrfToken: 'fictional-csrf-token' },
+            }),
+          );
+        if (url.endsWith('/customers') && options?.method === 'POST')
+          return new Promise<Response>((resolve) => {
+            release = resolve;
+          });
+        return Promise.resolve(
+          jsonResponse({
+            success: true,
+            data: created ? [summary] : [],
+            pagination: {
+              page: 1,
+              pageSize: 20,
+              totalItems: created ? 1 : 0,
+              totalPages: 1,
+            },
+          }),
+        );
+      },
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    render(<AdminCustomerManager />);
+    fireEvent.click(screen.getByRole('button', { name: 'Add customer' }));
+    for (const [label, value] of Object.entries({
+      Email: 'customer@example.test',
+      'Initial password': 'fictional password for tests only',
+      'First name': 'Amina',
+      'Last name': 'Rahman',
+      Address: '7 Test Avenue',
+      City: 'Dhaka',
+      'Country code': 'BD',
+    }))
+      fireEvent.change(screen.getByLabelText(label), { target: { value } });
+    const form = screen
+      .getByRole('button', { name: 'Create customer' })
+      .closest('form')!;
+    const reset = vi.spyOn(form, 'reset');
+    fireEvent.submit(form);
+    await waitFor(() => expect(release).toBeDefined());
+    expect(reset).not.toHaveBeenCalled();
+    await act(async () => {
+      created = true;
+      release?.(jsonResponse({ success: true, data: detail }));
+    });
+    await screen.findByRole('link', { name: 'Amina Rahman' });
+    expect(reset).toHaveBeenCalledTimes(1);
+    expect(
+      screen.queryByRole('button', { name: 'Create customer' }),
+    ).toBeNull();
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(
+      fetchMock.mock.calls.filter(
+        ([input, options]) =>
+          String(input).endsWith('/customers') && options?.method === 'POST',
+      ),
+    ).toHaveLength(1);
+  });
   it('renders administrator search results with status and detail navigation', async () => {
     vi.stubGlobal(
       'fetch',

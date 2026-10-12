@@ -26,6 +26,7 @@ x-worker-environment: &worker-environment
   CREDENTIAL_ENCRYPTION_KEY_FILE: /run/secrets/credential_encryption_key
   BULLMQ_PREFIX: ${BULLMQ_PREFIX:-webhost-billing-production}
   HOSTING_PANEL_TIMEOUT_MS: ${HOSTING_PANEL_TIMEOUT_MS:-10000}
+  RESELLBIZ_LIVE_ENABLED: ${RESELLBIZ_LIVE_ENABLED:-false}
   EMAIL_TRANSPORT: smtp
   EMAIL_PUBLIC_WEB_URL: https://${BILLING_HOST:?Set BILLING_HOST}
   EMAIL_BRAND_NAME: ${EMAIL_BRAND_NAME:-Webhost Billing}
@@ -161,6 +162,7 @@ services:
       BULLMQ_PREFIX: ${BULLMQ_PREFIX:-webhost-billing-production}
       BKASH_ENABLED: 'false'
       SSLCOMMERZ_ENABLED: 'false'
+      RESELLBIZ_LIVE_ENABLED: ${RESELLBIZ_LIVE_ENABLED:-false}
     secrets:
       - database_url
       - redis_url

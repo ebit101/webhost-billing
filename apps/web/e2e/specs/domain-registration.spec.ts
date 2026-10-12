@@ -163,7 +163,7 @@ test('mobile customer and administrator complete a clearly simulated domain work
     }))
       await customer.getByLabel(label, { exact: true }).fill(value);
     await customer.getByRole('checkbox').check();
-    await customer.getByRole('button', { name: 'Get simulated quote' }).click();
+    await customer.getByRole('button', { name: 'Get domain quote' }).click();
     await customer
       .getByRole('button', { name: 'Create order and unpaid invoice' })
       .click();
@@ -226,7 +226,7 @@ test('mobile customer and administrator complete a clearly simulated domain work
     ).toBeVisible();
     await admin.getByLabel('Type exact domain name').fill(domainName);
     await admin
-      .getByLabel('Approved USD provider cost ceiling in minor units')
+      .getByLabel('Approved USD preflight threshold in minor units')
       .fill('1000');
     await admin
       .getByRole('button', { name: 'Approve simulated registration' })

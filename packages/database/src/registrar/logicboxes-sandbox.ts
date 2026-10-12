@@ -29,8 +29,11 @@ function id(value: unknown): string {
   return value;
 }
 // Tokenize strings before numbers so prices never pass through a floating-point value.
-export function losslessRegistrarJson(body: string): unknown {
-  if (Buffer.byteLength(body, 'utf8') > 65536)
+export function losslessRegistrarJson(
+  body: string,
+  limits = { bytes: 65536, nodes: 4096 },
+): unknown {
+  if (Buffer.byteLength(body, 'utf8') > limits.bytes)
     throw new Error('Registrar response exceeds the limit.');
   try {
     // Validate shape before JSON.parse can silently overwrite duplicated fields.
@@ -50,7 +53,7 @@ export function losslessRegistrarJson(body: string): unknown {
       throw new Error();
     };
     const value = (depth: number): void => {
-      if (depth > 16 || ++nodes > 4096) throw new Error();
+      if (depth > 16 || ++nodes > limits.nodes) throw new Error();
       whitespace();
       const character = body[position];
       if (character === '"') {

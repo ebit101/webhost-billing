@@ -19,7 +19,13 @@ export function loadPinnedMigrations() {
     .filter((f) => f.isDirectory())
     .map((f) => f.name)
     .sort()
-    .filter((name) => name !== '20261012000100_domain_registrar');
+    .filter(
+      (name) =>
+        ![
+          '20261012000100_domain_registrar',
+          '20261012000200_resellbiz_live_registration',
+        ].includes(name),
+    );
   assert.deepEqual(
     names,
     Object.keys(migrationPins).sort(),

@@ -6,6 +6,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Header,
 } from '@nestjs/common';
 import {
   createApiSuccessResponse,
@@ -17,16 +18,93 @@ import {
   type DomainQuoteRequest,
   type DomainPurchaseRequest,
   type DomainApprovalRequest,
+  resellbizSetupSchema,
+  resellbizCredentialSchema,
+  resellbizMappingSchema,
+  domainNameSchema,
+  type ResellbizSetup,
+  domainActionRequestSchema,
+  type DomainActionRequest,
 } from '@webhost-billing/shared';
 import { ZodValidationPipe } from '../../common/validation/zod-validation.pipe';
 import { CurrentAuth } from '../auth/decorators/current-auth.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import type { AuthRequestContext } from '../auth/auth.types';
 import { DomainService } from './domain.service';
+import { z } from 'zod';
+import { DomainLifecycleService } from './domain-lifecycle.service';
 
 @Controller('domains')
 export class DomainController {
-  constructor(private readonly domains: DomainService) {}
+  constructor(
+    private readonly domains: DomainService,
+    private readonly lifecycle: DomainLifecycleService,
+  ) {}
+  @Get('registrar/live')
+  @Roles('ADMIN')
+  async liveSettings(@CurrentAuth() auth: AuthRequestContext) {
+    return createApiSuccessResponse(await this.domains.liveSettings(auth));
+  }
+  @Post('registrar/live')
+  @Roles('ADMIN')
+  async liveSetup(
+    @Body(new ZodValidationPipe(resellbizSetupSchema)) input: ResellbizSetup,
+    @CurrentAuth() auth: AuthRequestContext,
+  ) {
+    return createApiSuccessResponse(await this.domains.setupLive(input, auth));
+  }
+  @Patch('registrar/live/:id/credential')
+  @Roles('ADMIN')
+  async liveCredential(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body(new ZodValidationPipe(resellbizCredentialSchema))
+    input: { resellerId: string; apiKey: string },
+    @CurrentAuth() auth: AuthRequestContext,
+  ) {
+    return createApiSuccessResponse(
+      await this.domains.rotateLiveCredential(id, input, auth),
+    );
+  }
+  @Post('registrar/live/:id/check')
+  @Roles('ADMIN')
+  async liveCheck(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body(
+      new ZodValidationPipe(
+        z.object({ domainName: domainNameSchema }).strict(),
+      ),
+    )
+    input: { domainName: string },
+    @CurrentAuth() auth: AuthRequestContext,
+  ) {
+    return createApiSuccessResponse(
+      await this.domains.checkLive(id, input.domainName, auth),
+    );
+  }
+  @Patch('registrar/live/:id')
+  @Roles('ADMIN')
+  async liveToggle(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body(new ZodValidationPipe(registrarToggleSchema))
+    input: { enabled: boolean },
+    @CurrentAuth() auth: AuthRequestContext,
+  ) {
+    return createApiSuccessResponse(
+      await this.domains.toggleLive(id, input.enabled, auth),
+    );
+  }
+  @Post(':id/registrar-contact')
+  @Roles('ADMIN')
+  async liveContact(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body(new ZodValidationPipe(resellbizMappingSchema))
+    input: { remoteCustomerId: string; remoteContactId: string },
+    @CurrentAuth() auth: AuthRequestContext,
+  ) {
+    return createApiSuccessResponse(
+      await this.domains.bindLiveContact(id, input, auth),
+    );
+  }
   @Get('registrar')
   @Roles('ADMIN')
   async settings() {
@@ -93,6 +171,154 @@ export class DomainController {
     @CurrentAuth() auth: AuthRequestContext,
   ) {
     return createApiSuccessResponse(await this.domains.detail(id, auth));
+  }
+  @Get(':id/management')
+  @Header('Cache-Control', 'private, no-store, max-age=0')
+  @Roles('ADMIN', 'CUSTOMER')
+  async management(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @CurrentAuth() auth: AuthRequestContext,
+  ) {
+    return createApiSuccessResponse(await this.lifecycle.stored(id, auth));
+  }
+  @Post(':id/management/refresh')
+  @Roles('ADMIN', 'CUSTOMER')
+  async managementRefresh(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @CurrentAuth() auth: AuthRequestContext,
+  ) {
+    return createApiSuccessResponse(await this.lifecycle.refresh(id, auth));
+  }
+  @Get(':id/actions')
+  @Roles('ADMIN', 'CUSTOMER')
+  async actions(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @CurrentAuth() auth: AuthRequestContext,
+  ) {
+    return createApiSuccessResponse(await this.lifecycle.list(id, auth));
+  }
+  @Post(':id/actions')
+  @Roles('ADMIN')
+  async action(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body(
+      new ZodValidationPipe(
+        z
+          .object({
+            confirmation: domainNameSchema,
+            request: domainActionRequestSchema,
+          })
+          .strict(),
+      ),
+    )
+    input: { confirmation: string; request: DomainActionRequest },
+    @CurrentAuth() auth: AuthRequestContext,
+  ) {
+    return createApiSuccessResponse(
+      await this.lifecycle.create(id, input.request, input.confirmation, auth),
+    );
+  }
+  @Post(':id/actions/:actionId/execute')
+  @Roles('ADMIN')
+  async executeAction(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Param('actionId', new ParseUUIDPipe()) actionId: string,
+    @Body(
+      new ZodValidationPipe(
+        z.object({ confirmation: domainNameSchema }).strict(),
+      ),
+    )
+    input: { confirmation: string },
+    @CurrentAuth() auth: AuthRequestContext,
+  ) {
+    return createApiSuccessResponse(
+      await this.lifecycle.execute(id, actionId, input.confirmation, auth),
+    );
+  }
+  @Post(':id/actions/:actionId/reconcile')
+  @Roles('ADMIN')
+  async reconcileAction(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Param('actionId', new ParseUUIDPipe()) actionId: string,
+    @Body(
+      new ZodValidationPipe(
+        z.object({ confirmation: domainNameSchema }).strict(),
+      ),
+    )
+    input: { confirmation: string },
+    @CurrentAuth() auth: AuthRequestContext,
+  ) {
+    return createApiSuccessResponse(
+      await this.lifecycle.execute(
+        id,
+        actionId,
+        input.confirmation,
+        auth,
+        true,
+      ),
+    );
+  }
+  @Post(':id/authorization-code')
+  @Header('Cache-Control', 'private, no-store, max-age=0')
+  @Roles('ADMIN')
+  async authorizationCode(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body(
+      new ZodValidationPipe(
+        z.object({ confirmation: domainNameSchema }).strict(),
+      ),
+    )
+    input: { confirmation: string },
+    @CurrentAuth() auth: AuthRequestContext,
+  ) {
+    return createApiSuccessResponse(
+      await this.lifecycle.authorizationCode(id, input.confirmation, auth),
+    );
+  }
+  @Post(':id/actions/:actionId/cancel-unsent')
+  @Roles('ADMIN')
+  async cancelUnsentAction(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Param('actionId', new ParseUUIDPipe()) actionId: string,
+    @Body(
+      new ZodValidationPipe(
+        z.object({ confirmation: domainNameSchema }).strict(),
+      ),
+    )
+    input: { confirmation: string },
+    @CurrentAuth() auth: AuthRequestContext,
+  ) {
+    return createApiSuccessResponse(
+      await this.lifecycle.cancelUnsent(id, actionId, input.confirmation, auth),
+    );
+  }
+  @Post(':id/actions/:actionId/recover-contact')
+  @Roles('ADMIN')
+  async recoverContact(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Param('actionId', new ParseUUIDPipe()) actionId: string,
+    @Body(
+      new ZodValidationPipe(
+        z
+          .object({
+            confirmation: domainNameSchema,
+            contactId: z.string().regex(/^[1-9][0-9]{0,18}$/),
+          })
+          .strict(),
+      ),
+    )
+    input: { confirmation: string; contactId: string },
+    @CurrentAuth() auth: AuthRequestContext,
+  ) {
+    return createApiSuccessResponse(
+      await this.lifecycle.recoverContact(
+        id,
+        actionId,
+        input.contactId,
+        input.confirmation,
+        auth,
+      ),
+    );
   }
   @Post(':id/approve')
   @Roles('ADMIN')

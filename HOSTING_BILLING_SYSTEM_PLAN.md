@@ -23,6 +23,19 @@ Genuine demo identity/access is not yet established. No credentials, provider ca
 customer/payment records or domain mutations are authorized by the design. Live mode,
 automatic renewal, WHMCS domain import and further currency development remain closed.
 
+**Registrar direction — 2026-10-12:** The owner authorized a guarded live resell.biz
+module and deployment to my.speedhost.bd, the final Speed Host portal address.
+WHMCS stays separate for existing customers, with no connection or synchronization;
+the new portal is intended for new customers after operating acceptance. Command 51
+replaces the earlier genuine-demo-only proposal with source implementation and a
+disabled/unconfigured deployment, not an agent-executed domain purchase. Use existing
+verified manual bank payments. No API cancellation. Registrar work comes first,
+then separately bounded cPanel/WHM acceptance. Currency stays held; launch gates remain.
+The owner's completion request also includes automatic customer/contact preparation,
+core nameserver/lock/contact management, secure authorization-code access and separately
+paid manual one-year renewal for the supported domain path. WHMCS-style actionability
+is the reference, not full TLD/feature parity or authority for real agent purchases.
+
 ---
 
 ## 1. Executive Summary

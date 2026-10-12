@@ -9,6 +9,9 @@ import {
   contactBinding,
   lockDomainInvoice,
   verifiedDomainInvoice,
+  ResellbizLiveRegistrar,
+  type DomainRegistrar,
+  type RegistrarIntent,
 } from '@webhost-billing/database/registrar';
 import {
   PROJECT_NAME,
@@ -19,6 +22,14 @@ import {
   type DomainQuoteRequest,
   type DomainPurchaseRequest,
   type DomainApprovalRequest,
+  resellbizSetupSchema,
+  resellbizSettingsSchema,
+  resellbizConfigurationSchema,
+  resellbizCredentialSchema,
+  domainContactSchema,
+  resellbizContactSchema,
+  domainNameSchema,
+  type ResellbizSetup,
 } from '@webhost-billing/shared';
 import { ApplicationException } from '../../common/errors/application.exception';
 import { allocateInvoiceNumber } from '../../common/identifiers/invoice-number';
@@ -32,11 +43,13 @@ export class DomainService {
   private readonly simulationAllowed: boolean;
   private readonly cipher: RegistrarCipher;
   private readonly provider: FakeDomainRegistrar;
+  private readonly liveAllowed: boolean;
   constructor(
     @Inject(PRISMA_CLIENT) private readonly prisma: PrismaClient,
     @Inject(API_ENVIRONMENT) environment: ApiEnvironment,
   ) {
     this.simulationAllowed = environment.NODE_ENV !== 'production';
+    this.liveAllowed = environment.RESELLBIZ_LIVE_ENABLED;
     this.cipher = new RegistrarCipher(environment.CREDENTIAL_ENCRYPTION_KEY);
     this.provider = new FakeDomainRegistrar(prisma);
   }
@@ -46,6 +59,394 @@ export class DomainService {
         'Simulated registrar writes are disabled in production.',
         HttpStatus.SERVICE_UNAVAILABLE,
       );
+  }
+  private requireRuntime(): void {
+    if (!this.simulationAllowed && !this.liveAllowed) this.requireSimulation();
+  }
+  private requireAccount(account: { mode: string; enabled: boolean }): void {
+    if (account.mode === 'FAKE') this.requireSimulation();
+    else if (account.mode !== 'LIVE' || !this.liveAllowed)
+      this.deny(
+        'Live registrar networking is disabled by the installation.',
+        HttpStatus.SERVICE_UNAVAILABLE,
+      );
+    if (!account.enabled) this.deny('The registrar is disabled.');
+  }
+  private async reserveLiveRead(
+    accountId: string,
+    auth: AuthRequestContext,
+  ): Promise<void> {
+    if (!this.liveAllowed)
+      this.deny(
+        'Live registrar networking is disabled by the installation.',
+        HttpStatus.SERVICE_UNAVAILABLE,
+      );
+    await this.prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM registrar_accounts WHERE id=${accountId}::uuid FOR UPDATE`;
+      const recent = await tx.activityLog.count({
+        where: {
+          entityId: accountId,
+          action: 'RESELLBIZ_READ_RESERVED',
+          createdAt: { gt: new Date(Date.now() - 60000) },
+        },
+      });
+      if (recent >= 5) this.deny('Please wait before another registrar check.');
+      await tx.activityLog.create({
+        data: {
+          actorUserId: auth.identity.userId,
+          action: 'RESELLBIZ_READ_RESERVED',
+          entityType: 'REGISTRAR',
+          entityId: accountId,
+        },
+      });
+    });
+  }
+  private async liveProvider(
+    accountId: string,
+    binding?: {
+      localCustomerId: string;
+      remoteCustomerId: string;
+      remoteContactId: string;
+    },
+    pinnedCredentialId?: string,
+  ): Promise<ResellbizLiveRegistrar> {
+    const account = await this.prisma.registrarAccount.findUniqueOrThrow({
+      where: { id: accountId },
+    });
+    if (account.mode !== 'LIVE')
+      this.deny('Select the live resell.biz account.');
+    const config = resellbizConfigurationSchema.parse(account.configuration);
+    const credential = await this.prisma.registrarCredential.findFirstOrThrow({
+      where: {
+        accountId,
+        ...(pinnedCredentialId ? { id: pinnedCredentialId } : {}),
+      },
+      orderBy: { version: 'desc' },
+    });
+    const payload = resellbizCredentialSchema.parse(
+      this.cipher.decrypt(
+        credentialBinding(accountId, credential.version, 'LIVE'),
+        credential.ciphertext,
+      ),
+    );
+    if (payload.resellerId !== config.resellerId)
+      this.deny('Registrar credential ownership changed.');
+    return new ResellbizLiveRegistrar(
+      payload,
+      undefined,
+      binding ? { accountId, ...binding } : undefined,
+    );
+  }
+  private async quoteFrom(
+    accountId: string,
+    name: string,
+    auth: AuthRequestContext,
+  ) {
+    const account = await this.prisma.registrarAccount.findUniqueOrThrow({
+      where: { id: accountId },
+    });
+    let provider: DomainRegistrar = this.provider;
+    if (account.mode === 'LIVE') {
+      await this.reserveLiveRead(accountId, auth);
+      provider = await this.liveProvider(accountId);
+    } else this.requireSimulation();
+    try {
+      return await provider.quote(name);
+    } catch {
+      this.deny(
+        'Registrar availability or cost could not be verified. No registration was submitted.',
+      );
+    }
+  }
+  async liveSettings(auth: AuthRequestContext) {
+    this.administrator(auth);
+    const account = await this.prisma.registrarAccount.findFirst({
+      where: { mode: 'LIVE' },
+    });
+    if (!account) return null;
+    const config = resellbizConfigurationSchema.parse(account.configuration);
+    const credential = await this.prisma.registrarCredential.findFirstOrThrow({
+      where: { accountId: account.id },
+      orderBy: { version: 'desc' },
+    });
+    const offer = await this.prisma.domainOffer.findFirstOrThrow({
+      where: { accountId: account.id },
+    });
+    const price = await this.prisma.productPrice.findUniqueOrThrow({
+      where: { id: offer.priceId },
+    });
+    return resellbizSettingsSchema.parse({
+      id: account.id,
+      mode: 'Live',
+      enabled: account.enabled,
+      networkEnabled: this.liveAllowed,
+      maskedResellerId: `••••${config.resellerId.slice(-4)}`,
+      credentialVersion: credential.version,
+      agreementUrl: config.agreementUrl,
+      customerTermsUrl: config.customerTermsUrl,
+      customerPrivacyUrl: config.customerPrivacyUrl,
+      nameservers: config.nameservers,
+      sellingAmount: price.amount.toString(),
+    });
+  }
+  async setupLive(raw: ResellbizSetup, auth: AuthRequestContext) {
+    this.administrator(auth);
+    const input = resellbizSetupSchema.parse(raw);
+    await this.prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT pg_advisory_xact_lock(510051)::text`;
+      if (await tx.registrarAccount.findFirst({ where: { mode: 'LIVE' } }))
+        this.deny(
+          'The live account is already configured. Replace its credential explicitly instead.',
+        );
+      const account = await tx.registrarAccount.create({
+        data: {
+          mode: 'LIVE',
+          enabled: false,
+          configuration: {
+            resellerId: input.resellerId,
+            nameservers: input.nameservers,
+            agreementUrl: input.agreementUrl,
+            customerTermsUrl: input.customerTermsUrl,
+            customerPrivacyUrl: input.customerPrivacyUrl,
+            confirmNativeUsdCosts: true,
+          },
+        },
+      });
+      await tx.registrarCredential.create({
+        data: {
+          accountId: account.id,
+          version: 1,
+          ciphertext: this.cipher.encrypt(
+            credentialBinding(account.id, 1, 'LIVE'),
+            { resellerId: input.resellerId, apiKey: input.apiKey },
+          ),
+        },
+      });
+      const product = await tx.product.create({
+        data: {
+          kind: 'DOMAIN',
+          slug: 'resellbiz-domain-com',
+          name: '.com domain registration',
+          status: 'ACTIVE',
+          publicVisible: true,
+          prices: {
+            create: {
+              billingPeriod: 'ANNUAL',
+              currency: 'BDT',
+              amount: BigInt(input.sellingAmount),
+              setupFee: 0n,
+            },
+          },
+        },
+        include: { prices: true },
+      });
+      const price = product.prices[0];
+      if (!price) throw new Error('Registrar price unavailable.');
+      await tx.domainOffer.create({
+        data: {
+          accountId: account.id,
+          productId: product.id,
+          priceId: price.id,
+          tld: 'com',
+          nameservers: input.nameservers,
+        },
+      });
+      await tx.activityLog.create({
+        data: {
+          actorUserId: auth.identity.userId,
+          action: 'RESELLBIZ_CONFIGURED_DISABLED',
+          entityType: 'REGISTRAR',
+          entityId: account.id,
+        },
+      });
+    });
+    return this.liveSettings(auth);
+  }
+  async rotateLiveCredential(
+    id: string,
+    input: { resellerId: string; apiKey: string },
+    auth: AuthRequestContext,
+  ) {
+    this.administrator(auth);
+    input = resellbizCredentialSchema.parse(input);
+    await this.prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM registrar_accounts WHERE id=${id}::uuid FOR UPDATE`;
+      const account = await tx.registrarAccount.findUniqueOrThrow({
+        where: { id },
+      });
+      if (
+        account.mode !== 'LIVE' ||
+        resellbizConfigurationSchema.parse(account.configuration).resellerId !==
+          input.resellerId
+      )
+        this.deny(
+          'Credential replacement must retain the same reseller identity.',
+        );
+      const latest = await tx.registrarCredential.findFirstOrThrow({
+        where: { accountId: id },
+        orderBy: { version: 'desc' },
+      });
+      const version = latest.version + 1;
+      await tx.registrarCredential.create({
+        data: {
+          accountId: id,
+          version,
+          ciphertext: this.cipher.encrypt(
+            credentialBinding(id, version, 'LIVE'),
+            input,
+          ),
+        },
+      });
+      await tx.registrarAccount.update({
+        where: { id },
+        data: { enabled: false },
+      });
+      await tx.activityLog.create({
+        data: {
+          actorUserId: auth.identity.userId,
+          action: 'RESELLBIZ_CREDENTIAL_REPLACED_DISABLED',
+          entityType: 'REGISTRAR',
+          entityId: id,
+        },
+      });
+    });
+    return this.liveSettings(auth);
+  }
+  async checkLive(id: string, name: string, auth: AuthRequestContext) {
+    this.administrator(auth);
+    const account = await this.prisma.registrarAccount.findUniqueOrThrow({
+      where: { id },
+    });
+    if (account.mode !== 'LIVE') this.deny('Select the live account.');
+    const quote = await this.quoteFrom(id, domainNameSchema.parse(name), auth);
+    return {
+      available: quote.available,
+      costAmount: quote.costAmount.toString(),
+      costCurrency: quote.costCurrency,
+      observedAt: quote.observedAt.toISOString(),
+      simulated: false,
+    };
+  }
+  async toggleLive(id: string, enabled: boolean, auth: AuthRequestContext) {
+    this.administrator(auth);
+    const checkedCredential = enabled
+      ? await this.prisma.registrarCredential.findFirstOrThrow({
+          where: { accountId: id },
+          orderBy: { version: 'desc' },
+        })
+      : null;
+    if (enabled) await this.checkLive(id, 'ordinary-example.com', auth);
+    await this.prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM registrar_accounts WHERE id=${id}::uuid FOR UPDATE`;
+      const account = await tx.registrarAccount.findUniqueOrThrow({
+        where: { id },
+      });
+      if (account.mode !== 'LIVE') this.deny('Select the live account.');
+      if (
+        enabled &&
+        checkedCredential?.id !==
+          (
+            await tx.registrarCredential.findFirstOrThrow({
+              where: { accountId: id },
+              orderBy: { version: 'desc' },
+            })
+          ).id
+      )
+        this.deny(
+          'Credential changed during the connection check. Check it again before enabling.',
+        );
+      await tx.registrarAccount.update({ where: { id }, data: { enabled } });
+      await tx.activityLog.create({
+        data: {
+          actorUserId: auth.identity.userId,
+          action: enabled ? 'RESELLBIZ_ENABLED' : 'REGISTRAR_DISABLED',
+          entityType: 'REGISTRAR',
+          entityId: id,
+        },
+      });
+    });
+    return this.liveSettings(auth);
+  }
+  async bindLiveContact(
+    id: string,
+    input: { remoteCustomerId: string; remoteContactId: string },
+    auth: AuthRequestContext,
+  ) {
+    this.administrator(auth);
+    const domain = await this.prisma.domain.findUniqueOrThrow({
+      where: { id },
+    });
+    const account = await this.prisma.registrarAccount.findUniqueOrThrow({
+      where: { id: domain.accountId },
+    });
+    if (account.mode !== 'LIVE') this.deny('Select a live domain request.');
+    const quote = await this.prisma.domainQuote.findUniqueOrThrow({
+      where: { id: domain.quoteId },
+    });
+    const contact = domainContactSchema.parse(
+      this.cipher.decrypt(
+        contactBinding(account.id, domain.customerId, 'LIVE'),
+        quote.contactCiphertext,
+      ),
+    );
+    const config = resellbizConfigurationSchema.parse(account.configuration);
+    const provider = await this.liveProvider(account.id, {
+      localCustomerId: domain.customerId,
+      ...input,
+    });
+    await this.reserveLiveRead(account.id, auth);
+    const intent: RegistrarIntent = {
+      accountId: account.id,
+      customerId: domain.customerId,
+      domainName: domain.domainName,
+      operationId: randomUUID(),
+      nameservers: config.nameservers,
+      contact,
+      costCeiling: quote.costAmount,
+    };
+    try {
+      await provider.ensureContacts(intent, quote.fingerprint);
+    } catch {
+      this.deny(
+        'Registrar customer/contact ownership or exact registrant data could not be verified. This check sent no mutation.',
+      );
+    }
+    await this.prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM domains WHERE id=${id}::uuid FOR UPDATE`;
+      const prior = await tx.registrarMapping.findUnique({
+        where: {
+          accountId_customerId_fingerprint: {
+            accountId: account.id,
+            customerId: domain.customerId,
+            fingerprint: quote.fingerprint,
+          },
+        },
+      });
+      if (
+        prior &&
+        (prior.remoteCustomerId !== input.remoteCustomerId ||
+          prior.remoteContactId !== input.remoteContactId)
+      )
+        this.deny('A different immutable registrar contact is already bound.');
+      if (!prior)
+        await tx.registrarMapping.create({
+          data: {
+            accountId: account.id,
+            customerId: domain.customerId,
+            fingerprint: quote.fingerprint,
+            ...input,
+          },
+        });
+      await tx.activityLog.create({
+        data: {
+          actorUserId: auth.identity.userId,
+          action: 'RESELLBIZ_CONTACT_OWNERSHIP_VERIFIED',
+          entityType: 'DOMAIN',
+          entityId: id,
+        },
+      });
+    });
+    return this.detail(id, auth);
   }
   private deny(message: string, status = HttpStatus.CONFLICT): never {
     throw new ApplicationException({
@@ -68,13 +469,14 @@ export class DomainService {
   private customer(auth: AuthRequestContext): string {
     if (auth.identity.role !== 'CUSTOMER')
       this.deny(
-        'Sign in as the customer to accept the fictional registration agreement.',
+        'Sign in as the customer to accept the registration agreement.',
         HttpStatus.FORBIDDEN,
       );
     return auth.identity.customerId;
   }
   async settings() {
     const accounts = await this.prisma.registrarAccount.findMany({
+      where: { mode: 'FAKE' },
       orderBy: { createdAt: 'asc' },
       take: 10,
     });
@@ -92,11 +494,13 @@ export class DomainService {
   async setup(sellingAmount: string, auth: AuthRequestContext) {
     this.requireSimulation();
     this.administrator(auth);
-    const existing = await this.prisma.registrarAccount.findFirst();
+    const existing = await this.prisma.registrarAccount.findFirst({
+      where: { mode: 'FAKE' },
+    });
     if (existing) return this.settings();
     await this.prisma.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT pg_advisory_xact_lock(500050)::text`;
-      if (await tx.registrarAccount.count()) return;
+      if (await tx.registrarAccount.count({ where: { mode: 'FAKE' } })) return;
       const account = await tx.registrarAccount.create({
         data: { enabled: true },
       });
@@ -156,6 +560,11 @@ export class DomainService {
   async toggle(id: string, enabled: boolean, auth: AuthRequestContext) {
     this.requireSimulation();
     this.administrator(auth);
+    if (
+      (await this.prisma.registrarAccount.findUnique({ where: { id } }))
+        ?.mode !== 'FAKE'
+    )
+      this.deny('Select a simulated account.');
     await this.prisma.registrarAccount.update({
       where: { id },
       data: { enabled },
@@ -171,7 +580,6 @@ export class DomainService {
     return this.settings();
   }
   async offers() {
-    if (!this.simulationAllowed) return [];
     const offers = await this.prisma.domainOffer.findMany({ take: 20 });
     const result = [];
     for (const offer of offers) {
@@ -184,7 +592,9 @@ export class DomainService {
       });
       if (
         !account.enabled ||
-        account.mode !== 'FAKE' ||
+        (account.mode === 'FAKE'
+          ? !this.simulationAllowed
+          : account.mode !== 'LIVE' || !this.liveAllowed) ||
         !price.isActive ||
         price.deletedAt ||
         price.product.status !== 'ACTIVE' ||
@@ -200,19 +610,33 @@ export class DomainService {
           sellingAmount: price.amount.toString(),
           currency: 'BDT',
           nameservers: offer.nameservers,
-          simulated: true,
-          costAmount: (
-            await this.provider.quote(`ordinary-example.${offer.tld}`)
-          ).costAmount.toString(),
-          costCurrency: 'USD',
-          observedAt: new Date().toISOString(),
+          simulated: account.mode === 'FAKE',
+          ...(account.mode === 'LIVE'
+            ? {
+                agreementUrl: resellbizConfigurationSchema.parse(
+                  account.configuration,
+                ).agreementUrl,
+                customerTermsUrl: resellbizConfigurationSchema.parse(
+                  account.configuration,
+                ).customerTermsUrl,
+                customerPrivacyUrl: resellbizConfigurationSchema.parse(
+                  account.configuration,
+                ).customerPrivacyUrl,
+              }
+            : {
+                costAmount: (
+                  await this.provider.quote(`ordinary-example.${offer.tld}`)
+                ).costAmount.toString(),
+                costCurrency: 'USD',
+                observedAt: new Date().toISOString(),
+              }),
         }),
       );
     }
     return result;
   }
   async quote(input: DomainQuoteRequest, auth: AuthRequestContext) {
-    this.requireSimulation();
+    this.requireRuntime();
     const customerId = this.customer(auth);
     const offer = await this.prisma.domainOffer.findUnique({
       where: { id: input.offerId },
@@ -222,8 +646,22 @@ export class DomainService {
     const account = await this.prisma.registrarAccount.findUniqueOrThrow({
       where: { id: offer.accountId },
     });
-    if (!account.enabled || account.mode !== 'FAKE')
-      this.deny('The simulated registrar is disabled.');
+    this.requireAccount(account);
+    if (
+      account.mode === 'LIVE' &&
+      (!resellbizContactSchema.safeParse(input.contact).success ||
+        input.customerPolicyConsent !== true)
+    )
+      this.deny(
+        'Complete the registrar contact fields and accept the customer terms and privacy policy.',
+      );
+    if (
+      input.agreement !==
+      (account.mode === 'LIVE'
+        ? 'resellbiz-registration-v1'
+        : 'fictional-registration-v1')
+    )
+      this.deny('Accept the agreement for the selected registrar mode.');
     const price = await this.prisma.productPrice.findUniqueOrThrow({
       where: { id: offer.priceId },
       include: { product: true },
@@ -240,8 +678,8 @@ export class DomainService {
       price.product.deletedAt
     )
       this.deny('This domain offer is unavailable.');
-    const cost = await this.provider.quote(input.domainName);
-    if (!cost.available) this.deny('The simulated domain is unavailable.');
+    const cost = await this.quoteFrom(account.id, input.domainName, auth);
+    if (!cost.available) this.deny('The domain is unavailable.');
     const now = new Date();
     const quote = await this.prisma.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT id FROM customers WHERE id=${customerId}::uuid FOR UPDATE`;
@@ -253,14 +691,14 @@ export class DomainService {
         customer.status !== 'ACTIVE' ||
         customer.deletedAt ||
         customer.user.status !== 'ACTIVE' ||
+        (account.mode === 'LIVE' && !customer.user.emailVerifiedAt) ||
         customer.user.deletedAt
       )
         this.deny('The customer account is inactive.');
       const recent = await tx.domainQuote.count({
         where: { customerId, createdAt: { gt: new Date(Date.now() - 600000) } },
       });
-      if (recent >= 10)
-        this.deny('Please wait before requesting more simulated quotes.');
+      if (recent >= 10) this.deny('Please wait before requesting more quotes.');
       return tx.domainQuote.create({
         data: {
           customerId,
@@ -273,11 +711,13 @@ export class DomainService {
           agreement: input.agreement,
           nameservers: offer.nameservers as Prisma.InputJsonValue,
           contactCiphertext: this.cipher.encrypt(
-            contactBinding(account.id, customerId),
+            contactBinding(account.id, customerId, account.mode),
             input.contact,
           ),
           fingerprint: createHash('sha256')
-            .update(`stargate:FAKE:Contact:${account.id}:${customerId}:`)
+            .update(
+              `stargate:${account.mode}:Contact:${account.id}:${customerId}:`,
+            )
             .update(JSON.stringify(input.contact))
             .digest('hex'),
           expiresAt: new Date(now.getTime() + 300000),
@@ -289,14 +729,18 @@ export class DomainService {
       domainName: quote.domainName,
       sellingAmount: quote.sellingAmount.toString(),
       currency: 'BDT',
-      costAmount: quote.costAmount.toString(),
-      costCurrency: quote.costCurrency,
+      ...(account.mode === 'FAKE'
+        ? {
+            costAmount: quote.costAmount.toString(),
+            costCurrency: quote.costCurrency,
+          }
+        : {}),
       expiresAt: quote.expiresAt.toISOString(),
-      simulated: true,
+      simulated: account.mode === 'FAKE',
     });
   }
   async purchase(input: DomainPurchaseRequest, auth: AuthRequestContext) {
-    this.requireSimulation();
+    this.requireRuntime();
     const customerId = this.customer(auth);
     try {
       const id = await this.prisma.$transaction(async (tx) => {
@@ -336,9 +780,9 @@ export class DomainService {
           where: { id: customerId },
           include: { user: true },
         });
+        this.requireAccount(account);
         if (
           !account.enabled ||
-          account.mode !== 'FAKE' ||
           !price.isActive ||
           price.deletedAt ||
           price.product.deletedAt ||
@@ -348,6 +792,7 @@ export class DomainService {
           customer.status !== 'ACTIVE' ||
           customer.deletedAt ||
           customer.user.status !== 'ACTIVE' ||
+          (account.mode === 'LIVE' && !customer.user.emailVerifiedAt) ||
           customer.user.deletedAt
         )
           this.deny('The offer or customer changed. Request a new quote.');
@@ -369,7 +814,9 @@ export class DomainService {
                 productPriceId: price.id,
                 productNameSnapshot: price.product.name,
                 descriptionSnapshot:
-                  'Simulated one-year domain registration; no external calls or charges.',
+                  account.mode === 'LIVE'
+                    ? 'One-year domain registration; requires verified payment and separate administrator approval.'
+                    : 'Simulated one-year domain registration; no external calls or charges.',
                 billingPeriod: 'ANNUAL',
                 currency: 'BDT',
                 unitAmount: quote.sellingAmount,
@@ -422,7 +869,7 @@ export class DomainService {
               create: {
                 orderItemId: item.id,
                 linePosition: 1,
-                descriptionSnapshot: `Simulated registration of ${quote.domainName} for one year`,
+                descriptionSnapshot: `${account.mode === 'LIVE' ? 'Registration' : 'Simulated registration'} of ${quote.domainName} for one year`,
                 currency: 'BDT',
                 quantity: 1,
                 unitAmount: quote.sellingAmount,
@@ -445,7 +892,10 @@ export class DomainService {
         await tx.activityLog.create({
           data: {
             actorUserId: auth.identity.userId,
-            action: 'SIMULATED_DOMAIN_ORDER_CREATED',
+            action:
+              account.mode === 'LIVE'
+                ? 'LIVE_DOMAIN_ORDER_CREATED'
+                : 'SIMULATED_DOMAIN_ORDER_CREATED',
             entityType: 'DOMAIN',
             entityId: domain.id,
           },
@@ -496,6 +946,11 @@ export class DomainService {
     const quote = await this.prisma.domainQuote.findUniqueOrThrow({
       where: { id: domain.quoteId },
     });
+    const account = await this.prisma.registrarAccount.findUniqueOrThrow({
+      where: { id: domain.accountId },
+    });
+    if (account.mode === 'LIVE' && auth.identity.role === 'ADMIN')
+      this.administrator(auth);
     const operation = await this.prisma.registrarOperation.findUnique({
       where: { domainId: id },
     });
@@ -508,7 +963,14 @@ export class DomainService {
           : domain.state,
       verification: domain.verification,
       expiresAt: domain.expiresAt?.toISOString() ?? null,
-      simulated: true,
+      simulated: account.mode === 'FAKE',
+      ...(account.mode === 'LIVE'
+        ? {
+            agreementUrl: resellbizConfigurationSchema.parse(
+              account.configuration,
+            ).agreementUrl,
+          }
+        : {}),
       autoRenew: false,
       registrar: 'StarGate/UK2 (resell.biz)',
       registrationYears: 1,
@@ -533,11 +995,24 @@ export class DomainService {
             costAmount: quote.costAmount.toString(),
             costCurrency: quote.costCurrency,
             contact: this.cipher.decrypt(
-              contactBinding(domain.accountId, domain.customerId),
+              contactBinding(domain.accountId, domain.customerId, account.mode),
               quote.contactCiphertext,
             ),
             operationId: operation?.id ?? null,
             dispatchClaimed: Boolean(operation?.claimedAt),
+            contactMappingVerified:
+              account.mode === 'FAKE' ||
+              Boolean(
+                await this.prisma.registrarMapping.findUnique({
+                  where: {
+                    accountId_customerId_fingerprint: {
+                      accountId: account.id,
+                      customerId: domain.customerId,
+                      fingerprint: quote.fingerprint,
+                    },
+                  },
+                }),
+              ),
             evidence: operation
               ? await this.prisma.registrarEvidence
                   .findMany({
@@ -562,14 +1037,27 @@ export class DomainService {
     input: DomainApprovalRequest,
     auth: AuthRequestContext,
   ) {
-    this.requireSimulation();
+    this.requireRuntime();
     this.administrator(auth);
     const domain = await this.prisma.domain.findUniqueOrThrow({
       where: { id },
     });
     if (input.confirmation !== domain.domainName)
       this.deny('Type the exact domain name to approve.');
-    const cost = await this.provider.quote(domain.domainName);
+    const approvalAccount =
+      await this.prisma.registrarAccount.findUniqueOrThrow({
+        where: { id: domain.accountId },
+      });
+    this.requireAccount(approvalAccount);
+    if (approvalAccount.mode === 'LIVE' && !input.acceptPriceChangeRisk)
+      this.deny(
+        'Confirm the real purchase and non-atomic provider price-change risk.',
+      );
+    const cost = await this.quoteFrom(
+      domain.accountId,
+      domain.domainName,
+      auth,
+    );
     if (!cost.available || cost.costAmount > BigInt(input.costCeiling))
       this.deny('Availability or the approved native cost ceiling changed.');
     await this.prisma.$transaction(async (tx) => {
@@ -579,8 +1067,7 @@ export class DomainService {
       const account = await tx.registrarAccount.findUniqueOrThrow({
         where: { id: current.accountId },
       });
-      if (!account.enabled || account.mode !== 'FAKE')
-        this.deny('The simulated registrar is disabled.');
+      this.requireAccount(account);
       if (
         !(await verifiedDomainInvoice(
           tx,
@@ -610,6 +1097,8 @@ export class DomainService {
             credentialId: credential.id,
             actorUserId: auth.identity.userId,
             costCeiling: BigInt(input.costCeiling),
+            priceChangeRiskAccepted:
+              account.mode === 'LIVE' && input.acceptPriceChangeRisk === true,
           },
         }));
       if (operation.costCeiling !== BigInt(input.costCeiling))
@@ -633,11 +1122,17 @@ export class DomainService {
     return this.detail(id, auth);
   }
   async reconcile(id: string, auth: AuthRequestContext) {
-    this.requireSimulation();
+    this.requireRuntime();
     this.administrator(auth);
     const operation = await this.prisma.registrarOperation.findUnique({
       where: { domainId: id },
     });
+    if (operation)
+      this.requireAccount(
+        await this.prisma.registrarAccount.findUniqueOrThrow({
+          where: { id: operation.accountId },
+        }),
+      );
     if (!operation?.claimedAt)
       this.deny(
         'Only a claimed operation can be reconciled; this action cannot register.',
@@ -656,5 +1151,87 @@ export class DomainService {
       },
     });
     return this.detail(id, auth);
+  }
+  async managementContext(
+    id: string,
+    auth: AuthRequestContext,
+    credentialId?: string,
+  ) {
+    await this.detail(id, auth); // Resource ownership and administrator MFA enforced before credential access.
+    const domain = await this.prisma.domain.findUniqueOrThrow({
+      where: { id },
+    });
+    const account = await this.prisma.registrarAccount.findUniqueOrThrow({
+      where: { id: domain.accountId },
+    });
+    this.requireAccount(account);
+    if (
+      account.mode !== 'LIVE' ||
+      domain.state !== 'REGISTERED' ||
+      !domain.providerOrderId ||
+      !domain.expiresAt
+    )
+      this.deny('Only a confirmed live registration can be managed.');
+    const customer = await this.prisma.customer.findUniqueOrThrow({
+      where: { id: domain.customerId },
+      include: { user: true },
+    });
+    if (
+      customer.deletedAt ||
+      customer.status !== 'ACTIVE' ||
+      customer.user.deletedAt ||
+      customer.user.status !== 'ACTIVE' ||
+      !customer.user.emailVerifiedAt
+    )
+      this.deny(
+        'The customer account is not eligible for registrar operations.',
+      );
+    const quote = await this.prisma.domainQuote.findUniqueOrThrow({
+      where: { id: domain.quoteId },
+    });
+    const mapping = await this.prisma.registrarMapping.findUniqueOrThrow({
+      where: {
+        accountId_customerId_fingerprint: {
+          accountId: account.id,
+          customerId: domain.customerId,
+          fingerprint: quote.fingerprint,
+        },
+      },
+    });
+    const provider = await this.liveProvider(
+      account.id,
+      {
+        localCustomerId: domain.customerId,
+        remoteCustomerId: mapping.remoteCustomerId,
+        remoteContactId: mapping.remoteContactId,
+      },
+      credentialId,
+    );
+    const config = resellbizConfigurationSchema.parse(account.configuration);
+    const intent: RegistrarIntent = {
+      operationId: id,
+      accountId: account.id,
+      customerId: domain.customerId,
+      domainName: domain.domainName,
+      nameservers: config.nameservers,
+      contact: domainContactSchema.parse(
+        this.cipher.decrypt(
+          contactBinding(account.id, domain.customerId, 'LIVE'),
+          quote.contactCiphertext,
+        ),
+      ),
+      costCeiling: quote.costAmount,
+    };
+    return {
+      domain,
+      account,
+      customer,
+      provider,
+      intent,
+      orderId: domain.providerOrderId,
+    };
+  }
+  async reserveManagementRead(accountId: string, auth: AuthRequestContext) {
+    return this.reserveLiveRead(accountId, auth);
   }
 }

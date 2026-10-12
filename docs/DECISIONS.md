@@ -2669,6 +2669,37 @@ report-only update must pass its own delivery gate; stop for the recommended pha
   protected genuine-demo identity/isolation, credentials/IP access, contracts/contact
   policy, all-in charge controls and exact operator/mutation authorization.
 
+## ADR-128 — Separate live registrar implementation from purchase and launch acceptance
+
+- **Status:** Owner-authorized Command 51 replacement, 2026-10-12; work in progress.
+- **Decision:** Independently implement live resell.biz registration and deploy verified
+  source to my.speedhost.bd. This is the final Speed Host portal address, not WHMCS
+  integration. Existing WHMCS customers remain there; no import or synchronization.
+  New-customer operation is the target, subject to unresolved operating/launch gates.
+- **Boundary:** .com, one year, no auto-renewal/privacy/cancellation/transfer/delete.
+  Automatically prepare registrar customers/contacts, reusing only fully matching
+  directly owned identities. Create only after a complete empty customer search;
+  separately persist customer/contact claims before POST, retain unknown outcomes,
+  use an independent policy-compliant random provider password, and never retry a
+  creation after a lost response. Explicit customer terms/privacy consent is required.
+  Actual provider agreement, customer consent, verified manual bank payment and full
+  administrator MFA approval are required before a durable register-once dispatch.
+  The owner's later completion request includes nameserver/lock management, replacement
+  contact association without in-place shared-contact edits or IRTP/lock bypass,
+  administrator-only transient authorization-code access, and manual paid one-year
+  renewal with a separate immutable invoice. Local unsent-action cancellation is not
+  registrar/API cancellation. WHMCS remains a workflow reference, not feature parity.
+- **Costs:** USD with two decimal places must be explicitly confirmed by the operator
+  from the account; the unlabeled cost API does not prove currency or all-in charges.
+  BDT sale prices remain separate. A preflight threshold is not an atomic provider cap;
+  explicitly acknowledge price-change risk. No automatic refund or assumed cancellation.
+- **Delivery:** Preserve prior migrations/history and fake production gates. Tests use
+  injected mocks only. Deployment leaves the account unconfigured/disabled, preserves
+  WHMCS and unrelated shared-server services, and needs verified backup/rollback/gates.
+  The agent will not register MessageDock.com, supply secrets or waive launch blockers.
+- **Next:** Finish Command 51 and report deployment. cPanel/WHM is next, separately
+  bounded and confirmed; do not automatically create a hosting account.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:
