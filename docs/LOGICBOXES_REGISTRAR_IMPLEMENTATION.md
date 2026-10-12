@@ -136,8 +136,9 @@ Both existing unwaived tooling advisories and the currency-development hold rema
 
 ## Live resell.biz rollout for Command 51
 
-Owner-authorized on 2026-10-12. Source implementation and validation are in progress;
-do not read this section as executed provider acceptance or completed deployment.
+Owner-authorized on 2026-10-12. The supported source scope passed local and exact-head
+hosted acceptance and was deployed to my.speedhost.bd. The registrar remains
+unconfigured/disabled; this is not executed genuine provider or production-launch acceptance.
 
 The new live path is independent of WHMCS. my.speedhost.bd is the final Speed Host
 portal address; existing WHMCS customers stay there with no synchronization/import.
@@ -213,9 +214,9 @@ tooling advisories remain unresolved.
 
 ## Supported management workflow in the current draft
 
-The source now includes nameserver/transfer-lock changes, contact replacement,
-administrator-only authorization-code access and manual one-year renewal. Final
-validation and deployment remain pending; this is not genuine provider acceptance.
+The deployed source includes nameserver/transfer-lock changes, contact replacement,
+administrator-only authorization-code access and manual one-year renewal. Local, hosted
+and deployment checks passed; this is not genuine provider acceptance or WHMCS parity.
 
 Full administrators with MFA save a named action, review it, confirm the exact domain
 and dispatch once. Ownership/current state is checked before any write, and a separate
@@ -265,8 +266,8 @@ this cancellation path. This never calls registrar cancellation/deletion.
 
 WHMCS is the workflow reference, not a claim of full feature or TLD parity. Transfer,
 deletion, privacy purchases, automatic renewal, unsupported TLD/IDN rules and currency
-conversion remain outside Command 51. Complete this supported registrar scope and its
-validation/deployment before moving to the separately authorized cPanel phase.
+conversion remain outside Command 51. The supported scope is delivered; securely
+configure and accept the paid pilot before moving to the separately bounded cPanel phase.
 
 Primary contracts: [customer search](https://cp.us2.net/kb/answer/1270),
 [signup](https://cp.us2.net/kb/answer/804), [contact creation](https://cp.us2.net/kb/answer/790),

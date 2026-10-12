@@ -2671,7 +2671,8 @@ report-only update must pass its own delivery gate; stop for the recommended pha
 
 ## ADR-128 — Separate live registrar implementation from purchase and launch acceptance
 
-- **Status:** Owner-authorized Command 51 replacement, 2026-10-12; work in progress.
+- **Status:** Owner-authorized Command 51 replacement completed in source and deployed,
+  2026-10-12; genuine provider and production-launch acceptance remain separate.
 - **Decision:** Independently implement live resell.biz registration and deploy verified
   source to my.speedhost.bd. This is the final Speed Host portal address, not WHMCS
   integration. Existing WHMCS customers remain there; no import or synchronization.

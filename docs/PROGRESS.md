@@ -3,9 +3,9 @@
 ## Status Summary
 
 - **Current command:** Command 51 — Implement and deploy guarded live resell.biz registration
-- **Current status:** Source implementation and validation in progress. No deployment or real registrar operation has occurred. The owner confirmed my.speedhost.bd as the final independent Speed Host portal, with WHMCS separate and manual bank payment. Currency remains held and both tooling findings unwaived.
-- **Last updated:** 2026-10-11
-- **Next command:** Finish Command 51 validation/delivery/deployment, then review the existing cPanel/WHM adapter and define its bounded configuration/acceptance command.
+- **Current status:** Supported registrar scope completed, locally/hosted validated and deployed to my.speedhost.bd at `1e51be0`. Core registration, automatic customer/contact preparation, management and paid renewal are delivered for the supported ordinary one-year .com path. Registrar credentials remain unconfigured; no real registration or external customer/contact operation occurred. WHMCS remains separate, payment manual, currency held and both tooling findings unwaived. Genuine provider and production-launch acceptance remain required.
+- **Last updated:** 2026-10-12
+- **Next command:** Owner configuration and explicit paid registrar pilot acceptance; then phase review the completed registrar delivery and define the bounded cPanel/WHM configuration/acceptance phase.
 - **Next command authorized:** No
 
 ## Command Reports
@@ -15104,7 +15104,7 @@ Stop after verified review delivery; do not implement it automatically.
 
 ### Command 51 — Implement and deploy guarded live resell.biz registration
 
-- **Status:** Local source acceptance passed; source delivery and protected deployment in progress.
+- **Status:** Completed supported Command 51 source scope and protected deployment; genuine registrar/production-launch acceptance not claimed.
 - **Date:** 2026-10-12 (Asia/Dhaka).
 - **Authorization:** Owner requests live module/deployment on my.speedhost.bd, then
   cPanel. WHMCS stays separate. Manual bank payments only; no API cancellation.
@@ -15155,9 +15155,9 @@ Stop after verified review delivery; do not implement it automatically.
 
 - **Owner scope update:** The owner requested completing, not removing or leaving pending,
   the registrar work, using a WHMCS-style manageable/actionable workflow. The supported
-  core above is now implemented in the draft; WHMCS remains separate and is not a
-  dependency or full feature/TLD parity claim. Final validation/delivery/deployment
-  are still required. No external customer/contact/domain operation ran.
+  core above is implemented and deployed; WHMCS remains separate and is not a
+  dependency or full feature/TLD parity claim. Local/hosted/delivery/operational gates
+  below passed. No external customer/contact/domain operation ran.
 - **Customer form repair:** Owner reported a create-form reset exception after saving.
   Source confirmed access to React event.currentTarget after an awaited POST. Capture the
   form before awaiting, then reset that captured element. Added a deferred-success
@@ -15172,13 +15172,14 @@ Stop after verified review delivery; do not implement it automatically.
   exclusions preserve all pinned baseline assertions. Attempt two passed database units
   161/161 and actual-login privilege suites 12/12, 8/8, 9/9, 9/9, then found a historical
   decoy test's stale ordinary migration count (29 instead of 30). Three exact ordinary
-  count assertions were updated to 30; full repeated acceptance remains pending.
+  count assertions were updated to 30; the complete repeated run subsequently passed
+  as recorded under final local acceptance below.
   Neither failed combined attempt is a pass; no skip, relaxed deadline or force push.
-- No genuine provider acceptance, credentials, purchase, contact mutation, cPanel
-  operation or deployment yet. Account currency/all-in charges/provider contract details
+- No genuine provider acceptance, configured registrar credentials, purchase, contact
+  mutation or cPanel operation occurred. Account currency/all-in charges/provider contract details
   need protected acceptance after configuration. Price preflight is not an atomic cap.
 - .com only, one year. The automatic preparation and core lifecycle source paths are
-  implemented but not deployed/accepted against the real provider. Transfer, deletion,
+  implemented and deployed, not accepted against the real provider. Transfer, deletion,
   privacy purchase, automatic renewal and additional TLD/IDN contracts remain out of
   this command, not silently advertised as WHMCS parity.
 - **Final local acceptance:** Full package invocation passed: shared contracts 113,
@@ -15209,12 +15210,49 @@ Stop after verified review delivery; do not implement it automatically.
   now closes its clients on bootstrap failure. The complete repeated package run passed.
   No deadline relaxed, case skipped, normal database adopted, real customer copied,
   failing work pushed or production/registrar action performed during these checks.
+- **Source delivery:** `1e51be0fd12b9edf12be23718e23b5ed44c5b66d` committed and pushed to
+  canonical `origin/main` after local acceptance and fresh remote reconciliation. GitHub
+  reported the owner's direct-main PR/expected-check bypass; no rule was changed and no
+  force push was used. Exact-head [CI](https://github.com/ebit101/webhost-billing/actions/runs/38203536271)
+  passed 29/29 and [CodeQL](https://github.com/ebit101/webhost-billing/actions/runs/38203536312)
+  passed 8/8 before cutover. Dependency review was skipped, not passed.
+- **Protected deployment:** Four source-pinned images were built serially on the owned
+  server release, preserving the exact owner logo. Initial preparation failed before
+  service/database changes because the Compose project-directory override made the
+  relative build context point above the release. Removed that override and resumed only
+  the newly owned unselected release; all four builds passed. A web build emitted its
+  non-fatal Prisma/OpenSSL discovery warning; API/worker/migration images include OpenSSL.
+  No unrelated resources were changed or pruned.
+- API/worker/scheduler writers were stopped for a fresh encrypted PostgreSQL backup;
+  checksum, OpenPGP integrity, archive structure and required tables passed verification.
+  Backup SHA-256: `308c8b4a577be4ebcaa6c28779fcc4273b05a7b802a9b3fd2c19913debef0750`.
+  Reviewed additive migrations 29/30 applied once, without seed/reset/adoption/import.
+  Before/after fingerprints of every existing business table matched, ignoring only the
+  two intended hosting-kind additions. All eleven registrar/domain stores remained empty.
+- Current release is `/srv/webhost-billing-staging/releases/1e51be0fd12b9edf12be23718e23b5ed44c5b66d`.
+  Only api/web/worker/scheduler were replaced. All seven services are healthy; replacement
+  services have zero restarts. PostgreSQL/Redis/Mailpit and every unrelated running
+  container retained their IDs. Approximately 71 GiB server disk remained available.
+  Old images, protected environment/Nginx copies and encrypted backup were retained.
+- Only the owned Nginx domain API prefix was added; syntax validation and graceful reload
+  passed. Existing unrelated TLS-option warning was not changed. Public health/readiness
+  returned 200, protected registrar routes returned 401 anonymously, expected browser API
+  origin/branding checks passed, and protected fixture role/billing/PDF/support/logout
+  smoke passed. It queued only the existing fictional password-reset email to Mailpit.
+- `RESELLBIZ_LIVE_ENABLED=true` now permits later owner-initiated integration checks;
+  actual registrar account count is zero, so no credential/provider operation exists or
+  is enabled. No real domain or external customer/contact was created. The owner must
+  enroll full-admin MFA, securely configure the dedicated reseller/API access and reviewed
+  agreements/prices, verify real customer email/manual bank receipt, and accept an exact
+  paid pilot before genuine registration. Mailpit is not public email acceptance.
 - New-customer production operation remains subject to operating, actual bank/catalogue/
   provider, public email and off-site recovery gates; final hostname is not launch evidence.
 - Two existing unwaived tooling advisories remain. No currency work, WHMCS connection/
   import, unrelated host/cache/Docker cleanup or real purchase is part of this command.
-- **Exact next:** Finish Command 51 verified source delivery and protected deployment;
-  then request the cPanel/WHM configuration/acceptance phase review.
+- **Exact next:** Owner configuration and explicit supported-domain pilot acceptance;
+  then **Phase review — Review completed registrar delivery and define the bounded
+  cPanel/WHM configuration and acceptance phase**. No additional currency work, transfer,
+  deletion, automatic renewal or agent-executed purchase is authorized by this delivery.
 
 ## Future report template
 
