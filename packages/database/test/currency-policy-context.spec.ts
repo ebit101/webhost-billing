@@ -715,6 +715,7 @@ test('private codec has zero imports/hash/side effects/ordinary consumers and ap
   );
   const pkg = JSON.parse(readFileSync(resolve(db, 'package.json'), 'utf8'));
   assert.deepEqual(Object.keys(pkg.exports), [
+    './smtp-settings',
     './registrar',
     '.',
     './currency-adoption-preflight',

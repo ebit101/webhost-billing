@@ -553,6 +553,7 @@ test('private codec has only built-in crypto import, no export entry or ordinary
   );
   const pkg = JSON.parse(readFileSync(resolve(db, 'package.json'), 'utf8'));
   assert.deepEqual(Object.keys(pkg.exports), [
+    './smtp-settings',
     './registrar',
     '.',
     './currency-adoption-preflight',

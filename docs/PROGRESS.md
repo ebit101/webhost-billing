@@ -15298,6 +15298,17 @@ Stop after verified review delivery; do not implement it automatically.
   authorized API error permits a fresh replacement form without claiming deployment
   fallback or offering activation of unreadable credentials. Unauthorized/network status
   failures remain closed and offer an account-security enrollment link.
+- **Hosted delivery correction:** Initial source `47d4dec` passed CodeQL but CI failed
+  at package tests: two old exact package-export inventories did not include the new
+  private SMTP entry. Added exactly that entry to the two expected inventories, leaving
+  all currency source/import/no-consumer guards intact. Full database units repeated
+  successfully, 164/164. The failed source was not selected on the live installation;
+  corrected exact-head CI/CodeQL and a newly pinned release are required before cutover.
+- **Additional owner request:** Create a genuine full-administrator account for the
+  supplied owner email. Existing staff creation requires an enrolled full-administrator
+  actor and uses verification/password-setup invitations, not a disclosed shared password.
+  No owner account/credential has been created. Existing owner enrollment and separately
+  accepted invitation delivery must precede it; no synthetic MFA or direct SQL bypass.
 - **Private credential test:** The owner's file is ignored and values were never printed.
   One direct TLS/certificate/authentication check passed through a checked public IP;
   no message sent or credentials persisted. An API-style username is not a sender email;
