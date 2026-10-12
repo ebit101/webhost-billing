@@ -33,15 +33,7 @@ const table = `"${schema}"."currency_controls"`;
 const input = { schema, staffMutex: 'not_required' };
 const dir = resolve('prisma/migrations');
 const migrations = readdirSync(dir)
-  .filter(
-    (n) =>
-      /^\d{14}_/.test(n) &&
-      ![
-        '20261012000100_domain_registrar',
-        '20261012000200_resellbiz_live_registration',
-        '20261012000300_domain_catalogue_registrar_selection',
-      ].includes(n),
-  )
+  .filter((n) => /^\d{14}_/.test(n) && n < '20261012000100_domain_registrar')
   .sort();
 let parent: PrismaClient;
 let prisma: PrismaClient;

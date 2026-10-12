@@ -15579,7 +15579,7 @@ require explicit approval.
 - **Files changed:** Shared domain/order contracts, DomainController/Service,
   OrderService, admin order/domain UI, Prisma schema and one additive migration,
   domain and order e2e tests, test-fixture email cleanup, historical currency
-  migration-prefix fixture, plan, decisions,
+  migration-prefix and full-chain acceptance fixtures, plan, decisions,
   command register and this progress report. A conceptual form image was saved
   outside the repository for review.
 - **Validation:** Prisma schema validation, package build, API and web typechecks,
@@ -15591,6 +15591,11 @@ require explicit approval.
   because its currency fixture treated every future migration as part of a
   pinned historical prefix. The fixture now pins only through its last recorded
   currency migration; all 164 local database unit tests passed after that fix.
+  A second hosted run exposed fixed migration counts in older SQL acceptance
+  fixtures. Historical replay now stops before the first domain migration, while
+  full-chain tests require all 32 migrations. The guarded local database suite
+  then applied all 32 in a fresh fictional schema and passed its integration,
+  seed and verification checks.
   Local privilege integration could not start because the approved Docker image
   was absent from the local cache; hosted CI has the prepared image and remains
   the required integration gate. No real provider call was made.
