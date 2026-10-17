@@ -5407,6 +5407,39 @@ configure or call a live registrar, import WHMCS data or enable transfers.
 Validate, document, commit and push the focused source command to main.
 ```
 
+## Command 121 — Complete administrator cPanel/WHM server management
+
+```text
+Owner-directed on 2026-10-17: complete the existing cPanel/WHM integration for
+adding, editing, testing, enabling and removing WHM servers and for creating,
+suspending and removing hosting accounts. Use WHMCS's cPanel server workflow as
+an interface reference, while keeping this application's one-business scope.
+Reuse the existing WHM API-token adapter and durable service operation boundary.
+Store server tokens encrypted, start new servers disabled, and require a
+successful test before activation. Preserve service and operation history when
+retiring a server; refuse removal while services or uncertain operations still
+need it. Validate with fictional data and mocked WHM responses only. Do not
+configure a live token, call a real WHM server, provision/terminate an external
+account, deploy, or connect to WHMCS. Update the plan, decisions, integration
+guide, tests and progress report; commit and push validated source to main.
+Credentialed WHM acceptance and deployment need separate owner authorization.
+```
+
+## Command 122 — Prepare a disposable cPanel/WHM development server
+
+```text
+Only after separate owner authorization and Command 121 delivery: identify the
+exact disposable development WHM hostname, approved application environment,
+dedicated reseller identity, least-privilege expiring IP-restricted token,
+outbound IP, test package and account limits. Have the owner enter the token
+through the protected administrator server form, never in chat or a report.
+Add the server disabled, perform only the approved read-only connection test,
+review the safe operation record and activate it only after successful proof.
+Do not create, suspend, unsuspend or remove a real account in this command.
+Record redacted evidence and stop. Any live account mutation follows the
+separately authorized Command 42 disposable-account sequence.
+```
+
 ## Operating Guidance
 
 1. Run commands in order.

@@ -1,10 +1,12 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Inject,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Query,
   Req,
@@ -14,11 +16,17 @@ import {
   createApiSuccessResponse,
   createPaginatedApiSuccessResponse,
   configureCpanelServerRequestSchema,
+  createCpanelServerRequestSchema,
+  updateCpanelServerRequestSchema,
+  removeCpanelServerRequestSchema,
   executeHostingOperationRequestSchema,
   hostingPanelOperationListQuerySchema,
   retryHostingOperationRequestSchema,
   testHostingConnectionRequestSchema,
   type ConfigureCpanelServerRequest,
+  type CreateCpanelServerRequest,
+  type UpdateCpanelServerRequest,
+  type RemoveCpanelServerRequest,
   type ExecuteHostingOperationRequest,
   type HostingPanelOperationListQuery,
   type RetryHostingOperationRequest,
@@ -42,6 +50,62 @@ export class HostingPanelController {
     @Inject(API_ENVIRONMENT) environment: ApiEnvironment,
   ) {
     this.auditSecret = environment.SESSION_SECRET;
+  }
+
+  @Get('servers')
+  @Roles('ADMIN')
+  async listServers(@CurrentAuth() auth: AuthRequestContext) {
+    return createApiSuccessResponse(await this.hostingPanels.listServers(auth));
+  }
+
+  @Post('servers')
+  @Roles('ADMIN')
+  async createServer(
+    @Body(new ZodValidationPipe(createCpanelServerRequestSchema))
+    input: CreateCpanelServerRequest,
+    @CurrentAuth() auth: AuthRequestContext,
+    @Req() request: Request,
+  ) {
+    return createApiSuccessResponse(
+      await this.hostingPanels.createServer(input, auth, this.context(request)),
+    );
+  }
+
+  @Patch('servers/:serverId')
+  @Roles('ADMIN')
+  async updateServer(
+    @Param('serverId', new ParseUUIDPipe()) serverId: string,
+    @Body(new ZodValidationPipe(updateCpanelServerRequestSchema))
+    input: UpdateCpanelServerRequest,
+    @CurrentAuth() auth: AuthRequestContext,
+    @Req() request: Request,
+  ) {
+    return createApiSuccessResponse(
+      await this.hostingPanels.updateServer(
+        serverId,
+        input,
+        auth,
+        this.context(request),
+      ),
+    );
+  }
+
+  @Delete('servers/:serverId')
+  @Roles('ADMIN')
+  async removeServer(
+    @Param('serverId', new ParseUUIDPipe()) serverId: string,
+    @Body(new ZodValidationPipe(removeCpanelServerRequestSchema))
+    _input: RemoveCpanelServerRequest,
+    @CurrentAuth() auth: AuthRequestContext,
+    @Req() request: Request,
+  ) {
+    return createApiSuccessResponse(
+      await this.hostingPanels.removeServer(
+        serverId,
+        auth,
+        this.context(request),
+      ),
+    );
   }
 
   @Post('servers/:serverId/cpanel-configuration')

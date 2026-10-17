@@ -1,4 +1,4 @@
-import { createHmac } from 'node:crypto';
+import { createHmac, randomUUID } from 'node:crypto';
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import type { ApiEnvironment } from '@webhost-billing/config';
 import {
@@ -13,12 +13,16 @@ import {
 import {
   createPaginationMeta,
   cpanelServerConfigurationSchema,
+  managedCpanelServerSchema,
   hostingAccountSchema,
   hostingPanelLoginUrlSchema,
   hostingPanelOperationResultSchema,
   hostingPanelOperationSchema,
   type ConfigureCpanelServerRequest,
   type CpanelServerConfiguration,
+  type CreateCpanelServerRequest,
+  type UpdateCpanelServerRequest,
+  type ManagedCpanelServer,
   type ExecuteHostingOperationRequest,
   type HostingAccount,
   type HostingPanelOperation,
@@ -98,6 +102,255 @@ export class HostingPanelService {
     this.panelTimeoutMilliseconds = environment.HOSTING_PANEL_TIMEOUT_MS;
   }
 
+  async listServers(actor: AuthRequestContext): Promise<ManagedCpanelServer[]> {
+    if (actor.identity.role !== 'ADMIN') {
+      throw this.forbidden('Only administrators can view panel servers.');
+    }
+    const servers = await this.prisma.server.findMany({
+      where: { deletedAt: null, adapterKey: 'cpanel-whm' },
+      include: { _count: { select: { services: true } } },
+      orderBy: [{ name: 'asc' }, { id: 'asc' }],
+    });
+    return servers.map((server) => this.toManagedServer(server));
+  }
+
+  async createServer(
+    input: CreateCpanelServerRequest,
+    actor: AuthRequestContext,
+    context: SecurityRequestContext,
+  ): Promise<ManagedCpanelServer> {
+    if (actor.identity.role !== 'ADMIN') {
+      throw this.forbidden('Only administrators can add panel servers.');
+    }
+    try {
+      const server = await this.prisma.$transaction(async (transaction) => {
+        const id = randomUUID();
+        const created = await transaction.server.create({
+          data: {
+            id,
+            name: input.name,
+            hostname: input.hostname,
+            port: input.port,
+            useTls: true,
+            adapterKey: 'cpanel-whm',
+            apiUsername: input.apiUsername,
+            credentialsCiphertext: this.credentialCipher.encrypt(
+              id,
+              input.apiToken,
+            ),
+            credentialKeyVersion: this.credentialCipher.keyVersion,
+            maxAccounts: input.maxAccounts,
+            status: 'DISABLED',
+          },
+          include: { _count: { select: { services: true } } },
+        });
+        await transaction.activityLog.create({
+          data: {
+            actorUserId: actor.identity.userId,
+            action: 'CPANEL_SERVER_CREATED',
+            entityType: 'SERVER',
+            entityId: id,
+            ipAddressHash: context.ipAddressHash,
+            metadata: { adapterKey: 'cpanel-whm', status: 'DISABLED' },
+          },
+        });
+        return created;
+      });
+      return this.toManagedServer(server);
+    } catch (error) {
+      if (this.isUniqueConstraintError(error)) {
+        throw this.conflict(
+          'A server with this name or hostname already exists.',
+        );
+      }
+      throw error;
+    }
+  }
+
+  async updateServer(
+    serverId: string,
+    input: UpdateCpanelServerRequest,
+    actor: AuthRequestContext,
+    context: SecurityRequestContext,
+  ): Promise<ManagedCpanelServer> {
+    if (actor.identity.role !== 'ADMIN') {
+      throw this.forbidden('Only administrators can edit panel servers.');
+    }
+    try {
+      const server = await this.prisma.$transaction(async (transaction) => {
+        await transaction.$queryRaw`SELECT "id" FROM "servers" WHERE "id" = ${serverId}::uuid FOR UPDATE`;
+        const current = await transaction.server.findFirst({
+          where: { id: serverId, deletedAt: null, adapterKey: 'cpanel-whm' },
+          include: { _count: { select: { services: true } } },
+        });
+        if (!current) throw this.notFound('Server was not found.');
+        const identityChanged =
+          (input.hostname !== undefined &&
+            input.hostname !== current.hostname) ||
+          (input.port !== undefined && input.port !== current.port) ||
+          (input.apiUsername !== undefined &&
+            input.apiUsername !== current.apiUsername);
+        if (identityChanged || input.apiToken !== undefined) {
+          const unresolved = await transaction.hostingPanelOperation.count({
+            where: { serverId, status: { in: ['RUNNING', 'INCONSISTENT'] } },
+          });
+          if (unresolved) {
+            throw this.conflict(
+              'Resolve outstanding panel operations before changing the WHM connection.',
+            );
+          }
+        }
+        if (identityChanged && current._count.services > 0) {
+          throw this.conflict(
+            'A server assigned to services cannot change its WHM address or username. Rotate its token or add another server.',
+          );
+        }
+        if (identityChanged && current.status !== 'DISABLED') {
+          throw this.conflict(
+            'Disable the unassigned server before changing its WHM connection.',
+          );
+        }
+        if (identityChanged && !input.apiToken) {
+          throw this.invalid(
+            'Enter a new API token when changing the WHM connection.',
+          );
+        }
+        if (
+          input.status === 'ACTIVE' &&
+          (current.status !== 'ACTIVE' || input.apiToken)
+        ) {
+          if (identityChanged || input.apiToken) {
+            throw this.invalid(
+              'Save the WHM connection, test it, then activate the server.',
+            );
+          }
+          const tested = await transaction.hostingPanelOperation.findFirst({
+            where: {
+              serverId,
+              type: 'TEST_CONNECTION',
+              status: 'SUCCEEDED',
+              startedAt: { gt: current.updatedAt },
+            },
+            select: { id: true },
+          });
+          if (!tested) {
+            throw this.invalid(
+              'Test the current WHM connection before activating this server.',
+            );
+          }
+        }
+        const updated = await transaction.server.update({
+          where: { id: serverId },
+          data: {
+            ...(input.name !== undefined ? { name: input.name } : {}),
+            ...(input.hostname !== undefined
+              ? { hostname: input.hostname }
+              : {}),
+            ...(input.port !== undefined ? { port: input.port } : {}),
+            ...(input.apiUsername !== undefined
+              ? { apiUsername: input.apiUsername }
+              : {}),
+            ...(input.maxAccounts !== undefined
+              ? { maxAccounts: input.maxAccounts }
+              : {}),
+            ...(input.apiToken !== undefined &&
+            input.status === undefined &&
+            current.status === 'ACTIVE'
+              ? { status: 'MAINTENANCE' as const }
+              : input.status !== undefined
+                ? { status: input.status }
+                : {}),
+            ...(input.apiToken !== undefined
+              ? {
+                  credentialsCiphertext: this.credentialCipher.encrypt(
+                    serverId,
+                    input.apiToken,
+                  ),
+                  credentialKeyVersion: this.credentialCipher.keyVersion,
+                }
+              : {}),
+          },
+          include: { _count: { select: { services: true } } },
+        });
+        await transaction.activityLog.create({
+          data: {
+            actorUserId: actor.identity.userId,
+            action: 'CPANEL_SERVER_UPDATED',
+            entityType: 'SERVER',
+            entityId: serverId,
+            ipAddressHash: context.ipAddressHash,
+            metadata: {
+              changedFields: Object.keys(input).filter(
+                (key) => key !== 'apiToken',
+              ),
+              tokenRotated: input.apiToken !== undefined,
+              status: updated.status,
+            },
+          },
+        });
+        return updated;
+      });
+      return this.toManagedServer(server);
+    } catch (error) {
+      if (this.isUniqueConstraintError(error)) {
+        throw this.conflict(
+          'A server with this name or hostname already exists.',
+        );
+      }
+      throw error;
+    }
+  }
+
+  async removeServer(
+    serverId: string,
+    actor: AuthRequestContext,
+    context: SecurityRequestContext,
+  ): Promise<{ removed: true }> {
+    if (actor.identity.role !== 'ADMIN') {
+      throw this.forbidden('Only administrators can remove panel servers.');
+    }
+    await this.prisma.$transaction(async (transaction) => {
+      await transaction.$queryRaw`SELECT "id" FROM "servers" WHERE "id" = ${serverId}::uuid FOR UPDATE`;
+      const current = await transaction.server.findFirst({
+        where: { id: serverId, deletedAt: null, adapterKey: 'cpanel-whm' },
+        include: { _count: { select: { services: true } } },
+      });
+      if (!current) throw this.notFound('Server was not found.');
+      const unresolved = await transaction.hostingPanelOperation.count({
+        where: { serverId, status: { in: ['RUNNING', 'INCONSISTENT'] } },
+      });
+      const liveServices = await transaction.service.count({
+        where: { serverId, status: { notIn: ['TERMINATED', 'CANCELLED'] } },
+      });
+      if (liveServices || unresolved) {
+        throw this.conflict(
+          'Resolve assigned services and uncertain panel operations before removing this server.',
+        );
+      }
+      await transaction.server.update({
+        where: { id: serverId },
+        data: {
+          status: 'DISABLED',
+          deletedAt: new Date(),
+          credentialsCiphertext: null,
+          credentialKeyVersion: null,
+          apiUsername: null,
+        },
+      });
+      await transaction.activityLog.create({
+        data: {
+          actorUserId: actor.identity.userId,
+          action: 'CPANEL_SERVER_REMOVED',
+          entityType: 'SERVER',
+          entityId: serverId,
+          ipAddressHash: context.ipAddressHash,
+          metadata: { historicalServiceCount: current._count.services },
+        },
+      });
+    });
+    return { removed: true };
+  }
+
   async configureCpanelServer(
     serverId: string,
     input: ConfigureCpanelServerRequest,
@@ -116,6 +369,38 @@ export class HostingPanelService {
         where: { id: serverId, deletedAt: null },
       });
       if (!current) throw this.notFound('Server was not found.');
+      if (
+        current.adapterKey !== 'cpanel-whm' &&
+        current.adapterKey !== 'fake-panel'
+      ) {
+        throw this.invalid('This server cannot use the cPanel/WHM adapter.');
+      }
+      const assigned = await transaction.service.count({ where: { serverId } });
+      if (assigned > 0 && current.adapterKey !== 'cpanel-whm') {
+        throw this.conflict(
+          'A server assigned to services cannot change its hosting panel adapter.',
+        );
+      }
+      if (
+        assigned > 0 &&
+        (input.hostname !== current.hostname ||
+          input.port !== current.port ||
+          input.apiUsername !== current.apiUsername)
+      ) {
+        throw this.conflict(
+          'A server assigned to services cannot change its WHM address or username.',
+        );
+      }
+      if (
+        current.status !== 'DISABLED' &&
+        (input.hostname !== current.hostname ||
+          input.port !== current.port ||
+          input.apiUsername !== current.apiUsername)
+      ) {
+        throw this.conflict(
+          'Disable the unassigned server before changing its WHM connection.',
+        );
+      }
       const encryptedToken = this.credentialCipher.encrypt(
         current.id,
         input.apiToken,
@@ -130,6 +415,7 @@ export class HostingPanelService {
           apiUsername: input.apiUsername,
           credentialsCiphertext: encryptedToken,
           credentialKeyVersion: this.credentialCipher.keyVersion,
+          status: current.status === 'ACTIVE' ? 'MAINTENANCE' : current.status,
         },
       });
       await transaction.activityLog.create({
@@ -267,6 +553,23 @@ export class HostingPanelService {
     }
     let providerResult: Awaited<ReturnType<HostingPanel['testConnection']>>;
     try {
+      const latest = await this.prisma.server.findFirst({
+        where: { id: serverId, deletedAt: null },
+      });
+      if (
+        !latest ||
+        latest.updatedAt.getTime() !== server.updatedAt.getTime() ||
+        latest.hostname !== server.hostname ||
+        latest.port !== server.port ||
+        latest.apiUsername !== server.apiUsername ||
+        latest.credentialsCiphertext !== server.credentialsCiphertext
+      ) {
+        throw new HostingPanelProviderError(
+          'PERMANENT',
+          'PANEL_CONNECTION_CHANGED',
+          'The server configuration changed. Run a new connection test.',
+        );
+      }
       const panel = this.registry.get(server.adapterKey);
       providerResult = await withHostingPanelTimeout(
         panel.testConnection(this.connection(server)),
@@ -796,8 +1099,11 @@ export class HostingPanelService {
     service: ServiceRecord,
     input: ExecuteHostingOperationRequest,
   ): void {
-    if (service.server.status !== 'ACTIVE' || service.server.deletedAt) {
-      throw this.invalid('The assigned server is not active.');
+    if (service.server.deletedAt || service.server.status === 'DISABLED') {
+      throw this.invalid('The assigned server is disabled.');
+    }
+    if (input.type === 'CREATE_ACCOUNT' && service.server.status !== 'ACTIVE') {
+      throw this.invalid('The assigned server is not active for new accounts.');
     }
     if (input.type === 'CREATE_ACCOUNT') {
       if (
@@ -1129,6 +1435,27 @@ export class HostingPanelService {
       apiUsername: server.apiUsername,
       credentialConfigured: Boolean(server.credentialsCiphertext),
       credentialKeyVersion: server.credentialKeyVersion,
+    });
+  }
+
+  private toManagedServer(server: {
+    id: string;
+    name: string;
+    hostname: string;
+    status: 'ACTIVE' | 'MAINTENANCE' | 'DISABLED';
+    adapterKey: string;
+    port: number;
+    useTls: boolean;
+    apiUsername: string | null;
+    credentialsCiphertext: string | null;
+    credentialKeyVersion: string | null;
+    maxAccounts: number | null;
+    _count: { services: number };
+  }): ManagedCpanelServer {
+    return managedCpanelServerSchema.parse({
+      ...this.toCpanelConfiguration(server),
+      maxAccounts: server.maxAccounts,
+      assignedServiceCount: server._count.services,
     });
   }
 

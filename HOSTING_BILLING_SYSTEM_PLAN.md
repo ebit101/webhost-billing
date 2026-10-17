@@ -43,6 +43,14 @@ both in the portal and may pay later. Verified payment and separate administrato
 approval remain prerequisites for registration. Keep online customer ordering
 available as a secondary path.
 
+**WHM server administration — 2026-10-17:** Administrators can add, edit, test,
+activate, pause and retire cPanel/WHM servers in the billing interface. New
+servers start disabled, use encrypted API tokens, and need a successful connection
+test before activation. Existing hosting services keep their assigned server and
+historical operation records. Account creation, suspension, reactivation and
+termination remain separate, verified service operations. Source and fake/mock
+tests do not establish credentialed WHM acceptance or deployment approval.
+
 **Email configuration direction — 2026-10-12:** The owner requested an administrator
 SMTP settings option after inspection confirmed that deployment SMTP captures email in
 Mailpit rather than delivering to public inboxes. Command 52 adds encrypted write-only

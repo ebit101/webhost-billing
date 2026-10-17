@@ -15706,6 +15706,63 @@ require explicit approval.
 - **Exact next:** With a verified Speed Host customer, test the explicit contact
   link and read-only service, invoice and ticket context in a supervised
   session. Keep registrar, payment and outbound messaging gates unchanged.
+### Command 121 — Complete administrator cPanel/WHM server management
+
+- **Status:** Source implementation and local fake/mock acceptance completed;
+  credentialed WHM acceptance and deployment remain separate.
+- **Date:** 2026-10-17–18 (Asia/Dhaka).
+- **Owner direction:** Complete add/edit/remove WHM server administration and
+  create/suspend/remove account integration using WHMCS's cPanel workflow as a
+  usability reference. The owner next wants to add a test cPanel server after
+  this source command is finished.
+- **Implemented scope:** Added `/admin/servers` and guarded API endpoints to
+  create an encrypted disabled cPanel/WHM server, list safe configuration,
+  edit name/connection/capacity/status, test the connection and retire a server.
+  Activation requires a successful read-only connection test started after the
+  latest server edit. Assigned servers cannot change WHM hostname, port or
+  username. Token rotation pauses new provisioning until retested. Maintenance
+  permits existing-account actions but stops new accounts; disabled blocks
+  panel actions. Retirement requires exact `REMOVE_SERVER`, refuses non-final
+  services or running/inconsistent operations, clears token/username and
+  preserves historical service/operation records. Existing WHM API-token
+  account creation, suspension, unsuspension and exact-confirmed termination
+  remain the provider-backed service actions; they were regression tested.
+- **Files changed:** Hosting-panel shared contracts, controller and service;
+  administrator server page/component/navigation and connection notice; hosting
+  and service tests; additive retired-server SQL migration and three full-chain
+  fixture counts; `HOSTING_BILLING_SYSTEM_PLAN.md`,
+  `CODEX_DEVELOPMENT_COMMANDS.md`, `docs/DECISIONS.md`,
+  `docs/HOSTING_PANELS.md`, `docs/CRITICAL_BUSINESS_INVARIANTS.md` and this
+  progress report. No provider token, production data or environment file was
+  added to Git.
+- **Validation:** Local Docker PostgreSQL/Redis were healthy. The reviewed
+  additive migration applied to the local development database and the guarded
+  acceptance runner applied all 33 migrations in an isolated fictional schema.
+  Prisma schema validation and database verification passed. The hosting/service
+  API E2E suites passed 13/13; mocked cPanel/fake adapter unit tests passed
+  20/20; selected web tests passed 52/52 and then 7/7 after final UI edits.
+  `pnpm test:invariants` passed 121 shared, 12 API unit, 43 API E2E and two
+  worker suites. The full guarded database acceptance passed on rerun after
+  correcting three fixtures pinned to 32 migrations. Its first corrected run
+  hit a short transaction-timeout test, which passed on rerun. API/web lint,
+  monorepo build, formatting, four offline documentation checks and
+  `git diff --check` passed on the final source head. The final focused web
+  test passed 1/1 after the last edit.
+- **Decisions:** Reuse the existing cPanel/WHM adapter and durable operation
+  history. Saving a server never calls WHM. Do not remove a server by calling
+  WHM `removeacct`; account termination remains a separate confirmed service
+  action. No WHMCS connection, server groups or unrelated provider features.
+- **Risks and blockers:** No real WHM hostname, token, dedicated reseller,
+  disposable account, approved mutation window or deployment target was
+  supplied. No real WHM request, account mutation, token configuration,
+  customer email or deployment was performed. The separate mandatory admin
+  MFA enrollment (Command 53) and credentialed Command 42 acceptance remain
+  open. Existing production launch gates remain open.
+- **Exact recommended next command:** Owner-authorized **Command 122 — Prepare
+  a disposable cPanel/WHM development server**. Select the exact test
+  environment and server, enter the scoped token only in the protected form,
+  then run a read-only connection test. Do not run account mutations until the
+  separately authorized Command 42 sequence.
 
 ## Future report template
 
