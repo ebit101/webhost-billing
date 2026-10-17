@@ -15680,6 +15680,33 @@ require explicit approval.
   fake-provider flow testing locally. Any genuine registrar operation,
   provider setup, charge or public launch needs separate authorization.
 
+### Owner-directed MessageDock context staging deployment — 2026-10-18
+
+- **Status:** Deployed the read-only Webhost Billing API slice to the existing
+  Speed Host staging installation at `my.speedhost.bd`.
+- **Scope:** Added the staging-only file secret and host Nginx route, then
+  recreated only the API from source `1985d84105c5663278c897cb02cacf1645b2d0e7`.
+  The web, worker, scheduler, PostgreSQL, Redis and Mailpit containers stayed on
+  their previous images. `RESELLBIZ_LIVE_ENABLED=false` was confirmed.
+- **Files changed:** `deploy/production/app-entrypoint.sh`,
+  `deploy/staging/compose.staging.yaml`, the staging Nginx template, and the
+  integration and deployment docs. No schema or application write path changed.
+- **Validation:** Three focused controller tests, API typecheck, lint and build
+  passed locally. The Linux/amd64 image was built off-server and matched its
+  SHA-256 after transfer. The new API was healthy with zero restarts. The
+  integration route returned 401 without a token and 200 with zero customers
+  for a fictional authenticated query. Public readiness returned 200.
+- **Decisions and risks:** The secret is mounted only into the API container;
+  the matching token is scoped to the isolated Speed Host MessageDock web
+  container. There were no billing data writes or migrations. No actual billing
+  customer has been linked or context viewed through MessageDock yet.
+- **Rollback:** Previous environment and Nginx files are retained under
+  `/srv/webhost-billing-staging/rollback/messagedock-1985d84105c5663278c897cb02cacf1645b2d0e7/`;
+  the previous API image and release remain available.
+- **Exact next:** With a verified Speed Host customer, test the explicit contact
+  link and read-only service, invoice and ticket context in a supervised
+  session. Keep registrar, payment and outbound messaging gates unchanged.
+
 ## Future report template
 
 ### Owner-directed MessageDock read-only customer context integration — 2026-10-18

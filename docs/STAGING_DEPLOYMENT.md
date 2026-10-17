@@ -1,6 +1,29 @@
 # Staging Deployment
 
-## Current staging release (2026-10-12, admin-assisted domain orders)
+## Current staging release (2026-10-18, MessageDock read-only context)
+
+- URL: `https://my.speedhost.bd`
+- Source/API image tag: `1985d84105c5663278c897cb02cacf1645b2d0e7`
+- Release: `/srv/webhost-billing-staging/releases/1985d84105c5663278c897cb02cacf1645b2d0e7`
+- Previous API tag: `a516f6ea5d1279abe27f1131899d490cdb8c4cb1`.
+  Web, worker, scheduler and migration images were retagged with the new release
+  name but their running containers were not replaced.
+- The API alone was recreated. Its nonroot image ID is
+  `sha256:b1b364ce1b41f823a3cedb417047dd4f618f6f183f06b921a1ab6b775f4dc46b`.
+- A staging-only Compose secret mounts the read token into the API. The host
+  Nginx site routes `/integrations/messagedock/` to that API. The token stays
+  out of the browser and source repository.
+- Postflight: API, web, worker, scheduler, PostgreSQL, Redis and Mailpit healthy;
+  public readiness 200; integration route 401 without a token and 200 with a
+  fictional authenticated search returning zero customers. The registrar flag
+  remains false. No billing migration, payment, registrar or customer-data write
+  was performed.
+- Private rollback files:
+  `/srv/webhost-billing-staging/rollback/messagedock-1985d84105c5663278c897cb02cacf1645b2d0e7/`.
+  Restore the previous API tag, environment, release symlink and this site's
+  Nginx file together if a rollback is needed; the previous images remain.
+
+## Prior staging release (2026-10-12, admin-assisted domain orders)
 
 - URL: `https://my.speedhost.bd`
 - Source and four application image tags: `a516f6ea5d1279abe27f1131899d490cdb8c4cb1`

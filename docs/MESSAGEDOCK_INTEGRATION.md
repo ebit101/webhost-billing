@@ -30,6 +30,16 @@ automatically treated as billing identity. Agents must verify identity before
 discussing private account details. Disconnecting this integration does not
 change billing, hosting, or ticket state.
 
-This source change does not configure the secret, deploy either app, enable a
-payment or registrar provider, or migrate customer data. Test with fictional
-records before any live activation.
+The isolated Speed Host staging rollout on 2026-10-18 deployed only the API
+image from source `1985d84105c5663278c897cb02cacf1645b2d0e7` and added
+the integration path to that hostname's Nginx site. The other staging service
+containers remained on their earlier images. The API rejected an unauthenticated
+lookup with 401 and returned 200 with no customers for a fictional authenticated
+query. The registrar flag stayed off. No billing migration, billing write,
+customer link, payment change, or live registrar action occurred.
+
+Rollback copies of the previous staging environment and Nginx site are in
+`/srv/webhost-billing-staging/rollback/messagedock-1985d84105c5663278c897cb02cacf1645b2d0e7/`.
+The previous API image tag `a516f6ea5d1279abe27f1131899d490cdb8c4cb1`
+is retained. Remove only this integration route and secret if the isolated
+integration is retired.
