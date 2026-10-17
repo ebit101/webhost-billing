@@ -15682,6 +15682,19 @@ require explicit approval.
 
 ## Future report template
 
+### Owner-directed MessageDock read-only customer context integration — 2026-10-18
+
+- **Scope:** Optional bearer-key API for bounded customer search and read-only
+  service, invoice, and ticket-header context. It is disabled without a key.
+- **Files:** API environment schema, isolated integration module/controller,
+  focused controller tests, and `docs/MESSAGEDOCK_INTEGRATION.md`.
+- **Validation:** Local API typecheck and focused controller tests passed. No
+  staging or production deployment, customer data access, billing change,
+  customer message, or registrar/hosting provider call was made.
+- **Next:** Pair this source with the MessageDock customer-linking UI and
+  migration in a fictional isolated test, then review both releases before
+  enabling the optional credential on the Speed Host deployment.
+
 Use this template after every future command:
 
 ```text

@@ -22,6 +22,7 @@ import { SettingsModule } from './modules/settings/settings.module';
 import { DashboardReportModule } from './modules/dashboard-reports/dashboard-report.module';
 import { ObservabilityModule } from './modules/observability/observability.module';
 import { StaffModule } from './modules/staff/staff.module';
+import { MessageDockIntegrationModule } from './modules/messagedock-integration/messagedock-integration.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { StaffModule } from './modules/staff/staff.module';
     EnvironmentModule,
     AuthModule,
     StaffModule,
+    MessageDockIntegrationModule,
     CustomerModule,
     ProductModule,
     OrderModule,

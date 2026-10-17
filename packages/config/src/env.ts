@@ -98,6 +98,11 @@ const apiEnvironmentObjectSchema = serverEnvironmentSchema
     WEB_ORIGIN: httpOriginSchema.default('http://localhost:3000'),
     API_PUBLIC_ORIGIN: httpOriginSchema.default('http://localhost:3001'),
     TRUST_PROXY_HOPS: z.coerce.number().int().min(0).max(2).default(0),
+    // Absent by default. Only the read-only MessageDock integration routes use this key.
+    MESSAGEDOCK_READ_TOKEN: z.preprocess(
+      (value) => (value === '' ? undefined : value),
+      z.string().min(32).max(512).optional(),
+    ),
     PAYMENT_PROVIDER_TIMEOUT_MS: z.coerce
       .number()
       .int()
