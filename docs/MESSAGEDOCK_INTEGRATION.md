@@ -7,6 +7,13 @@ process as `WEBHOST_BILLING_READ_TOKEN`, with this API's credential-free HTTPS
 origin in `WEBHOST_BILLING_API_ORIGIN`. Do not put the token in a browser,
 repository, URL, log, or shared customer deployment.
 
+For the isolated Speed Host staging deployment, store the token in
+`/srv/webhost-billing-staging/secrets/messagedock_read_token`. The staging
+Compose override mounts it only in the API container; the entrypoint loads it
+from the file. The host Nginx site routes only
+`/integrations/messagedock/` to the API. Keep other deployments without this
+staging override and token.
+
 `GET /integrations/messagedock/customers?q=...` searches up to ten customer
 identities; terms must have 3–100 characters. `GET
 /integrations/messagedock/customers/:customerId/context` returns that customer's

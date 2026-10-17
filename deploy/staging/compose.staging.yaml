@@ -2,6 +2,10 @@ services:
   api:
     ports:
       - '127.0.0.1:${STAGING_API_PORT:-19600}:3001'
+    environment:
+      MESSAGEDOCK_READ_TOKEN_FILE: /run/secrets/messagedock_read_token
+    secrets:
+      - messagedock_read_token
 
   web:
     ports:
@@ -63,3 +67,7 @@ services:
 
 volumes:
   mailpit_data:
+
+secrets:
+  messagedock_read_token:
+    file: ${PRODUCTION_SECRET_DIRECTORY:?Set PRODUCTION_SECRET_DIRECTORY}/messagedock_read_token
