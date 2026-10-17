@@ -2786,6 +2786,14 @@ report-only update must pass its own delivery gate; stop for the recommended pha
   override. The consent record is administrative evidence of a prior customer
   discussion, not a claim that the customer used the online form.
 
+## ADR-132 — Manage WHM server lifecycle without losing service evidence
+
+- **Status:** Accepted
+- **Date:** 2026-10-17
+- **Decision:** Create cPanel/WHM servers disabled with encrypted API tokens. A successful connection test after the latest server edit is required before activation. An assigned server cannot change WHM hostname, port or username; token rotation pauses new provisioning until a fresh test. Maintenance stops new accounts while permitting management of existing ones. Retirement is a confirmed soft deletion that clears the token and username, preserves historical service/operation rows, and is refused while a non-final service or unresolved operation remains.
+- **Reason:** Changing an assigned server's identity could redirect destructive account actions. Deleting service or operation history would remove the evidence needed to reconcile external WHM state. A saved credential is not proof of a working or approved connection.
+- **Consequence:** The administrator server screen and API provide add/edit/test/status/remove controls with audit records and no token disclosure. The database permits credential-free retired cPanel servers but keeps complete configuration mandatory for active records. A real WHM test or mutation and deployment still need separate authorization and credentialed acceptance.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

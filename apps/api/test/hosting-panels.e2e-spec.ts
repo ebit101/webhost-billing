@@ -19,6 +19,8 @@ import {
 import {
   apiSuccessResponseSchema,
   cpanelServerConfigurationSchema,
+  managedCpanelServerSchema,
+  managedCpanelServerListSchema,
   hostingPanelOperationResultSchema,
   paginatedApiSuccessResponseSchema,
   hostingPanelOperationSchema,
@@ -31,6 +33,7 @@ import { PRISMA_CLIENT } from '../src/infrastructure/database/database.module';
 import { API_ENVIRONMENT } from '../src/infrastructure/environment/environment.module';
 import { PasswordHasherService } from '../src/modules/auth/services/password-hasher.service';
 import { FakeHostingPanel } from '../src/modules/hosting-panels/fake-hosting-panel';
+import { CpanelWhmHttpClient } from '../src/modules/hosting-panels/cpanel-whm-http.client';
 
 const ADMIN_EMAIL = 'command15-admin@example.test';
 const CUSTOMER_EMAIL = 'command15-customer@example.test';
@@ -39,6 +42,7 @@ const PASSWORD = 'command fifteen secure password';
 const PRODUCT_SLUG = 'command-fifteen-hosting';
 const SERVER_HOSTNAME = 'command15-whm.example.test';
 const CONFIG_SERVER_HOSTNAME = 'command16-whm.example.test';
+const MANAGED_SERVER_HOSTNAME = 'command121-whm.example.test';
 
 describe('Hosting panel operations (e2e)', () => {
   let app: INestApplication<App>;
@@ -51,11 +55,16 @@ describe('Hosting panel operations (e2e)', () => {
   let productPriceId = '';
   let serverId = '';
   let primaryServiceId = '';
+  let setupAdmin: ReturnType<typeof request.agent>;
+  let setupCsrf = '';
+  const whmCall = jest.fn();
 
   beforeAll(async () => {
     moduleFixture = await Test.createTestingModule({ imports: [AppModule] })
       .overrideProvider(API_ENVIRONMENT)
       .useValue(loadTestEnvironment())
+      .overrideProvider(CpanelWhmHttpClient)
+      .useValue({ call: whmCall })
       .compile();
     app = moduleFixture.createNestApplication();
     await app.init();
@@ -113,6 +122,230 @@ describe('Hosting panel operations (e2e)', () => {
     });
     serverId = server.id;
     primaryServiceId = await createPendingService('panel-one.example.test');
+    setupAdmin = request.agent(app.getHttpServer());
+    setupCsrf = await authenticate(setupAdmin, ADMIN_EMAIL);
+  });
+
+  it('adds, edits, tests activation policy and safely removes a WHM server', async () => {
+    const admin = setupAdmin;
+    const csrf = setupCsrf;
+    const customer = request.agent(app.getHttpServer());
+    const customerCsrf = await authenticate(customer, CUSTOMER_EMAIL);
+    const token = 'FictionalCommand121Token'.repeat(2);
+    await customer.get('/hosting-panel/servers').expect(403);
+    await customer
+      .post('/hosting-panel/servers')
+      .set('X-CSRF-Token', customerCsrf)
+      .send({
+        name: 'Unauthorized server',
+        hostname: MANAGED_SERVER_HOSTNAME,
+        port: 2087,
+        apiUsername: 'reseller',
+        apiToken: token,
+      })
+      .expect(403);
+    const createdResponse = await admin
+      .post('/hosting-panel/servers')
+      .set('X-CSRF-Token', csrf)
+      .send({
+        name: 'Command 121 WHM',
+        hostname: MANAGED_SERVER_HOSTNAME,
+        port: 2087,
+        apiUsername: 'reseller',
+        apiToken: token,
+        maxAccounts: 5,
+      })
+      .expect(201);
+    const created = apiSuccessResponseSchema(managedCpanelServerSchema).parse(
+      createdResponse.body,
+    ).data;
+    expect(created).toMatchObject({
+      server: { status: 'DISABLED', adapterKey: 'cpanel-whm' },
+      maxAccounts: 5,
+      credentialConfigured: true,
+      assignedServiceCount: 0,
+    });
+    expect(JSON.stringify(createdResponse.body)).not.toContain(token);
+    const persisted = await prisma.server.findUniqueOrThrow({
+      where: { id: created.server.id },
+    });
+    expect(persisted.credentialsCiphertext).not.toContain(token);
+    const list = await admin.get('/hosting-panel/servers').expect(200);
+    expect(
+      apiSuccessResponseSchema(managedCpanelServerListSchema)
+        .parse(list.body)
+        .data.some((item) => item.server.id === created.server.id),
+    ).toBe(true);
+    await admin
+      .patch(`/hosting-panel/servers/${created.server.id}`)
+      .set('X-CSRF-Token', csrf)
+      .send({ status: 'ACTIVE' })
+      .expect(422);
+    const updatedResponse = await admin
+      .patch(`/hosting-panel/servers/${created.server.id}`)
+      .set('X-CSRF-Token', csrf)
+      .send({ name: 'Command 121 WHM updated', maxAccounts: 8 })
+      .expect(200);
+    expect(
+      apiSuccessResponseSchema(managedCpanelServerSchema).parse(
+        updatedResponse.body,
+      ).data,
+    ).toMatchObject({
+      server: { name: 'Command 121 WHM updated' },
+      maxAccounts: 8,
+    });
+    whmCall.mockResolvedValueOnce({
+      data: { users: 12 },
+      metadata: {
+        command: 'get_current_users_count',
+        reason: 'OK',
+        result: 1,
+        version: 1,
+      },
+    });
+    const tested = await postResult(
+      admin,
+      csrf,
+      `/hosting-panel/servers/${created.server.id}/test`,
+      { submissionKey: randomUUID() },
+    );
+    expect(tested.operation.status).toBe('SUCCEEDED');
+    expect(whmCall).toHaveBeenCalledWith(
+      expect.objectContaining({ hostname: MANAGED_SERVER_HOSTNAME }),
+      'get_current_users_count',
+      {},
+      false,
+    );
+    const activated = await admin
+      .patch(`/hosting-panel/servers/${created.server.id}`)
+      .set('X-CSRF-Token', csrf)
+      .send({ status: 'ACTIVE' })
+      .expect(200);
+    expect(
+      apiSuccessResponseSchema(managedCpanelServerSchema).parse(activated.body)
+        .data.server.status,
+    ).toBe('ACTIVE');
+    await admin
+      .patch(`/hosting-panel/servers/${created.server.id}`)
+      .set('X-CSRF-Token', csrf)
+      .send({ status: 'MAINTENANCE' })
+      .expect(200);
+    await admin
+      .patch(`/hosting-panel/servers/${created.server.id}`)
+      .set('X-CSRF-Token', csrf)
+      .send({ status: 'ACTIVE' })
+      .expect(422);
+    whmCall.mockResolvedValueOnce({
+      data: { users: 12 },
+      metadata: {
+        command: 'get_current_users_count',
+        reason: 'OK',
+        result: 1,
+        version: 1,
+      },
+    });
+    expect(
+      (
+        await postResult(
+          admin,
+          csrf,
+          `/hosting-panel/servers/${created.server.id}/test`,
+          { submissionKey: randomUUID() },
+        )
+      ).operation.status,
+    ).toBe('SUCCEEDED');
+    await admin
+      .patch(`/hosting-panel/servers/${created.server.id}`)
+      .set('X-CSRF-Token', csrf)
+      .send({ status: 'ACTIVE' })
+      .expect(200);
+    const rotatedToken = 'RotatedFictionalCommand121Token'.repeat(2);
+    const rotated = await admin
+      .patch(`/hosting-panel/servers/${created.server.id}`)
+      .set('X-CSRF-Token', csrf)
+      .send({ apiToken: rotatedToken })
+      .expect(200);
+    expect(
+      apiSuccessResponseSchema(managedCpanelServerSchema).parse(rotated.body)
+        .data.server.status,
+    ).toBe('MAINTENANCE');
+    expect(JSON.stringify(rotated.body)).not.toContain(rotatedToken);
+    await admin
+      .patch(`/hosting-panel/servers/${created.server.id}`)
+      .set('X-CSRF-Token', csrf)
+      .send({ status: 'ACTIVE' })
+      .expect(422);
+    whmCall.mockResolvedValueOnce({
+      data: { users: 12 },
+      metadata: {
+        command: 'get_current_users_count',
+        reason: 'OK',
+        result: 1,
+        version: 1,
+      },
+    });
+    expect(
+      (
+        await postResult(
+          admin,
+          csrf,
+          `/hosting-panel/servers/${created.server.id}/test`,
+          { submissionKey: randomUUID() },
+        )
+      ).operation.status,
+    ).toBe('SUCCEEDED');
+    await admin
+      .patch(`/hosting-panel/servers/${created.server.id}`)
+      .set('X-CSRF-Token', csrf)
+      .send({ status: 'ACTIVE' })
+      .expect(200);
+    const serviceId = await createPendingService('managed-panel.example.test');
+    await prisma.service.update({
+      where: { id: serviceId },
+      data: { serverId: created.server.id },
+    });
+    await admin
+      .patch(`/hosting-panel/servers/${created.server.id}`)
+      .set('X-CSRF-Token', csrf)
+      .send({ hostname: 'changed-whm.example.test', apiToken: token })
+      .expect(409);
+    await admin
+      .delete(`/hosting-panel/servers/${created.server.id}`)
+      .set('X-CSRF-Token', csrf)
+      .send({ confirmation: 'REMOVE_SERVER' })
+      .expect(409);
+    await prisma.service.update({
+      where: { id: serviceId },
+      data: {
+        status: 'CANCELLED',
+        cancelledAt: new Date(),
+        cancellationReason: 'Fictional server removal acceptance.',
+      },
+    });
+    await admin
+      .delete(`/hosting-panel/servers/${created.server.id}`)
+      .set('X-CSRF-Token', csrf)
+      .send({ confirmation: 'wrong' })
+      .expect(400);
+    await admin
+      .delete(`/hosting-panel/servers/${created.server.id}`)
+      .set('X-CSRF-Token', csrf)
+      .send({ confirmation: 'REMOVE_SERVER' })
+      .expect(200);
+    const archived = await prisma.server.findUniqueOrThrow({
+      where: { id: created.server.id },
+    });
+    expect(archived.deletedAt).not.toBeNull();
+    expect(archived.credentialsCiphertext).toBeNull();
+    expect(
+      await prisma.service.count({ where: { serverId: created.server.id } }),
+    ).toBe(1);
+    const after = await admin.get('/hosting-panel/servers').expect(200);
+    expect(
+      apiSuccessResponseSchema(managedCpanelServerListSchema)
+        .parse(after.body)
+        .data.some((server) => server.server.id === created.server.id),
+    ).toBe(false);
   });
 
   it('encrypts and audits administrator-only cPanel server configuration', async () => {
@@ -120,12 +353,12 @@ describe('Hosting panel operations (e2e)', () => {
       data: {
         name: `Command Sixteen WHM ${randomUUID().slice(0, 8)}`,
         hostname: CONFIG_SERVER_HOSTNAME,
-        status: ServerStatus.ACTIVE,
+        status: ServerStatus.DISABLED,
         adapterKey: 'fake-panel',
       },
     });
-    const admin = request.agent(app.getHttpServer());
-    const csrf = await authenticate(admin, ADMIN_EMAIL);
+    const admin = setupAdmin;
+    const csrf = setupCsrf;
     const apiToken = 'FictionalCommand16Token'.repeat(2);
     const configuredResponse = await admin
       .post(`/hosting-panel/servers/${server.id}/cpanel-configuration`)
@@ -295,6 +528,18 @@ describe('Hosting panel operations (e2e)', () => {
         }),
       ),
     ).not.toContain('new-fake-password-123');
+    await prisma.server.update({
+      where: { id: serverId },
+      data: { status: ServerStatus.MAINTENANCE },
+    });
+    const pendingId = await createPendingService(
+      'maintenance-panel.example.test',
+    );
+    await admin
+      .post(`/hosting-panel/services/${pendingId}/operations`)
+      .set('X-CSRF-Token', csrf)
+      .send({ type: 'CREATE_ACCOUNT', submissionKey: randomUUID() })
+      .expect(422);
     await run({ type: 'SUSPEND_ACCOUNT', reason: 'Command 15 test.' });
     expect(
       (
@@ -304,6 +549,10 @@ describe('Hosting panel operations (e2e)', () => {
       ).status,
     ).toBe(ServiceStatus.SUSPENDED);
     await run({ type: 'UNSUSPEND_ACCOUNT' });
+    await prisma.server.update({
+      where: { id: serverId },
+      data: { status: ServerStatus.ACTIVE },
+    });
 
     const customer = request.agent(app.getHttpServer());
     const customerCsrf = await authenticate(customer, CUSTOMER_EMAIL);
@@ -580,7 +829,17 @@ describe('Hosting panel operations (e2e)', () => {
       where: {
         OR: [
           { requestedByUserId: { in: userIds } },
-          { server: { hostname: SERVER_HOSTNAME } },
+          {
+            server: {
+              hostname: {
+                in: [
+                  SERVER_HOSTNAME,
+                  CONFIG_SERVER_HOSTNAME,
+                  MANAGED_SERVER_HOSTNAME,
+                ],
+              },
+            },
+          },
         ],
       },
     });
@@ -609,7 +868,15 @@ describe('Hosting panel operations (e2e)', () => {
     await prisma.orderItem.deleteMany({ where: { orderId: { in: orderIds } } });
     await prisma.order.deleteMany({ where: { id: { in: orderIds } } });
     await prisma.server.deleteMany({
-      where: { hostname: { in: [SERVER_HOSTNAME, CONFIG_SERVER_HOSTNAME] } },
+      where: {
+        hostname: {
+          in: [
+            SERVER_HOSTNAME,
+            CONFIG_SERVER_HOSTNAME,
+            MANAGED_SERVER_HOSTNAME,
+          ],
+        },
+      },
     });
     const product = await prisma.product.findUnique({
       where: { slug: PRODUCT_SLUG },

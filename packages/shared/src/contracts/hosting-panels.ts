@@ -200,6 +200,44 @@ export const cpanelServerConfigurationSchema = z
   })
   .strict();
 
+const serverNameSchema = z.string().trim().min(1).max(120);
+const serverCapacitySchema = z.number().int().min(1).max(1_000_000).nullable();
+
+export const createCpanelServerRequestSchema =
+  configureCpanelServerRequestSchema
+    .omit({ confirmation: true })
+    .extend({
+      name: serverNameSchema,
+      maxAccounts: serverCapacitySchema.default(null),
+    })
+    .strict();
+
+export const updateCpanelServerRequestSchema = z
+  .object({
+    name: serverNameSchema.optional(),
+    hostname: cpanelHostnameSchema.optional(),
+    port: z.union([z.literal(443), z.literal(2087)]).optional(),
+    apiUsername: cpanelApiUsernameSchema.optional(),
+    apiToken: configureCpanelServerRequestSchema.shape.apiToken.optional(),
+    maxAccounts: serverCapacitySchema.optional(),
+    status: z.enum(['ACTIVE', 'MAINTENANCE', 'DISABLED']).optional(),
+  })
+  .strict()
+  .refine((value) => Object.keys(value).length > 0, 'Enter a change to save');
+
+export const removeCpanelServerRequestSchema = z
+  .object({ confirmation: z.literal('REMOVE_SERVER') })
+  .strict();
+
+export const managedCpanelServerSchema = cpanelServerConfigurationSchema
+  .extend({
+    maxAccounts: serverCapacitySchema,
+    assignedServiceCount: z.number().int().nonnegative(),
+  })
+  .strict();
+
+export const managedCpanelServerListSchema = z.array(managedCpanelServerSchema);
+
 export const hostingPanelOperationResultSchema = z
   .object({
     operation: hostingPanelOperationSchema,
@@ -241,6 +279,16 @@ export type ConfigureCpanelServerRequest = z.infer<
 export type CpanelServerConfiguration = z.infer<
   typeof cpanelServerConfigurationSchema
 >;
+export type CreateCpanelServerRequest = z.infer<
+  typeof createCpanelServerRequestSchema
+>;
+export type UpdateCpanelServerRequest = z.infer<
+  typeof updateCpanelServerRequestSchema
+>;
+export type RemoveCpanelServerRequest = z.infer<
+  typeof removeCpanelServerRequestSchema
+>;
+export type ManagedCpanelServer = z.infer<typeof managedCpanelServerSchema>;
 export type HostingPanelOperationResult = z.infer<
   typeof hostingPanelOperationResultSchema
 >;

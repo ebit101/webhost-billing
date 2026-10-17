@@ -48,6 +48,31 @@ Temporary login URLs must be HTTPS, contain no URL credentials, and use the conf
 
 ## Credential configuration
 
+Administrators manage cPanel/WHM servers at `/admin/servers`. A new server is
+saved as `DISABLED` with an encrypted token; saving does not call WHM. The
+operator explicitly runs a read-only connection test, then may set the server
+`ACTIVE` for new paid-order fulfilment. `MAINTENANCE` stops new account creation
+but permits actions on existing accounts. `DISABLED` blocks all panel actions.
+The screen uses a scoped API token and does not offer password or access-hash
+authentication. Maximum accounts is a local assignment limit, not a claim about
+the WHM account quota.
+
+An assigned server cannot change its hostname, port or WHM username. Add a new
+server for a different WHM identity; leave existing services bound to their
+original server. Rotating a token moves an active server to maintenance until
+the new connection is tested and explicitly reactivated. A server edit that
+changes the stored row also requires a fresh connection test before the next
+activation. Removal requires `REMOVE_SERVER`, refuses non-final services and
+running/inconsistent operations, soft-deletes the server, and erases its stored
+token and username. Historical service and operation rows keep their server ID.
+Removing a server does not call WHM `removeacct`; account termination remains a
+separate service action with its own `TERMINATE` confirmation and provider result.
+
+This workflow follows the useful [WHMCS cPanel server setup](https://docs.whmcs.com/8-10/servers/server-modules/cpanel/)
+sequence of add, test and save, and its create/suspend/unsuspend/terminate
+actions. The application remains deliberately smaller than WHMCS: there are no
+server groups, reseller marketplace functions or direct WHMCS connection.
+
 Administrators configure a server through `POST /hosting-panel/servers/:serverId/cpanel-configuration` or the hosting-panel connection form. The request requires:
 
 - a fully qualified hostname;
@@ -92,14 +117,18 @@ Temporary failures may be retried manually, creating a new child operation. The 
 
 ## API and authorization
 
-| Method | Route                                                   | Access          | Purpose                                        |
-| ------ | ------------------------------------------------------- | --------------- | ---------------------------------------------- |
-| `GET`  | `/hosting-panel/operations`                             | Administrator   | Filtered durable operation history             |
-| `POST` | `/hosting-panel/servers/:serverId/test`                 | Administrator   | Idempotent adapter connection test             |
-| `POST` | `/hosting-panel/servers/:serverId/cpanel-configuration` | Administrator   | Encrypt and rotate WHM API-token configuration |
-| `POST` | `/hosting-panel/services/:serviceId/operations`         | Administrator   | Run a validated hosting action                 |
-| `POST` | `/hosting-panel/operations/:operationId/retry`          | Administrator   | Deliberate retry of a safe temporary failure   |
-| `POST` | `/hosting-panel/services/:serviceId/login-url`          | Owning customer | Generate an ephemeral panel login URL          |
+| Method   | Route                                                   | Access          | Purpose                                        |
+| -------- | ------------------------------------------------------- | --------------- | ---------------------------------------------- |
+| `GET`    | `/hosting-panel/servers`                                | Administrator   | List safe, non-retired cPanel/WHM server data  |
+| `POST`   | `/hosting-panel/servers`                                | Administrator   | Add an encrypted, disabled WHM server          |
+| `PATCH`  | `/hosting-panel/servers/:serverId`                      | Administrator   | Edit connection, capacity or status            |
+| `DELETE` | `/hosting-panel/servers/:serverId`                      | Administrator   | Confirm guarded server retirement              |
+| `GET`    | `/hosting-panel/operations`                             | Administrator   | Filtered durable operation history             |
+| `POST`   | `/hosting-panel/servers/:serverId/test`                 | Administrator   | Idempotent adapter connection test             |
+| `POST`   | `/hosting-panel/servers/:serverId/cpanel-configuration` | Administrator   | Encrypt and rotate WHM API-token configuration |
+| `POST`   | `/hosting-panel/services/:serviceId/operations`         | Administrator   | Run a validated hosting action                 |
+| `POST`   | `/hosting-panel/operations/:operationId/retry`          | Administrator   | Deliberate retry of a safe temporary failure   |
+| `POST`   | `/hosting-panel/services/:serviceId/login-url`          | Owning customer | Generate an ephemeral panel login URL          |
 
 Customer ownership is checked at the service layer. Customers cannot run account mutations or access another customer's login URL. Administrator and customer interfaces display safe normalized failures only.
 
@@ -117,8 +146,8 @@ This checklist is documentation, not authorization. Do not perform it until the 
 2. Create a dedicated development reseller/token with only the required ACLs, an expiry, and an outbound-IP restriction. Record the token only in the encrypted configuration form.
 3. Create two clearly disposable development packages: the initial package and a package-change target. Confirm neither is used by a real customer.
 4. Select a disposable development domain/account, confirm a usable backup exists, and record the owner-approved termination target separately.
-5. Configure the server in the administrator interface. Verify the response exposes only `credentialConfigured` and the key version.
-6. Authorize and run the read-only connection test. Stop on hostname, TLS, authentication, privilege, or response-shape failure.
+5. Add the server in the administrator interface. Verify it starts disabled and the response exposes only `credentialConfigured` and the key version, never the token.
+6. Authorize and run the read-only connection test, then explicitly activate the tested server. Stop on hostname, TLS, authentication, privilege, or response-shape failure.
 7. Under a separately approved mutation window, provision exactly one disposable account. Repeat the same local submission key and confirm no second account is created.
 8. Query identity, domain, package, and state. Then test suspension, unsuspension, package change, password change, and temporary login in that order, reconciling after each result.
 9. Perform termination only if the exact disposable username is rechecked and the owner explicitly approves `TERMINATE`. Confirm `accountsummary` reports the account absent.
@@ -131,3 +160,8 @@ Abort immediately if the target identity differs, a real-customer account appear
 Command 16 implements and validates the adapter entirely with mocks. No cPanel credential was configured, no development-server request was sent, and no live mutation was attempted during automated development.
 
 UK2Group domain integration is not part of Command 16. It requires a separately authorized registrar command and domain-specific data/workflow design.
+
+Command 121 added server administration and retirement using fictional data and
+mocked cPanel/WHM responses. It did not configure a real server or run the
+credentialed development-server checklist. A production or staging deployment
+also remains separate.
