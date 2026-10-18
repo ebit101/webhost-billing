@@ -94,16 +94,21 @@ compose ps --format json </dev/null >"$rollback/preflight-services.json"
 )
 echo "Verified backup and rollback inventory: $rollback"
 
-# Only application writers stop; PostgreSQL, Redis, Mailpit and unrelated stacks remain running.
-compose stop api worker scheduler </dev/null
 restart_previous() {
+  cp -p "$rollback/previous-env" "$env_file"
   cd "$old"
   unset IMAGE_TAG
   compose up -d --no-deps api worker scheduler </dev/null || true
 }
-if ! compose --profile tools run --rm --no-deps migrate </dev/null; then
-  echo 'Migration failed; restarting the previous application services.' >&2
+recover_before_switch() {
+  echo 'Deployment stopped before release switch; restoring the previous app services.' >&2
   restart_previous
+}
+# Only application writers stop; PostgreSQL, Redis, Mailpit and unrelated stacks remain running.
+trap recover_before_switch ERR
+compose stop api worker scheduler </dev/null
+if ! compose --profile tools run --rm --no-deps migrate </dev/null; then
+  recover_before_switch
   exit 1
 fi
 unfinished=$(compose exec -T postgres sh -ceu '
@@ -112,8 +117,8 @@ unfinished=$(compose exec -T postgres sh -ceu '
     --command "SELECT COUNT(*) FROM _prisma_migrations WHERE finished_at IS NULL AND rolled_back_at IS NULL"
 ' </dev/null | tr -d '\r\n')
 if [[ $unfinished != 0 ]]; then
-  echo "Database has $unfinished unfinished migrations; restarting the previous services." >&2
-  restart_previous
+  echo "Database has $unfinished unfinished migrations." >&2
+  recover_before_switch
   exit 1
 fi
 
@@ -124,6 +129,7 @@ mv -f "$next_env" "$env_file"
 next_link="$base/.current-$sha"
 ln -s "$release" "$next_link"
 mv -Tf "$next_link" "$base/current"
+trap - ERR
 cd "$base/current"
 compose up -d --no-deps --force-recreate --wait api web worker scheduler </dev/null
 compose ps --format json </dev/null >"$rollback/postflight-services.json"
