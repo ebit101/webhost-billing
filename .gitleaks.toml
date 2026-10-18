@@ -15,4 +15,7 @@ regexes = [
   '''^abc123def456$''',
   # Authored invoice submission identifier, not an integration credential.
   '''^fictional-invoice-98$''',
+  # Verified Git commit IDs in the staging release history, not API keys.
+  '''^1985d84105c5663278c897cb02cacf1645b2d0e7$''',
+  '''^a516f6ea5d1279abe27f1131899d490cdb8c4cb1$''',
 ]
