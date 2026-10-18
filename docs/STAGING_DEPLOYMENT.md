@@ -1,6 +1,38 @@
 # Staging Deployment
 
-## Current staging release (2026-10-18, combined hosting/domain order)
+## Current staging release (2026-10-19, guest hosting order)
+
+- URL: `https://my.speedhost.bd/shared-hosting`
+- Source and application image tag: `326fb4d2745c361fbadf6f974743015ac8d32cff`.
+  This includes Command 125's public order step and renewable administrator sessions.
+- Previous retained release: `93523fa6cabba7c5dd715fdfd0a69ffb647812c4`.
+- Protected rollback inventory:
+  `/srv/webhost-billing-staging/rollback/release-20261018T180742Z-326fb4d2745c361fbadf6f974743015ac8d32cff/`.
+  It records the previous release and environment, pre/post service inventories,
+  and the verified backup path.
+- Fresh encrypted backup:
+  `/srv/webhost-billing-staging/backups/webhost-billing-webhost_billing_staging-20261018T180743Z.dump.gpg`.
+  Checksum, OpenPGP integrity, PostgreSQL archive structure and required-table
+  verification passed. It remains a same-host backup.
+- Database: 34 completed migrations and zero unfinished; no migration was pending
+  for this release. All seven staging services are healthy. The release script
+  confirmed PostgreSQL, Redis and Mailpit container IDs were unchanged, the
+  browser API origin, and disabled live registrar flags in API, worker and scheduler.
+  Read-only postflight confirmed `BKASH_ENABLED=false` and
+  `SSLCOMMERZ_ENABLED=false` in the API.
+- Public `/order`, `/health`, `/ready` and the preserved logo returned 200.
+  A signed-out live Chromium check followed the actual Starter Hosting card
+  through guest domain review and only then to customer sign-in with the
+  selected product and price preserved. No order, customer account, payment,
+  registrar action or WHM operation was made during that check.
+- GitHub Validate and CodeQL passed for the deployed commit. The first apply
+  stopped before build or switch because the staging logo setting was quoted;
+  the exact-path guard now accepts both quoted and unquoted forms. An interim
+  CI run timed out starting the administrator browser fixture; its Next build
+  directory is now isolated, and the final CI run passed all browser checks.
+  Authenticated live administrator session acceptance still needs the owner's MFA.
+
+## Prior staging release (2026-10-18, combined hosting/domain order)
 
 - URL: `https://my.speedhost.bd/shared-hosting`
 - Source and application image tag: `93523fa6cabba7c5dd715fdfd0a69ffb647812c4`.
