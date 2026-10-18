@@ -15863,11 +15863,11 @@ require explicit approval.
 
 ### Command 124 validation follow-up — Migration-count acceptance fixtures
 
-- **Status/date:** Local correction complete, 2026-10-18; hosted validation pending.
-- **Implemented scope:** Updated three guarded database integration fixtures from 33 to 34 expected committed migrations after the combined hosting/domain migration. No runtime logic, schema, provider setting or data changed.
-- **Files changed:** Three `packages/database/test/currency-*.integration.spec.ts` files and this report.
-- **Validation performed:** GitHub's `Validate` job for `eb688c2` failed at the first stale migration-count assertion (`34 !== 33`). The full local guarded database acceptance launcher passed after correcting all three full-history assertions, including isolated migration replay, fictional seed and schema verification.
-- **Decisions:** Preserve the explicit migration inventory assertions and update them with the new committed migration.
+- **Status/date:** Local corrections complete, 2026-10-18; hosted validation pending.
+- **Implemented scope:** Updated three guarded database integration fixtures from 33 to 34 expected committed migrations after the combined hosting/domain migration. Narrowed the existing hosting browser test's domain input locator to the textbox because the new domain-choice radio labels also contain "domain." No runtime logic, schema, provider setting or data changed.
+- **Files changed:** Three `packages/database/test/currency-*.integration.spec.ts` files, `apps/web/e2e/specs/hosting-lifecycle.spec.ts`, and this report.
+- **Validation performed:** GitHub's `Validate` job for `eb688c2` failed at the first stale migration-count assertion (`34 !== 33`). The full local guarded database acceptance launcher passed after correcting all three full-history assertions, including isolated migration replay, fictional seed and schema verification. GitHub's follow-up `Validate` job for `6e7f78b` passed database and API gates but exposed the ambiguous browser label; the focused guarded hosting browser lifecycle passed locally (1/1) after selecting the domain textbox by role and exact name.
+- **Decisions:** Preserve the explicit migration inventory assertions and update them with the new committed migration. Select the domain text field by semantic role in browser acceptance.
 - **Unresolved questions, risks, and blockers:** Hosted `Validate` must pass on the follow-up commit before the requested staging rollout.
 - **Exact recommended next command:** Complete the owner-authorized Command 124 staging deployment after hosted validation succeeds.
 

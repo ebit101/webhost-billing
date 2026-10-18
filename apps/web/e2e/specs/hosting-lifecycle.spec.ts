@@ -195,7 +195,9 @@ test('complete hosting customer and administrator lifecycle', async ({
     await page.goto(
       `/portal/checkout?productId=${E2E_PRODUCT.id}&priceId=${E2E_PRODUCT.priceId}`,
     );
-    await page.getByLabel('Domain').fill(E2E_PRODUCT.domain);
+    await page
+      .getByRole('textbox', { name: 'Domain', exact: true })
+      .fill(E2E_PRODUCT.domain);
     await page.getByRole('button', { name: 'Place order' }).click();
     await expect(page.getByRole('heading', { name: /^ORD-/ })).toBeVisible();
     const lifecycle = await lifecycleRecord();
