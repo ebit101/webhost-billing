@@ -3,6 +3,7 @@ node_modules/
 .pnpm-store/
 .next/
 .next-e2e/
+.next-e2e-staff/
 dist/
 coverage/
 *.tsbuildinfo

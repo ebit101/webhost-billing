@@ -29,7 +29,8 @@ export default defineConfig({
       url: 'http://127.0.0.1:3300/login',
       reuseExistingServer: false,
       env: {
-        NEXT_DIST_DIR: '.next-e2e',
+        // Keep this second browser server clear of the lifecycle run's dev lock/cache.
+        NEXT_DIST_DIR: '.next-e2e-staff',
         INTERNAL_API_URL: 'http://127.0.0.1:3301',
         NEXT_PUBLIC_API_URL: 'http://127.0.0.1:3301',
         NEXT_PUBLIC_WEB_ORIGIN: 'http://127.0.0.1:3300',
