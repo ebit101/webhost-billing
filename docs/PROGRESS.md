@@ -15825,6 +15825,32 @@ require explicit approval.
   server. A separately bounded read-only connection test follows; do not run
   account mutations until the authorized Command 42 sequence.
 
+### Command 123 — Redesign administrator WHM server list
+
+- **Status/date:** Source complete, 2026-10-18.
+- **Implemented scope:** Replaced the always-expanded forms on `/admin/servers`
+  with a compact server list. Each row shows name, hostname/port, status, assigned
+  services, account limit and whether a token is configured, plus its own Edit
+  button. Add new server and Edit open one focused form; Cancel returns to the
+  list. Existing add, update, test, status-change and confirmed-removal actions
+  remain available. Tokens are not displayed in the list or editor.
+- **Files changed:** `apps/web/src/components/services/admin-whm-server-manager.tsx`,
+  its component test, this report and `CODEX_DEVELOPMENT_COMMANDS.md`.
+- **Validation:** Focused Vitest suite passed (2 tests); web typecheck passed;
+  focused ESLint passed; production web build passed; Prettier applied to the
+  two edited component files. No live WHM connection or account operation ran.
+- **Decisions:** Keep the server list visible while editing, with a single
+  in-page editor rather than opening every server's fields. Keep new servers
+  disabled and retain the existing exact removal confirmation.
+- **Open questions and risks:** Authenticated staging visual review and deployment
+  were not part of this source command. The owner-configured test server was
+  not read or changed by this command.
+- **Exact recommended next command:** Command 124 — build a testable
+  shared-hosting package page and domain-plus-hosting order path, as requested
+  by the owner, using the public Speed Host shared-hosting page as design and
+  catalogue reference after verifying its current content. Do not deploy or
+  perform live registrar/WHM operations in that command.
+
 ## Future report template
 
 ### Owner-directed MessageDock read-only customer context integration — 2026-10-18

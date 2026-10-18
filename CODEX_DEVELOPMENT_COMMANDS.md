@@ -5440,6 +5440,17 @@ Record redacted evidence and stop. Any live account mutation follows the
 separately authorized Command 42 disposable-account sequence.
 ```
 
+## Command 123 — Redesign administrator WHM server list
+
+```text
+Owner-directed on 2026-10-18: make the administrator WHM server page a compact
+server list with an Edit action for each server and an Add new server button.
+Show one focused form only while adding or editing. Preserve encrypted-token,
+connection-test, activation and removal rules from Command 121. Validate with
+fictional server data, document results, commit and push source to main. Do not
+change the owner's configured test server or perform a WHM call or deployment.
+```
+
 ## Operating Guidance
 
 1. Run commands in order.
