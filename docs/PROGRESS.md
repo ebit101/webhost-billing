@@ -15765,6 +15765,66 @@ require explicit approval.
   then run a read-only connection test. Do not run account mutations until the
   separately authorized Command 42 sequence.
 
+### Owner-directed Command 121 staging deployment — Deploy WHM server management
+
+- **Status:** Deployed to the existing Speed Host staging installation;
+  credentialed WHM acceptance remains open.
+- **Date:** 2026-10-18 (Asia/Dhaka).
+- **Authorization and target:** The owner said “deploy” and will enter the WHM
+  API access token personally. Reused the existing isolated staging site at
+  `https://my.speedhost.bd`; this is not a public production launch.
+- **Source and gate:** Clean `main` source `7c3b55e` includes Command 121 and
+  the prior MessageDock read-only integration. The merged source initially hit
+  two false-positive full commit IDs in the complete-history secret scan and a
+  one-line progress-report formatting issue. Exact commit allowlisting and
+  formatting fixed those gates. The final source head passed hosted Validate
+  and CodeQL; Dependency review was skipped on the main push. Four nonroot
+  Linux/amd64 images were built off-server from the pinned source. The source
+  archive and image bundle passed matching local/host SHA-256 and gzip checks;
+  all four loaded host image IDs matched local IDs.
+- **Preflight and rollback:** Seven staging services healthy, 85 GiB free,
+  32 finished/zero unfinished migrations, one server with no stored WHM
+  credential, zero panel operations, and live registrar flag false. Captured
+  exact prior release, protected environment and container inventory at
+  `/srv/webhost-billing-staging/rollback/command121-20261018T015306Z/`.
+  Stopped only API, worker and scheduler before backup. The fresh encrypted
+  backup is
+  `/srv/webhost-billing-staging/backups/webhost-billing-webhost_billing_staging-20261018T015323Z.dump.gpg`;
+  its checksum, OpenPGP integrity, archive structure and required tables
+  passed verification. Mode is `0600`, metadata records 32 migrations, and
+  prior release/images are retained. No Nginx file was edited or reloaded.
+- **Change:** Applied only
+  `20261017000100_retired_cpanel_servers` using the new migration image,
+  then switched API, web, worker and scheduler to the pinned images. Kept
+  PostgreSQL, Redis, Mailpit, unrelated applications and their containers.
+- **Postflight:** All seven owned services healthy with zero restarts; exactly
+  one scheduler; unrelated container IDs unchanged; 33 finished/zero
+  unfinished migrations. Server, WHM credential and panel-operation counts
+  remained 1/0/0. API, worker and scheduler retained
+  `RESELLBIZ_LIVE_ENABLED=false`. Public storefront, health and readiness
+  returned 200; anonymous `/admin/servers` redirected to sign-in; protected
+  WHM and MessageDock routes returned 401. The browser bundle used the exact
+  staging API origin. An authenticated read-only MessageDock search for a
+  fictional identity returned 200 and zero matches. Nginx validation passed,
+  and recent application logs had zero error-word lines.
+- **Files changed:** `.gitleaks.toml` and progress formatting repaired the
+  merged CI gate before deployment. This report and
+  `docs/STAGING_DEPLOYMENT.md` record the release; no application code,
+  migration, credential or environment source is changed by the report.
+- **Decisions and limits:** The WHM server UI is deployed, but no WHM token
+  was entered, no WHM connection test or external account action was run,
+  and no registrar, payment, customer-email or WHMCS operation occurred.
+  Browser login with the protected staging administrator password reached
+  its existing MFA challenge, so signed-in `/admin/servers` acceptance awaits
+  the owner's authenticator. The backup is same-host evidence, not off-site
+  recovery acceptance. Public launch and credentialed WHM acceptance remain
+  separate.
+- **Exact recommended next command:** Owner-authorized **Command 122 — Prepare
+  a disposable cPanel/WHM development server**. The owner signs in with MFA,
+  enters the scoped token only at `/admin/servers`, and saves a disabled
+  server. A separately bounded read-only connection test follows; do not run
+  account mutations until the authorized Command 42 sequence.
+
 ## Future report template
 
 ### Owner-directed MessageDock read-only customer context integration — 2026-10-18

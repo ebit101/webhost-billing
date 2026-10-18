@@ -1,6 +1,41 @@
 # Staging Deployment
 
-## Current staging release (2026-10-18, MessageDock read-only context)
+## Current staging release (2026-10-18, WHM server administration)
+
+- URL: `https://my.speedhost.bd`
+- Source and four application image tags: `7c3b55e` (the full tag is recorded by
+  the live `IMAGE_TAG` setting and release directory). This source includes both
+  Command 121 WHM server administration and the prior MessageDock read-only API.
+- Previous API release: the MessageDock release documented below. Its image and
+  the older web/worker images remain available for application rollback.
+- Preflight: seven healthy services, 85 GiB free, 32 completed/zero unfinished
+  migrations, no stored WHM credential or hosting-panel operation, and
+  `RESELLBIZ_LIVE_ENABLED=false`.
+- Protected rollback inventory:
+  `/srv/webhost-billing-staging/rollback/command121-20261018T015306Z/`.
+  It contains the prior environment, exact prior release pointer, container
+  inventories and safe baseline counts.
+- Fresh encrypted pre-migration backup:
+  `/srv/webhost-billing-staging/backups/webhost-billing-webhost_billing_staging-20261018T015323Z.dump.gpg`.
+  Its protected SHA-256 file, OpenPGP integrity, PostgreSQL custom archive and
+  required tables passed verification; the backup is mode `0600` and records
+  32 completed migrations. It is same-host rollback evidence, not off-site
+  recovery acceptance.
+- Applied only `20261017000100_retired_cpanel_servers`; the database has 33
+  completed and zero unfinished migrations. Only API, web, worker and scheduler
+  were recreated. All seven staging services are healthy with zero restarts;
+  unrelated container IDs are unchanged. Exactly one scheduler is running.
+- Public `/`, `/health` and `/ready` returned 200. Anonymous `/admin/servers`
+  redirected to admin sign-in; protected WHM and MessageDock routes returned 401. The web API-origin check passed. The authenticated read-only MessageDock
+  probe returned 200 and zero matches for a fictional query. API, worker and
+  scheduler still report `RESELLBIZ_LIVE_ENABLED=false`; WHM credentials and
+  hosting-panel operations remain at zero. No WHM token, external account
+  action, registrar operation, payment or customer email was performed.
+- The protected staging administrator password reached the existing MFA
+  challenge in browser testing. Signed-in `/admin/servers` acceptance awaits
+  owner MFA; no authenticator code was requested or bypassed.
+
+## Prior staging release (2026-10-18, MessageDock read-only context)
 
 - URL: `https://my.speedhost.bd`
 - Source/API image tag: `1985d84105c5663278c897cb02cacf1645b2d0e7`
