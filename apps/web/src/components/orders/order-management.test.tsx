@@ -10,6 +10,7 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AdminOrderManager } from './admin-order-manager';
 import { CustomerCheckout } from './customer-checkout';
+import { saveOrderDraft } from '../../lib/order-draft';
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
 
@@ -153,9 +154,44 @@ const customerDetail: CustomerDetail = {
   },
 };
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.unstubAllGlobals();
+  localStorage.clear();
+});
 
 describe('order interfaces', () => {
+  it('restores the guest domain choice after account sign in', async () => {
+    saveOrderDraft({
+      productId,
+      priceId,
+      domainChoice: 'EXISTING',
+      requestedDomain: 'example.com',
+    });
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => jsonResponse({ success: true, data: [publicProduct] })),
+    );
+    render(
+      <CustomerCheckout
+        initialProductId={productId}
+        initialPriceId={priceId}
+      />,
+    );
+    expect(
+      (
+        (await screen.findByRole('textbox', {
+          name: 'Domain',
+        })) as HTMLInputElement
+      ).value,
+    ).toBe('example.com');
+    expect(
+      (
+        screen.getByRole('radio', {
+          name: /Use an existing domain/i,
+        }) as HTMLInputElement
+      ).checked,
+    ).toBe(true);
+  });
   it.each([
     'retired product',
     'retired price',
@@ -334,6 +370,12 @@ describe('order interfaces', () => {
 
   it('quotes a simulated new domain and adds it to the hosting order on one invoice', async () => {
     const user = userEvent.setup();
+    saveOrderDraft({
+      productId,
+      priceId,
+      domainChoice: 'REGISTER',
+      requestedDomain: 'newsite.com',
+    });
     const domainQuoteId = '90000000-0000-4000-8000-000000000091';
     const offerId = '90000000-0000-4000-8000-000000000092';
     const bodies: Record<string, unknown>[] = [];
@@ -433,17 +475,17 @@ describe('order interfaces', () => {
       />,
     );
     await screen.findByLabelText('Product');
-    await user.click(
-      screen.getByRole('radio', { name: /Register a new domain/ }),
-    );
     await screen.findByRole('button', { name: 'Check domain and get quote' });
+    expect(screen.getByLabelText('Domain name')).toHaveProperty(
+      'value',
+      'newsite',
+    );
     await waitFor(() =>
       expect(screen.getByLabelText('Registrant name')).toHaveProperty(
         'value',
         'Amina Rahman',
       ),
     );
-    await user.type(screen.getByLabelText('Domain name'), 'newsite');
     await user.type(screen.getByLabelText('Company'), 'Example Studio');
     await user.type(screen.getByLabelText('Region'), 'Dhaka');
     await user.type(screen.getByLabelText('Phone country code'), '880');

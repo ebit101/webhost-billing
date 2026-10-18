@@ -280,6 +280,37 @@ describe('Authentication (e2e)', () => {
     await customerAgent.get('/auth/me').expect(401);
   });
 
+  it('still revokes an idle customer session', async () => {
+    const agent = request.agent(app.getHttpServer());
+    const csrfToken = await issueCsrfToken(agent);
+    await agent
+      .post('/auth/login')
+      .set('X-CSRF-Token', csrfToken)
+      .send({ email: CUSTOMER_EMAIL, password: NEW_PASSWORD })
+      .expect(200);
+    const sessionsResponse = await agent.get('/auth/sessions').expect(200);
+    const session = sessionsResponseSchema
+      .parse(sessionsResponse.body as unknown)
+      .data.find((item) => item.current);
+    if (!session) throw new Error('Current customer session missing');
+    await prisma.authSession.update({
+      where: { id: session.id },
+      data: {
+        createdAt: new Date(Date.now() - 3 * 60 * 60 * 1_000),
+        lastSeenAt: new Date(Date.now() - 2 * 60 * 60 * 1_000),
+      },
+    });
+
+    await agent.get('/auth/me').expect(401);
+    expect(
+      (
+        await prisma.authSession.findUniqueOrThrow({
+          where: { id: session.id },
+        })
+      ).revokedReason,
+    ).toBe('IDLE_TIMEOUT');
+  });
+
   it('allows an authenticated administrator through role and ownership guards', async () => {
     const adminAgent = request.agent(app.getHttpServer());
     const csrfToken = await issueCsrfToken(adminAgent);
@@ -299,6 +330,54 @@ describe('Authentication (e2e)', () => {
     await adminAgent
       .get(`/auth/customer-profile/${SEEDED_OTHER_CUSTOMER_ID}`)
       .expect(200);
+  });
+
+  it('renews an idle administrator session and ends it on sign out', async () => {
+    const adminAgent = request.agent(app.getHttpServer());
+    const csrfToken = await issueCsrfToken(adminAgent);
+    await adminAgent
+      .post('/auth/login')
+      .set('X-CSRF-Token', csrfToken)
+      .send({ email: ADMIN_EMAIL, password: ORIGINAL_PASSWORD })
+      .expect(200);
+    const sessionsResponse = await adminAgent.get('/auth/sessions').expect(200);
+    const session = sessionsResponseSchema
+      .parse(sessionsResponse.body as unknown)
+      .data.find((item) => item.current);
+    if (!session) throw new Error('Current administrator session missing');
+    await prisma.authSession.update({
+      where: { id: session.id },
+      data: {
+        createdAt: new Date(Date.now() - 3 * 60 * 60 * 1_000),
+        lastSeenAt: new Date(Date.now() - 2 * 60 * 60 * 1_000),
+        expiresAt: new Date(Date.now() + 60 * 60 * 1_000),
+      },
+    });
+
+    const me = await adminAgent.get('/auth/me').expect(200);
+    expect(me.headers['set-cookie']).toEqual(
+      expect.arrayContaining([expect.stringContaining('Max-Age=31536000')]),
+    );
+    const renewed = await prisma.authSession.findUniqueOrThrow({
+      where: { id: session.id },
+    });
+    expect(renewed.revokedAt).toBeNull();
+    expect(renewed.expiresAt.getTime()).toBeGreaterThan(
+      Date.now() + 360 * 24 * 60 * 60 * 1_000,
+    );
+
+    await adminAgent
+      .post('/auth/logout')
+      .set('X-CSRF-Token', csrfToken)
+      .expect(200);
+    await adminAgent.get('/auth/me').expect(401);
+    expect(
+      (
+        await prisma.authSession.findUniqueOrThrow({
+          where: { id: session.id },
+        })
+      ).revokedReason,
+    ).toBe('LOGOUT');
   });
 
   it('requires replay-resistant MFA for an enrolled administrator', async () => {

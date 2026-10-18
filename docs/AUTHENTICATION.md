@@ -31,7 +31,7 @@ An email worker/provider is not part of Command 5. Until that provider is implem
 
 `POST /auth/login` uses a generic invalid-credentials response and performs password work even when the account is absent. Pending-verification, inactive, deleted, expired-session, and revoked-session states do not produce authenticated access.
 
-Successful login creates a database-backed session and sets the HttpOnly cookie. Session activity is refreshed at a bounded interval rather than on every request. A session expires at its absolute configured expiry or after one hour without activity. Users can inspect sessions, revoke an individual session, sign out the current session, or revoke all sessions. A completed password reset also revokes all existing sessions.
+Successful login creates a database-backed session and sets the HttpOnly cookie. Customer sessions expire at their configured absolute expiry or after one hour without activity. Administrator sessions have no idle cutoff and renew their database expiry on activity. The administrator workspace refreshes the browser cookie on opening, hourly while visible, and when the tab becomes visible again. Each administrator renewal has a 365-day browser lifetime, so browser cookie deletion, a year without activity, or browser policy may still require a new login. Users can inspect sessions, revoke an individual session, sign out the current session, or revoke all sessions. A completed password reset also revokes all existing sessions. MFA requirements and explicit revocation continue to apply to administrators.
 
 ### Administrator two-factor authentication
 

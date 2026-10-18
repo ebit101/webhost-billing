@@ -10,7 +10,7 @@ This document records implemented controls and remaining operational duties. It 
 
 - Passwords use Argon2id. Opaque session/action/challenge tokens are generated with 256 bits of randomness and stored only as SHA-256 hashes.
 - Browser sessions use HttpOnly, path-root, `SameSite=Lax` cookies. Production uses `Secure` and the `__Host-` prefix.
-- Sessions have an absolute configured expiry and a one-hour idle expiry. Idle sessions and administrator sessions missing a newly required second factor are revoked with an audit reason.
+- Customer sessions have an absolute configured expiry and a one-hour idle expiry. Administrator sessions have a renewable 365-day expiry and no idle cutoff; the workspace refreshes their cookie while visible. Explicit sign out, revocation, password reset and MFA enforcement remain in effect. Idle customer sessions and administrator sessions missing a newly required second factor are revoked with an audit reason.
 - Password reset is single-use, expires, and revokes every active session. It does not remove or bypass administrator MFA.
 - Public registration cannot create administrators. Registration, verification, login, MFA login, and password-reset entry points have Redis-backed limits which fail closed.
 

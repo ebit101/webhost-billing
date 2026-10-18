@@ -4,6 +4,7 @@ import { parse, type SerializeOptions } from 'cookie';
 import type { Request, Response } from 'express';
 import { API_ENVIRONMENT } from '../../../infrastructure/environment/environment.module';
 import {
+  ADMIN_SESSION_TTL_MILLISECONDS,
   CSRF_COOKIE_BASE_NAME,
   SESSION_COOKIE_BASE_NAME,
 } from '../auth.constants';
@@ -47,11 +48,17 @@ export class AuthCookieService {
     });
   }
 
-  setSessionCookie(response: Response, token: string): void {
+  setSessionCookie(
+    response: Response,
+    token: string,
+    administrator = false,
+  ): void {
     response.cookie(this.sessionCookieName, token, {
       ...this.baseOptions(),
       httpOnly: true,
-      maxAge: this.sessionTtlMilliseconds,
+      maxAge: administrator
+        ? ADMIN_SESSION_TTL_MILLISECONDS
+        : this.sessionTtlMilliseconds,
     });
   }
 

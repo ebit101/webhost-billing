@@ -37,13 +37,15 @@ const contactLabels: {
 export function HostingDomainQuote({
   quote,
   onQuote,
+  initialDomainName,
 }: {
   quote?: DomainQuote;
   onQuote: (quote?: DomainQuote) => void;
+  initialDomainName?: string;
 }) {
   const [offers, setOffers] = useState<DomainOffer[]>([]);
   const [offerId, setOfferId] = useState('');
-  const [label, setLabel] = useState('');
+  const [label, setLabel] = useState(initialDomainName?.split('.')[0] ?? '');
   const [contact, setContact] = useState<Partial<DomainContact>>({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -58,7 +60,12 @@ export function HostingDomainQuote({
           .parse(result)
           .filter((offer) => offer.simulated);
         setOffers(available);
-        setOfferId(available[0]?.id ?? '');
+        const extension = initialDomainName?.split('.').at(-1);
+        setOfferId(
+          available.find((offer) => offer.tld === extension)?.id ??
+            available[0]?.id ??
+            '',
+        );
       })
       .catch((caught: unknown) => {
         if (active) setError(message(caught));
@@ -82,7 +89,7 @@ export function HostingDomainQuote({
     return () => {
       active = false;
     };
-  }, []);
+  }, [initialDomainName]);
 
   async function requestQuote(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

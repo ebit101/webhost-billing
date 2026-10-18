@@ -15,8 +15,8 @@ For a local fake-provider test:
 
 1. Start local PostgreSQL and Redis, apply committed migrations with `pnpm db:migrate:deploy`, and run `pnpm --filter @webhost-billing/database db:seed:shared-hosting`.
 2. For the new-domain path, a full administrator with two-factor authentication enables the simulated registrar in the domain manager and sets a fictional annual BDT test price. This creates the simulated `.com` and `.net` offers; do not configure live registrar credentials.
-3. Open `/shared-hosting` or `/hosting`, select an active annual plan, and continue to customer checkout.
-4. Choose **Use an existing domain** to order hosting without a registration charge, or **Register a new domain** to enter fictional registrant details and request a simulated `.com` or `.net` quote.
+3. Open `/shared-hosting` or `/hosting`, select an active annual plan, and choose a domain on the public `/order` page. The page shows the selected plan and BDT price before any account step. The domain choice is kept in this browser for 24 hours, scoped to that exact plan and price, so it survives email verification in a new tab.
+4. Continue to checkout. Sign in or create and verify a customer account if needed. The domain choice is restored after sign in. Choose **Use an existing domain** to order hosting without a registration charge, or **Register a new domain** to enter fictional registrant details and request a simulated `.com` or `.net` quote. New-domain availability and registration price are confirmed only in authenticated checkout.
 5. For a new domain, check that the hosting and domain appear as two order items on one unpaid invoice. Verify payment through the existing test workflow. Domain registration still needs administrator approval, and the order completes only after the domain is registered in the simulation and the hosting service is active.
 
 Only fake providers belong in this local test. No live registrar, WHM, payment provider or deployment action is part of Command 124. BDT is the only currency for a combined hosting and domain order; domain transfers and further currency work remain held.

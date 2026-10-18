@@ -219,7 +219,7 @@ export function PublicProductCatalog() {
                 </ul>
                 {price ? (
                   <Link
-                    href={`/portal/checkout?productId=${product.id}&priceId=${price.id}`}
+                    href={`/order?productId=${product.id}&priceId=${price.id}`}
                     className={`${buttonStyles(index === 1 ? 'primary' : 'secondary')} mt-8 w-full`}
                   >
                     Choose {product.name}

@@ -83,11 +83,18 @@ test('complete hosting customer and administrator lifecycle', async ({
       page.getByRole('link', { name: `Choose ${E2E_PRODUCT.name}` }),
     ).toHaveAttribute(
       'href',
-      `/portal/checkout?productId=${E2E_PRODUCT.id}&priceId=${E2E_PRODUCT.priceId}`,
+      `/order?productId=${E2E_PRODUCT.id}&priceId=${E2E_PRODUCT.priceId}`,
     );
     await page
       .getByRole('link', { name: `Choose ${E2E_PRODUCT.name}` })
       .click();
+    await expect(page).toHaveURL(new RegExp(`/order\\?${selectionQuery}$`));
+    await page.getByRole('radio', { name: /Use an existing domain/ }).check();
+    await page
+      .getByRole('textbox', { name: 'Domain name' })
+      .fill(E2E_PRODUCT.domain);
+    await page.getByRole('button', { name: 'Review selection' }).click();
+    await page.getByRole('link', { name: 'Continue to checkout' }).click();
     await expect(page).toHaveURL(new RegExp(`/login\\?${selectionQuery}$`));
     await expect(
       page.getByRole('link', { name: 'Create an account' }),
@@ -153,6 +160,9 @@ test('complete hosting customer and administrator lifecycle', async ({
     await expect(page.getByLabel('Billing period')).toHaveValue(
       E2E_PRODUCT.priceId,
     );
+    await expect(
+      page.getByRole('textbox', { name: 'Domain', exact: true }),
+    ).toHaveValue(E2E_PRODUCT.domain);
     const customer = await e2ePrisma.customer.findFirstOrThrow({
       where: { user: { email: E2E_CUSTOMER.email } },
       select: { id: true },
@@ -170,6 +180,13 @@ test('complete hosting customer and administrator lifecycle', async ({
     await page
       .getByRole('link', { name: `Choose ${E2E_PRODUCT.name}` })
       .click();
+    await expect(page).toHaveURL(new RegExp(`/order\\?${selectionQuery}$`));
+    await page.getByRole('radio', { name: /Use an existing domain/ }).check();
+    await page
+      .getByRole('textbox', { name: 'Domain name' })
+      .fill(E2E_PRODUCT.domain);
+    await page.getByRole('button', { name: 'Review selection' }).click();
+    await page.getByRole('link', { name: 'Continue to checkout' }).click();
     await expect(page).toHaveURL(
       new RegExp(
         `/portal/checkout\\?productId=${E2E_PRODUCT.id}&priceId=${E2E_PRODUCT.priceId}$`,

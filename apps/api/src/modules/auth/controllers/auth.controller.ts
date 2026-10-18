@@ -143,7 +143,11 @@ export class AuthController {
     if ('requiresTwoFactor' in result) {
       return createApiSuccessResponse(result);
     }
-    this.cookies.setSessionCookie(response, result.token);
+    this.cookies.setSessionCookie(
+      response,
+      result.token,
+      result.identity.role === 'ADMIN',
+    );
 
     return createApiSuccessResponse({
       identity: result.identity,
@@ -170,7 +174,11 @@ export class AuthController {
       input,
       this.securityContext(request),
     );
-    this.cookies.setSessionCookie(response, result.token);
+    this.cookies.setSessionCookie(
+      response,
+      result.token,
+      result.identity.role === 'ADMIN',
+    );
     return createApiSuccessResponse({
       identity: result.identity,
       session: result.session,
@@ -328,9 +336,16 @@ export class AuthController {
   }
 
   @Get('me')
+  @Header('Cache-Control', 'no-store')
   me(
     @CurrentAuth() auth: AuthRequestContext,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
   ): ApiSuccessResponse<AuthenticatedIdentity> {
+    if (auth.identity.role === 'ADMIN') {
+      const token = this.cookies.read(request, this.cookies.sessionCookieName);
+      if (token) this.cookies.setSessionCookie(response, token, true);
+    }
     return createApiSuccessResponse(auth.identity);
   }
 

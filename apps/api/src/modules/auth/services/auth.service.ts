@@ -29,7 +29,10 @@ import { ApplicationException } from '../../../common/errors/application.excepti
 import type { SecurityRequestContext } from '../../../common/http/request-context';
 import { PRISMA_CLIENT } from '../../../infrastructure/database/database.module';
 import { API_ENVIRONMENT } from '../../../infrastructure/environment/environment.module';
-import { AUTH_TOKEN_FACTORY } from '../auth.constants';
+import {
+  ADMIN_SESSION_TTL_MILLISECONDS,
+  AUTH_TOKEN_FACTORY,
+} from '../auth.constants';
 import type { AuthRequestContext, AuthTokenFactory } from '../auth.types';
 import { AuthAuditService } from './auth-audit.service';
 import { hashOpaqueToken } from './auth-token.service';
@@ -387,7 +390,10 @@ export class AuthService {
     const rawToken = this.tokens.generate();
     const createdAt = new Date();
     const expiresAt = new Date(
-      createdAt.getTime() + this.sessionTtlMilliseconds,
+      createdAt.getTime() +
+        (user.role === UserRole.ADMIN
+          ? ADMIN_SESSION_TTL_MILLISECONDS
+          : this.sessionTtlMilliseconds),
     );
     const sessionId = randomUUID();
 
@@ -451,6 +457,7 @@ export class AuthService {
     });
     const idleExpired = Boolean(
       session &&
+      session.user.role !== UserRole.ADMIN &&
       now.getTime() - session.lastSeenAt.getTime() >
         this.sessionIdleTtlMilliseconds,
     );
@@ -496,9 +503,18 @@ export class AuthService {
     }
 
     if (now.getTime() - session.lastSeenAt.getTime() >= 300_000) {
-      await this.prisma.authSession.update({
-        where: { id: session.id },
-        data: { lastSeenAt: now },
+      await this.prisma.authSession.updateMany({
+        where: { id: session.id, revokedAt: null },
+        data: {
+          lastSeenAt: now,
+          ...(session.user.role === UserRole.ADMIN
+            ? {
+                expiresAt: new Date(
+                  now.getTime() + ADMIN_SESSION_TTL_MILLISECONDS,
+                ),
+              }
+            : {}),
+        },
       });
     }
 
@@ -1084,7 +1100,10 @@ export class AuthService {
   ): Promise<LoginResult> {
     const rawToken = this.tokens.generate();
     const expiresAt = new Date(
-      createdAt.getTime() + this.sessionTtlMilliseconds,
+      createdAt.getTime() +
+        (user.role === UserRole.ADMIN
+          ? ADMIN_SESSION_TTL_MILLISECONDS
+          : this.sessionTtlMilliseconds),
     );
     const sessionId = randomUUID();
     await transaction.authSession.create({

@@ -5464,6 +5464,19 @@ data and committed migrations. Do not deploy, contact live providers or
 modify the owner's configured WHM server.
 ```
 
+## Command 125 — Guest hosting order step and renewable administrator sessions
+
+```text
+Owner-directed on 2026-10-18: selecting a public hosting plan must lead to a
+guest domain and order-review step before customer sign-in or registration.
+Carry the chosen plan, billing period and existing/new domain choice into
+protected checkout, where pricing, simulated availability, consent and order
+submission remain authoritative. Administrators stay signed in during normal
+work until explicit sign-out or revocation; preserve customer timeout and MFA.
+Validate with fictional local data and guarded browser tests. Do not deploy or
+perform live registrar, WHM or payment operations in this command.
+```
+
 ## Operating Guidance
 
 1. Run commands in order.

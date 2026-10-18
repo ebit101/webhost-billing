@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { authenticatedGet } from '../../lib/auth-api';
 import { Icon, type IconName } from '../ui/icon';
 import { Brand } from './brand';
 
@@ -30,6 +31,22 @@ export function WorkspaceShell({
   const [menuOpen, setMenuOpen] = useState(false);
   const openMenuRef = useRef<HTMLButtonElement>(null);
   const closeMenuRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (mode !== 'admin') return;
+    const renewSession = () => {
+      if (document.visibilityState === 'visible') {
+        void authenticatedGet<unknown>('/auth/me').catch(() => undefined);
+      }
+    };
+    renewSession();
+    const interval = window.setInterval(renewSession, 60 * 60 * 1_000);
+    document.addEventListener('visibilitychange', renewSession);
+    return () => {
+      window.clearInterval(interval);
+      document.removeEventListener('visibilitychange', renewSession);
+    };
+  }, [mode]);
 
   useEffect(() => {
     if (!menuOpen) return;

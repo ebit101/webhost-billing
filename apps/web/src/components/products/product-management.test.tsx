@@ -104,7 +104,7 @@ describe('product and pricing interfaces', () => {
       name: 'Choose Business Hosting',
     });
     expect(choose.getAttribute('href')).toBe(
-      `/portal/checkout?productId=${productId}&priceId=${monthlyPriceId}`,
+      `/order?productId=${productId}&priceId=${monthlyPriceId}`,
     );
     expect(screen.getByText('BDT 240.00')).toBeTruthy();
     expect(
@@ -125,7 +125,7 @@ describe('product and pricing interfaces', () => {
       screen
         .getByRole('link', { name: 'Choose Business Hosting' })
         .getAttribute('href'),
-    ).toBe(`/portal/checkout?productId=${productId}&priceId=${annualPriceId}`);
+    ).toBe(`/order?productId=${productId}&priceId=${annualPriceId}`);
     expect(
       screen.getByRole('table', { name: 'Comparison of active hosting plans' }),
     ).toBeTruthy();
@@ -153,7 +153,7 @@ describe('product and pricing interfaces', () => {
       (
         await screen.findByRole('link', { name: 'Choose Business Hosting' })
       ).getAttribute('href'),
-    ).toBe(`/portal/checkout?productId=${productId}&priceId=${annualPriceId}`);
+    ).toBe(`/order?productId=${productId}&priceId=${annualPriceId}`);
     expect(
       screen
         .getByRole('button', { name: 'Yearly' })
@@ -240,7 +240,7 @@ describe('product and pricing interfaces', () => {
         name: `Choose ${plan.name}`,
       });
       expect(choose.getAttribute('href')).toBe(
-        `/portal/checkout?productId=${plan.id}&priceId=${plan.prices[0]!.id}`,
+        `/order?productId=${plan.id}&priceId=${plan.prices[0]!.id}`,
       );
     }
     expect(

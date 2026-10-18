@@ -2802,6 +2802,14 @@ report-only update must pass its own delivery gate; stop for the recommended pha
 - **Reason:** Customers need one order and invoice when buying hosting with a domain, while payment, registrar result, and hosting provisioning remain separate evidence.
 - **Consequence:** Existing-domain orders remain hosting-only. Domain transfers, USD display or collection, real registrar/WHM calls, and deployment are outside this source command. The combined-order database migration must pass isolated PostgreSQL tests before the command can be delivered.
 
+## ADR-134 — Guest hosting selection and renewable administrator sessions
+
+- **Status:** Accepted by owner
+- **Date:** 2026-10-18
+- **Decision:** The public hosting plan button opens a guest order step for domain selection and plan review. The exact plan, price, domain and existing/new choice are held in browser local storage for 24 hours; sign in or registration is requested only when continuing to protected checkout. This draft contains no credentials or authoritative price, and is cleared after successful order placement. Availability, registration pricing, registrant consent and order submission remain server-validated. Administrator sessions have no idle cutoff and renew a 365-day cookie and database expiry while in use; customer session policy is unchanged.
+- **Reason:** Customers should configure hosting and a domain before account entry. The owner also wants administrators to remain signed in during normal work until they sign out.
+- **Consequence:** Clearing browser storage can discard an unfinished guest selection; anyone using the same browser could see the unsubmitted domain for up to 24 hours. A browser may delete the cookie or enforce a lifetime cap, so a fresh administrator login can still be required. Sign out, revocation, password reset and MFA continue to end or restrict access. No live provider operation or deployment is authorized by this source change.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

@@ -12,7 +12,8 @@ import {
   checkoutEntryHref,
   readCheckoutIntent,
 } from '../../lib/checkout-intent';
-import { Card, Field, fieldClass } from '../customers/customer-fields';
+import { clearOrderDraft, readOrderDraft } from '../../lib/order-draft';
+import { Card, fieldClass } from '../customers/customer-fields';
 import { Button, buttonStyles } from '../ui/button';
 import { LoadingState } from '../ui/feedback-state';
 import { Icon } from '../ui/icon';
@@ -35,6 +36,7 @@ export function CustomerCheckout({
     'EXISTING',
   );
   const [domainQuote, setDomainQuote] = useState<DomainQuote>();
+  const [requestedDomain, setRequestedDomain] = useState('');
   const [result, setResult] = useState<OrderCreationResult>();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -64,6 +66,13 @@ export function CustomerCheckout({
         }
         setProductId(selected?.id ?? '');
         setPriceId(selectedPrice?.id ?? '');
+        if (intent) {
+          const draft = readOrderDraft(intent);
+          if (draft) {
+            setDomainChoice(draft.domainChoice);
+            setRequestedDomain(draft.requestedDomain);
+          }
+        }
       })
       .catch((caught: unknown) => {
         if (active) setError(errorMessage(caught));
@@ -97,6 +106,7 @@ export function CustomerCheckout({
         },
       );
       setResult(created);
+      clearOrderDraft();
       submissionKey.current = '';
     } catch (caught) {
       setError(errorMessage(caught));
@@ -300,12 +310,17 @@ export function CustomerCheckout({
             </fieldset>
             {domainChoice === 'EXISTING' ? (
               <form onSubmit={checkout} className="grid gap-4">
-                <Field
-                  label="Domain"
-                  name="requestedDomain"
-                  placeholder="example.com"
-                  required
-                />
+                <label className="block text-sm font-semibold text-slate-700">
+                  Domain
+                  <input
+                    className={fieldClass}
+                    name="requestedDomain"
+                    value={requestedDomain}
+                    onChange={(event) => setRequestedDomain(event.target.value)}
+                    placeholder="example.com"
+                    required
+                  />
+                </label>
                 <Button type="submit" disabled={saving || !price}>
                   {saving ? 'Placing order…' : 'Place order'}
                   <Icon name="arrow-right" className="size-4" />
@@ -314,8 +329,10 @@ export function CustomerCheckout({
             ) : (
               <>
                 <HostingDomainQuote
+                  key={requestedDomain}
                   quote={domainQuote}
                   onQuote={setDomainQuote}
+                  initialDomainName={requestedDomain}
                 />
                 {price && price.amount.currency !== 'BDT' ? (
                   <p role="alert" className="text-sm text-amber-800">
