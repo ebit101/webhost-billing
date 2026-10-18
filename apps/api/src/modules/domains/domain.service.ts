@@ -932,6 +932,70 @@ export class DomainService {
     this.requireSimulation();
     return this.purchaseForCustomer(input, auth, input.customerId, true);
   }
+  async quoteForHostingOrder(
+    tx: Prisma.TransactionClient,
+    quoteId: string,
+    customerId: string,
+    domainName: string,
+  ) {
+    this.requireSimulation();
+    await tx.$queryRaw`SELECT id FROM domain_quotes WHERE id=${quoteId}::uuid FOR UPDATE`;
+    const quote = await tx.domainQuote.findUnique({ where: { id: quoteId } });
+    if (
+      !quote ||
+      quote.customerId !== customerId ||
+      quote.domainName !== domainName ||
+      quote.offlineConsent !== null ||
+      quote.expiresAt <= new Date()
+    )
+      this.deny('This domain quote is unavailable. Request a new quote.');
+    if (await tx.domain.findUnique({ where: { quoteId } }))
+      this.deny('This domain quote already has an order.');
+    const offer = await tx.domainOffer.findUniqueOrThrow({
+      where: { id: quote.offerId },
+    });
+    const account = await tx.registrarAccount.findUniqueOrThrow({
+      where: { id: quote.accountId },
+    });
+    if (offer.accountId !== account.id || account.mode !== 'FAKE')
+      this.deny('Only simulated domain offers can be combined with hosting.');
+    this.requireAccount(account);
+    const selection = quote.selectionSnapshot
+      ? domainSelectionSnapshotSchema.parse(quote.selectionSnapshot)
+      : null;
+    if (selection) {
+      await tx.$queryRaw`SELECT pg_advisory_xact_lock(510118)::text`;
+      const fresh = await this.administration.catalogueContext(
+        offer.tld,
+        quote.accountId,
+      );
+      if (
+        !fresh ||
+        JSON.stringify(fresh.snapshot) !== JSON.stringify(selection) ||
+        JSON.stringify(fresh.nameservers) !== JSON.stringify(quote.nameservers)
+      )
+        this.deny('The domain catalogue changed. Request a new quote.');
+    }
+    const price = await tx.productPrice.findUniqueOrThrow({
+      where: { id: selection?.priceId ?? offer.priceId },
+      include: { product: true },
+    });
+    if (
+      !account.enabled ||
+      (!selection && !price.isActive) ||
+      price.deletedAt ||
+      price.product.deletedAt ||
+      price.product.kind !== 'DOMAIN' ||
+      price.product.status !== 'ACTIVE' ||
+      !price.product.publicVisible ||
+      price.currency !== 'BDT' ||
+      price.amount <= 0n ||
+      price.setupFee !== 0n ||
+      price.amount !== quote.sellingAmount
+    )
+      this.deny('The domain offer changed. Request a new quote.');
+    return { quote, price, account };
+  }
   private async purchaseForCustomer(
     input: DomainPurchaseRequest,
     auth: AuthRequestContext,

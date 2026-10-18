@@ -11,5 +11,6 @@ import { DomainAdministrationController } from './domain-administration.controll
     DomainLifecycleService,
     DomainAdministrationService,
   ],
+  exports: [DomainService],
 })
 export class DomainModule {}

@@ -2794,6 +2794,14 @@ report-only update must pass its own delivery gate; stop for the recommended pha
 - **Reason:** Changing an assigned server's identity could redirect destructive account actions. Deleting service or operation history would remove the evidence needed to reconcile external WHM state. A saved credential is not proof of a working or approved connection.
 - **Consequence:** The administrator server screen and API provide add/edit/test/status/remove controls with audit records and no token disclosure. The database permits credential-free retired cPanel servers but keeps complete configuration mandatory for active records. A real WHM test or mutation and deployment still need separate authorization and credentialed acceptance.
 
+## ADR-133 — Combine hosting and simulated domain registration on one invoice
+
+- **Status:** Accepted for local fake-provider testing
+- **Date:** 2026-10-18
+- **Decision:** Customer checkout offers an existing domain or a new simulated `.com`/`.net` registration. The new-domain path consumes a customer-owned, unexpired fake quote and creates one hosting item, one domain item, and one unpaid BDT invoice. Verified payment precedes domain approval and hosting activation. A combined order completes only after the domain is registered in the simulation and the hosting service is active. Public shared-hosting plans use the current Speed Host annual BDT catalogue as the test reference; the active product catalogue remains the source of orderable prices.
+- **Reason:** Customers need one order and invoice when buying hosting with a domain, while payment, registrar result, and hosting provisioning remain separate evidence.
+- **Consequence:** Existing-domain orders remain hosting-only. Domain transfers, USD display or collection, real registrar/WHM calls, and deployment are outside this source command. The combined-order database migration must pass isolated PostgreSQL tests before the command can be delivered.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

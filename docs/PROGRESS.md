@@ -15851,6 +15851,16 @@ require explicit approval.
   catalogue reference after verifying its current content. Do not deploy or
   perform live registrar/WHM operations in that command.
 
+### Command 124 — Shared-hosting catalogue and combined fake domain order
+
+- **Status/date:** Complete, 2026-10-18.
+- **Implemented scope:** Added a shared-hosting landing page at `/hosting` and `/shared-hosting`, with four-plan annual BDT catalogue rendering from active products. Customer checkout can use an existing domain or request a new fake `.com`/`.net` registration quote. The combined path creates hosting and domain order items on one unpaid invoice, with quote ownership and BDT checks. The registrar, manual service, and hosting-panel completion paths require both a registered simulated domain and an active hosting service. A transactional order lock serializes concurrent completion checks. A forward migration adjusts immutable domain-invoice guards for combined lines. A guarded local seed creates the four fictional annual plans against an active fake-panel server; it ran successfully and repeatably on the local development database.
+- **Files changed:** Hosting page and public catalogue components and tests; checkout and quote components and tests; order/domain modules and services; hosting-panel service; shared order schema; database fulfillment helper, registrar processor, migration, local catalogue seed and tests; this report, `docs/DECISIONS.md`, `docs/SHARED_HOSTING_TESTING.md`, and `CODEX_DEVELOPMENT_COMMANDS.md`.
+- **Validation performed:** Local PostgreSQL and Redis became available after Docker Desktop was restored. `pnpm db:migrate:deploy` applied the new migration; `pnpm db:migrate:status` reported all 34 migrations up to date. Isolated PostgreSQL end-to-end suites passed: domains 21/21 (including the combined invoice and both fulfillment gates), hosting panels 6/6, services 7/7 and orders 7/7. Focused web Vitest 22/22 and database unit suite 166/166 passed. API and web typechecks and lint, database build/typecheck and Prisma schema validation, web production build, Prettier check, Markdown link check and `git diff --check` passed. The guarded local seed succeeded twice, and a read-only query confirmed exactly the four expected public annual BDT plans.
+- **Decisions:** Use the current public Speed Host Starter, Standard, Premium and Maximum annual BDT plans as the local test catalogue reference. WHMCS screenshots inform layout, not prices. The page displays only BDT prices from active configured products, so it does not fabricate orderable prices. Only fake providers; verified payment before activation; no transfer or currency expansion.
+- **Unresolved questions, risks, and blockers:** A full administrator must choose a fictional annual BDT price and enable the simulated registrar before manually testing the new-domain path; local registrar offers are currently absent. No live provider call, configured WHM server change, or deployment occurred.
+- **Exact recommended next command:** Authorize Command 125 after reviewing Command 124; choose the next work item from the plan and current product priorities.
+
 ## Future report template
 
 ### Owner-directed MessageDock read-only customer context integration — 2026-10-18

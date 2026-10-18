@@ -28,6 +28,98 @@ import { EventEmitter } from 'node:events';
 import { PassThrough } from 'node:stream';
 import type { IncomingMessage } from 'node:http';
 import type { request as httpsRequest, RequestOptions } from 'node:https';
+import type { Prisma } from '../src/index';
+import { orderFulfillmentComplete } from '../src/fulfillment';
+
+function fulfillmentTransaction(
+  items: Array<{
+    id: string;
+    kind: 'HOSTING' | 'DOMAIN';
+    service: { status: string } | null;
+  }>,
+  registered: number,
+  events?: string[],
+): Prisma.TransactionClient {
+  return {
+    $queryRaw: async () => {
+      events?.push('lock order');
+      return [];
+    },
+    orderItem: {
+      findMany: async () => {
+        events?.push('read items');
+        return items;
+      },
+    },
+    domain: {
+      count: async () => {
+        events?.push('read domains');
+        return registered;
+      },
+    },
+  } as unknown as Prisma.TransactionClient;
+}
+
+test('a combined order completes only after hosting and domain fulfillment', async () => {
+  const pendingHosting = [
+    { id: 'hosting', kind: 'HOSTING' as const, service: null },
+    { id: 'domain', kind: 'DOMAIN' as const, service: null },
+  ];
+  assert.equal(
+    await orderFulfillmentComplete(
+      fulfillmentTransaction(pendingHosting, 1),
+      'order',
+    ),
+    false,
+  );
+  const activeHosting = [
+    { id: 'hosting', kind: 'HOSTING' as const, service: { status: 'ACTIVE' } },
+    { id: 'domain', kind: 'DOMAIN' as const, service: null },
+  ];
+  const events: string[] = [];
+  assert.equal(
+    await orderFulfillmentComplete(
+      fulfillmentTransaction(activeHosting, 0, events),
+      'order',
+    ),
+    false,
+  );
+  assert.deepEqual(events, ['lock order', 'read items', 'read domains']);
+  assert.equal(
+    await orderFulfillmentComplete(
+      fulfillmentTransaction(activeHosting, 1),
+      'order',
+    ),
+    true,
+  );
+});
+
+test('hosting-only and domain-only orders keep their completion rules', async () => {
+  assert.equal(
+    await orderFulfillmentComplete(fulfillmentTransaction([], 0), 'order'),
+    false,
+  );
+  assert.equal(
+    await orderFulfillmentComplete(
+      fulfillmentTransaction(
+        [{ id: 'hosting', kind: 'HOSTING', service: { status: 'ACTIVE' } }],
+        0,
+      ),
+      'order',
+    ),
+    true,
+  );
+  assert.equal(
+    await orderFulfillmentComplete(
+      fulfillmentTransaction(
+        [{ id: 'domain', kind: 'DOMAIN', service: null }],
+        1,
+      ),
+      'order',
+    ),
+    true,
+  );
+});
 
 test('ordinary names and consent fail closed', () => {
   assert.equal(domainNameSchema.parse('Example.COM'), 'example.com');

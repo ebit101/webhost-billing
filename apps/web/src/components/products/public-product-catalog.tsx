@@ -25,7 +25,6 @@ const periods: {
 export function PublicProductCatalog() {
   const [products, setProducts] = useState<PublicProduct[]>([]);
   const [period, setPeriod] = useState<HostingBillingPeriod>('MONTHLY');
-  const [currency, setCurrency] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -34,10 +33,14 @@ export function PublicProductCatalog() {
     void publicGet<PublicProduct[]>('/products/public')
       .then((result) => {
         if (!active) return;
-        setProducts(result);
-        const selection = defaultCatalogueSelection(result);
-        setPeriod(selection?.period ?? 'MONTHLY');
-        setCurrency(selection?.currency ?? '');
+        const bdtProducts = result.map((product) => ({
+          ...product,
+          prices: product.prices.filter(
+            (price) => price.amount.currency === 'BDT',
+          ),
+        }));
+        setProducts(bdtProducts);
+        setPeriod(defaultCatalogueSelection(bdtProducts));
       })
       .catch((caught: unknown) => {
         if (active) {
@@ -56,17 +59,6 @@ export function PublicProductCatalog() {
     };
   }, []);
 
-  const currencies = useMemo(
-    () =>
-      [
-        ...new Set(
-          products.flatMap((product) =>
-            product.prices.map((price) => price.amount.currency),
-          ),
-        ),
-      ].sort(),
-    [products],
-  );
   const comparisonColumns = useMemo<DataColumn<ComparisonRow>[]>(
     () => [
       {
@@ -158,35 +150,15 @@ export function PublicProductCatalog() {
             </button>
           ))}
         </div>
-        {currencies.length > 1 ? (
-          <label className="text-sm font-semibold text-slate-700">
-            Currency
-            <select
-              value={currency}
-              onChange={(event) => {
-                const nextCurrency = event.target.value;
-                setCurrency(nextCurrency);
-                setPeriod(firstAvailablePeriod(products, nextCurrency));
-              }}
-              className="ml-3 rounded-xl border border-slate-300 bg-white px-3 py-2"
-            >
-              {currencies.map((item) => (
-                <option key={item}>{item}</option>
-              ))}
-            </select>
-          </label>
-        ) : (
-          <span className="text-sm font-semibold text-slate-500">
-            Prices in {currency}
-          </span>
-        )}
+        <span className="text-sm font-semibold text-slate-500">
+          Prices in BDT
+        </span>
       </div>
-      <div className="grid gap-5 lg:grid-cols-3">
+      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         {products.map((product, index) => {
           const price = product.prices.find(
             (item) =>
-              item.billingPeriod === period &&
-              item.amount.currency === currency,
+              item.billingPeriod === period && item.amount.currency === 'BDT',
           );
           return (
             <article
@@ -283,38 +255,17 @@ export function PublicProductCatalog() {
 
 function defaultCatalogueSelection(
   products: PublicProduct[],
-): { currency: string; period: HostingBillingPeriod } | undefined {
-  for (const period of periods) {
-    const currencies = [
-      ...new Set(
-        products.flatMap((product) =>
-          product.prices
-            .filter((price) => price.billingPeriod === period.value)
-            .map((price) => price.amount.currency),
-        ),
-      ),
-    ].sort();
-    const currency = currencies[0];
-    if (currency) return { currency, period: period.value };
-  }
-  return undefined;
-}
-
-function firstAvailablePeriod(
-  products: PublicProduct[],
-  currency: string,
 ): HostingBillingPeriod {
-  return (
-    periods.find((period) =>
-      products.some((product) =>
-        product.prices.some(
-          (price) =>
-            price.billingPeriod === period.value &&
-            price.amount.currency === currency,
-        ),
-      ),
-    )?.value ?? 'MONTHLY'
-  );
+  let selected: { period: HostingBillingPeriod; count: number } | undefined;
+  for (const period of periods) {
+    const count = products.filter((product) =>
+      product.prices.some((price) => price.billingPeriod === period.value),
+    ).length;
+    if (!selected || count > selected.count) {
+      selected = { period: period.value, count };
+    }
+  }
+  return selected?.period ?? 'MONTHLY';
 }
 
 interface ComparisonRow {

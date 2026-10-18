@@ -161,6 +161,99 @@ describe('product and pricing interfaces', () => {
     ).toBe('true');
   });
 
+  it('shows four annual shared-hosting packages and carries each package into checkout', async () => {
+    const plans = [
+      [
+        'Starter',
+        '150000',
+        '1 GB NVMe SSD',
+        '1 website',
+        '5 email accounts',
+        '100 GB monthly',
+      ],
+      [
+        'Standard',
+        '350000',
+        '5 GB NVMe SSD',
+        '3 websites',
+        '10 email accounts',
+        '300 GB monthly',
+      ],
+      [
+        'Premium',
+        '500000',
+        '10 GB NVMe SSD',
+        '5 websites',
+        '15 email accounts',
+        '500 GB monthly',
+      ],
+      [
+        'Maximum',
+        '800000',
+        '20 GB NVMe SSD',
+        '10 websites',
+        'Unlimited email accounts',
+        '1,000 GB monthly',
+      ],
+    ] as const;
+    const catalog: PublicProduct[] = plans.map(
+      ([name, amount, storage, websites, email, bandwidth], index) => {
+        const id = `80000000-0000-4000-8000-${String(index + 10).padStart(12, '0')}`;
+        const priceId = `80000000-0000-4000-8000-${String(index + 20).padStart(12, '0')}`;
+        return {
+          ...publicProduct,
+          id,
+          slug: `shared-${name.toLowerCase()}`,
+          name,
+          displayOrder: index,
+          features: { storage, websites, email, bandwidth },
+          prices: [
+            {
+              ...publicProduct.prices[0]!,
+              id: priceId,
+              amount: { amount, currency: 'BDT' },
+            },
+            ...(index === 0
+              ? [
+                  { ...publicProduct.prices[1]!, id: monthlyPriceId },
+                  {
+                    ...publicProduct.prices[0]!,
+                    id: `80000000-0000-4000-8000-000000000099`,
+                    amount: { amount: '9900', currency: 'USD' },
+                    setupFee: { amount: '0', currency: 'USD' },
+                  },
+                ]
+              : []),
+          ],
+        };
+      },
+    );
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(jsonResponse({ success: true, data: catalog })),
+    );
+
+    render(<PublicProductCatalog />);
+
+    for (const plan of catalog) {
+      const choose = await screen.findByRole('link', {
+        name: `Choose ${plan.name}`,
+      });
+      expect(choose.getAttribute('href')).toBe(
+        `/portal/checkout?productId=${plan.id}&priceId=${plan.prices[0]!.id}`,
+      );
+    }
+    expect(
+      screen
+        .getByRole('button', { name: 'Yearly' })
+        .getAttribute('aria-pressed'),
+    ).toBe('true');
+    expect(screen.getByText('BDT 1,500.00')).toBeTruthy();
+    expect(screen.getByText('BDT 8,000.00')).toBeTruthy();
+    expect(screen.queryByLabelText('Currency')).toBeNull();
+    expect(screen.queryByText(/USD/)).toBeNull();
+  });
+
   it('shows an explicit unavailable state when products have no active prices', async () => {
     vi.stubGlobal(
       'fetch',

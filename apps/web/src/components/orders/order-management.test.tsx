@@ -124,7 +124,16 @@ const customer: CustomerSummary = {
 };
 
 const customerDetail: CustomerDetail = {
-  ...customer,
+  id: customer.id,
+  customerNumber: customer.customerNumber,
+  status: customer.status,
+  accountStatus: customer.accountStatus,
+  email: customer.email,
+  emailVerified: customer.emailVerified,
+  firstName: customer.firstName,
+  lastName: customer.lastName,
+  companyName: customer.companyName,
+  createdAt: customer.createdAt,
   phone: null,
   addressLine1: '7 Test Avenue',
   addressLine2: null,
@@ -321,6 +330,150 @@ describe('order interfaces', () => {
     expect(submittedBody?.submissionKey).toMatch(/^[0-9a-f-]{36}$/);
     expect(submittedBody).not.toHaveProperty('total');
     expect(submittedBody).not.toHaveProperty('amount');
+  });
+
+  it('quotes a simulated new domain and adds it to the hosting order on one invoice', async () => {
+    const user = userEvent.setup();
+    const domainQuoteId = '90000000-0000-4000-8000-000000000091';
+    const offerId = '90000000-0000-4000-8000-000000000092';
+    const bodies: Record<string, unknown>[] = [];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input);
+        if (url.endsWith('/products/public'))
+          return jsonResponse({ success: true, data: [publicProduct] });
+        if (url.endsWith('/domains/offers'))
+          return jsonResponse({
+            success: true,
+            data: [
+              {
+                id: offerId,
+                tld: 'com',
+                years: 1,
+                sellingAmount: '150000',
+                currency: 'BDT',
+                nameservers: ['ns1.example.test', 'ns2.example.test'],
+                simulated: true,
+                costAmount: '1000',
+                costCurrency: 'USD',
+              },
+            ],
+          });
+        if (url.endsWith('/auth/me'))
+          return jsonResponse({
+            success: true,
+            data: {
+              userId: '90000000-0000-4000-8000-000000000099',
+              email: customer.email,
+              role: 'CUSTOMER',
+              customerId,
+            },
+          });
+        if (url.endsWith(`/customers/${customerId}`))
+          return jsonResponse({ success: true, data: customerDetail });
+        if (url.endsWith('/auth/csrf'))
+          return jsonResponse({
+            success: true,
+            data: { csrfToken: 'a'.repeat(32) },
+          });
+        if (url.endsWith('/domains/quotes')) {
+          bodies.push(
+            JSON.parse(String(init?.body)) as Record<string, unknown>,
+          );
+          return jsonResponse({
+            success: true,
+            data: {
+              id: domainQuoteId,
+              domainName: 'newsite.com',
+              sellingAmount: '150000',
+              currency: 'BDT',
+              costAmount: '1000',
+              costCurrency: 'USD',
+              simulated: true,
+              expiresAt: new Date(Date.now() + 300000).toISOString(),
+            },
+          });
+        }
+        if (url.endsWith('/orders/checkout')) {
+          bodies.push(
+            JSON.parse(String(init?.body)) as Record<string, unknown>,
+          );
+          return jsonResponse({
+            success: true,
+            data: {
+              order: {
+                ...order,
+                items: [
+                  {
+                    ...order.items[0],
+                    id: '90000000-0000-4000-8000-000000000093',
+                    kind: 'DOMAIN',
+                    productName: 'Simulated domain registration',
+                    requestedDomain: 'newsite.com',
+                  },
+                  {
+                    ...order.items[0],
+                    kind: 'HOSTING',
+                    requestedDomain: 'newsite.com',
+                  },
+                ],
+              },
+              duplicate: false,
+            },
+          });
+        }
+        throw new Error(`Unexpected request: ${url}`);
+      }),
+    );
+    render(
+      <CustomerCheckout
+        initialProductId={productId}
+        initialPriceId={priceId}
+      />,
+    );
+    await screen.findByLabelText('Product');
+    await user.click(
+      screen.getByRole('radio', { name: /Register a new domain/ }),
+    );
+    await screen.findByRole('button', { name: 'Check domain and get quote' });
+    await waitFor(() =>
+      expect(screen.getByLabelText('Registrant name')).toHaveProperty(
+        'value',
+        'Amina Rahman',
+      ),
+    );
+    await user.type(screen.getByLabelText('Domain name'), 'newsite');
+    await user.type(screen.getByLabelText('Company'), 'Example Studio');
+    await user.type(screen.getByLabelText('Region'), 'Dhaka');
+    await user.type(screen.getByLabelText('Phone country code'), '880');
+    await user.type(screen.getByLabelText('Phone number'), '1712345678');
+    await user.click(screen.getByRole('checkbox'));
+    await user.click(
+      screen.getByRole('button', { name: 'Check domain and get quote' }),
+    );
+    expect(
+      await screen.findByText(/newsite.com is available in the simulation/),
+    ).toBeTruthy();
+    expect(bodies[0]).toMatchObject({
+      offerId,
+      domainName: 'newsite.com',
+      agreement: 'fictional-registration-v1',
+      consent: true,
+    });
+    await user.click(
+      screen.getByRole('button', { name: 'Place hosting and domain order' }),
+    );
+    expect(await screen.findByText(order.orderNumber)).toBeTruthy();
+    expect(screen.getByText('Starter Hosting')).toBeTruthy();
+    expect(screen.getByText('newsite.com')).toBeTruthy();
+    expect(bodies[1]).toMatchObject({
+      productId,
+      priceId,
+      requestedDomain: 'newsite.com',
+      domainQuoteId,
+    });
+    expect(bodies[1]).not.toHaveProperty('total');
   });
 
   it('loads administrator order creation and state controls', async () => {

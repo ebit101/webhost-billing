@@ -30,6 +30,7 @@ import { createHumanReadableNumber } from '../../common/identifiers/business-num
 import { allocateInvoiceNumber } from '../../common/identifiers/invoice-number';
 import { PRISMA_CLIENT } from '../../infrastructure/database/database.module';
 import type { AuthRequestContext } from '../auth/auth.types';
+import { DomainService } from '../domains/domain.service';
 
 type CreateOrderInput = (
   CreateAdminOrderRequest | CreateCustomerOrderRequest
@@ -65,7 +66,10 @@ export function isOrderTransitionAllowed(
 
 @Injectable()
 export class OrderService {
-  constructor(@Inject(PRISMA_CLIENT) private readonly prisma: PrismaClient) {}
+  constructor(
+    @Inject(PRISMA_CLIENT) private readonly prisma: PrismaClient,
+    private readonly domains: DomainService,
+  ) {}
 
   async create(
     input: CreateOrderInput,
@@ -137,7 +141,37 @@ export class OrderService {
           });
         }
 
-        const total = price.amount + price.setupFee;
+        const domainQuoteId =
+          source === 'CUSTOMER' && 'domainQuoteId' in input
+            ? input.domainQuoteId
+            : undefined;
+        const domain = domainQuoteId
+          ? await this.domains.quoteForHostingOrder(
+              transaction,
+              domainQuoteId,
+              customer.id,
+              input.requestedDomain,
+            )
+          : null;
+        if (domain && price.currency !== 'BDT') {
+          throw new ApplicationException({
+            status: HttpStatus.UNPROCESSABLE_ENTITY,
+            code: 'UNPROCESSABLE_ENTITY',
+            message: 'Combined hosting and domain orders require BDT pricing.',
+          });
+        }
+        const hostingTotal = price.amount + price.setupFee;
+        if (
+          domain &&
+          domain.quote.sellingAmount > POSTGRES_BIGINT_MAX - hostingTotal
+        ) {
+          throw new ApplicationException({
+            status: HttpStatus.UNPROCESSABLE_ENTITY,
+            code: 'UNPROCESSABLE_ENTITY',
+            message: 'The combined order total exceeds the supported range.',
+          });
+        }
+        const total = hostingTotal + (domain?.quote.sellingAmount ?? 0n);
         const order = await transaction.order.create({
           data: {
             orderNumber: createHumanReadableNumber('ORD', now),
@@ -145,37 +179,58 @@ export class OrderService {
             customerId: customer.id,
             status: OrderStatus.AWAITING_PAYMENT,
             currency: price.currency,
-            subtotal: price.amount,
+            subtotal: price.amount + (domain?.quote.sellingAmount ?? 0n),
             setupTotal: price.setupFee,
             total,
             customerEmailSnapshot: customer.user.email,
             notes: 'notes' in input ? (input.notes ?? null) : null,
             placedAt: now,
             items: {
-              create: {
-                productId: price.product.id,
-                productPriceId: price.id,
-                productNameSnapshot: price.product.name,
-                descriptionSnapshot: price.product.description,
-                billingPeriod: price.billingPeriod,
-                currency: price.currency,
-                unitAmount: price.amount,
-                setupFee: price.setupFee,
-                quantity: 1,
-                lineTotal: total,
-                requestedDomain: input.requestedDomain,
-                provisioningSnapshot: {
-                  productSlug: price.product.slug,
-                  hostingPackageIdentifier:
-                    price.product.hostingPackageIdentifier,
+              create: [
+                {
+                  kind: 'HOSTING',
+                  productId: price.product.id,
+                  productPriceId: price.id,
+                  productNameSnapshot: price.product.name,
+                  descriptionSnapshot: price.product.description,
+                  billingPeriod: price.billingPeriod,
+                  currency: price.currency,
+                  unitAmount: price.amount,
+                  setupFee: price.setupFee,
+                  quantity: 1,
+                  lineTotal: hostingTotal,
+                  requestedDomain: input.requestedDomain,
+                  provisioningSnapshot: {
+                    productSlug: price.product.slug,
+                    hostingPackageIdentifier:
+                      price.product.hostingPackageIdentifier,
+                  },
                 },
-              },
+                ...(domain
+                  ? [
+                      {
+                        kind: 'DOMAIN' as const,
+                        productId: domain.price.productId,
+                        productPriceId: domain.price.id,
+                        productNameSnapshot: domain.price.product.name,
+                        descriptionSnapshot:
+                          'Simulated one-year domain registration; no external calls or charges.',
+                        billingPeriod: 'ANNUAL' as const,
+                        currency: 'BDT',
+                        unitAmount: domain.quote.sellingAmount,
+                        lineTotal: domain.quote.sellingAmount,
+                        requestedDomain: domain.quote.domainName,
+                      },
+                    ]
+                  : []),
+              ],
             },
           },
           include: { items: true },
         });
-        const orderItem = order.items[0];
+        const orderItem = order.items.find((item) => item.kind === 'HOSTING');
         if (!orderItem) throw new Error('Order item creation failed');
+        const domainItem = order.items.find((item) => item.kind === 'DOMAIN');
 
         const businessSetting = await transaction.setting.findUnique({
           where: { key: 'business.identity' },
@@ -239,10 +294,46 @@ export class OrderService {
                       },
                     ]
                   : []),
+                ...(domain && domainItem
+                  ? [
+                      {
+                        orderItemId: domainItem.id,
+                        linePosition: price.setupFee > 0n ? 3 : 2,
+                        descriptionSnapshot: `Simulated registration of ${domain.quote.domainName} for one year`,
+                        currency: 'BDT',
+                        quantity: 1,
+                        unitAmount: domain.quote.sellingAmount,
+                        lineTotal: domain.quote.sellingAmount,
+                      },
+                    ]
+                  : []),
               ],
             },
           },
         });
+        if (domain) {
+          if (!domainItem) throw new Error('Domain order item creation failed');
+          const registration = await transaction.domain.create({
+            data: {
+              quoteId: domain.quote.id,
+              customerId: customer.id,
+              accountId: domain.account.id,
+              orderItemId: domainItem.id,
+              invoiceId: invoice.id,
+              domainName: domain.quote.domainName,
+              submissionKey: input.submissionKey,
+            },
+          });
+          await transaction.activityLog.create({
+            data: {
+              actorUserId: actor.identity.userId,
+              action: 'SIMULATED_DOMAIN_ORDER_CREATED',
+              entityType: 'DOMAIN',
+              entityId: registration.id,
+              metadata: { orderId: order.id, invoiceId: invoice.id },
+            },
+          });
+        }
         await transaction.outboxEvent.createMany({
           data: [
             {
@@ -488,16 +579,25 @@ export class OrderService {
     });
   }
 
-  private duplicateResult(
+  private async duplicateResult(
     existing: OrderRecord,
     input: CreateOrderInput,
-  ): OrderCreationResult {
-    const item = existing.items[0];
+  ): Promise<OrderCreationResult> {
+    const item = existing.items.find((entry) => entry.kind === 'HOSTING');
+    const domainItem = existing.items.find((entry) => entry.kind === 'DOMAIN');
+    const requestedQuoteId =
+      'domainQuoteId' in input ? input.domainQuoteId : undefined;
+    const registration = domainItem
+      ? await this.prisma.domain.findUnique({
+          where: { orderItemId: domainItem.id },
+        })
+      : null;
     if (
       existing.customerId !== input.customerId ||
       item?.productId !== input.productId ||
       item.productPriceId !== input.priceId ||
-      item.requestedDomain !== input.requestedDomain
+      item.requestedDomain !== input.requestedDomain ||
+      (registration?.quoteId ?? undefined) !== requestedQuoteId
     ) {
       throw new ApplicationException({
         status: HttpStatus.CONFLICT,

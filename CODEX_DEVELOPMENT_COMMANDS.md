@@ -5451,6 +5451,19 @@ fictional server data, document results, commit and push source to main. Do not
 change the owner's configured test server or perform a WHM call or deployment.
 ```
 
+## Command 124 — Shared-hosting catalogue and combined fake domain order
+
+```text
+Owner-directed on 2026-10-18: build a shared-hosting page and a customer order
+path that supports both an existing domain and a newly quoted simulated domain.
+Use the current public Speed Host shared-hosting page as the four-plan BDT
+catalogue reference. A new domain registration and hosting plan must produce
+one unpaid invoice, with verified payment and separate fulfillment gates.
+Keep currency expansion and transfers held. Validate with fictional local
+data and committed migrations. Do not deploy, contact live providers or
+modify the owner's configured WHM server.
+```
+
 ## Operating Guidance
 
 1. Run commands in order.

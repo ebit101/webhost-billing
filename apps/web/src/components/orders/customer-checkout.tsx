@@ -1,6 +1,7 @@
 'use client';
 
 import type {
+  DomainQuote,
   OrderCreationResult,
   PublicProduct,
 } from '@webhost-billing/shared';
@@ -17,6 +18,7 @@ import { LoadingState } from '../ui/feedback-state';
 import { Icon } from '../ui/icon';
 import { PageHeader } from '../ui/page-header';
 import { StatusBadge } from '../ui/status-badge';
+import { HostingDomainQuote } from './hosting-domain-quote';
 import { errorMessage, formatMinor } from './order-ui';
 
 export function CustomerCheckout({
@@ -29,6 +31,10 @@ export function CustomerCheckout({
   const [products, setProducts] = useState<PublicProduct[]>([]);
   const [productId, setProductId] = useState('');
   const [priceId, setPriceId] = useState('');
+  const [domainChoice, setDomainChoice] = useState<'EXISTING' | 'REGISTER'>(
+    'EXISTING',
+  );
+  const [domainQuote, setDomainQuote] = useState<DomainQuote>();
   const [result, setResult] = useState<OrderCreationResult>();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -73,10 +79,8 @@ export function CustomerCheckout({
   const product = products.find((item) => item.id === productId);
   const price = product?.prices.find((item) => item.id === priceId);
 
-  async function checkout(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function submitOrder(requestedDomain: string, domainQuoteId?: string) {
     if (loading || unavailable || !price || saving) return;
-    const values = new FormData(event.currentTarget);
     if (!submissionKey.current) submissionKey.current = crypto.randomUUID();
     setSaving(true);
     setError('');
@@ -87,7 +91,8 @@ export function CustomerCheckout({
         {
           productId,
           priceId,
-          requestedDomain: String(values.get('requestedDomain')),
+          requestedDomain,
+          ...(domainQuoteId ? { domainQuoteId } : {}),
           submissionKey: submissionKey.current,
         },
       );
@@ -100,8 +105,18 @@ export function CustomerCheckout({
     }
   }
 
+  function checkout(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    void submitOrder(
+      String(new FormData(event.currentTarget).get('requestedDomain')),
+    );
+  }
+
   if (loading) return <LoadingState label="Loading secure checkout" />;
   if (result) {
+    const hostingItem =
+      result.order.items.find((item) => item.kind === 'HOSTING') ??
+      result.order.items[0];
     return (
       <div className="mx-auto grid max-w-3xl gap-6">
         <PageHeader
@@ -111,14 +126,17 @@ export function CustomerCheckout({
         />
         <Card title="Order summary">
           <dl className="grid gap-4 sm:grid-cols-2">
-            <Summary
-              label="Plan"
-              value={result.order.items[0]?.productName ?? ''}
-            />
+            <Summary label="Plan" value={hostingItem?.productName ?? ''} />
             <Summary
               label="Domain"
-              value={result.order.items[0]?.requestedDomain ?? ''}
+              value={hostingItem?.requestedDomain ?? ''}
             />
+            {result.order.items.some((item) => item.kind === 'DOMAIN') ? (
+              <Summary
+                label="Domain registration"
+                value="Awaiting payment and administrator approval"
+              />
+            ) : null}
             <Summary
               label="Invoice"
               value={result.order.invoice.invoiceNumber}
@@ -186,8 +204,8 @@ export function CustomerCheckout({
         </div>
       ) : null}
       <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
-        <Card title="Hosting details">
-          <form onSubmit={checkout} className="grid gap-5">
+        <Card title="Hosting and domain details">
+          <div className="grid gap-5">
             <label className="block text-sm font-semibold text-slate-700">
               Product
               <select
@@ -232,17 +250,98 @@ export function CustomerCheckout({
                 ))}
               </select>
             </label>
-            <Field
-              label="Domain"
-              name="requestedDomain"
-              placeholder="example.com"
-              required
-            />
-            <Button type="submit" disabled={saving || !price}>
-              {saving ? 'Placing order…' : 'Place order'}
-              <Icon name="arrow-right" className="size-4" />
-            </Button>
-          </form>
+            <fieldset className="grid gap-3 border-t border-slate-200 pt-5">
+              <legend className="text-sm font-bold text-slate-950">
+                Choose a domain
+              </legend>
+              <label
+                className={`flex cursor-pointer gap-3 rounded-xl border p-4 text-sm ${domainChoice === 'EXISTING' ? 'border-brand-500 bg-brand-50' : 'border-slate-200'}`}
+              >
+                <input
+                  type="radio"
+                  name="domainChoice"
+                  checked={domainChoice === 'EXISTING'}
+                  onChange={() => {
+                    setDomainChoice('EXISTING');
+                    setDomainQuote(undefined);
+                  }}
+                />
+                <span>
+                  <strong className="block text-slate-950">
+                    Use an existing domain
+                  </strong>
+                  <span className="mt-1 block text-slate-600">
+                    I already own a domain and will point it to this hosting
+                    account.
+                  </span>
+                </span>
+              </label>
+              <label
+                className={`flex cursor-pointer gap-3 rounded-xl border p-4 text-sm ${domainChoice === 'REGISTER' ? 'border-brand-500 bg-brand-50' : 'border-slate-200'}`}
+              >
+                <input
+                  type="radio"
+                  name="domainChoice"
+                  checked={domainChoice === 'REGISTER'}
+                  onChange={() => {
+                    setDomainChoice('REGISTER');
+                    setDomainQuote(undefined);
+                  }}
+                />
+                <span>
+                  <strong className="block text-slate-950">
+                    Register a new domain
+                  </strong>
+                  <span className="mt-1 block text-slate-600">
+                    Check a simulated registration and add it to this invoice.
+                  </span>
+                </span>
+              </label>
+            </fieldset>
+            {domainChoice === 'EXISTING' ? (
+              <form onSubmit={checkout} className="grid gap-4">
+                <Field
+                  label="Domain"
+                  name="requestedDomain"
+                  placeholder="example.com"
+                  required
+                />
+                <Button type="submit" disabled={saving || !price}>
+                  {saving ? 'Placing order…' : 'Place order'}
+                  <Icon name="arrow-right" className="size-4" />
+                </Button>
+              </form>
+            ) : (
+              <>
+                <HostingDomainQuote
+                  quote={domainQuote}
+                  onQuote={setDomainQuote}
+                />
+                {price && price.amount.currency !== 'BDT' ? (
+                  <p role="alert" className="text-sm text-amber-800">
+                    Choose a BDT hosting price to combine it with a domain.
+                  </p>
+                ) : null}
+                <Button
+                  type="button"
+                  disabled={
+                    saving ||
+                    !price ||
+                    price.amount.currency !== 'BDT' ||
+                    !domainQuote ||
+                    new Date(domainQuote.expiresAt) <= new Date()
+                  }
+                  onClick={() => {
+                    if (domainQuote)
+                      void submitOrder(domainQuote.domainName, domainQuote.id);
+                  }}
+                >
+                  {saving ? 'Placing order…' : 'Place hosting and domain order'}
+                  <Icon name="arrow-right" className="size-4" />
+                </Button>
+              </>
+            )}
+          </div>
         </Card>
         <Card
           title="Price summary"
@@ -260,6 +359,13 @@ export function CustomerCheckout({
                 amount={price.setupFee.amount}
                 currency={price.setupFee.currency}
               />
+              {domainChoice === 'REGISTER' && domainQuote ? (
+                <PriceRow
+                  label="Domain registration"
+                  amount={domainQuote.sellingAmount}
+                  currency="BDT"
+                />
+              ) : null}
               <p className="mt-2 border-t border-slate-200 pt-4 text-xs font-semibold leading-5 text-slate-500">
                 Your confirmed total will appear after the server creates the
                 order and unpaid invoice.

@@ -6,6 +6,7 @@ import {
   domainSelectionSnapshotSchema,
 } from '@webhost-billing/shared';
 import type { Prisma, PrismaClient } from '../index';
+import { orderFulfillmentComplete } from '../fulfillment';
 import { RegistrarCipher, contactBinding, credentialBinding } from './cipher';
 import {
   FakeDomainRegistrar,
@@ -442,9 +443,12 @@ export class RegistrarProcessor {
         const item = await tx.orderItem.findUniqueOrThrow({
           where: { id: locatedDomain.orderItemId },
         });
+        const complete = await orderFulfillmentComplete(tx, item.orderId);
         await tx.order.update({
           where: { id: item.orderId },
-          data: { status: 'COMPLETED', completedAt: new Date() },
+          data: complete
+            ? { status: 'COMPLETED', completedAt: new Date() }
+            : { status: 'PROCESSING' },
         });
       }
     });

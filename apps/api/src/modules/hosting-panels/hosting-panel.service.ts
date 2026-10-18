@@ -8,6 +8,7 @@ import {
   OrderStatus,
   Prisma,
   ServiceStatus,
+  orderFulfillmentComplete,
   type PrismaClient,
 } from '@webhost-billing/database';
 import {
@@ -1029,16 +1030,9 @@ export class HostingPanelService {
         include: { orderItem: true },
       });
       if (service.orderItem) {
-        const remaining = await transaction.orderItem.count({
-          where: {
-            orderId: service.orderItem.orderId,
-            OR: [
-              { service: { is: null } },
-              { service: { is: { status: { not: ServiceStatus.ACTIVE } } } },
-            ],
-          },
-        });
-        if (remaining === 0) {
+        if (
+          await orderFulfillmentComplete(transaction, service.orderItem.orderId)
+        ) {
           await transaction.order.updateMany({
             where: {
               id: service.orderItem.orderId,

@@ -33,7 +33,9 @@ const orderSelectionSchema = z
   })
   .strict();
 
-export const createCustomerOrderRequestSchema = orderSelectionSchema;
+export const createCustomerOrderRequestSchema = orderSelectionSchema
+  .extend({ domainQuoteId: z.uuid().optional() })
+  .strict();
 
 export const createAdminOrderRequestSchema = orderSelectionSchema
   .extend({

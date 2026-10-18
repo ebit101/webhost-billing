@@ -21,6 +21,7 @@ import {
 import {
   PARTIAL_PAYMENT_POLICY_CONFIRMATION,
   domainDetailSchema,
+  orderCreationResultSchema,
 } from '@webhost-billing/shared';
 import request from 'supertest';
 import type { App } from 'supertest/types';
@@ -497,6 +498,166 @@ describe('complete simulated registrar in isolated PostgreSQL (e2e)', () => {
     await expect(
       prisma.registrarEvidence.deleteMany({ where: { operationId: op.id } }),
     ).rejects.toThrow();
+  });
+  it('bills simulated registration and hosting together and completes after both are fulfilled', async () => {
+    const hosting = await prisma.product.create({
+      data: {
+        slug: `combined-${randomUUID()}`,
+        name: 'Fictional shared hosting',
+        status: 'ACTIVE',
+        publicVisible: true,
+        hostingPackageIdentifier: 'fake_shared',
+        prices: {
+          create: {
+            billingPeriod: 'ANNUAL',
+            currency: 'BDT',
+            amount: 25_000n,
+            isActive: true,
+          },
+        },
+      },
+      include: { prices: true },
+    });
+    const server = await prisma.server.create({
+      data: {
+        name: 'Fictional combined-order server',
+        hostname: `${randomUUID()}.example.test`,
+        status: 'ACTIVE',
+        adapterKey: 'fake-panel',
+      },
+    });
+    const name = `combined-${randomUUID()}.com`;
+    const quoted = await mutation(
+      customer,
+      '/domains/quotes',
+      {
+        offerId,
+        domainName: name,
+        contact: {
+          name: 'Fictional registrant',
+          company: 'Fictional company',
+          address: '1 Test Street',
+          city: 'Dhaka',
+          region: 'Dhaka',
+          postalCode: '1000',
+          country: 'BD',
+          email: 'fictional@example.test',
+          phoneCountryCode: '880',
+          phone: '1700000000',
+        },
+        agreement: 'fictional-registration-v1',
+        consent: true,
+      },
+      201,
+    );
+    const quoteId = (quoted.body as Success<{ id: string }>).data.id;
+    const input = {
+      productId: hosting.id,
+      priceId: hosting.prices[0].id,
+      requestedDomain: name,
+      domainQuoteId: quoteId,
+      submissionKey: randomUUID(),
+    };
+    const createdResponse = await mutation(
+      customer,
+      '/orders/checkout',
+      input,
+      201,
+    );
+    const created = orderCreationResultSchema.parse(
+      (createdResponse.body as Success<unknown>).data,
+    );
+    const duplicateResponse = await mutation(
+      customer,
+      '/orders/checkout',
+      input,
+      201,
+    );
+    const duplicate = orderCreationResultSchema.parse(
+      (duplicateResponse.body as Success<unknown>).data,
+    );
+    expect(duplicate.duplicate).toBe(true);
+    expect(duplicate.order.id).toBe(created.order.id);
+    expect(created.order.items.map((item) => item.kind).sort()).toEqual([
+      'DOMAIN',
+      'HOSTING',
+    ]);
+    expect(created.order.invoice.total.amount).toBe('175000');
+    expect(
+      await prisma.invoice.count({ where: { orderId: created.order.id } }),
+    ).toBe(1);
+    expect(
+      await prisma.invoiceItem.count({
+        where: { invoiceId: created.order.invoice.id },
+      }),
+    ).toBe(2);
+    const domain = await prisma.domain.findUniqueOrThrow({
+      where: { quoteId },
+    });
+    await pay(
+      {
+        id: domain.id,
+        invoiceId: domain.invoiceId,
+        orderId: created.order.id,
+        domainName: name,
+        state: domain.state,
+      },
+      '175000',
+    );
+    await approve({
+      id: domain.id,
+      invoiceId: domain.invoiceId,
+      orderId: created.order.id,
+      domainName: name,
+      state: domain.state,
+    });
+    const operation = await prisma.registrarOperation.findUniqueOrThrow({
+      where: { domainId: domain.id },
+    });
+    await processor.process(operation.id);
+    expect(
+      (
+        await prisma.order.findUniqueOrThrow({
+          where: { id: created.order.id },
+        })
+      ).status,
+    ).toBe('PROCESSING');
+    const hostingItem = created.order.items.find(
+      (item) => item.kind === 'HOSTING',
+    );
+    expect(hostingItem).toBeDefined();
+    const serviceResponse = await mutation(
+      owner,
+      '/services',
+      { orderItemId: hostingItem!.id, serverId: server.id },
+      201,
+    );
+    const serviceId = (
+      serviceResponse.body as Success<{ service: { id: string } }>
+    ).data.service.id;
+    const csrf = await owner.get('/auth/csrf').expect(200);
+    const token = (csrf.body as Success<{ csrfToken: string }>).data.csrfToken;
+    await owner
+      .patch(`/services/${serviceId}/status`)
+      .set('X-CSRF-Token', token)
+      .send({ status: 'PROVISIONING' })
+      .expect(200);
+    await owner
+      .patch(`/services/${serviceId}/status`)
+      .set('X-CSRF-Token', token)
+      .send({
+        status: 'ACTIVE',
+        externalAccountId: 'fictional-combined-account',
+        controlPanelUsername: 'fakecombined',
+      })
+      .expect(200);
+    expect(
+      (
+        await prisma.order.findUniqueOrThrow({
+          where: { id: created.order.id },
+        })
+      ).status,
+    ).toBe('COMPLETED');
   });
   it('reconciles lost successful responses without a second mutation', async () => {
     const domain = await purchase('lost');
