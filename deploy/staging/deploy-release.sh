@@ -38,7 +38,8 @@ old=$(readlink -f "$base/current")
 }
 # This installation-owned logo is intentionally excluded from the public Git archive.
 logo=apps/web/public/branding/speed-host-logo.png
-grep -qx 'NEXT_PUBLIC_BRAND_LOGO_PATH=/branding/speed-host-logo.png' "$env_file" || {
+# Compose accepts the existing quoted value as well as the unquoted form.
+grep -Eq '^NEXT_PUBLIC_BRAND_LOGO_PATH=(/branding/speed-host-logo\.png|"/branding/speed-host-logo\.png")$' "$env_file" || {
   echo 'The staging logo setting differs from the expected installation asset.' >&2
   exit 1
 }
