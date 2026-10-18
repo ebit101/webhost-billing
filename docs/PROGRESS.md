@@ -15861,6 +15861,16 @@ require explicit approval.
 - **Unresolved questions, risks, and blockers:** A full administrator must choose a fictional annual BDT price and enable the simulated registrar before manually testing the new-domain path; local registrar offers are currently absent. No live provider call, configured WHM server change, or deployment occurred.
 - **Exact recommended next command:** Authorize Command 125 after reviewing Command 124; choose the next work item from the plan and current product priorities.
 
+### Command 124 validation follow-up — Migration-count acceptance fixtures
+
+- **Status/date:** Local correction complete, 2026-10-18; hosted validation pending.
+- **Implemented scope:** Updated three guarded database integration fixtures from 33 to 34 expected committed migrations after the combined hosting/domain migration. No runtime logic, schema, provider setting or data changed.
+- **Files changed:** Three `packages/database/test/currency-*.integration.spec.ts` files and this report.
+- **Validation performed:** GitHub's `Validate` job for `eb688c2` failed at the first stale migration-count assertion (`34 !== 33`). The full local guarded database acceptance launcher passed after correcting all three full-history assertions, including isolated migration replay, fictional seed and schema verification.
+- **Decisions:** Preserve the explicit migration inventory assertions and update them with the new committed migration.
+- **Unresolved questions, risks, and blockers:** Hosted `Validate` must pass on the follow-up commit before the requested staging rollout.
+- **Exact recommended next command:** Complete the owner-authorized Command 124 staging deployment after hosted validation succeeds.
+
 ## Future report template
 
 ### Owner-directed MessageDock read-only customer context integration — 2026-10-18
