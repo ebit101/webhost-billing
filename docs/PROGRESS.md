@@ -15871,6 +15871,16 @@ require explicit approval.
 - **Unresolved questions, risks, and blockers:** Hosted `Validate` must pass on the follow-up commit before the requested staging rollout.
 - **Exact recommended next command:** Complete the owner-authorized Command 124 staging deployment after hosted validation succeeds.
 
+### Owner-directed Command 124 staging deployment and deploy script — 2026-10-18
+
+- **Status/date:** Staging deployment complete, 2026-10-18. Reusable one-command staging script added locally for the requested faster future releases; script validation and delivery are recorded below.
+- **Implemented scope:** Released validated commit `93523fa6cabba7c5dd715fdfd0a69ffb647812c4` to `my.speedhost.bd`. Applied the combined hosting/domain migration once and switched only API, web, worker and scheduler. Added `scripts/deploy-staging.ps1` and `deploy/staging/deploy-release.sh` to automate future clean-main, CI-gated, checksum-verified, backed-up staging releases. The installation-owned logo is copied from the current release during the build.
+- **Files changed:** Deployment wrapper, staging release script, this report and `docs/STAGING_DEPLOYMENT.md`. The released application source is the earlier Command 124 commit.
+- **Validation performed:** GitHub `Validate` and CodeQL passed for the deployed commit; four source images built on the staging host. The fresh encrypted pre-migration backup passed checksum, OpenPGP, archive and table verification. Migration inventory is 34 completed/zero unfinished. Seven staging services are healthy with zero restarts; PostgreSQL, Redis and Mailpit container IDs are unchanged. `/`, `/shared-hosting`, `/health`, `/ready` and the installed logo returned 200; anonymous admin redirected, protected hosting-panel and MessageDock API routes returned 401; the web bundle API-origin check passed. Public products returned the existing Starter Hosting offer. PowerShell and Bash syntax checks passed for the new deployment scripts. No live provider operation was run.
+- **Decisions made:** Keep staging in production mode with registrar and payment flags disabled. Do not seed fictional local packages into a public staging database. Preserve the prior release and same-host encrypted backup. Automate safe handoffs, while acknowledging image compilation still takes minutes.
+- **Unresolved questions, risks and blockers:** The one-command script has syntax validation but has not yet driven a full release end to end; its non-applying preflight should be exercised after its GitHub checks pass. Signed-in admin/browser acceptance still requires the owner's MFA. Full fake registration and fake-panel provisioning remain local-only; this staging deployment is not public launch acceptance. The same-host backup is not off-site recovery proof.
+- **Exact recommended next command:** Owner-authorized review of Command 124 live UI at `/shared-hosting`, followed by an explicitly scoped next product command. Do not enable real registrar or WHM operations for this review.
+
 ## Future report template
 
 ### Owner-directed MessageDock read-only customer context integration — 2026-10-18

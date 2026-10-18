@@ -1,6 +1,57 @@
 # Staging Deployment
 
-## Current staging release (2026-10-18, WHM server administration)
+## Current staging release (2026-10-18, combined hosting/domain order)
+
+- URL: `https://my.speedhost.bd/shared-hosting`
+- Source and application image tag: `93523fa6cabba7c5dd715fdfd0a69ffb647812c4`.
+  The release includes Commands 123 and 124. The subsequent deployment-script
+  and report commit is source tooling only; it is not a different running image.
+- Previous retained release and images: `7c3b55e4117979317a31e9a477744f2665e69445`.
+- Protected rollback inventory:
+  `/srv/webhost-billing-staging/rollback/command124-20261018T155203Z/`.
+  It records the previous release, prior environment, service inventories and
+  verified backup path.
+- Fresh encrypted pre-migration backup:
+  `/srv/webhost-billing-staging/backups/webhost-billing-webhost_billing_staging-20261018T155204Z.dump.gpg`.
+  Checksum, OpenPGP integrity, PostgreSQL archive and required-table checks
+  passed; mode is `0600`. This is a same-host backup.
+- Applied only `20261018000100_combined_hosting_domain_order`; the database has
+  34 completed and zero unfinished migrations. Four application services were
+  recreated. All seven owned services are healthy with zero restarts; the
+  PostgreSQL, Redis and Mailpit container IDs are unchanged.
+- `/`, `/shared-hosting`, `/health`, `/ready` and the preserved installation
+  logo returned 200. Anonymous `/admin/servers` redirected to sign-in; the
+  protected hosting-panel and MessageDock API routes returned 401. Public
+  products returned 200 with the one existing Starter Hosting offer. The web
+  bundle API-origin check passed.
+- API, worker and scheduler retained `RESELLBIZ_LIVE_ENABLED=false`; API
+  `BKASH_ENABLED` and `SSLCOMMERZ_ENABLED` remained false. No real registrar,
+  WHM, payment or email operation was performed. Production-mode staging
+  cannot complete fake-provider registration/provisioning; use local fake-provider
+  tests for the complete flow. The four local annual test plans were not seeded
+  into this staging database.
+
+### One-command staging deployment
+
+From a clean, synchronized `main` checkout in Windows PowerShell:
+
+```powershell
+.\scripts\deploy-staging.ps1 -IdentityFile C:\path\to\staging_ssh_key
+.\scripts\deploy-staging.ps1 -IdentityFile C:\path\to\staging_ssh_key -Apply
+```
+
+The first command checks the exact remote commit and GitHub `Validate` and
+CodeQL results without changing the server. `-Apply` archives that commit,
+uploads it over pinned-key SSH, verifies its SHA-256, copies the installation
+logo from the current release, builds four image types, creates and verifies an
+encrypted database backup, runs migrations, switches only the application
+services, and checks public health and disabled registrar flags. Keep the SSH
+identity and staging environment outside Git. Inspect the protected rollback
+inventory and host health if any step fails; do not blindly retry after a
+partial migration or switch. On-host image builds still take several minutes;
+the script removes manual handoffs, not compilation time.
+
+## Prior staging release (2026-10-18, WHM server administration)
 
 - URL: `https://my.speedhost.bd`
 - Source and four application image tags: `7c3b55e` (the full tag is recorded by
