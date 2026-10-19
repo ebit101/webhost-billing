@@ -17,6 +17,7 @@ import {
   serializeMoney,
   type CreateAdminOrderRequest,
   type CreateCustomerOrderRequest,
+  type GuestHostingCheckoutRequest,
   type Order,
   type OrderCreationResult,
   type OrderListQuery,
@@ -73,21 +74,30 @@ export class OrderService {
 
   async create(
     input: CreateOrderInput,
-    actor: AuthRequestContext,
+    actor: { identity: { userId: string } },
     context: SecurityRequestContext,
     source: 'ADMIN' | 'CUSTOMER',
+    options?: {
+      transaction?: Prisma.TransactionClient;
+      allowPendingVerification?: boolean;
+    },
   ): Promise<OrderCreationResult> {
     const duplicate = await this.findBySubmissionKey(input.submissionKey);
     if (duplicate) return this.duplicateResult(duplicate, input);
 
     try {
-      const created = await this.prisma.$transaction(async (transaction) => {
+      const persist = async (transaction: Prisma.TransactionClient) => {
         const customer = await transaction.customer.findFirst({
           where: {
             id: input.customerId,
             deletedAt: null,
             status: CustomerStatus.ACTIVE,
-            user: { status: UserStatus.ACTIVE, deletedAt: null },
+            user: {
+              status: options?.allowPendingVerification
+                ? { in: [UserStatus.ACTIVE, UserStatus.PENDING_VERIFICATION] }
+                : UserStatus.ACTIVE,
+              deletedAt: null,
+            },
           },
           include: { user: { select: { email: true } } },
         });
@@ -371,9 +381,12 @@ export class OrderService {
           },
         });
         return order.id;
-      });
+      };
+      const created = options?.transaction
+        ? await persist(options.transaction)
+        : await this.prisma.$transaction(persist);
       return orderCreationResultSchema.parse({
-        order: await this.getUnchecked(created),
+        order: await this.getUnchecked(created, options?.transaction),
         duplicate: false,
       });
     } catch (error) {
@@ -579,6 +592,32 @@ export class OrderService {
     });
   }
 
+  async guestDuplicate(
+    input: GuestHostingCheckoutRequest,
+  ): Promise<OrderCreationResult | null> {
+    const existing = await this.findBySubmissionKey(input.submissionKey);
+    if (!existing) return null;
+    const item = existing.items.find((entry) => entry.kind === 'HOSTING');
+    if (
+      existing.customerEmailSnapshot !== input.email ||
+      !item ||
+      item.productId !== input.productId ||
+      item.productPriceId !== input.priceId ||
+      item.requestedDomain !== input.requestedDomain ||
+      existing.items.some((entry) => entry.kind === 'DOMAIN')
+    ) {
+      throw new ApplicationException({
+        status: HttpStatus.CONFLICT,
+        code: 'CONFLICT',
+        message: 'This submission key has already been used for another order.',
+      });
+    }
+    return orderCreationResultSchema.parse({
+      order: this.toOrder(existing),
+      duplicate: true,
+    });
+  }
+
   private async duplicateResult(
     existing: OrderRecord,
     input: CreateOrderInput,
@@ -611,12 +650,18 @@ export class OrderService {
     });
   }
 
-  private async getUnchecked(orderId: string): Promise<Order> {
-    return this.toOrder(await this.getRecord(orderId));
+  private async getUnchecked(
+    orderId: string,
+    transaction?: Prisma.TransactionClient,
+  ): Promise<Order> {
+    return this.toOrder(await this.getRecord(orderId, transaction));
   }
 
-  private async getRecord(orderId: string): Promise<OrderRecord> {
-    const order = await this.prisma.order.findUnique({
+  private async getRecord(
+    orderId: string,
+    transaction?: Prisma.TransactionClient,
+  ): Promise<OrderRecord> {
+    const order = await (transaction ?? this.prisma).order.findUnique({
       where: { id: orderId },
       include: orderInclude,
     });

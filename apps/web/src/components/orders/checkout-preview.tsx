@@ -14,6 +14,7 @@ import {
 import { readOrderDraft, type OrderDraft } from '../../lib/order-draft';
 import { buttonStyles } from '../ui/button';
 import { formatHostingSubtotal, formatMinor } from './order-ui';
+import { GuestHostingCheckoutForm } from './guest-hosting-checkout-form';
 
 export function CheckoutPreview({
   selection,
@@ -186,9 +187,9 @@ export function CheckoutPreview({
                 ) : (
                   <>
                     <p className="mt-2 text-sm text-slate-600">
-                      Enter your account details to continue. Your selection
-                      will be carried forward; no order is placed during account
-                      creation or sign-in.
+                      {draft.domainChoice === 'EXISTING'
+                        ? 'Enter your details to create your account, order and unpaid invoice together.'
+                        : 'Create an account to check availability, review the domain price and consent, then place the combined order.'}
                     </p>
                     <div
                       className="mt-5 flex flex-wrap gap-2"
@@ -222,10 +223,19 @@ export function CheckoutPreview({
                     </div>
                     <div className="mt-6">
                       {accountMode === 'register' ? (
-                        <RegisterForm
-                          checkoutIntent={selection}
-                          onChooseSignIn={() => setAccountMode('login')}
-                        />
+                        draft.domainChoice === 'EXISTING' ? (
+                          <GuestHostingCheckoutForm
+                            productId={product.id}
+                            priceId={price.id}
+                            requestedDomain={draft.requestedDomain}
+                            onChooseSignIn={() => setAccountMode('login')}
+                          />
+                        ) : (
+                          <RegisterForm
+                            checkoutIntent={selection}
+                            onChooseSignIn={() => setAccountMode('login')}
+                          />
+                        )
                       ) : (
                         <LoginForm
                           checkoutIntent={selection}

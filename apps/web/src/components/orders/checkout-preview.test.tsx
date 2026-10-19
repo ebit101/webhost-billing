@@ -2,7 +2,7 @@ import type { PublicProduct } from '@webhost-billing/shared';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { saveOrderDraft } from '../../lib/order-draft';
+import { readOrderDraft, saveOrderDraft } from '../../lib/order-draft';
 import { CheckoutPreview } from './checkout-preview';
 
 vi.mock('next/navigation', () => ({
@@ -73,6 +73,92 @@ describe('public checkout review', () => {
       .click(screen.getByRole('button', { name: 'Create an account' }));
     expect(screen.getByLabelText('First name')).toBeTruthy();
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('places an existing-domain guest order with account details in one submission', async () => {
+    saveOrderDraft({
+      ...selection,
+      domainChoice: 'EXISTING',
+      requestedDomain: 'surjo.bd',
+    });
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ success: true, data: [product] }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            success: true,
+            data: { csrfToken: 'token'.repeat(8) },
+          }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            success: true,
+            data: {
+              duplicate: false,
+              order: {
+                orderNumber: 'ORD-20261019-TEST',
+                invoice: {
+                  invoiceNumber: 'INV-20261019-TEST',
+                  balanceDue: { amount: '125000', currency: 'BDT' },
+                },
+              },
+            },
+          }),
+          { status: 201 },
+        ),
+      );
+    vi.stubGlobal('fetch', fetchMock);
+    const user = userEvent.setup();
+    render(<CheckoutPreview selection={selection} audience="guest" />);
+    await screen.findByRole('button', {
+      name: 'Place order and create account',
+    });
+    await user.type(screen.getByLabelText('First name'), 'Guest');
+    await user.type(screen.getByLabelText('Last name'), 'Checkout');
+    await user.type(
+      screen.getByLabelText('Email address'),
+      'guest@example.test',
+    );
+    await user.type(
+      screen.getByLabelText('Street address'),
+      '127 Example Road',
+    );
+    await user.type(screen.getByLabelText('City'), 'Dhaka');
+    await user.type(
+      screen.getByLabelText('Password (at least 12 characters)'),
+      'guest secure password',
+    );
+    await user.type(
+      screen.getByLabelText('Confirm password'),
+      'guest secure password',
+    );
+    await user.click(
+      screen.getByRole('button', { name: 'Place order and create account' }),
+    );
+    expect(
+      await screen.findByRole('heading', { name: 'Order received' }),
+    ).toBeTruthy();
+    expect(screen.getByText(/ORD-20261019-TEST/)).toBeTruthy();
+    expect(screen.getByText(/INV-20261019-TEST/)).toBeTruthy();
+    expect(readOrderDraft(selection)).toBeUndefined();
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    const request = fetchMock.mock.calls[2] as [string, RequestInit];
+    expect(request[0]).toContain('/orders/guest-checkout');
+    expect(JSON.parse(String(request[1].body))).toMatchObject({
+      email: 'guest@example.test',
+      productId: selection.productId,
+      priceId: selection.priceId,
+      requestedDomain: 'surjo.bd',
+      domainChoice: 'EXISTING',
+    });
   });
 
   it('takes an administrator to the selected customer-order form', async () => {

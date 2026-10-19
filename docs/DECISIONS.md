@@ -2818,6 +2818,28 @@ report-only update must pass its own delivery gate; stop for the recommended pha
 - **Reason:** The guest flow reached sign-in before showing checkout, while an administrator session diverted to the dashboard. The owner supplied a WHMCS order-flow reference and expects the chosen plan and domain to remain visible through configuration, cart review and checkout.
 - **Consequence:** Browser drafts remain temporary and non-authoritative. Domain availability, registration price and registrant consent are checked after customer authentication. The administrator form remains separate for new-domain requests with offline consent and separate invoices. No transfer, optional add-on, additional currency, live provider operation or deployment is authorized by this UI change.
 
+## ADR-136 — Create a guest account and unpaid hosting order in one checkout
+
+- **Status:** Accepted by owner
+- **Date:** 2026-10-19
+- **Decision:** For an anonymous customer using an existing domain, the final
+  checkout action creates a pending-verification customer account, a hosting
+  order and one unpaid invoice in the same database transaction. The public
+  endpoint retains CSRF and registration rate limits, validates the active
+  server price, and uses a submission key to make retries idempotent. A retry
+  returning order details must also verify the new account's password.
+  Account verification remains required before portal sign-in or payment.
+- **Reason:** The previous checkout created only an account and sent the
+  customer through email verification and sign-in before order placement. The
+  owner wants the WHMCS-style final checkout action to create the account and
+  unpaid order together.
+- **Consequence:** A failed price or order check rolls back account creation.
+  The receipt shows the order and unpaid invoice immediately, while activation
+  still waits for verified payment and successful provisioning. A new-domain
+  checkout continues through authenticated fake quote and registrant-consent
+  checks before a combined order can be placed. This decision does not enable
+  live registrar, WHM or payment operations or authorize deployment.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

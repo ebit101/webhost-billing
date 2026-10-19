@@ -31,6 +31,8 @@ import { PasswordHasherService } from '../src/modules/auth/services/password-has
 const ADMIN_EMAIL = 'command9-admin@example.test';
 const CUSTOMER_EMAIL = 'command9-customer@example.test';
 const OTHER_CUSTOMER_EMAIL = 'command9-other@example.test';
+const GUEST_EMAIL = 'command127-guest@example.test';
+const FAILED_GUEST_EMAIL = 'command127-failed@example.test';
 const PASSWORD = 'command nine secure password';
 const PRODUCT_SLUG = 'command-nine-hosting';
 
@@ -748,6 +750,123 @@ describe('Order creation (e2e)', () => {
     expect(await ledgerSnapshot()).toEqual(before);
   });
 
+  it('creates a guest account and unpaid order atomically with an idempotent retry', async () => {
+    const guest = request.agent(app.getHttpServer());
+    const csrf = await csrfToken(guest);
+    const currentPrice = await prisma.productPrice.findFirstOrThrow({
+      where: {
+        productId,
+        billingPeriod: BillingPeriod.MONTHLY,
+        isActive: true,
+      },
+    });
+    const body = {
+      email: GUEST_EMAIL,
+      password: 'guest checkout secure password',
+      firstName: 'Guest',
+      lastName: 'Checkout',
+      phone: '+8801700000000',
+      addressLine1: '127 Example Road',
+      city: 'Dhaka',
+      countryCode: 'BD',
+      productId,
+      priceId: currentPrice.id,
+      requestedDomain: 'guest-host.example.test',
+      submissionKey: randomUUID(),
+      domainChoice: 'EXISTING' as const,
+    };
+
+    await guest
+      .post('/orders/guest-checkout')
+      .set('X-CSRF-Token', csrf)
+      .send({ ...body, email: FAILED_GUEST_EMAIL, priceId: archivedPriceId })
+      .expect(422);
+    expect(
+      await prisma.user.count({ where: { email: FAILED_GUEST_EMAIL } }),
+    ).toBe(0);
+    await guest
+      .post('/orders/guest-checkout')
+      .set('X-CSRF-Token', csrf)
+      .send({ ...body, domainChoice: 'REGISTER' })
+      .expect(400);
+    expect(await prisma.user.count({ where: { email: GUEST_EMAIL } })).toBe(0);
+
+    const first = await guest
+      .post('/orders/guest-checkout')
+      .set('X-CSRF-Token', csrf)
+      .send(body)
+      .expect((response) => {
+        if (response.status !== 201)
+          throw new Error(`Guest checkout: ${JSON.stringify(response.body)}`);
+      });
+    const created = apiSuccessResponseSchema(orderCreationResultSchema).parse(
+      first.body,
+    ).data;
+    expect(created.duplicate).toBe(false);
+    expect(created.order.status).toBe('AWAITING_PAYMENT');
+    expect(created.order.invoice.status).toBe('UNPAID');
+    expect(created.order.invoice.balanceDue.amount).toBe(
+      (currentPrice.amount + currentPrice.setupFee).toString(),
+    );
+    const user = await prisma.user.findUniqueOrThrow({
+      where: { email: GUEST_EMAIL },
+      include: { customer: true },
+    });
+    expect(user.status).toBe(UserStatus.PENDING_VERIFICATION);
+    expect(user.customer?.id).toBe(created.order.customerId);
+    expect(
+      await prisma.emailVerificationToken.count({ where: { userId: user.id } }),
+    ).toBe(1);
+    expect(
+      await prisma.outboxEvent.findMany({
+        where: {
+          OR: [
+            { aggregateType: 'USER', aggregateId: user.id },
+            { aggregateType: 'ORDER', aggregateId: created.order.id },
+            { aggregateType: 'INVOICE', aggregateId: created.order.invoice.id },
+          ],
+        },
+        select: { eventType: true },
+      }),
+    ).toEqual(
+      expect.arrayContaining([
+        { eventType: 'AUTH_EMAIL_VERIFICATION_REQUESTED' },
+        { eventType: 'EMAIL_ORDER_RECEIVED' },
+        { eventType: 'EMAIL_INVOICE_CREATED' },
+      ]),
+    );
+    await guest.get('/orders/my').expect(401);
+
+    const retry = await guest
+      .post('/orders/guest-checkout')
+      .set('X-CSRF-Token', csrf)
+      .send(body)
+      .expect(201);
+    const duplicate = apiSuccessResponseSchema(orderCreationResultSchema).parse(
+      retry.body,
+    ).data;
+    expect(duplicate.duplicate).toBe(true);
+    expect(duplicate.order.id).toBe(created.order.id);
+    await guest
+      .post('/orders/guest-checkout')
+      .set('X-CSRF-Token', csrf)
+      .send({ ...body, password: 'different secure password' })
+      .expect(409);
+    expect(
+      await prisma.order.count({
+        where: { submissionKey: body.submissionKey },
+      }),
+    ).toBe(1);
+    expect(
+      await prisma.invoice.count({ where: { orderId: created.order.id } }),
+    ).toBe(1);
+    await guest
+      .post('/orders/guest-checkout')
+      .set('X-CSRF-Token', csrf)
+      .send({ ...body, requestedDomain: 'changed.example.test' })
+      .expect(409);
+  });
+
   async function ledgerSnapshot() {
     return {
       orders: await prisma.order.findMany({ orderBy: { id: 'asc' } }),
@@ -796,7 +915,9 @@ describe('Order creation (e2e)', () => {
   async function cleanup() {
     const users = await prisma.user.findMany({
       where: {
-        email: { in: [ADMIN_EMAIL, CUSTOMER_EMAIL, OTHER_CUSTOMER_EMAIL] },
+        email: {
+          in: [ADMIN_EMAIL, CUSTOMER_EMAIL, OTHER_CUSTOMER_EMAIL, GUEST_EMAIL],
+        },
       },
       select: { id: true, customer: { select: { id: true } } },
     });
@@ -822,6 +943,7 @@ describe('Order creation (e2e)', () => {
           OR: [
             { aggregateType: 'ORDER', aggregateId: { in: orderIds } },
             { aggregateType: 'INVOICE', aggregateId: { in: invoiceIds } },
+            { aggregateType: 'USER', aggregateId: { in: userIds } },
           ],
         },
         select: { id: true },
@@ -841,6 +963,7 @@ describe('Order creation (e2e)', () => {
           OR: [
             { aggregateType: 'ORDER', aggregateId: { in: orderIds } },
             { aggregateType: 'INVOICE', aggregateId: { in: invoiceIds } },
+            { aggregateType: 'USER', aggregateId: { in: userIds } },
           ],
         },
       });
@@ -867,6 +990,9 @@ describe('Order creation (e2e)', () => {
       await prisma.product.delete({ where: { id: product.id } });
     }
     if (userIds.length) {
+      await prisma.emailVerificationToken.deleteMany({
+        where: { userId: { in: userIds } },
+      });
       await prisma.activityLog.deleteMany({
         where: { actorUserId: { in: userIds } },
       });

@@ -24,7 +24,9 @@ async function main() {
     const args =
       process.argv[2] === 'packages'
         ? ['test']
-        : process.argv[2] === 'domains' || process.argv[2] === 'smtp'
+        : process.argv[2] === 'domains' ||
+            process.argv[2] === 'smtp' ||
+            process.argv[2] === 'orders'
           ? [
               '--filter',
               '@webhost-billing/api',
@@ -38,7 +40,9 @@ async function main() {
               '--runTestsByPath',
               process.argv[2] === 'smtp'
                 ? 'test/smtp-settings.e2e-spec.ts'
-                : 'test/domains.e2e-spec.ts',
+                : process.argv[2] === 'orders'
+                  ? 'test/orders.e2e-spec.ts'
+                  : 'test/domains.e2e-spec.ts',
             ]
           : process.argv[2] === 'invariants'
             ? ['test:invariants']

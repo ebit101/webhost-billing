@@ -765,6 +765,47 @@ test('complete hosting customer and administrator lifecycle', async ({
   });
 });
 
+test('guest checkout creates the account and unpaid order in one action', async ({
+  page,
+}) => {
+  const email = `guest-checkout-${randomUUID()}@example.test`;
+  const domain = `guest-${randomUUID().slice(0, 8)}.example.test`;
+  const selectionQuery = `productId=${E2E_PRODUCT.id}&priceId=${E2E_PRODUCT.priceId}`;
+  await page.goto(`/order?${selectionQuery}`);
+  await page.getByRole('radio', { name: /Use an existing domain/ }).check();
+  await page.getByRole('textbox', { name: 'Domain name' }).fill(domain);
+  await page.getByRole('button', { name: 'Review selection' }).click();
+  await page.getByRole('link', { name: 'Continue to configure' }).click();
+  await page.getByRole('button', { name: 'Continue to review' }).click();
+  await page.getByRole('link', { name: 'Continue to checkout' }).click();
+  await page.getByLabel('First name').fill('Guest');
+  await page.getByLabel('Last name').fill('Checkout');
+  await page.getByLabel('Email address').fill(email);
+  await page.getByLabel('Street address').fill('27 Fictional Browser Road');
+  await page.getByLabel('City').fill('Dhaka');
+  await page
+    .getByLabel('Password (at least 12 characters)')
+    .fill('fictional guest checkout password');
+  await page
+    .getByLabel('Confirm password')
+    .fill('fictional guest checkout password');
+  await page
+    .getByRole('button', { name: 'Place order and create account' })
+    .click();
+  await expect(page.getByRole('status')).toContainText('Order received');
+  const customer = await e2ePrisma.customer.findFirstOrThrow({
+    where: { user: { email } },
+    include: { user: true, orders: { include: { invoices: true } } },
+  });
+  expect(customer.user.status).toBe('PENDING_VERIFICATION');
+  expect(customer.orders).toHaveLength(1);
+  expect(customer.orders[0]?.status).toBe('AWAITING_PAYMENT');
+  expect(customer.orders[0]?.invoices).toHaveLength(1);
+  expect(customer.orders[0]?.invoices[0]?.status).toBe('UNPAID');
+  await page.goto('/portal');
+  await expect(page).toHaveURL(/\/login$/);
+});
+
 test.afterAll(async () => {
   await e2ePrisma.$disconnect();
 });

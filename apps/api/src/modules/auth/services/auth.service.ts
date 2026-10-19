@@ -128,6 +128,7 @@ export class AuthService {
     input: RegistrationRequest & { taxIdentifier?: string },
     context: SecurityRequestContext,
     options?: { administratorActorUserId: string },
+    transaction?: Prisma.TransactionClient,
   ): Promise<RegisteredCustomerAccount> {
     const passwordHash = await this.passwords.hash(input.password);
     const userId = randomUUID();
@@ -140,8 +141,8 @@ export class AuthService {
     );
 
     try {
-      await this.prisma.$transaction(async (transaction) => {
-        await transaction.user.create({
+      const persist = async (client: Prisma.TransactionClient) => {
+        await client.user.create({
           data: {
             id: userId,
             email: input.email,
@@ -174,7 +175,7 @@ export class AuthService {
             },
           },
         });
-        await transaction.emailVerificationToken.create({
+        await client.emailVerificationToken.create({
           data: {
             id: verificationTokenId,
             userId,
@@ -183,7 +184,7 @@ export class AuthService {
             expiresAt,
           },
         });
-        await transaction.outboxEvent.create({
+        await client.outboxEvent.create({
           data: {
             aggregateType: 'USER',
             aggregateId: userId,
@@ -198,7 +199,7 @@ export class AuthService {
             status: OutboxStatus.PENDING,
           },
         });
-        await transaction.activityLog.create({
+        await client.activityLog.create({
           data: {
             actorUserId: userId,
             action: 'AUTH_REGISTERED',
@@ -208,7 +209,7 @@ export class AuthService {
           },
         });
         if (options) {
-          await transaction.activityLog.create({
+          await client.activityLog.create({
             data: {
               actorUserId: options.administratorActorUserId,
               action: 'CUSTOMER_CREATED_BY_ADMIN',
@@ -219,7 +220,9 @@ export class AuthService {
             },
           });
         }
-      });
+      };
+      if (transaction) await persist(transaction);
+      else await this.prisma.$transaction(persist);
       return { userId, customerId };
     } catch (error) {
       if (isUniqueConstraintError(error)) {

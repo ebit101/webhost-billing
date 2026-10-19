@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { registrationRequestSchema } from './authentication';
 import { moneySchema } from './money';
 import { paginationQuerySchema } from './pagination';
 import {
@@ -35,6 +36,16 @@ const orderSelectionSchema = z
 
 export const createCustomerOrderRequestSchema = orderSelectionSchema
   .extend({ domainQuoteId: z.uuid().optional() })
+  .strict();
+
+export const guestHostingCheckoutRequestSchema = registrationRequestSchema
+  .safeExtend({
+    productId: z.uuid(),
+    priceId: z.uuid(),
+    requestedDomain: requestedDomainSchema,
+    submissionKey: z.uuid(),
+    domainChoice: z.literal('EXISTING'),
+  })
   .strict();
 
 export const createAdminOrderRequestSchema = orderSelectionSchema
@@ -111,6 +122,9 @@ export const orderCreationResultSchema = z
 
 export type CreateCustomerOrderRequest = z.infer<
   typeof createCustomerOrderRequestSchema
+>;
+export type GuestHostingCheckoutRequest = z.infer<
+  typeof guestHostingCheckoutRequestSchema
 >;
 export type CreateAdminOrderRequest = z.infer<
   typeof createAdminOrderRequestSchema

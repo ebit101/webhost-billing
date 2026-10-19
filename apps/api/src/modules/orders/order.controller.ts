@@ -17,11 +17,13 @@ import {
   createAdminOrderRequestSchema,
   createApiSuccessResponse,
   createCustomerOrderRequestSchema,
+  guestHostingCheckoutRequestSchema,
   createPaginatedApiSuccessResponse,
   orderListQuerySchema,
   updateOrderStatusRequestSchema,
   type CreateAdminOrderRequest,
   type CreateCustomerOrderRequest,
+  type GuestHostingCheckoutRequest,
   type OrderListQuery,
   type UpdateOrderStatusRequest,
 } from '@webhost-billing/shared';
@@ -31,7 +33,10 @@ import { ZodValidationPipe } from '../../common/validation/zod-validation.pipe';
 import { API_ENVIRONMENT } from '../../infrastructure/environment/environment.module';
 import type { AuthRequestContext } from '../auth/auth.types';
 import { CurrentAuth } from '../auth/decorators/current-auth.decorator';
+import { Public } from '../auth/decorators/public.decorator';
+import { AuthRateLimit } from '../auth/decorators/rate-limit.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { GuestCheckoutService } from './guest-checkout.service';
 import { OrderService } from './order.service';
 
 @Controller('orders')
@@ -40,9 +45,29 @@ export class OrderController {
 
   constructor(
     private readonly orders: OrderService,
+    private readonly guestCheckout: GuestCheckoutService,
     @Inject(API_ENVIRONMENT) environment: ApiEnvironment,
   ) {
     this.auditSecret = environment.SESSION_SECRET;
+  }
+
+  @Public()
+  @Post('guest-checkout')
+  @HttpCode(HttpStatus.CREATED)
+  @AuthRateLimit({
+    scope: 'registration',
+    limit: 5,
+    windowMs: 60 * 60 * 1_000,
+    includeEmail: true,
+  })
+  async guest(
+    @Body(new ZodValidationPipe(guestHostingCheckoutRequestSchema))
+    input: GuestHostingCheckoutRequest,
+    @Req() request: Request,
+  ) {
+    return createApiSuccessResponse(
+      await this.guestCheckout.place(input, this.context(request)),
+    );
   }
 
   @Post('checkout')

@@ -5492,6 +5492,23 @@ catalogue display, and existing fake-provider boundaries. Do not introduce
 domain transfers, add-ons, live provider operations, or deployment.
 ```
 
+## Command 127 — One-submit guest hosting checkout for an existing domain
+
+```text
+Owner-directed on 2026-10-19 after comparing two checkout recordings: an
+anonymous new customer selecting an existing domain must enter account and
+billing details at checkout, then create the account, unpaid hosting order and
+invoice together with one final action. Keep the operation atomic and retry
+safe, with server-authoritative pricing, CSRF and registration rate limits.
+Require email verification before portal sign-in. Payment verification and
+successful provisioning remain separate activation gates. Preserve the
+authenticated new-domain quote and consent path; do not silently place a
+domain order without those checks. Validate with fictional local data and
+fake providers only. Do not deploy or perform live registrar, WHM or payment
+operations without separate authorization. Report, commit and push validated
+source to main.
+```
+
 ## Operating Guidance
 
 1. Run commands in order.
