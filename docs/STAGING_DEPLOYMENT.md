@@ -1,6 +1,37 @@
 # Staging Deployment
 
-## Current staging release (2026-10-19, guest hosting order)
+## Current staging release (2026-10-19, public cart and checkout)
+
+- URL: `https://my.speedhost.bd/shared-hosting`
+- Source and application image tag: `15c8cdb559f985c9d4d20abccaba882353613ed5`.
+  This adds public domain choice, hosting configuration, cart review and inline
+  guest checkout. The previous release is `326fb4d2745c361fbadf6f974743015ac8d32cff`.
+- Protected rollback inventory:
+  `/srv/webhost-billing-staging/rollback/release-20261019T020224Z-15c8cdb559f985c9d4d20abccaba882353613ed5/`.
+  The verified encrypted backup is
+  `/srv/webhost-billing-staging/backups/webhost-billing-webhost_billing_staging-20261019T020225Z.dump.gpg`.
+  It remains a same-host backup.
+- GitHub Validate and CodeQL passed for the deployed commit. The guarded
+  script verified the backup checksum, OpenPGP integrity, archive structure
+  and required tables; 34 migrations were complete with none pending. All
+  seven staging services became healthy, and PostgreSQL, Redis and Mailpit
+  container IDs were unchanged. The browser API-origin check passed.
+- `/checkout`, `/order/configure` and `/order/review` returned 200. A fresh
+  anonymous Chromium session followed the actual Starter Hosting card through
+  existing-domain choice, configuration, cart review and checkout. Inline
+  account creation and existing-customer sign-in fields were present. No
+  account or order was submitted.
+- `RESELLBIZ_LIVE_ENABLED=false` was verified in API, worker and scheduler;
+  `BKASH_ENABLED=false` and `SSLCOMMERZ_ENABLED=false` were verified in API.
+  No live registrar, payment or WHM operation was made. Production-mode
+  staging cannot complete the fake-provider registration/provisioning path;
+  that path was tested locally with fake providers.
+- The first wrapper attempt stopped before upload or service changes because
+  Windows PowerShell 5 lacks the .NET process argument-list API. The release
+  completed with PowerShell 7, and the wrapper's archive step now uses Git's
+  own output option for compatibility with both PowerShell versions.
+
+## Prior staging release (2026-10-19, guest hosting order)
 
 - URL: `https://my.speedhost.bd/shared-hosting`
 - Source and application image tag: `326fb4d2745c361fbadf6f974743015ac8d32cff`.

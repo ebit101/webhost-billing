@@ -41,20 +41,7 @@ if (-not $Apply) {
   exit 0
 }
 
-$archiveFile = [System.IO.File]::Create($archive)
-try {
-  $git = [System.Diagnostics.Process]::new()
-  $git.StartInfo.FileName = 'git'
-  $git.StartInfo.UseShellExecute = $false
-  $git.StartInfo.RedirectStandardOutput = $true
-  $git.StartInfo.ArgumentList.Add('archive')
-  $git.StartInfo.ArgumentList.Add('--format=tar.gz')
-  $git.StartInfo.ArgumentList.Add($sha)
-  if (-not $git.Start()) { throw 'Could not start git archive.' }
-  $git.StandardOutput.BaseStream.CopyTo($archiveFile)
-  $git.WaitForExit()
-  if ($git.ExitCode -ne 0) { throw 'git archive failed.' }
-} finally { $archiveFile.Dispose() }
+Invoke-Checked git @('archive', '--format=tar.gz', "--output=$archive", $sha)
 
 $archiveSha = (Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash.ToLowerInvariant()
 Invoke-Checked scp (@('-q') + $sshOptions + @($archive, "${target}:$remoteArchive"))
