@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
+  adminOrderEntryHref,
   checkoutEntryHref,
   checkoutIntentQuery,
   customerLandingHref,
+  readAdminOrderIntent,
   readCheckoutIntent,
 } from './checkout-intent';
 
@@ -17,7 +19,16 @@ describe('allowlisted checkout intent', () => {
     expect(readCheckoutIntent(intent)).toEqual(intent);
     expect(readCheckoutIntent(new URLSearchParams(query))).toEqual(intent);
     expect(checkoutIntentQuery(intent)).toBe(query);
-    expect(customerLandingHref(intent)).toBe(`/portal/checkout?${query}`);
+    expect(customerLandingHref(intent)).toBe(`/checkout?${query}`);
+    expect(adminOrderEntryHref(intent)).toBe(
+      `/admin/orders?checkoutProductId=${intent.productId}&checkoutPriceId=${intent.priceId}`,
+    );
+    expect(
+      readAdminOrderIntent({
+        checkoutProductId: intent.productId,
+        checkoutPriceId: intent.priceId,
+      }),
+    ).toEqual(intent);
     expect(checkoutEntryHref('/login', intent)).toBe(`/login?${query}`);
     expect(checkoutEntryHref('/register', intent)).toBe(`/register?${query}`);
     expect(customerLandingHref()).toBe('/portal');
@@ -67,7 +78,7 @@ describe('allowlisted checkout intent', () => {
     });
     expect(readCheckoutIntent(untrusted)).toEqual(intent);
     expect(customerLandingHref(readCheckoutIntent(untrusted))).toBe(
-      `/portal/checkout?${query}`,
+      `/checkout?${query}`,
     );
     expect(
       customerLandingHref(

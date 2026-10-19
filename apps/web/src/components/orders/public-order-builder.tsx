@@ -9,10 +9,14 @@ import Link from 'next/link';
 import { useEffect, useState, type FormEvent } from 'react';
 import { publicGet } from '../../lib/auth-api';
 import {
-  customerLandingHref,
+  checkoutIntentQuery,
   type CheckoutIntent,
 } from '../../lib/checkout-intent';
-import { saveOrderDraft, type OrderDraft } from '../../lib/order-draft';
+import {
+  readOrderDraft,
+  saveOrderDraft,
+  type OrderDraft,
+} from '../../lib/order-draft';
 import { buttonStyles } from '../ui/button';
 import { fieldClass } from '../customers/customer-fields';
 import { formatMinor } from './order-ui';
@@ -28,12 +32,25 @@ export function PublicOrderBuilder({
   const [choice, setChoice] = useState<OrderDraft['domainChoice']>('REGISTER');
   const [domain, setDomain] = useState('');
   const [ready, setReady] = useState(false);
+  const selectionProductId = selection?.productId;
+  const selectionPriceId = selection?.priceId;
 
   useEffect(() => {
     let active = true;
     void publicGet<PublicProduct[]>('/products/public')
       .then((catalog) => {
-        if (active) setProducts(catalog);
+        if (!active) return;
+        setProducts(catalog);
+        const draft =
+          selectionProductId && selectionPriceId
+            ? readOrderDraft({
+                productId: selectionProductId,
+                priceId: selectionPriceId,
+              })
+            : undefined;
+        setChoice(draft?.domainChoice ?? 'REGISTER');
+        setDomain(draft?.requestedDomain ?? '');
+        setReady(false);
       })
       .catch(() => {
         if (active) setError('Hosting plans could not be loaded.');
@@ -44,7 +61,7 @@ export function PublicOrderBuilder({
     return () => {
       active = false;
     };
-  }, []);
+  }, [selectionPriceId, selectionProductId]);
 
   const product = products.find((item) => item.id === selection?.productId);
   const price = product?.prices.find(
@@ -93,7 +110,7 @@ export function PublicOrderBuilder({
           ← Hosting plans
         </Link>
         <p className="mt-8 text-sm font-bold text-brand-700">
-          Step 2 of 3 · Choose your domain
+          Step 1 of 4 · Choose your domain
         </p>
         <h1 className="mt-2 text-3xl font-bold text-slate-950">
           Set up your hosting order
@@ -228,14 +245,13 @@ export function PublicOrderBuilder({
                     No order has been placed.
                   </p>
                   <Link
-                    href={customerLandingHref(selection)}
+                    href={`/order/configure?${checkoutIntentQuery(selection)}`}
                     className={`${buttonStyles('primary')} mt-5 w-full`}
                   >
-                    Continue to checkout
+                    Continue to configure
                   </Link>
                   <p className="mt-3 text-xs text-slate-600">
-                    You will sign in or create an account before placing the
-                    order.
+                    Next, review the billing period and hosting details.
                   </p>
                 </>
               ) : (

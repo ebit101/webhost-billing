@@ -542,6 +542,69 @@ describe('order interfaces', () => {
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeTruthy();
   });
 
+  it('prefills an administrator hosting order from the public selection', async () => {
+    saveOrderDraft({
+      productId,
+      priceId,
+      domainChoice: 'EXISTING',
+      requestedDomain: 'surjo.bd',
+    });
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes('/orders?')) return paginatedResponse([], 20);
+        if (url.includes('/customers?')) return paginatedResponse([customer]);
+        if (url.endsWith('/products'))
+          return jsonResponse({ success: true, data: [product] });
+        throw new Error(`Unexpected request: ${url}`);
+      }),
+    );
+    render(<AdminOrderManager checkoutIntent={{ productId, priceId }} />);
+    await screen.findByText('Hosting selection carried forward');
+    expect((screen.getByLabelText('Product') as HTMLSelectElement).value).toBe(
+      productId,
+    );
+    expect((screen.getByLabelText('Price') as HTMLSelectElement).value).toBe(
+      priceId,
+    );
+    expect(
+      (screen.getByLabelText('Requested domain') as HTMLInputElement).value,
+    ).toBe('surjo.bd');
+    expect(
+      screen.getByRole('button', { name: 'Create order and invoice' }),
+    ).not.toHaveProperty('disabled', true);
+  });
+
+  it('prevents a new-domain draft from becoming a hosting-only administrator order', async () => {
+    saveOrderDraft({
+      productId,
+      priceId,
+      domainChoice: 'REGISTER',
+      requestedDomain: 'newsite.com',
+    });
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes('/orders?')) return paginatedResponse([], 20);
+        if (url.includes('/customers?')) return paginatedResponse([customer]);
+        if (url.endsWith('/products'))
+          return jsonResponse({ success: true, data: [product] });
+        throw new Error(`Unexpected request: ${url}`);
+      }),
+    );
+    render(<AdminOrderManager checkoutIntent={{ productId, priceId }} />);
+    expect(
+      await screen.findByText(
+        /This selection requests a new domain registration/,
+      ),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('button', { name: 'Create order and invoice' }),
+    ).toHaveProperty('disabled', true);
+  });
+
   it('applies, explains, and clears URL-bound customer context', async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input);

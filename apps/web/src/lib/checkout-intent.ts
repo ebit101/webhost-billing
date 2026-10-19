@@ -43,5 +43,24 @@ export function checkoutEntryHref(
 
 export function customerLandingHref(intent?: CheckoutIntent): string {
   const query = intent ? checkoutIntentQuery(intent) : '';
-  return query ? `/portal/checkout?${query}` : '/portal';
+  return query ? `/checkout?${query}` : '/portal';
+}
+
+export function adminOrderEntryHref(intent?: CheckoutIntent): string {
+  const validated = intent && readCheckoutIntent(intent);
+  if (!validated) return '/admin/orders';
+  const query = new URLSearchParams({
+    checkoutProductId: validated.productId,
+    checkoutPriceId: validated.priceId,
+  });
+  return `/admin/orders?${query}`;
+}
+
+export function readAdminOrderIntent(
+  query: SelectionQuery,
+): CheckoutIntent | undefined {
+  return readCheckoutIntent({
+    productId: query.checkoutProductId,
+    priceId: query.checkoutPriceId,
+  });
 }

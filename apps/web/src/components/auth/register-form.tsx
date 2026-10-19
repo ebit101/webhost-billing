@@ -11,8 +11,10 @@ import { AuthForm, Field, FormNotice, SubmitButton } from './form-controls';
 
 export function RegisterForm({
   checkoutIntent,
+  onChooseSignIn,
 }: {
   checkoutIntent?: CheckoutIntent;
+  onChooseSignIn?: () => void;
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
@@ -52,12 +54,22 @@ export function RegisterForm({
       {message && checkoutIntent ? (
         <p className="text-sm text-slate-600">
           After verifying your email, return here and{' '}
-          <Link
-            href={checkoutEntryHref('/login', checkoutIntent)}
-            className="font-medium text-cyan-700 underline"
-          >
-            sign in to continue your selected plan
-          </Link>
+          {onChooseSignIn ? (
+            <button
+              type="button"
+              onClick={onChooseSignIn}
+              className="font-medium text-cyan-700 underline"
+            >
+              sign in to continue your selected plan
+            </button>
+          ) : (
+            <Link
+              href={checkoutEntryHref('/login', checkoutIntent)}
+              className="font-medium text-cyan-700 underline"
+            >
+              sign in to continue your selected plan
+            </Link>
+          )}
           .
         </p>
       ) : null}
@@ -122,12 +134,22 @@ export function RegisterForm({
       <SubmitButton busy={busy}>Create customer account</SubmitButton>
       <p className="text-center text-sm text-slate-600">
         Already registered?{' '}
-        <Link
-          href={checkoutEntryHref('/login', checkoutIntent)}
-          className="font-medium text-cyan-700 hover:underline"
-        >
-          Sign in
-        </Link>
+        {onChooseSignIn ? (
+          <button
+            type="button"
+            onClick={onChooseSignIn}
+            className="font-medium text-cyan-700 hover:underline"
+          >
+            Sign in
+          </button>
+        ) : (
+          <Link
+            href={checkoutEntryHref('/login', checkoutIntent)}
+            className="font-medium text-cyan-700 hover:underline"
+          >
+            Sign in
+          </Link>
+        )}
       </p>
     </AuthForm>
   );

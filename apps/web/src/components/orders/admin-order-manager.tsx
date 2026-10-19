@@ -37,13 +37,17 @@ import {
   readAdminOrderQuery,
   type AdminOrderSelection,
 } from '../../lib/admin-order-ledger-query';
+import { type CheckoutIntent } from '../../lib/checkout-intent';
+import { clearOrderDraft, readOrderDraft } from '../../lib/order-draft';
 
 export function AdminOrderManager({
   customerFilter = emptyAdminCustomerFilter,
   selection,
+  checkoutIntent,
 }: {
   customerFilter?: AdminCustomerFilter;
   selection?: AdminOrderSelection;
+  checkoutIntent?: CheckoutIntent;
 } = {}) {
   const applied = selection ?? {
     ...readAdminOrderQuery({ customerId: customerFilter.customerId }),
@@ -55,6 +59,10 @@ export function AdminOrderManager({
   const [filteredCustomer, setFilteredCustomer] = useState<CustomerDetail>();
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedProductId, setSelectedProductId] = useState('');
+  const [selectedPriceId, setSelectedPriceId] = useState('');
+  const [requestedDomain, setRequestedDomain] = useState('');
+  const [draftNeedsRegistration, setDraftNeedsRegistration] = useState(false);
+  const [selectionUnavailable, setSelectionUnavailable] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -66,6 +74,8 @@ export function AdminOrderManager({
   const filteredCustomerId = customerFilter.customerId;
   const scope = `${adminOrderQueryString(applied.query)}:${applied.invalid}:${customerFilter.invalid}`;
   const [reviewScope, setReviewScope] = useState(scope);
+  const checkoutProductId = checkoutIntent?.productId;
+  const checkoutPriceId = checkoutIntent?.priceId;
   // Discard old selection without remounting independent creation inputs/key.
   if (reviewScope !== scope) {
     setReviewScope(scope);
@@ -82,10 +92,32 @@ export function AdminOrderManager({
         if (!active) return;
         setCustomers(customerResult.data);
         setProducts(productResult);
-        setSelectedProductId(
-          productResult.find((product) => product.status === 'ACTIVE')?.id ??
-            '',
+        const requestedProduct = checkoutProductId
+          ? productResult.find(
+              (product) =>
+                product.id === checkoutProductId && product.status === 'ACTIVE',
+            )
+          : undefined;
+        const requestedPrice = requestedProduct?.prices.find(
+          (price) => price.id === checkoutPriceId && price.isActive,
         );
+        setSelectionUnavailable(Boolean(checkoutProductId && !requestedPrice));
+        setSelectedProductId(
+          checkoutProductId
+            ? (requestedProduct?.id ?? '')
+            : (productResult.find((product) => product.status === 'ACTIVE')
+                ?.id ?? ''),
+        );
+        setSelectedPriceId(requestedPrice?.id ?? '');
+        const draft =
+          checkoutProductId && checkoutPriceId
+            ? readOrderDraft({
+                productId: checkoutProductId,
+                priceId: checkoutPriceId,
+              })
+            : undefined;
+        setRequestedDomain(draft?.requestedDomain ?? '');
+        setDraftNeedsRegistration(draft?.domainChoice === 'REGISTER');
       })
       .catch((caught: unknown) => {
         if (active) setError(errorMessage(caught));
@@ -96,7 +128,7 @@ export function AdminOrderManager({
     return () => {
       active = false;
     };
-  }, []);
+  }, [checkoutPriceId, checkoutProductId]);
 
   useEffect(() => {
     let active = true;
@@ -267,6 +299,8 @@ export function AdminOrderManager({
       );
       submissionKey.current = '';
       form.reset();
+      setRequestedDomain('');
+      if (checkoutIntent) clearOrderDraft();
       setNotice(
         `${result.order.orderNumber} created with unpaid invoice ${result.order.invoice.invoiceNumber}.`,
       );
@@ -306,8 +340,12 @@ export function AdminOrderManager({
     <div className="grid gap-7">
       <PageHeader
         eyebrow="Administrator"
-        title="Orders"
-        description="Create customer orders with server-authoritative prices, then track payment and fulfilment states independently."
+        title={checkoutIntent ? 'Complete hosting order' : 'Orders'}
+        description={
+          checkoutIntent
+            ? 'Choose the customer, review the selected hosting plan and domain, then create an unpaid invoice.'
+            : 'Create customer orders with server-authoritative prices, then track payment and fulfilment states independently.'
+        }
       />
       <AdminCustomerFilterNotice
         customer={
@@ -326,13 +364,44 @@ export function AdminOrderManager({
       />
       {error ? <Message tone="error">{error}</Message> : null}
       {notice ? <Message tone="success">{notice}</Message> : null}
-      <AdminDomainOrderForm
-        onCreated={() => setReadRevision((current) => current + 1)}
-      />
+      {!checkoutIntent && (
+        <AdminDomainOrderForm
+          onCreated={() => setReadRevision((current) => current + 1)}
+        />
+      )}
       <Card
         title="Create a hosting order"
         description="Create a hosting order and unpaid invoice for a customer. The API revalidates the customer, product, active price, domain, and every total."
       >
+        {checkoutIntent && (
+          <div className="mb-5 rounded-xl border border-brand-200 bg-brand-50 p-4 text-sm text-slate-800">
+            <p className="font-semibold">Hosting selection carried forward</p>
+            <p className="mt-1">
+              No order has been placed. Select the customer and review the
+              active price before creating an invoice.
+            </p>
+          </div>
+        )}
+        {selectionUnavailable && (
+          <p
+            role="alert"
+            className="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950"
+          >
+            This hosting plan or billing period is no longer available. Select
+            an active product and price below.
+          </p>
+        )}
+        {draftNeedsRegistration && (
+          <p
+            role="alert"
+            className="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950"
+          >
+            This selection requests a new domain registration. The administrator
+            hosting form creates hosting-only orders. Use a customer account for
+            a combined hosting and domain invoice, or create a separate domain
+            order below with recorded offline consent.
+          </p>
+        )}
         <form
           onSubmit={createOrder}
           className="grid gap-4 md:grid-cols-2 xl:grid-cols-5"
@@ -356,7 +425,11 @@ export function AdminOrderManager({
               name="productId"
               required
               value={selectedProductId}
-              onChange={(event) => setSelectedProductId(event.target.value)}
+              onChange={(event) => {
+                setSelectedProductId(event.target.value);
+                setSelectedPriceId('');
+                setSelectionUnavailable(false);
+              }}
               className={fieldClass}
             >
               <option value="">Select product</option>
@@ -371,7 +444,13 @@ export function AdminOrderManager({
           </label>
           <label className="block text-sm font-semibold text-slate-700">
             Price
-            <select name="priceId" required className={fieldClass}>
+            <select
+              name="priceId"
+              required
+              value={selectedPriceId}
+              onChange={(event) => setSelectedPriceId(event.target.value)}
+              className={fieldClass}
+            >
               <option value="">Select billing period</option>
               {activePrices.map((price) => (
                 <option key={price.id} value={price.id}>
@@ -386,16 +465,26 @@ export function AdminOrderManager({
             name="requestedDomain"
             placeholder="example.com"
             required
+            value={requestedDomain}
+            onChange={(event) => setRequestedDomain(event.target.value)}
           />
           <Field label="Internal note" name="notes" />
           <div className="md:col-span-2 xl:col-span-5">
-            <Button type="submit" disabled={saving || !customers.length}>
+            <Button
+              type="submit"
+              disabled={saving || !customers.length || draftNeedsRegistration}
+            >
               <Icon name="plus" className="size-4" />
               {saving ? 'Creating…' : 'Create order and invoice'}
             </Button>
           </div>
         </form>
       </Card>
+      {checkoutIntent && (
+        <AdminDomainOrderForm
+          onCreated={() => setReadRevision((current) => current + 1)}
+        />
+      )}
       <AdminOrderLedger
         selection={applied}
         revision={readRevision}

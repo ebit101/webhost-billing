@@ -1,4 +1,14 @@
-import type { OrderStatus } from '@webhost-billing/shared';
+import type { OrderStatus, PublicProduct } from '@webhost-billing/shared';
+
+export function formatHostingSubtotal(
+  price: PublicProduct['prices'][number],
+): string | undefined {
+  if (price.amount.currency !== price.setupFee.currency) return undefined;
+  return formatMinor(
+    (BigInt(price.amount.amount) + BigInt(price.setupFee.amount)).toString(),
+    price.amount.currency,
+  );
+}
 
 export function formatMinor(amount: string, currency: string) {
   const fractionDigits =

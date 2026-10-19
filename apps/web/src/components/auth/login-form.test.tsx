@@ -83,7 +83,11 @@ describe('administrator login security', () => {
       screen.getByRole('button', { name: 'Verify and sign in' }),
     );
 
-    await waitFor(() => expect(navigation.push).toHaveBeenCalledWith('/admin'));
+    await waitFor(() =>
+      expect(navigation.push).toHaveBeenCalledWith(
+        `/admin/orders?checkoutProductId=${intent.productId}&checkoutPriceId=${intent.priceId}`,
+      ),
+    );
     const loginCall = fetchMock.mock.calls.find(([url]) =>
       String(url).endsWith('/auth/login'),
     );
@@ -115,10 +119,14 @@ describe('administrator login security', () => {
 
 describe('customer checkout sign-in', () => {
   it.each([
-    ['CUSTOMER', intent, `/portal/checkout?${query}`],
+    ['CUSTOMER', intent, `/checkout?${query}`],
     ['CUSTOMER', undefined, '/portal'],
     ['CUSTOMER', { ...intent, priceId: '//evil.example' }, '/portal'],
-    ['ADMIN', intent, '/admin'],
+    [
+      'ADMIN',
+      intent,
+      `/admin/orders?checkoutProductId=${intent.productId}&checkoutPriceId=${intent.priceId}`,
+    ],
   ] as const)(
     'lands role %s with validated selection only',
     async (role, selection, destination) => {
@@ -187,7 +195,7 @@ describe('customer checkout sign-in', () => {
     expect(navigation.push).not.toHaveBeenCalled();
     await user.click(screen.getByRole('button', { name: 'Sign in' }));
     await waitFor(() =>
-      expect(navigation.push).toHaveBeenCalledWith(`/portal/checkout?${query}`),
+      expect(navigation.push).toHaveBeenCalledWith(`/checkout?${query}`),
     );
     expect(
       mock.mock.calls.every(([url]) =>

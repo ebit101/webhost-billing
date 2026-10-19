@@ -54,4 +54,26 @@ describe('administrator order server entry', () => {
       },
     });
   });
+  it('passes a validated checkout selection to the administrator form', async () => {
+    const checkoutProductId = '10000000-0000-4000-8000-000000000080';
+    const checkoutPriceId = '10000000-0000-4000-8000-000000000081';
+    render(
+      await Page({
+        params: Promise.resolve({}),
+        searchParams: Promise.resolve({
+          checkoutProductId,
+          checkoutPriceId,
+          amount: '1',
+        }),
+      }),
+    );
+    expect(
+      JSON.parse(screen.getByTestId('selection').textContent!),
+    ).toMatchObject({
+      checkoutIntent: {
+        productId: checkoutProductId,
+        priceId: checkoutPriceId,
+      },
+    });
+  });
 });

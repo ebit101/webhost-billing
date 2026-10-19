@@ -94,11 +94,29 @@ test('complete hosting customer and administrator lifecycle', async ({
       .getByRole('textbox', { name: 'Domain name' })
       .fill(E2E_PRODUCT.domain);
     await page.getByRole('button', { name: 'Review selection' }).click();
-    await page.getByRole('link', { name: 'Continue to checkout' }).click();
-    await expect(page).toHaveURL(new RegExp(`/login\\?${selectionQuery}$`));
+    await page.getByRole('link', { name: 'Continue to configure' }).click();
+    await expect(page).toHaveURL(
+      new RegExp(`/order/configure\\?${selectionQuery}$`),
+    );
     await expect(
-      page.getByRole('link', { name: 'Create an account' }),
-    ).toHaveAttribute('href', `/register?${selectionQuery}`);
+      page.getByRole('heading', { name: 'Configure your hosting' }),
+    ).toBeVisible();
+    await page.getByRole('button', { name: 'Continue to review' }).click();
+    await expect(page).toHaveURL(
+      new RegExp(`/order/review\\?${selectionQuery}$`),
+    );
+    await expect(
+      page.getByRole('heading', { name: 'Review your cart' }),
+    ).toBeVisible();
+    await page.getByRole('link', { name: 'Continue to checkout' }).click();
+    await expect(page).toHaveURL(new RegExp(`/checkout\\?${selectionQuery}$`));
+    await expect(page.getByRole('heading', { name: 'Checkout' })).toBeVisible();
+    await expect(page.getByText(E2E_PRODUCT.domain)).toBeVisible();
+    await expect(page.getByLabel('First name')).toBeVisible();
+    await page.getByRole('button', { name: 'Existing customer' }).click();
+    await expect(page.getByLabel('Password')).toBeVisible();
+    await page.getByRole('button', { name: 'Create an account' }).click();
+    await expect(page.getByLabel('First name')).toBeVisible();
   });
 
   await test.step('invalid session cookie retains the same safe checkout sign-in context', async () => {
@@ -153,9 +171,7 @@ test('complete hosting customer and administrator lifecycle', async ({
     await page.getByLabel('Email address').fill(E2E_CUSTOMER.email);
     await page.getByLabel('Password').fill(E2E_CUSTOMER.password);
     await page.getByRole('button', { name: 'Sign in' }).click();
-    await expect(page).toHaveURL(
-      new RegExp(`/portal/checkout\\?${selectionQuery}$`),
-    );
+    await expect(page).toHaveURL(new RegExp(`/checkout\\?${selectionQuery}$`));
     await expect(page.getByLabel('Product')).toHaveValue(E2E_PRODUCT.id);
     await expect(page.getByLabel('Billing period')).toHaveValue(
       E2E_PRODUCT.priceId,
@@ -186,10 +202,12 @@ test('complete hosting customer and administrator lifecycle', async ({
       .getByRole('textbox', { name: 'Domain name' })
       .fill(E2E_PRODUCT.domain);
     await page.getByRole('button', { name: 'Review selection' }).click();
+    await page.getByRole('link', { name: 'Continue to configure' }).click();
+    await page.getByRole('button', { name: 'Continue to review' }).click();
     await page.getByRole('link', { name: 'Continue to checkout' }).click();
     await expect(page).toHaveURL(
       new RegExp(
-        `/portal/checkout\\?productId=${E2E_PRODUCT.id}&priceId=${E2E_PRODUCT.priceId}$`,
+        `/checkout\\?productId=${E2E_PRODUCT.id}&priceId=${E2E_PRODUCT.priceId}$`,
       ),
     );
     await expect(page.getByLabel('Product')).toHaveValue(E2E_PRODUCT.id);
@@ -238,6 +256,36 @@ test('complete hosting customer and administrator lifecycle', async ({
     await login(page, E2E_ADMIN.email, E2E_ADMIN.password, '/admin');
     await page.goto('/portal');
     await expect(page).toHaveURL(/\/admin$/);
+    await page.goto(`/order?${selectionQuery}`);
+    await page.getByRole('radio', { name: /Use an existing domain/ }).check();
+    await page
+      .getByRole('textbox', { name: 'Domain name' })
+      .fill('admin-choice.example.test');
+    await page.getByRole('button', { name: 'Review selection' }).click();
+    await page.getByRole('link', { name: 'Continue to configure' }).click();
+    await page.getByRole('button', { name: 'Continue to review' }).click();
+    await page.getByRole('link', { name: 'Continue to checkout' }).click();
+    await expect(page.getByRole('heading', { name: 'Checkout' })).toBeVisible();
+    await page
+      .getByRole('link', { name: 'Continue to administrator order' })
+      .click();
+    await expect(page).toHaveURL(
+      new RegExp(
+        `/admin/orders\\?checkoutProductId=${E2E_PRODUCT.id}&checkoutPriceId=${E2E_PRODUCT.priceId}$`,
+      ),
+    );
+    await expect(
+      page.getByRole('heading', { name: 'Complete hosting order' }),
+    ).toBeVisible();
+    await expect(page.getByRole('combobox', { name: 'Product' })).toHaveValue(
+      E2E_PRODUCT.id,
+    );
+    await expect(page.getByRole('combobox', { name: 'Price' })).toHaveValue(
+      E2E_PRODUCT.priceId,
+    );
+    await expect(
+      page.getByRole('textbox', { name: 'Requested domain' }),
+    ).toHaveValue('admin-choice.example.test');
     await page.goto('/admin/orders');
     const orderRow = page.getByRole('row').filter({
       hasText: E2E_PRODUCT.domain,

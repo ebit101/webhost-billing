@@ -7,6 +7,7 @@ import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import {
   CHECKOUT_INTENT_HEADER,
+  adminOrderEntryHref,
   checkoutEntryHref,
   readCheckoutIntent,
 } from './checkout-intent';
@@ -97,6 +98,14 @@ export async function requireWorkspaceRole(
   }
 
   if (identity.role !== requiredRole) {
+    if (identity.role === 'ADMIN' && requiredRole === 'CUSTOMER') {
+      const context = (await headers()).get(CHECKOUT_INTENT_HEADER);
+      const intent =
+        context && context.length <= 128
+          ? readCheckoutIntent(new URLSearchParams(context))
+          : undefined;
+      if (intent) redirect(adminOrderEntryHref(intent));
+    }
     redirect(identity.role === 'ADMIN' ? '/admin' : '/portal');
   }
 

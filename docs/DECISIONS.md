@@ -2810,6 +2810,14 @@ report-only update must pass its own delivery gate; stop for the recommended pha
 - **Reason:** Customers should configure hosting and a domain before account entry. The owner also wants administrators to remain signed in during normal work until they sign out.
 - **Consequence:** Clearing browser storage can discard an unfinished guest selection; anyone using the same browser could see the unsubmitted domain for up to 24 hours. A browser may delete the cookie or enforce a lifetime cap, so a fresh administrator login can still be required. Sign out, revocation, password reset and MFA continue to end or restrict access. No live provider operation or deployment is authorized by this source change.
 
+## ADR-135 — Show the complete public order path before account entry
+
+- **Status:** Accepted by owner
+- **Date:** 2026-10-19
+- **Decision:** Public hosting ordering uses four visible steps: choose a domain, configure the active BDT hosting price, review the cart, and enter customer account details at checkout. Guests can see all four steps without a session. Checkout offers inline registration or sign-in; placing an order remains an authenticated operation. An administrator with a selected existing domain can continue through the administrator customer-order form, which revalidates the active product and price. A new-domain selection cannot silently become a hosting-only administrator order.
+- **Reason:** The guest flow reached sign-in before showing checkout, while an administrator session diverted to the dashboard. The owner supplied a WHMCS order-flow reference and expects the chosen plan and domain to remain visible through configuration, cart review and checkout.
+- **Consequence:** Browser drafts remain temporary and non-authoritative. Domain availability, registration price and registrant consent are checked after customer authentication. The administrator form remains separate for new-domain requests with offline consent and separate invoices. No transfer, optional add-on, additional currency, live provider operation or deployment is authorized by this UI change.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

@@ -5477,6 +5477,21 @@ Validate with fictional local data and guarded browser tests. Do not deploy or
 perform live registrar, WHM or payment operations in this command.
 ```
 
+## Command 126 — Public hosting cart and checkout continuation
+
+```text
+Owner-directed on 2026-10-19: follow the reference order sequence of domain
+choice, hosting configuration, cart review, and checkout with customer details.
+The public Continue action must not redirect an anonymous visitor to login
+or an administrator to the dashboard. Keep account creation and sign-in inside
+the checkout page, carry the validated browser selection between steps, and
+send an administrator to customer order creation with the selected hosting
+plan and existing domain. Keep prices server-authoritative, invoice creation
+behind customer authentication or administrator authorization, BDT-only
+catalogue display, and existing fake-provider boundaries. Do not introduce
+domain transfers, add-ons, live provider operations, or deployment.
+```
+
 ## Operating Guidance
 
 1. Run commands in order.

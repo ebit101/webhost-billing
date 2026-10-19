@@ -10,6 +10,7 @@ import type {
 import { authMutation } from '../../lib/auth-api';
 import { domainEntryHref, type DomainIntent } from '../../lib/domain-intent';
 import {
+  adminOrderEntryHref,
   checkoutEntryHref,
   customerLandingHref,
   type CheckoutIntent,
@@ -20,10 +21,12 @@ export function LoginForm({
   audience = 'customer',
   checkoutIntent,
   domainIntent,
+  onChooseRegister,
 }: {
   audience?: 'admin' | 'customer';
   checkoutIntent?: CheckoutIntent;
   domainIntent?: DomainIntent;
+  onChooseRegister?: () => void;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -50,7 +53,9 @@ export function LoginForm({
       }
       router.push(
         result.identity.role === 'ADMIN'
-          ? '/admin'
+          ? checkoutIntent
+            ? adminOrderEntryHref(checkoutIntent)
+            : '/admin'
           : domainIntent
             ? domainEntryHref('/portal/domains', domainIntent)
             : customerLandingHref(checkoutIntent),
@@ -79,7 +84,9 @@ export function LoginForm({
       );
       router.push(
         result.identity.role === 'ADMIN'
-          ? '/admin'
+          ? checkoutIntent
+            ? adminOrderEntryHref(checkoutIntent)
+            : '/admin'
           : domainIntent
             ? domainEntryHref('/portal/domains', domainIntent)
             : customerLandingHref(checkoutIntent),
@@ -154,7 +161,15 @@ export function LoginForm({
         >
           Forgot password?
         </Link>
-        {audience === 'customer' ? (
+        {audience === 'customer' && onChooseRegister ? (
+          <button
+            type="button"
+            onClick={onChooseRegister}
+            className="font-medium text-cyan-700 hover:underline"
+          >
+            Create an account
+          </button>
+        ) : audience === 'customer' ? (
           <Link
             href={checkoutEntryHref('/register', checkoutIntent)}
             className="font-medium text-cyan-700 hover:underline"

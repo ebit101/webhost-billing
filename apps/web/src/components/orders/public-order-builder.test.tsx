@@ -48,7 +48,7 @@ describe('public hosting order step', () => {
     render(<PublicOrderBuilder selection={selection} />);
     expect(await screen.findByText('BDT 1,500.00')).toBeTruthy();
     expect(
-      screen.queryByRole('link', { name: 'Continue to checkout' }),
+      screen.queryByRole('link', { name: 'Continue to configure' }),
     ).toBeNull();
     await user.click(
       screen.getByRole('radio', { name: /Use an existing domain/i }),
@@ -64,10 +64,10 @@ describe('public hosting order step', () => {
     });
     expect(
       screen
-        .getByRole('link', { name: 'Continue to checkout' })
+        .getByRole('link', { name: 'Continue to configure' })
         .getAttribute('href'),
     ).toBe(
-      `/portal/checkout?productId=${selection.productId}&priceId=${selection.priceId}`,
+      `/order/configure?productId=${selection.productId}&priceId=${selection.priceId}`,
     );
   });
 
@@ -87,7 +87,7 @@ describe('public hosting order step', () => {
       ),
     ).toBeTruthy();
     expect(
-      screen.queryByRole('link', { name: 'Continue to checkout' }),
+      screen.queryByRole('link', { name: 'Continue to configure' }),
     ).toBeNull();
   });
 });

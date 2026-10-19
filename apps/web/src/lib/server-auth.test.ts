@@ -121,6 +121,22 @@ describe('server workspace authorization', () => {
     );
   });
 
+  it('takes an administrator with a selected plan to customer order creation', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(identityResponse('ADMIN')),
+    );
+    nextServer.headers.mockResolvedValue(
+      new Headers({
+        'x-webhost-checkout-intent':
+          'productId=10000000-0000-4000-8000-000000000080&priceId=10000000-0000-4000-8000-000000000081',
+      }),
+    );
+    await expect(requireWorkspaceRole('CUSTOMER')).rejects.toThrow(
+      'NEXT_REDIRECT:/admin/orders?checkoutProductId=10000000-0000-4000-8000-000000000080&checkoutPriceId=10000000-0000-4000-8000-000000000081',
+    );
+  });
+
   it('uses the private API origin for server-side identity checks when configured', async () => {
     vi.stubEnv('INTERNAL_API_URL', 'http://api:3001');
     vi.resetModules();
