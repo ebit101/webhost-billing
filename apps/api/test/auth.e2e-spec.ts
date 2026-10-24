@@ -311,7 +311,7 @@ describe('Authentication (e2e)', () => {
     ).toBe('IDLE_TIMEOUT');
   });
 
-  it('allows an authenticated administrator through role and ownership guards', async () => {
+  it('allows administrator access but uses a browser cookie and idle cutoff when unchecked', async () => {
     const adminAgent = request.agent(app.getHttpServer());
     const csrfToken = await issueCsrfToken(adminAgent);
     const loginResponse = await adminAgent
@@ -320,51 +320,72 @@ describe('Authentication (e2e)', () => {
       .send({ email: ADMIN_EMAIL, password: ORIGINAL_PASSWORD })
       .expect(200);
     const loginBody: unknown = loginResponse.body;
-    expect(
-      apiSuccessResponseSchema(authenticatedSessionResponseSchema).parse(
-        loginBody,
-      ).data.identity.role,
-    ).toBe('ADMIN');
+    const login = apiSuccessResponseSchema(
+      authenticatedSessionResponseSchema,
+    ).parse(loginBody).data;
+    expect(login.identity.role).toBe('ADMIN');
 
     await adminAgent.get('/auth/admin-check').expect(200);
     await adminAgent
       .get(`/auth/customer-profile/${SEEDED_OTHER_CUSTOMER_ID}`)
       .expect(200);
+    const session = login.session;
+    const cookie = (
+      loginResponse.headers['set-cookie'] as unknown as string[]
+    ).find((value) => value.startsWith('webhost_session='));
+    expect(cookie).toBeDefined();
+    expect(cookie).not.toMatch(/Max-Age=|Expires=/i);
+    expect(
+      new Date(session.expiresAt).getTime() -
+        new Date(session.createdAt).getTime(),
+    ).toBeLessThanOrEqual(24 * 60 * 60 * 1_000);
+    const me = await adminAgent.get('/auth/me').expect(200);
+    expect(
+      (me.headers['set-cookie'] as unknown as string[]).join(';'),
+    ).not.toMatch(/Max-Age=|Expires=/i);
+    await prisma.authSession.update({
+      where: { id: session.id },
+      data: { lastSeenAt: new Date(Date.now() - 2 * 60 * 60 * 1_000) },
+    });
+    await adminAgent.get('/auth/me').expect(401);
   });
 
-  it('renews an idle administrator session and ends it on sign out', async () => {
+  it('keeps an idle remembered administrator session within its deadline and ends it on sign out', async () => {
     const adminAgent = request.agent(app.getHttpServer());
     const csrfToken = await issueCsrfToken(adminAgent);
     await adminAgent
       .post('/auth/login')
       .set('X-CSRF-Token', csrfToken)
-      .send({ email: ADMIN_EMAIL, password: ORIGINAL_PASSWORD })
+      .send({
+        email: ADMIN_EMAIL,
+        password: ORIGINAL_PASSWORD,
+        rememberDevice: true,
+      })
       .expect(200);
     const sessionsResponse = await adminAgent.get('/auth/sessions').expect(200);
     const session = sessionsResponseSchema
       .parse(sessionsResponse.body as unknown)
       .data.find((item) => item.current);
     if (!session) throw new Error('Current administrator session missing');
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1_000);
     await prisma.authSession.update({
       where: { id: session.id },
       data: {
         createdAt: new Date(Date.now() - 3 * 60 * 60 * 1_000),
         lastSeenAt: new Date(Date.now() - 2 * 60 * 60 * 1_000),
-        expiresAt: new Date(Date.now() + 60 * 60 * 1_000),
+        expiresAt,
       },
     });
 
     const me = await adminAgent.get('/auth/me').expect(200);
     expect(me.headers['set-cookie']).toEqual(
-      expect.arrayContaining([expect.stringContaining('Max-Age=31536000')]),
+      expect.arrayContaining([expect.stringMatching(/Max-Age=35\d{2};/)]),
     );
     const renewed = await prisma.authSession.findUniqueOrThrow({
       where: { id: session.id },
     });
     expect(renewed.revokedAt).toBeNull();
-    expect(renewed.expiresAt.getTime()).toBeGreaterThan(
-      Date.now() + 360 * 24 * 60 * 60 * 1_000,
-    );
+    expect(renewed.expiresAt).toEqual(expiresAt);
 
     await adminAgent
       .post('/auth/logout')
@@ -427,14 +448,25 @@ describe('Authentication (e2e)', () => {
       twoFactorRequiredResponseSchema,
     ).parse(challengeResponse.body as unknown).data;
     await mfaAgent.get('/auth/admin-check').expect(401);
-    await mfaAgent
+    const verifiedResponse = await mfaAgent
       .post('/auth/login/two-factor')
       .set('X-CSRF-Token', mfaCsrf)
       .send({
         challengeToken: challenge.challengeToken,
         code: recoveryCodes[0],
+        rememberDevice: true,
       })
       .expect(200);
+    const verified = apiSuccessResponseSchema(
+      authenticatedSessionResponseSchema,
+    ).parse(verifiedResponse.body as unknown).data;
+    expect(
+      new Date(verified.session.expiresAt).getTime() -
+        new Date(verified.session.createdAt).getTime(),
+    ).toBe(30 * 24 * 60 * 60 * 1_000);
+    expect(verifiedResponse.headers['set-cookie']).toEqual(
+      expect.arrayContaining([expect.stringMatching(/Max-Age=259\d{4};/)]),
+    );
     await mfaAgent.get('/auth/admin-check').expect(200);
 
     const replayAgent = request.agent(app.getHttpServer());

@@ -139,10 +139,15 @@ for (const scenario of routes) {
         });
         return;
       }
-      const expected: Record<string, string> =
+      const expected: Record<string, string | boolean> =
         path === '/auth/login/two-factor'
-          ? { challengeToken, code: '123456' }
-          : { ...scenario.fields };
+          ? { challengeToken, code: '123456', rememberDevice: false }
+          : {
+              ...scenario.fields,
+              ...(scenario.name === 'administrator login'
+                ? { rememberDevice: false }
+                : {}),
+            };
       if (path === '/auth/password-reset/confirm') expected.token = resetToken;
       const body: unknown = request.postDataJSON();
       const valid =
@@ -323,7 +328,10 @@ function observe(page: Page) {
   return result;
 }
 
-function sameBody(body: unknown, expected: Record<string, string>): boolean {
+function sameBody(
+  body: unknown,
+  expected: Record<string, string | boolean>,
+): boolean {
   if (typeof body !== 'object' || body === null || Array.isArray(body))
     return false;
   const values = body as Record<string, unknown>;

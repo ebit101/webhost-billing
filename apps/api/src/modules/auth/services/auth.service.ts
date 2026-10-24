@@ -35,6 +35,11 @@ import {
 } from '../auth.constants';
 import type { AuthRequestContext, AuthTokenFactory } from '../auth.types';
 import { AuthAuditService } from './auth-audit.service';
+import {
+  administratorSessionMode,
+  administratorSessionToken,
+  administratorSessionTtl,
+} from './admin-session-policy';
 import { hashOpaqueToken } from './auth-token.service';
 import { PasswordHasherService } from './password-hasher.service';
 import { TokenCipherService } from './token-cipher.service';
@@ -390,12 +395,19 @@ export class AuthService {
       };
     }
 
-    const rawToken = this.tokens.generate();
+    const generatedToken = this.tokens.generate();
+    const rawToken =
+      user.role === UserRole.ADMIN
+        ? administratorSessionToken(
+            generatedToken,
+            input.rememberDevice === true,
+          )
+        : generatedToken;
     const createdAt = new Date();
     const expiresAt = new Date(
       createdAt.getTime() +
         (user.role === UserRole.ADMIN
-          ? ADMIN_SESSION_TTL_MILLISECONDS
+          ? administratorSessionTtl(rawToken, this.sessionTtlMilliseconds)
           : this.sessionTtlMilliseconds),
     );
     const sessionId = randomUUID();
@@ -460,7 +472,8 @@ export class AuthService {
     });
     const idleExpired = Boolean(
       session &&
-      session.user.role !== UserRole.ADMIN &&
+      (session.user.role !== UserRole.ADMIN ||
+        administratorSessionMode(rawToken) === 'browser') &&
       now.getTime() - session.lastSeenAt.getTime() >
         this.sessionIdleTtlMilliseconds,
     );
@@ -510,7 +523,8 @@ export class AuthService {
         where: { id: session.id, revokedAt: null },
         data: {
           lastSeenAt: now,
-          ...(session.user.role === UserRole.ADMIN
+          ...(session.user.role === UserRole.ADMIN &&
+          administratorSessionMode(rawToken) === 'legacy'
             ? {
                 expiresAt: new Date(
                   now.getTime() + ADMIN_SESSION_TTL_MILLISECONDS,
@@ -524,6 +538,7 @@ export class AuthService {
     return {
       identity: this.toIdentity(session.user),
       sessionId: session.id,
+      sessionExpiresAt: session.expiresAt.toISOString(),
     };
   }
 
@@ -611,6 +626,7 @@ export class AuthService {
           now,
           true,
           recovery ? 'RECOVERY_CODE' : 'TOTP',
+          input.rememberDevice === true,
         );
       });
     } catch (error) {
@@ -1100,12 +1116,17 @@ export class AuthService {
     createdAt: Date,
     twoFactorVerified: boolean,
     method?: string,
+    rememberDevice = false,
   ): Promise<LoginResult> {
-    const rawToken = this.tokens.generate();
+    const generatedToken = this.tokens.generate();
+    const rawToken =
+      user.role === UserRole.ADMIN
+        ? administratorSessionToken(generatedToken, rememberDevice)
+        : generatedToken;
     const expiresAt = new Date(
       createdAt.getTime() +
         (user.role === UserRole.ADMIN
-          ? ADMIN_SESSION_TTL_MILLISECONDS
+          ? administratorSessionTtl(rawToken, this.sessionTtlMilliseconds)
           : this.sessionTtlMilliseconds),
     );
     const sessionId = randomUUID();

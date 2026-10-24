@@ -4,10 +4,13 @@ import { parse, type SerializeOptions } from 'cookie';
 import type { Request, Response } from 'express';
 import { API_ENVIRONMENT } from '../../../infrastructure/environment/environment.module';
 import {
-  ADMIN_SESSION_TTL_MILLISECONDS,
   CSRF_COOKIE_BASE_NAME,
   SESSION_COOKIE_BASE_NAME,
 } from '../auth.constants';
+import {
+  administratorSessionMode,
+  administratorSessionTtl,
+} from './admin-session-policy';
 
 @Injectable()
 export class AuthCookieService {
@@ -52,13 +55,24 @@ export class AuthCookieService {
     response: Response,
     token: string,
     administrator = false,
+    expiresAt?: string,
   ): void {
+    const browserSession =
+      administrator && administratorSessionMode(token) === 'browser';
+    const ttl = administrator
+      ? administratorSessionTtl(token, this.sessionTtlMilliseconds)
+      : this.sessionTtlMilliseconds;
     response.cookie(this.sessionCookieName, token, {
       ...this.baseOptions(),
       httpOnly: true,
-      maxAge: administrator
-        ? ADMIN_SESSION_TTL_MILLISECONDS
-        : this.sessionTtlMilliseconds,
+      ...(!browserSession
+        ? {
+            maxAge:
+              expiresAt && administratorSessionMode(token) === 'remembered'
+                ? Math.max(0, Math.min(ttl, Date.parse(expiresAt) - Date.now()))
+                : ttl,
+          }
+        : {}),
     });
   }
 

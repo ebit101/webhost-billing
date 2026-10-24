@@ -147,6 +147,7 @@ export class AuthController {
       response,
       result.token,
       result.identity.role === 'ADMIN',
+      result.session.expiresAt,
     );
 
     return createApiSuccessResponse({
@@ -178,6 +179,7 @@ export class AuthController {
       response,
       result.token,
       result.identity.role === 'ADMIN',
+      result.session.expiresAt,
     );
     return createApiSuccessResponse({
       identity: result.identity,
@@ -344,7 +346,13 @@ export class AuthController {
   ): ApiSuccessResponse<AuthenticatedIdentity> {
     if (auth.identity.role === 'ADMIN') {
       const token = this.cookies.read(request, this.cookies.sessionCookieName);
-      if (token) this.cookies.setSessionCookie(response, token, true);
+      if (token)
+        this.cookies.setSessionCookie(
+          response,
+          token,
+          true,
+          auth.sessionExpiresAt,
+        );
     }
     return createApiSuccessResponse(auth.identity);
   }

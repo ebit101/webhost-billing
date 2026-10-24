@@ -37,6 +37,7 @@ export const loginRequestSchema = z
   .object({
     email: normalizedEmailSchema,
     password: z.string().min(1).max(128),
+    rememberDevice: z.boolean().optional(),
   })
   .strict();
 
@@ -51,6 +52,7 @@ export const twoFactorLoginRequestSchema = z
   .object({
     challengeToken: z.string().min(32).max(256),
     code: twoFactorCodeSchema,
+    rememberDevice: z.boolean().optional(),
   })
   .strict();
 

@@ -76,6 +76,15 @@ separate; new registrar/configuration mutations still require full-administrator
 
 ---
 
+**Administrator sign-in choice — 2026-10-24:** The owner requested a
+“Remember this device” checkbox and clarified that it extends the session,
+without trusting a device to skip MFA. New administrator sessions explicitly
+selected for persistence have a fixed maximum of 30 days. Otherwise use a
+browser-session cookie, a one-day-or-shorter absolute limit and the existing
+one-hour-or-shorter idle limit. Preserve already issued administrator sessions
+and customer behavior. Sign-out and security revocation remain effective.
+Command 53's MFA enrollment and remembered-factor work remains separate.
+
 ## 1. Executive Summary
 
 This project is a lightweight, open-source web-hosting billing and service-management system inspired by the useful core of WHMCS. Each installation is intended for one hosting business; public source distribution does not expand the product into a multi-tenant, worldwide, general-purpose hosting platform.

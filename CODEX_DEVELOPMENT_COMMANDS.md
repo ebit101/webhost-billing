@@ -5509,6 +5509,24 @@ operations without separate authorization. Report, commit and push validated
 source to main.
 ```
 
+## Command 128 — Offer administrator session persistence at sign-in
+
+```text
+Owner-directed on 2026-10-24: add a “Remember this device” option to
+administrator sign-in, including the authentication-code screen. The owner
+clarified that it must only keep the session signed in longer; it must not
+skip MFA on later sign-ins. Make the choice opt-in. A remembered session
+lasts at most 30 days; an unchecked choice uses a browser-session cookie,
+an absolute maximum of one day (or the configured shorter session limit),
+and the existing one-hour-or-shorter inactivity limit. Preserve already
+issued administrator sessions and customer session behavior. Retain secure
+HttpOnly cookie transport, hashed session tokens, CSRF, MFA replay protection,
+sign-out, password-reset and session/access revocation. Do not implement
+Command 53's remembered-factor trust or mandatory enrollment in this slice.
+Validate with fictional identities, record evidence, commit/reconcile and
+non-force-push source to main. No deployment or live-provider operation.
+```
+
 ## Operating Guidance
 
 1. Run commands in order.

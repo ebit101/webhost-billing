@@ -4,6 +4,7 @@ import type { Request } from 'express';
 export interface AuthRequestContext {
   identity: AuthenticatedIdentity;
   sessionId: string;
+  sessionExpiresAt?: string;
 }
 
 export interface AuthenticatedRequest extends Request {

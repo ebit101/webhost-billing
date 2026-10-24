@@ -32,6 +32,29 @@ export function LoginForm({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
   const [challenge, setChallenge] = useState<TwoFactorRequiredResponse>();
+  const [rememberDevice, setRememberDevice] = useState(false);
+
+  const rememberDeviceOption = (
+    <div className="grid gap-2">
+      <label className="flex items-center gap-3 text-sm font-medium text-slate-700">
+        <input
+          type="checkbox"
+          name="rememberDevice"
+          checked={rememberDevice}
+          disabled={busy}
+          onChange={(event) => setRememberDevice(event.target.checked)}
+          aria-describedby="remember-device-help"
+          className="h-4 w-4 rounded border-slate-300 accent-cyan-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-700"
+        />
+        Remember this device
+      </label>
+      <p id="remember-device-help" className="text-xs leading-5 text-slate-500">
+        Stay signed in for up to 30 days on this browser. Sign out to end
+        access. New sign-ins still require two-factor authentication when
+        enabled.
+      </p>
+    </div>
+  );
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -45,6 +68,7 @@ export function LoginForm({
       >('/auth/login', 'POST', {
         email: String(form.get('email') ?? ''),
         password: String(form.get('password') ?? ''),
+        ...(audience === 'admin' ? { rememberDevice } : {}),
       });
       if ('requiresTwoFactor' in result) {
         setChallenge(result);
@@ -80,6 +104,7 @@ export function LoginForm({
         {
           challengeToken: challenge.challengeToken,
           code: String(form.get('code') ?? '').trim(),
+          rememberDevice,
         },
       );
       router.push(
@@ -115,6 +140,7 @@ export function LoginForm({
           placeholder="123456"
           required
         />
+        {rememberDeviceOption}
         <SubmitButton busy={busy}>Verify and sign in</SubmitButton>
         <button
           type="button"
@@ -122,6 +148,7 @@ export function LoginForm({
           onClick={() => {
             setChallenge(undefined);
             setError(undefined);
+            setRememberDevice(false);
           }}
         >
           Use a different account
@@ -153,6 +180,7 @@ export function LoginForm({
         autoComplete="current-password"
         required
       />
+      {audience === 'admin' ? rememberDeviceOption : null}
       <SubmitButton busy={busy}>Sign in</SubmitButton>
       <div className="flex flex-wrap justify-between gap-3 text-sm">
         <Link
