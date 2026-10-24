@@ -5532,6 +5532,13 @@ idle-session fixture chronology and the production dependency audit blockers
 with compatible patched versions; preserve audit thresholds and security
 tests. Require renewed complete CI and CodeQL acceptance. Do not deploy,
 activate providers or start another product command.
+
+Owner-authorized staging follow-up on 2026-10-24: deploy Commands 127–128
+to my.speedhost.bd. Verify a fresh backup first, preserve the staging
+environment and installation logo, keep live providers disabled and run
+smoke tests. Deploy only the exact validated source through the guarded
+staging runbook. Production deployment, provider activation and the next
+product command remain outside this authorization.
 ```
 
 ## Operating Guidance

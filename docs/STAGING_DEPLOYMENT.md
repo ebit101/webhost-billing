@@ -1,6 +1,52 @@
 # Staging Deployment
 
-## Current staging release (2026-10-19, public cart and checkout)
+## Current staging release (2026-10-24, Commands 127–128)
+
+- URL: `https://my.speedhost.bd`. Source and all application image tags:
+  `36642e60fdc3dbdd177aae095362e919b8b2ae3d`. This includes one-submit guest
+  checkout, opt-in administrator session persistence and validated dependency
+  security repairs. Exact-source CI and CodeQL passed before deployment.
+- The owner explicitly authorized staging deployment with verified backup,
+  environment/logo preservation, disabled live providers and smoke tests.
+  Previous source `15c8cdb559f985c9d4d20abccaba882353613ed5` is retained.
+- Encrypted backup verified before building:
+  `/srv/webhost-billing-staging/backups/webhost-billing-webhost_billing_staging-20261024T120128Z.dump.gpg`.
+  A second backup immediately before switching also passed checksum, OpenPGP
+  integrity, PostgreSQL archive structure and required-table verification:
+  `/srv/webhost-billing-staging/backups/webhost-billing-webhost_billing_staging-20261024T121244Z.dump.gpg`.
+  These are same-host backups, not off-site recovery acceptance.
+- Protected rollback inventory:
+  `/srv/webhost-billing-staging/rollback/release-20261024T121244Z-36642e60fdc3dbdd177aae095362e919b8b2ae3d/`.
+  It contains the previous release pointer/environment, verified backup path
+  and service inventories. Additional pre-build fingerprints and shared-host
+  inventories are retained under
+  `/srv/webhost-billing-staging/rollback/commands127-128-preflight-20261024T120119Z/`.
+- All four images built on-host with Node 24 and pinned pnpm 11.22.0,
+  frozen-lockfile installs and package/application builds. Runtime Node is
+  `v24.22.1`. Prisma reported no pending migrations; 34 are complete and none
+  unfinished. All seven services are healthy with exactly one scheduler.
+  Only the four application services were recreated; PostgreSQL, Redis and
+  Mailpit IDs are unchanged.
+- Staging environment contents are unchanged except `IMAGE_TAG`, with mode
+  `0600` retained. The installation logo fingerprint and Office `.env` are
+  unchanged. Registrar flags are false in API/worker/scheduler, payment flags
+  are false in API, and the existing cPanel/WHM server remains disabled.
+  No provider operation, account/order submission or external customer email
+  was performed by deployment smoke tests.
+- Public storefront, order/configuration/review/checkout, health/readiness and
+  logo routes returned 200; protected hosting-panel and MessageDock API routes
+  returned 401. The browser API-origin check passed. Fresh anonymous Chromium
+  followed the actual hosting card to inline guest checkout without submitting.
+  Administrator sign-in showed the unchecked, working “Remember this device”
+  option and its 30-day/continued-MFA explanation; customer sign-in is unchanged.
+  No mutating browser request or browser page error occurred. Owner-completed
+  MFA and real-duration persistence remain manual acceptance checks.
+- The shared-host inventory comparison observed unrelated temporary container
+  `shc-intake-verify-db-20261024` disappear during the build window. This
+  deployment did not target it; all other unrelated running IDs matched.
+  See the detailed deployment report in `PROGRESS.md` for the retained limits.
+
+## Prior staging release (2026-10-19, public cart and checkout)
 
 - URL: `https://my.speedhost.bd/shared-hosting`
 - Source and application image tag: `15c8cdb559f985c9d4d20abccaba882353613ed5`.
