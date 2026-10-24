@@ -5525,6 +5525,13 @@ sign-out, password-reset and session/access revocation. Do not implement
 Command 53's remembered-factor trust or mandatory enrollment in this slice.
 Validate with fictional identities, record evidence, commit/reconcile and
 non-force-push source to main. No deployment or live-provider operation.
+
+Owner-authorized validation follow-up on 2026-10-24: finish Command 128
+validation, fix failures and update the project status report. Repair the
+idle-session fixture chronology and the production dependency audit blockers
+with compatible patched versions; preserve audit thresholds and security
+tests. Require renewed complete CI and CodeQL acceptance. Do not deploy,
+activate providers or start another product command.
 ```
 
 ## Operating Guidance
