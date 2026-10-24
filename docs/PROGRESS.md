@@ -2,12 +2,12 @@
 
 ## Status Summary
 
-- **Current command:** Commands 127–128 — Authorized staging deployment
-- **Current status:** Commands 127–128 are deployed to `https://my.speedhost.bd` from validated source `36642e60fdc3dbdd177aae095362e919b8b2ae3d`. All four application images built with Node 24 and pnpm 11.22.0; all seven services are healthy. Fresh encrypted backups verified before deployment and immediately before the switch. Environment settings and installation logo are preserved; live providers remain disabled. Read-only HTTP and anonymous Chromium smoke tests passed.
+- **Current command:** Command 128 — Owner-assisted staging session acceptance
+- **Current status:** Commands 127–128 remain deployed at `36642e60fdc3dbdd177aae095362e919b8b2ae3d`. The owner confirmed MFA at sign-in, remembered access through `/admin`, and OTP required again after explicit sign-out. Read-only session metadata showed MFA-verified sessions with fixed 30-day lifetimes. `/login` still renders the customer sign-in form for an already authenticated administrator; record this navigation issue separately from session expiry. Full browser restart and elapsed-duration persistence remain unconfirmed.
 - **Last updated:** 2026-10-24
 - **Last recorded staging release:** Commands 127–128, `36642e60fdc3dbdd177aae095362e919b8b2ae3d`, deployed on 2026-10-24. Previous Command 126 release and rollback inventory are retained.
-- **Next command:** Owner acceptance of administrator password/MFA sign-in with the remembered-session choice on staging. Command 53 MFA enforcement, SMTP acceptance, WHM/registrar acceptance and production launch gates remain separate. Before Office local development, free `D:` disk space and reinstall from the frozen lockfile.
-- **Next command authorized:** None beyond closure of this staging deployment/report follow-up. No additional product command, provider activation, currency work or production deployment starts automatically.
+- **Next command:** Confirm persistence after fully quitting and reopening the same normal browser profile, using `/admin`; optionally check after a longer idle period. Separately authorize the authenticated `/login` navigation improvement if desired. Command 53 MFA enforcement, SMTP/provider acceptance and production launch gates remain separate. Free Office `D:` disk space and reinstall from the frozen lockfile before local development.
+- **Next command authorized:** None beyond this session acceptance/report follow-up. No application change, deployment, provider activation or next product command starts automatically.
 
 ## Command Reports
 
@@ -15968,6 +15968,16 @@ require explicit approval.
 - **Report validation:** Prettier, Markdown links (170 references across 67 files), contributor-map paths/root scripts, issue-form YAML/guidance links, demo screenshot assets and `git diff --check` passed. A later service stability check confirmed all four application containers remained healthy with zero restarts.
 - **Decisions and remaining limits:** Use the existing on-host build path because Office `D:` is nearly full and its Docker engine is unavailable. No deployment script or application change was needed. Live administrator MFA completion and real 30-day persistence are not claimed by the anonymous smoke test; complete functional session-policy tests passed in hosted CI. Off-site recovery, SMTP/provider operating acceptance and production launch remain separate gates. Office dependency repair remains necessary before local development.
 - **Exact recommended next command:** Owner acceptance of the administrator password/MFA sign-in and remembered-session choice on staging; authorize any additional product command or provider acceptance separately. Stop after this deployment report.
+
+### Command 128 staging acceptance follow-up — Remembered access, MFA and sign-out
+
+- **Status and date:** Core interactive checks confirmed by the owner on 2026-10-24; full browser restart and real elapsed-duration acceptance remain open.
+- **Authorized scope:** Help the owner test remembered administrator sign-in on staging, including MFA, persistence and sign-out, with MFA required on every new sign-in. The owner entered credentials and codes privately; the agent did not read or request those values.
+- **Observed results:** The owner saw the authentication-code prompt after submitting a password with the remember option selected, completed sign-in, confirmed that reopening `https://my.speedhost.bd/admin` recognizes the remembered session, and reported that signing out makes the next sign-in require OTP again. The earlier report of a full browser restart passing was corrected by the owner: only a browser tab had been closed. Do not claim full-browser restart acceptance or infer 30 days of observed use.
+- **Read-only evidence:** Staging remained on `36642e6`, all seven services were healthy, and registrar/payment flags remained false. Recent administrator-session metadata showed MFA verification and exactly 30 days between creation and expiry, with remembered sessions still active during the reported confusion. No identity, session token, token hash, authenticator secret or recovery code was printed. Previously executed hosted tests cover fixed expiry, invalid/replayed MFA rejection, revocation and unchecked-session behavior; they were not rerun in this interactive follow-up.
+- **Finding:** `/login` is currently the customer entry page and renders `LoginForm` without checking an existing authenticated identity. `/admin` checks the session on the server and correctly recognizes the remembered administrator. Seeing the `/login` form was therefore not evidence that the saved session expired. Use `/admin` for administrator return visits; redirecting already authenticated visitors from `/login` is a separate navigation improvement, not an MFA bypass. No application fix or deployment was performed here.
+- **Files changed and validation:** `docs/PROGRESS.md`, `docs/STAGING_DEPLOYMENT.md`, `CODEX_DEVELOPMENT_COMMANDS.md` record the authorized test scope, owner-reported results, independent metadata and remaining checks. Prettier and `git diff --check` passed. Office environment, installation logo, database business data and provider settings were not changed by the agent; owner sign-in/sign-out used the normal authentication flow.
+- **Exact recommended next command:** Test a complete normal-browser restart against `/admin` without signing out; optionally check persistence after a longer idle interval. Authorize any `/login` navigation change separately. Do not claim real-duration persistence or begin another product command automatically.
 
 ## Future report template
 

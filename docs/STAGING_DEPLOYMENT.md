@@ -39,8 +39,15 @@
   followed the actual hosting card to inline guest checkout without submitting.
   Administrator sign-in showed the unchecked, working “Remember this device”
   option and its 30-day/continued-MFA explanation; customer sign-in is unchanged.
-  No mutating browser request or browser page error occurred. Owner-completed
-  MFA and real-duration persistence remain manual acceptance checks.
+  No mutating browser request or browser page error occurred during that smoke.
+- Owner-assisted session acceptance on 2026-10-24 confirmed the MFA prompt,
+  remembered access when returning to `/admin`, and OTP required on the next
+  sign-in after explicit sign-out. Read-only session metadata showed MFA
+  verification and fixed 30-day lifetimes. The owner clarified that only a tab
+  had been closed; a full browser restart and real elapsed-duration persistence
+  are still unconfirmed. `/login` continues to show the customer sign-in form
+  even with an authenticated administrator session; this is a navigation issue,
+  not evidence of session expiry. Use `/admin` for administrator return visits.
 - The shared-host inventory comparison observed unrelated temporary container
   `shc-intake-verify-db-20261024` disappear during the build window. This
   deployment did not target it; all other unrelated running IDs matched.

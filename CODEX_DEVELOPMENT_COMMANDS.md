@@ -5539,6 +5539,13 @@ environment and installation logo, keep live providers disabled and run
 smoke tests. Deploy only the exact validated source through the guarded
 staging runbook. Production deployment, provider activation and the next
 product command remain outside this authorization.
+
+Owner-authorized session acceptance on 2026-10-24: help test remembered
+administrator access on staging, including MFA, staying signed in and
+signing out. A new sign-in must still require MFA. Keep credentials/codes
+private, use read-only server diagnostics, and record observed results and
+unconfirmed duration/restart checks. No provider activation or application
+deployment is included in this acceptance follow-up.
 ```
 
 ## Operating Guidance
