@@ -345,7 +345,10 @@ describe('Authentication (e2e)', () => {
     ).not.toMatch(/Max-Age=|Expires=/i);
     await prisma.authSession.update({
       where: { id: session.id },
-      data: { lastSeenAt: new Date(Date.now() - 2 * 60 * 60 * 1_000) },
+      data: {
+        createdAt: new Date(Date.now() - 3 * 60 * 60 * 1_000),
+        lastSeenAt: new Date(Date.now() - 2 * 60 * 60 * 1_000),
+      },
     });
     await adminAgent.get('/auth/me').expect(401);
   });

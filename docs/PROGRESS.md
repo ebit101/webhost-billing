@@ -2,11 +2,12 @@
 
 ## Status Summary
 
-- **Current command:** Command 118 — Separate the TLD catalogue and multi-registrar execution choice
-- **Current status:** Command 118 source implementation and local acceptance complete; delivered to canonical main as `85ba0ea`. Separate registrar/TLD/default pages, consent-scoped immutable execution choice, selected-account management/renewal and additive historical preservation passed the recorded gates. Hosted checks were still running at the delivery snapshot; not claimed passed. No live domain purchase or deployment. Currency remains held.
-- **Last updated:** 2026-10-12
-- **Next command:** Phase review — Review Command 118 TLD catalogue and multi-registrar execution selection and decide deployment readiness. Command 53 MFA enforcement and requested email-template polishing remain distinct tasks.
-- **Next command authorized:** Command 53's earlier source authorization is retained but not started in Command 118. No automatic deployment, purchase or next-command execution.
+- **Current command:** Command 128 — Offer administrator session persistence at sign-in; validation follow-up
+- **Current status:** Source `24ba309` passed local checks and hosted CodeQL. Hosted CI passed package tests but failed one authentication API test because its idle-session fixture violated the existing timestamp-order constraint (110/111 API tests passed). The fixture now backdates creation before last activity; application behavior and database constraints are unchanged. Repair validation is in progress; no passing hosted rerun is claimed yet.
+- **Last updated:** 2026-10-24
+- **Last recorded staging release:** Command 126, `15c8cdb559f985c9d4d20abccaba882353613ed5`, deployed on 2026-10-19. Commands 127–128 are source changes awaiting separate deployment approval.
+- **Next command:** After Command 128 validation passes, review and separately authorize a guarded staging deployment of the guest checkout and administrator session changes. Command 53 MFA enforcement, SMTP acceptance, WHM/registrar acceptance and production launch gates remain separate.
+- **Next command authorized:** Finish Command 128 validation, fix failures and update this report only. The owner explicitly prohibited deployment in this follow-up. No additional product command, live provider operation or currency work is authorized.
 
 ## Command Reports
 
@@ -15940,6 +15941,16 @@ require explicit approval.
 - **Decisions made:** This is session persistence only, separate from Command 53's remembered-factor and mandatory-enrollment scope. The full opaque session token includes its policy marker in the existing stored hash; no independently trusted preference cookie or new database column is needed. Already issued unprefixed administrator sessions remain compatible. Standard browser cookie persistence can depend on browser session-restore settings, so server deadlines remain authoritative.
 - **Unresolved questions, risks and blockers:** Database-backed integration acceptance is unavailable locally until PostgreSQL/Redis are available; hosted CI has not yet been observed for this source change. Local browser preview was blocked by automatic approval review. No deployment, live-provider mutation or production data access is authorized or performed; existing Office `.env` is preserved. Fresh login is needed to choose the new policy.
 - **Exact recommended next command:** Review this source change and its validation, then separately authorize a guarded staging deployment if accepted. Keep Command 53, live-provider operations and any further product command separate.
+
+### Command 128 validation follow-up — Repair idle-session test timestamps
+
+- **Status/date:** Repair implemented; validation in progress, 2026-10-24. Deployment explicitly prohibited by the owner.
+- **Implemented scope:** Corrected only the unchecked administrator idle-session API fixture: creation is backdated three hours and last activity two hours, matching the existing customer/remembered-session fixtures and `auth_sessions_time_order_check`. The test still asserts an HttpOnly browser-session cookie, bounded expiry, access/ownership enforcement and idle rejection. No runtime session policy, migration, dependency or provider configuration changed.
+- **Files changed:** `apps/api/test/auth.e2e-spec.ts` and this report, including replacement of the stale Command 118 status summary.
+- **Validation performed:** Original [CI run 40087635297](https://github.com/ebit101/webhost-billing/actions/runs/40087635297) passed secret scanning, frozen install, tooling mitigations, all 34 migrations/seed verification, formatting, documentation, lint, typechecks and package tests. API integration reported 110/111 passing; its sole failure was SQLSTATE `23514` on the new fixture's timestamp order. Later invariant/browser/audit/build steps were skipped. Original [CodeQL run 40087635318](https://github.com/ebit101/webhost-billing/actions/runs/40087635318) passed. The repair passed local API typecheck, focused ESLint, 25/25 authentication security/session tests, targeted Prettier and `git diff --check`; renewed full hosted validation remains pending. Docker's configured local Linux engine remains unavailable.
+- **Decisions made:** Repair fictional fixture chronology rather than weaken the database constraint or application authentication behavior. Require a passing complete hosted run before closing validation.
+- **Unresolved questions, risks and blockers:** Full hosted validation remains pending for the repair. Local database-backed acceptance is unavailable without the Docker engine. No deployment, real customer data access or external provider action is part of this follow-up.
+- **Exact recommended next command:** Only after validation closure, review and separately authorize a guarded staging deployment of Commands 127–128. Do not start it automatically.
 
 ## Future report template
 
