@@ -5588,6 +5588,22 @@ change, complete normal verification/sign-in/sign-out and retain the fictional
 financial records. No SMTP reactivation, deployment or live operation is included.
 ```
 
+## Command 131 — Review staging invoice business identity and payment instructions
+
+```text
+Owner-authorized on 2026-10-26: review staging's invoice business identity
+and payment instructions. The invoice should show Speed Host. Keep live
+providers disabled and do not deploy.
+
+Use the existing protected administrator controls to change the future-invoice
+business name to Speed Host, preserving other settings and issued invoice
+snapshots. Validate with one clearly fictional draft retained without issuance,
+payment, email delivery or provisioning. Review current manual instructions;
+do not invent bank/mobile-payment destinations, legal or tax details. Record
+missing operating inputs, verification results and the next authorization
+boundary in the project status report. No provider activation or next command.
+```
+
 ## Operating Guidance
 
 1. Run commands in order.

@@ -39,6 +39,29 @@
   deployment was performed. Full-browser restart/elapsed-duration persistence
   and production/provider acceptance remain separate. See `PROGRESS.md` for details.
 
+## Invoice identity and payment-instruction review (2026-10-26, Command 131)
+
+- Future-invoice business name is now `Speed Host`, saved through the existing
+  protected administrator interface. No application deployment or code change
+  occurred. The original three invoices and their identity/financial snapshots
+  are unchanged; historical issued invoices keep their original issuer.
+- Fictional draft `INV-001003` displays Speed Host and remains Draft, unissued
+  and unpaid, with no payment, email or order. The normal counter advanced to 1004. Only the business name and expected numbering counter changed; other
+  settings, environment and logo fingerprints were preserved.
+- Manual-payment instructions remain the generic bank/cash/mobile-service text
+  asking for a reference. They contain no approved destination/recipient details;
+  partial payments remain disabled. Billing email/address/phone/country/tax
+  fields are unspecified. Obtain owner-approved values before customer use;
+  do not invent financial instructions or rewrite historical snapshots.
+- Scoped Node 24 assertions passed for the setting, visible draft, unchanged
+  original invoices and provider boundary. Seven services remain healthy;
+  health/readiness return 200. Registrar/payment flags are false, WHM is
+  disabled and custom SMTP remains disabled with Mailpit capture in use.
+  No provider operation, payment, issuance or provisioning was performed.
+- Root-only baseline, validation scripts, redacted passing result and screenshot:
+  `/srv/webhost-billing-staging/acceptance/command131-20261026/`.
+  See `PROGRESS.md` for exact evidence and remaining operating inputs.
+
 ## Guest checkout acceptance (2026-10-26, Command 130)
 
 - Acceptance passed after the owner explicitly authorized disabling custom
