@@ -1,6 +1,41 @@
 # Staging Deployment
 
-## Current staging release (2026-10-24, Commands 127–128)
+## Current staging release (2026-10-25, Command 129)
+
+- URL: `https://my.speedhost.bd`. Source and application image tags:
+  `5321ed7ee00ea4a11cc7e3fabdcb0f5509cae5a3`. Authenticated `/login` visitors
+  now go to `/admin` or `/portal` according to their verified role. Exact-source
+  CI and CodeQL passed before deployment. Previous source `36642e6` is retained.
+- Verified encrypted backup before building:
+  `/srv/webhost-billing-staging/backups/webhost-billing-webhost_billing_staging-20261025T102159Z.dump.gpg`.
+  Fresh pre-switch backup:
+  `/srv/webhost-billing-staging/backups/webhost-billing-webhost_billing_staging-20261025T103133Z.dump.gpg`.
+  Both passed checksum, OpenPGP integrity, PostgreSQL archive structure and
+  required-table verification. They remain same-host backups.
+- Protected rollback inventory:
+  `/srv/webhost-billing-staging/rollback/release-20261025T103133Z-5321ed7ee00ea4a11cc7e3fabdcb0f5509cae5a3/`.
+  Pre-build fingerprints and shared-host inventories are under
+  `/srv/webhost-billing-staging/rollback/command129-preflight-20261025T102157Z/`.
+- Four image types built on-host with Node 24 and pnpm 11.22.0. All seven
+  services are healthy; app restart counts are zero and exactly one scheduler
+  is running. No migration was pending; 34 are complete with none unfinished.
+  PostgreSQL, Redis, Mailpit and unrelated running-container IDs are unchanged.
+- Environment contents are unchanged except `IMAGE_TAG`, with mode `0600`
+  retained. Installation logo and Office `.env` fingerprints are unchanged.
+  Registrar/payment flags remain false and the cPanel/WHM server is disabled.
+  No real provider operation or business-data change was performed.
+- Health/readiness, storefront and logo checks passed, as did protected API
+  rejection and the browser API-origin check. Anonymous sign-in remains visible.
+  Authenticated staging test-customer `/login → /portal` and sign-out passed.
+  The customer redirect uses Next.js's HTTP 200 streamed refresh marker;
+  the smoke verifies its exact `/portal` destination. A fresh admin password
+  submission with remember selected required MFA and issued no session before
+  OTP; `/auth/me` returned 401. Credentials/tokens were not printed.
+- Owner-session `/login → /admin` browser acceptance awaits private sign-in
+  and confirmation. Full-browser restart/elapsed-duration persistence and
+  production/provider acceptance remain separate. See `PROGRESS.md` for details.
+
+## Prior staging release (2026-10-24, Commands 127–128)
 
 - URL: `https://my.speedhost.bd`. Source and all application image tags:
   `36642e60fdc3dbdd177aae095362e919b8b2ae3d`. This includes one-submit guest

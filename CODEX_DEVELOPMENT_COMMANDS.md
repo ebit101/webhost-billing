@@ -5559,6 +5559,13 @@ device as a reason to bypass MFA on a new sign-in. Preserve validated
 checkout/domain intent for signed-out visitors. Run validation, update the
 project status report, commit/reconcile and deliver validated source to main.
 Do not deploy, change provider settings or start the next product command.
+
+Owner-authorized deployment follow-up on 2026-10-25: deploy Command 129
+to staging at my.speedhost.bd. Verify a fresh backup first, preserve the
+environment and installation logo, keep live providers disabled, and
+smoke-test /login role redirects and MFA. Use normal authentication only;
+the owner enters any MFA code privately. No production deployment or next
+product command is included.
 ```
 
 ## Operating Guidance
