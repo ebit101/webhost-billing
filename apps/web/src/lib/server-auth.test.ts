@@ -62,14 +62,17 @@ describe('server workspace authorization', () => {
     );
   });
 
-  it('returns no identity for an expired administrator session', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue(new Response(null, { status: 401 })),
-    );
+  it.each([401, 403])(
+    'returns no identity when session verification denies access (%s)',
+    async (status) => {
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue(new Response(null, { status })),
+      );
 
-    await expect(getAuthenticatedIdentity()).resolves.toBeNull();
-  });
+      await expect(getAuthenticatedIdentity()).resolves.toBeNull();
+    },
+  );
 
   it.each(['missing', 'expired'])(
     'retains only checkout intent for a %s customer session',

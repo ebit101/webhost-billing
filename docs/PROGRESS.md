@@ -2,12 +2,12 @@
 
 ## Status Summary
 
-- **Current command:** Command 128 — Owner-assisted staging session acceptance
-- **Current status:** Commands 127–128 remain deployed at `36642e60fdc3dbdd177aae095362e919b8b2ae3d`. The owner confirmed MFA at sign-in, remembered access through `/admin`, and OTP required again after explicit sign-out. Read-only session metadata showed MFA-verified sessions with fixed 30-day lifetimes. `/login` still renders the customer sign-in form for an already authenticated administrator; record this navigation issue separately from session expiry. Full browser restart and elapsed-duration persistence remain unconfirmed.
-- **Last updated:** 2026-10-24
+- **Current command:** Command 129 — Redirect authenticated sign-in visitors to their workspace
+- **Current status:** Implemented the `/login` server-side session check and fixed role destinations (`/admin` and `/portal`). Regression coverage includes role redirects, anonymous sign-in, denied/unavailable verification, checkout/domain continuation and navigation only after MFA. Hosted validation is pending. Office test attempts could not load missing Next.js/Zod dependencies; no assertions ran locally. This source is not deployed.
+- **Last updated:** 2026-10-25
 - **Last recorded staging release:** Commands 127–128, `36642e60fdc3dbdd177aae095362e919b8b2ae3d`, deployed on 2026-10-24. Previous Command 126 release and rollback inventory are retained.
-- **Next command:** Confirm persistence after fully quitting and reopening the same normal browser profile, using `/admin`; optionally check after a longer idle period. Separately authorize the authenticated `/login` navigation improvement if desired. Command 53 MFA enforcement, SMTP/provider acceptance and production launch gates remain separate. Free Office `D:` disk space and reinstall from the frozen lockfile before local development.
-- **Next command authorized:** None beyond this session acceptance/report follow-up. No application change, deployment, provider activation or next product command starts automatically.
+- **Next command:** Finish Command 129 validation and source delivery, then stop. Staging deployment requires separate authorization. Full-browser restart/elapsed-duration session acceptance and Office dependency repair remain separate preparation checks.
+- **Next command authorized:** Command 129 implementation, validation, report and validated source delivery only. The owner explicitly prohibited deployment. No provider activation or next product command starts automatically.
 
 ## Command Reports
 
@@ -15978,6 +15978,16 @@ require explicit approval.
 - **Finding:** `/login` is currently the customer entry page and renders `LoginForm` without checking an existing authenticated identity. `/admin` checks the session on the server and correctly recognizes the remembered administrator. Seeing the `/login` form was therefore not evidence that the saved session expired. Use `/admin` for administrator return visits; redirecting already authenticated visitors from `/login` is a separate navigation improvement, not an MFA bypass. No application fix or deployment was performed here.
 - **Files changed and validation:** `docs/PROGRESS.md`, `docs/STAGING_DEPLOYMENT.md`, `CODEX_DEVELOPMENT_COMMANDS.md` record the authorized test scope, owner-reported results, independent metadata and remaining checks. Prettier and `git diff --check` passed. Office environment, installation logo, database business data and provider settings were not changed by the agent; owner sign-in/sign-out used the normal authentication flow.
 - **Exact recommended next command:** Test a complete normal-browser restart against `/admin` without signing out; optionally check persistence after a longer idle interval. Authorize any `/login` navigation change separately. Do not claim real-duration persistence or begin another product command automatically.
+
+### Command 129 — Redirect authenticated sign-in visitors to their workspace
+
+- **Status and date:** Implemented on 2026-10-25; isolated hosted validation pending.
+- **Implemented scope:** `/login` now calls the existing `getAuthenticatedIdentity()` server-side helper before rendering the customer sign-in form. An authenticated administrator redirects to `/admin`; an authenticated customer redirects to `/portal`. Destinations are fixed by verified role, independent of untrusted query parameters. Signed-out visitors retain normal sign-in and validated checkout/domain selections. Authentication, cookie lifetime, MFA enrollment/challenges, logout/revocation and provider settings are unchanged.
+- **Files changed:** `apps/web/src/app/login/page.tsx`, `apps/web/src/app/checkout-entry.test.tsx`, `apps/web/src/lib/server-auth.test.ts`, `apps/web/src/components/auth/login-form.test.tsx`, `CODEX_DEVELOPMENT_COMMANDS.md`, `docs/PROGRESS.md`.
+- **Regression coverage:** Both role destinations and no sign-in form on redirect; anonymous form rendering; verifier failure without access; validated anonymous checkout/domain continuation and rejected redirect authority; 401/403 verification returning no identity; MFA challenge shown without navigation, with navigation occurring only after verification for checked and unchecked remember choices. Existing API session-choice tests continue to cover mandatory MFA on fresh sign-in for MFA-enabled administrators and invalid/replayed-code rejection.
+- **Validation performed:** Prettier and `git diff --check` passed on the application/test changes. Attempted four focused web suites and two focused API session/MFA suites through their installed Node entry points, avoiding automatic dependency installation. All stopped before test execution because the incomplete Office dependency tree cannot resolve Next.js and Zod. No local test assertion passed or failed; complete validation must come from an isolated frozen installation in CI. Office `D:` has about 110 MB free; no cleanup, dependency repair or `.env` change was performed in this task.
+- **Decisions and limits:** Reuse API-backed session verification with `cache: 'no-store'`; do not infer authentication from cookie presence or the remember option. Authentication failures retain normal login, and verifier service failure fails closed. Already authenticated visitors go to the requested role home; anonymous checkout/domain continuation and the existing post-sign-in flow remain intact. No schema migration, deployment, provider operation or business-data change is needed.
+- **Exact recommended next command:** Complete Command 129 hosted validation and source delivery; then review and separately authorize a guarded staging deployment if accepted. Do not deploy automatically.
 
 ## Future report template
 
