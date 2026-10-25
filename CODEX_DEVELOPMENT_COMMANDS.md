@@ -5578,9 +5578,14 @@ creation. Keep live providers disabled and update the project status report.
 Use a reserved existing domain; do not pay, provision, register a domain,
 delete financial/audit records, deploy or start another product command.
 Confirm the effective email adapter uses Mailpit before submission: a stored
-enabled custom SMTP setting overrides the environment fallback. Preserve that
-owner-configured setting until the owner resolves whether it may be disabled.
-Record blockers and unexecuted acceptance checks honestly.
+enabled custom SMTP setting overrides the environment fallback. Record blockers
+and unexecuted acceptance checks honestly.
+
+Owner-authorized continuation on 2026-10-26: disable custom SMTP and continue.
+Leave it disabled so the existing Mailpit transport captures verification,
+order and invoice emails. Preserve encrypted credentials, audit the operational
+change, complete normal verification/sign-in/sign-out and retain the fictional
+financial records. No SMTP reactivation, deployment or live operation is included.
 ```
 
 ## Operating Guidance

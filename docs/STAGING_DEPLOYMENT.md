@@ -39,23 +39,35 @@
   deployment was performed. Full-browser restart/elapsed-duration persistence
   and production/provider acceptance remain separate. See `PROGRESS.md` for details.
 
-## Guest checkout acceptance preflight (2026-10-26, Command 130)
+## Guest checkout acceptance (2026-10-26, Command 130)
 
-- End-to-end acceptance is blocked before submission. The stored custom SMTP
-  setting is enabled for `smtp.mailchannels.net:587` with STARTTLS and takes
-  precedence over the Mailpit environment fallback. The owner previously
-  activated this setting; it was not changed during this preflight. The owner
-  was asked whether it may be disabled and left disabled for captured-email
-  testing. Do not submit fictional checkout data until that boundary is resolved.
+- Acceptance passed after the owner explicitly authorized disabling custom
+  SMTP and leaving it disabled. Its encrypted credentials were preserved, a
+  protected pre-change snapshot retained and an operator audit entry recorded
+  through server maintenance. The effective adapter now uses Mailpit. Do not
+  reactivate SMTP automatically; staging messages remain captured.
 - All seven services remain healthy; health/readiness return 200. Registrar and
   payment flags are false, WHM is disabled, and hosting/registrar operation
   counts remain one pre-existing connection test / zero. There are 34 completed
   migrations and zero unfinished. Environment/logo and Office `.env`
-  fingerprints are unchanged. No deployment or database write was performed.
-- No fictional customer, order, invoice or email was created; email verification
-  and authenticated portal acceptance remain unexecuted. Resume Command 130
-  after confirming the effective mail adapter uses Mailpit. See `PROGRESS.md`
-  for the exact continuation scope; this is not an application test failure.
+  fingerprints are unchanged. No application deployment or restart occurred.
+- One anonymous existing-domain browser checkout created fictional customer
+  `CUS-12BFD9CE4B8F`, order `ORD-20261025-A452B3888B7CD44B` and invoice
+  `INV-001002` for BDT 1,200.00. Sign-in was rejected before verification.
+  Mailpit captured verification, order and invoice emails; the captured link
+  succeeded through normal public HTTPS verification with CSRF. Normal browser
+  sign-in then showed the active account, correct order and unpaid invoice.
+- Scoped assertions passed: exactly one account/order/invoice, integer price
+  and balance `120000`, zero paid, zero payments and zero services. Order state
+  is awaiting payment; invoice state is unpaid. Normal sign-out revoked the
+  single fictional session and reopening the portal returned to sign-in. The
+  records and audit history remain intact; no provider operation was added.
+- Root-only evidence, encrypted SMTP snapshot, scoped assertions, passing
+  redacted JSON and screenshots are retained under
+  `/srv/webhost-billing-staging/acceptance/command130-20261026/`.
+  The invoice still uses the existing `Webhost Billing` issuer label; review
+  billing identity/payment instructions separately before real-customer use.
+  See `PROGRESS.md` for complete evidence and the next authorization boundary.
 
 ## Prior staging release (2026-10-24, Commands 127–128)
 
