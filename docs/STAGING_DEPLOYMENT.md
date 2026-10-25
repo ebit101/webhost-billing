@@ -31,9 +31,13 @@
   the smoke verifies its exact `/portal` destination. A fresh admin password
   submission with remember selected required MFA and issued no session before
   OTP; `/auth/me` returned 401. Credentials/tokens were not printed.
-- Owner-session `/login → /admin` browser acceptance awaits private sign-in
-  and confirmation. Full-browser restart/elapsed-duration persistence and
-  production/provider acceptance remain separate. See `PROGRESS.md` for details.
+- Staging acceptance closed on 2026-10-26: after private sign-in, the owner
+  confirmed `/login` redirects to the `/admin` dashboard in the same browser.
+  This is owner-reported authenticated browser evidence. The agent's read-only
+  recheck confirmed the source, healthy services, health/readiness responses,
+  preserved environment/logo and disabled registrar/payment flags. No further
+  deployment was performed. Full-browser restart/elapsed-duration persistence
+  and production/provider acceptance remain separate. See `PROGRESS.md` for details.
 
 ## Prior staging release (2026-10-24, Commands 127–128)
 
