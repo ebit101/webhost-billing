@@ -87,6 +87,7 @@ describe('administrator login security', () => {
       await user.type(screen.getByLabelText('Password'), 'a-private-password');
       await user.click(screen.getByRole('button', { name: 'Sign in' }));
       expect(await screen.findByLabelText('Authentication code')).toBeTruthy();
+      expect(navigation.push).not.toHaveBeenCalled();
       expect(
         (
           screen.getByRole('checkbox', {

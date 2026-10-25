@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
+import { getAuthenticatedIdentity } from '../../lib/server-auth';
 import { readDomainIntent } from '../../lib/domain-intent';
 import { AuthShell } from '../../components/auth/auth-shell';
 import { LoginForm } from '../../components/auth/login-form';
@@ -14,6 +16,9 @@ export default async function LoginPage({
 }: {
   searchParams: Promise<SelectionQuery>;
 }) {
+  const identity = await getAuthenticatedIdentity();
+  if (identity) redirect(identity.role === 'ADMIN' ? '/admin' : '/portal');
+
   const intent = readCheckoutIntent(await searchParams);
   return (
     <AuthShell

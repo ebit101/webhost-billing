@@ -5548,6 +5548,19 @@ unconfirmed duration/restart checks. No provider activation or application
 deployment is included in this acceptance follow-up.
 ```
 
+## Command 129 — Redirect authenticated sign-in visitors to their workspace
+
+```text
+Owner-authorized on 2026-10-25: fix /login so an already authenticated
+administrator goes to /admin and an authenticated customer goes to /portal.
+Use the existing server-side session verification; missing, invalid, expired
+or revoked sessions must retain normal sign-in and MFA. Never use remember
+device as a reason to bypass MFA on a new sign-in. Preserve validated
+checkout/domain intent for signed-out visitors. Run validation, update the
+project status report, commit/reconcile and deliver validated source to main.
+Do not deploy, change provider settings or start the next product command.
+```
+
 ## Operating Guidance
 
 1. Run commands in order.
