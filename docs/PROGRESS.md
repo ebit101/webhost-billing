@@ -3,11 +3,11 @@
 ## Status Summary
 
 - **Current command:** Command 134 - Make record pages table-first
-- **Current status:** Command 134 is implemented and validated locally; GitHub delivery is in progress. The record lists follow the owner's WHMCS reference. No deployment or Office business-database changes. Command 132 billing/contact inputs remain pending.
-- **Last updated:** 2026-10-26
+- **Current status:** Command 134 is completed, validated and delivered to `main` through PR #50. The Office checkout was safely fast-forwarded to the verified source. No deployment or Office business-database changes. Command 132 billing/contact inputs remain pending.
+- **Last updated:** 2026-10-27
 - **Last recorded staging release:** Command 129, `5321ed7ee00ea4a11cc7e3fabdcb0f5509cae5a3`, deployed on 2026-10-25.
-- **Next command:** Finish verified Command 134 delivery and report closure. Then continue Command 132 when the owner supplies billing details and explicitly authorizes that work.
-- **Next command authorized:** Command 134 only. No deployment, import or live-provider activation.
+- **Next command:** Continue Command 132 when the owner supplies billing details and explicitly authorizes that work.
+- **Next command authorized:** None. Command 134 is complete. No deployment, import or live-provider activation is authorized.
 
 ## Command Reports
 
@@ -16172,8 +16172,9 @@ requires explicit separate authorization.
 
 ### Command 134 - Make record pages table-first
 
-- **Status:** Validated locally; GitHub delivery in progress. No deployment.
-- **Date:** 2026-10-26
+- **Status:** Completed locally, validated and delivered to `main` through [PR #50](https://github.com/ebit101/webhost-billing/pull/50). No deployment.
+- **Date:** 2026-10-26; delivery and report closure 2026-10-27 (Asia/Dhaka).
+- **Validated source:** `d498c65e94899267dfc7854393f65e863f2878fb`; merge `e928c28298fa99783be7c199440701dd10b73271`.
 - **Authorization:** The owner requested tabular record pages following WHMCS, then supplied a client-directory screenshot showing compact filters, a result count and dense column-based records.
 
 #### Scope implemented
@@ -16202,6 +16203,10 @@ requires explicit separate authorization.
 - Formatting and Git whitespace checks passed. The four offline documentation validators passed; final report-format verification is performed again before delivery.
 - Browser checks found and repaired absolute screen-reader labels escaping table scroll containers. Dialog cleanup also retains body scrolling correctly when nested records are removed together. Invalid fictional server/ticket fixtures and assertions tied to the old card/always-open-form layouts were corrected without weakening backend constraints or historical-data checks.
 - All database/browser mutations used fresh guarded fictional schemas in the dedicated loopback test containers. Live provider flags stayed disabled. The Office environment SHA-256 remained unchanged; source/logo assets and the Office business database were not modified by validation.
+- [Full hosted CI](https://github.com/ebit101/webhost-billing/actions/runs/40371483913), dependency review and [CodeQL](https://github.com/ebit101/webhost-billing/actions/runs/40371483954) passed on the exact validated source above. CI included package, API integration, critical invariant, browser lifecycle and staff-role tests, production dependency audit/license inventory and production builds.
+- The clean Office `main` checkout was fast-forwarded without reset, clean, force or auto-stash. The merge tree exactly matched the validated source. Command 127 commit `168a80ddf143aa358eb62344b1df270b97b081a1` remains an ancestor. Office `.env` SHA-256 remains `D85F67011174E4D38A9A54DAFCB896653C7998798B056704BF918F3703892B5C`.
+- The dedicated test containers and temporary browser servers were removed after validation. Reviewed fictional screenshots and successful validation logs are retained as ignored local evidence under `release-artifacts/command134-record-tables/`.
+- This report closure changes documentation only; hosted checks above attest the implementation commit. Formatting, whitespace and all four offline documentation validators passed again for the closure.
 
 #### Decisions, constraints and next command
 
@@ -16209,3 +16214,8 @@ requires explicit separate authorization.
 - Existing bounded endpoints remain bounded and labeled. Existing server-paginated ledgers retain access to older records; this command does not silently replace them with the first 100 rows.
 - Office business data and the primary local environment are preserved. Validation uses fresh guarded fictional schemas and separate loopback PostgreSQL/Redis containers.
 - Command 132 billing/contact and payment-instruction inputs remain pending. After verified delivery, the exact recommended next command is to continue Command 132 with owner-supplied billing details. Deployment requires separate authorization.
+- No unresolved implementation or validation failure remains for Command 134. Staging remains at the recorded Command 129 release.
+
+#### Recommended next command
+
+Continue **Command 132 — Configure owner-approved staging billing details and manual-payment instructions** after the owner supplies the exact Speed Host billing contacts/payment instructions and explicitly authorizes continuation. Do not deploy or enable live providers as part of this completed command.
