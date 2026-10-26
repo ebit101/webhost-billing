@@ -5620,6 +5620,23 @@ record results and deliver it to main without deploying. This follow-up does
 not supply the pending billing inputs or authorize another product command.
 ```
 
+## Command 133 - Group hosting products for catalogue administration
+
+```text
+Owner-authorized on 2026-10-26: implement locally the proposed grouped product
+administration. Add named hosting-product groups, group display order,
+administrator create/edit controls and exact-ID assignment or ungrouping in
+existing product forms. Leave existing products ungrouped on migration. Preserve
+per-product public visibility, activation, versioned prices, cPanel identifiers
+and historical order/invoice/service data. Retain groups without a delete API;
+protect referenced groups from deletion. Validate contracts, API authorization,
+audit, migration and interfaces, update the report and deliver validated source
+through the normal Git workflow. Do not deploy, migrate the Office business
+database or staging, import WHMCS, configure real plans/prices, activate providers,
+add reseller/email/ShoutCast modules or start another command. Command 132
+billing inputs remain pending independently.
+```
+
 ## Operating Guidance
 
 1. Run commands in order.

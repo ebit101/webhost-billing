@@ -488,7 +488,21 @@ model EmailVerificationToken {
   @@map("email_verification_tokens")
 }
 
+model ProductGroup {
+  id           String    @id @default(uuid()) @db.Uuid
+  name         String    @unique(map: "product_groups_name_key") @db.VarChar(160)
+  displayOrder Int       @default(0) @map("display_order")
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  products     Product[]
+
+  @@index([displayOrder, name], map: "product_groups_order_idx")
+  @@map("product_groups")
+}
+
 model Product {
+  groupId                  String?        @map("group_id") @db.Uuid
+  group                    ProductGroup?  @relation(fields: [groupId], references: [id], onDelete: Restrict)
   kind                     ProductKind    @default(HOSTING)
   id                       String         @id @default(uuid()) @db.Uuid
   slug                     String         @unique(map: "products_slug_key") @db.VarChar(120)
@@ -513,6 +527,7 @@ model Product {
 
   @@index([status, deletedAt], map: "products_status_deleted_at_idx")
   @@index([publicVisible, status, displayOrder], map: "products_public_catalog_idx")
+  @@index([groupId, displayOrder], map: "products_group_order_idx")
   @@map("products")
 }
 

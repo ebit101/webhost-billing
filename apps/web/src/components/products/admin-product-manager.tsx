@@ -1,7 +1,7 @@
 'use client';
 import { sentenceCaseLabel } from '@webhost-billing/shared';
 
-import type { Product } from '@webhost-billing/shared';
+import type { Product, ProductGroup } from '@webhost-billing/shared';
 import { useEffect, useState, type FormEvent } from 'react';
 import { authMutation, authenticatedGet } from '../../lib/auth-api';
 import {
@@ -28,6 +28,8 @@ const nullableFields = [
 
 export function AdminProductManager() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [groups, setGroups] = useState<ProductGroup[]>([]);
+  const [groupsOpen, setGroupsOpen] = useState(false);
   const [selected, setSelected] = useState<Product>();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -38,10 +40,14 @@ export function AdminProductManager() {
 
   useEffect(() => {
     let active = true;
-    void authenticatedGet<Product[]>('/products')
-      .then((result) => {
+    void Promise.all([
+      authenticatedGet<Product[]>('/products'),
+      authenticatedGet<ProductGroup[]>('/products/groups'),
+    ])
+      .then(([result, productGroups]) => {
         if (!active) return;
         setProducts(result);
+        setGroups(productGroups);
         setSelected(result[0]);
       })
       .catch((caught: unknown) => {
@@ -59,8 +65,12 @@ export function AdminProductManager() {
     await Promise.resolve();
     setLoading(true);
     try {
-      const result = await authenticatedGet<Product[]>('/products');
+      const [result, productGroups] = await Promise.all([
+        authenticatedGet<Product[]>('/products'),
+        authenticatedGet<ProductGroup[]>('/products/groups'),
+      ]);
       setProducts(result);
+      setGroups(productGroups);
       setSelected(
         (current) =>
           result.find((item) => item.id === current?.id) ?? result[0],
@@ -83,6 +93,7 @@ export function AdminProductManager() {
       name: raw.name,
       publicVisible: new FormData(form).has('publicVisible'),
       displayOrder: Number(raw.displayOrder),
+      groupId: raw.groupId || null,
     };
     for (const field of nullableFields) {
       const value = raw[field];
@@ -124,6 +135,7 @@ export function AdminProductManager() {
       name: raw.name,
       publicVisible: new FormData(form).has('publicVisible'),
       displayOrder: Number(raw.displayOrder),
+      groupId: raw.groupId || null,
     };
     for (const field of nullableFields) {
       const value = raw[field];
@@ -196,6 +208,33 @@ export function AdminProductManager() {
     }
   }
 
+  async function saveGroup(event: FormEvent<HTMLFormElement>, id?: string) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const raw = valuesFromForm(form);
+    setSaving(true);
+    setError('');
+    setNotice('');
+    try {
+      const group = await authMutation<ProductGroup>(
+        id ? `/products/groups/${id}` : '/products/groups',
+        id ? 'PATCH' : 'POST',
+        { name: raw.name, displayOrder: Number(raw.displayOrder) },
+      );
+      setGroups((current) =>
+        [...current.filter((item) => item.id !== group.id), group].sort(
+          byDisplayOrder,
+        ),
+      );
+      if (!id) form.reset();
+      setNotice('Product group saved.');
+    } catch (caught) {
+      setError(errorMessage(caught));
+    } finally {
+      setSaving(false);
+    }
+  }
+
   if (loading) return <LoadingState label="Loading products" />;
 
   return (
@@ -205,9 +244,18 @@ export function AdminProductManager() {
         title="Products & pricing"
         description="Maintain the focused hosting catalogue, public ordering, cPanel package mapping, features, and versioned prices."
         actions={
-          <Button onClick={() => setCreateOpen(true)}>
-            <Icon name="plus" className="size-4" /> Create product
-          </Button>
+          <div className="flex flex-wrap gap-3">
+            <Button
+              variant="secondary"
+              onClick={() => setGroupsOpen(!groupsOpen)}
+              aria-expanded={groupsOpen}
+            >
+              Manage groups
+            </Button>
+            <Button onClick={() => setCreateOpen(true)}>
+              <Icon name="plus" className="size-4" /> Create product
+            </Button>
+          </div>
         }
       />
       {error ? (
@@ -226,6 +274,27 @@ export function AdminProductManager() {
           {notice}
         </p>
       ) : null}
+      {groupsOpen ? (
+        <Card
+          title="Product groups"
+          description="Organize hosting plans with group headings and display order. Public visibility is controlled on each product. Existing services and invoices keep their history."
+        >
+          <div className="grid gap-4">
+            {groups.map((group) => (
+              <GroupForm
+                key={group.id}
+                group={group}
+                saving={saving}
+                onSubmit={(event) => void saveGroup(event, group.id)}
+              />
+            ))}
+            <GroupForm
+              saving={saving}
+              onSubmit={(event) => void saveGroup(event)}
+            />
+          </div>
+        </Card>
+      ) : null}
       {products.length === 0 ? (
         <EmptyState
           title="No products yet"
@@ -241,42 +310,62 @@ export function AdminProductManager() {
             description="Select a product to manage it."
           >
             <div className="grid gap-2">
-              {products.map((product) => (
-                <button
-                  key={product.id}
-                  type="button"
-                  onClick={() => {
-                    setSelected(product);
-                    setError('');
-                    setNotice('');
-                  }}
-                  className={`rounded-xl border p-4 text-left transition ${selected?.id === product.id ? 'border-brand-500 bg-brand-50' : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'}`}
+              {[...groups, { id: null, name: 'Ungrouped' }].map((group) => (
+                <section
+                  key={group.id ?? 'ungrouped'}
+                  aria-label={group.name}
+                  className="grid gap-2"
                 >
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="font-bold text-slate-950">
-                      {product.name}
-                    </span>
-                    <span className="text-xs font-bold text-slate-400">
-                      #{product.displayOrder}
-                    </span>
-                  </div>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    <StatusBadge
-                      tone={
-                        product.status === 'ACTIVE'
-                          ? 'success'
-                          : product.status === 'ARCHIVED'
-                            ? 'danger'
-                            : 'warning'
+                  <h2 className="mt-3 flex items-center justify-between gap-2 rounded-lg bg-slate-100 px-3 py-2 text-sm font-bold text-slate-700">
+                    {group.name}
+                    <span>
+                      {
+                        products.filter(
+                          (product) => product.groupId === group.id,
+                        ).length
                       }
-                    >
-                      {sentenceCaseLabel(product.status)}
-                    </StatusBadge>
-                    {product.publicVisible ? (
-                      <StatusBadge tone="info">Public</StatusBadge>
-                    ) : null}
-                  </div>
-                </button>
+                    </span>
+                  </h2>
+                  {products
+                    .filter((product) => product.groupId === group.id)
+                    .map((product) => (
+                      <button
+                        key={product.id}
+                        type="button"
+                        onClick={() => {
+                          setSelected(product);
+                          setError('');
+                          setNotice('');
+                        }}
+                        className={`rounded-xl border p-4 text-left transition ${selected?.id === product.id ? 'border-brand-500 bg-brand-50' : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'}`}
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="font-bold text-slate-950">
+                            {product.name}
+                          </span>
+                          <span className="text-xs font-bold text-slate-400">
+                            #{product.displayOrder}
+                          </span>
+                        </div>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          <StatusBadge
+                            tone={
+                              product.status === 'ACTIVE'
+                                ? 'success'
+                                : product.status === 'ARCHIVED'
+                                  ? 'danger'
+                                  : 'warning'
+                            }
+                          >
+                            {sentenceCaseLabel(product.status)}
+                          </StatusBadge>
+                          {product.publicVisible ? (
+                            <StatusBadge tone="info">Public</StatusBadge>
+                          ) : null}
+                        </div>
+                      </button>
+                    ))}
+                </section>
               ))}
             </div>
           </Card>
@@ -284,6 +373,7 @@ export function AdminProductManager() {
             <div className="grid gap-6">
               <ProductEditor
                 product={selected}
+                groups={groups}
                 saving={saving}
                 onSubmit={updateProduct}
                 onActivate={() => void changeStatus('ACTIVE')}
@@ -304,6 +394,7 @@ export function AdminProductManager() {
       )}
       {createOpen ? (
         <CreateProductDialog
+          groups={groups}
           saving={saving}
           error={error}
           onClose={() => setCreateOpen(false)}
@@ -329,6 +420,7 @@ export function AdminProductManager() {
 
 function ProductEditor({
   product,
+  groups,
   saving,
   onSubmit,
   onActivate,
@@ -336,6 +428,7 @@ function ProductEditor({
   onArchive,
 }: {
   product: Product;
+  groups: ProductGroup[];
   saving: boolean;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onActivate: () => void;
@@ -354,6 +447,7 @@ function ProductEditor({
       >
         <Field label="Name" name="name" required defaultValue={product.name} />
         <Field label="Slug" name="slug" required defaultValue={product.slug} />
+        <GroupSelect groups={groups} groupId={product.groupId} />
         <div className="sm:col-span-2">
           <Field
             label="Description"
@@ -523,11 +617,13 @@ function PriceHistory({ product }: { product: Product }) {
 }
 
 function CreateProductDialog({
+  groups,
   saving,
   error,
   onClose,
   onSubmit,
 }: {
+  groups: ProductGroup[];
   saving: boolean;
   error: string;
   onClose: () => void;
@@ -555,6 +651,7 @@ function CreateProductDialog({
         </div>
         <form className="mt-7 grid gap-4 sm:grid-cols-2" onSubmit={onSubmit}>
           <Field label="Name" name="name" required />
+          <GroupSelect groups={groups} />
           <Field
             label="Slug"
             name="slug"
@@ -652,7 +749,73 @@ function CreateProductDialog({
   );
 }
 
-function byDisplayOrder(left: Product, right: Product) {
+function GroupSelect({
+  groups,
+  groupId,
+}: {
+  groups: ProductGroup[];
+  groupId?: string | null;
+}) {
+  return (
+    <label className="text-sm font-semibold text-slate-700">
+      Product group
+      <select
+        name="groupId"
+        className={fieldClass}
+        defaultValue={groupId ?? ''}
+      >
+        <option value="">Ungrouped</option>
+        {groups.map((group) => (
+          <option key={group.id} value={group.id}>
+            {group.name}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+function GroupForm({
+  group,
+  saving,
+  onSubmit,
+}: {
+  group?: ProductGroup;
+  saving: boolean;
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+}) {
+  return (
+    <form
+      aria-label={group ? `Edit ${group.name}` : 'Create product group'}
+      onSubmit={onSubmit}
+      className="grid items-end gap-3 rounded-xl border border-slate-200 p-4 sm:grid-cols-[1fr_10rem_auto]"
+    >
+      <Field
+        label="Group name"
+        name="name"
+        required
+        maxLength={160}
+        defaultValue={group?.name ?? ''}
+        placeholder="Shared hosting"
+      />
+      <Field
+        label="Group order"
+        name="displayOrder"
+        type="number"
+        required
+        defaultValue={String(group?.displayOrder ?? 0)}
+      />
+      <Button type="submit" disabled={saving}>
+        {group ? 'Save group' : 'Create group'}
+      </Button>
+    </form>
+  );
+}
+
+function byDisplayOrder(
+  left: { displayOrder: number; name: string },
+  right: { displayOrder: number; name: string },
+) {
   return (
     left.displayOrder - right.displayOrder ||
     left.name.localeCompare(right.name)

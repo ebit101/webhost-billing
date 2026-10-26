@@ -2,12 +2,12 @@
 
 ## Status Summary
 
-- **Current command:** Command 132 — Billing inputs pending; administrator logo navigation follow-up
-- **Current status:** The owner was asked to confirm the exact Speed Host billing contacts and manual-payment instructions; those answers remain pending. The additional administrator-logo fix now targets `/admin` and closes the mobile drawer. It was delivered to `main` through PR #48 after all CI and CodeQL checks passed, and Office fast-forwarded safely to merge `db86af1`. No deployment or staging setting/provider change was performed; the last recorded staging source remains `5321ed7ee00ea4a11cc7e3fabdcb0f5509cae5a3`.
+- **Current command:** Command 133 - Group hosting products for catalogue administration
+- **Current status:** Local implementation and validation passed in an isolated worktree; Git delivery acceptance is pending. Groups organize administrator catalogue work. Command 132 billing/contact and manual-payment inputs remain pending.
 - **Last updated:** 2026-10-26
-- **Last recorded staging release:** Command 129, `5321ed7ee00ea4a11cc7e3fabdcb0f5509cae5a3`, deployed on 2026-10-25. Previous release `36642e6` and protected rollback inventory are retained.
-- **Next command:** Continue Command 132 when the owner supplies the requested billing/contact and manual-payment values. Applying the logo fix to staging requires separate deployment authorization. Fictional payment/provisioning acceptance, administrator duration tests and launch/provider gates remain separate.
-- **Next command authorized:** Command 132's requested inputs and bounded source-navigation follow-up only. No deployment, invoice issuance, payment, provisioning, domain registration, SMTP reactivation or next product command starts automatically.
+- **Last recorded staging release:** Command 129, `5321ed7ee00ea4a11cc7e3fabdcb0f5509cae5a3`, deployed on 2026-10-25.
+- **Next command:** Review the local grouped catalogue; continue Command 132 when the owner supplies exact billing inputs. Deployment and real catalogue configuration need separate authorization.
+- **Next command authorized:** None automatically. No staging/business-database migration, import, live-provider activation or next product command.
 
 ## Command Reports
 
@@ -16080,3 +16080,71 @@ Use this template after every future command:
 #### Open questions and risks
 #### Recommended next command
 ```
+
+### Command 133 - Group hosting products for catalogue administration
+
+- **Status:** Local implementation validated; delivery acceptance pending
+- **Date:** 2026-10-26
+
+#### Scope implemented
+
+- Added optional exact-ID group membership and group names/display order. The
+  additive migration leaves existing products ungrouped.
+- Added administrator-only list/create/edit APIs, strict bounded contracts,
+  duplicate-name/unknown-group errors and transactional audit records.
+- Added Manage groups, group headings/counts and create/edit product selectors.
+  Existing activation, visibility, cPanel mapping and price versions remain.
+- Retained groups without a delete API; a restrictive foreign key protects
+  referenced groups. Products can be explicitly ungrouped.
+
+#### Files changed
+
+- Database schema/invariant verifier and `20261026140000_product_groups/migration.sql`.
+- Shared products contracts and `product-groups.spec.ts`.
+- API product controller/service and product integration tests.
+- Web product manager/tests, focused API runner option, browser acceptance spec
+  and two order test fixtures.
+- This report, decision ADR-138 and the development command playbook.
+
+#### Validation
+
+- Node 24.20.0, pinned pnpm 11.22.0 frozen install and package builds passed.
+- Shared contracts: 124 passed. Full web suite: 67 files / 636 tests passed
+  with one worker; targeted product/order interfaces also passed all 56 checks.
+- API unit suite: 28 files / 129 tests passed. Focused products API integration:
+  4 tests passed, including grouped creation, invalid references, authorization,
+  CSRF, uniqueness, audit, restricted deletion and unchanged sale/price behavior.
+- Sequential workspace type checks, API/worker builds and all-app lint passed.
+- All 35 migrations, fictional seed and database invariant verification passed
+  on the separate command133 PostgreSQL container. Database verification now
+  expects the group table and display-order constraint.
+- All four offline documentation validators passed; changed-file formatting and
+  Git whitespace checks passed.
+- Local Chromium acceptance passed: create two groups in reverse order, assign a
+  product, reload and retain membership, inspect order and ungroup it. Desktop
+  (1440px) and mobile (375px) have no horizontal overflow; captured screenshots
+  were visually reviewed with CSS animations disabled. The first browser attempt
+  used an overly exact label selector and was stopped; a broader label also
+  matched the create form. The corrected combobox-role selector passed twice.
+- Screenshots are local ignored evidence in `release-artifacts/product-groups/`.
+  Hosted CI/CodeQL and delivery reconciliation remain pending.
+- Further checks use separate loopback PostgreSQL/Redis containers and freshly
+  owned fictional schemas. Concurrent broad checks exceeded Office memory;
+  the memory-interrupted checks passed when rerun sequentially with fewer workers.
+  The broad API attempt was stopped after a test expected HTTP 422 instead of the
+  established HTTP 400 form-validation response; the corrected focused suite
+  passed. Full-suite Linux CI remains a separate delivery check.
+
+#### Decisions, limits and open inputs
+
+- Groups organize administration; public visibility remains a product property.
+- No WHMCS import, new product types, real plans/prices or deployment is included.
+- Command 132 remains pending owner billing/contact and payment instructions.
+- Office environment, business database and logo are preserved. The migration
+  runs only in disposable test storage until separately approved.
+
+#### Recommended next command
+
+Review the local grouped catalogue. Continue **Command 132** after supplying the
+exact Speed Host billing contacts and manual-payment instructions. Any staging
+deployment or real catalogue setup needs separate authorization.

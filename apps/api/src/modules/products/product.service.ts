@@ -6,6 +6,8 @@ import {
 } from '@webhost-billing/database';
 import {
   productSchema,
+  productGroupSchema,
+  type ProductGroupInput,
   publicProductSchema,
   serializeMoney,
   type CreateProductRequest,
@@ -85,6 +87,7 @@ export class ProductService {
     context: SecurityRequestContext,
   ): Promise<Product> {
     const { prices = [], ...fields } = input;
+    await this.assertGroupExists(input.groupId);
     try {
       const product = await this.prisma.$transaction(async (transaction) => {
         const created = await transaction.product.create({
@@ -201,6 +204,7 @@ export class ProductService {
     actor: AuthRequestContext,
     context: SecurityRequestContext,
   ): Promise<Product> {
+    await this.assertGroupExists(input.groupId);
     const current = await this.prisma.product.findFirst({
       where: { id: productId, deletedAt: null, kind: 'HOSTING' },
       include: {
@@ -397,6 +401,7 @@ export class ProductService {
     product: Awaited<ReturnType<ProductService['findProduct']>>,
   ) {
     return productSchema.parse({
+      groupId: product.groupId,
       id: product.id,
       slug: product.slug,
       name: product.name,
@@ -425,6 +430,18 @@ export class ProductService {
   }
 
   private rethrowConflict(error: unknown): never {
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'code' in error &&
+      error.code === 'P2003'
+    ) {
+      throw new ApplicationException({
+        status: HttpStatus.UNPROCESSABLE_ENTITY,
+        code: 'UNPROCESSABLE_ENTITY',
+        message: 'Choose an existing product group.',
+      });
+    }
     if (isUniqueConstraintError(error)) {
       throw new ApplicationException({
         status: HttpStatus.CONFLICT,
@@ -442,5 +459,88 @@ export class ProductService {
       code: 'RESOURCE_NOT_FOUND',
       message: 'Product was not found.',
     });
+  }
+
+  async listGroups() {
+    const groups = await this.prisma.productGroup.findMany({
+      orderBy: [{ displayOrder: 'asc' }, { name: 'asc' }, { id: 'asc' }],
+    });
+    return groups.map((group) =>
+      productGroupSchema.parse({
+        ...group,
+        createdAt: group.createdAt.toISOString(),
+        updatedAt: group.updatedAt.toISOString(),
+      }),
+    );
+  }
+
+  async saveGroup(
+    id: string | undefined,
+    input: ProductGroupInput,
+    actor: AuthRequestContext,
+    context: SecurityRequestContext,
+  ) {
+    try {
+      return await this.prisma.$transaction(async (transaction) => {
+        if (
+          id &&
+          !(await transaction.productGroup.findUnique({ where: { id } }))
+        ) {
+          throw new ApplicationException({
+            status: HttpStatus.NOT_FOUND,
+            code: 'RESOURCE_NOT_FOUND',
+            message: 'Product group was not found.',
+          });
+        }
+        const group = id
+          ? await transaction.productGroup.update({
+              where: { id },
+              data: input,
+            })
+          : await transaction.productGroup.create({ data: input });
+        await transaction.activityLog.create({
+          data: {
+            actorUserId: actor.identity.userId,
+            action: id
+              ? 'PRODUCT_GROUP_UPDATED_BY_ADMIN'
+              : 'PRODUCT_GROUP_CREATED_BY_ADMIN',
+            entityType: 'PRODUCT_GROUP',
+            entityId: group.id,
+            ipAddressHash: context.ipAddressHash,
+            metadata: { changedFields: Object.keys(input).sort() },
+          },
+        });
+        return productGroupSchema.parse({
+          ...group,
+          createdAt: group.createdAt.toISOString(),
+          updatedAt: group.updatedAt.toISOString(),
+        });
+      });
+    } catch (error) {
+      if (isUniqueConstraintError(error)) {
+        throw new ApplicationException({
+          status: HttpStatus.CONFLICT,
+          code: 'CONFLICT',
+          message: 'A product group with this name already exists.',
+        });
+      }
+      throw error;
+    }
+  }
+
+  private async assertGroupExists(groupId: string | null | undefined) {
+    if (!groupId) return;
+    if (
+      !(await this.prisma.productGroup.findUnique({
+        where: { id: groupId },
+        select: { id: true },
+      }))
+    ) {
+      throw new ApplicationException({
+        status: HttpStatus.UNPROCESSABLE_ENTITY,
+        code: 'UNPROCESSABLE_ENTITY',
+        message: 'Choose an existing product group.',
+      });
+    }
   }
 }

@@ -2849,6 +2849,22 @@ report-only update must pass its own delivery gate; stop for the recommended pha
 - **Implementation:** New administrator opaque tokens include a session-policy prefix covered by the existing SHA-256 token hash. Changing the prefix invalidates authentication against that exact stored hash. The authenticated token determines idle/renewal policy, and `expiresAt` remains the database authority. This avoids adding storage or a second browser credential. Existing unprefixed sessions retain their prior policy. Refreshing `/auth/me` must neither persist an unchecked browser cookie nor extend the remembered session's absolute deadline.
 - **Consequence:** Sign-out, logout-all, password reset, disabled access, session revocation and MFA protections continue to use the same session rows. No remembered-factor token, localStorage credential, migration, live deployment or provider operation is added. Some browsers restore session cookies after restart; the server's absolute and idle limits still apply. Existing sessions are not shortened retroactively; sign out and sign in again to choose the new policy.
 
+## ADR-138 - Organize hosting products with administrator catalogue groups
+
+- **Status:** Accepted for local implementation by owner
+- **Date:** 2026-10-26
+- **Decision:** Add optional group UUID membership, named group headings and
+  separate group/product display order in administrator catalogue management.
+  Existing products remain ungrouped; cPanel identifiers remain independent.
+- **Reason:** The owner wants useful WHMCS-style organization within the focused
+  hosting catalogue and existing product editor.
+- **Consequence:** Groups organize administration only. Public sale visibility
+  and order eligibility remain product properties. Renaming/reordering groups
+  never rewrites prices or historical records. Names are trimmed and exact-name
+  unique. Membership is optional and protected by a restrictive foreign key.
+  There is no delete endpoint. Import, other product types, operating plans/prices
+  and deployment require separate authorization.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

@@ -15,6 +15,7 @@ import {
   apiErrorResponseSchema,
   apiSuccessResponseSchema,
   productSchema,
+  productGroupSchema,
   publicProductSchema,
 } from '@webhost-billing/shared';
 import request from 'supertest';
@@ -36,6 +37,7 @@ describe('Products and pricing (e2e)', () => {
   let prisma: PrismaClient;
   let passwords: PasswordHasherService;
   let productId = '';
+  let groupId = '';
 
   beforeAll(async () => {
     moduleFixture = await Test.createTestingModule({ imports: [AppModule] })
@@ -204,6 +206,161 @@ describe('Products and pricing (e2e)', () => {
     );
   });
 
+  it('organizes existing products without changing sale visibility, prices or package mapping', async () => {
+    const admin = request.agent(app.getHttpServer());
+    const csrf = await csrfToken(admin);
+    await login(admin, csrf, ADMIN_EMAIL);
+    const customer = request.agent(app.getHttpServer());
+    const customerCsrf = await csrfToken(customer);
+    await login(customer, customerCsrf, CUSTOMER_EMAIL);
+    await request(app.getHttpServer()).get('/products/groups').expect(401);
+    await customer.get('/products/groups').expect(403);
+    await customer
+      .post('/products/groups')
+      .set('X-CSRF-Token', customerCsrf)
+      .send({ name: 'Forbidden group', displayOrder: 0 })
+      .expect(403);
+    await admin
+      .post('/products/groups')
+      .send({ name: 'Missing CSRF', displayOrder: 0 })
+      .expect(403);
+    await admin
+      .post('/products/groups')
+      .set('X-CSRF-Token', csrf)
+      .send({ name: 'Invalid group', displayOrder: -1 })
+      .expect(400);
+    const response = await admin
+      .post('/products/groups')
+      .set('X-CSRF-Token', csrf)
+      .send({ name: 'Command 133 shared hosting', displayOrder: 30 })
+      .expect(201);
+    const group = apiSuccessResponseSchema(productGroupSchema).parse(
+      response.body,
+    ).data;
+    groupId = group.id;
+    await admin
+      .post('/products')
+      .set('X-CSRF-Token', csrf)
+      .send({
+        name: 'Invalid group membership',
+        slug: `${PRODUCT_SLUG}-grouped`,
+        groupId: randomUUID(),
+      })
+      .expect(422);
+    expect(
+      await prisma.product.count({
+        where: { slug: `${PRODUCT_SLUG}-grouped` },
+      }),
+    ).toBe(0);
+    const groupedDraft = await admin
+      .post('/products')
+      .set('X-CSRF-Token', csrf)
+      .send({
+        name: 'Fictional grouped draft',
+        slug: `${PRODUCT_SLUG}-grouped`,
+        groupId,
+      })
+      .expect(201);
+    expect(
+      apiSuccessResponseSchema(productSchema).parse(groupedDraft.body).data,
+    ).toMatchObject({ groupId, status: 'DRAFT', publicVisible: false });
+    await admin
+      .post('/products/groups')
+      .set('X-CSRF-Token', csrf)
+      .send({ name: group.name, displayOrder: 0 })
+      .expect(409);
+    await admin
+      .patch(`/products/groups/${randomUUID()}`)
+      .set('X-CSRF-Token', csrf)
+      .send({ name: 'Missing group', displayOrder: 0 })
+      .expect(404);
+    await customer
+      .patch(`/products/groups/${groupId}`)
+      .set('X-CSRF-Token', customerCsrf)
+      .send({ name: 'Forbidden rename', displayOrder: 0 })
+      .expect(403);
+    const before = await prisma.product.findUniqueOrThrow({
+      where: { id: productId },
+      include: { prices: true },
+    });
+    expect(before.groupId).toBeNull();
+    await admin
+      .patch(`/products/${productId}`)
+      .set('X-CSRF-Token', csrf)
+      .send({ groupId: randomUUID() })
+      .expect(422);
+    const assigned = await admin
+      .patch(`/products/${productId}`)
+      .set('X-CSRF-Token', csrf)
+      .send({ groupId })
+      .expect(200);
+    expect(
+      apiSuccessResponseSchema(productSchema).parse(assigned.body).data.groupId,
+    ).toBe(groupId);
+    await admin
+      .patch(`/products/groups/${groupId}`)
+      .set('X-CSRF-Token', csrf)
+      .send({ name: 'Command 133 hosting plans', displayOrder: 0 })
+      .expect(200);
+    const groups = apiSuccessResponseSchema(z.array(productGroupSchema)).parse(
+      (await admin.get('/products/groups').expect(200)).body,
+    ).data;
+    expect(groups.find((item) => item.id === groupId)?.name).toBe(
+      'Command 133 hosting plans',
+    );
+    expect(groups).toEqual(
+      [...groups].sort(
+        (a, b) =>
+          a.displayOrder - b.displayOrder ||
+          a.name.localeCompare(b.name) ||
+          a.id.localeCompare(b.id),
+      ),
+    );
+    await expect(
+      prisma.productGroup.delete({ where: { id: groupId } }),
+    ).rejects.toMatchObject({ code: 'P2003' });
+    const after = await prisma.product.findUniqueOrThrow({
+      where: { id: productId },
+      include: { prices: true },
+    });
+    expect(after.prices).toEqual(before.prices);
+    expect(after.status).toBe(before.status);
+    expect(after.publicVisible).toBe(before.publicVisible);
+    expect(after.hostingPackageIdentifier).toBe(
+      before.hostingPackageIdentifier,
+    );
+    expect(after.deletedAt).toBeNull();
+    const publicBefore = (
+      await request(app.getHttpServer()).get('/products/public').expect(200)
+    ).body as unknown;
+    await admin
+      .patch(`/products/${productId}`)
+      .set('X-CSRF-Token', csrf)
+      .send({ groupId: null })
+      .expect(200);
+    expect(
+      (await request(app.getHttpServer()).get('/products/public').expect(200))
+        .body,
+    ).toEqual(publicBefore);
+    expect(
+      (await prisma.product.findUniqueOrThrow({ where: { id: productId } }))
+        .groupId,
+    ).toBeNull();
+    expect(
+      (
+        await prisma.activityLog.findMany({
+          where: { entityId: groupId },
+          select: { action: true },
+        })
+      )
+        .map((item) => item.action)
+        .sort(),
+    ).toEqual([
+      'PRODUCT_GROUP_CREATED_BY_ADMIN',
+      'PRODUCT_GROUP_UPDATED_BY_ADMIN',
+    ]);
+  });
+
   it('denies customer administration and archives without deleting history', async () => {
     const customer = request.agent(app.getHttpServer());
     const customerCsrf = await csrfToken(customer);
@@ -254,6 +411,8 @@ describe('Products and pricing (e2e)', () => {
       'PRODUCT_PRICE_DEFINED_BY_ADMIN',
       'PRODUCT_PRICE_DEFINED_BY_ADMIN',
       'PRODUCT_UPDATED_BY_ADMIN',
+      'PRODUCT_UPDATED_BY_ADMIN',
+      'PRODUCT_UPDATED_BY_ADMIN',
     ]);
   });
 
@@ -282,17 +441,24 @@ describe('Products and pricing (e2e)', () => {
   }
 
   async function cleanup() {
-    const product = await prisma.product.findUnique({
-      where: { slug: PRODUCT_SLUG },
+    const products = await prisma.product.findMany({
+      where: { slug: { in: [PRODUCT_SLUG, `${PRODUCT_SLUG}-grouped`] } },
       select: { id: true },
     });
-    if (product) {
+    for (const product of products) {
       await prisma.activityLog.deleteMany({ where: { entityId: product.id } });
       await prisma.productPrice.deleteMany({
         where: { productId: product.id },
       });
       await prisma.product.delete({ where: { id: product.id } });
     }
+    await prisma.productGroup.deleteMany({
+      where: {
+        name: {
+          in: ['Command 133 shared hosting', 'Command 133 hosting plans'],
+        },
+      },
+    });
     const users = await prisma.user.findMany({
       where: { email: { in: [ADMIN_EMAIL, CUSTOMER_EMAIL] } },
       select: { id: true },
