@@ -3,11 +3,20 @@ import Image from 'next/image';
 import { getWebBranding } from '../../lib/web-branding';
 import { Icon } from '../ui/icon';
 
-export function Brand({ inverse = false }: { inverse?: boolean }) {
+export function Brand({
+  inverse = false,
+  href = '/',
+  onClick,
+}: {
+  inverse?: boolean;
+  href?: string;
+  onClick?: () => void;
+}) {
   const branding = getWebBranding();
   return (
     <Link
-      href="/"
+      href={href}
+      onClick={onClick}
       className={`inline-flex min-w-0 shrink-0 items-center gap-3 rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 ${
         inverse
           ? 'text-white focus-visible:outline-white'

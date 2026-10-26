@@ -5604,6 +5604,22 @@ missing operating inputs, verification results and the next authorization
 boundary in the project status report. No provider activation or next command.
 ```
 
+## Command 132 — Configure owner-approved staging billing details and manual-payment instructions
+
+```text
+Owner-authorized on 2026-10-26: start Command 132 and ask for the exact Speed
+Host billing contact details and manual-payment instructions needed. Keep live
+providers disabled and do not deploy. Await the requested values before changing
+billing contacts, tax identifiers, payment destinations or instruction text.
+
+Owner-directed navigation follow-up on 2026-10-26: clicking the administrator
+sidebar logo should return to the administrator dashboard instead of the public
+storefront. Keep the existing logo and public/customer destinations. Close the
+responsive navigation after selecting the logo. Validate the bounded source fix,
+record results and deliver it to main without deploying. This follow-up does
+not supply the pending billing inputs or authorize another product command.
+```
+
 ## Operating Guidance
 
 1. Run commands in order.

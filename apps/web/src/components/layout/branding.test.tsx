@@ -98,6 +98,13 @@ describe('installation web branding', () => {
     expect(
       screen.getAllByRole('link', { name: 'Speed Host home' }),
     ).toHaveLength(5);
+    const logoDestinations = screen
+      .getAllByRole('link', { name: 'Speed Host home' })
+      .map((link) => link.getAttribute('href'));
+    expect(logoDestinations.filter((href) => href === '/admin')).toHaveLength(
+      1,
+    );
+    expect(logoDestinations.filter((href) => href === '/')).toHaveLength(4);
     for (const image of screen.getAllByRole('img', { name: 'Speed Host' })) {
       expect(image.getAttribute('src')).toBe('/branding/speed-host-logo.png');
       expect(image.getAttribute('width')).toBe('285');

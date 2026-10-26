@@ -11,6 +11,10 @@ vi.mock('next/navigation', () => ({
   usePathname: () => '/portal',
 }));
 
+vi.mock('../../lib/auth-api', () => ({
+  authenticatedGet: vi.fn().mockResolvedValue({}),
+}));
+
 vi.mock('next/link', () => ({
   default: ({ href, onClick, children, ...props }: ComponentProps<'a'>) => (
     <a
@@ -80,6 +84,27 @@ describe('WorkspaceShell', () => {
     const openButton = screen.getByRole('button', { name: 'Open navigation' });
     await user.click(openButton);
     await user.click(screen.getByRole('link', { name: 'My services' }));
+    expect(openButton.getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('keeps the administrator logo in the dashboard and closes mobile navigation', async () => {
+    const user = userEvent.setup();
+    render(
+      <WorkspaceShell
+        mode="admin"
+        navigation={[{ href: '/admin', label: 'Dashboard', icon: 'dashboard' }]}
+        userName="Example Admin"
+        userDetail="admin@example.test"
+      >
+        <h1>Administrator content</h1>
+      </WorkspaceShell>,
+    );
+
+    const openButton = screen.getByRole('button', { name: 'Open navigation' });
+    await user.click(openButton);
+    const logo = screen.getByRole('link', { name: / home$/ });
+    expect(logo.getAttribute('href')).toBe('/admin');
+    await user.click(logo);
     expect(openButton.getAttribute('aria-expanded')).toBe('false');
   });
 });
