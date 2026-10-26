@@ -82,7 +82,7 @@ describe('WHM server administration', () => {
       screen.getByRole('button', { name: 'Add disabled server' }),
     );
     expect(
-      await screen.findByRole('heading', { name: 'Fictional WHM' }),
+      await screen.findByRole('cell', { name: 'Fictional WHM' }),
     ).toBeTruthy();
     expect(screen.queryByText(token)).toBeNull();
     expect(screen.queryByRole('textbox', { name: 'Server name' })).toBeNull();
@@ -151,8 +151,8 @@ describe('WHM server administration', () => {
     vi.stubGlobal('fetch', fetchMock);
     render(<AdminWhmServerManager />);
     expect(await screen.findByText('2 servers')).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'Fictional WHM' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'Backup WHM' })).toBeTruthy();
+    expect(screen.getByRole('cell', { name: 'Fictional WHM' })).toBeTruthy();
+    expect(screen.getByRole('cell', { name: 'Backup WHM' })).toBeTruthy();
     expect(screen.queryByRole('textbox', { name: 'Server name' })).toBeNull();
 
     await user.click(screen.getByRole('button', { name: 'Edit Backup WHM' }));

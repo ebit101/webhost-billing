@@ -12,6 +12,7 @@ import {
 import { authenticatedGet, authMutation } from '../../lib/auth-api';
 import { Card, Field, fieldClass } from '../customers/customer-fields';
 import { Button } from '../ui/button';
+import { RecordDialog } from '../ui/record-dialog';
 import { PageHeader } from '../ui/page-header';
 import { ConfirmationDialog } from '../ui/confirmation-dialog';
 const base = '/domains/administration';
@@ -368,105 +369,117 @@ export function TldManager() {
             </div>
           </Card>
           {edit && (
-            <Card
+            <RecordDialog
+              open
               title={
                 editing ? `Pricing for .${editing.tld}` : 'Add domain extension'
               }
+              busy={busy}
+              feedback={error || notice}
+              onClose={() => setEdit(undefined)}
             >
-              <form
-                key={editing?.revision ?? 'new'}
-                onSubmit={(event) => void save(event)}
-                className="grid gap-4 sm:grid-cols-2"
+              <Card
+                title={
+                  editing
+                    ? `Pricing for .${editing.tld}`
+                    : 'Add domain extension'
+                }
               >
-                <Field
-                  name="tld"
-                  label="TLD"
-                  defaultValue={editing?.tld ?? ''}
-                  readOnly={Boolean(editing)}
-                  required
-                  maxLength={50}
-                />
-                <Field
-                  name="registrationAmount"
-                  label="One-year registration price (BDT)"
-                  defaultValue={price(editing?.registrationAmount ?? null)}
-                  placeholder="1500.00"
-                />
-                <Field
-                  name="renewalAmount"
-                  label="One-year renewal price (BDT)"
-                  defaultValue={price(editing?.renewalAmount ?? null)}
-                  placeholder="1600.00"
-                />
-                <label>
-                  Preferred registrar
-                  <select
-                    className={fieldClass}
-                    name="preferredRegistrarId"
-                    aria-label="Preferred registrar"
-                    defaultValue={editing?.preferredRegistrarId ?? ''}
-                  >
-                    <option value="">Use installation default</option>
-                    {choices.map((account) => (
-                      <option key={account.id} value={account.id}>
-                        {account.name}
-                      </option>
-                    ))}
-                    {editing?.preferredRegistrarId &&
-                      !choices.some(
-                        (account) =>
-                          account.id === editing.preferredRegistrarId,
-                      ) && (
-                        <option value={editing.preferredRegistrarId}>
-                          {registrarName(editing.preferredRegistrarId)}{' '}
-                          (unavailable)
-                        </option>
-                      )}
-                  </select>
-                </label>
-                <Field
-                  name="displayOrder"
-                  label="Display order"
-                  type="number"
-                  defaultValue={String(editing?.displayOrder ?? 0)}
-                  required
-                />
-                <p>
-                  Period: one year. Transfer and other periods: not supported.
-                </p>
-                <label className="flex gap-2">
-                  <input
-                    type="checkbox"
-                    name="enabled"
-                    defaultChecked={editing?.enabled ?? false}
-                  />
-                  Offer registration
-                </label>
-                <label className="flex gap-2">
-                  <input
-                    type="checkbox"
-                    name="featured"
-                    defaultChecked={editing?.featured ?? false}
-                  />
-                  Featured extension
-                </label>
-                <p className="text-sm sm:col-span-2">
-                  Blank prices disable the corresponding sale; zero is not a
-                  free registration. Changes create a new price revision and
-                  require stale quotes to be reviewed again. Use Add TLD for a
-                  different extension; existing extensions cannot be renamed.
-                </p>
-                <Button disabled={busy}>Save TLD pricing</Button>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  disabled={busy}
-                  onClick={() => setEdit(undefined)}
+                <form
+                  key={editing?.revision ?? 'new'}
+                  onSubmit={(event) => void save(event)}
+                  className="grid gap-4 sm:grid-cols-2"
                 >
-                  Cancel
-                </Button>
-              </form>
-            </Card>
+                  <Field
+                    name="tld"
+                    label="TLD"
+                    defaultValue={editing?.tld ?? ''}
+                    readOnly={Boolean(editing)}
+                    required
+                    maxLength={50}
+                  />
+                  <Field
+                    name="registrationAmount"
+                    label="One-year registration price (BDT)"
+                    defaultValue={price(editing?.registrationAmount ?? null)}
+                    placeholder="1500.00"
+                  />
+                  <Field
+                    name="renewalAmount"
+                    label="One-year renewal price (BDT)"
+                    defaultValue={price(editing?.renewalAmount ?? null)}
+                    placeholder="1600.00"
+                  />
+                  <label>
+                    Preferred registrar
+                    <select
+                      className={fieldClass}
+                      name="preferredRegistrarId"
+                      aria-label="Preferred registrar"
+                      defaultValue={editing?.preferredRegistrarId ?? ''}
+                    >
+                      <option value="">Use installation default</option>
+                      {choices.map((account) => (
+                        <option key={account.id} value={account.id}>
+                          {account.name}
+                        </option>
+                      ))}
+                      {editing?.preferredRegistrarId &&
+                        !choices.some(
+                          (account) =>
+                            account.id === editing.preferredRegistrarId,
+                        ) && (
+                          <option value={editing.preferredRegistrarId}>
+                            {registrarName(editing.preferredRegistrarId)}{' '}
+                            (unavailable)
+                          </option>
+                        )}
+                    </select>
+                  </label>
+                  <Field
+                    name="displayOrder"
+                    label="Display order"
+                    type="number"
+                    defaultValue={String(editing?.displayOrder ?? 0)}
+                    required
+                  />
+                  <p>
+                    Period: one year. Transfer and other periods: not supported.
+                  </p>
+                  <label className="flex gap-2">
+                    <input
+                      type="checkbox"
+                      name="enabled"
+                      defaultChecked={editing?.enabled ?? false}
+                    />
+                    Offer registration
+                  </label>
+                  <label className="flex gap-2">
+                    <input
+                      type="checkbox"
+                      name="featured"
+                      defaultChecked={editing?.featured ?? false}
+                    />
+                    Featured extension
+                  </label>
+                  <p className="text-sm sm:col-span-2">
+                    Blank prices disable the corresponding sale; zero is not a
+                    free registration. Changes create a new price revision and
+                    require stale quotes to be reviewed again. Use Add TLD for a
+                    different extension; existing extensions cannot be renamed.
+                  </p>
+                  <Button disabled={busy}>Save TLD pricing</Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    disabled={busy}
+                    onClick={() => setEdit(undefined)}
+                  >
+                    Cancel
+                  </Button>
+                </form>
+              </Card>
+            </RecordDialog>
           )}
         </>
       )}

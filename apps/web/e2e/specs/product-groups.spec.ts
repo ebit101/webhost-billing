@@ -1,3 +1,4 @@
+import { expectRecordPageFits } from '../assert-record-layout';
 import { expect, test } from '@playwright/test';
 import { hash } from 'argon2';
 import { createPrismaClient } from '@webhost-billing/database';
@@ -44,73 +45,90 @@ test('administrator groups hosting plans and retains membership after reload on 
     page.getByRole('heading', { name: 'Business overview', exact: true }),
   ).toBeVisible();
   await page.goto('/admin/products');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
   await page.getByRole('button', { name: 'Manage groups' }).click();
-  const create = page.getByRole('form', { name: 'Create product group' });
-  await create.getByLabel('Group name').fill('Fictional shared hosting');
-  await create.getByLabel('Group order').fill('20');
-  await create
-    .getByRole('button', { name: 'Create group', exact: true })
-    .click();
-  await expect(
-    page.getByRole('form', { name: 'Edit Fictional shared hosting' }),
-  ).toBeVisible();
-  await create.getByLabel('Group name').fill('Fictional business hosting');
-  await create.getByLabel('Group order').fill('10');
-  await create
-    .getByRole('button', { name: 'Create group', exact: true })
-    .click();
-  await expect(
-    page.getByRole('form', { name: 'Edit Fictional business hosting' }),
-  ).toBeVisible();
-  await page
+  const manager = page.getByRole('dialog', {
+    name: 'Product groups',
+    exact: true,
+  });
+  for (const [name, order] of [
+    ['Fictional shared hosting', '20'],
+    ['Fictional business hosting', '10'],
+  ]) {
+    await manager
+      .getByRole('button', { name: 'Create group', exact: true })
+      .click();
+    const create = page.getByRole('form', { name: 'Create product group' });
+    await create.getByLabel('Group name').fill(name!);
+    await create.getByLabel('Group order').fill(order!);
+    await create
+      .getByRole('button', { name: 'Create group', exact: true })
+      .click();
+    await expect(create.getByLabel('Group name')).toHaveValue('');
+    await page
+      .getByRole('dialog', { name: 'Create group', exact: true })
+      .getByRole('button', { name: 'Close', exact: true })
+      .click();
+    await expect(
+      manager.getByRole('button', { name: 'Edit ' + name, exact: true }),
+    ).toBeVisible();
+  }
+  expect(
+    await manager.locator('tbody tr td:first-child').allTextContents(),
+  ).toEqual(['Fictional business hosting', 'Fictional shared hosting']);
+  await manager.getByRole('button', { name: 'Close', exact: true }).click();
+  const first = page
+    .getByRole('table', { name: 'Ungrouped products', exact: true })
+    .getByRole('button')
+    .first();
+  const productName = (await first.textContent())!.trim();
+  await first.click();
+  const editor = page.getByRole('dialog', { name: productName, exact: true });
+  await editor
     .getByRole('combobox', { name: /^Product group/ })
     .selectOption({ label: 'Fictional shared hosting' });
-  const productName = await page
-    .getByLabel('Name', { exact: true })
-    .inputValue();
-  await page.getByRole('button', { name: 'Save details' }).click();
-  await expect(page.getByRole('status')).toHaveText('Product details saved.');
+  await editor.getByRole('button', { name: 'Save details' }).click();
+  await expect(editor).toContainText('Product details saved.');
+  await editor.getByRole('button', { name: 'Close', exact: true }).click();
   await expect(
     page
-      .getByRole('region', { name: 'Fictional shared hosting', exact: true })
-      .getByRole('button', { name: new RegExp(productName) }),
+      .getByRole('table', {
+        name: 'Fictional shared hosting products',
+        exact: true,
+      })
+      .getByRole('button', { name: productName, exact: true }),
   ).toBeVisible();
   await page.reload();
+  await page.getByRole('button', { name: productName, exact: true }).click();
   await expect(
-    page.getByRole('combobox', { name: /^Product group/ }),
+    editor.getByRole('combobox', { name: /^Product group/ }),
   ).toHaveValue(
-    (await page
+    (await editor
       .getByRole('option', { name: 'Fictional shared hosting', exact: true })
       .getAttribute('value')) ?? '',
   );
-  const groups = page.locator('section[aria-label^="Fictional"]');
-  await expect(groups).toHaveCount(2);
-  expect(
-    await groups.evaluateAll((items) =>
-      items.map((item) => item.getAttribute('aria-label')),
-    ),
-  ).toEqual(['Fictional business hosting', 'Fictional shared hosting']);
+  await editor.getByRole('button', { name: 'Close', exact: true }).click();
   const output = resolve('../../release-artifacts/product-groups');
   await mkdir(output, { recursive: true });
   for (const width of [1440, 375]) {
     await page.setViewportSize({ width, height: 1000 });
-    expect(
-      await page.evaluate(
-        () => document.documentElement.scrollWidth <= window.innerWidth,
-      ),
-    ).toBe(true);
+    await expectRecordPageFits(page, 'records-' + width);
     await page.screenshot({
-      path: resolve(output, `product-groups-${width}.png`),
+      path: resolve(output, 'product-groups-' + width + '.png'),
       animations: 'disabled',
       fullPage: true,
     });
   }
-  await page.getByRole('combobox', { name: /^Product group/ }).selectOption('');
-  await page.getByRole('button', { name: 'Save details' }).click();
-  await expect(page.getByRole('status')).toHaveText('Product details saved.');
+  await page.getByRole('button', { name: productName, exact: true }).click();
+  await editor
+    .getByRole('combobox', { name: /^Product group/ })
+    .selectOption('');
+  await editor.getByRole('button', { name: 'Save details' }).click();
+  await expect(editor).toContainText('Product details saved.');
+  await editor.getByRole('button', { name: 'Close', exact: true }).click();
   await expect(
     page
-      .getByRole('region', { name: 'Ungrouped', exact: true })
-      .getByRole('button', { name: new RegExp(productName) }),
+      .getByRole('table', { name: 'Ungrouped products', exact: true })
+      .getByRole('button', { name: productName, exact: true }),
   ).toBeVisible();
 });

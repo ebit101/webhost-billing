@@ -29,6 +29,7 @@ import { formatMinor } from '../invoices/invoice-ui';
 import { Button } from '../ui/button';
 import { DataTable, type DataColumn } from '../ui/data-table';
 import { EmptyState, LoadingState } from '../ui/feedback-state';
+import { RecordAction, RecordDialog } from '../ui/record-dialog';
 import { PageHeader } from '../ui/page-header';
 import { StatusBadge } from '../ui/status-badge';
 import { paymentDate, paymentError, paymentTone } from './payment-ui';
@@ -396,170 +397,195 @@ function PaymentWorkspace({
       {error ? <Message error>{error}</Message> : null}
       {notice ? <Message>{notice}</Message> : null}
 
-      {fullAdministrator ? <GatewayFailurePanel /> : null}
+      {fullAdministrator ? (
+        <RecordAction label="Gateway exceptions">
+          <GatewayFailurePanel />
+        </RecordAction>
+      ) : null}
 
-      <div className="grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-          <h2 className="text-lg font-bold text-slate-950">
-            Record verified payment
-          </h2>
-          <p className="mt-1 text-sm text-slate-600">
-            Values are integer minor units. The server derives currency and
-            applies the invoice balance transactionally.
-          </p>
-          <form onSubmit={record} className="mt-5 grid gap-4 md:grid-cols-2">
-            <label className="text-sm font-semibold text-slate-700 md:col-span-2">
-              Payable invoice
-              <select className={fieldClass} name="invoiceId" required>
-                <option value="">Select invoice</option>
-                {payableInvoices.map((invoice) => (
-                  <option key={invoice.id} value={invoice.id}>
-                    {invoice.invoiceNumber} — {invoice.customerName} — balance{' '}
-                    {invoice.balanceDue.amount} {invoice.currency}
+      <div className="flex flex-wrap gap-3">
+        <RecordAction
+          label="Record payment"
+          busy={saving}
+          feedback={error || notice}
+        >
+          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+            <h2 className="text-lg font-bold text-slate-950">
+              Record verified payment
+            </h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Values are integer minor units. The server derives currency and
+              applies the invoice balance transactionally.
+            </p>
+            <form onSubmit={record} className="mt-5 grid gap-4 md:grid-cols-2">
+              <label className="text-sm font-semibold text-slate-700 md:col-span-2">
+                Payable invoice
+                <select className={fieldClass} name="invoiceId" required>
+                  <option value="">Select invoice</option>
+                  {payableInvoices.map((invoice) => (
+                    <option key={invoice.id} value={invoice.id}>
+                      {invoice.invoiceNumber} — {invoice.customerName} — balance{' '}
+                      {invoice.balanceDue.amount} {invoice.currency}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-sm font-semibold text-slate-700">
+                Amount
+                <input
+                  className={fieldClass}
+                  name="amount"
+                  inputMode="numeric"
+                  pattern="[0-9]+"
+                  required
+                />
+              </label>
+              <label className="text-sm font-semibold text-slate-700">
+                Method
+                <select className={fieldClass} name="method" required>
+                  <option value="BANK_TRANSFER">Bank transfer</option>
+                  <option value="MOBILE_FINANCIAL_SERVICE">
+                    Mobile financial service
                   </option>
-                ))}
-              </select>
-            </label>
-            <label className="text-sm font-semibold text-slate-700">
-              Amount
-              <input
-                className={fieldClass}
-                name="amount"
-                inputMode="numeric"
-                pattern="[0-9]+"
-                required
-              />
-            </label>
-            <label className="text-sm font-semibold text-slate-700">
-              Method
-              <select className={fieldClass} name="method" required>
-                <option value="BANK_TRANSFER">Bank transfer</option>
-                <option value="MOBILE_FINANCIAL_SERVICE">
-                  Mobile financial service
-                </option>
-                <option value="CASH">Cash</option>
-                <option value="OTHER">Other</option>
-              </select>
-            </label>
-            <label className="text-sm font-semibold text-slate-700">
-              Reference
-              <input className={fieldClass} name="reference" required />
-            </label>
-            <label className="text-sm font-semibold text-slate-700">
-              Payer name
-              <input className={fieldClass} name="payerName" />
-            </label>
-            <label className="text-sm font-semibold text-slate-700 md:col-span-2">
-              Note
-              <textarea className={fieldClass} name="note" rows={2} />
-            </label>
-            <div className="md:col-span-2">
-              <Button disabled={saving} type="submit">
-                Record verified payment
-              </Button>
+                  <option value="CASH">Cash</option>
+                  <option value="OTHER">Other</option>
+                </select>
+              </label>
+              <label className="text-sm font-semibold text-slate-700">
+                Reference
+                <input className={fieldClass} name="reference" required />
+              </label>
+              <label className="text-sm font-semibold text-slate-700">
+                Payer name
+                <input className={fieldClass} name="payerName" />
+              </label>
+              <label className="text-sm font-semibold text-slate-700 md:col-span-2">
+                Note
+                <textarea className={fieldClass} name="note" rows={2} />
+              </label>
+              <div className="md:col-span-2">
+                <Button disabled={saving} type="submit">
+                  Record verified payment
+                </Button>
+              </div>
+            </form>
+          </section>
+        </RecordAction>
+        <RecordAction label="Settlement policy">
+          <section className="rounded-2xl border border-slate-200 bg-slate-950 p-5 text-white shadow-sm sm:p-6">
+            <p className="text-xs font-bold tracking-[0.14em] text-brand-300">
+              Settlement policy
+            </p>
+            <h2 className="mt-2 text-lg font-bold">Partial payments</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-300">
+              {settings.partialPaymentsEnabled
+                ? 'Manual payments may be less than the invoice’s current balance.'
+                : 'Manual payments must equal the invoice’s full current balance.'}{' '}
+              The effective policy is checked on submission, recording, and
+              pending-reference verification.
+            </p>
+            <div className="mt-6 flex items-center justify-between gap-4 rounded-xl bg-white/10 p-4">
+              <div>
+                <p className="font-bold">
+                  {settings.partialPaymentsEnabled ? 'Enabled' : 'Disabled'}
+                </p>
+                <p className="mt-1 text-xs text-slate-400">
+                  Applies again when a pending reference is verified.
+                </p>
+              </div>
+              {fullAdministrator ? (
+                <Link
+                  href="/admin/settings#billing-policy"
+                  className="rounded-lg px-3 py-2 text-sm font-bold text-brand-300 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-300"
+                >
+                  Review billing policy in settings
+                </Link>
+              ) : (
+                <span className="text-sm text-slate-300">
+                  Ask a full administrator to change this policy.
+                </span>
+              )}
             </div>
-          </form>
-        </section>
-
-        <section className="rounded-2xl border border-slate-200 bg-slate-950 p-5 text-white shadow-sm sm:p-6">
-          <p className="text-xs font-bold tracking-[0.14em] text-brand-300">
-            Settlement policy
-          </p>
-          <h2 className="mt-2 text-lg font-bold">Partial payments</h2>
-          <p className="mt-2 text-sm leading-6 text-slate-300">
-            {settings.partialPaymentsEnabled
-              ? 'Manual payments may be less than the invoice’s current balance.'
-              : 'Manual payments must equal the invoice’s full current balance.'}{' '}
-            The effective policy is checked on submission, recording, and
-            pending-reference verification.
-          </p>
-          <div className="mt-6 flex items-center justify-between gap-4 rounded-xl bg-white/10 p-4">
-            <div>
-              <p className="font-bold">
-                {settings.partialPaymentsEnabled ? 'Enabled' : 'Disabled'}
-              </p>
-              <p className="mt-1 text-xs text-slate-400">
-                Applies again when a pending reference is verified.
-              </p>
-            </div>
-            {fullAdministrator ? (
-              <Link
-                href="/admin/settings#billing-policy"
-                className="rounded-lg px-3 py-2 text-sm font-bold text-brand-300 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-300"
-              >
-                Review billing policy in settings
-              </Link>
-            ) : (
-              <span className="text-sm text-slate-300">
-                Ask a full administrator to change this policy.
-              </span>
-            )}
-          </div>
-        </section>
+          </section>
+        </RecordAction>
       </div>
 
       {adjustment ? (
-        <section className="rounded-2xl border border-amber-200 bg-amber-50 p-5 sm:p-6">
-          <h2 className="text-lg font-bold text-slate-950">
-            Record {adjustment.kind.toLowerCase()}
-          </h2>
-          <p className="mt-1 text-sm text-slate-600">
-            Original {adjustment.payment.reference} remains unchanged.
-            Refundable amount: {adjustment.payment.refundableAmount.amount}{' '}
-            {adjustment.payment.refundableAmount.currency}.
-          </p>
-          <form
-            onSubmit={createAdjustment}
-            className="mt-4 grid gap-4 md:grid-cols-3"
-          >
-            <input
-              className={fieldClass}
-              aria-label="Adjustment amount"
-              name="amount"
-              defaultValue={adjustment.payment.refundableAmount.amount}
-              required
-            />
-            <input
-              className={fieldClass}
-              aria-label="Adjustment reference"
-              name="reference"
-              placeholder="Reference"
-              required
-            />
-            <input
-              className={fieldClass}
-              aria-label="Adjustment note"
-              name="note"
-              placeholder="Optional note"
-            />
-            <div className="flex gap-2 md:col-span-3">
-              <Button disabled={saving} type="submit">
-                Confirm {adjustment.kind.toLowerCase()}
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => setAdjustment(undefined)}
-              >
-                Cancel
-              </Button>
-            </div>
-          </form>
-        </section>
+        <RecordDialog
+          open
+          title="Payment adjustment"
+          busy={saving}
+          feedback={error || notice}
+          onClose={() => setAdjustment(undefined)}
+        >
+          <section className="rounded-2xl border border-amber-200 bg-amber-50 p-5 sm:p-6">
+            <h2 className="text-lg font-bold text-slate-950">
+              Record {adjustment.kind.toLowerCase()}
+            </h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Original {adjustment.payment.reference} remains unchanged.
+              Refundable amount: {adjustment.payment.refundableAmount.amount}{' '}
+              {adjustment.payment.refundableAmount.currency}.
+            </p>
+            <form
+              onSubmit={createAdjustment}
+              className="mt-4 grid gap-4 md:grid-cols-3"
+            >
+              <input
+                className={fieldClass}
+                aria-label="Adjustment amount"
+                name="amount"
+                defaultValue={adjustment.payment.refundableAmount.amount}
+                required
+              />
+              <input
+                className={fieldClass}
+                aria-label="Adjustment reference"
+                name="reference"
+                placeholder="Reference"
+                required
+              />
+              <input
+                className={fieldClass}
+                aria-label="Adjustment note"
+                name="note"
+                placeholder="Optional note"
+              />
+              <div className="flex gap-2 md:col-span-3">
+                <Button disabled={saving} type="submit">
+                  Confirm {adjustment.kind.toLowerCase()}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setAdjustment(undefined)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </section>
+        </RecordDialog>
       ) : null}
 
       {selectedReview ? (
-        <AdminPaymentReview
-          key={selectedReview.sequence}
-          paymentId={selectedReview.id}
-          customerId={filteredCustomerId}
-          onClose={() => {
-            setSelectedReview(undefined);
-            const trigger = reviewTrigger.current;
-            if (trigger?.isConnected && !trigger.disabled) trigger.focus();
-            else ledgerHeading.current?.focus();
-          }}
-        />
+        <RecordDialog
+          open
+          title="Payment details"
+          onClose={() => setSelectedReview(undefined)}
+        >
+          <AdminPaymentReview
+            key={selectedReview.sequence}
+            paymentId={selectedReview.id}
+            customerId={filteredCustomerId}
+            onClose={() => {
+              setSelectedReview(undefined);
+              const trigger = reviewTrigger.current;
+              if (trigger?.isConnected && !trigger.disabled) trigger.focus();
+              else ledgerHeading.current?.focus();
+            }}
+          />
+        </RecordDialog>
       ) : null}
 
       <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -572,7 +598,8 @@ function PaymentWorkspace({
             Payment ledger
           </h2>
           <p className="mt-1 text-sm text-slate-600">
-            Pending, verified, rejected, refunded, and reversed transactions.
+            Showing {payments.length} payment records · Up to 100 matching
+            transactions.
           </p>
         </div>
         {payments.length ? (

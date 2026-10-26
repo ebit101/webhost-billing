@@ -603,6 +603,7 @@ describe('payment workspace review boundaries and existing mutations', () => {
       }),
     );
     await screen.findByText('Payer name', { selector: 'dt' });
+    await user.click(screen.getByRole('button', { name: 'Record payment' }));
     const form = screen
       .getByRole('button', { name: 'Record verified payment' })
       .closest('form')!;
@@ -620,7 +621,7 @@ describe('payment workspace review boundaries and existing mutations', () => {
     expect(screen.getByRole('region', { name: 'Payment review' })).toBeTruthy();
     fail = false;
     await user.click(within(form).getByRole('button'));
-    await screen.findByText(
+    await screen.findAllByText(
       'Verified manual payment recorded and invoice recalculated.',
     );
     expect(screen.queryByRole('region', { name: 'Payment review' })).toBeNull();

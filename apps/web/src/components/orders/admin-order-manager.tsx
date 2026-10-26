@@ -24,6 +24,7 @@ import { Button } from '../ui/button';
 import { type DataColumn } from '../ui/data-table';
 import { LoadingState } from '../ui/feedback-state';
 import { Icon } from '../ui/icon';
+import { RecordAction, RecordDialog } from '../ui/record-dialog';
 import { PageHeader } from '../ui/page-header';
 import { StatusBadge } from '../ui/status-badge';
 import { errorMessage, formatMinor, orderTone } from './order-ui';
@@ -364,127 +365,141 @@ export function AdminOrderManager({
       />
       {error ? <Message tone="error">{error}</Message> : null}
       {notice ? <Message tone="success">{notice}</Message> : null}
-      {!checkoutIntent && (
-        <AdminDomainOrderForm
-          onCreated={() => setReadRevision((current) => current + 1)}
-        />
-      )}
-      <Card
-        title="Create a hosting order"
-        description="Create a hosting order and unpaid invoice for a customer. The API revalidates the customer, product, active price, domain, and every total."
-      >
-        {checkoutIntent && (
-          <div className="mb-5 rounded-xl border border-brand-200 bg-brand-50 p-4 text-sm text-slate-800">
-            <p className="font-semibold">Hosting selection carried forward</p>
-            <p className="mt-1">
-              No order has been placed. Select the customer and review the
-              active price before creating an invoice.
-            </p>
-          </div>
-        )}
-        {selectionUnavailable && (
-          <p
-            role="alert"
-            className="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950"
-          >
-            This hosting plan or billing period is no longer available. Select
-            an active product and price below.
-          </p>
-        )}
-        {draftNeedsRegistration && (
-          <p
-            role="alert"
-            className="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950"
-          >
-            This selection requests a new domain registration. The administrator
-            hosting form creates hosting-only orders. Use a customer account for
-            a combined hosting and domain invoice, or create a separate domain
-            order below with recorded offline consent.
-          </p>
-        )}
-        <form
-          onSubmit={createOrder}
-          className="grid gap-4 md:grid-cols-2 xl:grid-cols-5"
+      <div className="flex flex-wrap gap-3">
+        <RecordAction
+          label="Create hosting order"
+          initialOpen={Boolean(checkoutIntent)}
+          busy={saving}
+          feedback={error || notice}
         >
-          <label className="block text-sm font-semibold text-slate-700">
-            Customer
-            <select name="customerId" required className={fieldClass}>
-              <option value="">Select customer</option>
-              {customers
-                .filter((customer) => customer.status === 'ACTIVE')
-                .map((customer) => (
-                  <option key={customer.id} value={customer.id}>
-                    {customer.firstName} {customer.lastName} — {customer.email}
-                  </option>
-                ))}
-            </select>
-          </label>
-          <label className="block text-sm font-semibold text-slate-700">
-            Product
-            <select
-              name="productId"
-              required
-              value={selectedProductId}
-              onChange={(event) => {
-                setSelectedProductId(event.target.value);
-                setSelectedPriceId('');
-                setSelectionUnavailable(false);
-              }}
-              className={fieldClass}
+          <Card
+            title="Create a hosting order"
+            description="Create a hosting order and unpaid invoice for a customer. The API revalidates the customer, product, active price, domain, and every total."
+          >
+            {checkoutIntent && (
+              <div className="mb-5 rounded-xl border border-brand-200 bg-brand-50 p-4 text-sm text-slate-800">
+                <p className="font-semibold">
+                  Hosting selection carried forward
+                </p>
+                <p className="mt-1">
+                  No order has been placed. Select the customer and review the
+                  active price before creating an invoice.
+                </p>
+              </div>
+            )}
+            {selectionUnavailable && (
+              <p
+                role="alert"
+                className="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950"
+              >
+                This hosting plan or billing period is no longer available.
+                Select an active product and price below.
+              </p>
+            )}
+            {draftNeedsRegistration && (
+              <p
+                role="alert"
+                className="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950"
+              >
+                This selection requests a new domain registration. The
+                administrator hosting form creates hosting-only orders. Use a
+                customer account for a combined hosting and domain invoice, or
+                create a separate domain order below with recorded offline
+                consent.
+              </p>
+            )}
+            <form
+              onSubmit={createOrder}
+              className="grid gap-4 md:grid-cols-2 xl:grid-cols-5"
             >
-              <option value="">Select product</option>
-              {products
-                .filter((product) => product.status === 'ACTIVE')
-                .map((product) => (
-                  <option key={product.id} value={product.id}>
-                    {product.name}
-                  </option>
-                ))}
-            </select>
-          </label>
-          <label className="block text-sm font-semibold text-slate-700">
-            Price
-            <select
-              name="priceId"
-              required
-              value={selectedPriceId}
-              onChange={(event) => setSelectedPriceId(event.target.value)}
-              className={fieldClass}
-            >
-              <option value="">Select billing period</option>
-              {activePrices.map((price) => (
-                <option key={price.id} value={price.id}>
-                  {price.billingPeriod.toLowerCase()} —{' '}
-                  {formatMinor(price.amount.amount, price.amount.currency)}
-                </option>
-              ))}
-            </select>
-          </label>
-          <Field
-            label="Requested domain"
-            name="requestedDomain"
-            placeholder="example.com"
-            required
-            value={requestedDomain}
-            onChange={(event) => setRequestedDomain(event.target.value)}
+              <label className="block text-sm font-semibold text-slate-700">
+                Customer
+                <select name="customerId" required className={fieldClass}>
+                  <option value="">Select customer</option>
+                  {customers
+                    .filter((customer) => customer.status === 'ACTIVE')
+                    .map((customer) => (
+                      <option key={customer.id} value={customer.id}>
+                        {customer.firstName} {customer.lastName} —{' '}
+                        {customer.email}
+                      </option>
+                    ))}
+                </select>
+              </label>
+              <label className="block text-sm font-semibold text-slate-700">
+                Product
+                <select
+                  name="productId"
+                  required
+                  value={selectedProductId}
+                  onChange={(event) => {
+                    setSelectedProductId(event.target.value);
+                    setSelectedPriceId('');
+                    setSelectionUnavailable(false);
+                  }}
+                  className={fieldClass}
+                >
+                  <option value="">Select product</option>
+                  {products
+                    .filter((product) => product.status === 'ACTIVE')
+                    .map((product) => (
+                      <option key={product.id} value={product.id}>
+                        {product.name}
+                      </option>
+                    ))}
+                </select>
+              </label>
+              <label className="block text-sm font-semibold text-slate-700">
+                Price
+                <select
+                  name="priceId"
+                  required
+                  value={selectedPriceId}
+                  onChange={(event) => setSelectedPriceId(event.target.value)}
+                  className={fieldClass}
+                >
+                  <option value="">Select billing period</option>
+                  {activePrices.map((price) => (
+                    <option key={price.id} value={price.id}>
+                      {price.billingPeriod.toLowerCase()} —{' '}
+                      {formatMinor(price.amount.amount, price.amount.currency)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <Field
+                label="Requested domain"
+                name="requestedDomain"
+                placeholder="example.com"
+                required
+                value={requestedDomain}
+                onChange={(event) => setRequestedDomain(event.target.value)}
+              />
+              <Field label="Internal note" name="notes" />
+              <div className="md:col-span-2 xl:col-span-5">
+                <Button
+                  type="submit"
+                  disabled={
+                    saving || !customers.length || draftNeedsRegistration
+                  }
+                >
+                  <Icon name="plus" className="size-4" />
+                  {saving ? 'Creating…' : 'Create order and invoice'}
+                </Button>
+              </div>
+            </form>
+          </Card>
+        </RecordAction>
+        <RecordAction
+          label="Create domain order"
+          busy={saving}
+          feedback={error || notice}
+        >
+          <AdminDomainOrderForm
+            onCreated={() => setReadRevision((current) => current + 1)}
           />
-          <Field label="Internal note" name="notes" />
-          <div className="md:col-span-2 xl:col-span-5">
-            <Button
-              type="submit"
-              disabled={saving || !customers.length || draftNeedsRegistration}
-            >
-              <Icon name="plus" className="size-4" />
-              {saving ? 'Creating…' : 'Create order and invoice'}
-            </Button>
-          </div>
-        </form>
-      </Card>
-      {checkoutIntent && (
-        <AdminDomainOrderForm
-          onCreated={() => setReadRevision((current) => current + 1)}
-        />
-      )}
+        </RecordAction>
+      </div>
       <AdminOrderLedger
         selection={applied}
         revision={readRevision}
@@ -492,16 +507,22 @@ export function AdminOrderManager({
         onNavigate={() => setReview(undefined)}
       />
       {review ? (
-        <AdminOrderReview
-          key={`${review.id}:${review.sequence}`}
-          orderId={review.id}
-          customerId={filteredCustomerId}
-          onClose={() => {
-            setReview(undefined);
-            if (reviewTrigger.current?.isConnected)
-              reviewTrigger.current.focus();
-          }}
-        />
+        <RecordDialog
+          open
+          title="Order details"
+          onClose={() => setReview(undefined)}
+        >
+          <AdminOrderReview
+            key={`${review.id}:${review.sequence}`}
+            orderId={review.id}
+            customerId={filteredCustomerId}
+            onClose={() => {
+              setReview(undefined);
+              if (reviewTrigger.current?.isConnected)
+                reviewTrigger.current.focus();
+            }}
+          />
+        </RecordDialog>
       ) : null}
     </div>
   );

@@ -22,8 +22,11 @@ for (const width of [375, 1440])
       page.getByRole('heading', { name: 'Administrators', exact: true }),
     ).toBeVisible();
     await expect(
-      page.getByRole('heading', { name: 'support@example.test' }),
+      page.getByRole('cell', { name: 'support@example.test', exact: true }),
     ).toBeVisible();
+    await page
+      .getByRole('button', { name: 'Invite administrator', exact: true })
+      .click();
     await expect(
       page.getByRole('button', { name: 'Send invitation', exact: true }),
     ).toBeEnabled();
@@ -32,12 +35,6 @@ for (const width of [375, 1440])
         () => document.documentElement.scrollWidth <= window.innerWidth,
       ),
     ).toBe(true);
-    const own = page.locator('section').filter({
-      has: page.getByRole('heading', { name: 'owner@example.test' }),
-    });
-    await expect(
-      own.getByRole('button', { name: 'Save access' }),
-    ).toBeDisabled();
     const firstInput = page
       .getByRole('textbox', { name: 'Display name' })
       .first();
@@ -46,6 +43,23 @@ for (const width of [375, 1440])
     await expect(
       page.getByRole('textbox', { name: 'Email', exact: true }),
     ).toBeFocused();
+    await page
+      .getByRole('dialog', { name: 'Invite administrator', exact: true })
+      .getByRole('button', { name: 'Close', exact: true })
+      .click();
+    await page
+      .getByRole('button', { name: 'Edit owner@example.test', exact: true })
+      .click();
+    const own = page.locator('section').filter({
+      has: page.getByRole('heading', { name: 'owner@example.test' }),
+    });
+    await expect(
+      own.getByRole('button', { name: 'Save access' }),
+    ).toBeDisabled();
+    await page
+      .getByRole('dialog', { name: 'Edit administrator', exact: true })
+      .getByRole('button', { name: 'Close', exact: true })
+      .click();
     expect(writes).toEqual([]);
     const directory = resolve('../../release-artifacts/staff-preview');
     await mkdir(directory, { recursive: true });
@@ -84,6 +98,9 @@ test('billing and support navigation and direct-route checks', async ({
     page.getByRole('button', { name: 'Save business identity' }),
   ).toHaveCount(0);
   await page.goto('/admin/payments');
+  await page
+    .getByRole('button', { name: 'Record payment', exact: true })
+    .click();
   await expect(
     page.getByRole('button', { name: 'Record verified payment' }),
   ).toBeVisible();

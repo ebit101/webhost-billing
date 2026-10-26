@@ -195,9 +195,17 @@ describe('invoice interfaces', () => {
       }),
     );
     render(<AdminInvoiceManager />);
+    await userEvent
+      .setup()
+      .click(
+        await screen.findByRole('button', { name: 'Create invoice draft' }),
+      );
     expect(
       await screen.findByRole('button', { name: 'Save draft' }),
     ).toBeTruthy();
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: 'Business identity' }));
     expect(
       screen.getByRole('button', { name: 'Save business identity' }),
     ).toBeTruthy();

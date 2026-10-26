@@ -533,6 +533,11 @@ describe('order interfaces', () => {
       }),
     );
     render(<AdminOrderManager />);
+    await userEvent
+      .setup()
+      .click(
+        await screen.findByRole('button', { name: 'Create hosting order' }),
+      );
     expect(
       await screen.findByRole('button', {
         name: 'Create order and invoice',
@@ -562,6 +567,7 @@ describe('order interfaces', () => {
       }),
     );
     render(<AdminOrderManager checkoutIntent={{ productId, priceId }} />);
+    await screen.findByRole('dialog', { name: 'Create hosting order' });
     await screen.findByText('Hosting selection carried forward');
     expect((screen.getByLabelText('Product') as HTMLSelectElement).value).toBe(
       productId,
@@ -911,6 +917,9 @@ describe('order interfaces', () => {
     const user = userEvent.setup();
     render(<AdminOrderManager />);
     await user.click(
+      await screen.findByRole('button', { name: 'Create hosting order' }),
+    );
+    await user.click(
       await screen.findByRole('button', {
         name: `Review order ${order.orderNumber}`,
       }),
@@ -928,7 +937,7 @@ describe('order interfaces', () => {
     await user.click(
       screen.getByRole('button', { name: 'Create order and invoice' }),
     );
-    await screen.findByText(/created with unpaid invoice/);
+    await screen.findAllByText(/created with unpaid invoice/);
     expect(body).toEqual({
       customerId,
       productId,

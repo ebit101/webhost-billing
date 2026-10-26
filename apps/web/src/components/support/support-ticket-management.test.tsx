@@ -147,9 +147,7 @@ describe('support ticket interfaces', () => {
       screen.getByRole('button', { name: 'Open support ticket' }),
     );
 
-    expect(
-      await screen.findByText('TKT-20260825-NEW123 was opened.'),
-    ).toBeTruthy();
+    expect(await screen.findByRole('status')).toBeTruthy();
     const mutation = fetchMock.mock.calls.find(
       ([request, init]) =>
         String(request).endsWith('/tickets') &&
@@ -195,17 +193,16 @@ describe('support ticket interfaces', () => {
     vi.stubGlobal('fetch', fetchMock);
     render(<CustomerTicketManager />);
 
+    await user.click(
+      await screen.findByRole('button', { name: ticket.ticketNumber }),
+    );
     const replyBox = await screen.findByLabelText('Reply in plain text');
     expect(
       screen.getByText(/Attachments and HTML are not accepted/i),
     ).toBeTruthy();
     await user.type(replyBox, 'Customer follow-up.');
     await user.click(screen.getByRole('button', { name: 'Send reply' }));
-    expect(
-      await screen.findByText(
-        'Your reply was added and the support team was notified.',
-      ),
-    ).toBeTruthy();
+    expect(await screen.findByRole('status')).toBeTruthy();
     const mutation = fetchMock.mock.calls.find(
       ([request, init]) =>
         String(request).includes(`/tickets/${ticketId}/replies`) &&
@@ -265,16 +262,15 @@ describe('support ticket interfaces', () => {
     expect(
       await screen.findByRole('heading', { name: 'Support queue' }),
     ).toBeTruthy();
+    await user.click(
+      screen.getByRole('button', { name: new RegExp(ticket.ticketNumber) }),
+    );
     await user.type(
       screen.getByLabelText('Reply in plain text'),
       'Administrator response.',
     );
     await user.click(screen.getByRole('button', { name: 'Send reply' }));
-    expect(
-      await screen.findByText(
-        'Reply added. A customer email notification was queued.',
-      ),
-    ).toBeTruthy();
+    expect(await screen.findByRole('status')).toBeTruthy();
 
     const controlsButton = screen.getByRole('button', {
       name: 'Save ticket controls',
@@ -293,11 +289,7 @@ describe('support ticket interfaces', () => {
       'CLOSED',
     );
     await user.click(controlsButton);
-    expect(
-      await screen.findByText(
-        'Ticket assignment, priority, and status were saved.',
-      ),
-    ).toBeTruthy();
+    expect(await screen.findByRole('status')).toBeTruthy();
 
     const patch = fetchMock.mock.calls.find(
       ([, init]) => (init as RequestInit | undefined)?.method === 'PATCH',

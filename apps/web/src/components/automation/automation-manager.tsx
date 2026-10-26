@@ -13,6 +13,8 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { authenticatedGet, authMutation } from '../../lib/auth-api';
 import { Button } from '../ui/button';
 import { EmptyState, LoadingState } from '../ui/feedback-state';
+import { DataTable } from '../ui/data-table';
+import { RecordAction } from '../ui/record-dialog';
 import { PageHeader } from '../ui/page-header';
 import { StatusBadge } from '../ui/status-badge';
 
@@ -198,7 +200,7 @@ export function AutomationManager() {
           <div className="grid gap-4 xl:grid-cols-2">
             <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
               <table className="min-w-full text-left text-sm">
-                <thead className="bg-slate-50 text-xs text-slate-500">
+                <thead className="bg-brand-800 text-xs text-white">
                   <tr>
                     <th className="px-4 py-3">Queue</th>
                     <th className="px-4 py-3">Backlog</th>
@@ -252,104 +254,111 @@ export function AutomationManager() {
         </section>
       ) : null}
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h2 className="text-lg font-bold text-slate-950">Renewal policy</h2>
-            <p className="mt-1 text-sm text-slate-600">
-              Daily invoice, reminder, overdue, suspension, and verified-payment
-              reactivation rules.
-            </p>
+      <RecordAction
+        label="Renewal policy"
+        busy={Boolean(savingKey)}
+        feedback={error || notice}
+      >
+        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <h2 className="text-lg font-bold text-slate-950">
+                Renewal policy
+              </h2>
+              <p className="mt-1 text-sm text-slate-600">
+                Daily invoice, reminder, overdue, suspension, and
+                verified-payment reactivation rules.
+              </p>
+            </div>
+            <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+              <input
+                type="checkbox"
+                checked={policy.enabled}
+                onChange={(event) =>
+                  setPolicy((current) => ({
+                    ...current,
+                    enabled: event.target.checked,
+                  }))
+                }
+              />
+              Automation enabled
+            </label>
           </div>
-          <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
-            <input
-              type="checkbox"
-              checked={policy.enabled}
-              onChange={(event) =>
-                setPolicy((current) => ({
-                  ...current,
-                  enabled: event.target.checked,
-                }))
-              }
-            />
-            Automation enabled
-          </label>
-        </div>
-        <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <PolicyField label="Invoice lead days">
-            <input
-              aria-label="Invoice lead days"
-              className={inputStyles}
-              type="number"
-              min={1}
-              max={90}
-              value={policy.invoiceLeadDays}
-              onChange={(event) =>
-                setPolicy((current) => ({
-                  ...current,
-                  invoiceLeadDays: Number(event.target.value),
-                }))
-              }
-            />
-          </PolicyField>
-          <PolicyField label="Reminder days">
-            <input
-              aria-label="Reminder days"
-              className={inputStyles}
-              value={policy.reminderDaysBeforeDue.join(', ')}
-              onChange={(event) =>
-                setPolicy((current) => ({
-                  ...current,
-                  reminderDaysBeforeDue: event.target.value
-                    .split(',')
-                    .map((value) => value.trim())
-                    .filter((value) => value.length > 0)
-                    .map(Number)
-                    .filter(Number.isFinite),
-                }))
-              }
-            />
-          </PolicyField>
-          <PolicyField label="Grace period days">
-            <input
-              aria-label="Grace period days"
-              className={inputStyles}
-              type="number"
-              min={0}
-              max={60}
-              value={policy.gracePeriodDays}
-              onChange={(event) =>
-                setPolicy((current) => ({
-                  ...current,
-                  gracePeriodDays: Number(event.target.value),
-                }))
-              }
-            />
-          </PolicyField>
-          <PolicyField label="Business time zone">
-            <input
-              aria-label="Business time zone"
-              className={inputStyles}
-              value={policy.timeZone}
-              onChange={(event) =>
-                setPolicy((current) => ({
-                  ...current,
-                  timeZone: event.target.value,
-                }))
-              }
-            />
-          </PolicyField>
-        </div>
-        <div className="mt-5 flex justify-end">
-          <Button
-            disabled={loading || savingKey === 'renewal-policy'}
-            onClick={() => void savePolicy()}
-          >
-            Save renewal policy
-          </Button>
-        </div>
-      </section>
-
+          <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <PolicyField label="Invoice lead days">
+              <input
+                aria-label="Invoice lead days"
+                className={inputStyles}
+                type="number"
+                min={1}
+                max={90}
+                value={policy.invoiceLeadDays}
+                onChange={(event) =>
+                  setPolicy((current) => ({
+                    ...current,
+                    invoiceLeadDays: Number(event.target.value),
+                  }))
+                }
+              />
+            </PolicyField>
+            <PolicyField label="Reminder days">
+              <input
+                aria-label="Reminder days"
+                className={inputStyles}
+                value={policy.reminderDaysBeforeDue.join(', ')}
+                onChange={(event) =>
+                  setPolicy((current) => ({
+                    ...current,
+                    reminderDaysBeforeDue: event.target.value
+                      .split(',')
+                      .map((value) => value.trim())
+                      .filter((value) => value.length > 0)
+                      .map(Number)
+                      .filter(Number.isFinite),
+                  }))
+                }
+              />
+            </PolicyField>
+            <PolicyField label="Grace period days">
+              <input
+                aria-label="Grace period days"
+                className={inputStyles}
+                type="number"
+                min={0}
+                max={60}
+                value={policy.gracePeriodDays}
+                onChange={(event) =>
+                  setPolicy((current) => ({
+                    ...current,
+                    gracePeriodDays: Number(event.target.value),
+                  }))
+                }
+              />
+            </PolicyField>
+            <PolicyField label="Business time zone">
+              <input
+                aria-label="Business time zone"
+                className={inputStyles}
+                value={policy.timeZone}
+                onChange={(event) =>
+                  setPolicy((current) => ({
+                    ...current,
+                    timeZone: event.target.value,
+                  }))
+                }
+              />
+            </PolicyField>
+          </div>
+          <div className="mt-5 flex justify-end">
+            <Button
+              disabled={loading || savingKey === 'renewal-policy'}
+              onClick={() => void savePolicy()}
+            >
+              Save renewal policy
+            </Button>
+          </div>
+        </section>
+      </RecordAction>
       <section className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-slate-950">
@@ -366,7 +375,7 @@ export function AutomationManager() {
         ) : (
           <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
             <table className="min-w-full text-left text-sm">
-              <thead className="bg-slate-50 text-xs text-slate-500">
+              <thead className="bg-brand-800 text-xs text-white">
                 <tr>
                   <th className="px-4 py-3">Run</th>
                   <th className="px-4 py-3">Status</th>
@@ -421,94 +430,111 @@ export function AutomationManager() {
             title="Queue failures"
             count={failures.queueJobs.length}
           >
-            {failures.queueJobs.map((job) => {
-              const key = `queue-${job.queueName}-${job.jobId}`;
-              return (
-                <article
-                  key={key}
-                  className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-3">
+            <DataTable
+              caption="Queue failures"
+              rows={failures.queueJobs}
+              rowKey={(job) => job.queueName + ':' + job.jobId}
+              columns={[
+                {
+                  key: 'job',
+                  header: 'Job',
+                  render: (job) => (
                     <div>
-                      <p className="font-bold text-slate-950">{job.jobName}</p>
-                      <p className="mt-1 text-xs text-slate-500">
+                      {job.jobName}
+                      <p className="text-xs text-slate-500">
                         {job.queueName} · {job.jobId}
                       </p>
                     </div>
-                    <StatusBadge tone="danger">
+                  ),
+                },
+                {
+                  key: 'failure',
+                  header: 'Failure',
+                  render: (job) => (
+                    <div>
                       {sentenceCaseLabel(job.failureKind ?? 'FAILED')}
-                    </StatusBadge>
-                  </div>
-                  <p className="mt-4 text-sm text-slate-600">
-                    Attempts {job.attemptsMade}/{job.maxAttempts} ·{' '}
-                    {job.failureCode ?? 'Safe failure details unavailable'}
-                  </p>
-                  <div className="mt-4 flex items-center justify-between gap-3">
-                    <p className="text-xs text-slate-500">
-                      Correlation {job.correlationId ?? 'invalid payload'}
-                    </p>
-                    {job.manualRetryAllowed ? (
+                      <p>
+                        {job.failureCode ?? 'Safe failure details unavailable'}
+                      </p>
+                    </div>
+                  ),
+                },
+                {
+                  key: 'attempts',
+                  header: 'Attempts',
+                  render: (job) => job.attemptsMade + '/' + job.maxAttempts,
+                },
+                {
+                  key: 'correlation',
+                  header: 'Correlation',
+                  render: (job) => job.correlationId ?? 'Invalid payload',
+                },
+                {
+                  key: 'action',
+                  header: 'Actions',
+                  render: (job) =>
+                    job.manualRetryAllowed ? (
                       <Button
                         size="sm"
-                        disabled={savingKey === key}
+                        disabled={
+                          savingKey ===
+                          'queue-' + job.queueName + '-' + job.jobId
+                        }
                         onClick={() => void retryQueue(job)}
                       >
                         Retry temporary job
                       </Button>
                     ) : (
-                      <span className="text-xs font-semibold text-amber-700">
-                        Reconciliation required
-                      </span>
-                    )}
-                  </div>
-                </article>
-              );
-            })}
+                      'Reconciliation required'
+                    ),
+                },
+              ]}
+            />
           </FailureSection>
 
           <FailureSection
             title="Outbox failures"
             count={failures.outboxEvents.length}
           >
-            {failures.outboxEvents.map((event) => {
-              const key = `outbox-${event.outboxEventId}`;
-              return (
-                <article
-                  key={key}
-                  className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div>
-                      <p className="font-bold text-slate-950">
-                        {event.eventType}
-                      </p>
-                      <p className="mt-1 text-xs text-slate-500">
-                        {event.aggregateType} · {event.aggregateId}
-                      </p>
-                    </div>
-                    <StatusBadge tone="danger">Failed</StatusBadge>
-                  </div>
-                  <p className="mt-4 text-sm text-slate-600">
-                    Publication attempts: {event.attemptCount}
-                  </p>
-                  <div className="mt-4 flex justify-end">
-                    {event.manualRetryAllowed ? (
+            <DataTable
+              caption="Outbox failures"
+              rows={failures.outboxEvents}
+              rowKey={(event) => event.outboxEventId}
+              columns={[
+                {
+                  key: 'event',
+                  header: 'Event',
+                  render: (event) => event.eventType,
+                },
+                {
+                  key: 'record',
+                  header: 'Record',
+                  render: (event) =>
+                    event.aggregateType + ' · ' + event.aggregateId,
+                },
+                {
+                  key: 'attempts',
+                  header: 'Publication attempts',
+                  render: (event) => event.attemptCount,
+                },
+                {
+                  key: 'action',
+                  header: 'Actions',
+                  render: (event) =>
+                    event.manualRetryAllowed ? (
                       <Button
                         size="sm"
-                        disabled={savingKey === key}
+                        disabled={savingKey === 'outbox-' + event.outboxEventId}
                         onClick={() => void retryOutbox(event)}
                       >
                         Retry publication
                       </Button>
                     ) : (
-                      <span className="text-xs font-semibold text-amber-700">
-                        Route repair required
-                      </span>
-                    )}
-                  </div>
-                </article>
-              );
-            })}
+                      'Route repair required'
+                    ),
+                },
+              ]}
+            />
           </FailureSection>
         </div>
       )}

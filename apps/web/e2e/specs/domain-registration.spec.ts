@@ -1,3 +1,6 @@
+import { expectRecordPageFits } from '../assert-record-layout';
+import { mkdir } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import { randomBytes, randomUUID, createHash } from 'node:crypto';
 import { expect, test, type BrowserContext } from '@playwright/test';
 import { e2ePrisma } from '../database';
@@ -168,6 +171,9 @@ test('mobile customer and administrator complete a clearly simulated domain work
     await expect(admin.getByRole('status')).toContainText('TLD revision saved');
     await admin.goto('/admin/domains');
     await customer.goto('/portal/domains');
+    await customer
+      .getByRole('button', { name: 'Request a domain quote', exact: true })
+      .click();
     const offer = (
       await e2ePrisma.domainOffer.findUniqueOrThrow({
         where: { accountId_tld: { accountId: originAccount.id, tld: 'com' } },
@@ -219,8 +225,18 @@ test('mobile customer and administrator complete a clearly simulated domain work
     await customer
       .getByRole('button', { name: 'Create order and unpaid invoice' })
       .click();
+    await expect(customer.getByRole('status')).toContainText(
+      'Request completed',
+    );
+    await customer
+      .getByRole('dialog', { name: 'Request a domain quote', exact: true })
+      .getByRole('button', { name: 'Close', exact: true })
+      .click();
+    await customer
+      .getByRole('button', { name: domainName, exact: true })
+      .click();
     await expect(
-      customer.getByRole('heading', { name: domainName }),
+      customer.getByRole('dialog', { name: domainName, exact: true }),
     ).toBeVisible();
     const domain = await e2ePrisma.domain.findUniqueOrThrow({
       where: { domainName },
@@ -273,8 +289,9 @@ test('mobile customer and administrator complete a clearly simulated domain work
     await admin
       .getByRole('button', { name: 'Refresh read-only status' })
       .click();
+    await admin.getByRole('button', { name: domainName, exact: true }).click();
     await expect(
-      admin.getByRole('heading', { name: domainName }),
+      admin.getByRole('dialog', { name: domainName, exact: true }),
     ).toBeVisible();
     await admin.getByLabel('Type exact domain name').fill(domainName);
     await admin
@@ -394,32 +411,31 @@ test('mobile customer and administrator complete a clearly simulated domain work
         await queues.queue(name).obliterate({ force: true });
       await queues.close();
     }
-    await customer
-      .getByRole('button', { name: 'Refresh read-only status' })
-      .click();
+    await customer.getByRole('button', { name: 'Refresh this domain' }).click();
     await expect(
       customer.getByText(
         'Simulated · Registered · Contact verification Pending',
       ),
     ).toBeVisible();
     const before = await e2ePrisma.fakeRegistrarRegistration.count();
-    await admin
-      .getByRole('button', { name: 'Refresh read-only status' })
-      .click();
-    await customer
-      .getByRole('button', { name: 'Refresh read-only status' })
-      .click();
+    await admin.getByRole('button', { name: 'Refresh this domain' }).click();
+    await customer.getByRole('button', { name: 'Refresh this domain' }).click();
     expect(await e2ePrisma.fakeRegistrarRegistration.count()).toBe(before);
     expect(
       await e2ePrisma.service.count({
         where: { orderItemId: domain.orderItemId },
       }),
     ).toBe(0);
-    expect(
-      await customer.evaluate(
-        () => document.documentElement.scrollWidth <= window.innerWidth,
-      ),
-    ).toBe(true);
+    const evidence = resolve(
+      '../../release-artifacts/command134-record-tables',
+    );
+    await mkdir(evidence, { recursive: true });
+    await customer.screenshot({
+      path: resolve(evidence, 'domain-mobile.png'),
+      fullPage: true,
+      animations: 'disabled',
+    });
+    await expectRecordPageFits(customer, 'domain-mobile');
   } finally {
     await adminContext.close();
     await customerContext.close();

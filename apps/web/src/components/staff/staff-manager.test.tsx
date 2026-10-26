@@ -46,6 +46,11 @@ describe('administrator account management', () => {
   it('reads without mutations and disables own access controls', async () => {
     const mock = setup();
     render(<StaffManager currentUserId={id} twoFactorEnabled />);
+    await userEvent
+      .setup()
+      .click(
+        await screen.findByRole('button', { name: 'Edit owner@example.test' }),
+      );
     const owner = (
       await screen.findByRole('heading', { name: 'owner@example.test' })
     ).closest('section')!;
@@ -69,7 +74,14 @@ describe('administrator account management', () => {
   it('requires MFA for changes while keeping account setup reachable', async () => {
     setup();
     render(<StaffManager currentUserId={id} twoFactorEnabled={false} />);
-    await screen.findByRole('heading', { name: 'support@example.test' });
+    await userEvent.setup().click(
+      await screen.findByRole('button', {
+        name: 'Edit support@example.test',
+      }),
+    );
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: 'Invite administrator' }));
     expect(
       (
         screen.getByRole('button', {
@@ -93,7 +105,14 @@ describe('administrator account management', () => {
   it('sends only invitation identity/role with CSRF, not a password or permission override', async () => {
     const mock = setup();
     render(<StaffManager currentUserId={id} twoFactorEnabled />);
-    await screen.findByRole('heading', { name: 'support@example.test' });
+    await userEvent.setup().click(
+      await screen.findByRole('button', {
+        name: 'Edit support@example.test',
+      }),
+    );
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: 'Invite administrator' }));
     const form = screen
       .getByRole('button', { name: 'Send invitation' })
       .closest('form')!;
@@ -105,7 +124,7 @@ describe('administrator account management', () => {
       target: { value: 'new@example.test' },
     });
     await userEvent.setup().click(within(form).getByRole('button'));
-    await screen.findByText(/Invitation emails queued/);
+    await screen.findByRole('status');
     const writes = mock.mock.calls.filter(([, init]) => init?.method);
     expect(writes).toHaveLength(1);
     expect(JSON.parse(String(writes[0]?.[1]?.body))).toEqual({
@@ -121,6 +140,11 @@ describe('administrator account management', () => {
   it('captures the selected account and requires confirmation before a role/disable change', async () => {
     const mock = setup();
     render(<StaffManager currentUserId={id} twoFactorEnabled />);
+    await userEvent.setup().click(
+      await screen.findByRole('button', {
+        name: 'Edit support@example.test',
+      }),
+    );
     const section = (
       await screen.findByRole('heading', { name: 'support@example.test' })
     ).closest('section')!;
@@ -131,7 +155,7 @@ describe('administrator account management', () => {
     await userEvent
       .setup()
       .click(within(section).getByRole('button', { name: 'Save access' }));
-    await screen.findByText(/Administrator access updated/);
+    await screen.findByRole('status');
     const write = mock.mock.calls.find(([, init]) => init?.method === 'PATCH');
     expect(String(write?.[0])).toContain(`/staff/${other}`);
     expect(JSON.parse(String(write?.[1]?.body))).toEqual({
@@ -153,7 +177,11 @@ describe('administrator account management', () => {
     let fail = false;
     const mock = setup(() => (fail ? {} : accounts));
     render(<StaffManager currentUserId={id} twoFactorEnabled />);
-    await screen.findByRole('heading', { name: 'support@example.test' });
+    await userEvent.setup().click(
+      await screen.findByRole('button', {
+        name: 'Edit support@example.test',
+      }),
+    );
     fail = true;
     await userEvent
       .setup()

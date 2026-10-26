@@ -395,7 +395,11 @@ describe('invoice forms remain independent of browsing', () => {
     const user = userEvent.setup();
     fixture();
     const view = render(<AdminInvoiceManager />);
-    await screen.findByRole('button', { name: 'Save draft' });
+    await userEvent
+      .setup()
+      .click(
+        await screen.findByRole('button', { name: 'Create invoice draft' }),
+      );
     await user.type(screen.getByLabelText('Description 1'), 'Unsaved hosting');
     await user.clear(screen.getByLabelText('Business name'));
     await user.type(screen.getByLabelText('Business name'), 'Unsaved business');
@@ -437,13 +441,17 @@ describe('invoice forms remain independent of browsing', () => {
       if (url.includes('status=PAID')) return json(page([], 0));
     });
     const view = render(<AdminInvoiceManager />);
-    await screen.findByRole('button', { name: 'Save draft' });
+    await userEvent
+      .setup()
+      .click(
+        await screen.findByRole('button', { name: 'Create invoice draft' }),
+      );
     await user.selectOptions(screen.getByLabelText('Customer'), customerId);
     await user.type(screen.getByLabelText('Description 1'), 'Hosting');
     await user.clear(screen.getByLabelText('Unit minor'));
     await user.type(screen.getByLabelText('Unit minor'), '9007199254740993');
     await user.click(screen.getByRole('button', { name: 'Save draft' }));
-    await screen.findByText('Write failed');
+    await screen.findAllByText('Write failed');
     await user.click(screen.getByRole('button', { name: 'Save draft' }));
     view.rerender(
       <AdminInvoiceManager
@@ -460,7 +468,7 @@ describe('invoice forms remain independent of browsing', () => {
         }),
       ),
     );
-    await screen.findByText(`${invoice.invoiceNumber} saved as a draft.`);
+    await screen.findAllByText(`${invoice.invoiceNumber} saved as a draft.`);
     await screen.findByText('Invoice ledger could not be loaded');
     const mutations = fetchMock.mock.calls.filter(
       ([, options]) => options?.method === 'POST',
@@ -502,12 +510,14 @@ describe('invoice forms remain independent of browsing', () => {
     const user = userEvent.setup();
     const fetchMock = fixture();
     render(<AdminInvoiceManager />);
-    await screen.findByRole('button', { name: 'Save business identity' });
+    await userEvent
+      .setup()
+      .click(await screen.findByRole('button', { name: 'Business identity' }));
     await user.type(screen.getByLabelText('Address'), '85 Fictional Road');
     await user.click(
       screen.getByRole('button', { name: 'Save business identity' }),
     );
-    await screen.findByText(/Business identity saved for future invoices/);
+    await screen.findAllByText(/Business identity saved for future invoices/);
     const mutation = fetchMock.mock.calls.find(
       ([, options]) => options?.method === 'PATCH',
     );
@@ -524,6 +534,9 @@ describe('invoice forms remain independent of browsing', () => {
         screen.getByRole('region', { name: 'Administrator invoice ledger' }),
       ).queryByRole('button', { name: 'Save draft' }),
     ).toBeNull();
+    await user.click(
+      screen.getByRole('button', { name: 'Create invoice draft' }),
+    );
     await waitFor(() =>
       expect(
         screen

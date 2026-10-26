@@ -12,15 +12,23 @@ export function DataTable<Row>({
   columns,
   rows,
   rowKey,
+  nowrap = false,
 }: {
   caption: string;
+  nowrap?: boolean;
   columns: readonly DataColumn<Row>[];
   rows: readonly Row[];
   rowKey: (row: Row) => string;
 }) {
+  // Contain absolutely positioned screen-reader labels when rows scroll sideways.
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full min-w-[680px] border-separate border-spacing-0 text-sm">
+    <div
+      className="relative min-w-0 overflow-x-auto"
+      tabIndex={0}
+      role="group"
+      aria-label={caption + ' — scroll horizontally'}
+    >
+      <table className="w-full min-w-[680px] border-collapse text-sm">
         <caption className="sr-only">{caption}</caption>
         <thead>
           <tr>
@@ -28,7 +36,7 @@ export function DataTable<Row>({
               <th
                 key={column.key}
                 scope="col"
-                className={`border-b border-slate-200 bg-slate-50/80 px-5 py-3 text-xs font-semibold tracking-[0.08em] text-slate-500 ${
+                className={`border-b border-slate-200 bg-brand-800 px-3 py-2 text-xs font-semibold text-white ${nowrap ? 'whitespace-nowrap' : ''} ${
                   column.align === 'right' ? 'text-right' : 'text-left'
                 }`}
               >
@@ -37,7 +45,7 @@ export function DataTable<Row>({
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100">
+        <tbody className="divide-y divide-slate-100 [&_a]:min-h-7 [&_button]:min-h-7 [&_button]:rounded-md [&_button]:px-2 [&_button]:text-xs">
           {rows.map((row) => (
             <tr
               key={rowKey(row)}
@@ -46,7 +54,7 @@ export function DataTable<Row>({
               {columns.map((column) => (
                 <td
                   key={column.key}
-                  className={`px-5 py-4 text-slate-700 ${
+                  className={`border-b border-slate-100 px-3 py-1.5 text-slate-700 ${nowrap ? 'whitespace-nowrap' : ''} ${
                     column.align === 'right' ? 'text-right' : 'text-left'
                   }`}
                 >

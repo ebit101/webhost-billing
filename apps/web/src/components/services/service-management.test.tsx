@@ -174,6 +174,11 @@ describe('service management interfaces', () => {
       }),
     );
     render(<AdminHostingOperationManager />);
+    await userEvent
+      .setup()
+      .click(
+        await screen.findByRole('button', { name: 'Hosting account tools' }),
+      );
     expect(
       await screen.findByRole('heading', { name: 'Hosting-panel connections' }),
     ).toBeTruthy();
@@ -215,6 +220,11 @@ describe('service management interfaces', () => {
     );
     vi.stubGlobal('fetch', fetchMock);
     render(<AdminHostingOperationManager />);
+    await userEvent
+      .setup()
+      .click(
+        await screen.findByRole('button', { name: 'Hosting account tools' }),
+      );
     await user.type(
       await screen.findByRole('textbox', { name: 'WHM username' }),
       'reseller',
@@ -226,7 +236,7 @@ describe('service management interfaces', () => {
     );
 
     expect(
-      await screen.findByText(/configuration encrypted and saved/i),
+      await screen.findAllByText(/configuration encrypted and saved/i),
     ).toBeTruthy();
     expect((tokenInput as HTMLInputElement).value).toBe('');
     const mutation = fetchMock.mock.calls.find(

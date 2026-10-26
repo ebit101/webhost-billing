@@ -2,12 +2,12 @@
 
 ## Status Summary
 
-- **Current command:** Command 133 - Group hosting products for catalogue administration
-- **Current status:** Completed locally and delivered to GitHub `main` through [PR #49](https://github.com/ebit101/webhost-billing/pull/49). Full CI, dependency review and CodeQL passed on source `96de55c`; Office fast-forwarded safely to merge `bf5527d`. Product groups organize administrator catalogue work. No deployment or Office business-database migration was performed. Command 132 billing/contact and manual-payment inputs remain pending.
+- **Current command:** Command 134 - Make record pages table-first
+- **Current status:** Command 134 is implemented and validated locally; GitHub delivery is in progress. The record lists follow the owner's WHMCS reference. No deployment or Office business-database changes. Command 132 billing/contact inputs remain pending.
 - **Last updated:** 2026-10-26
 - **Last recorded staging release:** Command 129, `5321ed7ee00ea4a11cc7e3fabdcb0f5509cae5a3`, deployed on 2026-10-25.
-- **Next command:** Review the local grouped catalogue evidence; continue Command 132 when the owner supplies exact billing inputs. Deployment and real catalogue configuration need separate authorization.
-- **Next command authorized:** None automatically. No staging/business-database migration, import, live-provider activation or next product command.
+- **Next command:** Finish verified Command 134 delivery and report closure. Then continue Command 132 when the owner supplies billing details and explicitly authorizes that work.
+- **Next command authorized:** Command 134 only. No deployment, import or live-provider activation.
 
 ## Command Reports
 
@@ -16169,3 +16169,43 @@ Review the local grouped catalogue evidence. Continue **Command 132** after
 supplying the exact Speed Host billing contacts and manual-payment instructions.
 Any staging deployment, business-database migration or actual catalogue setup
 requires explicit separate authorization.
+
+### Command 134 - Make record pages table-first
+
+- **Status:** Validated locally; GitHub delivery in progress. No deployment.
+- **Date:** 2026-10-26
+- **Authorization:** The owner requested tabular record pages following WHMCS, then supplied a client-directory screenshot showing compact filters, a result count and dense column-based records.
+
+#### Scope implemented
+
+- Standard record tables use colored sentence-case headers, dense rows, semantic column headings and keyboard-accessible horizontal scrolling on narrow screens.
+- The customer directory separates customer number, first name, last name, company, email address, creation date, services, status and verification. Existing server filtering and pagination are retained; counts describe the matching result and visible range.
+- Products and groups, WHM servers, registrar connections, domain requests, administrators, customer hosting services, customer support tickets and background failures use tables instead of stacked record cards or per-record editing forms.
+- Hosting/domain order creation, invoice drafts, business identity, verified-payment recording, service creation, account tools, invitations, record editing and deliberate actions open separately. Read-only order/payment/service reviews remain explicit row actions and retain existing customer links and query invalidation boundaries.
+- Native modal dialogs support keyboard dismissal, focus return, pending-write guards and nested confirmation isolation. Existing draft/submission-key tests are retained. Visited domain management remains mounted when closed so pending work and per-record state are not discarded.
+- Dedicated settings, security, checkout and individual invoice/detail workflows retain suitable forms/documents. Public product cards remain a storefront presentation.
+- No API contract, migration, dependency, price rule, financial history, environment setting, logo or provider activation was changed.
+
+#### Files changed
+
+- Shared web table, record-dialog and confirmation-dialog components; customer, product, order, invoice, payment, service/server, domain/registrar, staff, support, automation and email record managers.
+- Corresponding frontend regression tests, browser lifecycle/list/role checks and a new guarded fictional record-table browser journey with desktop/mobile captures and accessibility checks.
+- The product plan, command playbook, ADR-139 and this progress report.
+
+#### Validation
+
+- Node 24.20.0 and pinned pnpm 11.22.0.
+- Frozen-lockfile dependency installation and package builds passed in the isolated worktree. API and worker builds needed by existing browser fixtures also passed.
+- Frontend suite: **68 files / 639 tests passed**, including retained financial/operational mutation boundaries, independent draft fields and idempotency keys, role visibility and new modal lifecycle regressions.
+- Full guarded Chromium suite: **27 passed**. The final customer/product density follow-up also passed **2 focused journeys**, with customer accessibility/viewport checks at 1920, 1440 and 375 pixels. The staff-role suite passed **4 tests**, including phone/desktop, restricted navigation and MFA enrollment guards.
+- Serial workspace lint and type checking passed. The Next.js production build passed against an unavailable loopback API fallback, without using an Office business API or starting a persistent development server.
+- Formatting and Git whitespace checks passed. The four offline documentation validators passed; final report-format verification is performed again before delivery.
+- Browser checks found and repaired absolute screen-reader labels escaping table scroll containers. Dialog cleanup also retains body scrolling correctly when nested records are removed together. Invalid fictional server/ticket fixtures and assertions tied to the old card/always-open-form layouts were corrected without weakening backend constraints or historical-data checks.
+- All database/browser mutations used fresh guarded fictional schemas in the dedicated loopback test containers. Live provider flags stayed disabled. The Office environment SHA-256 remained unchanged; source/logo assets and the Office business database were not modified by validation.
+
+#### Decisions, constraints and next command
+
+- Follow the supplied record-list pattern while keeping the current product scope and backend rules. Do not add WHMCS-only bulk deletion, client-group, provider or financial behavior.
+- Existing bounded endpoints remain bounded and labeled. Existing server-paginated ledgers retain access to older records; this command does not silently replace them with the first 100 rows.
+- Office business data and the primary local environment are preserved. Validation uses fresh guarded fictional schemas and separate loopback PostgreSQL/Redis containers.
+- Command 132 billing/contact and payment-instruction inputs remain pending. After verified delivery, the exact recommended next command is to continue Command 132 with owner-supplied billing details. Deployment requires separate authorization.

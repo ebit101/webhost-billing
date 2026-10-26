@@ -85,18 +85,17 @@ for (const width of [390, 1280]) {
     await expect(
       page.getByRole('heading', { name: 'Domain registrars', exact: true }),
     ).toBeVisible();
-    await expect(
-      page.getByRole('heading', {
-        name: `Fictional registrar ${width}`,
-        exact: true,
-      }),
-    ).toBeVisible();
     await page
-      .getByRole('heading', {
-        name: `Fictional registrar ${width}`,
+      .getByRole('button', {
+        name: 'Manage Fictional registrar ' + width,
         exact: true,
       })
-      .locator('..')
+      .click();
+    await page
+      .getByRole('dialog', {
+        name: 'Fictional registrar ' + width,
+        exact: true,
+      })
       .getByRole('button', { name: 'Set as default' })
       .click();
     await expect(page.getByRole('alertdialog')).toContainText(
@@ -119,6 +118,16 @@ for (const width of [390, 1280]) {
         })
       ).isDefault,
     ).toBe(true);
+    await page
+      .getByRole('dialog', {
+        name: 'Fictional registrar ' + width,
+        exact: true,
+      })
+      .getByRole('button', { name: 'Close', exact: true })
+      .click();
+    await page
+      .getByRole('button', { name: 'Add registrar connection', exact: true })
+      .click();
     await page
       .getByLabel('Connection name')
       .fill(`Fictional disabled connection ${width}`);

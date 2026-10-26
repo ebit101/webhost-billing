@@ -402,9 +402,19 @@ test('complete hosting customer and administrator lifecycle', async ({
 
   await test.step('administrator provisions through the fake hosting panel', async () => {
     await page.goto('/admin/services');
+    await page
+      .getByRole('button', { name: 'Create service', exact: true })
+      .click();
     await page.getByLabel('Paid order item').selectOption({ index: 1 });
     await page.getByLabel('Active server').selectOption({ index: 1 });
     await page.getByRole('button', { name: 'Create pending service' }).click();
+    await expect(page.getByRole('status')).toContainText(
+      'ready for provisioning',
+    );
+    await page
+      .getByRole('dialog', { name: 'Create service', exact: true })
+      .getByRole('button', { name: 'Close', exact: true })
+      .click();
     const serviceRow = page
       .getByRole('row')
       .filter({ hasText: E2E_PRODUCT.domain })
@@ -422,7 +432,7 @@ test('complete hosting customer and administrator lifecycle', async ({
     await context.clearCookies();
     await login(page, E2E_CUSTOMER.email, E2E_CUSTOMER.password, '/portal');
     await page.goto('/portal/services');
-    const serviceCard = page.getByRole('link').filter({
+    const serviceCard = page.getByRole('row').filter({
       hasText: E2E_PRODUCT.domain,
     });
     await expect(serviceCard).toContainText('Active');
@@ -444,7 +454,7 @@ test('complete hosting customer and administrator lifecycle', async ({
   await test.step('overdue automation suspends only for the renewal invoice', async () => {
     await suspendOverdueService(serviceId, renewalInvoiceId);
     await page.goto('/portal/services');
-    const serviceCard = page.getByRole('link').filter({
+    const serviceCard = page.getByRole('row').filter({
       hasText: E2E_PRODUCT.domain,
     });
     await expect(serviceCard).toContainText('Suspended');
@@ -454,7 +464,7 @@ test('complete hosting customer and administrator lifecycle', async ({
     await settleFakeGateway(page, renewalInvoiceId);
     await applyRenewalPaymentAndUnsuspend(serviceId, renewalInvoiceId);
     await page.goto('/portal/services');
-    const serviceCard = page.getByRole('link').filter({
+    const serviceCard = page.getByRole('row').filter({
       hasText: E2E_PRODUCT.domain,
     });
     await expect(serviceCard).toContainText('Active');
@@ -480,6 +490,10 @@ test('complete hosting customer and administrator lifecycle', async ({
     await context.clearCookies();
     await login(page, E2E_ADMIN.email, E2E_ADMIN.password, '/admin');
     await page.goto('/admin/support');
+    await page
+      .getByRole('table', { name: 'Filtered support tickets' })
+      .getByRole('button', { name: /Command 26 browser support/ })
+      .click();
     await expect(
       page.getByRole('heading', { name: 'Command 26 browser support' }),
     ).toBeVisible();
@@ -492,6 +506,11 @@ test('complete hosting customer and administrator lifecycle', async ({
     await context.clearCookies();
     await login(page, E2E_CUSTOMER.email, E2E_CUSTOMER.password, '/portal');
     await page.goto('/portal/support');
+    await page
+      .getByRole('table', { name: 'Your tickets' })
+      .getByRole('button')
+      .first()
+      .click();
     await expect(
       page.getByText('The fictional account is active and verified.'),
     ).toBeVisible();
@@ -691,6 +710,9 @@ test('complete hosting customer and administrator lifecycle', async ({
     await expect(
       page.getByRole('button', { name: 'Disable', exact: true }),
     ).toHaveCount(0);
+    await page
+      .getByRole('button', { name: 'Settlement policy', exact: true })
+      .click();
     await page
       .getByRole('link', { name: 'Review billing policy in settings' })
       .click();

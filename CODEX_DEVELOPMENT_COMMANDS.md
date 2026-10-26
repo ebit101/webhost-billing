@@ -5647,3 +5647,14 @@ billing inputs remain pending independently.
 6. Never place production credentials in a prompt, source file, test fixture, or Git commit.
 7. Require explicit authorization before staging or production mutations.
 8. Do not enable automatic service termination in the initial release.
+
+## Command 134 - Make record pages table-first
+
+**Authorized:** 2026-10-26. Implement the owner's WHMCS record-list reference locally.
+
+- Use compact tables for record collections with clearly labeled columns, row links/actions, visible result counts and the existing search/filter/pagination controls.
+- Move creation, editing and operational forms behind explicit actions; preserve form drafts, historical records, authorization, MFA, stale-write protection and deliberate confirmations.
+- Cover administrator record lists and the remaining card-based customer service/support/domain lists. Keep dedicated settings, authentication, checkout, invoice documents and individual record-detail workflows purpose-built.
+- Preserve the environment, logo, database and existing Office work. Use fictional isolated test data; keep live providers disabled. No deployment or business-database migration.
+- Validate frontend behavior and responsive/accessibility regressions, run relevant tests/builds, update the report and deliver the verified command through the normal GitHub workflow.
+- Stop after this command. Command 132 still requires the owner's exact billing and payment inputs.

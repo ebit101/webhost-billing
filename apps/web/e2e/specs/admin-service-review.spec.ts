@@ -115,7 +115,7 @@ test('administrator inspects service facts and customer without business mutatio
   // The existing sibling panel workspace reads stored operation history on mount;
   // that GET is not a provider call and must not be removed by this command.
   await expect(
-    page.getByRole('heading', { name: 'Account tools', exact: true }),
+    page.getByRole('button', { name: 'Hosting account tools', exact: true }),
   ).toBeVisible();
   const initialHistoryReads = panelRequests.length;
   expect(detailReads).toEqual([]);
@@ -204,6 +204,10 @@ test('administrator inspects service facts and customer without business mutatio
       }),
     });
   });
+  await review.getByRole('button', { name: 'Close service review' }).click();
+  await page
+    .getByRole('button', { name: 'Hosting account tools', exact: true })
+    .click();
   await page
     .getByRole('button', { name: `Test ${E2E_SERVER.name}`, exact: true })
     .click();
@@ -219,13 +223,19 @@ test('administrator inspects service facts and customer without business mutatio
     .toEqual({ submissionKey: expect.stringMatching(/^[0-9a-f-]{36}$/) });
   finish();
   await expect(
-    page.getByText('Fictional panel test failure', { exact: true }),
+    page
+      .getByRole('dialog', { name: 'Hosting account tools', exact: true })
+      .getByText('Fictional panel test failure', { exact: true }),
   ).toBeVisible();
   await expect(trigger).toBeEnabled();
   await expect(review).toHaveCount(0);
   expect(detailReads).toHaveLength(readsBeforeDispatch);
   expect(writes).toEqual([testPath]);
   expect(await snapshot()).toEqual(before);
+  await page
+    .getByRole('dialog', { name: 'Hosting account tools', exact: true })
+    .getByRole('button', { name: 'Close', exact: true })
+    .click();
   await trigger.click();
   await expect(
     review.getByRole('heading', { name: domain, exact: true }),

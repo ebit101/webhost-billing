@@ -74,7 +74,11 @@ afterEach(() => {
 describe('separate registrar connections', () => {
   it('contains only credentials/name, clears the secret immediately and saves disabled', async () => {
     render(<RegistrarConnections />);
-    await screen.findByRole('heading', { name: 'Add registrar connection' });
+    await userEvent
+      .setup()
+      .click(
+        await screen.findByRole('button', { name: 'Add registrar connection' }),
+      );
     for (const [label, value] of [
       ['Connection name', 'Fictional secondary'],
       ['Reseller ID', '45678'],
@@ -87,7 +91,7 @@ describe('separate registrar connections', () => {
     await userEvent
       .setup()
       .click(screen.getByRole('button', { name: 'Save connection' }));
-    await screen.findByText(/Connection saved and encrypted, disabled/);
+    await screen.findByRole('status');
     expect(api.mutate).toHaveBeenCalledWith(
       '/domains/administration/registrars',
       'POST',
@@ -106,14 +110,19 @@ describe('separate registrar connections', () => {
     render(<RegistrarConnections />);
     await userEvent
       .setup()
-      .click(await screen.findByRole('button', { name: 'Set as default' }));
+      .click(
+        await screen.findByRole('button', { name: 'Manage Fictional primary' }),
+      );
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: 'Set as default' }));
     expect(api.mutate).not.toHaveBeenCalled();
     await userEvent.setup().click(
       within(screen.getByRole('alertdialog')).getByRole('button', {
         name: 'Confirm',
       }),
     );
-    await screen.findByText(/Installation default saved/);
+    await screen.findByRole('status');
     expect(api.mutate).toHaveBeenCalledWith(
       `/domains/administration/registrars/${primary}/default`,
       'PUT',

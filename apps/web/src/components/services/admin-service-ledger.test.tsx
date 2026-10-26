@@ -470,7 +470,11 @@ describe('administrator service inventory', () => {
     const view = render(
       <AdminServicesWorkspace selection={readAdminServiceQuery({})} />,
     );
-    await screen.findByRole('heading', { name: 'Account tools' });
+    await userEvent
+      .setup()
+      .click(
+        await screen.findByRole('button', { name: 'Hosting account tools' }),
+      );
     await user.click(await screen.findByRole('button', { name: 'Terminate' }));
     await user.type(screen.getByLabelText('Reason'), 'Unfinished reason');
     await user.type(
@@ -548,6 +552,7 @@ describe('administrator service inventory', () => {
       screen.getByLabelText('Active server'),
       service.server.id,
     );
+    await user.click(screen.getByRole('button', { name: 'Create service' }));
     await user.click(
       screen.getByRole('button', { name: 'Create pending service' }),
     );
@@ -569,7 +574,7 @@ describe('administrator service inventory', () => {
         }),
       ),
     );
-    await screen.findByText(
+    await screen.findAllByText(
       'out-of-scope.example.test is ready for provisioning.',
     );
     await screen.findByRole('heading', {

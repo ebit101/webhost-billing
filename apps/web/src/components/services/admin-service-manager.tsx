@@ -27,6 +27,7 @@ import { formatMinor } from '../invoices/invoice-ui';
 import { Button } from '../ui/button';
 import { type DataColumn } from '../ui/data-table';
 import { EmptyState, LoadingState } from '../ui/feedback-state';
+import { RecordAction, RecordDialog } from '../ui/record-dialog';
 import { PageHeader } from '../ui/page-header';
 import { StatusBadge } from '../ui/status-badge';
 import { serviceDate, serviceError, serviceTone } from './service-ui';
@@ -457,76 +458,96 @@ export function AdminServiceManager({
         </Message>
       ) : null}
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-        <h2 className="text-lg font-bold text-slate-950">
-          Create service from paid order
-        </h2>
-        <p className="mt-1 text-sm text-slate-600">
-          Product, price, domain, customer, and billing period are copied from
-          the historical order item. Creating the service does not provision the
-          hosting account.
-        </p>
-        {options.orderItems.length && options.servers.length ? (
-          <form
-            onSubmit={create}
-            className="mt-5 grid gap-4 lg:grid-cols-[1fr_1fr_auto] lg:items-end"
-          >
-            <label className="text-sm font-semibold text-slate-700">
-              Paid order item
-              <select name="orderItemId" required className={fieldClass}>
-                <option value="">Select order and domain</option>
-                {options.orderItems.map((item) => (
-                  <option key={item.orderItemId} value={item.orderItemId}>
-                    {item.orderNumber} — {item.customerName} — {item.domain}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="text-sm font-semibold text-slate-700">
-              Active server
-              <select name="serverId" required className={fieldClass}>
-                <option value="">Select server</option>
-                {options.servers.map((server) => (
-                  <option key={server.id} value={server.id}>
-                    {server.name} — {server.hostname}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <Button disabled={saving} type="submit">
-              Create pending service
-            </Button>
-          </form>
-        ) : (
-          <div className="mt-5">
-            <EmptyState
-              title="No fulfilment options"
-              description="A paid order item without a service and at least one active server are required."
-            />
-          </div>
-        )}
-      </section>
+      <RecordAction
+        label="Create service"
+        busy={saving}
+        feedback={error || notice}
+      >
+        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+          <h2 className="text-lg font-bold text-slate-950">
+            Create service from paid order
+          </h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Product, price, domain, customer, and billing period are copied from
+            the historical order item. Creating the service does not provision
+            the hosting account.
+          </p>
+          {options.orderItems.length && options.servers.length ? (
+            <form
+              onSubmit={create}
+              className="mt-5 grid gap-4 lg:grid-cols-[1fr_1fr_auto] lg:items-end"
+            >
+              <label className="text-sm font-semibold text-slate-700">
+                Paid order item
+                <select name="orderItemId" required className={fieldClass}>
+                  <option value="">Select order and domain</option>
+                  {options.orderItems.map((item) => (
+                    <option key={item.orderItemId} value={item.orderItemId}>
+                      {item.orderNumber} — {item.customerName} — {item.domain}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-sm font-semibold text-slate-700">
+                Active server
+                <select name="serverId" required className={fieldClass}>
+                  <option value="">Select server</option>
+                  {options.servers.map((server) => (
+                    <option key={server.id} value={server.id}>
+                      {server.name} — {server.hostname}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <Button disabled={saving} type="submit">
+                Create pending service
+              </Button>
+            </form>
+          ) : (
+            <div className="mt-5">
+              <EmptyState
+                title="No fulfilment options"
+                description="A paid order item without a service and at least one active server are required."
+              />
+            </div>
+          )}
+        </section>
+      </RecordAction>
 
       {action ? (
-        <ActionForm
-          action={action}
-          saving={saving}
-          onCancel={() => setAction(undefined)}
-          onSubmit={submitAction}
-        />
+        <RecordDialog
+          open
+          title="Service action"
+          busy={saving}
+          feedback={error || notice}
+          onClose={() => setAction(undefined)}
+        >
+          <ActionForm
+            action={action}
+            saving={saving}
+            onCancel={() => setAction(undefined)}
+            onSubmit={submitAction}
+          />
+        </RecordDialog>
       ) : null}
 
       {review ? (
-        <AdminServiceReview
-          key={`${review.id}:${review.sequence}`}
-          serviceId={review.id}
-          customerId={filteredCustomerId}
-          onClose={() => {
-            setReview(undefined);
-            if (reviewTrigger.current?.isConnected)
-              reviewTrigger.current.focus();
-          }}
-        />
+        <RecordDialog
+          open
+          title="Service details"
+          onClose={() => setReview(undefined)}
+        >
+          <AdminServiceReview
+            key={`${review.id}:${review.sequence}`}
+            serviceId={review.id}
+            customerId={filteredCustomerId}
+            onClose={() => {
+              setReview(undefined);
+              if (reviewTrigger.current?.isConnected)
+                reviewTrigger.current.focus();
+            }}
+          />
+        </RecordDialog>
       ) : null}
 
       <AdminServiceLedger

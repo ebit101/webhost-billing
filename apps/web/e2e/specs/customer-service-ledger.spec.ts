@@ -138,9 +138,10 @@ test('customer searches and pages older owned services without business mutation
     name: 'Your service inventory',
     exact: true,
   });
-  const older = ledger
-    .getByRole('link')
-    .filter({ has: page.getByRole('heading', { name: domain, exact: true }) });
+  const older = ledger.getByRole('link', {
+    name: domain + ' · View service details',
+    exact: true,
+  });
   await expect(ledger).toContainText('140 matching services');
   await expect(ledger).toContainText('Page 1 of 7');
   await expect(older).toHaveCount(0);

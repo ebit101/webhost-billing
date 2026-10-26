@@ -117,6 +117,9 @@ describe('manual payment interfaces', () => {
     expect(screen.getByRole('button', { name: 'Reject' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Enable' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Disable' })).toBeNull();
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: 'Settlement policy' }));
     expect(
       screen
         .getByRole('link', { name: 'Review billing policy in settings' })
@@ -128,6 +131,9 @@ describe('manual payment interfaces', () => {
         ([url]) => !String(url).includes('/auth/csrf'),
       ),
     ).toBe(true);
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: 'Record payment' }));
     expect(
       screen.getByRole('button', { name: 'Record verified payment' }),
     ).toBeTruthy();

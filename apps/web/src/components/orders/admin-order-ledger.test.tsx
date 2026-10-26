@@ -493,6 +493,9 @@ describe('administrator order ledger', () => {
       if (url.pathname === '/orders/' + orderId) return detail.promise;
     });
     const view = render(manager({ search: 'old' }));
+    await user.click(
+      await screen.findByRole('button', { name: 'Create hosting order' }),
+    );
     await waitFor(() => expect(calls).toBe(1));
     const old = mock.mock.calls.find(
       ([url]) => new URL(String(url)).pathname === '/orders',
@@ -544,7 +547,11 @@ describe('administrator order ledger', () => {
       if (url.pathname === '/orders') return json(page([]));
     });
     const view = render(manager({ customerId }));
-    await screen.findByRole('button', { name: 'Create order and invoice' });
+    await userEvent
+      .setup()
+      .click(
+        await screen.findByRole('button', { name: 'Create hosting order' }),
+      );
     await user.selectOptions(
       screen.getByLabelText('Customer', { exact: true }),
       customerId,
@@ -640,6 +647,9 @@ describe('administrator order ledger', () => {
     await screen.findByRole('button', {
       name: 'Review order ' + order.orderNumber,
     });
+    await user.click(
+      screen.getByRole('button', { name: 'Create hosting order' }),
+    );
     await user.selectOptions(
       screen.getByLabelText('Customer', { exact: true }),
       customerId,
@@ -667,7 +677,7 @@ describe('administrator order ledger', () => {
         }),
       ),
     );
-    await screen.findByText(/OUT-OF-SCOPE created with unpaid invoice/);
+    await screen.findAllByText(/OUT-OF-SCOPE created with unpaid invoice/);
     await screen.findByRole('heading', {
       name: 'Order ledger could not be loaded',
     });

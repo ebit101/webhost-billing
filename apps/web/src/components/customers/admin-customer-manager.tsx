@@ -9,6 +9,7 @@ import { Button, buttonStyles } from '../ui/button';
 import { DataTable } from '../ui/data-table';
 import { EmptyState, ErrorState, LoadingState } from '../ui/feedback-state';
 import { Icon } from '../ui/icon';
+import { RecordDialog } from '../ui/record-dialog';
 import { PageHeader } from '../ui/page-header';
 import { StatusBadge } from '../ui/status-badge';
 import {
@@ -129,7 +130,7 @@ export function AdminCustomerManager({
   }
 
   return (
-    <div className="grid gap-7">
+    <div className="grid min-w-0 grid-cols-1 gap-7">
       <PageHeader
         eyebrow="Administrator"
         title="Customers"
@@ -143,18 +144,6 @@ export function AdminCustomerManager({
           ) : null
         }
       />
-
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Metric label="Matching customers" value={pagination.totalItems} />
-        <Metric
-          label="Active on this page"
-          value={customers.filter((item) => item.status === 'ACTIVE').length}
-        />
-        <Metric
-          label="Awaiting verification"
-          value={customers.filter((item) => !item.emailVerified).length}
-        />
-      </div>
 
       <Card title="Customer directory">
         <form
@@ -213,27 +202,62 @@ export function AdminCustomerManager({
           />
         ) : (
           <>
+            <p className="mb-3 text-sm text-slate-600">
+              {pagination.totalItems} records found · Showing{' '}
+              {(pagination.page - 1) * pagination.pageSize + 1} to{' '}
+              {(pagination.page - 1) * pagination.pageSize + customers.length}
+            </p>
             <DataTable
+              nowrap
               caption="Customers"
               rowKey={(row) => row.id}
               rows={customers}
               columns={[
                 {
-                  key: 'customer',
-                  header: 'Customer',
+                  key: 'number',
+                  header: 'Number',
                   render: (row) => (
-                    <div>
-                      <Link
-                        className="font-bold text-slate-950 hover:text-brand-700"
-                        href={`/admin/customers/${row.id}`}
-                      >
-                        {row.firstName} {row.lastName}
-                      </Link>
-                      <p className="mt-0.5 text-xs text-slate-500">
-                        {row.email} · {row.customerNumber}
-                      </p>
-                    </div>
+                    <Link
+                      className="font-semibold text-brand-700 hover:underline"
+                      href={'/admin/customers/' + row.id}
+                    >
+                      {row.customerNumber}
+                    </Link>
                   ),
+                },
+                {
+                  key: 'first',
+                  header: 'First name',
+                  render: (row) => (
+                    <Link
+                      className="font-semibold text-brand-700 hover:underline"
+                      href={'/admin/customers/' + row.id}
+                      aria-label={row.firstName + ' ' + row.lastName}
+                    >
+                      {row.firstName}
+                    </Link>
+                  ),
+                },
+                {
+                  key: 'last',
+                  header: 'Last name',
+                  render: (row) => row.lastName,
+                },
+                {
+                  key: 'company',
+                  header: 'Company name',
+                  render: (row) => row.companyName ?? '—',
+                },
+                {
+                  key: 'address',
+                  header: 'Email address',
+                  render: (row) => row.email,
+                },
+                {
+                  key: 'created',
+                  header: 'Created',
+                  render: (row) =>
+                    new Date(row.createdAt).toLocaleDateString('en-GB'),
                 },
                 {
                   key: 'status',
@@ -248,7 +272,7 @@ export function AdminCustomerManager({
                 },
                 {
                   key: 'verification',
-                  header: 'Email',
+                  header: 'Verification',
                   render: (row) => (
                     <StatusBadge
                       tone={row.emailVerified ? 'success' : 'warning'}
@@ -265,7 +289,7 @@ export function AdminCustomerManager({
                 },
                 {
                   key: 'view',
-                  header: '',
+                  header: 'Actions',
                   align: 'right',
                   render: (row) => (
                     <Link
@@ -305,98 +329,72 @@ export function AdminCustomerManager({
         )}
       </Card>
 
-      {createOpen ? (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/60 p-4 backdrop-blur-sm">
-          <div className="mx-auto my-8 max-w-3xl rounded-3xl bg-white p-6 shadow-2xl sm:p-8">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h2 className="text-xl font-bold text-slate-950">
-                  Create customer
-                </h2>
-                <p className="mt-1 text-sm text-slate-600">
-                  The customer receives a pending-verification account and must
-                  verify the email before signing in.
-                </p>
-              </div>
-              <Button
-                variant="ghost"
-                onClick={() => setCreateOpen(false)}
-                aria-label="Close create customer form"
+      {!readOnly ? (
+        <RecordDialog
+          open={createOpen}
+          title="Create customer"
+          busy={saving}
+          onClose={() => setCreateOpen(false)}
+        >
+          <form
+            className="mt-7 grid gap-4 sm:grid-cols-2"
+            onSubmit={createCustomer}
+          >
+            <div className="sm:col-span-2">
+              <Field
+                label="Email"
+                name="email"
+                type="email"
+                required
+                autoComplete="email"
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <Field
+                label="Initial password"
+                name="password"
+                type="password"
+                required
+                autoComplete="new-password"
+              />
+            </div>
+            <ProfileFields registrantReady />
+            <p className="text-sm text-slate-600 sm:col-span-2">
+              These fields can prefill a domain registrant contact. For
+              automatic phone prefill, enter +country code.number; missing
+              registrant fields are reviewed at domain checkout. Creating a
+              portal customer does not create a registrar account.
+            </p>
+            <div className="sm:col-span-2">
+              <Field
+                label="Tax identifier (administrator only)"
+                name="taxIdentifier"
+              />
+            </div>
+            {error ? (
+              <p
+                role="alert"
+                className="sm:col-span-2 text-sm font-semibold text-red-700"
               >
-                <Icon name="close" className="size-5" />
+                {error}
+              </p>
+            ) : null}
+            <div className="flex justify-end gap-3 sm:col-span-2">
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={saving}
+                onClick={() => setCreateOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={saving}>
+                {saving ? 'Creating…' : 'Create customer'}
               </Button>
             </div>
-            <form
-              className="mt-7 grid gap-4 sm:grid-cols-2"
-              onSubmit={createCustomer}
-            >
-              <div className="sm:col-span-2">
-                <Field
-                  label="Email"
-                  name="email"
-                  type="email"
-                  required
-                  autoComplete="email"
-                />
-              </div>
-              <div className="sm:col-span-2">
-                <Field
-                  label="Initial password"
-                  name="password"
-                  type="password"
-                  required
-                  autoComplete="new-password"
-                />
-              </div>
-              <ProfileFields registrantReady />
-              <p className="text-sm text-slate-600 sm:col-span-2">
-                These fields can prefill a domain registrant contact. For
-                automatic phone prefill, enter +country code.number; missing
-                registrant fields are reviewed at domain checkout. Creating a
-                portal customer does not create a registrar account.
-              </p>
-              <div className="sm:col-span-2">
-                <Field
-                  label="Tax identifier (administrator only)"
-                  name="taxIdentifier"
-                />
-              </div>
-              {error ? (
-                <p
-                  role="alert"
-                  className="sm:col-span-2 text-sm font-semibold text-red-700"
-                >
-                  {error}
-                </p>
-              ) : null}
-              <div className="flex justify-end gap-3 sm:col-span-2">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  disabled={saving}
-                  onClick={() => setCreateOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={saving}>
-                  {saving ? 'Creating…' : 'Create customer'}
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
+          </form>
+        </RecordDialog>
       ) : null}
-    </div>
-  );
-}
-
-function Metric({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <p className="text-sm font-semibold text-slate-500">{label}</p>
-      <p className="mt-2 text-3xl font-bold tracking-tight text-slate-950">
-        {value}
-      </p>
     </div>
   );
 }

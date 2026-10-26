@@ -87,8 +87,22 @@ test('administrator searches older invoices with URL context without business mu
     `/admin/invoices/${E2E_HISTORY_CUSTOMER.oldestInvoiceId}`,
   );
   expect(detailReads).toEqual([]);
+  await page
+    .getByRole('button', { name: 'Create invoice draft', exact: true })
+    .click();
   await page.getByLabel('Description 1').fill('Unsaved fictional draft');
+  await page
+    .getByRole('dialog', { name: 'Create invoice draft', exact: true })
+    .getByRole('button', { name: 'Close', exact: true })
+    .click();
+  await page
+    .getByRole('button', { name: 'Business identity', exact: true })
+    .click();
   await page.getByLabel('Business name').fill('Unsaved fictional identity');
+  await page
+    .getByRole('dialog', { name: 'Business identity', exact: true })
+    .getByRole('button', { name: 'Close', exact: true })
+    .click();
   await ledger.getByRole('button', { name: 'Previous page' }).click();
   await expect(ledger).toContainText('Page 5 of 6');
   await expect(page.getByLabel('Description 1')).toHaveValue(
