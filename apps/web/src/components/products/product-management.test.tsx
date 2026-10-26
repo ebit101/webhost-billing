@@ -110,14 +110,12 @@ describe('product and pricing interfaces', () => {
     });
     vi.stubGlobal('fetch', fetch);
     render(<AdminProductManager />);
-    await screen.findByDisplayValue('business_pkg');
     expect(
-      within(screen.getByRole('region', { name: 'Ungrouped' })).getByRole(
-        'button',
-        { name: /Business Hosting/ },
-      ),
+      await screen.findByRole('table', { name: 'Ungrouped products' }),
     ).toBeTruthy();
+    expect(screen.queryByRole('dialog')).toBeNull();
     await user.click(screen.getByRole('button', { name: 'Manage groups' }));
+    await user.click(screen.getByRole('button', { name: 'Create group' }));
     const create = within(
       screen.getByRole('form', { name: 'Create product group' }),
     );
@@ -125,30 +123,46 @@ describe('product and pricing interfaces', () => {
     await user.clear(create.getByLabelText('Group order'));
     await user.type(create.getByLabelText('Group order'), '10');
     await user.click(create.getByRole('button', { name: 'Create group' }));
-    await screen.findByRole('form', { name: 'Edit Shared hosting' });
-    await user.selectOptions(screen.getByLabelText('Product group'), groupId);
-    await user.click(screen.getByRole('button', { name: 'Save details' }));
-    await screen.findByText('Product details saved.');
-    expect(
-      within(screen.getByRole('region', { name: 'Shared hosting' })).getByRole(
+    await screen.findByRole('button', { name: 'Edit Shared hosting' });
+    await user.click(
+      within(screen.getByRole('dialog', { name: 'Create group' })).getByRole(
         'button',
-        { name: /Business Hosting/ },
+        { name: 'Close' },
       ),
-    ).toBeTruthy();
+    );
+    await user.click(
+      screen.getByRole('button', { name: 'Edit Shared hosting' }),
+    );
     const edit = within(
       screen.getByRole('form', { name: 'Edit Shared hosting' }),
     );
     await user.clear(edit.getByLabelText('Group name'));
     await user.type(edit.getByLabelText('Group name'), 'Hosting plans');
     await user.click(edit.getByRole('button', { name: 'Save group' }));
-    await screen.findByRole('region', { name: 'Hosting plans' });
+    await screen.findByRole('button', { name: 'Edit Hosting plans' });
+    await user.click(
+      within(screen.getByRole('dialog', { name: 'Product groups' })).getByRole(
+        'button',
+        { name: 'Close' },
+      ),
+    );
+    await user.click(screen.getByRole('button', { name: 'Business Hosting' }));
+    await user.selectOptions(screen.getByLabelText('Product group'), groupId);
+    await user.click(screen.getByRole('button', { name: 'Save details' }));
+    await screen.findByRole('status');
+    expect(
+      within(screen.getByRole('region', { name: 'Hosting plans' })).getByRole(
+        'button',
+        { name: 'Business Hosting' },
+      ),
+    ).toBeTruthy();
     await user.selectOptions(screen.getByLabelText('Product group'), '');
     await user.click(screen.getByRole('button', { name: 'Save details' }));
-    await screen.findByText('Product details saved.');
+    await screen.findByRole('status');
     expect(
       within(screen.getByRole('region', { name: 'Ungrouped' })).getByRole(
         'button',
-        { name: /Business Hosting/ },
+        { name: 'Business Hosting' },
       ),
     ).toBeTruthy();
     expect(
@@ -181,6 +195,9 @@ describe('product and pricing interfaces', () => {
     );
     failed = false;
     await user.click(screen.getByRole('button', { name: 'Try again' }));
+    await user.click(
+      await screen.findByRole('button', { name: 'Business Hosting' }),
+    );
     await screen.findByDisplayValue('business_pkg');
   });
 
@@ -195,6 +212,9 @@ describe('product and pricing interfaces', () => {
       ),
     );
     render(<AdminProductManager />);
+    await userEvent
+      .setup()
+      .click(await screen.findByRole('button', { name: 'Business Hosting' }));
     expect(await screen.findByDisplayValue('business_pkg')).toBeTruthy();
     expect(screen.getByDisplayValue('30 GB SSD')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Move to draft' })).toBeTruthy();

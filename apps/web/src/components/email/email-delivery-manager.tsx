@@ -56,13 +56,13 @@ export function EmailDeliveryManager() {
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-slate-200 text-sm">
-              <thead className="bg-slate-50 text-left text-xs font-bold tracking-wide text-slate-500">
+              <thead className="bg-brand-800 text-left text-xs font-semibold text-white">
                 <tr>
-                  <th className="px-5 py-3">Message</th>
-                  <th className="px-5 py-3">Recipient</th>
-                  <th className="px-5 py-3">Status</th>
-                  <th className="px-5 py-3">Attempts</th>
-                  <th className="px-5 py-3">Last activity</th>
+                  <th className="px-3 py-2">Message</th>
+                  <th className="px-3 py-2">Recipient</th>
+                  <th className="px-3 py-2">Status</th>
+                  <th className="px-3 py-2">Attempts</th>
+                  <th className="px-3 py-2">Last activity</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -70,7 +70,7 @@ export function EmailDeliveryManager() {
                   const attempt = log.attempts[0];
                   return (
                     <tr key={log.id} className="align-top">
-                      <td className="px-5 py-4">
+                      <td className="px-3 py-2">
                         <p className="font-semibold text-slate-950">
                           {log.subject}
                         </p>
@@ -78,10 +78,10 @@ export function EmailDeliveryManager() {
                           {log.templateKey} · {log.provider ?? 'not started'}
                         </p>
                       </td>
-                      <td className="px-5 py-4 text-slate-700">
+                      <td className="px-3 py-2 text-slate-700">
                         {log.recipientEmail}
                       </td>
-                      <td className="px-5 py-4">
+                      <td className="px-3 py-2">
                         <StatusBadge tone={tone(log.status)}>
                           {sentenceCaseLabel(log.status)}
                         </StatusBadge>
@@ -92,10 +92,10 @@ export function EmailDeliveryManager() {
                           </p>
                         ) : null}
                       </td>
-                      <td className="px-5 py-4 text-slate-700">
+                      <td className="px-3 py-2 text-slate-700">
                         {log.attemptCount}
                       </td>
-                      <td className="whitespace-nowrap px-5 py-4 text-slate-600">
+                      <td className="whitespace-nowrap px-3 py-2 text-slate-600">
                         {formatDate(log.sentAt ?? log.failedAt ?? log.queuedAt)}
                       </td>
                     </tr>

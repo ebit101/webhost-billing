@@ -13,6 +13,8 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { authenticatedGet, authMutation } from '../../lib/auth-api';
 import { AuthForm, Field, FormNotice } from '../auth/form-controls';
 import { Button } from '../ui/button';
+import { RecordAction, RecordDialog } from '../ui/record-dialog';
+import { DataTable } from '../ui/data-table';
 import { PageHeader } from '../ui/page-header';
 import { LoadingState } from '../ui/feedback-state';
 
@@ -23,6 +25,8 @@ export function StaffManager({
   currentUserId: string;
   twoFactorEnabled: boolean;
 }) {
+  const [editingId, setEditingId] = useState<string>();
+  const [search, setSearch] = useState('');
   const [accounts, setAccounts] = useState<StaffAccount[]>([]);
   const [revision, setRevision] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -122,28 +126,53 @@ export function StaffManager({
         </p>
       ) : null}
       <FormNotice error={error || undefined} message={notice || undefined} />
-      <section className="rounded-2xl border border-slate-200 bg-white p-5">
-        <h2 className="mb-4 text-lg font-bold">Invite administrator</h2>
-        <AuthForm onSubmit={(event) => void invite(event)}>
-          <Field
-            label="Display name"
-            name="displayName"
-            maxLength={150}
-            required
-          />
-          <Field
-            label="Email"
-            name="email"
-            type="email"
-            maxLength={320}
-            required
-          />
-          <RoleField defaultValue="SUPPORT_OPERATOR" />
-          <Button type="submit" disabled={busy || !twoFactorEnabled}>
-            Send invitation
-          </Button>
-        </AuthForm>
-      </section>
+      <RecordAction
+        label="Invite administrator"
+        busy={busy}
+        feedback={error || notice}
+      >
+        <section className="rounded-2xl border border-slate-200 bg-white p-5">
+          <h2 className="mb-4 text-lg font-bold">Invite administrator</h2>
+          <AuthForm onSubmit={(event) => void invite(event)}>
+            <Field
+              label="Display name"
+              name="displayName"
+              maxLength={150}
+              required
+            />
+            <Field
+              label="Email"
+              name="email"
+              type="email"
+              maxLength={320}
+              required
+            />
+            <RoleField defaultValue="SUPPORT_OPERATOR" />
+            <Button type="submit" disabled={busy || !twoFactorEnabled}>
+              Send invitation
+            </Button>
+          </AuthForm>
+        </section>
+      </RecordAction>
+      <label className="text-sm font-semibold">
+        Search administrators
+        <input
+          type="search"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          className="ml-3 rounded-lg border border-slate-300 px-3 py-2"
+        />
+      </label>
+      <p className="text-sm">
+        {
+          accounts.filter((account) =>
+            (account.email + ' ' + account.displayName)
+              .toLowerCase()
+              .includes(search.toLowerCase()),
+          ).length
+        }{' '}
+        matching accounts
+      </p>
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold">Administrator accounts</h2>
         <Button
@@ -158,106 +187,177 @@ export function StaffManager({
           Refresh accounts
         </Button>
       </div>
+      {!loading ? (
+        <DataTable
+          caption="Administrator accounts"
+          rows={accounts.filter((account) =>
+            (account.email + ' ' + account.displayName)
+              .toLowerCase()
+              .includes(search.toLowerCase()),
+          )}
+          rowKey={(account) => account.id}
+          columns={[
+            {
+              key: 'name',
+              header: 'Name',
+              render: (account) => account.displayName,
+            },
+            {
+              key: 'email',
+              header: 'Email address',
+              render: (account) => account.email,
+            },
+            {
+              key: 'role',
+              header: 'Role',
+              render: (account) => staffRoleLabels[account.staffRole],
+            },
+            {
+              key: 'status',
+              header: 'Status',
+              render: (account) =>
+                account.status === 'PENDING_VERIFICATION'
+                  ? 'Invitation pending'
+                  : account.status === 'DISABLED'
+                    ? 'Disabled'
+                    : account.status === 'SUSPENDED'
+                      ? 'Suspended'
+                      : 'Active',
+            },
+            {
+              key: 'mfa',
+              header: 'Two-factor authentication',
+              render: (account) =>
+                account.twoFactorEnabled ? 'Enabled' : 'Not enrolled',
+            },
+            {
+              key: 'actions',
+              header: 'Actions',
+              render: (account) => (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  disabled={busy}
+                  onClick={() => setEditingId(account.id)}
+                >
+                  Edit <span className="sr-only">{account.email}</span>
+                </Button>
+              ),
+            },
+          ]}
+        />
+      ) : null}
       {loading ? (
         <LoadingState label="Loading administrator accounts" />
       ) : (
-        accounts.map((account) => (
-          <section
-            key={`${account.id}:${account.staffRole}:${account.status}:${account.displayName}`}
-            className="rounded-2xl border border-slate-200 bg-white p-5"
-          >
-            <h3 className="break-all font-bold">{account.email}</h3>
-            <p className="my-3 text-sm text-slate-600">
-              {account.status === 'PENDING_VERIFICATION'
-                ? 'Invitation pending'
-                : account.status === 'DISABLED'
-                  ? 'Disabled'
-                  : account.status === 'SUSPENDED'
-                    ? 'Suspended'
-                    : 'Active'}{' '}
-              ·{' '}
-              {account.twoFactorEnabled
-                ? 'Two-factor enabled'
-                : 'Two-factor not enrolled'}
-            </p>
-            <AuthForm
-              onSubmit={(event) => {
-                event.preventDefault();
-                const values = new FormData(event.currentTarget);
-                const parsed = updateStaffRequestSchema.safeParse({
-                  displayName: values.get('displayName'),
-                  staffRole: values.get('staffRole'),
-                  enabled: values.get('enabled') === 'on',
-                });
-                if (!parsed.success) {
-                  setError('Enter a valid display name and role.');
-                  return;
-                }
-                if (
-                  !window.confirm(
-                    `Save access changes for ${account.email}? Existing sessions will be revoked.`,
-                  )
-                )
-                  return;
-                void mutate(`/staff/${account.id}`, 'PATCH', parsed.data);
-              }}
+        accounts
+          .filter((account) => account.id === editingId)
+          .map((account) => (
+            <RecordDialog
+              key={account.id}
+              open
+              title="Edit administrator"
+              busy={busy}
+              feedback={error || notice}
+              onClose={() => setEditingId(undefined)}
             >
-              <Field
-                label="Display name"
-                name="displayName"
-                defaultValue={account.displayName}
-                maxLength={150}
-                required
-              />
-              <RoleField
-                defaultValue={account.staffRole}
-                ownAccount={account.id === currentUserId}
-              />
-              <label className="flex gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  name="enabled"
-                  defaultChecked={account.status !== 'DISABLED'}
-                  disabled={account.id === currentUserId}
-                />
-                Account enabled
-              </label>
-              {account.id === currentUserId ? (
-                <input type="hidden" name="enabled" value="on" />
-              ) : null}
-              <Button
-                type="submit"
-                disabled={
-                  busy || !twoFactorEnabled || account.id === currentUserId
-                }
+              <section
+                key={`${account.id}:${account.staffRole}:${account.status}:${account.displayName}`}
+                className="rounded-2xl border border-slate-200 bg-white p-5"
               >
-                Save access
-              </Button>
-            </AuthForm>
-            {account.status === 'PENDING_VERIFICATION' ? (
-              <Button
-                className="mt-4"
-                variant="secondary"
-                disabled={busy || !twoFactorEnabled}
-                onClick={() => {
-                  if (
-                    window.confirm(
-                      `Resend invitation emails to ${account.email}? Previous links will expire.`,
+                <h3 className="break-all font-bold">{account.email}</h3>
+                <p className="my-3 text-sm text-slate-600">
+                  {account.status === 'PENDING_VERIFICATION'
+                    ? 'Invitation pending'
+                    : account.status === 'DISABLED'
+                      ? 'Disabled'
+                      : account.status === 'SUSPENDED'
+                        ? 'Suspended'
+                        : 'Active'}{' '}
+                  ·{' '}
+                  {account.twoFactorEnabled
+                    ? 'Two-factor enabled'
+                    : 'Two-factor not enrolled'}
+                </p>
+                <AuthForm
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    const values = new FormData(event.currentTarget);
+                    const parsed = updateStaffRequestSchema.safeParse({
+                      displayName: values.get('displayName'),
+                      staffRole: values.get('staffRole'),
+                      enabled: values.get('enabled') === 'on',
+                    });
+                    if (!parsed.success) {
+                      setError('Enter a valid display name and role.');
+                      return;
+                    }
+                    if (
+                      !window.confirm(
+                        `Save access changes for ${account.email}? Existing sessions will be revoked.`,
+                      )
                     )
-                  )
-                    void mutate(`/staff/${account.id}/invitation`, 'POST');
-                }}
-              >
-                Resend invitation
-              </Button>
-            ) : null}
-            {account.id === currentUserId ? (
-              <p className="mt-3 text-sm text-slate-600">
-                You cannot disable or demote your own account.
-              </p>
-            ) : null}
-          </section>
-        ))
+                      return;
+                    void mutate(`/staff/${account.id}`, 'PATCH', parsed.data);
+                  }}
+                >
+                  <Field
+                    label="Display name"
+                    name="displayName"
+                    defaultValue={account.displayName}
+                    maxLength={150}
+                    required
+                  />
+                  <RoleField
+                    defaultValue={account.staffRole}
+                    ownAccount={account.id === currentUserId}
+                  />
+                  <label className="flex gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      name="enabled"
+                      defaultChecked={account.status !== 'DISABLED'}
+                      disabled={account.id === currentUserId}
+                    />
+                    Account enabled
+                  </label>
+                  {account.id === currentUserId ? (
+                    <input type="hidden" name="enabled" value="on" />
+                  ) : null}
+                  <Button
+                    type="submit"
+                    disabled={
+                      busy || !twoFactorEnabled || account.id === currentUserId
+                    }
+                  >
+                    Save access
+                  </Button>
+                </AuthForm>
+                {account.status === 'PENDING_VERIFICATION' ? (
+                  <Button
+                    className="mt-4"
+                    variant="secondary"
+                    disabled={busy || !twoFactorEnabled}
+                    onClick={() => {
+                      if (
+                        window.confirm(
+                          `Resend invitation emails to ${account.email}? Previous links will expire.`,
+                        )
+                      )
+                        void mutate(`/staff/${account.id}/invitation`, 'POST');
+                    }}
+                  >
+                    Resend invitation
+                  </Button>
+                ) : null}
+                {account.id === currentUserId ? (
+                  <p className="mt-3 text-sm text-slate-600">
+                    You cannot disable or demote your own account.
+                  </p>
+                ) : null}
+              </section>
+            </RecordDialog>
+          ))
       )}
     </div>
   );

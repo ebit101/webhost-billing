@@ -108,8 +108,11 @@ describe('automation manager', () => {
       }),
     ).toBeTruthy();
     expect(screen.getByText(/HOSTING_RESULT_UNKNOWN/)).toBeTruthy();
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: 'Renewal policy' }));
     expect(
-      screen.getByRole('heading', { name: 'Renewal policy' }),
+      screen.getAllByRole('heading', { name: 'Renewal policy' })[0],
     ).toBeTruthy();
     expect(
       screen.getByText('No renewal automation cycle has run yet.'),
@@ -126,7 +129,7 @@ describe('automation manager', () => {
     await user.click(screen.getByRole('button', { name: 'Retry publication' }));
 
     expect(
-      await screen.findByText(
+      await screen.findAllByText(
         'The failed outbox publication was queued for dispatch.',
       ),
     ).toBeTruthy();

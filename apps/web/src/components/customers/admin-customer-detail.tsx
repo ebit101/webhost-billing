@@ -10,6 +10,8 @@ import { formatMinor } from '../invoices/invoice-ui';
 import { Button, buttonStyles } from '../ui/button';
 import { ConfirmationDialog } from '../ui/confirmation-dialog';
 import { ErrorState, LoadingState } from '../ui/feedback-state';
+import { RecordAction } from '../ui/record-dialog';
+import { DataTable } from '../ui/data-table';
 import { PageHeader } from '../ui/page-header';
 import { StatusBadge } from '../ui/status-badge';
 import {
@@ -320,54 +322,63 @@ export function AdminCustomerDetail({ customerId }: { customerId: string }) {
         </div>
       </section>
 
-      <section aria-labelledby="customer-administration" className="grid gap-4">
-        <div>
-          <h2
-            id="customer-administration"
-            className="text-xl font-bold text-slate-950"
-          >
-            Customer administration
-          </h2>
-          <p className="mt-1 text-sm text-slate-600">
-            Optional profile and billing changes are kept below the operational
-            record context.
-          </p>
-        </div>
-        <div className="grid gap-6 xl:grid-cols-[1.5fr_1fr]">
-          <Card
-            title="Profile and contact"
-            description="Administrator changes are recorded without storing sensitive field values in the activity log."
-          >
-            <form
-              key={customer.updatedAt}
-              className="grid gap-4 sm:grid-cols-2"
-              onSubmit={updateProfile}
+      <RecordAction
+        label="Edit customer"
+        busy={saving}
+        feedback={error || notice}
+      >
+        <section
+          aria-labelledby="customer-administration"
+          className="grid gap-4"
+        >
+          <div>
+            <h2
+              id="customer-administration"
+              className="text-xl font-bold text-slate-950"
             >
-              <ProfileFields customer={customer} />
-              <div className="flex justify-end sm:col-span-2">
-                <Button type="submit" disabled={saving}>
-                  {saving ? 'Saving…' : 'Save profile'}
+              Customer administration
+            </h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Optional profile and billing changes are kept below the
+              operational record context.
+            </p>
+          </div>
+          <div className="grid gap-6 xl:grid-cols-[1.5fr_1fr]">
+            <Card
+              title="Profile and contact"
+              description="Administrator changes are recorded without storing sensitive field values in the activity log."
+            >
+              <form
+                key={customer.updatedAt}
+                className="grid gap-4 sm:grid-cols-2"
+                onSubmit={updateProfile}
+              >
+                <ProfileFields customer={customer} />
+                <div className="flex justify-end sm:col-span-2">
+                  <Button type="submit" disabled={saving}>
+                    {saving ? 'Saving…' : 'Save profile'}
+                  </Button>
+                </div>
+              </form>
+            </Card>
+            <Card title="Billing identity">
+              <form
+                key={`billing-${customer.updatedAt}`}
+                onSubmit={updateBilling}
+              >
+                <Field
+                  label="Tax identifier"
+                  name="taxIdentifier"
+                  defaultValue={customer.taxIdentifier ?? ''}
+                />
+                <Button className="mt-4 w-full" type="submit" disabled={saving}>
+                  Save billing information
                 </Button>
-              </div>
-            </form>
-          </Card>
-          <Card title="Billing identity">
-            <form
-              key={`billing-${customer.updatedAt}`}
-              onSubmit={updateBilling}
-            >
-              <Field
-                label="Tax identifier"
-                name="taxIdentifier"
-                defaultValue={customer.taxIdentifier ?? ''}
-              />
-              <Button className="mt-4 w-full" type="submit" disabled={saving}>
-                Save billing information
-              </Button>
-            </form>
-          </Card>
-        </div>
-      </section>
+              </form>
+            </Card>
+          </div>
+        </section>
+      </RecordAction>
       <ConfirmationDialog
         open={confirmAccess}
         destructive={active}
@@ -411,19 +422,30 @@ function LinkedList({
   return (
     <Card title={title}>
       {rows.length ? (
-        <ul className="divide-y divide-slate-100">
-          {rows.map((row) => (
-            <li className="py-3 first:pt-0 last:pb-0" key={row.id}>
-              <Link
-                className="text-sm font-bold text-brand-700 hover:underline"
-                href={row.href}
-              >
-                {row.primary}
-              </Link>
-              <p className="mt-1 text-xs text-slate-500">{row.secondary}</p>
-            </li>
-          ))}
-        </ul>
+        <DataTable
+          caption={title}
+          rows={rows}
+          rowKey={(row) => row.id}
+          columns={[
+            {
+              key: 'record',
+              header: 'Record',
+              render: (row) => (
+                <Link
+                  className="font-semibold text-brand-700 hover:underline"
+                  href={row.href}
+                >
+                  {row.primary}
+                </Link>
+              ),
+            },
+            {
+              key: 'details',
+              header: 'Details',
+              render: (row) => row.secondary,
+            },
+          ]}
+        />
       ) : (
         <p className="text-sm text-slate-500">{empty}</p>
       )}

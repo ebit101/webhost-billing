@@ -14,6 +14,9 @@ import { Button } from '../ui/button';
 import { ConfirmationDialog } from '../ui/confirmation-dialog';
 import { EmptyState, LoadingState } from '../ui/feedback-state';
 import { Icon } from '../ui/icon';
+import { DataTable, type DataColumn } from '../ui/data-table';
+import { RecordAction, RecordDialog } from '../ui/record-dialog';
+import { formatMinor } from '../invoices/invoice-ui';
 import { PageHeader } from '../ui/page-header';
 import { StatusBadge } from '../ui/status-badge';
 
@@ -31,6 +34,13 @@ export function AdminProductManager() {
   const [groups, setGroups] = useState<ProductGroup[]>([]);
   const [groupsOpen, setGroupsOpen] = useState(false);
   const [selected, setSelected] = useState<Product>();
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [groupEditor, setGroupEditor] = useState<ProductGroup>();
+  const [search, setSearch] = useState('');
+  const [status, setStatus] = useState('');
+  const [productTab, setProductTab] = useState<'details' | 'pricing'>(
+    'details',
+  );
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -48,7 +58,6 @@ export function AdminProductManager() {
         if (!active) return;
         setProducts(result);
         setGroups(productGroups);
-        setSelected(result[0]);
       })
       .catch((caught: unknown) => {
         if (active) setError(errorMessage(caught));
@@ -71,10 +80,7 @@ export function AdminProductManager() {
       ]);
       setProducts(result);
       setGroups(productGroups);
-      setSelected(
-        (current) =>
-          result.find((item) => item.id === current?.id) ?? result[0],
-      );
+      setSelected((current) => result.find((item) => item.id === current?.id));
       setError('');
     } catch (caught) {
       setError(errorMessage(caught));
@@ -115,6 +121,7 @@ export function AdminProductManager() {
       const created = await authMutation<Product>('/products', 'POST', body);
       setProducts((current) => [...current, created].sort(byDisplayOrder));
       setSelected(created);
+      setEditorOpen(true);
       setCreateOpen(false);
       form.reset();
       setNotice('Draft product created. Review it before activation.');
@@ -227,6 +234,7 @@ export function AdminProductManager() {
         ),
       );
       if (!id) form.reset();
+      setGroupEditor(undefined);
       setNotice('Product group saved.');
     } catch (caught) {
       setError(errorMessage(caught));
@@ -235,10 +243,97 @@ export function AdminProductManager() {
     }
   }
 
+  const visibleProducts = products.filter(
+    (product) =>
+      (!status || product.status === status) &&
+      [product.name, product.slug, product.hostingPackageIdentifier ?? ''].some(
+        (value) => value.toLowerCase().includes(search.trim().toLowerCase()),
+      ),
+  );
+  const columns: DataColumn<Product>[] = [
+    {
+      key: 'name',
+      header: 'Product',
+      render: (product) => (
+        <button
+          type="button"
+          className="font-semibold text-brand-700 hover:underline"
+          onClick={() => {
+            setSelected(product);
+            setEditorOpen(true);
+            setProductTab('details');
+            setError('');
+            setNotice('');
+          }}
+        >
+          {product.name}
+        </button>
+      ),
+    },
+    { key: 'type', header: 'Type', render: () => 'Shared hosting' },
+    {
+      key: 'package',
+      header: 'cPanel package',
+      render: (product) => product.hostingPackageIdentifier ?? 'Not mapped',
+    },
+    {
+      key: 'prices',
+      header: 'Active prices',
+      render: (product) =>
+        product.prices
+          .filter((price) => price.isActive)
+          .map((price) => (
+            <div key={price.id}>
+              {sentenceCaseLabel(price.billingPeriod)} ·{' '}
+              {formatMinor(price.amount.amount, price.amount.currency)}
+            </div>
+          )),
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      render: (product) => (
+        <StatusBadge tone={product.status === 'ACTIVE' ? 'success' : 'neutral'}>
+          {sentenceCaseLabel(product.status)}
+        </StatusBadge>
+      ),
+    },
+    {
+      key: 'visibility',
+      header: 'Visibility',
+      render: (product) =>
+        product.publicVisible && product.status === 'ACTIVE'
+          ? 'Public'
+          : 'Hidden',
+    },
+    {
+      key: 'order',
+      header: 'Sort order',
+      render: (product) => product.displayOrder,
+    },
+    {
+      key: 'edit',
+      header: 'Actions',
+      render: (product) => (
+        <Button
+          size="sm"
+          variant="secondary"
+          onClick={() => {
+            setSelected(product);
+            setEditorOpen(true);
+            setProductTab('details');
+          }}
+        >
+          Edit <span className="sr-only">{product.name}</span>
+        </Button>
+      ),
+    },
+  ];
+
   if (loading) return <LoadingState label="Loading products" />;
 
   return (
-    <div className="grid gap-7">
+    <div className="grid min-w-0 grid-cols-1 gap-7">
       <PageHeader
         eyebrow="Administrator"
         title="Products & pricing"
@@ -274,124 +369,197 @@ export function AdminProductManager() {
           {notice}
         </p>
       ) : null}
-      {groupsOpen ? (
-        <Card
-          title="Product groups"
-          description="Organize hosting plans with group headings and display order. Public visibility is controlled on each product. Existing services and invoices keep their history."
-        >
-          <div className="grid gap-4">
-            {groups.map((group) => (
-              <GroupForm
-                key={group.id}
-                group={group}
-                saving={saving}
-                onSubmit={(event) => void saveGroup(event, group.id)}
-              />
+      <div className="flex flex-wrap items-end gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+        <label className="min-w-48 flex-1 text-sm font-semibold">
+          Search products
+          <input
+            type="search"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            className={fieldClass}
+            placeholder="Name, slug or cPanel package"
+          />
+        </label>
+        <label className="text-sm font-semibold">
+          Status
+          <select
+            value={status}
+            onChange={(event) => setStatus(event.target.value)}
+            className={fieldClass}
+          >
+            <option value="">All statuses</option>
+            {['DRAFT', 'ACTIVE', 'ARCHIVED'].map((value) => (
+              <option key={value} value={value}>
+                {sentenceCaseLabel(value)}
+              </option>
             ))}
-            <GroupForm
-              saving={saving}
-              onSubmit={(event) => void saveGroup(event)}
+          </select>
+        </label>
+      </div>
+      <p className="text-sm text-slate-600">
+        {visibleProducts.length} of {products.length} products
+      </p>
+      {products.length ? (
+        <div className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white">
+          {[...groups, { id: null, name: 'Ungrouped' }].map((group) => {
+            const rows = visibleProducts.filter(
+              (product) => product.groupId === group.id,
+            );
+            if (!rows.length) return null;
+            return (
+              <section key={group.id ?? 'ungrouped'} aria-label={group.name}>
+                <h2 className="border-b border-slate-200 bg-slate-100 px-4 py-2 text-sm font-semibold">
+                  {group.name}{' '}
+                  <span className="font-normal text-slate-500">
+                    ({rows.length})
+                  </span>
+                </h2>
+                <DataTable
+                  nowrap
+                  caption={group.name + ' products'}
+                  columns={columns}
+                  rows={rows}
+                  rowKey={(product) => product.id}
+                />
+              </section>
+            );
+          })}
+          {!visibleProducts.length ? (
+            <EmptyState
+              title="No matching products"
+              description="Change your search or status filter."
             />
-          </div>
-        </Card>
-      ) : null}
-      {products.length === 0 ? (
+          ) : null}
+        </div>
+      ) : (
         <EmptyState
           title="No products yet"
           description="Create the first hosting product as a draft."
-          action={
-            <Button onClick={() => setCreateOpen(true)}>Create product</Button>
-          }
         />
-      ) : (
-        <div className="grid gap-6 xl:grid-cols-[22rem_1fr]">
-          <Card
-            title="Catalogue order"
-            description="Select a product to manage it."
-          >
-            <div className="grid gap-2">
-              {[...groups, { id: null, name: 'Ungrouped' }].map((group) => (
-                <section
-                  key={group.id ?? 'ungrouped'}
-                  aria-label={group.name}
-                  className="grid gap-2"
-                >
-                  <h2 className="mt-3 flex items-center justify-between gap-2 rounded-lg bg-slate-100 px-3 py-2 text-sm font-bold text-slate-700">
-                    {group.name}
-                    <span>
-                      {
-                        products.filter(
-                          (product) => product.groupId === group.id,
-                        ).length
-                      }
-                    </span>
-                  </h2>
-                  {products
-                    .filter((product) => product.groupId === group.id)
-                    .map((product) => (
-                      <button
-                        key={product.id}
-                        type="button"
-                        onClick={() => {
-                          setSelected(product);
-                          setError('');
-                          setNotice('');
-                        }}
-                        className={`rounded-xl border p-4 text-left transition ${selected?.id === product.id ? 'border-brand-500 bg-brand-50' : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'}`}
-                      >
-                        <div className="flex items-center justify-between gap-3">
-                          <span className="font-bold text-slate-950">
-                            {product.name}
-                          </span>
-                          <span className="text-xs font-bold text-slate-400">
-                            #{product.displayOrder}
-                          </span>
-                        </div>
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          <StatusBadge
-                            tone={
-                              product.status === 'ACTIVE'
-                                ? 'success'
-                                : product.status === 'ARCHIVED'
-                                  ? 'danger'
-                                  : 'warning'
-                            }
-                          >
-                            {sentenceCaseLabel(product.status)}
-                          </StatusBadge>
-                          {product.publicVisible ? (
-                            <StatusBadge tone="info">Public</StatusBadge>
-                          ) : null}
-                        </div>
-                      </button>
-                    ))}
-                </section>
-              ))}
-            </div>
-          </Card>
-          {selected ? (
-            <div className="grid gap-6">
-              <ProductEditor
-                product={selected}
-                groups={groups}
-                saving={saving}
-                onSubmit={updateProduct}
-                onActivate={() => void changeStatus('ACTIVE')}
-                onDraft={() => void changeStatus('DRAFT')}
-                onArchive={() => setArchiveOpen(true)}
-              />
-              <div className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
-                <PriceForm
-                  saving={saving}
-                  archived={selected.status === 'ARCHIVED'}
-                  onSubmit={definePrice}
-                />
-                <PriceHistory product={selected} />
-              </div>
-            </div>
-          ) : null}
-        </div>
       )}
+      <RecordDialog
+        open={groupsOpen}
+        title="Product groups"
+        busy={saving}
+        feedback={error || notice}
+        onClose={() => setGroupsOpen(false)}
+      >
+        <RecordAction
+          label="Create group"
+          busy={saving}
+          feedback={error || notice}
+        >
+          <GroupForm
+            saving={saving}
+            onSubmit={(event) => void saveGroup(event)}
+          />
+        </RecordAction>
+        <DataTable
+          caption="Product groups"
+          rows={groups}
+          rowKey={(group) => group.id}
+          columns={[
+            {
+              key: 'name',
+              header: 'Group name',
+              render: (group) => group.name,
+            },
+            {
+              key: 'order',
+              header: 'Sort order',
+              render: (group) => group.displayOrder,
+            },
+            {
+              key: 'count',
+              header: 'Products',
+              render: (group) =>
+                products.filter((product) => product.groupId === group.id)
+                  .length,
+            },
+            {
+              key: 'edit',
+              header: 'Actions',
+              render: (group) => (
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => setGroupEditor(group)}
+                >
+                  Edit <span className="sr-only">{group.name}</span>
+                </Button>
+              ),
+            },
+          ]}
+        />
+        <p className="text-sm text-slate-600">
+          Groups organize administrator records. Product visibility and
+          historical billing records stay independent.
+        </p>
+      </RecordDialog>
+      {groupEditor ? (
+        <RecordDialog
+          open
+          title={'Edit ' + groupEditor.name}
+          busy={saving}
+          feedback={error || notice}
+          onClose={() => setGroupEditor(undefined)}
+        >
+          <GroupForm
+            group={groupEditor}
+            saving={saving}
+            onSubmit={(event) => void saveGroup(event, groupEditor.id)}
+          />
+        </RecordDialog>
+      ) : null}
+      {selected ? (
+        <RecordDialog
+          key={selected.id}
+          open={editorOpen}
+          title={selected.name}
+          busy={saving}
+          feedback={error || notice}
+          onClose={() => setEditorOpen(false)}
+        >
+          <div className="flex gap-2" aria-label="Product sections">
+            <Button
+              variant="secondary"
+              aria-pressed={productTab === 'details'}
+              onClick={() => setProductTab('details')}
+            >
+              Details
+            </Button>
+            <Button
+              variant="secondary"
+              aria-pressed={productTab === 'pricing'}
+              onClick={() => setProductTab('pricing')}
+            >
+              Pricing
+            </Button>
+          </div>
+          <div hidden={productTab !== 'details'}>
+            <ProductEditor
+              product={selected}
+              groups={groups}
+              saving={saving}
+              onSubmit={updateProduct}
+              onActivate={() => void changeStatus('ACTIVE')}
+              onDraft={() => void changeStatus('DRAFT')}
+              onArchive={() => setArchiveOpen(true)}
+            />
+          </div>
+          <div
+            hidden={productTab !== 'pricing'}
+            className={productTab === 'pricing' ? 'grid gap-5' : 'hidden'}
+          >
+            <PriceForm
+              saving={saving}
+              archived={selected.status === 'ARCHIVED'}
+              onSubmit={definePrice}
+            />
+            <PriceHistory product={selected} />
+          </div>
+        </RecordDialog>
+      ) : null}
       {createOpen ? (
         <CreateProductDialog
           groups={groups}
@@ -630,122 +798,108 @@ function CreateProductDialog({
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }) {
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/60 p-4 backdrop-blur-sm">
-      <div className="mx-auto my-8 max-w-3xl rounded-3xl bg-white p-6 shadow-2xl sm:p-8">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h2 className="text-xl font-bold text-slate-950">
-              Create draft product
-            </h2>
-            <p className="mt-1 text-sm text-slate-600">
-              Add catalogue details and an optional first price.
-            </p>
-          </div>
-          <Button
-            variant="ghost"
-            onClick={onClose}
-            aria-label="Close create product form"
+    <RecordDialog
+      open
+      title="Create draft product"
+      busy={saving}
+      onClose={onClose}
+    >
+      <form className="mt-7 grid gap-4 sm:grid-cols-2" onSubmit={onSubmit}>
+        <Field label="Name" name="name" required />
+        <GroupSelect groups={groups} />
+        <Field
+          label="Slug"
+          name="slug"
+          required
+          placeholder="starter-hosting"
+        />
+        <div className="sm:col-span-2">
+          <Field label="Description" name="description" />
+        </div>
+        <Field
+          label="Display order"
+          name="displayOrder"
+          type="number"
+          required
+          defaultValue="0"
+        />
+        <Field
+          label="cPanel package identifier"
+          name="hostingPackageIdentifier"
+        />
+        <Field
+          label="Storage display"
+          name="storageFeature"
+          placeholder="10 GB SSD"
+        />
+        <Field
+          label="Websites display"
+          name="websiteFeature"
+          placeholder="1 website"
+        />
+        <Field
+          label="Email display"
+          name="emailFeature"
+          placeholder="10 email accounts"
+        />
+        <Field
+          label="Bandwidth display"
+          name="bandwidthFeature"
+          placeholder="100 GB monthly"
+        />
+        <label className="flex items-center gap-3 rounded-xl border border-slate-200 p-4 text-sm font-semibold text-slate-700 sm:col-span-2">
+          <input
+            className="size-4 accent-brand-600"
+            type="checkbox"
+            name="publicVisible"
+          />
+          Show after activation
+        </label>
+        <div className="border-t border-slate-200 pt-5 sm:col-span-2">
+          <h3 className="font-bold text-slate-950">Optional first price</h3>
+        </div>
+        <label className="text-sm font-semibold text-slate-700">
+          Billing period
+          <select
+            className={fieldClass}
+            name="billingPeriod"
+            defaultValue="MONTHLY"
           >
-            <Icon name="close" className="size-5" />
+            <option value="MONTHLY">Monthly</option>
+            <option value="QUARTERLY">Quarterly</option>
+            <option value="ANNUAL">Yearly</option>
+          </select>
+        </label>
+        <Field label="Currency" name="currency" defaultValue="BDT" />
+        <Field label="Amount in minor units" name="amount" />
+        <Field
+          label="Setup fee in minor units"
+          name="setupFee"
+          defaultValue="0"
+        />
+        {error ? (
+          <p
+            role="alert"
+            className="text-sm font-semibold text-red-700 sm:col-span-2"
+          >
+            {error}
+          </p>
+        ) : null}
+        <div className="flex justify-end gap-3 sm:col-span-2">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={onClose}
+            disabled={saving}
+          >
+            Cancel
+          </Button>
+          <Button type="submit" disabled={saving}>
+            {saving ? 'Creating…' : 'Create draft'}
           </Button>
         </div>
-        <form className="mt-7 grid gap-4 sm:grid-cols-2" onSubmit={onSubmit}>
-          <Field label="Name" name="name" required />
-          <GroupSelect groups={groups} />
-          <Field
-            label="Slug"
-            name="slug"
-            required
-            placeholder="starter-hosting"
-          />
-          <div className="sm:col-span-2">
-            <Field label="Description" name="description" />
-          </div>
-          <Field
-            label="Display order"
-            name="displayOrder"
-            type="number"
-            required
-            defaultValue="0"
-          />
-          <Field
-            label="cPanel package identifier"
-            name="hostingPackageIdentifier"
-          />
-          <Field
-            label="Storage display"
-            name="storageFeature"
-            placeholder="10 GB SSD"
-          />
-          <Field
-            label="Websites display"
-            name="websiteFeature"
-            placeholder="1 website"
-          />
-          <Field
-            label="Email display"
-            name="emailFeature"
-            placeholder="10 email accounts"
-          />
-          <Field
-            label="Bandwidth display"
-            name="bandwidthFeature"
-            placeholder="100 GB monthly"
-          />
-          <label className="flex items-center gap-3 rounded-xl border border-slate-200 p-4 text-sm font-semibold text-slate-700 sm:col-span-2">
-            <input
-              className="size-4 accent-brand-600"
-              type="checkbox"
-              name="publicVisible"
-            />
-            Show after activation
-          </label>
-          <div className="border-t border-slate-200 pt-5 sm:col-span-2">
-            <h3 className="font-bold text-slate-950">Optional first price</h3>
-          </div>
-          <label className="text-sm font-semibold text-slate-700">
-            Billing period
-            <select
-              className={fieldClass}
-              name="billingPeriod"
-              defaultValue="MONTHLY"
-            >
-              <option value="MONTHLY">Monthly</option>
-              <option value="QUARTERLY">Quarterly</option>
-              <option value="ANNUAL">Yearly</option>
-            </select>
-          </label>
-          <Field label="Currency" name="currency" defaultValue="BDT" />
-          <Field label="Amount in minor units" name="amount" />
-          <Field
-            label="Setup fee in minor units"
-            name="setupFee"
-            defaultValue="0"
-          />
-          {error ? (
-            <p
-              role="alert"
-              className="text-sm font-semibold text-red-700 sm:col-span-2"
-            >
-              {error}
-            </p>
-          ) : null}
-          <div className="flex justify-end gap-3 sm:col-span-2">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={onClose}
-              disabled={saving}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={saving}>
-              {saving ? 'Creating…' : 'Create draft'}
-            </Button>
-          </div>
-        </form>
-      </div>
-    </div>
+      </form>
+    </RecordDialog>
   );
 }
 

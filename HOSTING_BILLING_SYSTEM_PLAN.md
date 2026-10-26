@@ -389,6 +389,15 @@ department engine, hosting-operator role or integration API-user role is introdu
 - Email, automation, grace-period, and business settings
 - Email-delivery and administrator-activity logs
 
+Record browsing follows the owner's WHMCS list-page reference: compact tables,
+clear column headings, search/filter controls, visible result counts and the
+existing pagination. Creation and editing open through explicit actions instead
+of permanently expanded forms. This applies to administrator and customer record
+collections. Settings, checkout and individual record documents keep appropriate
+form/detail layouts; storefront product cards remain customer-facing catalogue
+presentation. This presentation rule does not authorize additional WHMCS business
+features, bulk mutations or provider activation.
+
 ### 4.2 Customer portal
 
 - Registration, sign-in, password reset, and profile management

@@ -26,6 +26,7 @@ import {
 import { fieldClass } from '../customers/customer-fields';
 import { Button } from '../ui/button';
 import { EmptyState, ErrorState } from '../ui/feedback-state';
+import { DataTable } from '../ui/data-table';
 import { PageHeader } from '../ui/page-header';
 import { StatusBadge } from '../ui/status-badge';
 import { formatMinor } from '../invoices/invoice-ui';
@@ -314,49 +315,69 @@ function Ledger({
       {result ? (
         <div className="min-w-0">
           {rows.length ? (
-            <div className="grid gap-5 lg:grid-cols-2">
-              {rows.map((service) => (
-                <Link
-                  key={service.id}
-                  href={`/portal/services/${service.id}`}
-                  className="group min-w-0 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md sm:p-6"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="min-w-0">
-                      <p className="break-words text-xs font-bold tracking-[0.14em] text-brand-700">
-                        {service.productName}
-                      </p>
-                      <h2 className="mt-1 break-words text-xl font-bold text-slate-950">
+            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+              <DataTable
+                caption="Your hosting services"
+                rows={rows}
+                rowKey={(service) => service.id}
+                columns={[
+                  {
+                    key: 'domain',
+                    header: 'Domain',
+                    render: (service) => (
+                      <Link
+                        href={'/portal/services/' + service.id}
+                        aria-label={
+                          (service.domain ?? 'Domain unavailable') +
+                          ' · View service details'
+                        }
+                        className="font-semibold text-brand-700 hover:underline"
+                      >
                         {service.domain ?? 'Domain unavailable'}
-                      </h2>
-                    </div>
-                    <StatusBadge tone={serviceTone(service.status)}>
-                      {sentenceCaseLabel(service.status)}
-                    </StatusBadge>
-                  </div>
-                  <dl className="mt-5 grid min-w-0 grid-cols-2 gap-4 text-sm">
-                    <Meta
-                      label="Next due"
-                      value={serviceDate(service.nextDueAt)}
-                    />
-                    <Meta
-                      label="Recurring"
-                      value={formatMinor(
+                      </Link>
+                    ),
+                  },
+                  {
+                    key: 'product',
+                    header: 'Product',
+                    render: (service) => service.productName,
+                  },
+                  {
+                    key: 'status',
+                    header: 'Status',
+                    render: (service) => (
+                      <StatusBadge tone={serviceTone(service.status)}>
+                        {sentenceCaseLabel(service.status)}
+                      </StatusBadge>
+                    ),
+                  },
+                  {
+                    key: 'due',
+                    header: 'Next due',
+                    render: (service) => serviceDate(service.nextDueAt),
+                  },
+                  {
+                    key: 'amount',
+                    header: 'Recurring',
+                    render: (service) =>
+                      formatMinor(
                         service.recurringAmount.amount,
                         service.recurringAmount.currency,
-                      )}
-                    />
-                    <Meta label="Server" value={service.server.hostname} />
-                    <Meta
-                      label="Username"
-                      value={service.controlPanelUsername ?? 'Pending setup'}
-                    />
-                  </dl>
-                  <p className="mt-5 text-sm font-bold text-brand-700 group-hover:text-brand-800">
-                    View service details →
-                  </p>
-                </Link>
-              ))}
+                      ),
+                  },
+                  {
+                    key: 'server',
+                    header: 'Server',
+                    render: (service) => service.server.hostname,
+                  },
+                  {
+                    key: 'username',
+                    header: 'Username',
+                    render: (service) =>
+                      service.controlPanelUsername ?? 'Pending setup',
+                  },
+                ]}
+              />
             </div>
           ) : meta && query.page > 1 ? (
             <EmptyState
@@ -385,16 +406,5 @@ function Ledger({
         </div>
       ) : null}
     </section>
-  );
-}
-
-function Meta({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <dt className="text-xs font-semibold tracking-wide text-slate-500">
-        {label}
-      </dt>
-      <dd className="mt-1 break-words font-semibold text-slate-900">{value}</dd>
-    </div>
   );
 }

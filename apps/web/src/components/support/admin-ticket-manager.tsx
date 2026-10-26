@@ -21,6 +21,7 @@ import {
 import { Button } from '../ui/button';
 import { DataTable, type DataColumn } from '../ui/data-table';
 import { EmptyState, LoadingState } from '../ui/feedback-state';
+import { RecordDialog } from '../ui/record-dialog';
 import { PageHeader } from '../ui/page-header';
 import { StatusBadge } from '../ui/status-badge';
 import {
@@ -76,13 +77,6 @@ export function AdminTicketManager({
         setTickets(ticketResult.data);
         setOptions(setup);
         setFilteredCustomer(customerContext);
-        const first = ticketResult.data[0];
-        if (first) {
-          const detail = await authenticatedGet<TicketDetail>(
-            `/tickets/${first.id}`,
-          );
-          if (active) setSelected(detail);
-        }
       })
       .catch((caught: unknown) => {
         if (active) setError(ticketError(caught));
@@ -174,12 +168,7 @@ export function AdminTicketManager({
         `/tickets?${query.toString()}`,
       );
       setTickets(result.data);
-      const first = result.data[0];
-      setSelected(
-        first
-          ? await authenticatedGet<TicketDetail>(`/tickets/${first.id}`)
-          : undefined,
-      );
+      setSelected(undefined);
     } catch (caught) {
       setError(ticketError(caught));
     } finally {
@@ -330,6 +319,9 @@ export function AdminTicketManager({
         <Button type="submit">Apply filters</Button>
       </form>
 
+      <p className="text-sm text-slate-600">
+        Showing {tickets.length} tickets · Up to 100 matching records
+      </p>
       <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         {tickets.length ? (
           <DataTable
@@ -355,51 +347,61 @@ export function AdminTicketManager({
         )}
       </section>
 
-      <TicketConversation
-        ticket={selected}
-        saving={saving}
-        onReply={reply}
-        controls={
-          selected ? (
-            <form
-              key={`${selected.id}-${selected.updatedAt}`}
-              onSubmit={update}
-              className="mt-5 grid gap-3 rounded-xl border border-slate-200 bg-white p-4 md:grid-cols-3 md:items-end"
-            >
-              <FilterSelect
-                name="assignedAdminId"
-                label="Assign administrator"
-                values={options.admins.map((admin) => admin.userId)}
-                labels={Object.fromEntries(
-                  options.admins.map((admin) => [
-                    admin.userId,
-                    admin.displayName,
-                  ]),
-                )}
-                emptyLabel="Unassigned"
-                defaultValue={selected.assignee?.userId ?? ''}
-              />
-              <FilterSelect
-                name="priority"
-                label="Priority"
-                values={ticketPriorities}
-                defaultValue={selected.priority}
-              />
-              <FilterSelect
-                name="status"
-                label="Status"
-                values={ticketStatuses}
-                defaultValue={selected.status}
-              />
-              <div className="md:col-span-3 flex justify-end">
-                <Button disabled={saving} type="submit">
-                  {saving ? 'Saving…' : 'Save ticket controls'}
-                </Button>
-              </div>
-            </form>
-          ) : null
-        }
-      />
+      {selected ? (
+        <RecordDialog
+          open
+          title={selected.ticketNumber}
+          busy={saving}
+          feedback={error || notice}
+          onClose={() => setSelected(undefined)}
+        >
+          <TicketConversation
+            ticket={selected}
+            saving={saving}
+            onReply={reply}
+            controls={
+              selected ? (
+                <form
+                  key={`${selected.id}-${selected.updatedAt}`}
+                  onSubmit={update}
+                  className="mt-5 grid gap-3 rounded-xl border border-slate-200 bg-white p-4 md:grid-cols-3 md:items-end"
+                >
+                  <FilterSelect
+                    name="assignedAdminId"
+                    label="Assign administrator"
+                    values={options.admins.map((admin) => admin.userId)}
+                    labels={Object.fromEntries(
+                      options.admins.map((admin) => [
+                        admin.userId,
+                        admin.displayName,
+                      ]),
+                    )}
+                    emptyLabel="Unassigned"
+                    defaultValue={selected.assignee?.userId ?? ''}
+                  />
+                  <FilterSelect
+                    name="priority"
+                    label="Priority"
+                    values={ticketPriorities}
+                    defaultValue={selected.priority}
+                  />
+                  <FilterSelect
+                    name="status"
+                    label="Status"
+                    values={ticketStatuses}
+                    defaultValue={selected.status}
+                  />
+                  <div className="md:col-span-3 flex justify-end">
+                    <Button disabled={saving} type="submit">
+                      {saving ? 'Saving…' : 'Save ticket controls'}
+                    </Button>
+                  </div>
+                </form>
+              ) : null
+            }
+          />
+        </RecordDialog>
+      ) : null}
     </div>
   );
 }

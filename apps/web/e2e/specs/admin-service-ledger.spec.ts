@@ -127,10 +127,17 @@ test('administrator finds older services with URL filters and pagination without
   await expect(inventory).toContainText('Page 1 of 7');
   await expect(trigger).toHaveCount(0);
   expect(details).toEqual([]);
+  await page
+    .getByRole('button', { name: 'Hosting account tools', exact: true })
+    .click();
   await expect(
     page.getByRole('heading', { name: 'Account tools', exact: true }),
   ).toBeVisible();
   await page.getByLabel('WHM username').fill('unfinished-fictional-user');
+  await page
+    .getByRole('dialog', { name: 'Hosting account tools', exact: true })
+    .getByRole('button', { name: 'Close', exact: true })
+    .click();
   await page.getByLabel('Services per page').selectOption('100');
   await expect(inventory).toContainText('Page 1 of 2');
   await inventory.getByRole('button', { name: 'Next page' }).focus();
@@ -156,6 +163,10 @@ test('administrator finds older services with URL filters and pagination without
   await expect(
     review.getByRole('heading', { name: 'Service review', exact: true }),
   ).toBeFocused();
+  await page
+    .getByRole('dialog', { name: 'Service details', exact: true })
+    .getByRole('button', { name: 'Close', exact: true })
+    .click();
   await page.getByLabel('Service status').selectOption('PROVISION_FAILED');
   await expect(review).toHaveCount(0);
   await expect(inventory).toContainText('Page 1 of 2');

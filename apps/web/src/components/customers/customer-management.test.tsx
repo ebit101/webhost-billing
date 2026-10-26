@@ -10,6 +10,7 @@ import {
   screen,
   waitFor,
 } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AdminCustomerManager } from './admin-customer-manager';
 import { AdminCustomerDetail } from './admin-customer-detail';
@@ -204,7 +205,7 @@ describe('customer management interfaces', () => {
       ),
     ).toBe(`/admin/customers/${summary.id}`);
     expect(
-      screen.getByText('customer@example.test · CUS-70000000'),
+      screen.getByRole('cell', { name: 'customer@example.test' }),
     ).toBeTruthy();
     expect(screen.getByText('Verified')).toBeTruthy();
   });
@@ -268,6 +269,9 @@ describe('customer management interfaces', () => {
     const operational = await screen.findByRole('heading', {
       name: 'Operational context',
     });
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: 'Edit customer' }));
     const administration = screen.getByRole('heading', {
       name: 'Customer administration',
     });

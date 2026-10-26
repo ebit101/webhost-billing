@@ -174,6 +174,9 @@ test('administrator finds older orders and reviews all items without business mu
   await expect(ledger).toContainText('Page 1 of 7');
   await expect(trigger).toHaveCount(0);
   expect(details).toEqual([]);
+  await page
+    .getByRole('button', { name: 'Create hosting order', exact: true })
+    .click();
   const creationCustomer = page.getByRole('combobox', { name: /^Customer\b/ });
   const creationPrice = page.getByRole('combobox', { name: /^Price\b/ });
   await expect(creationCustomer).toHaveCount(1);
@@ -189,6 +192,10 @@ test('administrator finds older orders and reviews all items without business mu
   await page
     .getByLabel('Internal note', { exact: true })
     .fill('Retain fictional draft');
+  await page
+    .getByRole('dialog', { name: 'Create hosting order', exact: true })
+    .getByRole('button', { name: 'Close', exact: true })
+    .click();
   await ledger.getByLabel('Orders per page').selectOption('100');
   await expect(ledger).toContainText('Page 1 of 2');
   await ledger.getByRole('button', { name: 'Next page' }).focus();
@@ -206,8 +213,15 @@ test('administrator finds older orders and reviews all items without business mu
   await expect(
     page.getByLabel('Requested domain', { exact: true }),
   ).toHaveValue('unfinished-command88.example.test');
+  await page
+    .getByRole('button', { name: 'Create hosting order', exact: true })
+    .click();
   await expect(creationPrice).toHaveValue(E2E_PRODUCT.priceId);
   await expect(creationCustomer).toHaveValue(customerId);
+  await page
+    .getByRole('dialog', { name: 'Create hosting order', exact: true })
+    .getByRole('button', { name: 'Close', exact: true })
+    .click();
   await trigger.focus();
   await page.keyboard.press('Enter');
   await expect(
@@ -225,6 +239,10 @@ test('administrator finds older orders and reviews all items without business mu
   }
   await expect(review).toContainText('Dates shown in Asia/Dhaka');
   await expect(review).toContainText('command88-historical@example.test');
+  await page
+    .getByRole('dialog', { name: 'Order details', exact: true })
+    .getByRole('button', { name: 'Close', exact: true })
+    .click();
   await ledger.getByLabel('Order status').selectOption('CANCELLED');
   await expect(review).toHaveCount(0);
   await expect(ledger).toContainText('70 matching orders');

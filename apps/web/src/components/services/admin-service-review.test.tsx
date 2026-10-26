@@ -416,7 +416,11 @@ describe('service review integration preserves deliberate operations', () => {
           customerFilter={{ customerId, invalid: false }}
         />,
       );
-      await screen.findByRole('heading', { name: 'Account tools' });
+      await userEvent
+        .setup()
+        .click(
+          await screen.findByRole('button', { name: 'Hosting account tools' }),
+        );
       await user.selectOptions(
         screen.getByLabelText('Paid order item'),
         otherId,
@@ -525,7 +529,7 @@ describe('service review integration preserves deliberate operations', () => {
           ),
         ),
       );
-      await screen.findByText('Fictional panel failure');
+      await screen.findAllByText('Fictional panel failure');
       expect(
         (
           (await screen.findByRole('button', {
@@ -573,7 +577,11 @@ describe('service review integration preserves deliberate operations', () => {
       if (path === `/services/${id}`) return slow.promise;
     });
     render(<AdminServicesWorkspace customerFilter={{ invalid: false }} />);
-    await screen.findByRole('heading', { name: 'Account tools' });
+    await userEvent
+      .setup()
+      .click(
+        await screen.findByRole('button', { name: 'Hosting account tools' }),
+      );
     await user.click(
       await screen.findByRole('button', { name: `Review ${service.domain}` }),
     );
@@ -602,7 +610,7 @@ describe('service review integration preserves deliberate operations', () => {
         }),
       ),
     );
-    await screen.findByText('Connection test finished.');
+    await screen.findAllByText('Connection test finished.');
     expect(
       screen.queryByRole('heading', { name: 'Service review' }),
     ).toBeNull();
@@ -750,6 +758,9 @@ describe('service review integration preserves deliberate operations', () => {
       render(<AdminServiceManager />);
       await open(user);
       if (action === 'create') {
+        await user.click(
+          screen.getByRole('button', { name: 'Create service' }),
+        );
         await user.selectOptions(
           screen.getByLabelText('Paid order item'),
           otherId,
@@ -853,7 +864,7 @@ describe('service review integration preserves deliberate operations', () => {
                 }),
         ),
       );
-      if (action !== 'create') await screen.findByText('Refresh failed');
+      if (action !== 'create') await screen.findAllByText('Refresh failed');
       expect(
         screen.queryByRole('heading', { name: 'Service review' }),
       ).toBeNull();
@@ -885,7 +896,7 @@ describe('service review integration preserves deliberate operations', () => {
     )?.[1]?.signal;
     await user.click(screen.getByRole('button', { name: 'Provision account' }));
     expect(signal?.aborted).toBe(true);
-    await screen.findByText('Mutation failed');
+    await screen.findAllByText('Mutation failed');
     await act(async () => slow.resolve(success(service)));
     expect(
       screen.queryByRole('heading', { name: 'Service review' }),
@@ -917,7 +928,7 @@ describe('service review integration preserves deliberate operations', () => {
     await user.click(
       screen.getByRole('button', { name: 'Confirm terminated' }),
     );
-    await screen.findByText('Exact confirmation required');
+    await screen.findAllByText('Exact confirmation required');
     expect(screen.getByLabelText('Type TERMINATE to confirm')).toBeTruthy();
     const write = fetchMock.mock.calls.find(
       ([, options]) => options?.method === 'POST',

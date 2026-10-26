@@ -16,6 +16,7 @@ import {
 } from '../../lib/auth-api';
 import { fieldClass } from '../customers/customer-fields';
 import { Button } from '../ui/button';
+import { RecordAction } from '../ui/record-dialog';
 import { DataTable, type DataColumn } from '../ui/data-table';
 import { EmptyState, LoadingState } from '../ui/feedback-state';
 import { StatusBadge } from '../ui/status-badge';
@@ -274,154 +275,166 @@ export function AdminHostingOperationManager({
         </a>
       ) : null}
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-        <h2 className="text-lg font-bold text-slate-950">
-          Hosting-panel connections
-        </h2>
-        <p className="mt-1 text-sm text-slate-600">
-          Configure a WHM API token over HTTPS. Tokens are encrypted before
-          storage and are never returned to this interface.
-        </p>
-        <div className="mt-5 grid gap-4">
-          {options.servers.map((server) => (
+      <RecordAction
+        label="Hosting account tools"
+        busy={saving}
+        feedback={error || notice}
+      >
+        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+          <h2 className="text-lg font-bold text-slate-950">
+            Hosting-panel connections
+          </h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Configure a WHM API token over HTTPS. Tokens are encrypted before
+            storage and are never returned to this interface.
+          </p>
+          <div className="mt-5 grid gap-4">
+            {options.servers.map((server) => (
+              <form
+                key={server.id}
+                onSubmit={configureServer}
+                className="grid gap-3 rounded-xl border border-slate-200 p-4 lg:grid-cols-5 lg:items-end"
+              >
+                <input type="hidden" name="serverId" value={server.id} />
+                <label className="text-sm font-semibold text-slate-700 lg:col-span-2">
+                  {server.name} hostname
+                  <input
+                    name="hostname"
+                    type="text"
+                    required
+                    defaultValue={server.hostname}
+                    autoComplete="off"
+                    className={fieldClass}
+                  />
+                </label>
+                <label className="text-sm font-semibold text-slate-700">
+                  HTTPS port
+                  <select
+                    name="port"
+                    defaultValue="2087"
+                    className={fieldClass}
+                  >
+                    <option value="2087">2087</option>
+                    <option value="443">443</option>
+                  </select>
+                </label>
+                <label className="text-sm font-semibold text-slate-700">
+                  WHM username
+                  <input
+                    name="apiUsername"
+                    required
+                    autoComplete="username"
+                    className={fieldClass}
+                  />
+                </label>
+                <label className="text-sm font-semibold text-slate-700">
+                  New API token
+                  <input
+                    name="apiToken"
+                    type="password"
+                    minLength={20}
+                    maxLength={512}
+                    required
+                    autoComplete="new-password"
+                    className={fieldClass}
+                  />
+                </label>
+                <div className="flex flex-wrap gap-2 lg:col-span-5">
+                  <Button type="submit" disabled={saving}>
+                    Encrypt and save cPanel
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    disabled={saving}
+                    onClick={() => void testServer(server.id)}
+                  >
+                    Test {server.name}
+                  </Button>
+                  <span className="self-center text-xs font-semibold text-slate-500">
+                    Adapter: {server.adapterKey}
+                  </span>
+                </div>
+              </form>
+            ))}
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+          <h2 className="text-lg font-bold text-slate-950">Account tools</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Query an account, change its mapped package or password, or generate
+            a short-lived administrator login link.
+          </p>
+          {manageable.length ? (
             <form
-              key={server.id}
-              onSubmit={configureServer}
-              className="grid gap-3 rounded-xl border border-slate-200 p-4 lg:grid-cols-5 lg:items-end"
+              onSubmit={runTool}
+              className="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-4 lg:items-end"
             >
-              <input type="hidden" name="serverId" value={server.id} />
-              <label className="text-sm font-semibold text-slate-700 lg:col-span-2">
-                {server.name} hostname
-                <input
-                  name="hostname"
-                  type="text"
-                  required
-                  defaultValue={server.hostname}
-                  autoComplete="off"
-                  className={fieldClass}
-                />
-              </label>
               <label className="text-sm font-semibold text-slate-700">
-                HTTPS port
-                <select name="port" defaultValue="2087" className={fieldClass}>
-                  <option value="2087">2087</option>
-                  <option value="443">443</option>
+                Service
+                <select name="serviceId" required className={fieldClass}>
+                  {manageable.map((service) => (
+                    <option key={service.id} value={service.id}>
+                      {service.domain} · {service.status.toLowerCase()}
+                    </option>
+                  ))}
                 </select>
               </label>
               <label className="text-sm font-semibold text-slate-700">
-                WHM username
-                <input
-                  name="apiUsername"
-                  required
-                  autoComplete="username"
+                Action
+                <select
+                  value={tool}
+                  onChange={(event) =>
+                    setTool(event.target.value as AccountTool)
+                  }
                   className={fieldClass}
-                />
-              </label>
-              <label className="text-sm font-semibold text-slate-700">
-                New API token
-                <input
-                  name="apiToken"
-                  type="password"
-                  minLength={20}
-                  maxLength={512}
-                  required
-                  autoComplete="new-password"
-                  className={fieldClass}
-                />
-              </label>
-              <div className="flex flex-wrap gap-2 lg:col-span-5">
-                <Button type="submit" disabled={saving}>
-                  Encrypt and save cPanel
-                </Button>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  disabled={saving}
-                  onClick={() => void testServer(server.id)}
                 >
-                  Test {server.name}
-                </Button>
-                <span className="self-center text-xs font-semibold text-slate-500">
-                  Adapter: {server.adapterKey}
-                </span>
-              </div>
+                  <option value="GET_ACCOUNT">Check account</option>
+                  <option value="CHANGE_PACKAGE">Change package</option>
+                  <option value="CHANGE_PASSWORD">Change password</option>
+                  <option value="GENERATE_LOGIN_URL">Generate login URL</option>
+                </select>
+              </label>
+              {tool === 'CHANGE_PACKAGE' ? (
+                <label className="text-sm font-semibold text-slate-700">
+                  Panel package
+                  <input
+                    name="packageIdentifier"
+                    required
+                    pattern="[a-zA-Z0-9][a-zA-Z0-9_.-]*"
+                    className={fieldClass}
+                  />
+                </label>
+              ) : tool === 'CHANGE_PASSWORD' ? (
+                <label className="text-sm font-semibold text-slate-700">
+                  New password
+                  <input
+                    name="newPassword"
+                    type="password"
+                    minLength={16}
+                    required
+                    autoComplete="new-password"
+                    className={fieldClass}
+                  />
+                </label>
+              ) : (
+                <div />
+              )}
+              <Button type="submit" disabled={saving}>
+                Run account tool
+              </Button>
             </form>
-          ))}
-        </div>
-      </section>
-
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-        <h2 className="text-lg font-bold text-slate-950">Account tools</h2>
-        <p className="mt-1 text-sm text-slate-600">
-          Query an account, change its mapped package or password, or generate a
-          short-lived administrator login link.
-        </p>
-        {manageable.length ? (
-          <form
-            onSubmit={runTool}
-            className="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-4 lg:items-end"
-          >
-            <label className="text-sm font-semibold text-slate-700">
-              Service
-              <select name="serviceId" required className={fieldClass}>
-                {manageable.map((service) => (
-                  <option key={service.id} value={service.id}>
-                    {service.domain} · {service.status.toLowerCase()}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="text-sm font-semibold text-slate-700">
-              Action
-              <select
-                value={tool}
-                onChange={(event) => setTool(event.target.value as AccountTool)}
-                className={fieldClass}
-              >
-                <option value="GET_ACCOUNT">Check account</option>
-                <option value="CHANGE_PACKAGE">Change package</option>
-                <option value="CHANGE_PASSWORD">Change password</option>
-                <option value="GENERATE_LOGIN_URL">Generate login URL</option>
-              </select>
-            </label>
-            {tool === 'CHANGE_PACKAGE' ? (
-              <label className="text-sm font-semibold text-slate-700">
-                Panel package
-                <input
-                  name="packageIdentifier"
-                  required
-                  pattern="[a-zA-Z0-9][a-zA-Z0-9_.-]*"
-                  className={fieldClass}
-                />
-              </label>
-            ) : tool === 'CHANGE_PASSWORD' ? (
-              <label className="text-sm font-semibold text-slate-700">
-                New password
-                <input
-                  name="newPassword"
-                  type="password"
-                  minLength={16}
-                  required
-                  autoComplete="new-password"
-                  className={fieldClass}
-                />
-              </label>
-            ) : (
-              <div />
-            )}
-            <Button type="submit" disabled={saving}>
-              Run account tool
-            </Button>
-          </form>
-        ) : (
-          <div className="mt-5">
-            <EmptyState
-              title="No manageable accounts"
-              description="Provision an active hosting account before using account tools."
-            />
-          </div>
-        )}
-      </section>
+          ) : (
+            <div className="mt-5">
+              <EmptyState
+                title="No manageable accounts"
+                description="Provision an active hosting account before using account tools."
+              />
+            </div>
+          )}
+        </section>
+      </RecordAction>
 
       <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div className="border-b border-slate-200 px-5 py-4">

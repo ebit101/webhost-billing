@@ -2865,6 +2865,14 @@ report-only update must pass its own delivery gate; stop for the recommended pha
   There is no delete endpoint. Import, other product types, operating plans/prices
   and deployment require separate authorization.
 
+## ADR-139 - Table-first record management
+
+- **Date:** 2026-10-26
+- **Status:** Accepted
+- **Decision:** Follow the owner-provided WHMCS client-record example: compact filters and result summaries, colored column headers, dense rows and explicit record actions. Record collections are tables; creation/editing/operational forms open separately in accessible dialogs. Dedicated settings, account security, checkout and individual record documents retain their appropriate form/detail layouts.
+- **Constraints:** Reuse existing API queries, server pagination and authorization. Never infer a successful payment/provisioning operation from a UI action. Preserve exact identifiers, integer money, historical snapshots, mutation guards and confirmation requirements. Native modal dialogs isolate focus and support nested confirmations; closing creation dialogs preserves mounted drafts.
+- **Consequences:** Narrow screens scroll each table horizontally within the page. Existing bounded endpoints remain explicitly labeled; this presentation command does not introduce new bulk mutations or API pagination semantics. The local environment, logo, business database and providers remain untouched.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:
