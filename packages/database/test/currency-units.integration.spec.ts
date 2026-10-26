@@ -341,6 +341,8 @@ for (const priorCount of [22, 23])
       });
       const customerId = user.customer!.id;
       const product = await client.product.create({
+        // Historical schemas predate optional catalogue group membership.
+        select: { id: true, name: true },
         data: {
           slug: 'fictional-98',
           name: 'Fictional hosting',

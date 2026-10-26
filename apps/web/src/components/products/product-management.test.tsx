@@ -1,5 +1,5 @@
 import type { Product, PublicProduct } from '@webhost-billing/shared';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AdminProductManager } from './admin-product-manager';
@@ -10,6 +10,7 @@ const annualPriceId = '80000000-0000-4000-8000-000000000002';
 const monthlyPriceId = '80000000-0000-4000-8000-000000000003';
 
 const product: Product = {
+  groupId: null,
   id: productId,
   slug: 'business-hosting',
   name: 'Business Hosting',
@@ -75,12 +76,123 @@ const publicProduct: PublicProduct = {
 afterEach(() => vi.unstubAllGlobals());
 
 describe('product and pricing interfaces', () => {
+  it('creates, renames and orders groups and assigns or ungroups a product', async () => {
+    const user = userEvent.setup();
+    const groupId = '80000000-0000-4000-8000-000000000004';
+    const group = {
+      id: groupId,
+      name: 'Shared hosting',
+      displayOrder: 10,
+      createdAt: product.createdAt,
+      updatedAt: product.updatedAt,
+    };
+    const fetch = vi.fn(async (url: string, options?: RequestInit) => {
+      const body = options?.body
+        ? (JSON.parse(String(options.body)) as Record<string, unknown>)
+        : {};
+      if (url.endsWith('/auth/csrf'))
+        return jsonResponse({
+          success: true,
+          data: { csrfToken: 'fictional-token' },
+        });
+      if (url.endsWith('/products/groups') && options?.method === 'POST')
+        return jsonResponse({ success: true, data: group });
+      if (url.endsWith(`/products/groups/${groupId}`))
+        return jsonResponse({ success: true, data: { ...group, ...body } });
+      if (url.endsWith('/products/groups'))
+        return jsonResponse({ success: true, data: [] });
+      if (url.endsWith(`/products/${productId}`))
+        return jsonResponse({
+          success: true,
+          data: { ...product, ...body, updatedAt: new Date().toISOString() },
+        });
+      return jsonResponse({ success: true, data: [product] });
+    });
+    vi.stubGlobal('fetch', fetch);
+    render(<AdminProductManager />);
+    await screen.findByDisplayValue('business_pkg');
+    expect(
+      within(screen.getByRole('region', { name: 'Ungrouped' })).getByRole(
+        'button',
+        { name: /Business Hosting/ },
+      ),
+    ).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: 'Manage groups' }));
+    const create = within(
+      screen.getByRole('form', { name: 'Create product group' }),
+    );
+    await user.type(create.getByLabelText('Group name'), 'Shared hosting');
+    await user.clear(create.getByLabelText('Group order'));
+    await user.type(create.getByLabelText('Group order'), '10');
+    await user.click(create.getByRole('button', { name: 'Create group' }));
+    await screen.findByRole('form', { name: 'Edit Shared hosting' });
+    await user.selectOptions(screen.getByLabelText('Product group'), groupId);
+    await user.click(screen.getByRole('button', { name: 'Save details' }));
+    await screen.findByText('Product details saved.');
+    expect(
+      within(screen.getByRole('region', { name: 'Shared hosting' })).getByRole(
+        'button',
+        { name: /Business Hosting/ },
+      ),
+    ).toBeTruthy();
+    const edit = within(
+      screen.getByRole('form', { name: 'Edit Shared hosting' }),
+    );
+    await user.clear(edit.getByLabelText('Group name'));
+    await user.type(edit.getByLabelText('Group name'), 'Hosting plans');
+    await user.click(edit.getByRole('button', { name: 'Save group' }));
+    await screen.findByRole('region', { name: 'Hosting plans' });
+    await user.selectOptions(screen.getByLabelText('Product group'), '');
+    await user.click(screen.getByRole('button', { name: 'Save details' }));
+    await screen.findByText('Product details saved.');
+    expect(
+      within(screen.getByRole('region', { name: 'Ungrouped' })).getByRole(
+        'button',
+        { name: /Business Hosting/ },
+      ),
+    ).toBeTruthy();
+    expect(
+      fetch.mock.calls.some(
+        ([url, options]) =>
+          url.endsWith(`/products/${productId}`) &&
+          String(options?.body).includes(`"groupId":"${groupId}"`),
+      ),
+    ).toBe(true);
+  });
+
+  it('shows a group loading failure and retries both catalogue requests', async () => {
+    const user = userEvent.setup();
+    let failed = true;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) => {
+        if (url.endsWith('/products/groups') && failed)
+          throw new Error('Groups could not be loaded.');
+        return jsonResponse({
+          success: true,
+          data: url.endsWith('/products/groups') ? [] : [product],
+        });
+      }),
+    );
+    render(<AdminProductManager />);
+    expect(await screen.findByRole('alert')).toHaveProperty(
+      'textContent',
+      'Groups could not be loaded.',
+    );
+    failed = false;
+    await user.click(screen.getByRole('button', { name: 'Try again' }));
+    await screen.findByDisplayValue('business_pkg');
+  });
+
   it('loads the administrator catalogue with provisioning and pricing controls', async () => {
     vi.stubGlobal(
       'fetch',
-      vi
-        .fn()
-        .mockResolvedValue(jsonResponse({ success: true, data: [product] })),
+      vi.fn().mockImplementation(async (url: string) =>
+        jsonResponse({
+          success: true,
+          data: url.endsWith('/products/groups') ? [] : [product],
+        }),
+      ),
     );
     render(<AdminProductManager />);
     expect(await screen.findByDisplayValue('business_pkg')).toBeTruthy();

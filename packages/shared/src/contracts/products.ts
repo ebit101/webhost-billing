@@ -32,6 +32,7 @@ export const productPriceInputSchema = z
 
 const productFieldsSchema = z
   .object({
+    groupId: z.uuid().nullable(),
     slug: productSlugSchema,
     name: z.string().trim().min(2).max(160),
     description: z.string().trim().min(1).max(2_000).nullable(),
@@ -47,6 +48,7 @@ const productFieldsSchema = z
 
 export const createProductRequestSchema = productFieldsSchema
   .extend({
+    groupId: z.uuid().nullable().optional(),
     description: z.string().trim().min(1).max(2_000).optional(),
     publicVisible: z.boolean().default(false),
     displayOrder: z.number().int().min(0).max(10_000).default(0),
@@ -140,3 +142,21 @@ export type PublicProductQuery = z.infer<typeof publicProductQuerySchema>;
 export type ProductPrice = z.infer<typeof productPriceSchema>;
 export type Product = z.infer<typeof productSchema>;
 export type PublicProduct = z.infer<typeof publicProductSchema>;
+
+export const productGroupInputSchema = z
+  .object({
+    name: z.string().trim().min(2).max(160),
+    displayOrder: z.number().int().min(0).max(10_000),
+  })
+  .strict();
+
+export const productGroupSchema = productGroupInputSchema
+  .extend({
+    id: z.uuid(),
+    createdAt: z.iso.datetime({ offset: true }),
+    updatedAt: z.iso.datetime({ offset: true }),
+  })
+  .strict();
+
+export type ProductGroupInput = z.infer<typeof productGroupInputSchema>;
+export type ProductGroup = z.infer<typeof productGroupSchema>;

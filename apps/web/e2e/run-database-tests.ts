@@ -44,6 +44,7 @@ async function main(): Promise<void> {
       'currency-intent-storage',
       'currency-authorization-storage',
       'registrar-migration',
+      'product-groups-migration',
     ]) {
       const args = [...baseArgs, `test/${file}.integration.spec.ts`];
       execFileSync(

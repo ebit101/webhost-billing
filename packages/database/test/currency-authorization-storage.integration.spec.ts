@@ -387,6 +387,8 @@ async function priorFacts(s: Scope) {
     },
   });
   const product = await m.product.create({
+    // Historical schemas predate optional catalogue group membership.
+    select: { id: true, name: true },
     data: {
       slug: 'fictional-115',
       name: 'Fictional hosting',

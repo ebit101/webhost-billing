@@ -16,6 +16,8 @@ import type { ApiEnvironment } from '@webhost-billing/config';
 import {
   createApiSuccessResponse,
   createProductRequestSchema,
+  productGroupInputSchema,
+  type ProductGroupInput,
   productPriceInputSchema,
   publicProductQuerySchema,
   updateProductRequestSchema,
@@ -60,6 +62,50 @@ export class ProductController {
   @Roles('ADMIN')
   async list() {
     return createApiSuccessResponse(await this.products.listAdmin());
+  }
+
+  @Get('groups')
+  @Roles('ADMIN')
+  async groups() {
+    return createApiSuccessResponse(await this.products.listGroups());
+  }
+
+  @Post('groups')
+  @Roles('ADMIN')
+  @HttpCode(HttpStatus.CREATED)
+  async createGroup(
+    @Body(new ZodValidationPipe(productGroupInputSchema))
+    input: ProductGroupInput,
+    @CurrentAuth() auth: AuthRequestContext,
+    @Req() request: Request,
+  ) {
+    return createApiSuccessResponse(
+      await this.products.saveGroup(
+        undefined,
+        input,
+        auth,
+        this.context(request),
+      ),
+    );
+  }
+
+  @Patch('groups/:groupId')
+  @Roles('ADMIN')
+  async updateGroup(
+    @Param('groupId', new ParseUUIDPipe()) groupId: string,
+    @Body(new ZodValidationPipe(productGroupInputSchema))
+    input: ProductGroupInput,
+    @CurrentAuth() auth: AuthRequestContext,
+    @Req() request: Request,
+  ) {
+    return createApiSuccessResponse(
+      await this.products.saveGroup(
+        groupId,
+        input,
+        auth,
+        this.context(request),
+      ),
+    );
   }
 
   @Get(':productId')

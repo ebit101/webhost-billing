@@ -736,6 +736,8 @@ test('the one additive migration preserves every prior-24 row, immutable policy/
     });
     const customerId = user.customer!.id;
     const product = await old.models.product.create({
+      // Historical schemas predate optional catalogue group membership.
+      select: { id: true, name: true },
       data: {
         slug: 'fictional-104',
         name: 'Fictional hosting',

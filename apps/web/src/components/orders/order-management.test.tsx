@@ -20,6 +20,7 @@ const priceId = '90000000-0000-4000-8000-000000000003';
 const orderId = '90000000-0000-4000-8000-000000000004';
 
 const product: Product = {
+  groupId: null,
   id: productId,
   slug: 'starter-hosting',
   name: 'Starter Hosting',
