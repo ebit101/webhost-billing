@@ -16137,7 +16137,13 @@ Use this template after every future command:
 - Complete guarded database acceptance passed locally: 91 tests across 11 files,
   including the new group-migration test. It verifies every prior row/snapshot
   and lossless financial value survives, group membership starts null and the
-  group store starts empty. Renewed full CI/CodeQL and delivery remain pending.
+  group store starts empty.
+- The next hosted attempt passed package, database, API and financial invariant
+  suites, then caught the new browser test sharing an administrator whose five
+  logins were already consumed by the existing lifecycle tests. The new test now
+  creates a separate guarded fictional administrator and signs in normally.
+  Authentication rate limits and MFA are unchanged; renewed acceptance is pending.
+- The complete local API integration suite passed: 19 suites / 112 tests.
 - Further checks use separate loopback PostgreSQL/Redis containers and freshly
   owned fictional schemas. Concurrent broad checks exceeded Office memory;
   the memory-interrupted checks passed when rerun sequentially with fewer workers.

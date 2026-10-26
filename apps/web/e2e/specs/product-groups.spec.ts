@@ -1,13 +1,43 @@
 import { expect, test } from '@playwright/test';
+import { hash } from 'argon2';
+import { createPrismaClient } from '@webhost-billing/database';
 import { mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { assertBrowserDatabaseScope } from '../database-scope';
+import { E2E_DATABASE_URL, E2E_SCHEMA } from '../environment';
 import { E2E_ADMIN } from '../fixtures';
+
+const prisma = createPrismaClient(E2E_DATABASE_URL);
+test.afterAll(async () => prisma.$disconnect());
 
 test('administrator groups hosting plans and retains membership after reload on desktop and mobile', async ({
   page,
 }) => {
+  await assertBrowserDatabaseScope(prisma, E2E_DATABASE_URL, E2E_SCHEMA);
+  // A separate fictional identity preserves the shared lifecycle login budget.
+  const email = 'command133-catalogue-admin@example.test';
+  await prisma.user.create({
+    data: {
+      email,
+      passwordHash: await hash(E2E_ADMIN.password, {
+        type: 2,
+        memoryCost: 19_456,
+        timeCost: 2,
+        parallelism: 1,
+      }),
+      role: 'ADMIN',
+      status: 'ACTIVE',
+      emailVerifiedAt: new Date(),
+      adminProfile: {
+        create: {
+          displayName: 'Fictional Catalogue Administrator',
+          isSuperAdmin: true,
+        },
+      },
+    },
+  });
   await page.goto('/admin');
-  await page.getByLabel('Email address').fill(E2E_ADMIN.email);
+  await page.getByLabel('Email address').fill(email);
   await page.getByLabel('Password', { exact: true }).fill(E2E_ADMIN.password);
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await expect(
