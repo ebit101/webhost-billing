@@ -3,10 +3,10 @@
 ## Status Summary
 
 - **Current command:** Command 133 - Group hosting products for catalogue administration
-- **Current status:** Local implementation and validation passed in an isolated worktree; Git delivery acceptance is pending. Groups organize administrator catalogue work. Command 132 billing/contact and manual-payment inputs remain pending.
+- **Current status:** Completed locally and delivered to GitHub `main` through [PR #49](https://github.com/ebit101/webhost-billing/pull/49). Full CI, dependency review and CodeQL passed on source `96de55c`; Office fast-forwarded safely to merge `bf5527d`. Product groups organize administrator catalogue work. No deployment or Office business-database migration was performed. Command 132 billing/contact and manual-payment inputs remain pending.
 - **Last updated:** 2026-10-26
 - **Last recorded staging release:** Command 129, `5321ed7ee00ea4a11cc7e3fabdcb0f5509cae5a3`, deployed on 2026-10-25.
-- **Next command:** Review the local grouped catalogue; continue Command 132 when the owner supplies exact billing inputs. Deployment and real catalogue configuration need separate authorization.
+- **Next command:** Review the local grouped catalogue evidence; continue Command 132 when the owner supplies exact billing inputs. Deployment and real catalogue configuration need separate authorization.
 - **Next command authorized:** None automatically. No staging/business-database migration, import, live-provider activation or next product command.
 
 ## Command Reports
@@ -16083,84 +16083,89 @@ Use this template after every future command:
 
 ### Command 133 - Group hosting products for catalogue administration
 
-- **Status:** Local implementation validated; delivery acceptance pending
+- **Status:** Completed locally, validated and delivered to `main` through [PR #49](https://github.com/ebit101/webhost-billing/pull/49)
 - **Date:** 2026-10-26
+- **Validated source:** `96de55c63ff9fcbf026a340e2d91717ae85bb90a`; merge `bf5527d69d2be3ab13299b9efd375272f4d8644a`
 
-#### Scope implemented
+#### Scope completed
 
-- Added optional exact-ID group membership and group names/display order. The
+- Added optional exact-ID group membership, names and group display order. The
   additive migration leaves existing products ungrouped.
 - Added administrator-only list/create/edit APIs, strict bounded contracts,
   duplicate-name/unknown-group errors and transactional audit records.
-- Added Manage groups, group headings/counts and create/edit product selectors.
+- Added Manage groups, headings/counts and product create/edit group selectors.
   Existing activation, visibility, cPanel mapping and price versions remain.
 - Retained groups without a delete API; a restrictive foreign key protects
   referenced groups. Products can be explicitly ungrouped.
+- Kept groups administrative: public catalogue visibility and order eligibility
+  remain product properties. Historical service and invoice snapshots are unchanged.
 
 #### Files changed
 
-- Database schema/invariant verifier and `20261026140000_product_groups/migration.sql`.
-- Shared products contracts and `product-groups.spec.ts`.
+- Database schema, invariant verifier and `20261026140000_product_groups/migration.sql`.
+- Shared product contracts and `product-groups.spec.ts`.
 - API product controller/service and product integration tests.
-- Web product manager/tests, focused API runner option, browser acceptance spec
-  and two order test fixtures.
-- Historical migration fixtures in eight database integration files and the
-  guarded database runner; new product-groups upgrade preservation coverage.
+- Web product manager/tests, focused API runner option, guarded database runner,
+  browser acceptance spec and two order test fixtures.
+- Historical compatibility fixtures in eight database integration files and
+  `product-groups-migration.integration.spec.ts` for populated upgrade preservation.
 - This report, decision ADR-138 and the development command playbook.
 
 #### Validation
 
-- Node 24.20.0, pinned pnpm 11.22.0 frozen install and package builds passed.
-- Shared contracts: 124 passed. Full web suite: 67 files / 636 tests passed
-  with one worker; targeted product/order interfaces also passed all 56 checks.
-- API unit suite: 28 files / 129 tests passed. Focused products API integration:
-  4 tests passed, including grouped creation, invalid references, authorization,
-  CSRF, uniqueness, audit, restricted deletion and unchanged sale/price behavior.
-- Sequential workspace type checks, API/worker builds and all-app lint passed.
-- All 35 migrations, fictional seed and database invariant verification passed
-  on the separate command133 PostgreSQL container. Database verification now
-  expects the group table and display-order constraint.
-- All four offline documentation validators passed; changed-file formatting and
-  Git whitespace checks passed.
-- Local Chromium acceptance passed: create two groups in reverse order, assign a
-  product, reload and retain membership, inspect order and ungroup it. Desktop
-  (1440px) and mobile (375px) have no horizontal overflow; captured screenshots
-  were visually reviewed with CSS animations disabled. The first browser attempt
-  used an overly exact label selector and was stopped; a broader label also
-  matched the create form. The corrected combobox-role selector passed twice.
-- Screenshots are local ignored evidence in `release-artifacts/product-groups/`.
-- The first hosted CI attempt found historical-fixture assumptions: current
-  Prisma product returns requested a column absent from old schemas, and three
-  full-chain assertions still expected 34 migrations. Historical product creation
-  now selects only the existing ID/name fields; current full-chain counts are 35.
-  No currency runtime code or migration-history assertions were weakened.
-- Complete guarded database acceptance passed locally: 91 tests across 11 files,
-  including the new group-migration test. It verifies every prior row/snapshot
-  and lossless financial value survives, group membership starts null and the
-  group store starts empty.
-- The next hosted attempt passed package, database, API and financial invariant
-  suites, then caught the new browser test sharing an administrator whose five
-  logins were already consumed by the existing lifecycle tests. The new test now
-  creates a separate guarded fictional administrator and signs in normally.
-  Authentication rate limits and MFA are unchanged; renewed acceptance is pending.
-- The complete local API integration suite passed: 19 suites / 112 tests.
-- Further checks use separate loopback PostgreSQL/Redis containers and freshly
-  owned fictional schemas. Concurrent broad checks exceeded Office memory;
-  the memory-interrupted checks passed when rerun sequentially with fewer workers.
-  The broad API attempt was stopped after a test expected HTTP 422 instead of the
-  established HTTP 400 form-validation response; the corrected focused suite
-  passed. Full-suite Linux CI remains a separate delivery check.
+- Node 24.20.0 and pinned pnpm 11.22.0: frozen install and package builds passed.
+- Shared contracts: 124 tests passed. Web: 67 files / 636 tests passed.
+- API unit: 28 suites / 129 tests passed. Full API integration: 19 suites /
+  112 tests passed, including the four focused product tests.
+- Complete guarded database acceptance: 91 tests across 11 files passed. All
+  35 migrations, fictional seed and schema invariants passed in separate test
+  storage. Populated upgrade coverage verifies every prior product, price,
+  order, invoice, payment and service row/snapshot survives, including financial
+  values above JavaScript's safe-integer limit. New membership starts null and
+  the group store starts empty.
+- Full local browser suite: all 26 tests passed. Group creation/order, assignment,
+  reload persistence and ungrouping passed at 1440px and 375px with no horizontal
+  overflow. Desktop/mobile screenshots were reviewed with animations disabled.
+- Workspace type checks, API/worker builds, lint, formatting, Git whitespace and
+  all four offline documentation validators passed.
+- [Full hosted CI](https://github.com/ebit101/webhost-billing/actions/runs/40349285357)
+  and dependency review passed on `96de55c`, including package/API/invariant/browser
+  suites, administrator roles, production dependency audit/license inventory and
+  production builds. [CodeQL](https://github.com/ebit101/webhost-billing/actions/runs/40349285386)
+  also passed on that exact source.
+- Office was clean and fast-forwarded without reset, clean, force or auto-stash.
+  Confirmed ancestry of Command 127 commit
+  `168a80ddf143aa358eb62344b1df270b97b081a1`. Office `.env` SHA-256 remains
+  `D85F67011174E4D38A9A54DAFCB896653C7998798B056704BF918F3703892B5C`.
+- Local evidence copies are ignored files under
+  `release-artifacts/command133-product-groups/`.
+
+#### Resolved validation failures
+
+- Concurrent broad Office checks exceeded memory; sequential checks passed.
+- Corrected the API test to expect the existing HTTP 400 form-validation response.
+- Historical Prisma product fixtures now select only ID/name fields that existed
+  in their old schemas; three current-chain assertions now expect 35 migrations.
+  Migration-history assertions and currency runtime behavior were preserved.
+- Browser selectors now target the combobox role. The browser fixture uses its
+  own guarded fictional administrator because the shared lifecycle administrator
+  had consumed its five-login allowance. Normal sign-in, rate limits and MFA
+  rules remain unchanged. Full local and hosted browser suites then passed.
 
 #### Decisions, limits and open inputs
 
-- Groups organize administration; public visibility remains a product property.
-- No WHMCS import, new product types, real plans/prices or deployment is included.
-- Command 132 remains pending owner billing/contact and payment instructions.
-- Office environment, business database and logo are preserved. The migration
-  runs only in disposable test storage until separately approved.
+- No WHMCS import, other product types, actual plans/prices or deployment was included.
+- Office environment, existing business database and logo were preserved. The
+  migration ran only in disposable validation storage; applying it to a business
+  installation belongs to a separately authorized rollout.
+- Staging remains at the last recorded Command 129 release. Live providers were
+  not enabled and no staging setting was changed.
+- Command 132 remains pending owner billing/contact and manual-payment inputs.
+- No unresolved implementation or validation failure remains for Command 133.
 
 #### Recommended next command
 
-Review the local grouped catalogue. Continue **Command 132** after supplying the
-exact Speed Host billing contacts and manual-payment instructions. Any staging
-deployment or real catalogue setup needs separate authorization.
+Review the local grouped catalogue evidence. Continue **Command 132** after
+supplying the exact Speed Host billing contacts and manual-payment instructions.
+Any staging deployment, business-database migration or actual catalogue setup
+requires explicit separate authorization.
