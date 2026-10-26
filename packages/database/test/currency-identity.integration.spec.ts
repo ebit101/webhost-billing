@@ -840,6 +840,8 @@ test('the additive 26th migration preserves every prior-25 row, currency/auth/se
       },
     });
     const product = await models.product.create({
+      // Historical schemas predate optional catalogue group membership.
+      select: { id: true, name: true },
       data: {
         slug: 'fictional-110',
         name: 'Fictional hosting',

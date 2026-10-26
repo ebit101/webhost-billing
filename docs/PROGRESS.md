@@ -16104,6 +16104,8 @@ Use this template after every future command:
 - API product controller/service and product integration tests.
 - Web product manager/tests, focused API runner option, browser acceptance spec
   and two order test fixtures.
+- Historical migration fixtures in eight database integration files and the
+  guarded database runner; new product-groups upgrade preservation coverage.
 - This report, decision ADR-138 and the development command playbook.
 
 #### Validation
@@ -16127,7 +16129,15 @@ Use this template after every future command:
   used an overly exact label selector and was stopped; a broader label also
   matched the create form. The corrected combobox-role selector passed twice.
 - Screenshots are local ignored evidence in `release-artifacts/product-groups/`.
-  Hosted CI/CodeQL and delivery reconciliation remain pending.
+- The first hosted CI attempt found historical-fixture assumptions: current
+  Prisma product returns requested a column absent from old schemas, and three
+  full-chain assertions still expected 34 migrations. Historical product creation
+  now selects only the existing ID/name fields; current full-chain counts are 35.
+  No currency runtime code or migration-history assertions were weakened.
+- Complete guarded database acceptance passed locally: 91 tests across 11 files,
+  including the new group-migration test. It verifies every prior row/snapshot
+  and lossless financial value survives, group membership starts null and the
+  group store starts empty. Renewed full CI/CodeQL and delivery remain pending.
 - Further checks use separate loopback PostgreSQL/Redis containers and freshly
   owned fictional schemas. Concurrent broad checks exceeded Office memory;
   the memory-interrupted checks passed when rerun sequentially with fewer workers.
