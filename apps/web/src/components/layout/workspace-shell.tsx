@@ -82,7 +82,11 @@ export function WorkspaceShell({
         }`}
       >
         <div className="flex h-20 items-center justify-between border-b border-white/10 px-5">
-          <Brand inverse />
+          <Brand
+            inverse
+            href={mode === 'admin' ? '/admin' : '/'}
+            onClick={() => setMenuOpen(false)}
+          />
           <button
             ref={closeMenuRef}
             type="button"
