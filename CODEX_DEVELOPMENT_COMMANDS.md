@@ -5658,3 +5658,17 @@ billing inputs remain pending independently.
 - Preserve the environment, logo, database and existing Office work. Use fictional isolated test data; keep live providers disabled. No deployment or business-database migration.
 - Validate frontend behavior and responsive/accessibility regressions, run relevant tests/builds, update the report and deliver the verified command through the normal GitHub workflow.
 - Stop after this command. Command 132 still requires the owner's exact billing and payment inputs.
+
+### Commands 133–134 staging deployment follow-up
+
+Owner-authorized on 2026-10-27: deploy Commands 133–134 to the existing isolated
+staging installation at `my.speedhost.bd`. Verify an encrypted backup before
+building and another before migration/cutover. Preserve the environment,
+installation logo, existing products/prices and historical records. Apply the
+reviewed product-group migration, keeping existing products ungrouped. Keep live
+registrar/payment switches, WHM servers and custom SMTP disabled. Smoke-test
+grouped-product controls and tabular record pages through normal authenticated
+access; never bypass MFA or fabricate authenticated browser acceptance. Record
+checks and any pending owner-assisted acceptance, update the deployment/status
+reports and stop. No production launch, catalogue setup, import, payment or
+provisioning is included. Command 132's operating inputs remain pending.

@@ -1,6 +1,56 @@
 # Staging Deployment
 
-## Current staging release (2026-10-25, Command 129)
+## Current staging release (2026-10-27, Commands 133–134)
+
+- URL: `https://my.speedhost.bd`. Source and application image tags:
+  `6879484525e3989548bec8452d7fa22535379180`. This includes the validated product
+  groups, compact record tables and earlier administrator-logo navigation fix.
+  Exact-source [CI](https://github.com/ebit101/webhost-billing/actions/runs/40374242892)
+  and [CodeQL](https://github.com/ebit101/webhost-billing/actions/runs/40374242667)
+  passed before deployment. Previous source `5321ed7` and images are retained.
+- Fresh encrypted backup verified before building:
+  `/srv/webhost-billing-staging/backups/webhost-billing-webhost_billing_staging-20261026T183649Z.dump.gpg`.
+  Fresh pre-migration backup:
+  `/srv/webhost-billing-staging/backups/webhost-billing-webhost_billing_staging-20261026T184713Z.dump.gpg`.
+  Both passed checksum, OpenPGP integrity, PostgreSQL archive structure and
+  required-table checks. UTC artifact timestamps fall on October 26; deployment
+  was October 27 in Asia/Dhaka. These are same-host rollback backups.
+- Protected rollback inventory:
+  `/srv/webhost-billing-staging/rollback/release-20261026T184712Z-6879484525e3989548bec8452d7fa22535379180/`.
+  Preflight fingerprints, service inventories and read-only postflight helpers:
+  `/srv/webhost-billing-staging/acceptance/commands133-134-20261027-verified/`.
+- Four image types built on-host with Node 24 and pinned pnpm 11.22.0 using
+  frozen dependency installs and package/application builds. API runtime is
+  `v24.22.1`. Applied only `20261026140000_product_groups`: 35 migrations are
+  complete, zero unfinished. The new group store is empty and every existing
+  product remains ungrouped. No catalogue group, assignment, price or plan was
+  invented for the smoke test.
+- All seven services are healthy, application restart counts are zero and
+  exactly one scheduler is running. PostgreSQL, Redis, Mailpit and unrelated
+  running-container IDs are unchanged. Fingerprints match for 28 existing
+  business tables, including products (excluding the new nullable group column),
+  prices, customers, financial records, settings and provider-operation history.
+- Environment contents match preflight except `IMAGE_TAG`, with mode `0600`
+  retained. The release logo and served HTTPS asset match the original hash.
+  Office `.env` is unchanged. Registrar/payment flags remain false, WHM servers
+  remain disabled and custom SMTP remains disabled with Mailpit capture retained.
+  Business identity remains `Speed Host`. No payment, provisioning, registration
+  or external customer-email operation was requested by the deployment/smoke.
+- Public storefront, hosting catalogue, health/readiness, sign-in and logo
+  checks passed. Chromium loaded the existing Starter Hosting price and its
+  domain-choice order summary without submitting. Anonymous `/admin` shows
+  administrator sign-in with an unchecked remember option and continued-MFA
+  explanation. Legacy `/admin/login` redirects to `/admin`; protected session,
+  product-group, WHM and MessageDock API routes return 401. Browser API-origin
+  verification passed.
+- **Pending authenticated acceptance:** The Speed browser profile was not
+  connected during this deployment. The owner was asked to open it and finish
+  MFA privately. Group headings/tools, row actions/dialogs and administrator
+  record tables still need a signed-in staging browser smoke check. No session
+  was forged, MFA bypassed or authenticated UI result claimed. Complete that
+  acceptance within this deployment follow-up; Command 132 remains separate.
+
+## Prior staging release (2026-10-25, Command 129)
 
 - URL: `https://my.speedhost.bd`. Source and application image tags:
   `5321ed7ee00ea4a11cc7e3fabdcb0f5509cae5a3`. Authenticated `/login` visitors

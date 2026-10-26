@@ -2,12 +2,12 @@
 
 ## Status Summary
 
-- **Current command:** Command 134 - Make record pages table-first
-- **Current status:** Command 134 is completed, validated and delivered to `main` through PR #50. The Office checkout was safely fast-forwarded to the verified source. No deployment or Office business-database changes. Command 132 billing/contact inputs remain pending.
+- **Current command:** Commands 133–134 staging deployment follow-up
+- **Current status:** Deployed to staging; automated backup, migration, preservation, provider-boundary and public smoke checks passed. Authenticated group/table browser acceptance awaits the signed-in Speed profile. Command 132 billing/contact inputs remain pending.
 - **Last updated:** 2026-10-27
-- **Last recorded staging release:** Command 129, `5321ed7ee00ea4a11cc7e3fabdcb0f5509cae5a3`, deployed on 2026-10-25.
-- **Next command:** Continue Command 132 when the owner supplies billing details and explicitly authorizes that work.
-- **Next command authorized:** None. Command 134 is complete. No deployment, import or live-provider activation is authorized.
+- **Last recorded staging release:** Commands 133–134, `6879484525e3989548bec8452d7fa22535379180`, deployed on 2026-10-27.
+- **Next command:** Finish authenticated Commands 133–134 staging smoke checks in the Speed profile. Then continue Command 132 only with owner-supplied billing details and explicit authorization.
+- **Next command authorized:** The current staging acceptance follow-up only. No production launch, import, catalogue setup or live-provider activation.
 
 ## Command Reports
 
@@ -16219,3 +16219,33 @@ requires explicit separate authorization.
 #### Recommended next command
 
 Continue **Command 132 — Configure owner-approved staging billing details and manual-payment instructions** after the owner supplies the exact Speed Host billing contacts/payment instructions and explicitly authorizes continuation. Do not deploy or enable live providers as part of this completed command.
+
+### Commands 133–134 staging deployment — Grouped products and tabular records
+
+- **Status and date:** Deployed on 2026-10-27 (Asia/Dhaka). Automated operational/public checks passed; authenticated administrator group/table browser acceptance remains pending.
+- **Authorization:** Deploy the two completed commands to `my.speedhost.bd`, verify a backup first, preserve the environment/logo, keep live providers disabled and smoke-test the changed interfaces. This does not authorize production launch, actual catalogue setup or another product command.
+- **Source:** Clean, synchronized Office `main` at `6879484525e3989548bec8452d7fa22535379180`, including validated Commands 133–134 and the prior administrator-logo navigation fix. Exact-source [CI 40374242892](https://github.com/ebit101/webhost-billing/actions/runs/40374242892) and [CodeQL 40374242667](https://github.com/ebit101/webhost-billing/actions/runs/40374242667) passed before upload/build. Main-push dependency review was skipped as configured; full CI passed. The archive checksum and pinned-key SSH identity were verified.
+
+#### Deployment and preservation
+
+- Verified a fresh encrypted backup before image builds: `/srv/webhost-billing-staging/backups/webhost-billing-webhost_billing_staging-20261026T183649Z.dump.gpg`. The guarded release script verified another immediately before migration: `/srv/webhost-billing-staging/backups/webhost-billing-webhost_billing_staging-20261026T184713Z.dump.gpg`. Both passed encrypted checksum, OpenPGP integrity, PostgreSQL archive structure and required-table checks. UTC artifact timestamps are October 26; local deployment date is October 27. Backups remain same-host evidence, not off-site recovery acceptance.
+- Protected rollback inventory is `/srv/webhost-billing-staging/rollback/release-20261026T184712Z-6879484525e3989548bec8452d7fa22535379180/`. It retains the previous environment/release, verified backup path and before/after service inventories. Prior source `5321ed7ee00ea4a11cc7e3fabdcb0f5509cae5a3` and images remain available.
+- Built migration/API/web/worker images on-host with Node 24 and pinned pnpm 11.22.0, frozen installs and package/application builds. The API reports runtime `v24.22.1`. Applied only `20261026140000_product_groups`; the database now has 35 completed/zero unfinished migrations. Existing products remain ungrouped and the group store starts empty.
+- Only API, web, worker and scheduler were recreated. All seven owned services are healthy, application restart counts are zero and exactly one scheduler is running. PostgreSQL, Redis, Mailpit and unrelated running-container IDs match preflight.
+- Fingerprints match across 28 existing business tables, including products excluding the new nullable group column, product prices, customers, orders/items, invoices/items, payments/events, services, settings, encrypted credentials and provider-operation history. No catalogue plan/group/price, financial or provider test record was created.
+- Staging environment contents excluding `IMAGE_TAG`, mode `0600`, installation logo bytes and served logo bytes match preflight. Office `.env` SHA-256 remains `D85F67011174E4D38A9A54DAFCB896653C7998798B056704BF918F3703892B5C`. No Office business-database migration was performed.
+
+#### Smoke checks and validation
+
+- Public `/`, `/shared-hosting`, `/health`, `/ready`, `/login`, `/admin` and the preserved logo returned 200. Chromium loaded Starter Hosting at BDT 1,200.00/month and opened its domain-choice order summary with the existing product/price retained, without account/order submission.
+- Anonymous `/admin` displays administrator sign-in, unchecked “Remember this device” and the continued-MFA explanation. Legacy `/admin/login` returns 307 to `/admin`. `/auth/me`, `/products/groups`, `/hosting-panel/servers` and the MessageDock customer endpoint reject anonymous requests with 401. The browser API-origin check passed.
+- Registrar flags are false in API, worker and scheduler. API bKash/SSLCOMMERZ flags are false, WHM servers are disabled and decrypted custom SMTP configuration remains disabled. Existing Mailpit capture and the `Speed Host` business identity are preserved. No live provider action or external customer email was requested.
+- Read-only Prisma assertions passed for the new empty group store, null existing memberships, preserved business name and provider boundaries. The supplemental shell postflight passed preservation, service, migration, route and API-origin checks.
+- The Windows wrapper could not run because `gh` is unavailable. The same reviewed Bash release script was invoked over pinned SSH after checking the exact candidate's public GitHub check results. The first supplemental preflight pipe ended before backup because Docker consumed standard input; the unchanged active release was inspected, and a saved-file invocation completed backup/preflight successfully. A supplemental smoke expectation initially treated legacy `/admin/login` as 200; inspection confirmed its intended 307 redirect, and the corrected read-only postflight passed. No release retry or application fix was required.
+- Report formatting, Git whitespace and the four offline documentation validators passed before committing the documentation-only closure. These report changes do not alter the deployed source/image tag.
+
+#### Files, evidence and remaining acceptance
+
+- Tracked files changed: `CODEX_DEVELOPMENT_COMMANDS.md`, `docs/STAGING_DEPLOYMENT.md` and this report. Operational helpers/logs remain ignored under `release-artifacts/`; protected database fingerprints and provider assertions remain under `/srv/webhost-billing-staging/acceptance/commands133-134-20261027-verified/`. No secret, backup, customer data or logo asset is committed.
+- **Pending:** The Speed profile is not connected to browser control. The owner was asked to open it, sign in and complete MFA privately. Authenticated staging checks of product group headings/tools, compact customer/product/operational tables and record dialogs have not run. Successful local/hosted UI tests are recorded in Commands 133–134; they are not substituted for this staging acceptance.
+- **Exact recommended next command:** Finish this already-authorized staging acceptance with the signed-in Speed profile, using read-only row/group actions and closing forms without saving. Then stop. Continue Command 132 only after the owner supplies exact billing/payment inputs and authorizes continuation. Do not activate providers or deploy another release automatically.
