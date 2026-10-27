@@ -5714,3 +5714,18 @@ Validate with fictional isolated data, update the status report and deliver
 verified source through the normal Git workflow. Do not deploy, migrate an
 Office/staging business database, send actual customer messages, change the
 environment/logo or start another product command.
+
+### Commands 135–137 staging deployment follow-up
+
+Owner-authorized on 2026-10-27: deploy Commands 135–137 to the existing isolated
+staging installation at `my.speedhost.bd`. Verify an encrypted backup before
+building and another before migration/cutover. Preserve the environment,
+installation logo and existing business records. Apply only the reviewed
+notification migration and add the notification API prefix to the existing
+Nginx route without removing any existing prefix. Keep live providers, custom
+SMTP and new notification delivery disabled; retain Mailpit capture. Smoke-test
+administrator verification resend using a fictional customer, selected product
+tabs and Admin/Client notifications through normal authenticated access. Do not
+bypass MFA. Record any pending owner-assisted acceptance honestly, update the
+deployment/status reports and stop. No production launch, real-recipient message,
+live WhatsApp, catalogue setup, payment or provisioning is included.

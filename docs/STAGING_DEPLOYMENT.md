@@ -1,6 +1,72 @@
 # Staging Deployment
 
-## Current staging release (2026-10-27, Commands 133–134)
+## Current staging release (2026-10-27, Commands 135–137)
+
+- URL: `https://my.speedhost.bd`. Source and all application image tags:
+  `ed7a5941bd0b4287aaaacf5a4fb256c9879ce4ff`. Exact-source
+  [CI](https://github.com/ebit101/webhost-billing/actions/runs/40550661353) and
+  [CodeQL](https://github.com/ebit101/webhost-billing/actions/runs/40550661307)
+  passed before cutover. Previous `6879484525e3989548bec8452d7fa22535379180`
+  source, images and protected environment are retained.
+- Fresh encrypted pre-build backup:
+  `/srv/webhost-billing-staging/backups/webhost-billing-webhost_billing_staging-20261027T173052Z.dump.gpg`,
+  SHA-256 `274c9e0c8cbf9cc916b91afcd33f801435b248d037001a7a40655964d9008a23`.
+  Fresh pre-migration backup:
+  `/srv/webhost-billing-staging/backups/webhost-billing-webhost_billing_staging-20261027T174837Z.dump.gpg`,
+  SHA-256 `06f1d317f5a54bd9d6fe5544daef1394907152244b1c08c03f8fb53137e7727d`.
+  Both passed encrypted checksum, OpenPGP integrity, PostgreSQL archive and
+  required-table checks. These remain same-host rollback backups.
+- Rollback inventory:
+  `/srv/webhost-billing-staging/rollback/release-20261027T174836Z-ed7a5941bd0b4287aaaacf5a4fb256c9879ce4ff/`.
+  Protected fingerprints, service inventories, original Nginx configuration,
+  fictional fixture and corrected postflight evidence:
+  `/srv/webhost-billing-staging/acceptance/commands135-137-20261027-verified/`.
+- Four image types built with Node 24 and pinned pnpm 11.22.0, frozen dependency
+  installs and package/application builds. API runtime is `v24.22.1`. Applied
+  only `20261027150000_notification_plan`: 36 migrations complete, zero unfinished.
+  Migration-time capture prevents replaying historical events. No seed or reset.
+- All seven services are healthy; application restart counts are zero and one
+  scheduler runs. PostgreSQL, Redis, Mailpit and unrelated running-container IDs
+  are unchanged. Fingerprints match all 28 existing business tables. The sole
+  added business fixture is the explicitly fictional pending customer
+  `command135-137-20261027@example.test`, excluded by exact email from that
+  preservation comparison. Its orders, invoices and services are all zero.
+- Environment contents match except `IMAGE_TAG`, with mode `0600` retained.
+  The release and served logo hashes match preflight, and Office `.env` is
+  unchanged. Live registrar/payment switches, WHM servers and custom SMTP
+  remain disabled. Mailpit remains the existing email capture transport.
+  `NOTIFICATION_DELIVERY_MODE=disabled` is effective in API, worker and scheduler
+  through its safe Compose default; no environment entry was added or changed.
+- Nginx now routes `/notifications/*` to the API, retaining every original prefix.
+  The first operator helper accidentally omitted `hosting-panel`; the immediate
+  route check also ran before reload settled. Corrected the configuration from
+  the preserved original, validated syntax, reloaded and checked both protected
+  routes before successful full postflight. No application-source repair was
+  needed. Existing shared-host protocol-options warnings remain non-fatal.
+- Public storefront, catalogue, sign-in, logo, health/readiness and browser API
+  origin passed. Session, product-group, hosting-panel, MessageDock and all four
+  notification API routes reject anonymous requests with 401. Normal administrator
+  password submission requires MFA and issues no pre-MFA session. Fake payment
+  and hosting adapter contract smokes passed without external provider calls.
+- Fictional Client Chromium acceptance passed at 1440px and 375px: 21 catalogue
+  definitions, invoice-issued/overdue important WhatsApp flags, default-enabled
+  preferences without opt-in, globally disabled delivery, all three notification
+  tables, selected section semantics, containment, CSRF and administrator-route
+  rejection, `/login` redirect and normal sign-out/session rejection. Screenshots
+  were reviewed. No preference, billing, payment or provisioning change was made.
+- **Administrator acceptance:** Browser automation failed to initialize before
+  accessing the owner's Speed profile. The owner reported all three requested
+  checks passed: fictional resend/continued pending state, Details/Pricing colors
+  and hover without saving, and Admin notification/history tables with disabled
+  delivery. The product-tab and Admin notification results are owner-reported.
+  However, read-only server audit and Mailpit capture still show only the original
+  fictional registration event/token/message, with no administrator resend.
+  Asked the owner to submit the confirmation once for fictional customer
+  `00dc1285-3acb-493c-a97a-fc5e9970f63f` and report its exact result. Resend
+  capture/audit acceptance remains open; staging cooldown was not exercised.
+  Prior Commands 133–134 acceptance and Command 132 inputs remain separate.
+
+## Prior staging release (2026-10-27, Commands 133–134)
 
 - URL: `https://my.speedhost.bd`. Source and application image tags:
   `6879484525e3989548bec8452d7fa22535379180`. This includes the validated product
