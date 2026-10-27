@@ -3,11 +3,11 @@
 ## Status Summary
 
 - **Current command:** Command 136 — Highlight the selected product editor section
-- **Current status:** Command 136's bounded tab-color change passed local tests, browser checks, lint, type checking and production build; GitHub delivery is pending. No deployment. Commands 135–136 staging rollout, authenticated Commands 133–134 acceptance and Command 132 billing inputs remain pending.
+- **Current status:** Command 136 is complete, validated and delivered to `main` through PR #52. The Office checkout contains the verified implementation. No deployment. Commands 135–136 staging rollout, authenticated Commands 133–134 acceptance and Command 132 billing inputs remain pending.
 - **Last updated:** 2026-10-27
 - **Last recorded staging release:** Commands 133–134, `6879484525e3989548bec8452d7fa22535379180`, deployed on 2026-10-27.
 - **Next command:** Review Commands 135–136 and separately authorize their guarded staging rollout if accepted; finish pending Commands 133–134 browser acceptance in the Speed profile.
-- **Next command authorized:** Finish Command 136 source validation and delivery only. No Commands 135–136 deployment or next product command. No actual customer resend, SMTP activation or production launch.
+- **Next command authorized:** None. No Commands 135–136 deployment or next product command. No actual customer resend, SMTP activation or production launch.
 
 ## Command Reports
 
@@ -16294,11 +16294,12 @@ Continue **Command 132 — Configure owner-approved staging billing details and 
 
 ### Command 136 — Highlight the selected product editor section
 
-- **Status and date:** Locally validated on 2026-10-27; GitHub delivery pending.
+- **Status and date:** Completed, validated and delivered to `main` through [PR #52](https://github.com/ebit101/webhost-billing/pull/52) on 2026-10-27 (Asia/Dhaka).
 - **Scope:** The selected Details or Pricing button uses the existing primary teal background, white text and darker hover color. The other section retains the secondary white style. Existing keyboard focus, `aria-pressed`, switching and mounted drafts are preserved.
 - **Files changed:** `apps/web/src/components/products/admin-product-manager.tsx`, `CODEX_DEVELOPMENT_COMMANDS.md` and this report. No global button styles, business rules, dependencies or database schema changed.
 - **Validation:** Node 24.20.0 and pinned pnpm 11.22.0; frozen dependency installation and package builds passed. Focused product/dialog tests passed (10 tests), web lint, complete web/E2E type checking and production web build passed. Changed-file formatting, Git whitespace and all four offline documentation validators passed. The fresh checkout initially needed API/worker build artifacts for E2E type imports; building those prerequisites and rerunning resolved the missing imports.
 - **Browser evidence:** The actual product manager and application CSS passed an isolated fictional read-only Chromium preview at 1440px and 375px. Checked computed selected/unselected colors, darker selected hover, reciprocal selection, keyboard focus/Enter activation, unsaved details and pricing drafts, and horizontal containment. Desktop/mobile screenshots were reviewed. Temporary preview module-resolution setup failures were corrected before the successful run. This is component presentation evidence, not staging or authentication acceptance.
+- **Delivery:** Exact source `17bce8a2346a364a64c3a6d968bd662c5d7f8743` passed [full CI](https://github.com/ebit101/webhost-billing/actions/runs/40514692954), dependency review and [CodeQL](https://github.com/ebit101/webhost-billing/actions/runs/40514693004), including full package/API/invariant/browser and administrator-role suites, production audit/license inventory and production builds. Merge commit `488d67e17562479a14853fd8db1ca3fa976ad0a1` has exactly the validated source tree. The clean Office checkout fast-forwarded without reset, clean, force or auto-stash; Command 127 remains an ancestor. Office `.env` SHA-256 remains `D85F67011174E4D38A9A54DAFCB896653C7998798B056704BF918F3703892B5C`. Screenshots and the read-only preview harness are retained as ignored local evidence in `release-artifacts/command136-tabs/`. The temporary preview server stopped. This closure changes only the status report; hosted checks attest the implementation source above. No unresolved implementation or validation failure remains.
 - **Decision:** Reuse the existing primary/secondary button variants rather than adding a second tab palette or changing all secondary buttons. The selected color persists after moving the pointer away. No new business rule requires additional backend tests.
 - **Preservation and limits:** Validation did not connect to an Office or staging API or mutate business data. The Office `.env`, installation logo and live-provider configuration remain outside the change. No deployment or customer email. Commands 135–136 still need separately authorized staging rollout; authenticated Commands 133–134 acceptance and Command 132 operating inputs remain pending.
 - **Exact recommended next command:** Review Commands 135–136 and, if accepted, authorize their staging deployment with verified backups, preserved environment/logo, disabled live providers and fictional resend/tab-color smoke tests. Finish existing Commands 133–134 acceptance in the Speed profile. Do not start another command automatically.
