@@ -290,10 +290,10 @@ export const notificationCatalog = [
   {
     key: 'admin-delivery-failure',
     audience: 'ADMIN',
-    label: 'Email delivery needs attention',
+    label: 'Notification delivery needs attention',
     description:
-      'An email delivery failed or has an uncertain outcome. Review delivery history.',
-    path: '/admin/email',
+      'A notification failed or has an uncertain outcome. Review the failed background job.',
+    path: '/admin/automation',
     whatsApp: true,
     existingEmail: false,
   },
