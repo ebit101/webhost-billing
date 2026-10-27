@@ -13,6 +13,7 @@ The local Redis service uses AOF with `appendfsync always` so an acknowledged qu
 | Queue                           | Automatic attempts | Initial exponential backoff | Safety class                           |
 | ------------------------------- | -----------------: | --------------------------: | -------------------------------------- |
 | `emails`                        |                  5 |                   2 seconds | Retryable delivery                     |
+| `notifications`                 |                  5 |                   2 seconds | Idempotent local alert previews        |
 | `hosting-provisioning`          |                  1 |                        none | External mutation                      |
 | `hosting-suspension`            |                  1 |                        none | External mutation                      |
 | `hosting-unsuspension`          |                  1 |                        none | External mutation                      |
@@ -52,6 +53,24 @@ If the process stops after step 4, the stale lease is reclaimed and the same Bul
 The dispatcher interval, batch size, and lease timeout are configured through `OUTBOX_POLL_INTERVAL_MS`, `OUTBOX_BATCH_SIZE`, and `OUTBOX_LOCK_TIMEOUT_SECONDS`. `BULLMQ_PREFIX` isolates one environment's Redis keys.
 
 ## Email processor and graceful shutdown
+
+Command 137 adds `NOTIFICATION_DELIVERY_REQUESTED`, routed to
+`notifications` / `preview-notification`. Its durable outbox payload contains
+only schema version and notification UUID; the Redis envelope keeps the same
+reference-only boundary. The existing dedicated scheduler projects up to 100
+committed sources per poll under an advisory transaction lock, with an anti-join
+against processed source keys and a migration-time historical cutover. Domain
+and final-warning calendar scans use keyset pagination. Normal workers consume
+previews; scaling them does not create additional scheduler processes.
+
+New alert delivery is `disabled` by default, with `preview` the only enabled
+mode. The consumer rechecks current ownership, recipient, account/role, mute
+preference and relevant invoice/service/domain/ticket state. Previews are recorded
+as `PREVIEWED`, never as external delivery. Temporary preview failures use five
+bounded attempts and sanitized failure codes; the existing protected manual retry
+flow can reopen a temporary failure. Failure alerts exclude their own delivery
+and automation alert keys to prevent recursive notification storms. See
+[the notification catalogue](EMAIL_NOTIFICATIONS.md#admin-and-client-notification-plan-command-137).
 
 `@webhost-billing/queue` provides the shared `BackgroundWorker` registration boundary. Command 18 registers the `emails` queue consumer with configurable bounded concurrency. It reloads and validates the published outbox event from PostgreSQL, renders the message at the trusted boundary, and persists an `EmailLog` plus an append-only row for every adapter attempt. See `docs/EMAIL_NOTIFICATIONS.md` for the template catalog, SMTP classifications, preview transport, and secret boundary.
 

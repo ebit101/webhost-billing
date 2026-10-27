@@ -62,7 +62,7 @@ export type EmailTemplateModel =
     });
 
 export interface ResolvedEmailMessage {
-  templateKey: EmailTemplateKey;
+  templateKey: EmailTemplateKey | 'account-notification';
   recipientEmail: string;
   subject: string;
   text: string;

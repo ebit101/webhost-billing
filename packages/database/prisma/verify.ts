@@ -57,6 +57,10 @@ const expectedTables = [
   'integration_credentials',
   'invoice_items',
   'invoices',
+  'notification_entries',
+  'notification_epochs',
+  'notification_preferences',
+  'notification_sources',
   'order_items',
   'orders',
   'outbox_events',
@@ -210,6 +214,7 @@ async function verify(): Promise<void> {
       AND table_name <> '_prisma_migrations'
       AND table_name <> 'currency_controls'
       AND table_name <> 'currency_installations'
+      AND table_name <> 'notification_epochs'
     ORDER BY table_name
   `;
 
@@ -220,9 +225,16 @@ async function verify(): Promise<void> {
       name !== 'currency_controls' &&
       name !== 'currency_installations' &&
       name !== 'registrar_profiles' &&
+      name !== 'notification_epochs' &&
+      name !== 'notification_preferences' &&
+      name !== 'notification_sources' &&
       name !== 'currency_selection_intents',
   );
   assert.equal(idColumnTypes.length, uuidTables.length);
+  const notificationEpoch = await prisma.notificationEpoch.findUniqueOrThrow({
+    where: { id: 'main' },
+  });
+  assert.ok(notificationEpoch.startedAt instanceof Date);
   assert.deepEqual(
     idColumnTypes.map((row) => row.table_name),
     [...uuidTables].sort(),

@@ -87,6 +87,17 @@ Command 53's MFA enrollment and remembered-factor work remains separate.
 
 ## 1. Executive Summary
 
+**Notification direction — 2026-10-27:** Command 137 adds Admin and Client
+notification tables and account-owned history. Existing transactional email
+continues through its current pipeline. Missing account/security/operations
+alerts use disabled or local-preview delivery until separately authorized.
+WhatsApp is limited to important alerts, including new invoices, overdue notices,
+final suspension/domain-expiry warnings, service suspension/restoration, urgent
+support and administrator payment-review/security/operational failures. The owner
+requires no WhatsApp opt-in: a valid account or separately saved number is used
+automatically, with a preference to turn important alerts off. Saved numbers are
+encrypted; no live WhatsApp provider, external message or deployment is authorized.
+
 This project is a lightweight, open-source web-hosting billing and service-management system inspired by the useful core of WHMCS. Each installation is intended for one hosting business; public source distribution does not expand the product into a multi-tenant, worldwide, general-purpose hosting platform.
 
 The system will help the business owner:

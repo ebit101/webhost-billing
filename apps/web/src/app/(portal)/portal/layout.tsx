@@ -22,6 +22,7 @@ const navigation: WorkspaceNavigationItem[] = [
   },
   { href: '/portal/invoices', label: 'Invoices', icon: 'invoice' },
   { href: '/portal/support', label: 'Support', icon: 'support' },
+  { href: '/portal/notifications', label: 'Notifications', icon: 'bell' },
   { href: '/portal/profile', label: 'Profile & security', icon: 'user' },
 ];
 

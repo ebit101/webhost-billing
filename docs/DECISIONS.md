@@ -2881,6 +2881,15 @@ report-only update must pass its own delivery gate; stop for the recommended pha
 - **Constraints:** Resending changes no account, session, MFA, financial or access state. Verified, deleted, disabled, inactive and suspended targets are ineligible. Tokens retain the configured verification lifetime. Previously emailed links keep their expiry; the existing verification transaction allows activation only once while the account remains pending. This avoids invalidating a link already in a customer's inbox or changing the verification lock order. Queue acceptance is not delivery proof.
 - **Consequences:** A new audit records actor/customer/request/token-record IDs without a raw token or recipient. Tests use fictional accounts and preview delivery. No schema migration, deployment, SMTP activation or actual customer resend is authorized by this source command.
 
+## ADR-141 — Account notification catalogue and important WhatsApp previews
+
+- **Date:** 2026-10-27
+- **Status:** Accepted for local implementation by owner.
+- **Decision:** Provide separate Admin/Client catalogues and paginated account-owned histories. Keep the twelve transactional email templates and their existing delivery settings. Project missing notices from committed business outbox/audit/operation records into an idempotent notification ledger. Use the existing dedicated scheduler and a reference-only retryable notification queue.
+- **WhatsApp:** The owner explicitly includes invoice creation and overdue notices and requires no opt-in. Important alerts default on for valid account numbers or encrypted overrides; muting cancels queued WhatsApp alerts. Routine notices, password/verification links, receipts and daily digests remain email-only. Full-administrator operational alerts never fan out to restricted staff; staff can receive their own security notices.
+- **Safety:** New delivery defaults disabled; preview mode writes private local email/WhatsApp artifacts and never calls a live provider. Historical source cutover is the migration epoch, so migration does not replay old events. Canonical invoice/channel/recipient keys prevent duplicates; an anti-join catches late committed sources. Current account, role, recipient fingerprint and mutable business state are checked again at delivery. Job payloads contain references only; responses expose masked contacts and safe statuses, not tokens, ciphertext, metadata or provider errors.
+- **Consequence:** New notification tables need a separately authorized guarded staging migration. New alert emails and WhatsApp have no live delivery until a future explicitly authorized integration. Existing transactional SMTP remains independent. No financial/provisioning action, deployment or real customer message is part of this command.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

@@ -2,12 +2,12 @@
 
 ## Status Summary
 
-- **Current command:** Command 136 — Highlight the selected product editor section
-- **Current status:** Command 136 is complete, validated and delivered to `main` through PR #52. The Office checkout contains the verified implementation. No deployment. Commands 135–136 staging rollout, authenticated Commands 133–134 acceptance and Command 132 billing inputs remain pending.
+- **Current command:** Command 137 — Implement Admin and Client notification lists
+- **Current status:** Command 137 is implemented and locally validated; verified GitHub delivery is in progress. New notification delivery defaults disabled; local previews have no external provider. No deployment. Commands 135–137 staging rollout, authenticated Commands 133–134 acceptance and Command 132 billing inputs remain pending.
 - **Last updated:** 2026-10-27
 - **Last recorded staging release:** Commands 133–134, `6879484525e3989548bec8452d7fa22535379180`, deployed on 2026-10-27.
-- **Next command:** Review Commands 135–136 and separately authorize their guarded staging rollout if accepted; finish pending Commands 133–134 browser acceptance in the Speed profile.
-- **Next command authorized:** None. No Commands 135–136 deployment or next product command. No actual customer resend, SMTP activation or production launch.
+- **Next command:** Finish Command 137 validation and delivery, then review Commands 135–137 and separately authorize their guarded staging rollout if accepted; finish pending Commands 133–134 browser acceptance in the Speed profile.
+- **Next command authorized:** Command 137 only. No deployment or next product command. No actual customer message, SMTP activation, live WhatsApp or production launch.
 
 ## Command Reports
 
@@ -16303,3 +16303,46 @@ Continue **Command 132 — Configure owner-approved staging billing details and 
 - **Decision:** Reuse the existing primary/secondary button variants rather than adding a second tab palette or changing all secondary buttons. The selected color persists after moving the pointer away. No new business rule requires additional backend tests.
 - **Preservation and limits:** Validation did not connect to an Office or staging API or mutate business data. The Office `.env`, installation logo and live-provider configuration remain outside the change. No deployment or customer email. Commands 135–136 still need separately authorized staging rollout; authenticated Commands 133–134 acceptance and Command 132 operating inputs remain pending.
 - **Exact recommended next command:** Review Commands 135–136 and, if accepted, authorize their staging deployment with verified backups, preserved environment/logo, disabled live providers and fictional resend/tab-color smoke tests. Finish existing Commands 133–134 acceptance in the Speed profile. Do not start another command automatically.
+
+### Command 137 — Implement Admin and Client notification lists
+
+- **Status and date:** Implemented and locally validated on 2026-10-27 (Asia/Dhaka); exact-source hosted checks and verified delivery remain in progress. No deployment.
+- **Authorization:** Implement the agreed notification plan locally, validate and update the report. The owner explicitly added invoice-created and overdue WhatsApp alerts and clarified that no opt-in is required. Preserve the environment/logo and keep live providers disabled.
+
+#### Scope completed
+
+- Added 34 role-specific notification definitions (21 Client, 13 Admin), table-first notification lists, paginated account-owned alert and transactional email histories, masked preferences and real header-bell navigation. Restricted staff see their own security notices only. Selected sections reuse the existing brand color.
+- Important WhatsApp alerts default on with a valid account phone or encrypted saved international number. Invoice issued and overdue are included, alongside final suspension/domain-expiry warnings, service suspension/restoration, urgent support and administrator review/security/operational failures. Routine messages and action tokens remain email-only. Muting cancels queued alerts and preserves the saved number; no consent/opt-in field exists.
+- Preserved the twelve-template transactional email pipeline. Missing account/security/payment-adjustment/domain/operations/daily-summary notices use a separate generic email preview ledger, without duplicating existing transactional email events. Saved email branding is reused.
+- Added four notification tables with a migration-time historical cutover, canonical per-recipient/channel invoice deduplication and processed-source anti-joins. The existing dedicated scheduler projects committed events and calendar notices; the worker consumes reference-only jobs. Domain scans cover multiple keyset pages. No billing, payment, domain or provisioning mutation is performed by a notification.
+- Added fresh delivery checks for account status/ownership, current staff role, encrypted recipient fingerprint, mute preference and mutable invoice/service/domain/ticket/payment state. Local failures retain sanitized five-attempt retry state; the existing protected temporary-failure manual retry path remains available. Failure alerts cannot recursively alert on themselves.
+- Delivery-failure alerts use a general notification label and link to Automation, where both transactional email and new preview-job failures can be reviewed and retried through existing guards.
+- New delivery defaults `disabled`; `preview` is the only other mode. The provider-neutral WhatsApp adapter writes atomic private masked artifacts and has no network client or credentials. Generic emails use the existing private preview transport. Preview history explicitly says local preview, not sent. Existing transactional email settings remain independent.
+
+#### Files changed
+
+- Shared notification catalogue/contracts and background-job routing; common environment schema; Prisma notification tables/migration, database-verifier inventory/key checks and three existing migration-count acceptance fixtures.
+- API notifications module/controller/service and three existing gateway-test environment fixtures.
+- Worker notification projection, scheduler registration, delivery consumer, private WhatsApp adapter and preview unit test; generic preview email type.
+- Admin/portal routes and navigation, shared notification manager, header bell, staff self-access path, UI/contract/guarded database/browser regressions.
+- Sample environment/production compose forwarding and staging Nginx API-prefix source configuration only; no deployed configuration change.
+- Product plan, command playbook, ADR-141, email/background-job documentation and this report.
+
+#### Validation and constraints
+
+- Node 24.20.0 / pinned pnpm 11.22.0: frozen-lockfile install and package builds passed. All 36 migrations applied successfully in dedicated fictional validation databases/schemas. No Office or staging business database was migrated.
+- API and worker builds and final strict API/worker/web/E2E type checks passed. Shared contracts: 127 tests passed. Full API unit suite: 28 suites / 129 tests passed. Queue suite: 3 tests passed. The private WhatsApp adapter unit test passed, covering deterministic atomic artifacts, masking and private file permissions on supported platforms.
+- Guarded Chromium/database acceptance: the final run passed all 3 tests, covering the Admin/Client journey, boundary cases and final suspension-policy case. Coverage includes automatic important invoice/overdue WhatsApp without a preference row, canonical duplicate invoice events, concurrent delivery, integer amounts beyond JavaScript's safe range, unchanged financial state, paid-overdue suppression, CSRF/input/owner isolation, encrypted saved numbers retained while muted, account-owned historical email, current role/account eligibility, default-disabled mode, invalid numbers, 101-domain keyset coverage, stale expiry suppression, closed WhatsApp allowlist, malformed references and five bounded preview failures followed by explicit temporary retry. Disabling the renewal policy suppresses queued final warnings while preserving the active service and unpaid invoice. Desktop/mobile table containment passed at 1440/375 pixels; fictional captures were visually reviewed.
+- Full frontend regression run: 69 files / 648 cases executed; 643 passed and five existing order/invoice cases failed under the loaded PC's five-second/async deadlines. All 75 tests across the three affected files then passed with one worker and a local 30-second test deadline; assertions and repository timeouts were unchanged. The new notification/header cases passed in the full run. No unresolved assertion failure remains; hosted CI must still run the standard configuration.
+- This PC's application-control policy blocks the native Next.js SWC binary. The tsx-loaded Next CLI with Webpack successfully compiled and completed the production web build. No host policy was changed. An initial development-server browser attempt also encountered the existing CommonJS React Refresh incompatibility; the guarded acceptance harness now uses the actual production build on loopback. The standard Linux CI path remains unchanged.
+- API/worker/web lint, full-repository Prettier, Git whitespace and all four offline documentation validators passed. Initial invoice/domain fixtures violated existing due-date and ownership triggers; correcting the fixtures and using fully linked fictional quote/order/invoice records resolved those failures without changing the safeguards. A missing test-only API port and an attempted use of the decrypt-only worker cipher were corrected before successful strict checks and retry acceptance.
+- The first hosted CI attempt applied all migrations and seeded successfully, then caught an omitted database-verifier inventory update for the four new tables. Added the inventory entries, explicit non-UUID key exclusions and cutover-epoch presence check. Fresh dedicated fictional migration, seed and `pnpm db:verify` then passed locally. The initial recreation attempt ran before PostgreSQL was ready; readiness was checked before the successful run. No schema guard was weakened.
+- A broader database acceptance run exposed three legacy fixtures still asserting 35 migrations. Updated those exact inventory assertions to 36, preserving all search-path, ownership, missing-table and fail-closed assertions. The full guarded database acceptance launcher passed all 11 suites / 91 cases, followed by fictional seed and schema verification. No currency behavior or authority is changed.
+- Hosted API acceptance caught one legacy eight-queue assertion after the notification queue made nine. The fixture now asserts all nine queues and explicitly requires notifications. The complete guarded API rerun passed 19 suites / 113 cases. Hosted package checks also passed all 648 frontend cases under the standard configuration, along with the package, database and worker suites.
+- Exact-source hosted CI, CodeQL and dependency review remain required before merge. The Office `.env` hash still matches `D85F67011174E4D38A9A54DAFCB896653C7998798B056704BF918F3703892B5C`; no business environment or logo change is staged.
+
+#### Preservation, limits and recommended next command
+
+- Work is isolated in the managed `codex/notification-plan` worktree. The Office environment, installation logo and business data are outside the change. Dedicated loopback test containers and fresh marked schemas contain fictional records only. Nothing was deployed or sent to a real recipient; no live provider or custom SMTP was enabled.
+- The last recorded staging release remains `6879484525e3989548bec8452d7fa22535379180` (Commands 133–134). New alert emails and WhatsApp currently support preview only; live delivery requires a future explicitly authorized integration. A staging rollout also requires the reviewed new migration and a verified backup.
+- **Exact recommended next command:** After Command 137 validation/delivery completes, review Commands 135–137 and separately authorize their guarded staging rollout with verified backups, preserved environment/logo, disabled live providers and fictional notification/resend/tab-color smoke tests. Finish Commands 133–134 authenticated acceptance in the Speed profile and supply Command 132 billing/payment inputs. Do not start another product command automatically.

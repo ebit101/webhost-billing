@@ -200,14 +200,13 @@ export function WorkspaceShell({
           <span className="hidden rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600 sm:inline-flex">
             Fictional workspace
           </span>
-          <button
-            type="button"
+          <Link
+            href={`/${mode}/notifications`}
             className="relative grid size-10 place-items-center rounded-xl text-slate-600 hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-600"
           >
             <span className="sr-only">View notifications</span>
             <Icon name="bell" className="size-5" />
-            <span className="absolute right-2 top-2 size-2 rounded-full border-2 border-white bg-red-500" />
-          </button>
+          </Link>
           <Link
             href="/account"
             className="grid size-10 place-items-center rounded-xl bg-slate-950 text-xs font-bold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"

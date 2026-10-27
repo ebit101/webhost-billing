@@ -36,6 +36,24 @@ const navigation: WorkspaceNavigationItem[] = [
 ];
 
 describe('WorkspaceShell', () => {
+  it.each(['portal', 'admin'] as const)(
+    'opens the real %s notification list without a fictional unread badge',
+    (mode) => {
+      render(
+        <WorkspaceShell
+          mode={mode}
+          navigation={navigation}
+          userName="Fictional User"
+          userDetail="fictional@example.test"
+        >
+          <p>Account</p>
+        </WorkspaceShell>,
+      );
+      const link = screen.getByRole('link', { name: 'View notifications' });
+      expect(link.getAttribute('href')).toBe(`/${mode}/notifications`);
+      expect(link.querySelector('.bg-red-500')).toBeNull();
+    },
+  );
   it('opens and closes responsive navigation with accessible controls', async () => {
     const user = userEvent.setup();
     render(
