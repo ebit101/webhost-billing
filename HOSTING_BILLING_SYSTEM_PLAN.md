@@ -596,6 +596,9 @@ Modules should share one database but interact through application services and 
 
 - Use framework-provided password hashing and session security.
 - Require email verification where appropriate.
+- Full administrators can deliberately resend a pending customer's verification
+  email through the protected, audited queue. Resending never verifies or
+  activates an account, and tokens remain private to the customer email flow.
 - Add optional two-factor authentication for administrators.
 - Apply authorization checks to every administrator and customer action.
 - Prevent customers from accessing another customer's resources by changing an ID in a URL.

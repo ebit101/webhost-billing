@@ -20,6 +20,7 @@ import {
   createCustomerRequestSchema,
   createPaginatedApiSuccessResponse,
   customerListQuerySchema,
+  resendCustomerVerificationRequestSchema,
   updateCustomerAccessRequestSchema,
   updateCustomerBillingRequestSchema,
   updateCustomerProfileRequestSchema,
@@ -40,6 +41,8 @@ import { RequireCustomerOwnership } from '../auth/decorators/customer-ownership.
 import { Roles } from '../auth/decorators/roles.decorator';
 import { StaffPermissionRequired } from '../auth/decorators/staff-permission.decorator';
 import { AuthCookieService } from '../auth/services/auth-cookie.service';
+import { AuthService } from '../auth/services/auth.service';
+import { AuthRateLimit } from '../auth/decorators/rate-limit.decorator';
 import { CustomerService } from './customer.service';
 
 @Controller('customers')
@@ -49,6 +52,7 @@ export class CustomerController {
   constructor(
     private readonly customers: CustomerService,
     private readonly cookies: AuthCookieService,
+    private readonly authService: AuthService,
     @Inject(API_ENVIRONMENT) environment: ApiEnvironment,
   ) {
     this.auditSecret = environment.SESSION_SECRET;
@@ -154,6 +158,31 @@ export class CustomerController {
         this.context(request),
       ),
     );
+  }
+
+  @Post(':customerId/resend-verification')
+  @Roles('ADMIN')
+  @HttpCode(HttpStatus.ACCEPTED)
+  @AuthRateLimit({
+    scope: 'customer-verification-resend',
+    limit: 10,
+    windowMs: 15 * 60_000,
+    includeEmail: false,
+  })
+  async resendVerification(
+    @Param('customerId', new ParseUUIDPipe()) customerId: string,
+    @Body(new ZodValidationPipe(resendCustomerVerificationRequestSchema))
+    input: { requestId: string },
+    @CurrentAuth() auth: AuthRequestContext,
+    @Req() request: Request,
+  ) {
+    await this.authService.resendCustomerVerification(
+      customerId,
+      input.requestId,
+      auth,
+      this.context(request),
+    );
+    return createApiSuccessResponse({ message: 'Verification email queued.' });
   }
 
   @Post(':customerId/change-password')

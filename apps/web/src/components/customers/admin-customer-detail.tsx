@@ -14,6 +14,7 @@ import { RecordAction } from '../ui/record-dialog';
 import { DataTable } from '../ui/data-table';
 import { PageHeader } from '../ui/page-header';
 import { StatusBadge } from '../ui/status-badge';
+import { CustomerVerificationAction } from './customer-verification-action';
 import {
   Card,
   Field,
@@ -196,6 +197,15 @@ export function AdminCustomerDetail({ customerId }: { customerId: string }) {
         <StatusBadge tone={customer.emailVerified ? 'success' : 'warning'}>
           {customer.emailVerified ? 'Email verified' : 'Verification pending'}
         </StatusBadge>
+        <CustomerVerificationAction
+          key={customer.id}
+          customer={customer}
+          disabled={saving}
+          onFeedback={(message, failed) => {
+            setError(failed ? message : '');
+            setNotice(failed ? '' : message);
+          }}
+        />
         <StatusBadge
           tone={customer.accountStatus === 'ACTIVE' ? 'success' : 'neutral'}
         >

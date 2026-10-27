@@ -96,6 +96,10 @@ export const updateCustomerAccessRequestSchema = z
   .object({ active: z.boolean() })
   .strict();
 
+export const resendCustomerVerificationRequestSchema = z
+  .object({ requestId: z.uuid() })
+  .strict();
+
 export const changeCustomerPasswordRequestSchema = z
   .object({
     currentPassword: z.string().min(1).max(128),

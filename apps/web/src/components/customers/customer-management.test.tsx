@@ -210,6 +210,170 @@ describe('customer management interfaces', () => {
     expect(screen.getByText('Verified')).toBeTruthy();
   });
 
+  it('confirms a verification resend, queues once and keeps the account unverified', async () => {
+    let finish: ((response: Response) => void) | undefined;
+    const pending = {
+      ...detail,
+      emailVerified: false,
+      accountStatus: 'PENDING_VERIFICATION' as const,
+    };
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.endsWith('/resend-verification'))
+        return new Promise<Response>((resolve) => {
+          finish = resolve;
+        });
+      if (url.endsWith('/auth/csrf'))
+        return jsonResponse({
+          success: true,
+          data: { csrfToken: 'fictional-csrf' },
+        });
+      return jsonResponse({
+        success: true,
+        data: url.endsWith('/settings') ? DEFAULT_BUSINESS_SETTINGS : pending,
+      });
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    render(<AdminCustomerDetail customerId={detail.id} />);
+    const user = userEvent.setup();
+    const action = await screen.findByRole('button', {
+      name: 'Resend verification email',
+    });
+    await user.click(action);
+    expect(screen.getByRole('alertdialog').textContent).toContain(detail.email);
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(
+      fetchMock.mock.calls.some(([input]) =>
+        String(input).endsWith('/resend-verification'),
+      ),
+    ).toBe(false);
+    await user.click(action);
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Queue verification email',
+      }),
+    );
+    await waitFor(() => expect(finish).toBeDefined());
+    expect(
+      (screen.getByRole('button', { name: 'Working…' }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(true);
+    await act(async () =>
+      finish!(
+        jsonResponse(
+          { success: true, data: { message: 'Verification email queued.' } },
+          202,
+        ),
+      ),
+    );
+    expect((await screen.findByRole('status')).textContent).toContain(
+      'Verification email queued',
+    );
+    expect(screen.getByText('Verification pending')).toBeTruthy();
+    expect((action as HTMLButtonElement).disabled).toBe(true);
+    expect(
+      fetchMock.mock.calls.filter(([input]) =>
+        String(input).endsWith('/resend-verification'),
+      ),
+    ).toHaveLength(1);
+  });
+
+  it('retains the resend request key after a lost response so retries cannot duplicate email', async () => {
+    const bodies: string[] = [];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL, options?: RequestInit) => {
+        const url = String(input);
+        if (url.endsWith('/resend-verification')) {
+          bodies.push(String(options?.body));
+          if (bodies.length === 1)
+            throw new Error('Connection interrupted. Try again.');
+          return jsonResponse(
+            { success: true, data: { message: 'Verification email queued.' } },
+            202,
+          );
+        }
+        if (url.endsWith('/auth/csrf'))
+          return jsonResponse({
+            success: true,
+            data: { csrfToken: 'fictional-csrf' },
+          });
+        return jsonResponse({
+          success: true,
+          data: url.endsWith('/settings')
+            ? DEFAULT_BUSINESS_SETTINGS
+            : {
+                ...detail,
+                emailVerified: false,
+                accountStatus: 'PENDING_VERIFICATION',
+              },
+        });
+      }),
+    );
+    render(<AdminCustomerDetail customerId={detail.id} />);
+    const user = userEvent.setup();
+    await user.click(
+      await screen.findByRole('button', {
+        name: 'Resend verification email',
+      }),
+    );
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Queue verification email',
+      }),
+    );
+    expect((await screen.findByRole('alert')).textContent).toContain(
+      'Connection interrupted',
+    );
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Resend verification email',
+      }),
+    );
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Queue verification email',
+      }),
+    );
+    await screen.findByRole('status');
+    expect(bodies).toHaveLength(2);
+    expect(bodies[1]).toBe(bodies[0]);
+    const body = JSON.parse(bodies[0]) as { requestId: string };
+    expect(Object.keys(body)).toEqual(['requestId']);
+    expect(body.requestId).toMatch(/^[0-9a-f-]{36}$/);
+  });
+
+  it.each([
+    detail,
+    { ...detail, emailVerified: false, accountStatus: 'DISABLED' as const },
+    {
+      ...detail,
+      emailVerified: false,
+      status: 'INACTIVE' as const,
+      accountStatus: 'PENDING_VERIFICATION' as const,
+    },
+  ])(
+    'omits resend for verified or unavailable accounts ($accountStatus)',
+    async (customer) => {
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(async (input: RequestInfo | URL) =>
+          jsonResponse({
+            success: true,
+            data: String(input).endsWith('/settings')
+              ? DEFAULT_BUSINESS_SETTINGS
+              : customer,
+          }),
+        ),
+      );
+      render(<AdminCustomerDetail customerId={customer.id} />);
+      await screen.findByRole('heading', { name: 'Operational context' });
+      expect(
+        screen.queryByRole('button', { name: 'Resend verification email' }),
+      ).toBeNull();
+    },
+  );
+
   it('loads the signed-in customer profile and exposes permitted profile fields', async () => {
     const fetchMock = vi
       .fn()

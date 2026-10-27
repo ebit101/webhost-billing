@@ -242,6 +242,12 @@ describe('staff roles in an isolated fictional schema (e2e)', () => {
       .send({ role: 'FULL_ADMINISTRATOR' })
       .expect(403);
     await billing.get('/invoices/my').expect(403);
+    for (const restricted of [billing, support]) {
+      await restricted
+        .post(`/customers/${randomUUID()}/resend-verification`)
+        .send({ requestId: randomUUID(), role: 'FULL_ADMINISTRATOR' })
+        .expect(403);
+    }
     await request(app.getHttpServer()).get('/staff').expect(401);
     const customer = await prisma.user.create({
       data: {
