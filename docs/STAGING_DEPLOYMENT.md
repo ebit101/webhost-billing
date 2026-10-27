@@ -1,5 +1,34 @@
 # Staging Deployment
 
+## SMTP activation and owner verification (2026-10-28)
+
+- The owner explicitly authorized enabling the existing SMTP configuration and
+  resending their verification email. Custom SMTP is now **active** for existing
+  transactional email, superseding the older disabled-SMTP state below. Application
+  release remains `ed7a5941bd0b4287aaaacf5a4fb256c9879ce4ff`; no deployment occurred.
+- The existing `smtp.mailchannels.net:587` configuration passed required STARTTLS,
+  certificate validation and authentication. No pending email backlog existed;
+  three old failed queue jobs were retained without retry. A root-protected
+  encrypted configuration baseline and preservation hashes are under
+  `/srv/webhost-billing-staging/acceptance/smtp-enable-20261028/`.
+- UI automation could not initialize, so the owner used the existing protected
+  activation/resend controls. Audited activation was 00:17:56 and resend 00:18:44
+  on October 28, Asia/Dhaka. Its outbox is published and SMTP sent the message on
+  the first attempt at 00:18:48, with no delivery-attempt failure.
+- The connected recipient Gmail Inbox contains the exact submitted Message-ID;
+  the message is outside Spam and SPF/DMARC pass. The owner's success screenshot
+  is backed by read-only assertions: account active, email verified and newest
+  verification token consumed. Tokens and recipient data remain outside Git.
+- Saved SMTP fields/credentials, environment and logo match the baseline except
+  the intended encrypted SMTP activation flag. All seven services remain healthy.
+  Payment, WHM/hosting, registrar and new notification/WhatsApp delivery remain
+  disabled. No additional external message or provider action was performed.
+- Earlier fictional acceptance queries and the owner's existing account were
+  different targets. The earlier owner resend was correctly captured in Mailpit;
+  it was not delivered to Gmail while custom SMTP was disabled. Fictional staging
+  resend/cooldown coverage remains separate; owner-requested SMTP delivery and
+  account verification are now confirmed.
+
 ## Current staging release (2026-10-27, Commands 135–137)
 
 - URL: `https://my.speedhost.bd`. Source and all application image tags:

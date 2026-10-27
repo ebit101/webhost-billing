@@ -5729,3 +5729,15 @@ tabs and Admin/Client notifications through normal authenticated access. Do not
 bypass MFA. Record any pending owner-assisted acceptance honestly, update the
 deployment/status reports and stop. No production launch, real-recipient message,
 live WhatsApp, catalogue setup, payment or provisioning is included.
+
+### Staging SMTP and owner verification follow-up
+
+Owner-authorized on 2026-10-28: enable the existing saved SMTP on staging, resend
+the owner's verification email and verify delivery. This supersedes the earlier
+staging custom-SMTP-disabled instruction for transactional email only. Preserve
+credentials, environment and logo. Use existing protected administrator controls
+without bypassing MFA; check backlog, secure SMTP connectivity, delivery attempt,
+recipient inbox and resulting account verification. Keep payment, hosting,
+registrar and WhatsApp disabled. Do not replay old failed mail, deploy application
+code or send further messages after this verification. Record redacted evidence,
+update the status report and stop.
