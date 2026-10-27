@@ -16321,7 +16321,7 @@ Continue **Command 132 — Configure owner-approved staging billing details and 
 
 #### Files changed
 
-- Shared notification catalogue/contracts and background-job routing; common environment schema; Prisma notification tables/migration and database-verifier inventory/key checks.
+- Shared notification catalogue/contracts and background-job routing; common environment schema; Prisma notification tables/migration, database-verifier inventory/key checks and three existing migration-count acceptance fixtures.
 - API notifications module/controller/service and three existing gateway-test environment fixtures.
 - Worker notification projection, scheduler registration, delivery consumer, private WhatsApp adapter and preview unit test; generic preview email type.
 - Admin/portal routes and navigation, shared notification manager, header bell, staff self-access path, UI/contract/guarded database/browser regressions.
@@ -16337,6 +16337,7 @@ Continue **Command 132 — Configure owner-approved staging billing details and 
 - This PC's application-control policy blocks the native Next.js SWC binary. The tsx-loaded Next CLI with Webpack successfully compiled and completed the production web build. No host policy was changed. An initial development-server browser attempt also encountered the existing CommonJS React Refresh incompatibility; the guarded acceptance harness now uses the actual production build on loopback. The standard Linux CI path remains unchanged.
 - API/worker/web lint, full-repository Prettier, Git whitespace and all four offline documentation validators passed. Initial invoice/domain fixtures violated existing due-date and ownership triggers; correcting the fixtures and using fully linked fictional quote/order/invoice records resolved those failures without changing the safeguards. A missing test-only API port and an attempted use of the decrypt-only worker cipher were corrected before successful strict checks and retry acceptance.
 - The first hosted CI attempt applied all migrations and seeded successfully, then caught an omitted database-verifier inventory update for the four new tables. Added the inventory entries, explicit non-UUID key exclusions and cutover-epoch presence check. Fresh dedicated fictional migration, seed and `pnpm db:verify` then passed locally. The initial recreation attempt ran before PostgreSQL was ready; readiness was checked before the successful run. No schema guard was weakened.
+- A broader database acceptance run exposed three legacy fixtures still asserting 35 migrations. Updated those exact inventory assertions to 36, preserving all search-path, ownership, missing-table and fail-closed assertions. All three updated cases passed in the guarded run; its remaining unchanged suites continue while hosted checks run on the corrected source. No currency behavior or authority is changed.
 - Exact-source hosted CI, CodeQL and dependency review remain required before merge. The Office `.env` hash still matches `D85F67011174E4D38A9A54DAFCB896653C7998798B056704BF918F3703892B5C`; no business environment or logo change is staged.
 
 #### Preservation, limits and recommended next command
