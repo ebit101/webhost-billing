@@ -5,6 +5,7 @@ export interface AuthRateLimitDefinition {
     | 'login'
     | 'registration'
     | 'email-verification'
+    | 'customer-verification-resend'
     | 'two-factor-login'
     | 'password-reset-request'
     | 'password-reset-confirmation'

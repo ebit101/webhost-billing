@@ -2873,6 +2873,14 @@ report-only update must pass its own delivery gate; stop for the recommended pha
 - **Constraints:** Reuse existing API queries, server pagination and authorization. Never infer a successful payment/provisioning operation from a UI action. Preserve exact identifiers, integer money, historical snapshots, mutation guards and confirmation requirements. Native modal dialogs isolate focus and support nested confirmations; closing creation dialogs preserves mounted drafts.
 - **Consequences:** Narrow screens scroll each table horizontally within the page. Existing bounded endpoints remain explicitly labeled; this presentation command does not introduce new bulk mutations or API pagination semantics. The local environment, logo, business database and providers remain untouched.
 
+## ADR-140 — Administrator-requested customer verification resend
+
+- **Date:** 2026-10-27
+- **Status:** Accepted for the owner-requested local implementation.
+- **Decision:** Expose a recipient-confirmed resend beside pending verification for active customers, using full-administrator/CSRF guards and the existing encrypted token/outbox/template flow. The API resolves the stored recipient; callers cannot supply an address or token. A UUID request key prevents duplicate queueing after lost responses, per-customer row locks enforce a one-minute cooldown, and a separate IP limit bounds administrator requests.
+- **Constraints:** Resending changes no account, session, MFA, financial or access state. Verified, deleted, disabled, inactive and suspended targets are ineligible. Tokens retain the configured verification lifetime. Previously emailed links keep their expiry; the existing verification transaction allows activation only once while the account remains pending. This avoids invalidating a link already in a customer's inbox or changing the verification lock order. Queue acceptance is not delivery proof.
+- **Consequences:** A new audit records actor/customer/request/token-record IDs without a raw token or recipient. Tests use fictional accounts and preview delivery. No schema migration, deployment, SMTP activation or actual customer resend is authorized by this source command.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

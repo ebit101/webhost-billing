@@ -242,6 +242,120 @@ export class AuthService {
     }
   }
 
+  async resendCustomerVerification(
+    customerId: string,
+    requestId: string,
+    actor: AuthRequestContext,
+    context: SecurityRequestContext,
+  ): Promise<void> {
+    if (
+      actor.identity.role !== 'ADMIN' ||
+      actor.identity.staffRole !== 'FULL_ADMINISTRATOR'
+    ) {
+      throw new ApplicationException({
+        status: HttpStatus.FORBIDDEN,
+        code: 'FORBIDDEN',
+        message: 'Only a full administrator can resend verification emails.',
+      });
+    }
+    await this.prisma.$transaction(async (tx) => {
+      // Serialize resends per customer; then read the account after its row lock.
+      await tx.$queryRaw`SELECT id FROM customers WHERE id = ${customerId}::uuid FOR UPDATE`;
+      const customer = await tx.customer.findFirst({
+        where: { id: customerId, deletedAt: null },
+        select: { userId: true, status: true },
+      });
+      if (!customer) {
+        throw new ApplicationException({
+          status: HttpStatus.NOT_FOUND,
+          code: 'RESOURCE_NOT_FOUND',
+          message: 'Customer was not found.',
+        });
+      }
+      await tx.$queryRaw`SELECT id FROM users WHERE id = ${customer.userId}::uuid FOR UPDATE`;
+      const user = await tx.user.findUnique({ where: { id: customer.userId } });
+      if (
+        customer.status !== CustomerStatus.ACTIVE ||
+        !user ||
+        user.deletedAt ||
+        user.role !== UserRole.CUSTOMER ||
+        user.status !== UserStatus.PENDING_VERIFICATION ||
+        user.emailVerifiedAt
+      ) {
+        throw new ApplicationException({
+          status: HttpStatus.CONFLICT,
+          code: 'CONFLICT',
+          message:
+            'Only an active customer awaiting email verification can receive this email.',
+        });
+      }
+      const idempotencyKey = `customer-verification-resend:${customerId}:${requestId}`;
+      if (
+        await tx.outboxEvent.findUnique({
+          where: { idempotencyKey },
+          select: { id: true },
+        })
+      )
+        return;
+      const now = new Date();
+      const recent = await tx.emailVerificationToken.findFirst({
+        where: {
+          userId: user.id,
+          createdAt: { gt: new Date(now.getTime() - 60_000) },
+        },
+        select: { id: true },
+      });
+      if (recent) {
+        throw new ApplicationException({
+          status: HttpStatus.TOO_MANY_REQUESTS,
+          code: 'RATE_LIMITED',
+          message:
+            'A verification email was requested recently. Wait one minute before resending.',
+        });
+      }
+      const tokenRecordId = randomUUID();
+      const token = this.tokens.generate();
+      await tx.emailVerificationToken.create({
+        data: {
+          id: tokenRecordId,
+          userId: user.id,
+          tokenHash: hashOpaqueToken(token),
+          deliveryCiphertext: this.tokenCipher.encrypt(token),
+          expiresAt: new Date(
+            now.getTime() + this.emailVerificationTtlMilliseconds,
+          ),
+        },
+      });
+      // Previously emailed links retain their expiry. Verification still requires
+      // a one-time token and an account that is pending verification.
+      await tx.outboxEvent.create({
+        data: {
+          aggregateType: 'USER',
+          aggregateId: user.id,
+          eventType: 'AUTH_EMAIL_VERIFICATION_REQUESTED',
+          idempotencyKey,
+          payload: {
+            schemaVersion: 1,
+            recipientEmail: user.email,
+            tokenRecordId,
+            purpose: 'EMAIL_VERIFICATION',
+          },
+          status: OutboxStatus.PENDING,
+        },
+      });
+      await tx.activityLog.create({
+        data: {
+          actorUserId: actor.identity.userId,
+          action: 'CUSTOMER_VERIFICATION_EMAIL_RESENT_BY_ADMIN',
+          entityType: 'CUSTOMER',
+          entityId: customerId,
+          ipAddressHash: context.ipAddressHash,
+          metadata: { requestId, tokenRecordId },
+        },
+      });
+    });
+  }
+
   async verifyEmail(
     token: string,
     context: SecurityRequestContext,

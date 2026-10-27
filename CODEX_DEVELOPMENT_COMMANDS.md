@@ -5672,3 +5672,16 @@ access; never bypass MFA or fabricate authenticated browser acceptance. Record
 checks and any pending owner-assisted acceptance, update the deployment/status
 reports and stop. No production launch, catalogue setup, import, payment or
 provisioning is included. Command 132's operating inputs remain pending.
+
+## Command 135 — Let administrators resend customer verification emails
+
+Owner-authorized on 2026-10-27: add an actionable “Resend verification email”
+control beside the pending verification state on customer details. Implement
+and validate locally, deliver the verified source and update the status report.
+Use the existing protected email-verification and outbox delivery flow. Require
+full-administrator authorization, CSRF protection, recipient confirmation,
+per-customer cooldown, request replay protection and an administrator audit.
+Keep verification separate from access activation; the customer must still
+prove ownership through a one-time emailed link. Never expose the token in an
+administrator response. Use fictional isolated tests with providers disabled.
+No deployment, real-customer resend, SMTP activation or next command is included.

@@ -2,12 +2,12 @@
 
 ## Status Summary
 
-- **Current command:** Commands 133–134 staging deployment follow-up
-- **Current status:** Deployed to staging; automated backup, migration, preservation, provider-boundary and public smoke checks passed. Authenticated group/table browser acceptance awaits the signed-in Speed profile. Command 132 billing/contact inputs remain pending.
+- **Current command:** Command 135 — Let administrators resend customer verification emails
+- **Current status:** Implemented and validated locally; GitHub delivery is in progress. No deployment or actual customer email. Authenticated Commands 133–134 staging acceptance and Command 132 billing inputs remain pending.
 - **Last updated:** 2026-10-27
 - **Last recorded staging release:** Commands 133–134, `6879484525e3989548bec8452d7fa22535379180`, deployed on 2026-10-27.
-- **Next command:** Finish authenticated Commands 133–134 staging smoke checks in the Speed profile. Then continue Command 132 only with owner-supplied billing details and explicit authorization.
-- **Next command authorized:** The current staging acceptance follow-up only. No production launch, import, catalogue setup or live-provider activation.
+- **Next command:** Finish Command 135 validation and source delivery, then stop for the next owner direction.
+- **Next command authorized:** Command 135 source implementation only. No deployment, actual customer resend, SMTP activation or production launch.
 
 ## Command Reports
 
@@ -16249,3 +16249,40 @@ Continue **Command 132 — Configure owner-approved staging billing details and 
 - Tracked files changed: `CODEX_DEVELOPMENT_COMMANDS.md`, `docs/STAGING_DEPLOYMENT.md` and this report. Operational helpers/logs remain ignored under `release-artifacts/`; protected database fingerprints and provider assertions remain under `/srv/webhost-billing-staging/acceptance/commands133-134-20261027-verified/`. No secret, backup, customer data or logo asset is committed.
 - **Pending:** The Speed profile is not connected to browser control. The owner was asked to open it, sign in and complete MFA privately. Authenticated staging checks of product group headings/tools, compact customer/product/operational tables and record dialogs have not run. Successful local/hosted UI tests are recorded in Commands 133–134; they are not substituted for this staging acceptance.
 - **Exact recommended next command:** Finish this already-authorized staging acceptance with the signed-in Speed profile, using read-only row/group actions and closing forms without saving. Then stop. Continue Command 132 only after the owner supplies exact billing/payment inputs and authorizes continuation. Do not activate providers or deploy another release automatically.
+
+### Command 135 — Let administrators resend customer verification emails
+
+- **Status:** Implemented and validated locally; GitHub delivery in progress. No deployment or actual customer email.
+- **Date:** 2026-10-27.
+- **Authorization:** The owner requested an actionable administrator resend beside pending customer verification.
+
+#### Scope implemented
+
+- Added “Resend verification email” beside the pending badge for an active, unverified customer. A confirmation shows the stored recipient; cancellation queues nothing. Queue success and errors are visible, with a one-minute client cooldown. Already verified or unavailable accounts do not show the action.
+- Added full-administrator-only `POST /customers/:customerId/resend-verification`, protected by the existing session/role/MFA and CSRF guards. A strict UUID request schema rejects recipient overrides. The API resolves the customer's current stored address and rejects deleted, disabled, suspended, inactive or verified targets.
+- Per-customer/account row locks, a one-minute cooldown and ten requests per fifteen minutes per IP prevent duplicate/spam requests. A retained UUID request key makes retries after lost responses reuse the original queued operation. Token creation, outbox event and administrator audit commit together.
+- Reused the existing encrypted token delivery, verification template, outbox processing and configured token lifetime. No token or verification URL is returned to the administrator. The customer must use a valid one-time link; resend changes no verification, access, MFA, session or financial state.
+
+#### Files changed
+
+- Shared customer request schema; auth resend service/rate-limit scope; customer controller.
+- Customer-detail action component and parent placement; component regression tests.
+- Customer/staff API integration tests, guarded focused API-runner option and browser acceptance journey.
+- Product plan, command playbook, ADR-140 and this progress report.
+
+#### Validation
+
+- Node 24.20.0 / pinned pnpm 11.22.0: frozen-lockfile installation and package builds passed in a managed isolated worktree. API and worker builds passed.
+- Focused customer frontend suite: 10 tests passed, covering deliberate recipient confirmation/cancel, busy feedback, queue success, unchanged pending status, cooldown and reuse of the request key after a lost response.
+- Guarded customer/staff API integration: 2 suites / 12 tests passed. The new cases cover simultaneous duplicate requests producing one token/event/audit, encrypted token storage and safe responses/audits, cooldown, account eligibility, unknown customer, strict input, CSRF, anonymous/customer denial and restricted staff denial. The newly issued token completes the normal verification flow.
+- Full frontend suite: **68 files / 644 tests passed**. The final focused rerun also passed all 10 customer interface tests after correcting a test-only type error.
+- Guarded Chromium journey: **1 passed**, including confirmation/cancellation, one token/event, unchanged pending account, cooldown after reload and page-fit checks at 1440 and 375 pixels. Both fictional desktop/mobile captures were visually reviewed.
+- Serial workspace lint and strict type checks passed. The web production build passed against an unavailable loopback API fallback. No persistent development server remains.
+- The first browser assertion also matched Next.js's hidden route announcer; scoping it to the customer page fixed the selector. Strict typing also caught a Playwright-only option in Testing Library tests; removing that unsupported option, then rerunning the affected tests/types, passed. No application behavior or security rule was weakened.
+
+#### Decisions, limits and next command
+
+- Existing emailed links retain their normal expiry; the unchanged verification transaction activates a pending account only once. This preserves links already in the inbox without changing verification lock order. Queue acceptance is not proof of delivery.
+- Database/browser validation used fresh marked fictional schemas in dedicated loopback PostgreSQL/Redis containers. Those dedicated containers/volumes and temporary servers were removed after validation; the existing Office infrastructure was left running. Office/staging business data, environment and logo remain outside this change. Live providers stay disabled; no external customer email, SMTP activation or deployment is included.
+- Staging remains `6879484525e3989548bec8452d7fa22535379180`; its custom SMTP remains disabled with Mailpit capture. Authenticated Commands 133–134 acceptance and Command 132 billing inputs remain pending independently.
+- **Exact recommended next command:** Finish verified Command 135 delivery and stop. A staging rollout or an actual customer resend requires separate authorization; review the fictional evidence before that next step.

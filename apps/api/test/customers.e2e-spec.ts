@@ -155,12 +155,155 @@ describe('Customer management (e2e)', () => {
     );
   });
 
+  it('queues encrypted customer verification once per request, throttles resends and rejects unsafe targets', async () => {
+    const admin = request.agent(app.getHttpServer());
+    const csrf = await csrfToken(admin);
+    await admin
+      .post('/auth/login')
+      .set('X-CSRF-Token', csrf)
+      .send({ email: ADMIN_EMAIL, password: PASSWORD })
+      .expect(200);
+    const customer = await prisma.customer.findFirstOrThrow({
+      where: { user: { email: CUSTOMER_EMAIL } },
+    });
+    const path = `/customers/${customer.id}/resend-verification`;
+    const original = await prisma.emailVerificationToken.findFirstOrThrow({
+      where: { userId: customer.userId },
+    });
+    await prisma.emailVerificationToken.update({
+      where: { id: original.id },
+      data: { createdAt: new Date() },
+    });
+    await request(app.getHttpServer())
+      .post(path)
+      .send({ requestId: randomUUID() })
+      .expect(401);
+    await admin.post(path).send({ requestId: randomUUID() }).expect(403);
+    await admin
+      .post(path)
+      .set('X-CSRF-Token', csrf)
+      .send({ requestId: randomUUID(), email: 'other@example.test' })
+      .expect(400);
+    await admin
+      .post(path)
+      .set('X-CSRF-Token', csrf)
+      .send({ requestId: randomUUID() })
+      .expect(429);
+    await prisma.emailVerificationToken.update({
+      where: { id: original.id },
+      data: { createdAt: new Date(Date.now() - 120_000) },
+    });
+    const requestId = randomUUID();
+    const results = await Promise.all(
+      [1, 2].map(() =>
+        admin.post(path).set('X-CSRF-Token', csrf).send({ requestId }),
+      ),
+    );
+    expect(results.map((response) => response.status)).toEqual([202, 202]);
+    expect(results[0].body).toEqual({
+      success: true,
+      data: { message: 'Verification email queued.' },
+    });
+    const tokens = await prisma.emailVerificationToken.findMany({
+      where: { userId: customer.userId },
+    });
+    expect(tokens).toHaveLength(2);
+    const issued = tokens.find((token) => token.id !== original.id)!;
+    expect(issued.tokenHash).toMatch(/^[0-9a-f]{64}$/);
+    expect(issued.deliveryCiphertext).not.toContain(issued.tokenHash);
+    expect(
+      tokenCipher.decrypt(issued.deliveryCiphertext).length,
+    ).toBeGreaterThan(20);
+    const event = await prisma.outboxEvent.findUniqueOrThrow({
+      where: {
+        idempotencyKey: `customer-verification-resend:${customer.id}:${requestId}`,
+      },
+    });
+    expect(event.eventType).toBe('AUTH_EMAIL_VERIFICATION_REQUESTED');
+    expect(event.payload).toEqual({
+      schemaVersion: 1,
+      recipientEmail: CUSTOMER_EMAIL,
+      tokenRecordId: issued.id,
+      purpose: 'EMAIL_VERIFICATION',
+    });
+    expect(JSON.stringify(event)).not.toContain(
+      tokenCipher.decrypt(issued.deliveryCiphertext),
+    );
+    const audit = await prisma.activityLog.findMany({
+      where: {
+        entityId: customer.id,
+        action: 'CUSTOMER_VERIFICATION_EMAIL_RESENT_BY_ADMIN',
+      },
+    });
+    expect(audit).toHaveLength(1);
+    expect(audit[0].metadata).toEqual({ requestId, tokenRecordId: issued.id });
+    expect(JSON.stringify(audit)).not.toContain(CUSTOMER_EMAIL);
+    await admin
+      .post(path)
+      .set('X-CSRF-Token', csrf)
+      .send({ requestId: randomUUID() })
+      .expect(429);
+    await admin
+      .post(`/customers/${randomUUID()}/resend-verification`)
+      .set('X-CSRF-Token', csrf)
+      .send({ requestId: randomUUID() })
+      .expect(404);
+    for (const status of ['DISABLED', 'SUSPENDED', 'ACTIVE'] as const) {
+      await prisma.user.update({
+        where: { id: customer.userId },
+        data: {
+          status,
+          emailVerifiedAt: status === 'ACTIVE' ? new Date() : null,
+        },
+      });
+      await admin
+        .post(path)
+        .set('X-CSRF-Token', csrf)
+        .send({ requestId: randomUUID() })
+        .expect(409);
+    }
+    await prisma.user.update({
+      where: { id: customer.userId },
+      data: { status: 'PENDING_VERIFICATION', emailVerifiedAt: null },
+    });
+    await prisma.customer.update({
+      where: { id: customer.id },
+      data: { status: 'INACTIVE' },
+    });
+    await admin
+      .post(path)
+      .set('X-CSRF-Token', csrf)
+      .send({ requestId: randomUUID() })
+      .expect(409);
+    await prisma.customer.update({
+      where: { id: customer.id },
+      data: { status: 'ACTIVE' },
+    });
+    expect(
+      await prisma.emailVerificationToken.count({
+        where: { userId: customer.userId },
+      }),
+    ).toBe(2);
+    expect(
+      (await prisma.user.findUniqueOrThrow({ where: { id: customer.userId } }))
+        .emailVerifiedAt,
+    ).toBeNull();
+    expect(
+      (
+        await prisma.emailVerificationToken.findUniqueOrThrow({
+          where: { id: original.id },
+        })
+      ).usedAt,
+    ).toBeNull();
+  });
+
   it('enforces customer ownership and allows profile and password self-service', async () => {
     const user = await prisma.user.findUniqueOrThrow({
       where: { email: CUSTOMER_EMAIL },
     });
     const verification = await prisma.emailVerificationToken.findFirstOrThrow({
       where: { userId: user.id, usedAt: null },
+      orderBy: { createdAt: 'desc' },
     });
     const customer = await prisma.customer.findUniqueOrThrow({
       where: { userId: user.id },
@@ -196,6 +339,11 @@ describe('Customer management (e2e)', () => {
     );
     await agent.get(`/customers/${randomUUID()}/portal-summary`).expect(403);
     await agent.get('/customers').expect(403);
+    await agent
+      .post(`/customers/${customer.id}/resend-verification`)
+      .set('X-CSRF-Token', csrf)
+      .send({ requestId: randomUUID() })
+      .expect(403);
     await agent
       .patch(`/customers/${customer.id}/billing`)
       .set('X-CSRF-Token', csrf)
