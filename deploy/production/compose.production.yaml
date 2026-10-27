@@ -20,6 +20,7 @@ x-app-security: &app-security
   logging: *json-logging
 
 x-worker-environment: &worker-environment
+  NOTIFICATION_DELIVERY_MODE: ${NOTIFICATION_DELIVERY_MODE:-disabled}
   NODE_ENV: production
   DATABASE_URL_FILE: /run/secrets/database_url
   REDIS_URL_FILE: /run/secrets/redis_url
@@ -152,6 +153,7 @@ services:
     environment:
       NODE_ENV: production
       API_PORT: 3001
+      NOTIFICATION_DELIVERY_MODE: ${NOTIFICATION_DELIVERY_MODE:-disabled}
       DATABASE_URL_FILE: /run/secrets/database_url
       REDIS_URL_FILE: /run/secrets/redis_url
       SESSION_SECRET_FILE: /run/secrets/session_secret

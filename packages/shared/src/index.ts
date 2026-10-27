@@ -29,3 +29,4 @@ export * from './contracts/web-branding';
 export * from './presentation';
 export * from './contracts/domains';
 export * from './contracts/domain-administration';
+export * from './contracts/notifications';

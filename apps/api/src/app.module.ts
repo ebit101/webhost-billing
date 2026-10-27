@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { NotificationModule } from './modules/notifications/notification.module';
 import { DomainModule } from './modules/domains/domain.module';
 import { APP_FILTER } from '@nestjs/core';
 import { AppController } from './app.controller';
@@ -26,6 +27,7 @@ import { MessageDockIntegrationModule } from './modules/messagedock-integration/
 
 @Module({
   imports: [
+    NotificationModule,
     DomainModule,
     EnvironmentModule,
     AuthModule,

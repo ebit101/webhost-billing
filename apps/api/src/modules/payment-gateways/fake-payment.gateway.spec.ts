@@ -3,6 +3,7 @@ import { FakePaymentGateway } from './fake-payment.gateway';
 
 const environment: ApiEnvironment = {
   NODE_ENV: 'test',
+  NOTIFICATION_DELIVERY_MODE: 'disabled',
   RESELLBIZ_LIVE_ENABLED: false,
   PORT: 3001,
   DATABASE_URL: 'postgresql://example.test/database',

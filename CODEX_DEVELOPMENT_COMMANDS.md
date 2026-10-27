@@ -5695,3 +5695,22 @@ indicator; retain selection semantics, section switching and unsaved form drafts
 Validate locally, update the report and deliver the verified source through the
 normal Git workflow. Preserve the Office environment and logo. No deployment,
 business-data change, provider activation or next command is included.
+
+## Command 137 — Implement Admin and Client notification lists
+
+Owner-authorized on 2026-10-27: implement the agreed notification plan locally,
+with table-first Admin and Client lists, account-owned history and preferences.
+Preserve the existing transactional email pipeline and add missing account,
+operations, domain and security alerts. WhatsApp is restricted to important
+events, explicitly including new invoices and overdue invoices. The owner
+clarified that no WhatsApp opt-in is required: important alerts default on when
+a valid account or saved number is available; an account may turn them off.
+
+Use a provider-neutral preview adapter, encrypted saved phone numbers,
+reference-only jobs, idempotent projection/delivery and fresh eligibility checks.
+New alert delivery defaults disabled and supports local preview only; do not
+implement or activate live WhatsApp. Preserve existing email transport settings.
+Validate with fictional isolated data, update the status report and deliver
+verified source through the normal Git workflow. Do not deploy, migrate an
+Office/staging business database, send actual customer messages, change the
+environment/logo or start another product command.

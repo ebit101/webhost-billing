@@ -20,6 +20,11 @@ describe('staff navigation and route boundaries', () => {
     if (!pattern) throw new Error('Staging API proxy location was not found');
     const apiPath = new RegExp(pattern);
     expect(apiPath.test('/staff')).toBe(true);
+    expect(apiPath.test('/notifications')).toBe(true);
+    expect(apiPath.test('/notifications/preferences')).toBe(true);
+    expect(apiPath.test('/admin/notifications')).toBe(false);
+    expect(apiPath.test('/portal/notifications')).toBe(false);
+    expect(apiPath.test('/notifications-extra')).toBe(false);
     expect(apiPath.test('/staff/fictional-user/invitation')).toBe(true);
     for (const path of ['/admin/staff', '/staffing', '/portal', '/login']) {
       expect(apiPath.test(path)).toBe(false);

@@ -65,6 +65,9 @@ function isSecureOrLoopbackOrigin(value: string): boolean {
 }
 
 const infrastructureEnvironmentSchema = z.object({
+  NOTIFICATION_DELIVERY_MODE: z
+    .enum(['disabled', 'preview'])
+    .default('disabled'),
   DATABASE_URL: postgresUrlSchema,
   REDIS_URL: redisUrlSchema,
   BULLMQ_PREFIX: z

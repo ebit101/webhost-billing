@@ -39,6 +39,7 @@ const navigation: WorkspaceNavigationItem[] = [
   { href: '/admin/support', label: 'Support', icon: 'support', badge: '3' },
   { href: '/admin/automation', label: 'Automation', icon: 'activity' },
   { href: '/admin/email', label: 'Email delivery', icon: 'bell' },
+  { href: '/admin/notifications', label: 'Notifications', icon: 'bell' },
   { href: '/admin/settings', label: 'Settings', icon: 'settings' },
   { href: '/admin/staff', label: 'Administrators', icon: 'users' },
 ];

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 export const backgroundQueueNames = [
+  'notifications',
   'emails',
   'hosting-provisioning',
   'hosting-suspension',
@@ -48,6 +49,7 @@ export interface BackgroundQueuePolicy {
 export const backgroundQueuePolicies: Readonly<
   Record<BackgroundQueueName, BackgroundQueuePolicy>
 > = {
+  notifications: { attempts: 5, backoffMilliseconds: 2_000 },
   'domain-registration': { attempts: 1, backoffMilliseconds: 0 },
   emails: { attempts: 5, backoffMilliseconds: 2_000 },
   'hosting-provisioning': { attempts: 1, backoffMilliseconds: 0 },
@@ -73,6 +75,10 @@ export interface OutboxQueueRoute {
 }
 
 const exactOutboxRoutes: Readonly<Record<string, OutboxQueueRoute>> = {
+  NOTIFICATION_DELIVERY_REQUESTED: {
+    queueName: 'notifications',
+    jobName: 'preview-notification',
+  },
   DOMAIN_REGISTRATION_REQUESTED: {
     queueName: 'domain-registration',
     jobName: 'register-domain-once',

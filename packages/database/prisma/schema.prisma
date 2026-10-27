@@ -337,10 +337,57 @@ model User {
   adminLoginChallenges          AdminLoginChallenge[]
   passwordResetTokens           PasswordResetToken[]
   emailVerificationTokens       EmailVerificationToken[]
+  notificationPreference        NotificationPreference?
+  notifications                 NotificationEntry[]
 
   @@index([role, status], map: "users_role_status_idx")
   @@index([deletedAt], map: "users_deleted_at_idx")
   @@map("users")
+}
+
+model NotificationEpoch {
+  id        String   @id @db.VarChar(16)
+  startedAt DateTime @default(now()) @map("started_at") @db.Timestamptz(3)
+
+  @@map("notification_epochs")
+}
+
+model NotificationSource {
+  key       String   @id @db.VarChar(191)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@map("notification_sources")
+}
+
+model NotificationPreference {
+  userId          String   @id @map("user_id") @db.Uuid
+  whatsAppEnabled Boolean  @default(true) @map("whatsapp_enabled")
+  phoneCiphertext String?  @map("phone_ciphertext") @db.Text
+  phoneLastFour   String?  @map("phone_last_four") @db.VarChar(4)
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user            User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@map("notification_preferences")
+}
+
+model NotificationEntry {
+  id           String    @id @default(uuid()) @db.Uuid
+  userId       String    @map("user_id") @db.Uuid
+  key          String    @db.VarChar(80)
+  sourceKey    String    @map("source_key") @db.VarChar(191)
+  channel      String    @db.VarChar(16)
+  status       String    @default("DISABLED") @db.VarChar(16)
+  attemptCount Int       @default(0) @map("attempt_count")
+  failureCode  String?   @map("failure_code") @db.VarChar(64)
+  metadata     Json?
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  completedAt  DateTime? @map("completed_at") @db.Timestamptz(3)
+  user         User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([sourceKey, userId, key, channel], map: "notifications_source_recipient_key")
+  @@index([userId, createdAt, id], map: "notifications_user_created_idx")
+  @@index([status, createdAt], map: "notifications_status_created_idx")
+  @@map("notification_entries")
 }
 
 model Customer {
@@ -1107,9 +1154,9 @@ model Domain {
   currentContactCiphertext String?   @map("current_contact_ciphertext") @db.Text
   createdAt                DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
 
-  @@index([accountId, providerOrderId])
   @@unique([executionAccountId, providerOrderId])
   @@unique([id, customerId, accountId])
+  @@index([accountId, providerOrderId])
   @@index([customerId, createdAt])
   @@map("domains")
 }
