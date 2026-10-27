@@ -3,11 +3,11 @@
 ## Status Summary
 
 - **Current command:** Command 135 — Let administrators resend customer verification emails
-- **Current status:** Implemented and validated locally; GitHub delivery is in progress. No deployment or actual customer email. Authenticated Commands 133–134 staging acceptance and Command 132 billing inputs remain pending.
+- **Current status:** Command 135 is complete, validated and delivered to `main` through PR #51. The Office checkout matches the verified implementation. No Command 135 deployment or actual customer email. Authenticated Commands 133–134 staging acceptance and Command 132 billing inputs remain pending.
 - **Last updated:** 2026-10-27
 - **Last recorded staging release:** Commands 133–134, `6879484525e3989548bec8452d7fa22535379180`, deployed on 2026-10-27.
-- **Next command:** Finish Command 135 validation and source delivery, then stop for the next owner direction.
-- **Next command authorized:** Command 135 source implementation only. No deployment, actual customer resend, SMTP activation or production launch.
+- **Next command:** Review Command 135 and separately authorize its guarded staging rollout if accepted; finish pending Commands 133–134 browser acceptance in the Speed profile.
+- **Next command authorized:** No Command 135 deployment or next product command. The previously requested Commands 133–134 staging acceptance remains pending. No actual customer resend, SMTP activation or production launch.
 
 ## Command Reports
 
@@ -16252,8 +16252,9 @@ Continue **Command 132 — Configure owner-approved staging billing details and 
 
 ### Command 135 — Let administrators resend customer verification emails
 
-- **Status:** Implemented and validated locally; GitHub delivery in progress. No deployment or actual customer email.
+- **Status:** Completed locally, validated and delivered to `main` through [PR #51](https://github.com/ebit101/webhost-billing/pull/51). No deployment or actual customer email.
 - **Date:** 2026-10-27.
+- **Validated source:** `9198a703bc1474a7dc869f41c1370fc2575e56c8`; merge `cb0ea7e6a0c30e6741761df791fa67b3fd6344e8`.
 - **Authorization:** The owner requested an actionable administrator resend beside pending customer verification.
 
 #### Scope implemented
@@ -16279,10 +16280,14 @@ Continue **Command 132 — Configure owner-approved staging billing details and 
 - Guarded Chromium journey: **1 passed**, including confirmation/cancellation, one token/event, unchanged pending account, cooldown after reload and page-fit checks at 1440 and 375 pixels. Both fictional desktop/mobile captures were visually reviewed.
 - Serial workspace lint and strict type checks passed. The web production build passed against an unavailable loopback API fallback. No persistent development server remains.
 - The first browser assertion also matched Next.js's hidden route announcer; scoping it to the customer page fixed the selector. Strict typing also caught a Playwright-only option in Testing Library tests; removing that unsupported option, then rerunning the affected tests/types, passed. No application behavior or security rule was weakened.
+- Changed-file formatting, Git whitespace and all four offline documentation validators passed before the source commit.
+- [Full hosted CI](https://github.com/ebit101/webhost-billing/actions/runs/40500955915), dependency review and [CodeQL](https://github.com/ebit101/webhost-billing/actions/runs/40500955890) passed on the exact source above. This includes full package/API/invariant/browser suites, administrator roles, production dependency audit/license inventory and production builds. The closure changes only this report; these hosted results attest the implementation commit.
+- The clean Office checkout fast-forwarded without reset, clean, force or auto-stash. Its merge tree exactly matched the validated source. Office `.env` SHA-256 remains `D85F67011174E4D38A9A54DAFCB896653C7998798B056704BF918F3703892B5C`. The logo and existing business data were preserved. Fictional screenshots and successful validation logs are retained as ignored local evidence under `release-artifacts/command135-verification/`.
 
 #### Decisions, limits and next command
 
 - Existing emailed links retain their normal expiry; the unchanged verification transaction activates a pending account only once. This preserves links already in the inbox without changing verification lock order. Queue acceptance is not proof of delivery.
 - Database/browser validation used fresh marked fictional schemas in dedicated loopback PostgreSQL/Redis containers. Those dedicated containers/volumes and temporary servers were removed after validation; the existing Office infrastructure was left running. Office/staging business data, environment and logo remain outside this change. Live providers stay disabled; no external customer email, SMTP activation or deployment is included.
-- Staging remains `6879484525e3989548bec8452d7fa22535379180`; its custom SMTP remains disabled with Mailpit capture. Authenticated Commands 133–134 acceptance and Command 132 billing inputs remain pending independently.
-- **Exact recommended next command:** Finish verified Command 135 delivery and stop. A staging rollout or an actual customer resend requires separate authorization; review the fictional evidence before that next step.
+- The last recorded staging release is `6879484525e3989548bec8452d7fa22535379180`, with custom SMTP disabled and Mailpit capture. This command made no staging change. Authenticated Commands 133–134 acceptance and Command 132 billing inputs remain pending independently.
+- No unresolved implementation or validation failure remains for Command 135.
+- **Exact recommended next command:** Review the fictional Command 135 evidence and, if accepted, authorize its guarded staging deployment with verified backup, preserved environment/logo, disabled live providers and a fictional resend/Mailpit smoke test. Finish the existing Commands 133–134 browser acceptance in the Speed profile. An actual customer resend or SMTP activation needs an explicit owner request. Do not start another product command automatically.
