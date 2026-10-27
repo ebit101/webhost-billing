@@ -5685,3 +5685,13 @@ Keep verification separate from access activation; the customer must still
 prove ownership through a one-time emailed link. Never expose the token in an
 administrator response. Use fictional isolated tests with providers disabled.
 No deployment, real-customer resend, SMTP activation or next command is included.
+
+## Command 136 — Highlight the selected product editor section
+
+Owner-authorized on 2026-10-27: give the active Details or Pricing tab a
+persistent brand color and a darker hover state, following the supplied product
+editor screenshot. Reuse the existing primary button styling and keyboard focus
+indicator; retain selection semantics, section switching and unsaved form drafts.
+Validate locally, update the report and deliver the verified source through the
+normal Git workflow. Preserve the Office environment and logo. No deployment,
+business-data change, provider activation or next command is included.

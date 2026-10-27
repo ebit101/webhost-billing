@@ -2,12 +2,12 @@
 
 ## Status Summary
 
-- **Current command:** Command 135 — Let administrators resend customer verification emails
-- **Current status:** Command 135 is complete, validated and delivered to `main` through PR #51. The Office checkout matches the verified implementation. No Command 135 deployment or actual customer email. Authenticated Commands 133–134 staging acceptance and Command 132 billing inputs remain pending.
+- **Current command:** Command 136 — Highlight the selected product editor section
+- **Current status:** Command 136's bounded tab-color change passed local tests, browser checks, lint, type checking and production build; GitHub delivery is pending. No deployment. Commands 135–136 staging rollout, authenticated Commands 133–134 acceptance and Command 132 billing inputs remain pending.
 - **Last updated:** 2026-10-27
 - **Last recorded staging release:** Commands 133–134, `6879484525e3989548bec8452d7fa22535379180`, deployed on 2026-10-27.
-- **Next command:** Review Command 135 and separately authorize its guarded staging rollout if accepted; finish pending Commands 133–134 browser acceptance in the Speed profile.
-- **Next command authorized:** No Command 135 deployment or next product command. The previously requested Commands 133–134 staging acceptance remains pending. No actual customer resend, SMTP activation or production launch.
+- **Next command:** Review Commands 135–136 and separately authorize their guarded staging rollout if accepted; finish pending Commands 133–134 browser acceptance in the Speed profile.
+- **Next command authorized:** Finish Command 136 source validation and delivery only. No Commands 135–136 deployment or next product command. No actual customer resend, SMTP activation or production launch.
 
 ## Command Reports
 
@@ -16291,3 +16291,14 @@ Continue **Command 132 — Configure owner-approved staging billing details and 
 - The last recorded staging release is `6879484525e3989548bec8452d7fa22535379180`, with custom SMTP disabled and Mailpit capture. This command made no staging change. Authenticated Commands 133–134 acceptance and Command 132 billing inputs remain pending independently.
 - No unresolved implementation or validation failure remains for Command 135.
 - **Exact recommended next command:** Review the fictional Command 135 evidence and, if accepted, authorize its guarded staging deployment with verified backup, preserved environment/logo, disabled live providers and a fictional resend/Mailpit smoke test. Finish the existing Commands 133–134 browser acceptance in the Speed profile. An actual customer resend or SMTP activation needs an explicit owner request. Do not start another product command automatically.
+
+### Command 136 — Highlight the selected product editor section
+
+- **Status and date:** Locally validated on 2026-10-27; GitHub delivery pending.
+- **Scope:** The selected Details or Pricing button uses the existing primary teal background, white text and darker hover color. The other section retains the secondary white style. Existing keyboard focus, `aria-pressed`, switching and mounted drafts are preserved.
+- **Files changed:** `apps/web/src/components/products/admin-product-manager.tsx`, `CODEX_DEVELOPMENT_COMMANDS.md` and this report. No global button styles, business rules, dependencies or database schema changed.
+- **Validation:** Node 24.20.0 and pinned pnpm 11.22.0; frozen dependency installation and package builds passed. Focused product/dialog tests passed (10 tests), web lint, complete web/E2E type checking and production web build passed. Changed-file formatting, Git whitespace and all four offline documentation validators passed. The fresh checkout initially needed API/worker build artifacts for E2E type imports; building those prerequisites and rerunning resolved the missing imports.
+- **Browser evidence:** The actual product manager and application CSS passed an isolated fictional read-only Chromium preview at 1440px and 375px. Checked computed selected/unselected colors, darker selected hover, reciprocal selection, keyboard focus/Enter activation, unsaved details and pricing drafts, and horizontal containment. Desktop/mobile screenshots were reviewed. Temporary preview module-resolution setup failures were corrected before the successful run. This is component presentation evidence, not staging or authentication acceptance.
+- **Decision:** Reuse the existing primary/secondary button variants rather than adding a second tab palette or changing all secondary buttons. The selected color persists after moving the pointer away. No new business rule requires additional backend tests.
+- **Preservation and limits:** Validation did not connect to an Office or staging API or mutate business data. The Office `.env`, installation logo and live-provider configuration remain outside the change. No deployment or customer email. Commands 135–136 still need separately authorized staging rollout; authenticated Commands 133–134 acceptance and Command 132 operating inputs remain pending.
+- **Exact recommended next command:** Review Commands 135–136 and, if accepted, authorize their staging deployment with verified backups, preserved environment/logo, disabled live providers and fictional resend/tab-color smoke tests. Finish existing Commands 133–134 acceptance in the Speed profile. Do not start another command automatically.
