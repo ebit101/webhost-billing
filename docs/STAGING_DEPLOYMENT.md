@@ -1,5 +1,35 @@
 # Staging Deployment
 
+## Commands 133–134 acceptance closed (2026-10-28)
+
+- Remaining read-only acceptance passed on the current release
+  `ed7a5941bd0b4287aaaacf5a4fb256c9879ce4ff`. No release was deployed or restarted.
+  Both UI connections failed to initialize, so the owner completed the supplied
+  walkthrough in the signed-in Speed profile. The browser results below are
+  owner-reported; automated server checks are identified separately.
+- Group controls passed: Ungrouped (1) with Starter Hosting; empty Product groups
+  table; separate Create group dialog; nested Escape dismissal; product group
+  selector showing Ungrouped; closing without saving.
+- Compact Customers/Orders/Invoices/Payments/Services/Domains/Support collections,
+  available search/filter/count controls, customer search/clear and Add customer
+  Escape dismissal passed. The owner affirmed these checks without separately
+  reporting a visual count; the database inventory contains four customers.
+- WHM servers, registrar connections, staff, domain pricing, automation and email
+  collection tables/empty states, separate row/create dialogs and narrow-window
+  table-contained scrolling passed. No exact mobile viewport or automated browser
+  accessibility/screenshot result is claimed for this walkthrough.
+- Automated before/after comparisons passed for 29 business-table fingerprints,
+  environment contents/mode, logo and running-container IDs. Seven services are
+  healthy, one scheduler runs, health/readiness return 200 and all 36 migrations
+  are complete. Zero groups and the one ungrouped product are preserved.
+- SMTP remains **active**. Payment/registrar flags are false, WHM servers are
+  disabled and new notification/WhatsApp delivery remains disabled. No record,
+  price, setting, provider operation or email was changed/triggered by acceptance.
+- Protected evidence and the explicitly owner-reported receipt:
+  `/srv/webhost-billing-staging/acceptance/commands133-134-20261028-acceptance/`.
+  Broader create/assignment/persistence and measured-layout cases remain covered
+  by the recorded isolated/hosted tests. Command 132 inputs remain separate.
+
 ## SMTP activation and owner verification (2026-10-28)
 
 - The owner explicitly authorized enabling the existing SMTP configuration and
@@ -138,12 +168,11 @@
   explanation. Legacy `/admin/login` redirects to `/admin`; protected session,
   product-group, WHM and MessageDock API routes return 401. Browser API-origin
   verification passed.
-- **Pending authenticated acceptance:** The Speed browser profile was not
-  connected during this deployment. The owner was asked to open it and finish
-  MFA privately. Group headings/tools, row actions/dialogs and administrator
-  record tables still need a signed-in staging browser smoke check. No session
-  was forged, MFA bypassed or authenticated UI result claimed. Complete that
-  acceptance within this deployment follow-up; Command 132 remains separate.
+- **Authenticated acceptance closed on 2026-10-28:** The owner completed the
+  read-only Speed-profile group/table/dialog/layout walkthrough on the current
+  release containing Commands 133–134; automated preservation/provider checks
+  passed. See the closure above for the distinction between owner-reported UI
+  observations and automated evidence. Command 132 remains separate.
 
 ## Prior staging release (2026-10-25, Command 129)
 
