@@ -522,14 +522,14 @@ export function AdminProductManager() {
         >
           <div className="flex gap-2" aria-label="Product sections">
             <Button
-              variant="secondary"
+              variant={productTab === 'details' ? 'primary' : 'secondary'}
               aria-pressed={productTab === 'details'}
               onClick={() => setProductTab('details')}
             >
               Details
             </Button>
             <Button
-              variant="secondary"
+              variant={productTab === 'pricing' ? 'primary' : 'secondary'}
               aria-pressed={productTab === 'pricing'}
               onClick={() => setProductTab('pricing')}
             >
