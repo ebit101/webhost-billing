@@ -369,7 +369,10 @@ test('live multi-product pricing keeps exact money within endpoint-specific pars
     900719925474099n,
   );
   const rejectedBodies = [
-    ' '.repeat(262145),
+    JSON.stringify({
+      domcno: { addnewdomain: { '1': '10.99' } },
+      padding: 'x'.repeat(262144),
+    }),
     JSON.stringify({
       domcno: { addnewdomain: { '1': '10.99' } },
       values: Array(32768).fill(0),
@@ -393,13 +396,22 @@ test('live multi-product pricing keeps exact money within endpoint-specific pars
     });
     await assert.rejects(provider.quote(liveIntent.domainName));
   }
-  for (const body of [' '.repeat(65537), JSON.stringify(Array(4096).fill(0))]) {
+  for (const padding of ['x'.repeat(65536), Array(4096).fill(0)]) {
+    let availabilityCalls = 0;
+    const body = JSON.stringify({
+      [liveIntent.domainName]: { status: 'available', classkey: 'domcno' },
+      padding,
+    });
     const provider = new ResellbizLiveRegistrar(liveCredentials, {
-      async request() {
-        return body;
+      async request(path, parameters) {
+        availabilityCalls++;
+        return path === '/api/domains/available.json'
+          ? body
+          : fixture.transport.request(path, parameters);
       },
     });
     await assert.rejects(provider.quote(liveIntent.domainName));
+    assert.equal(availabilityCalls, 1);
   }
 });
 
