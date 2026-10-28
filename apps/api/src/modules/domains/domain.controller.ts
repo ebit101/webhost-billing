@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Header,
+  Query,
 } from '@nestjs/common';
 import {
   createApiSuccessResponse,
@@ -201,16 +202,24 @@ export class DomainController {
   }
   @Get()
   @Roles('ADMIN', 'CUSTOMER')
-  async list(@CurrentAuth() auth: AuthRequestContext) {
-    return createApiSuccessResponse(await this.domains.list(auth));
+  async list(
+    @CurrentAuth() auth: AuthRequestContext,
+    @Query('customerId', new ParseUUIDPipe({ optional: true }))
+    customerId?: string,
+  ) {
+    return createApiSuccessResponse(await this.domains.list(auth, customerId));
   }
   @Get(':id')
   @Roles('ADMIN', 'CUSTOMER')
   async detail(
     @Param('id', new ParseUUIDPipe()) id: string,
     @CurrentAuth() auth: AuthRequestContext,
+    @Query('customerId', new ParseUUIDPipe({ optional: true }))
+    customerId?: string,
   ) {
-    return createApiSuccessResponse(await this.domains.detail(id, auth));
+    return createApiSuccessResponse(
+      await this.domains.detail(id, auth, customerId),
+    );
   }
   @Get(':id/management')
   @Header('Cache-Control', 'private, no-store, max-age=0')

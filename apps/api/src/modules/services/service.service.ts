@@ -117,11 +117,17 @@ export class ServiceService {
     };
   }
 
-  async get(serviceId: string, actor: AuthRequestContext): Promise<Service> {
+  async get(
+    serviceId: string,
+    actor: AuthRequestContext,
+    customerId?: string,
+  ): Promise<Service> {
     const service = await this.getRecord(serviceId);
     if (
-      actor.identity.role === 'CUSTOMER' &&
-      actor.identity.customerId !== service.customerId
+      (actor.identity.role === 'CUSTOMER' &&
+        actor.identity.customerId !== service.customerId) ||
+      (customerId !== undefined &&
+        service.customerId.toLowerCase() !== customerId.toLowerCase())
     ) {
       throw new ApplicationException({
         status: HttpStatus.FORBIDDEN,

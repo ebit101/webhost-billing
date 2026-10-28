@@ -450,6 +450,26 @@ describe('Hosting services (e2e)', () => {
       (await admin.get(`/services/${serviceId}`).expect(200)).body,
     ).data;
     expect(detail).toMatchObject({ id: serviceId, customerId });
+    expect(
+      apiSuccessResponseSchema(serviceSchema).parse(
+        (
+          await admin
+            .get(`/services/${serviceId}?customerId=${customerId}`)
+            .expect(200)
+        ).body,
+      ).data.id,
+    ).toBe(serviceId);
+    await admin
+      .get(
+        `/services/${serviceId}?customerId=86000000-0000-4000-8000-000000000086`,
+      )
+      .expect(403);
+    await admin.get(`/services/${serviceId}?customerId=invalid`).expect(400);
+    await admin
+      .get(
+        `/services/${serviceId}?customerId=${customerId}&customerId=${customerId}`,
+      )
+      .expect(400);
     expect(detail).toEqual(
       services.find((service) => service.id === serviceId),
     );

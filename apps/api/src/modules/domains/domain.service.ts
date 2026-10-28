@@ -1216,21 +1216,36 @@ export class DomainService {
       throw error;
     }
   }
-  async list(auth: AuthRequestContext) {
+  async list(auth: AuthRequestContext, customerId?: string) {
+    if (
+      auth.identity.role === 'CUSTOMER' &&
+      customerId &&
+      customerId.toLowerCase() !== auth.identity.customerId.toLowerCase()
+    )
+      this.deny(
+        'The customer domain scope is unavailable.',
+        HttpStatus.FORBIDDEN,
+      );
     const records = await this.prisma.domain.findMany({
       where:
         auth.identity.role === 'CUSTOMER'
           ? { customerId: auth.identity.customerId }
-          : {},
+          : customerId
+            ? { customerId }
+            : {},
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       take: 100,
     });
-    return Promise.all(records.map((record) => this.detail(record.id, auth)));
+    return Promise.all(
+      records.map((record) => this.detail(record.id, auth, customerId)),
+    );
   }
-  async detail(id: string, auth: AuthRequestContext) {
+  async detail(id: string, auth: AuthRequestContext, customerId?: string) {
     const domain = await this.prisma.domain.findUnique({ where: { id } });
     if (
       !domain ||
+      (customerId !== undefined &&
+        domain.customerId.toLowerCase() !== customerId.toLowerCase()) ||
       (auth.identity.role === 'CUSTOMER' &&
         domain.customerId !== auth.identity.customerId)
     )

@@ -2898,6 +2898,14 @@ report-only update must pass its own delivery gate; stop for the recommended pha
 - **Date rule:** Due dates use the existing persisted UTC calendar day in ISO date-only form, matching the draft editor and PDF across browser/business time zones. Preserve stored timestamps, invoice states, money, overdue/reminder timing and all other event-date rules. No migration or historical backfill is needed.
 - **Consequence:** Instructions remain current collection guidance, not a new financial snapshot; changing the installation instructions can change a later download's guidance without changing its historical identity or money. Existing authorization, draft PDF restrictions and payment-proof rules remain in force. Staging SMTP stays active and payment/hosting/registrar/WhatsApp disabled. Deployment and acceptance of the new release require separate authorization.
 
+## ADR-143 — Keep administrator domain and hosting records in client context
+
+- **Date:** 2026-10-28
+- **Status:** Accepted for local implementation by owner; not deployed.
+- **Decision:** Use `/admin/customers/{customerId}` as the parent workspace, with Summary, Profile, Products/services and Domains navigation. Nested service/domain detail URLs retain the client header and provide an owned record selector. Global names link to these URLs; a legacy administrator domain detail alias resolves its saved owner. Customer domain links use their authenticated portal and existing API ownership checks.
+- **Boundary:** Optional expected-client UUIDs on domain list/detail and service detail reads are validated at the controller and enforced before detail serialization. Domain filtering happens in PostgreSQL before the existing 100-record limit. Invalid or mismatched client/record responses never render record controls; switching clients discards record selection. New nested routes retain domain/service full-administrator authorization rather than inheriting the broader customer-read permission.
+- **Consequence:** Client and record selectors remain bounded to 100 recent choices, retaining the current client and individually fetched selected older record. Domains keep the existing list bound; this does not implement all-history registrar search. The client service table retains its existing search, status, counts and pagination with a fixed parent scope. Existing guarded service operations remain on that client table; selected service details show saved application facts. Existing registrar forms are reused with their original explicit operation/payment/MFA guards. No schema, financial state, provisioning policy, live networking, migration/import or unsupported WHMCS feature is introduced.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:
