@@ -72,6 +72,9 @@ describe('shared-control administrator MFA regression', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: 'Verify and enable' }));
     await screen.findByText('Enabled · 1 recovery codes remain');
+    expect(view.container.querySelectorAll('details[open]')).toHaveLength(0);
+    fireEvent.click(screen.getByText('Replace recovery codes'));
+    fireEvent.click(screen.getByText('Disable two-factor authentication'));
     for (const form of view.container.querySelectorAll('form')) {
       fireEvent.change(form.querySelector('input[name="password"]')!, {
         target: { value: 'Fictional-83!' },

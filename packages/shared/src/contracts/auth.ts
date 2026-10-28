@@ -10,6 +10,7 @@ export const administratorIdentitySchema = authenticatedIdentityBaseSchema
   .extend({
     role: z.literal('ADMIN'),
     adminProfileId: z.uuid(),
+    displayName: z.string().trim().min(1).max(150).optional(),
     staffRole: staffRoleSchema,
     twoFactorEnabled: z.boolean(),
   })

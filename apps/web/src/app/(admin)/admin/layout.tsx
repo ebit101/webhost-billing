@@ -11,6 +11,7 @@ import { getAuthenticatedIdentity } from '../../../lib/server-auth';
 import { getBrandTitle } from '../../../lib/web-branding';
 import { staffRoleLabels } from '@webhost-billing/shared';
 import { canAccessAdminPath } from '../../../lib/admin-access';
+import { accountDisplayName } from '../../../lib/account-display';
 
 export const metadata: Metadata = {
   title: getBrandTitle('Administrator'),
@@ -72,7 +73,7 @@ export default async function AdminLayout({
       navigation={navigation.filter((item) =>
         canAccessAdminPath(identity.staffRole, item.href),
       )}
-      userName={identity.email}
+      userName={accountDisplayName(identity)}
       userDetail={staffRoleLabels[identity.staffRole]}
     >
       {children}

@@ -5796,3 +5796,17 @@ with the editor without rewriting timestamps or financial records. Add regressio
 coverage and validate locally, then update the report and deliver reviewed source
 through the normal repository checks. Keep staging SMTP active and other providers
 disabled; do not deploy or alter the fictional staging draft.
+
+## Command 138 — Compact administrator account settings and show saved names
+
+Owner-authorized on 2026-10-28: compact the administrator profile/account page and
+show the administrator name instead of the email in the sidebar. Use the existing
+saved staff profile name in authenticated identity responses; retain a neutral
+fallback for older responses. Make account identity, security status and session
+actions compact, with advanced MFA forms in accessible expandable sections.
+Preserve password/MFA/CSRF, sign-out, session lifetime and revocation behavior.
+Keep the public sign-in shell and customer identity behavior unchanged. Do not
+invent a name, modify a stored profile, enable providers, send messages or deploy.
+Validate locally with fictional records, update the report and deliver source
+through the normal protected repository workflow. Staging SMTP remains active
+and payment, hosting, registrar and WhatsApp disabled.

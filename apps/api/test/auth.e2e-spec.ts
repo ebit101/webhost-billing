@@ -324,6 +324,9 @@ describe('Authentication (e2e)', () => {
       authenticatedSessionResponseSchema,
     ).parse(loginBody).data;
     expect(login.identity.role).toBe('ADMIN');
+    expect(login.identity).toMatchObject({
+      displayName: 'Command Five Administrator',
+    });
 
     await adminAgent.get('/auth/admin-check').expect(200);
     await adminAgent
@@ -340,6 +343,9 @@ describe('Authentication (e2e)', () => {
         new Date(session.createdAt).getTime(),
     ).toBeLessThanOrEqual(24 * 60 * 60 * 1_000);
     const me = await adminAgent.get('/auth/me').expect(200);
+    expect(identityResponseSchema.parse(me.body).data).toMatchObject({
+      displayName: 'Command Five Administrator',
+    });
     expect(
       (me.headers['set-cookie'] as unknown as string[]).join(';'),
     ).not.toMatch(/Max-Age=|Expires=/i);
