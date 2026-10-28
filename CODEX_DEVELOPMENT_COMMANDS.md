@@ -5741,3 +5741,17 @@ recipient inbox and resulting account verification. Keep payment, hosting,
 registrar and WhatsApp disabled. Do not replay old failed mail, deploy application
 code or send further messages after this verification. Record redacted evidence,
 update the status report and stop.
+
+### Commands 133–134 remaining staging acceptance
+
+Owner-authorized on 2026-10-28: finish the remaining grouped-product and tabular
+record acceptance in the Speed profile and close the report. Inspect existing
+group headings, group management and product selectors without saving. Inspect
+the compact record tables, search/count controls, separate row/create dialogs,
+keyboard dismissal and narrow-window scrolling. Preserve catalogue and business
+records. Keep the already approved SMTP active and payment, hosting, registrar
+and WhatsApp disabled. Compare read-only preservation/provider checks before and
+after the walkthrough. Distinguish owner-assisted browser observations from
+automated server evidence when UI tooling is unavailable. Do not claim closure
+until the required observations pass. No deployment, catalogue setup, financial
+operation, provider test, email resend or next command is included.
