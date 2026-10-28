@@ -132,11 +132,9 @@ export function AdminTwoFactorPanel() {
   }
 
   return (
-    <section className="grid gap-5 rounded-2xl border border-slate-200 bg-white p-5">
+    <section className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4">
       <div>
-        <h2 className="font-bold text-slate-950">
-          Administrator two-factor authentication
-        </h2>
+        <h2 className="font-bold text-slate-950">Two-factor authentication</h2>
         <p className="mt-1 text-sm leading-6 text-slate-600">
           Protect administrator sign-in with a TOTP authenticator and single-use
           recovery codes.
@@ -195,58 +193,68 @@ export function AdminTwoFactorPanel() {
           <p className="text-sm font-semibold text-emerald-700">
             Enabled · {status.recoveryCodesRemaining} recovery codes remain
           </p>
-          <form
-            onSubmit={(event) =>
-              void protectedAction(
-                event,
-                '/auth/two-factor/recovery-codes',
-                'POST',
-              )
-            }
-            className="grid gap-4 rounded-xl border border-slate-200 p-4"
-          >
-            <h3 className="font-semibold text-slate-950">
+          <details className="rounded-xl border border-slate-200">
+            <summary className="cursor-pointer rounded-xl px-4 py-3 text-sm font-semibold text-slate-950 hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-600">
               Replace recovery codes
-            </h3>
-            <Field
-              label="Current password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              required
-            />
-            <Field
-              label="Authenticator or recovery code"
-              name="code"
-              autoComplete="one-time-code"
-              required
-            />
-            <SubmitButton busy={busy}>Generate new recovery codes</SubmitButton>
-          </form>
-          <form
-            onSubmit={(event) =>
-              void protectedAction(event, '/auth/two-factor', 'DELETE')
-            }
-            className="grid gap-4 rounded-xl border border-red-200 bg-red-50 p-4"
-          >
-            <h3 className="font-semibold text-red-950">
+            </summary>
+            <form
+              onSubmit={(event) =>
+                void protectedAction(
+                  event,
+                  '/auth/two-factor/recovery-codes',
+                  'POST',
+                )
+              }
+              className="grid gap-3 border-t border-slate-200 p-4 sm:grid-cols-2"
+            >
+              <Field
+                label="Current password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                required
+              />
+              <Field
+                label="Authenticator or recovery code"
+                name="code"
+                autoComplete="one-time-code"
+                required
+              />
+              <div className="sm:col-span-2">
+                <SubmitButton busy={busy}>
+                  Generate new recovery codes
+                </SubmitButton>
+              </div>
+            </form>
+          </details>
+          <details className="rounded-xl border border-red-200">
+            <summary className="cursor-pointer rounded-xl px-4 py-3 text-sm font-semibold text-red-800 hover:bg-red-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-red-600">
               Disable two-factor authentication
-            </h3>
-            <Field
-              label="Current password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              required
-            />
-            <Field
-              label="Authenticator or recovery code"
-              name="code"
-              autoComplete="one-time-code"
-              required
-            />
-            <SubmitButton busy={busy}>Disable and sign out</SubmitButton>
-          </form>
+            </summary>
+            <form
+              onSubmit={(event) =>
+                void protectedAction(event, '/auth/two-factor', 'DELETE')
+              }
+              className="grid gap-3 border-t border-red-200 bg-red-50 p-4 sm:grid-cols-2"
+            >
+              <Field
+                label="Current password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                required
+              />
+              <Field
+                label="Authenticator or recovery code"
+                name="code"
+                autoComplete="one-time-code"
+                required
+              />
+              <div className="sm:col-span-2">
+                <SubmitButton busy={busy}>Disable and sign out</SubmitButton>
+              </div>
+            </form>
+          </details>
         </>
       ) : null}
     </section>

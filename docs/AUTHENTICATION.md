@@ -6,6 +6,21 @@ Command 5 implements customer registration, email verification, login, logout, p
 
 ## Security model
 
+Command 138 adds the saved administrator profile `displayName` to administrator
+identity responses from password login, MFA completion and session checks. The
+optional response field keeps older fixtures/deployments compatible; the UI uses
+a neutral Administrator label when absent rather than deriving a name from email.
+The name is display-only and does not affect role, MFA or session authorization.
+Customer identities and public registration fields are unchanged.
+
+The `/account` page uses a compact profile/security/session layout instead of the
+public sign-in shell. Recovery-code replacement and MFA disable forms are closed
+native disclosures until opened, with keyboard support and two-column desktop
+fields. Existing password/code checks, CSRF, revocation and sign-out requests are
+unchanged. The administrator sidebar and avatar use the saved name; the account
+summary retains the actual email separately. This does not add self-service name
+editing or change a stored profile.
+
 - Passwords are hashed with Argon2id using 19,456 KiB memory, two iterations, and one degree of parallelism. Plaintext passwords are never stored.
 - Session tokens and action tokens are 256-bit random values. PostgreSQL stores only their SHA-256 hashes.
 - The session token is carried in an HttpOnly, `SameSite=Lax`, path-root cookie. Production uses `Secure` and the `__Host-` prefix.

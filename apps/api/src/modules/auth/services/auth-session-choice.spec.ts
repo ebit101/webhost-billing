@@ -40,6 +40,7 @@ function fixture() {
     customer: null,
     adminProfile: {
       id: '10000000-0000-4000-8000-000000000002',
+      displayName: 'Fictional Administrator',
       staffRole: 'FULL_ADMINISTRATOR',
     },
     adminTotpCredential: {
@@ -148,6 +149,9 @@ describe('administrator session persistence', () => {
           new Date(result.session.createdAt).getTime(),
       ).toBe(rememberDevice ? 30 * day : day);
       const created = prisma.authSession.create.mock.calls[0]?.[0].data;
+      expect(result.identity).toMatchObject({
+        displayName: 'Fictional Administrator',
+      });
       expect(created?.tokenHash).toBe(hashOpaqueToken(result.token));
       expect(created?.twoFactorVerifiedAt).toBeInstanceOf(Date);
       expect(
@@ -180,6 +184,9 @@ describe('administrator session persistence', () => {
       context,
     );
     if ('requiresTwoFactor' in result) throw new Error('Unexpected challenge');
+    expect(result.identity).toMatchObject({
+      displayName: 'Fictional Administrator',
+    });
     expect(
       new Date(result.session.expiresAt).getTime() -
         new Date(result.session.createdAt).getTime(),
@@ -192,6 +199,9 @@ describe('administrator session persistence', () => {
       administratorSessionToken('random', true),
     );
     expect(result.sessionExpiresAt).toBe(session.expiresAt.toISOString());
+    expect(result.identity).toMatchObject({
+      displayName: 'Fictional Administrator',
+    });
     const update = prisma.authSession.updateMany.mock.calls[0]?.[0];
     expect(update?.where).toEqual({ id: session.id, revokedAt: null });
     expect(update?.data.lastSeenAt).toBeInstanceOf(Date);

@@ -478,11 +478,14 @@ describe('boundary contracts', () => {
       email: 'admin@example.test',
       role: 'ADMIN',
       adminProfileId: '10000000-0000-4000-8000-000000000002',
+      displayName: 'Fictional Administrator',
       staffRole: 'FULL_ADMINISTRATOR',
       twoFactorEnabled: true,
     });
 
     assert.equal(identity.role, 'ADMIN');
+    if (identity.role === 'ADMIN')
+      assert.equal(identity.displayName, 'Fictional Administrator');
     assert.equal(
       authenticatedIdentitySchema.safeParse({
         userId: '10000000-0000-4000-8000-000000000001',

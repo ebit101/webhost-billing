@@ -6,22 +6,22 @@ import { useEffect, useState } from 'react';
 import { authenticatedGet, authMutation } from '../../lib/auth-api';
 import { FormNotice } from './form-controls';
 import { AdminTwoFactorPanel } from './admin-two-factor-panel';
-
-interface Identity {
-  userId: string;
-  email: string;
-  role: 'ADMIN' | 'CUSTOMER';
-}
+import {
+  staffRoleLabels,
+  type AuthenticatedIdentity,
+} from '@webhost-billing/shared';
+import { accountDisplayName } from '../../lib/account-display';
+import { Brand } from '../layout/brand';
 
 export function AccountPanel() {
   const router = useRouter();
-  const [identity, setIdentity] = useState<Identity>();
+  const [identity, setIdentity] = useState<AuthenticatedIdentity>();
   const [error, setError] = useState<string>();
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     let active = true;
-    void authenticatedGet<Identity>('/auth/me')
+    void authenticatedGet<AuthenticatedIdentity>('/auth/me')
       .then((result) => {
         if (active) setIdentity(result);
       })
@@ -73,46 +73,66 @@ export function AccountPanel() {
   }
 
   return (
-    <div className="grid gap-6">
+    <div className="grid gap-4">
       <FormNotice error={error} />
-      <dl className="grid gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-5 text-sm">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Brand href={identity.role === 'ADMIN' ? '/admin' : '/portal'} />
+        <Link
+          href={identity.role === 'ADMIN' ? '/admin' : '/portal'}
+          className="inline-flex min-h-11 items-center rounded-xl px-3 text-sm font-semibold text-brand-700 hover:bg-brand-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-600"
+        >
+          Back to workspace
+        </Link>
+      </div>
+      <dl className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 text-sm sm:grid-cols-3">
+        {identity.role === 'ADMIN' ? (
+          <div className="min-w-0">
+            <dt className="text-slate-500">Name</dt>
+            <dd className="mt-1 break-words font-semibold">
+              {accountDisplayName(identity)}
+            </dd>
+          </div>
+        ) : null}
         <div>
           <dt className="text-slate-500">Email</dt>
-          <dd className="mt-1 font-semibold text-slate-950">
+          <dd className="mt-1 break-all font-semibold text-slate-950">
             {identity.email}
           </dd>
         </div>
         <div>
           <dt className="text-slate-500">Role</dt>
-          <dd className="mt-1 font-semibold text-slate-950">{identity.role}</dd>
+          <dd className="mt-1 font-semibold text-slate-950">
+            {identity.role === 'ADMIN'
+              ? staffRoleLabels[identity.staffRole]
+              : 'Customer'}
+          </dd>
         </div>
       </dl>
       {identity.role === 'ADMIN' ? <AdminTwoFactorPanel /> : null}
-      <Link
-        href={identity.role === 'ADMIN' ? '/admin' : '/portal'}
-        className="inline-flex min-h-11 items-center justify-center rounded-xl bg-brand-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+      <section
+        aria-label="Sessions"
+        className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-4"
       >
-        Open {identity.role === 'ADMIN' ? 'administrator' : 'customer'}{' '}
-        workspace
-      </Link>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <button
-          type="button"
-          disabled={busy}
-          onClick={() => void logout(false)}
-          className="h-11 rounded-xl border border-slate-300 bg-white px-5 font-semibold text-slate-800 transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-600 disabled:opacity-60"
-        >
-          Sign out
-        </button>
-        <button
-          type="button"
-          disabled={busy}
-          onClick={() => void logout(true)}
-          className="h-11 rounded-xl border border-red-200 bg-red-50 px-5 font-semibold text-red-700 transition hover:bg-red-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-red-600 disabled:opacity-60"
-        >
-          Revoke all sessions
-        </button>
-      </div>
+        <h2 className="font-bold">Sessions</h2>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => void logout(false)}
+            className="h-11 rounded-xl border border-slate-300 bg-white px-5 font-semibold text-slate-800 transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-600 disabled:opacity-60"
+          >
+            Sign out
+          </button>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => void logout(true)}
+            className="h-11 rounded-xl border border-red-200 bg-red-50 px-5 font-semibold text-red-700 transition hover:bg-red-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-red-600 disabled:opacity-60"
+          >
+            Revoke all sessions
+          </button>
+        </div>
+      </section>
     </div>
   );
 }

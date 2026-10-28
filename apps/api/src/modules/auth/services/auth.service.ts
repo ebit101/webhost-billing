@@ -54,7 +54,11 @@ interface UserWithProfiles {
   emailVerifiedAt: Date | null;
   deletedAt: Date | null;
   customer: { id: string } | null;
-  adminProfile: { id: string; staffRole: StaffRole } | null;
+  adminProfile: {
+    id: string;
+    staffRole: StaffRole;
+    displayName?: string;
+  } | null;
   adminTotpCredential?: { enabledAt: Date | null } | null;
 }
 
@@ -422,7 +426,9 @@ export class AuthService {
       where: { email: input.email },
       include: {
         customer: { select: { id: true } },
-        adminProfile: { select: { id: true, staffRole: true } },
+        adminProfile: {
+          select: { id: true, staffRole: true, displayName: true },
+        },
         adminTotpCredential: { select: { enabledAt: true } },
       },
     });
@@ -578,7 +584,9 @@ export class AuthService {
         user: {
           include: {
             customer: { select: { id: true } },
-            adminProfile: { select: { id: true, staffRole: true } },
+            adminProfile: {
+              select: { id: true, staffRole: true, displayName: true },
+            },
             adminTotpCredential: { select: { enabledAt: true } },
           },
         },
@@ -667,7 +675,9 @@ export class AuthService {
         user: {
           include: {
             customer: { select: { id: true } },
-            adminProfile: { select: { id: true, staffRole: true } },
+            adminProfile: {
+              select: { id: true, staffRole: true, displayName: true },
+            },
             adminTotpCredential: {
               include: { recoveryCodes: { where: { usedAt: null } } },
             },
@@ -1206,6 +1216,9 @@ export class AuthService {
         email: user.email,
         role: 'ADMIN',
         adminProfileId: user.adminProfile.id,
+        ...(user.adminProfile.displayName?.trim()
+          ? { displayName: user.adminProfile.displayName.trim() }
+          : {}),
         staffRole: user.adminProfile.staffRole,
         twoFactorEnabled: Boolean(user.adminTotpCredential?.enabledAt),
       });
