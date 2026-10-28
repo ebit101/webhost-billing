@@ -3,7 +3,18 @@ import { sentenceCaseLabel } from '@webhost-billing/shared';
 
 import type { CustomerDetail, SettingsOverview } from '@webhost-billing/shared';
 import Link from 'next/link';
-import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useState,
+  type FormEvent,
+  type ReactNode,
+} from 'react';
+import { ClientProfileNavigation } from './client-profile-navigation';
+import {
+  clientRecordHref,
+  type ClientRecordSection,
+} from '../../lib/client-record-href';
 import { authMutation, authenticatedGet } from '../../lib/auth-api';
 import { adminCustomerFilterHref } from '../../lib/admin-customer-filter';
 import { formatMinor, invoiceDueDate } from '../invoices/invoice-ui';
@@ -22,7 +33,19 @@ import {
   nullableProfileValues,
 } from './customer-fields';
 
-export function AdminCustomerDetail({ customerId }: { customerId: string }) {
+type Props = {
+  customerId: string;
+  section?: ClientRecordSection;
+  children?: ReactNode;
+};
+export function AdminCustomerDetail(props: Props) {
+  return <CustomerDetailRequest key={props.customerId} {...props} />;
+}
+function CustomerDetailRequest({
+  customerId,
+  section = 'summary',
+  children,
+}: Props) {
   const [customer, setCustomer] = useState<CustomerDetail>();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -40,6 +63,8 @@ export function AdminCustomerDetail({ customerId }: { customerId: string }) {
         authenticatedGet<CustomerDetail>(`/customers/${customerId}`),
         authenticatedGet<SettingsOverview>('/settings'),
       ]);
+      if (customerResult.id.toLowerCase() !== customerId.toLowerCase())
+        throw new Error('Client context does not match.');
       setCustomer(customerResult);
       setTimeZone(settings.timeZone);
     } catch (caught) {
@@ -61,6 +86,8 @@ export function AdminCustomerDetail({ customerId }: { customerId: string }) {
     ])
       .then(([customerResult, settings]) => {
         if (!active) return;
+        if (customerResult.id.toLowerCase() !== customerId.toLowerCase())
+          throw new Error('Client context does not match.');
         setCustomer(customerResult);
         setTimeZone(settings.timeZone);
       })
@@ -152,7 +179,7 @@ export function AdminCustomerDetail({ customerId }: { customerId: string }) {
     {
       label: 'Services',
       count: customer.linked.counts.services,
-      href: adminCustomerFilterHref('/admin/services', customer.id),
+      href: clientRecordHref(customer.id, 'services'),
     },
     {
       label: 'Invoices',
@@ -212,6 +239,7 @@ export function AdminCustomerDetail({ customerId }: { customerId: string }) {
           Account {sentenceCaseLabel(customer.accountStatus)}
         </StatusBadge>
       </div>
+      <ClientProfileNavigation customer={customer} section={section} />
       {error ? (
         <p
           role="alert"
@@ -229,108 +257,127 @@ export function AdminCustomerDetail({ customerId }: { customerId: string }) {
         </p>
       ) : null}
 
-      <section aria-labelledby="operational-context" className="grid gap-4">
-        <div>
-          <h2
-            id="operational-context"
-            className="text-xl font-bold text-slate-950"
-          >
-            Operational context
-          </h2>
-          <p className="mt-1 text-sm text-slate-600">
-            Identity, linked totals, and the latest bounded business records for
-            this customer.
-          </p>
-        </div>
-        <div className="grid gap-6 xl:grid-cols-[0.75fr_1.25fr]">
-          <Card title="Account identity">
-            <dl className="grid gap-3 text-sm">
-              <Detail label="Email" value={customer.email} />
-              <Detail
-                label="Company"
-                value={customer.companyName ?? 'Individual account'}
-              />
-              <Detail label="Country" value={customer.countryCode} />
-              <Detail
-                label="Customer since"
-                value={businessDate(customer.createdAt, timeZone)}
-              />
-              <Detail
-                label="Last updated"
-                value={businessDate(customer.updatedAt, timeZone)}
-              />
-            </dl>
-          </Card>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-5">
-            {linkedCounts.map((record) => (
-              <Link
-                key={record.label}
-                href={record.href}
-                className="rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-brand-300 hover:shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-600"
-              >
-                <p className="text-xs font-bold tracking-wider text-slate-500">
-                  {record.label}
-                </p>
-                <p className="mt-2 text-3xl font-bold text-slate-950">
-                  {record.count}
-                </p>
-              </Link>
-            ))}
+      {section === 'summary' ? (
+        <section aria-labelledby="operational-context" className="grid gap-4">
+          <div>
+            <h2
+              id="operational-context"
+              className="text-xl font-bold text-slate-950"
+            >
+              Operational context
+            </h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Identity, linked totals, and the latest bounded business records
+              for this customer.
+            </p>
           </div>
-        </div>
-        <div className="grid gap-6 xl:grid-cols-2">
-          <LinkedList
-            title="Recent orders"
-            empty="No orders"
-            rows={customer.linked.orders.map((item) => ({
-              id: item.id,
-              primary: sentenceCaseLabel(item.status),
-              secondary: `${formatMinor(item.total.amount, item.total.currency)} · ${businessDate(item.createdAt, timeZone)}`,
-              href: adminCustomerFilterHref('/admin/orders', customer.id),
-            }))}
-          />
-          <LinkedList
-            title="Recent services"
-            empty="No services"
-            rows={customer.linked.services.map((item) => ({
-              id: item.id,
-              primary: item.productName,
-              secondary: `${sentenceCaseLabel(item.status)}${item.domain ? ` · ${item.domain}` : ''} · ${formatMinor(item.recurringAmount.amount, item.recurringAmount.currency)} · ${businessDate(item.createdAt, timeZone)}`,
-              href: adminCustomerFilterHref('/admin/services', customer.id),
-            }))}
-          />
-          <LinkedList
-            title="Recent invoices"
-            empty="No invoices"
-            rows={customer.linked.invoices.map((item) => ({
-              id: item.id,
-              primary: `${item.invoiceNumber} · ${sentenceCaseLabel(item.status)}`,
-              secondary: `${formatMinor(item.total.amount, item.total.currency)} · due ${invoiceDueDate(item.dueAt)}`,
-              href: `/admin/invoices/${item.id}`,
-            }))}
-          />
-          <LinkedList
-            title="Recent payments"
-            empty="No payments"
-            rows={customer.linked.payments.map((item) => ({
-              id: item.id,
-              primary: `${sentenceCaseLabel(item.kind)} · ${sentenceCaseLabel(item.status)}`,
-              secondary: `${formatMinor(item.amount.amount, item.amount.currency)} · ${item.invoiceNumber} · ${item.provider} · ${businessDate(item.createdAt, timeZone)}`,
-              href: adminCustomerFilterHref('/admin/payments', customer.id),
-            }))}
-          />
-          <LinkedList
-            title="Recent tickets"
-            empty="No tickets"
-            rows={customer.linked.tickets.map((item) => ({
-              id: item.id,
-              primary: `${item.ticketNumber} · ${item.subject}`,
-              secondary: `${sentenceCaseLabel(item.status)} · ${sentenceCaseLabel(item.priority)} · ${businessDate(item.updatedAt, timeZone)}`,
-              href: adminCustomerFilterHref('/admin/support', customer.id),
-            }))}
-          />
-        </div>
-      </section>
+          <div className="grid gap-6 xl:grid-cols-[0.75fr_1.25fr]">
+            <Card title="Account identity">
+              <dl className="grid gap-3 text-sm">
+                <Detail label="Email" value={customer.email} />
+                <Detail
+                  label="Company"
+                  value={customer.companyName ?? 'Individual account'}
+                />
+                <Detail label="Country" value={customer.countryCode} />
+                <Detail
+                  label="Customer since"
+                  value={businessDate(customer.createdAt, timeZone)}
+                />
+                <Detail
+                  label="Last updated"
+                  value={businessDate(customer.updatedAt, timeZone)}
+                />
+              </dl>
+            </Card>
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-5">
+              {linkedCounts.map((record) => (
+                <Link
+                  key={record.label}
+                  href={record.href}
+                  className="rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-brand-300 hover:shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-600"
+                >
+                  <p className="text-xs font-bold tracking-wider text-slate-500">
+                    {record.label}
+                  </p>
+                  <p className="mt-2 text-3xl font-bold text-slate-950">
+                    {record.count}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          </div>
+          <div className="grid gap-6 xl:grid-cols-2">
+            <LinkedList
+              title="Recent orders"
+              empty="No orders"
+              rows={customer.linked.orders.map((item) => ({
+                id: item.id,
+                primary: sentenceCaseLabel(item.status),
+                secondary: `${formatMinor(item.total.amount, item.total.currency)} · ${businessDate(item.createdAt, timeZone)}`,
+                href: adminCustomerFilterHref('/admin/orders', customer.id),
+              }))}
+            />
+            <LinkedList
+              title="Recent services"
+              empty="No services"
+              rows={customer.linked.services.map((item) => ({
+                id: item.id,
+                primary: item.productName,
+                secondary: `${sentenceCaseLabel(item.status)}${item.domain ? ` · ${item.domain}` : ''} · ${formatMinor(item.recurringAmount.amount, item.recurringAmount.currency)} · ${businessDate(item.createdAt, timeZone)}`,
+                href: clientRecordHref(customer.id, 'services', item.id),
+              }))}
+            />
+            <LinkedList
+              title="Recent invoices"
+              empty="No invoices"
+              rows={customer.linked.invoices.map((item) => ({
+                id: item.id,
+                primary: `${item.invoiceNumber} · ${sentenceCaseLabel(item.status)}`,
+                secondary: `${formatMinor(item.total.amount, item.total.currency)} · due ${invoiceDueDate(item.dueAt)}`,
+                href: `/admin/invoices/${item.id}`,
+              }))}
+            />
+            <LinkedList
+              title="Recent payments"
+              empty="No payments"
+              rows={customer.linked.payments.map((item) => ({
+                id: item.id,
+                primary: `${sentenceCaseLabel(item.kind)} · ${sentenceCaseLabel(item.status)}`,
+                secondary: `${formatMinor(item.amount.amount, item.amount.currency)} · ${item.invoiceNumber} · ${item.provider} · ${businessDate(item.createdAt, timeZone)}`,
+                href: adminCustomerFilterHref('/admin/payments', customer.id),
+              }))}
+            />
+            <LinkedList
+              title="Recent tickets"
+              empty="No tickets"
+              rows={customer.linked.tickets.map((item) => ({
+                id: item.id,
+                primary: `${item.ticketNumber} · ${item.subject}`,
+                secondary: `${sentenceCaseLabel(item.status)} · ${sentenceCaseLabel(item.priority)} · ${businessDate(item.updatedAt, timeZone)}`,
+                href: adminCustomerFilterHref('/admin/support', customer.id),
+              }))}
+            />
+          </div>
+        </section>
+      ) : section === 'profile' ? (
+        <Card title="Client profile">
+          <dl className="grid gap-3 text-sm sm:grid-cols-2">
+            <Detail
+              label="Name"
+              value={`${customer.firstName} ${customer.lastName}`}
+            />
+            <Detail label="Email" value={customer.email} />
+            <Detail
+              label="Company"
+              value={customer.companyName ?? 'Individual account'}
+            />
+            <Detail label="Country" value={customer.countryCode} />
+          </dl>
+        </Card>
+      ) : (
+        children
+      )}
 
       <RecordAction
         label="Edit customer"

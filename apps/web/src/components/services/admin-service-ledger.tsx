@@ -37,11 +37,15 @@ export function AdminServiceLedger({
   revision,
   columns,
   onNavigate,
+  basePath = '/admin/services',
+  lockCustomerScope = false,
 }: {
   selection: AdminServiceSelection;
   revision: number;
   columns: DataColumn<Service>[];
   onNavigate: () => void;
+  basePath?: string;
+  lockCustomerScope?: boolean;
 }) {
   const focusRequestedRef = useRef(false);
   return (
@@ -49,6 +53,8 @@ export function AdminServiceLedger({
       key={`${adminServiceQueryString(selection.query)}:${selection.invalid}:${selection.customerFilter.invalid}:${revision}`}
       selection={selection}
       columns={columns}
+      basePath={basePath}
+      lockCustomerScope={lockCustomerScope}
       onNavigate={() => {
         focusRequestedRef.current = true;
         onNavigate();
@@ -63,11 +69,15 @@ function Ledger({
   columns,
   onNavigate,
   focusRequestedRef,
+  basePath,
+  lockCustomerScope,
 }: {
   selection: AdminServiceSelection;
   columns: DataColumn<Service>[];
   onNavigate: () => void;
   focusRequestedRef: RefObject<boolean>;
+  basePath: string;
+  lockCustomerScope: boolean;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -102,7 +112,9 @@ function Ledger({
     if (adminServiceQueryString(next) === queryString)
       setAttempt((value) => value + 1);
     startTransition(() =>
-      router.push(adminServiceHref(next), { scroll: false }),
+      router.push(adminServiceHref(next).replace('/admin/services', basePath), {
+        scroll: false,
+      }),
     );
   }
   function submitSearch(event: FormEvent<HTMLFormElement>) {
@@ -181,7 +193,7 @@ function Ledger({
           Matching counts are records, not balances or remote provisioning
           evidence.
         </p>
-        {query.customerId ? (
+        {query.customerId && !lockCustomerScope ? (
           <Button
             type="button"
             variant="ghost"

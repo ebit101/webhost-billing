@@ -232,11 +232,9 @@ test('mobile customer and administrator complete a clearly simulated domain work
       .getByRole('dialog', { name: 'Request a domain quote', exact: true })
       .getByRole('button', { name: 'Close', exact: true })
       .click();
-    await customer
-      .getByRole('button', { name: domainName, exact: true })
-      .click();
+    await customer.getByRole('link', { name: domainName, exact: true }).click();
     await expect(
-      customer.getByRole('dialog', { name: domainName, exact: true }),
+      customer.getByRole('heading', { name: domainName, exact: true }),
     ).toBeVisible();
     const domain = await e2ePrisma.domain.findUniqueOrThrow({
       where: { domainName },
@@ -289,9 +287,9 @@ test('mobile customer and administrator complete a clearly simulated domain work
     await admin
       .getByRole('button', { name: 'Refresh read-only status' })
       .click();
-    await admin.getByRole('button', { name: domainName, exact: true }).click();
+    await admin.getByRole('link', { name: domainName, exact: true }).click();
     await expect(
-      admin.getByRole('dialog', { name: domainName, exact: true }),
+      admin.getByRole('heading', { name: domainName, exact: true }),
     ).toBeVisible();
     await admin.getByLabel('Type exact domain name').fill(domainName);
     await admin
@@ -411,15 +409,19 @@ test('mobile customer and administrator complete a clearly simulated domain work
         await queues.queue(name).obliterate({ force: true });
       await queues.close();
     }
-    await customer.getByRole('button', { name: 'Refresh this domain' }).click();
+    await customer
+      .getByRole('button', { name: 'Refresh saved records' })
+      .click();
     await expect(
       customer.getByText(
         'Simulated · Registered · Contact verification Pending',
       ),
     ).toBeVisible();
     const before = await e2ePrisma.fakeRegistrarRegistration.count();
-    await admin.getByRole('button', { name: 'Refresh this domain' }).click();
-    await customer.getByRole('button', { name: 'Refresh this domain' }).click();
+    await admin.getByRole('button', { name: 'Refresh saved records' }).click();
+    await customer
+      .getByRole('button', { name: 'Refresh saved records' })
+      .click();
     expect(await e2ePrisma.fakeRegistrarRegistration.count()).toBe(before);
     expect(
       await e2ePrisma.service.count({

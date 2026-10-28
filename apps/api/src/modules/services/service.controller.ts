@@ -83,8 +83,12 @@ export class ServiceController {
   async detail(
     @Param('serviceId', new ParseUUIDPipe()) serviceId: string,
     @CurrentAuth() auth: AuthRequestContext,
+    @Query('customerId', new ParseUUIDPipe({ optional: true }))
+    customerId?: string,
   ) {
-    return createApiSuccessResponse(await this.services.get(serviceId, auth));
+    return createApiSuccessResponse(
+      await this.services.get(serviceId, auth, customerId),
+    );
   }
 
   @Post()

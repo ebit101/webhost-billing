@@ -1,5 +1,7 @@
 'use client';
 import { sentenceCaseLabel } from '@webhost-billing/shared';
+import Link from 'next/link';
+import { clientRecordHref } from '../../lib/client-record-href';
 
 import type {
   CustomerDetail,
@@ -56,12 +58,16 @@ export function AdminServiceManager({
   inspectionBlocked = false,
   selection,
   inventoryRevision = 0,
+  basePath,
+  embedded = false,
 }: {
   customerFilter?: AdminCustomerFilter;
   reviewRevision?: number;
   inspectionBlocked?: boolean;
   selection?: AdminServiceSelection;
   inventoryRevision?: number;
+  basePath?: string;
+  embedded?: boolean;
 } = {}) {
   const applied = selection ?? {
     ...readAdminServiceQuery({ customerId: customerFilter.customerId }),
@@ -102,7 +108,17 @@ export function AdminServiceManager({
     ])
       .then(([setup, customerContext]) => {
         if (!active) return;
-        setOptions(setup);
+        setOptions({
+          ...setup,
+          orderItems:
+            embedded && filteredCustomerId
+              ? setup.orderItems.filter(
+                  (item) =>
+                    item.customerId.toLowerCase() ===
+                    filteredCustomerId.toLowerCase(),
+                )
+              : setup.orderItems,
+        });
         setFilteredCustomer(customerContext);
       })
       .catch((caught: unknown) => {
@@ -114,7 +130,7 @@ export function AdminServiceManager({
     return () => {
       active = false;
     };
-  }, [filteredCustomerId]);
+  }, [filteredCustomerId, embedded]);
 
   const columns: DataColumn<Service>[] = [
     {
@@ -122,7 +138,13 @@ export function AdminServiceManager({
       header: 'Service',
       render: (service) => (
         <div>
-          <p className="font-bold text-slate-950">{service.domain}</p>
+          <Link
+            prefetch={false}
+            className="font-bold text-brand-700 hover:underline"
+            href={clientRecordHref(service.customerId, 'services', service.id)}
+          >
+            {service.domain ?? service.productName}
+          </Link>
           <p className="mt-1 text-xs text-slate-500">
             {service.productName} · {service.billingPeriod.toLowerCase()}
           </p>
@@ -430,26 +452,30 @@ export function AdminServiceManager({
 
   return (
     <div className="grid gap-7">
-      <PageHeader
-        eyebrow="Administrator"
-        title="Hosting services"
-        description="Fulfil paid orders and manage provisioning, active, suspended, failed, cancelled, and terminated states independently from billing."
-      />
-      <AdminCustomerFilterNotice
-        customer={
-          filteredCustomer?.id.toLowerCase() ===
-          filteredCustomerId?.toLowerCase()
-            ? filteredCustomer
-            : undefined
-        }
-        invalid={customerFilter.invalid}
-        clearHref={adminServiceHref({
-          ...applied.query,
-          customerId: undefined,
-          page: 1,
-        })}
-        resourceLabel="services"
-      />
+      {!embedded && (
+        <PageHeader
+          eyebrow="Administrator"
+          title="Hosting services"
+          description="Fulfil paid orders and manage provisioning, active, suspended, failed, cancelled, and terminated states independently from billing."
+        />
+      )}
+      {!embedded && (
+        <AdminCustomerFilterNotice
+          customer={
+            filteredCustomer?.id.toLowerCase() ===
+            filteredCustomerId?.toLowerCase()
+              ? filteredCustomer
+              : undefined
+          }
+          invalid={customerFilter.invalid}
+          clearHref={adminServiceHref({
+            ...applied.query,
+            customerId: undefined,
+            page: 1,
+          })}
+          resourceLabel="services"
+        />
+      )}
       {error ? <Message error>{error}</Message> : null}
       {notice ? <Message>{notice}</Message> : null}
       {inspectionBlocked ? (
@@ -551,6 +577,8 @@ export function AdminServiceManager({
       ) : null}
 
       <AdminServiceLedger
+        basePath={basePath}
+        lockCustomerScope={embedded}
         selection={applied}
         revision={readRevision + inventoryRevision}
         columns={columns}

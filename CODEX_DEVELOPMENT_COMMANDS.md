@@ -5810,3 +5810,20 @@ invent a name, modify a stored profile, enable providers, send messages or deplo
 Validate locally with fictional records, update the report and deliver source
 through the normal protected repository workflow. Staging SMTP remains active
 and payment, hosting, registrar and WhatsApp disabled.
+
+## Command 139 — Client profile workspace for domains and hosting services
+
+Owner-authorized on 2026-10-28 through the supplied WHMCS flow examples and
+approval of the client/domain/hosting model. Keep the client identity, selector
+and implemented profile tabs visible while opening that client's Domains or
+Products/services records. Global domain/service names link to the same scoped
+details; record selectors never carry a previous client's selection. Preserve
+Summary and existing profile, verification, access and operational safeguards.
+Validate expected client ownership in API reads, retain existing customer-session
+ownership and full-administrator restrictions, and add focused regressions and
+desktop/mobile browser checks with fictional records. Reuse existing guarded
+registrar controls and hosting actions without adding WHMCS feature parity,
+imports, purchases or new automation. Validate locally, update the report and
+deliver source through the normal protected repository checks. Keep staging SMTP
+active and payment, hosting, registrar and WhatsApp disabled. Do not deploy,
+change staging records, contact a live provider or start a next command.

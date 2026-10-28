@@ -437,6 +437,61 @@ describe('complete simulated registrar in isolated PostgreSQL (e2e)', () => {
   });
   it('uses immutable invoices and verified payments, isolates ownership, dispatches once concurrently', async () => {
     const domain = await purchase();
+    const customerId = (
+      await prisma.domain.findUniqueOrThrow({ where: { id: domain.id } })
+    ).customerId;
+    const otherId = (
+      (await other.get('/auth/me').expect(200)).body as Success<{
+        customerId: string;
+      }>
+    ).data.customerId;
+    const before = await Promise.all([
+      prisma.domain.count(),
+      prisma.registrarOperation.count(),
+      prisma.invoice.count(),
+      prisma.payment.count(),
+      prisma.outboxEvent.count(),
+    ]);
+    const scoped = (
+      await owner.get(`/domains?customerId=${customerId}`).expect(200)
+    ).body as Success<DomainResult[]>;
+    expect(scoped.data.map((row) => row.id)).toEqual([domain.id]);
+    expect(scoped.data.every((row) => row.customerId === customerId)).toBe(
+      true,
+    );
+    expect(
+      (
+        (await owner.get(`/domains?customerId=${otherId}`).expect(200))
+          .body as Success<DomainResult[]>
+      ).data,
+    ).toEqual([]);
+    await owner
+      .get(`/domains/${domain.id}?customerId=${customerId}`)
+      .expect(200);
+    await owner.get(`/domains/${domain.id}?customerId=${otherId}`).expect(403);
+    await customer.get(`/domains?customerId=${otherId}`).expect(403);
+    await customer
+      .get(`/domains/${domain.id}?customerId=${otherId}`)
+      .expect(403);
+    await other
+      .get(`/domains/${domain.id}?customerId=${customerId}`)
+      .expect(403);
+    for (const path of ['/domains', '/domains/' + domain.id]) {
+      await owner.get(`${path}?customerId=invalid`).expect(400);
+      await owner
+        .get(`${path}?customerId=${customerId}&customerId=${otherId}`)
+        .expect(400);
+      await billing.get(`${path}?customerId=${customerId}`).expect(403);
+    }
+    expect(
+      await Promise.all([
+        prisma.domain.count(),
+        prisma.registrarOperation.count(),
+        prisma.invoice.count(),
+        prisma.payment.count(),
+        prisma.outboxEvent.count(),
+      ]),
+    ).toEqual(before);
     await other.get(`/domains/${domain.id}`).expect(403);
     expect(
       JSON.stringify((await customer.get(`/domains/${domain.id}`)).body),

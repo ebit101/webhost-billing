@@ -150,6 +150,59 @@ function fixture(
 function manager(input: Record<string, string | string[] | undefined> = {}) {
   return <AdminServiceManager selection={readAdminServiceQuery(input)} />;
 }
+
+it('keeps embedded service links, filters and eligible order items within the client profile', async () => {
+  const user = userEvent.setup();
+  fixture((url) =>
+    url.pathname === '/services/setup-options'
+      ? json({
+          success: true,
+          data: {
+            servers: [service.server],
+            orderItems: [
+              {
+                orderItemId: otherId,
+                orderId: otherId,
+                orderNumber: 'Other client order',
+                customerId: otherId,
+                customerName: 'Other client',
+                productName: 'Other hosting',
+                domain: 'other.example.test',
+                billingPeriod: 'MONTHLY',
+                recurringAmount: service.recurringAmount,
+              },
+            ],
+          },
+        })
+      : undefined,
+  );
+  const path = `/admin/customers/${customerId}/services`;
+  render(
+    <AdminServiceManager
+      selection={readAdminServiceQuery({ customerId })}
+      embedded
+      basePath={path}
+    />,
+  );
+  expect(
+    (await screen.findByRole('link', { name: service.domain! })).getAttribute(
+      'href',
+    ),
+  ).toBe(`${path}/${id}`);
+  expect(
+    screen.queryByRole('button', { name: 'Clear customer scope' }),
+  ).toBeNull();
+  await user.type(screen.getByRole('searchbox'), 'historical');
+  await user.click(screen.getByRole('button', { name: 'Search' }));
+  expect(String(push.mock.calls.at(-1)?.[0])).toContain(path + '?');
+  expect(String(push.mock.calls.at(-1)?.[0])).toContain(
+    'customerId=' + customerId,
+  );
+  await user.click(screen.getByRole('button', { name: 'Create service' }));
+  expect(
+    screen.queryByRole('option', { name: /Other client order/ }),
+  ).toBeNull();
+});
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
