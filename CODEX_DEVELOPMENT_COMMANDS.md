@@ -5755,3 +5755,16 @@ after the walkthrough. Distinguish owner-assisted browser observations from
 automated server evidence when UI tooling is unavailable. Do not claim closure
 until the required observations pass. No deployment, catalogue setup, financial
 operation, provider test, email resend or next command is included.
+
+### Command 132 owner-approved billing configuration
+
+Owner-authorized on 2026-10-28: resume Command 132 with the supplied invoice
+business identity/contact/address and manual bank/bKash Merchant instructions.
+The owner explicitly approved real payment destinations on staging, the manual
+WhatsApp contact and invoice number plus transaction ID requirements. Keep the
+exact supplied data in protected configuration/evidence, outside Git. Use the
+existing protected administrator controls, preserve historical invoice snapshots
+and unrelated settings, and validate the persisted values and provider boundaries.
+Keep SMTP active and payment, hosting, registrar and automated WhatsApp disabled.
+Do not deploy, create/pay/issue invoices, send messages or invent fee/tax/review
+policies. Record redacted validation evidence, update the report and stop.

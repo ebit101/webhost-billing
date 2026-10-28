@@ -1,5 +1,30 @@
 # Staging Deployment
 
+## Owner-approved billing configuration (2026-10-28, Command 132)
+
+- The owner supplied and approved real business/contact and manual bank/bKash
+  Merchant details for staging. They confirmed the manual WhatsApp contact and
+  invoice number plus transaction ID requirements. Applied the approved identity
+  and instruction values through the protected administrator settings form.
+  Exact account/contact data and screenshots remain outside Git.
+- The full street address is retained; area/region/postcode share the existing
+  city display line and the country code is `BD`. The tax ID marked not applicable
+  is omitted. No fee/review-time promise or payment-policy change was added.
+- The UI confirmed the audited save and a reload retained the values. Existing
+  runtime schemas and exact private-payload comparisons passed. Only
+  `business.identity` and `billing.manual-payment-instructions` values changed.
+  Other settings, all 28 checked business-table fingerprints, historical invoices,
+  credentials, environment, logo and running-container IDs match preflight.
+- SMTP remains **active**. Payment/registrar flags remain false, WHM servers
+  disabled and new notification/automated WhatsApp delivery disabled. The manual
+  WhatsApp instruction does not enable a connector or send messages. Seven
+  services remain healthy; health/readiness return 200.
+- Protected evidence: `/srv/webhost-billing-staging/acceptance/command132-20261028/`.
+  A persisted-form screenshot was reviewed and retained in ignored local evidence.
+  No draft or issued invoice, payment, provider operation or email was created.
+  No deployment occurred; application release remains
+  `ed7a5941bd0b4287aaaacf5a4fb256c9879ce4ff`.
+
 ## Commands 133–134 acceptance closed (2026-10-28)
 
 - Remaining read-only acceptance passed on the current release
