@@ -13,6 +13,7 @@ import { authenticatedGet } from '../../lib/auth-api';
 import { Button, buttonStyles } from '../ui/button';
 import { EmptyState, ErrorState, LoadingState } from '../ui/feedback-state';
 import { formatMinor } from './order-ui';
+import { invoiceDueDate } from '../invoices/invoice-ui';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 const responseSchema = apiSuccessResponseSchema(orderSchema);
@@ -227,7 +228,9 @@ function ReviewDetails({
             <Fact label="Invoice status">
               {sentenceCaseLabel(order.invoice.status)}
             </Fact>
-            <Fact label="Invoice due">{date(order.invoice.dueAt)}</Fact>
+            <Fact label="Invoice due">
+              {invoiceDueDate(order.invoice.dueAt)}
+            </Fact>
             <Fact label="Invoice total">
               {formatMinor(
                 order.invoice.total.amount,

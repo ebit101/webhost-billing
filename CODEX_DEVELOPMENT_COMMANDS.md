@@ -5784,3 +5784,15 @@ document, plus inconsistent editor/document due dates. Record these limitations;
 do not claim complete rendering acceptance or expand into an unauthorized fix.
 Recommended next bounded command: implement the invoice display/date fixes locally,
 add regression coverage, validate and update the report without deploying.
+
+### Command 132 local invoice display and date correction
+
+Owner-authorized on 2026-10-28: fix missing invoice phone, country and manual
+payment instructions, and the due-date mismatch locally. Resume the same bounded
+work after the reported Office power failure, preserving saved edits and `.env`.
+Render existing identity snapshots and current saved instructions in admin,
+customer, print and PDF documents. Keep invoice due calendar dates consistent
+with the editor without rewriting timestamps or financial records. Add regression
+coverage and validate locally, then update the report and deliver reviewed source
+through the normal repository checks. Keep staging SMTP active and other providers
+disabled; do not deploy or alter the fictional staging draft.

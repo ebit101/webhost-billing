@@ -19,3 +19,9 @@ export function invoiceError(error: unknown) {
 export function invoiceDate(value: string | null) {
   return value ? new Date(value).toLocaleDateString() : '—';
 }
+
+// Draft dates and PDF due dates use the persisted UTC calendar day. Do not
+// reinterpret the end-of-day timestamp in the viewer's browser time zone.
+export function invoiceDueDate(value: string) {
+  return value.slice(0, 10);
+}

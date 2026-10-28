@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { authMutation, authenticatedGet } from '../../lib/auth-api';
 import { adminCustomerFilterHref } from '../../lib/admin-customer-filter';
-import { formatMinor } from '../invoices/invoice-ui';
+import { formatMinor, invoiceDueDate } from '../invoices/invoice-ui';
 import { Button, buttonStyles } from '../ui/button';
 import { ConfirmationDialog } from '../ui/confirmation-dialog';
 import { ErrorState, LoadingState } from '../ui/feedback-state';
@@ -305,7 +305,7 @@ export function AdminCustomerDetail({ customerId }: { customerId: string }) {
             rows={customer.linked.invoices.map((item) => ({
               id: item.id,
               primary: `${item.invoiceNumber} · ${sentenceCaseLabel(item.status)}`,
-              secondary: `${formatMinor(item.total.amount, item.total.currency)} · due ${businessDate(item.dueAt, timeZone)}`,
+              secondary: `${formatMinor(item.total.amount, item.total.currency)} · due ${invoiceDueDate(item.dueAt)}`,
               href: `/admin/invoices/${item.id}`,
             }))}
           />

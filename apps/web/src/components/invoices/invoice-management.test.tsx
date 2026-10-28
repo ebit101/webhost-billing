@@ -3,12 +3,20 @@ import type {
   CustomerSummary,
   Invoice,
 } from '@webhost-billing/shared';
-import { render, screen } from '@testing-library/react';
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AdminInvoiceManager } from './admin-invoice-manager';
 import { CustomerInvoiceList } from './customer-invoice-list';
 import { InvoiceDetail } from './invoice-detail';
+import { invoiceDueDate } from './invoice-ui';
+import { InvoiceDocument } from './invoice-document';
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
 
@@ -21,6 +29,7 @@ const identity: BusinessIdentity = {
   city: 'Dhaka',
   countryCode: 'BD',
   email: 'billing@example.test',
+  phone: '+880 1000 000000',
   taxIdentifier: 'BUSINESS-TAX-10',
 };
 
@@ -103,6 +112,110 @@ afterEach(() => {
 });
 
 describe('invoice interfaces', () => {
+  it.each(['admin', 'customer', 'print'] as const)(
+    'shows snapshot contact details and one current instruction block in %s view',
+    async (mode) => {
+      const instructions =
+        'Fictional bank: TEST-ACCOUNT\nUse the invoice number and transaction ID.\nSend proof to the fictional manual contact. <script>test</script>';
+      const fetchMock = vi.fn<typeof fetch>(
+        async (input: RequestInfo | URL) => {
+          const path = new URL(String(input)).pathname;
+          if (path === '/payments/my') return paginatedResponse([]);
+          if (path === '/payment-gateways')
+            return jsonResponse({ success: true, data: [] });
+          return jsonResponse({
+            success: true,
+            data: {
+              ...invoice,
+              dueAt: '2026-10-29T23:59:59.000Z',
+              manualPaymentInstructions: instructions,
+            },
+          });
+        },
+      );
+      vi.stubGlobal('fetch', fetchMock);
+      render(<InvoiceDetail invoiceId={invoiceId} mode={mode} />);
+      await screen.findByText(invoice.invoiceNumber);
+      const document = screen.getByRole('article');
+      expect(within(document).getByText(identity.phone!)).toBeTruthy();
+      expect(
+        within(document.querySelector('header')!).getByText('BD'),
+      ).toBeTruthy();
+      expect(
+        screen.getAllByRole('heading', { name: 'Payment instructions' }),
+      ).toHaveLength(1);
+      expect(document.textContent).toContain(instructions);
+      expect(document.querySelector('script')).toBeNull();
+      expect(within(document).getByText('2026-10-29')).toBeTruthy();
+      expect(
+        fetchMock.mock.calls.every(
+          ([, init]) => !init?.method || init.method === 'GET',
+        ),
+      ).toBe(true);
+    },
+  );
+
+  it('omits absent optional contacts and empty instructions on historical documents', () => {
+    render(
+      <InvoiceDocument
+        invoice={{
+          ...invoice,
+          businessIdentity: { name: 'Legacy issuer' },
+          manualPaymentInstructions: '',
+        }}
+      />,
+    );
+    expect(screen.getByText('Legacy issuer')).toBeTruthy();
+    expect(
+      screen.queryByRole('heading', { name: 'Payment instructions' }),
+    ).toBeNull();
+    expect(screen.queryByText(identity.phone!)).toBeNull();
+  });
+
+  it('round-trips the selected draft date without changing its timestamp or issuing it', async () => {
+    const dueAt = '2026-10-29T23:59:59.000Z';
+    const draft = {
+      ...invoice,
+      status: 'DRAFT' as const,
+      issuedAt: null,
+      dueAt,
+    };
+    const fetchMock = vi.fn<typeof fetch>(async (input: RequestInfo | URL) => {
+      if (String(input).endsWith('/auth/csrf'))
+        return jsonResponse({
+          success: true,
+          data: { csrfToken: 'x'.repeat(32) },
+        });
+      return jsonResponse({ success: true, data: draft });
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    render(<InvoiceDetail invoiceId={invoiceId} mode="admin" />);
+    await screen.findByText(invoice.invoiceNumber);
+    expect((screen.getByLabelText('Due date') as HTMLInputElement).value).toBe(
+      '2026-10-29',
+    );
+    expect(screen.getByText(invoiceDueDate(dueAt))).toBeTruthy();
+    fireEvent.submit(
+      screen
+        .getByRole('button', { name: 'Save draft changes' })
+        .closest('form')!,
+    );
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        expect.stringContaining(`/invoices/${invoiceId}/draft`),
+        expect.objectContaining({ method: 'PATCH', body: expect.any(String) }),
+      ),
+    );
+    const call = fetchMock.mock.calls.find(([url]) =>
+      String(url).endsWith('/draft'),
+    );
+    const request = call?.[1] as RequestInit;
+    expect(JSON.parse(String(request.body)).dueAt).toBe(dueAt);
+    expect(
+      fetchMock.mock.calls.some(([url]) => String(url).endsWith('/action')),
+    ).toBe(false);
+  });
+
   it('lists customer invoices with status, due date, and balance links', async () => {
     vi.stubGlobal(
       'fetch',
@@ -115,6 +228,7 @@ describe('invoice interfaces', () => {
     expect(link.getAttribute('href')).toBe(`/portal/invoices/${invoice.id}`);
     expect(screen.getByText('BDT 256.00')).toBeTruthy();
     expect(screen.getByRole('cell', { name: 'Unpaid' })).toBeTruthy();
+    expect(screen.getByRole('cell', { name: '2026-09-01' })).toBeTruthy();
   });
 
   it('renders historical snapshots and a working printable view', async () => {

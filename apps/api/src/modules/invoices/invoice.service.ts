@@ -32,6 +32,7 @@ import { allocateInvoiceNumber } from '../../common/identifiers/invoice-number';
 import type { SecurityRequestContext } from '../../common/http/request-context';
 import { PRISMA_CLIENT } from '../../infrastructure/database/database.module';
 import type { AuthRequestContext } from '../auth/auth.types';
+import { readManualPaymentInstructions } from '../payments/manual-payment-instructions';
 
 interface CalculableItem {
   quantity: number;
@@ -613,7 +614,12 @@ export class InvoiceService {
         message: 'You do not have access to this invoice.',
       });
     }
-    return this.toInvoice(invoice);
+    return {
+      ...this.toInvoice(invoice),
+      manualPaymentInstructions: await readManualPaymentInstructions(
+        this.prisma,
+      ),
+    };
   }
 
   private parseAndCalculate(
@@ -730,7 +736,12 @@ export class InvoiceService {
   }
 
   private async getUnchecked(invoiceId: string): Promise<Invoice> {
-    return this.toInvoice(await this.getRecord(invoiceId));
+    return {
+      ...this.toInvoice(await this.getRecord(invoiceId)),
+      manualPaymentInstructions: await readManualPaymentInstructions(
+        this.prisma,
+      ),
+    };
   }
 
   private async getRecord(invoiceId: string): Promise<InvoiceRecord> {

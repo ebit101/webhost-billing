@@ -60,6 +60,68 @@ const invoice: Invoice = {
 };
 
 describe('InvoicePdfService', () => {
+  it('prints issuer contacts, the UTC due day and complete multiline instructions without changing input', async () => {
+    const preview: Invoice = {
+      ...invoice,
+      dueAt: '2026-10-29T23:59:59.000Z',
+      manualPaymentInstructions:
+        'Fictional bank: TEST-123\nInvoice number and transaction ID required.\nSend proof to the manual contact.',
+    };
+    const before = structuredClone(preview);
+    const text = jest.spyOn(PDFDocument.prototype, 'text');
+    try {
+      await renderInvoicePdf(preview);
+      const labels = text.mock.calls.map(([label]) => label);
+      for (const expected of [
+        invoice.businessIdentity.phone,
+        invoice.businessIdentity.countryCode,
+        '2026-10-29',
+        'Payment instructions',
+        'Fictional bank: TEST-123',
+        'Invoice number and transaction ID required.',
+        'Send proof to the manual contact.',
+      ])
+        expect(labels).toContain(expected);
+      expect(preview).toEqual(before);
+    } finally {
+      text.mockRestore();
+    }
+  });
+
+  it('paginates the maximum instruction length above page footers without dropping its final line', async () => {
+    const body = Array.from(
+      { length: 190 },
+      (_, i) => `Fictional line ${i + 1}`,
+    ).join('\n');
+    const ending = '\nFinal payment instruction';
+    const instructions =
+      body + '\n' + 'x'.repeat(4000 - body.length - 1 - ending.length) + ending;
+    expect(instructions.length).toBe(4000);
+    const text = jest.spyOn(PDFDocument.prototype, 'text');
+    try {
+      const pdf = await renderInvoicePdf({
+        ...invoice,
+        manualPaymentInstructions: instructions,
+      });
+      expect(
+        pdf.toString('latin1').match(/\/Type \/Page\b/g)!.length,
+      ).toBeGreaterThan(3);
+      const instructionCalls = text.mock.calls.filter(
+        ([label]) =>
+          String(label).startsWith('Fictional line') ||
+          label === 'Final payment instruction',
+      );
+      expect(instructionCalls).toHaveLength(191);
+      for (const call of instructionCalls)
+        expect(call[2]).toBeLessThanOrEqual(748 - 13);
+      expect(text.mock.calls.map(([label]) => label)).toContain(
+        'Payment instructions (continued)',
+      );
+    } finally {
+      text.mockRestore();
+    }
+  });
+
   it('uses sentence-case labels while preserving snapshot identifiers and currency', async () => {
     const original = structuredClone(invoice);
     const text = jest.spyOn(PDFDocument.prototype, 'text');

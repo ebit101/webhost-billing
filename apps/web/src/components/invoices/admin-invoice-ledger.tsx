@@ -24,7 +24,7 @@ import { EmptyState, ErrorState, LoadingState } from '../ui/feedback-state';
 import { StatusBadge } from '../ui/status-badge';
 import {
   formatMinor,
-  invoiceDate,
+  invoiceDueDate,
   invoiceError,
   invoiceTone,
 } from './invoice-ui';
@@ -71,7 +71,7 @@ const columns: DataColumn<Invoice>[] = [
   {
     key: 'due',
     header: 'Due',
-    render: (invoice) => invoiceDate(invoice.dueAt),
+    render: (invoice) => invoiceDueDate(invoice.dueAt),
   },
   {
     key: 'total',

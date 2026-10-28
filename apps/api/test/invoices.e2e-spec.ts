@@ -42,6 +42,8 @@ describe('Invoice management (e2e)', () => {
   let customerId = '';
   let invoiceId = '';
   let ledgerAdmin: ReturnType<typeof request.agent>;
+  let documentAdmin: ReturnType<typeof request.agent>;
+  let documentCustomer: ReturnType<typeof request.agent>;
   let previousBusinessSetting: {
     value: Prisma.InputJsonValue;
     updatedByUserId: string | null;
@@ -300,6 +302,8 @@ describe('Invoice management (e2e)', () => {
     const customerCsrf = await csrfToken(customer);
     await login(customer, customerCsrf, CUSTOMER_EMAIL);
     const detail = await customer.get(`/invoices/${invoiceId}`).expect(200);
+    documentAdmin = admin;
+    documentCustomer = customer;
     const invoice = apiSuccessResponseSchema(invoiceSchema).parse(
       detail.body,
     ).data;
@@ -340,6 +344,62 @@ describe('Invoice management (e2e)', () => {
         .parse(list.body)
         .data.some((item) => item.id === invoiceId),
     ).toBe(true);
+  });
+
+  it('adds current manual instructions only to authorized detail without rewriting issued records', async () => {
+    const key = 'billing.manual-payment-instructions';
+    const original = await prisma.setting.findUnique({ where: { key } });
+    const invoiceBefore = await prisma.invoice.findUniqueOrThrow({
+      where: { id: invoiceId },
+      include: { items: true },
+    });
+    const emailCount = await prisma.outboxEvent.count({
+      where: { aggregateId: invoiceId },
+    });
+    const instructions =
+      'Fictional bank transfer: TEST-123\nUse invoice number and transaction ID.\nSend proof to the fictional manual contact.';
+    try {
+      await prisma.setting.upsert({
+        where: { key },
+        create: { key, category: 'BILLING', value: { instructions } },
+        update: { value: { instructions } },
+      });
+      for (const actor of [documentAdmin, documentCustomer]) {
+        const response = await actor.get(`/invoices/${invoiceId}`).expect(200);
+        const detail = apiSuccessResponseSchema(invoiceSchema).parse(
+          response.body,
+        ).data;
+        expect(detail.manualPaymentInstructions).toBe(instructions);
+        expect(detail.businessIdentity.name).toBe('Fictional Hosting Ltd');
+      }
+      await prisma.setting.update({
+        where: { key },
+        data: { value: { instructions: '' } },
+      });
+      const empty = await documentAdmin
+        .get(`/invoices/${invoiceId}`)
+        .expect(200);
+      expect(
+        apiSuccessResponseSchema(invoiceSchema).parse(empty.body).data
+          .manualPaymentInstructions,
+      ).toBe('');
+      expect(
+        await prisma.invoice.findUniqueOrThrow({
+          where: { id: invoiceId },
+          include: { items: true },
+        }),
+      ).toEqual(invoiceBefore);
+      expect(
+        await prisma.outboxEvent.count({ where: { aggregateId: invoiceId } }),
+      ).toBe(emailCount);
+    } finally {
+      if (original)
+        await prisma.setting.update({
+          where: { key },
+          data: { value: original.value as Prisma.InputJsonValue },
+        });
+      else await prisma.setting.deleteMany({ where: { key } });
+    }
   });
 
   it('enforces ownership, cancellation rules, and non-deletion of issued history', async () => {

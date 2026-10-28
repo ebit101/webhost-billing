@@ -1,5 +1,19 @@
 # Staging Deployment
 
+## Local invoice correction prepared, not deployed (2026-10-28, Command 132)
+
+Local source now renders saved issuer phone/country, current manual instructions
+in web/print/PDF documents and the editor's UTC due calendar day in invoice lists
+and summaries. This does **not** close the earlier staging display findings: the
+staging release is still `ed7a5941bd0b4287aaaacf5a4fb256c9879ce4ff`.
+Read-only checks confirm unchanged staging environment/mode and logo, active SMTP,
+disabled payment/registrar flags and real WHM servers, and disabled notification/
+WhatsApp delivery. `INV-001004` is still Draft, unissued and paid zero. No staging
+save, email, migration, restart, deployment or provider operation was performed.
+See the local validation and constraints in the progress report. Separately
+authorize a backed-up staging deployment and bounded invoice acceptance before
+claiming the display issues are fixed on staging.
+
 ## Fictional billing draft acceptance (2026-10-28, Command 132)
 
 - Created exactly one administrator draft through the signed-in Speed profile:

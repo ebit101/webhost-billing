@@ -5,14 +5,9 @@ import type {
   Invoice,
   ManualPayment,
   ManualPaymentCreationResult,
-  ManualPaymentInstructions,
 } from '@webhost-billing/shared';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import {
-  authenticatedGet,
-  authMutation,
-  authenticatedPaginatedGet,
-} from '../../lib/auth-api';
+import { authMutation, authenticatedPaginatedGet } from '../../lib/auth-api';
 import { formatMinor } from '../invoices/invoice-ui';
 import { Button } from '../ui/button';
 import { EmptyState } from '../ui/feedback-state';
@@ -25,24 +20,17 @@ export function CustomerManualPayment({ invoice }: { invoice: Invoice }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
-  const [instructions, setInstructions] = useState('');
   const submissionKey = useRef('');
   const payable = invoice.status === 'UNPAID' || invoice.status === 'OVERDUE';
 
   useEffect(() => {
     let active = true;
-    void Promise.all([
-      authenticatedPaginatedGet<ManualPayment>(
-        `/payments/my?invoiceId=${invoice.id}&pageSize=100`,
-      ),
-      authenticatedGet<ManualPaymentInstructions>(
-        '/payments/manual/instructions',
-      ),
-    ])
-      .then(([result, paymentInstructions]) => {
+    void authenticatedPaginatedGet<ManualPayment>(
+      `/payments/my?invoiceId=${invoice.id}&pageSize=100`,
+    )
+      .then((result) => {
         if (active) {
           setPayments(result.data);
-          setInstructions(paymentInstructions.instructions);
         }
       })
       .catch((caught: unknown) => {
@@ -113,16 +101,6 @@ export function CustomerManualPayment({ invoice }: { invoice: Invoice }) {
           numbers, or secret codes.
         </p>
       </div>
-      {instructions ? (
-        <div className="rounded-xl border border-cyan-200 bg-cyan-50 p-4">
-          <h3 className="text-sm font-bold text-cyan-950">
-            Payment instructions
-          </h3>
-          <p className="mt-1 whitespace-pre-wrap text-sm leading-6 text-cyan-900">
-            {instructions}
-          </p>
-        </div>
-      ) : null}
       {error ? <Message error>{error}</Message> : null}
       {notice ? <Message>{notice}</Message> : null}
       {payable ? (

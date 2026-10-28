@@ -43,6 +43,20 @@ Issuance snapshots and locks the complete document. After issuance:
 - invoice number and due date remain stable;
 - no API route deletes the invoice or its items.
 
+The historical identity includes the saved issuer phone and country when present;
+the web document and PDF show these optional fields without looking up today's
+business identity. Manual payment instructions are separate, current collection
+guidance from the saved installation setting, not a historical invoice snapshot.
+Authorized invoice detail and draft/action responses include this bounded plain
+text; list responses may omit it. Administrator, customer, printable and PDF views
+use that same instruction value. Empty saved instructions omit the section.
+
+Invoice **due dates** display the persisted UTC calendar day (`YYYY-MM-DD`) across
+the draft editor, ledgers, document, summaries and PDF. This avoids shifting an
+end-of-day UTC timestamp into the following day in a browser time zone. Creation,
+issuance and other event timestamps retain their existing presentation rules.
+No saved due timestamp, overdue boundary or reminder schedule is rewritten.
+
 Order-created invoices begin at `UNPAID` and are already issued. A zero-balance or fully credited draft becomes `PAID` when issued because no payment is due; a positive balance becomes `UNPAID`.
 
 ## States and actions
@@ -95,6 +109,8 @@ The A4 renderer includes:
 - snapshotted business and customer billing identities;
 - item descriptions, quantities, unit values, discounts, tax, line totals, and service periods;
 - subtotal, discount, tax, invoice total, credit, paid amount, and balance due;
+- current multiline manual payment instructions, wrapped and paginated before
+  page footers, with continuation headings when needed;
 - exact integer-minor-unit formatting, with BDT displayed to two decimal places;
 - embedded Latin and Bengali font subsets, wrapped address/item text, repeated table headings, and numbered multi-page footers.
 

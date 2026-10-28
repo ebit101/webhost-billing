@@ -5,7 +5,12 @@ import type { CustomerPortalSummary } from '@webhost-billing/shared';
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { authenticatedGet } from '../../lib/auth-api';
-import { formatMinor, invoiceDate, invoiceTone } from '../invoices/invoice-ui';
+import {
+  formatMinor,
+  invoiceDate,
+  invoiceDueDate,
+  invoiceTone,
+} from '../invoices/invoice-ui';
 import { serviceTone } from '../services/service-ui';
 import { ticketTone } from '../support/support-ui';
 import { Button, buttonStyles } from '../ui/button';
@@ -179,7 +184,7 @@ export function CustomerPortalOverview({ customerId }: { customerId: string }) {
                     ? 'invoice'
                     : 'invoices'}
                   . Next: {billing.nextInvoice.invoiceNumber}, due{' '}
-                  {invoiceDate(billing.nextInvoice.dueAt)}.
+                  {invoiceDueDate(billing.nextInvoice.dueAt)}.
                 </p>
                 <Link
                   href={`/portal/invoices/${billing.nextInvoice.id}`}
