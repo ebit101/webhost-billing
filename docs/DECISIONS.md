@@ -2890,6 +2890,14 @@ report-only update must pass its own delivery gate; stop for the recommended pha
 - **Safety:** New delivery defaults disabled; preview mode writes private local email/WhatsApp artifacts and never calls a live provider. Historical source cutover is the migration epoch, so migration does not replay old events. Canonical invoice/channel/recipient keys prevent duplicates; an anti-join catches late committed sources. Current account, role, recipient fingerprint and mutable business state are checked again at delivery. Job payloads contain references only; responses expose masked contacts and safe statuses, not tokens, ciphertext, metadata or provider errors.
 - **Consequence:** New notification tables need a separately authorized guarded staging migration. New alert emails and WhatsApp have no live delivery until a future explicitly authorized integration. Existing transactional SMTP remains independent. No financial/provisioning action, deployment or real customer message is part of this command.
 
+## ADR-142 — Complete invoice contact display and preserve due calendar dates
+
+- **Date:** 2026-10-28
+- **Status:** Accepted for local implementation by owner; not deployed.
+- **Decision:** Render optional issuer phone/country and complete locality from the existing historical identity. Include current, runtime-validated manual payment instructions in authorized detail and post-mutation responses, and show one block in the shared web/print document and server PDF. Reuse the existing instruction reader and fallback; do not duplicate the customer payment panel's text or expose credentials/settings bundles.
+- **Date rule:** Due dates use the existing persisted UTC calendar day in ISO date-only form, matching the draft editor and PDF across browser/business time zones. Preserve stored timestamps, invoice states, money, overdue/reminder timing and all other event-date rules. No migration or historical backfill is needed.
+- **Consequence:** Instructions remain current collection guidance, not a new financial snapshot; changing the installation instructions can change a later download's guidance without changing its historical identity or money. Existing authorization, draft PDF restrictions and payment-proof rules remain in force. Staging SMTP stays active and payment/hosting/registrar/WhatsApp disabled. Deployment and acceptance of the new release require separate authorization.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

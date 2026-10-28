@@ -95,6 +95,7 @@ export async function renderInvoicePdf(invoice: Invoice): Promise<Buffer> {
   drawParties(document, invoice);
   drawItems(document, invoice);
   drawTotals(document, invoice);
+  drawPaymentInstructions(document, invoice);
   drawNotes(document, invoice);
   drawPageFooters(document, invoice);
   document.end();
@@ -390,6 +391,51 @@ function drawTotals(document: PDFKit.PDFDocument, invoice: Invoice) {
     color: COLORS.brand,
   });
   document.y = balanceY + 30;
+}
+
+function drawPaymentInstructions(
+  document: PDFKit.PDFDocument,
+  invoice: Invoice,
+) {
+  if (!invoice.manualPaymentInstructions) return;
+  function heading(continued: boolean) {
+    const y = document.y;
+    text(
+      document,
+      continued ? 'Payment instructions (continued)' : 'Payment instructions',
+      MARGIN,
+      y,
+      {
+        width: CONTENT_WIDTH,
+        size: 9,
+        bold: true,
+        color: COLORS.ink,
+      },
+    );
+    document.y = y + 22;
+  }
+  if (document.y > ITEM_BOTTOM - 55) addPage(document, invoice, false);
+  else document.y += 16;
+  heading(false);
+  for (const line of wrapText(
+    document,
+    invoice.manualPaymentInstructions,
+    CONTENT_WIDTH,
+    false,
+    8,
+  )) {
+    if (document.y + 13 > ITEM_BOTTOM) {
+      addPage(document, invoice, false);
+      heading(true);
+    }
+    const y = document.y;
+    text(document, line, MARGIN, y, {
+      width: CONTENT_WIDTH,
+      size: 8,
+      color: COLORS.muted,
+    });
+    document.y = y + 13;
+  }
 }
 
 function drawNotes(document: PDFKit.PDFDocument, invoice: Invoice) {

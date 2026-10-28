@@ -1,11 +1,16 @@
 import { sentenceCaseLabel } from '@webhost-billing/shared';
 import type { Invoice } from '@webhost-billing/shared';
 import { StatusBadge } from '../ui/status-badge';
-import { formatMinor, invoiceDate, invoiceTone } from './invoice-ui';
+import {
+  formatMinor,
+  invoiceDate,
+  invoiceDueDate,
+  invoiceTone,
+} from './invoice-ui';
 
 export function InvoiceDocument({ invoice }: { invoice: Invoice }) {
   return (
-    <article className="invoice-document rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-9">
+    <article className="invoice-document min-w-0 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-9">
       <header className="flex flex-col gap-6 border-b border-slate-200 pb-7 sm:flex-row sm:items-start sm:justify-between">
         <Identity identity={invoice.businessIdentity} />
         <div className="sm:text-right">
@@ -45,7 +50,7 @@ export function InvoiceDocument({ invoice }: { invoice: Invoice }) {
             value={invoiceDate(invoice.createdAt)}
           />
           <DocumentMeta label="Issued" value={invoiceDate(invoice.issuedAt)} />
-          <DocumentMeta label="Due" value={invoiceDate(invoice.dueAt)} />
+          <DocumentMeta label="Due" value={invoiceDueDate(invoice.dueAt)} />
           {invoice.orderNumber ? (
             <DocumentMeta label="Order" value={invoice.orderNumber} />
           ) : null}
@@ -104,6 +109,16 @@ export function InvoiceDocument({ invoice }: { invoice: Invoice }) {
           </dd>
         </div>
       </div>
+      {invoice.manualPaymentInstructions ? (
+        <section className="mt-7 border-t border-slate-200 pt-5">
+          <h2 className="text-sm font-bold text-slate-950">
+            Payment instructions
+          </h2>
+          <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-700 [overflow-wrap:anywhere]">
+            {invoice.manualPaymentInstructions}
+          </p>
+        </section>
+      ) : null}
     </article>
   );
 }
@@ -112,7 +127,14 @@ function Identity({ identity }: { identity: Invoice['businessIdentity'] }) {
   return (
     <div>
       <p className="text-xl font-bold text-slate-950">{identity.name}</p>
-      {[identity.addressLine1, identity.addressLine2, identity.city]
+      {[
+        identity.addressLine1,
+        identity.addressLine2,
+        [identity.city, identity.region, identity.postalCode]
+          .filter(Boolean)
+          .join(', '),
+        identity.countryCode,
+      ]
         .filter(Boolean)
         .map((line) => (
           <p key={line} className="mt-1 text-sm text-slate-600">
@@ -121,6 +143,9 @@ function Identity({ identity }: { identity: Invoice['businessIdentity'] }) {
         ))}
       {identity.email ? (
         <p className="mt-1 text-sm text-slate-600">{identity.email}</p>
+      ) : null}
+      {identity.phone ? (
+        <p className="mt-1 text-sm text-slate-600">{identity.phone}</p>
       ) : null}
       {identity.taxIdentifier ? (
         <p className="mt-1 text-sm text-slate-600">

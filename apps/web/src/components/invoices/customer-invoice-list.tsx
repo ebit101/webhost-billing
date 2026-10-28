@@ -33,6 +33,7 @@ import { StatusBadge } from '../ui/status-badge';
 import {
   formatMinor,
   invoiceDate,
+  invoiceDueDate,
   invoiceError,
   invoiceTone,
 } from './invoice-ui';
@@ -155,7 +156,7 @@ function Ledger({
       {
         key: 'due',
         header: 'Due',
-        render: (invoice) => invoiceDate(invoice.dueAt),
+        render: (invoice) => invoiceDueDate(invoice.dueAt),
       },
       {
         key: 'total',

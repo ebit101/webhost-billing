@@ -125,6 +125,7 @@ export const invoiceSchema = z
     customerEmail: z.email().max(320),
     customerAddress: invoiceAddressSchema,
     businessIdentity: businessIdentitySchema,
+    manualPaymentInstructions: z.string().trim().max(4_000).optional(),
     taxIdentity: z
       .object({ taxIdentifier: z.string().min(1).max(64) })
       .strict()
