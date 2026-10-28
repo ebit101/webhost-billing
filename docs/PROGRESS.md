@@ -2,14 +2,26 @@
 
 ## Status Summary
 
-- **Current command:** Command 139 — Client profile workspace for domains and hosting services
-- **Current status:** Local implementation and acceptance complete. Client identity and tabs remain visible around owned domain/service details, with clickable global records and client-scoped selection. No deployment or staging business-data change. SMTP is active and payment, hosting, registrar and WhatsApp remain disabled.
+- **Current command:** Command 140 — Registrar compatibility and pending staging release
+- **Current status:** Registrar response compatibility fixed locally; validation and the explicitly authorized staging deployment are in progress. Preserve active SMTP, disabled payment/hosting/registrar/WhatsApp, environment, logo and business records.
 - **Last updated:** 2026-10-28
 - **Last recorded staging release:** Commands 135–137, `ed7a5941bd0b4287aaaacf5a4fb256c9879ce4ff`, deployed on 2026-10-27.
-- **Next command:** Separately authorize backup-verified staging deployment and bounded acceptance of the pending invoice, administrator account and client-workspace changes, preserving environment/logo and active SMTP with other providers disabled.
-- **Next command authorized:** None. No deployment, provider activation, real customer operation or next product command.
+- **Next command:** Finish Command 140 validation, reviewed source delivery and backup-verified deployment of all pending changes, then record bounded staging acceptance.
+- **Next command authorized:** Command 140 compatibility fixes and deployment of pending Commands 132/138/139. No provider activation, registration, hosting provisioning or existing-domain adoption.
 
 ## Command Reports
+
+### Command 140 — Registrar compatibility and pending staging release
+
+- **Status and date:** In progress, 2026-10-28. Local regression validation started; no cutover yet.
+- **Authorization:** The owner requested provider connection validation, chose the saved Rainbow server, saved a disabled StarGate connection privately, and then explicitly authorized fixing registrar compatibility and deploying all pending changes. Existing-domain linking remains deferred.
+- **Diagnosis:** The owner's protected WHM connection test succeeded and the persisted test result confirmed it. That read establishes authentication/connectivity only; package availability, account creation permissions and hosting provisioning are unproven. Separate read-only TLS registrar requests returned HTTP 200 for availability and cost pricing. Availability included a previously rejected `classkey`; the deployed pricing response exceeded its old parser limit. Current pending source already had expanded live parser limits, which this change confines to the multi-product pricing endpoint.
+- **Implemented scope:** Accept optional `classkey` only when exactly `domcno` for the existing one-year ordinary `.com` pilot. Retain rejection of premium, unknown status, unrelated fields and wrong types/classes. Cost pricing alone allows 262,144 bytes and 32,768 value nodes, matching the existing transport byte ceiling; other responses and sandbox parsing retain their smaller defaults. Exact money, duplicate-key/prototype/depth defenses, pinned hosts/verbs/TLS, deadlines, redaction and no-retry behavior remain intact.
+- **Files changed:** `packages/database/src/registrar/resellbiz-live.ts`, `packages/database/test/registrar.spec.ts`, `CODEX_DEVELOPMENT_COMMANDS.md` and this report. Deployment evidence will also update `docs/STAGING_DEPLOYMENT.md`.
+- **Validation performed:** Focused registrar suite passed 20/20 and database unit suite passed 168/168 using fictional fixtures and injected transports. Frozen installation, package/API/worker builds, database typecheck and API/worker lint passed with Node 24.20.0 and pinned pnpm 11.22.0. Guarded fictional domain/service/customer API acceptance passed 31/31 across three suites and removed only its verified owned temporary schema; the worker registrar module test passed 1/1. All four offline documentation validators, changed-file formatting and Git whitespace checks passed. Complete-history Gitleaks scanned 329 commits with no leaks. Office `.env` hash is unchanged. Hosted full CI/CodeQL and staging deployment checks remain pending; no result is claimed in advance. Existing pg concurrent-query and VM-module warnings were non-fatal.
+- **Decisions and boundaries:** No provider activation, domain registration/renewal/transfer, hosting creation, nameserver/contact mutation, invoice issue/payment, new email or schema change. Retain SMTP active and payment/hosting/registrar/WhatsApp disabled. Standalone live reads do not approve native cost currency, local ownership mapping or a real sale. Keep the existing fictional draft unissued and unpaid. Credentials and provider payloads remain outside Git.
+- **Open risks and blockers:** Existing-domain adoption is missing and separately scoped. The saved product still uses its development hosting mapping; `app-pkg` existence and provisioning are unverified. Native registrar cost currency is not independently approved. Authenticated staging UI acceptance may require the owner's Speed profile because browser automation cannot connect.
+- **Exact recommended next command:** Finish the already authorized validation, reviewed source delivery and backup-verified pending release, record postflight and stop. No next product command is authorized.
 
 ### Command 0 — Define Permanent Project Rules
 

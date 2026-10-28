@@ -306,6 +306,115 @@ test('live quote is exact, isolated from mock mode and rejects unsupported/premi
     await assert.rejects(fixture.registrar.quote(liveIntent.domainName));
   }
 });
+test('live availability accepts only the ordinary .com class key without changing registration status', async () => {
+  for (const status of ['available', 'regthroughus', 'regthroughothers']) {
+    const fixture = liveFixture();
+    fixture.modify((path, value) =>
+      path === '/api/domains/available.json'
+        ? {
+            [liveIntent.domainName]: {
+              status,
+              classkey: 'domcno',
+              isPremium: false,
+            },
+          }
+        : value,
+    );
+    const quote = await fixture.registrar.quote(liveIntent.domainName);
+    assert.equal(quote.available, status === 'available');
+    assert.deepEqual(
+      fixture.calls.map(({ path }) => path),
+      ['/api/domains/available.json', '/api/products/reseller-cost-price.json'],
+    );
+  }
+  for (const extra of [
+    { classkey: 'dotnet' },
+    { classkey: 'DOMCNO' },
+    { classkey: '' },
+    { classkey: null },
+    { classkey: 1 },
+    { classkey: {} },
+    { classkey: 'domcno', isPremium: 'true' },
+    { classkey: 'domcno', unexpected: false },
+    { classkey: 'domcno', status: 'unknown' },
+  ]) {
+    const fixture = liveFixture();
+    fixture.modify((path, value) =>
+      path === '/api/domains/available.json'
+        ? { [liveIntent.domainName]: { status: 'available', ...extra } }
+        : value,
+    );
+    await assert.rejects(fixture.registrar.quote(liveIntent.domainName));
+    assert.equal(fixture.calls.length, 1);
+  }
+});
+
+test('live multi-product pricing keeps exact money within endpoint-specific parser limits', async () => {
+  const prices = {
+    domcno: { addnewdomain: { '1': '9007199254740.99' } },
+    ...Object.fromEntries(
+      Array.from({ length: 1800 }, (_, index) => [
+        `fictional-product-${index}`,
+        { addnewdomain: { '1': '10.99', '2': '21.98' } },
+      ]),
+    ),
+  };
+  assert.ok(Buffer.byteLength(JSON.stringify(prices)) > 65536);
+  const fixture = liveFixture();
+  fixture.modify((path, value) =>
+    path === '/api/products/reseller-cost-price.json' ? prices : value,
+  );
+  assert.equal(
+    (await fixture.registrar.quote(liveIntent.domainName)).costAmount,
+    900719925474099n,
+  );
+  const rejectedBodies = [
+    JSON.stringify({
+      domcno: { addnewdomain: { '1': '10.99' } },
+      padding: 'x'.repeat(262144),
+    }),
+    JSON.stringify({
+      domcno: { addnewdomain: { '1': '10.99' } },
+      values: Array(32768).fill(0),
+    }),
+    '{"domcno":{"addnewdomain":{"1":"10.99","1":"11.99"}}}',
+    '{"domcno":{"addnewdomain":{"1":"10.99"}},"__proto__":{}}',
+    '{"domcno":{"addnewdomain":{"1":"10.99"}},"nested":' +
+      '['.repeat(18) +
+      '0' +
+      ']'.repeat(18) +
+      '}',
+    '{"domcno":{"addnewdomain":{"1":1e3}}}',
+  ];
+  for (const body of rejectedBodies) {
+    const provider = new ResellbizLiveRegistrar(liveCredentials, {
+      async request(path, parameters) {
+        return path === '/api/products/reseller-cost-price.json'
+          ? body
+          : fixture.transport.request(path, parameters);
+      },
+    });
+    await assert.rejects(provider.quote(liveIntent.domainName));
+  }
+  for (const padding of ['x'.repeat(65536), Array(4096).fill(0)]) {
+    let availabilityCalls = 0;
+    const body = JSON.stringify({
+      [liveIntent.domainName]: { status: 'available', classkey: 'domcno' },
+      padding,
+    });
+    const provider = new ResellbizLiveRegistrar(liveCredentials, {
+      async request(path, parameters) {
+        availabilityCalls++;
+        return path === '/api/domains/available.json'
+          ? body
+          : fixture.transport.request(path, parameters);
+      },
+    });
+    await assert.rejects(provider.quote(liveIntent.domainName));
+    assert.equal(availabilityCalls, 1);
+  }
+});
+
 function memoryPreparation() {
   const claims = new Set<string>();
   let binding: ResellbizBinding | undefined;

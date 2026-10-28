@@ -213,7 +213,9 @@ export class ResellbizLiveRegistrar implements DomainRegistrar {
           'auth-userid': this.credentials.resellerId,
           'api-key': this.credentials.apiKey,
         }),
-        { bytes: 262144, nodes: 32768 },
+        path === '/api/products/reseller-cost-price.json'
+          ? { bytes: 262144, nodes: 32768 }
+          : undefined,
       );
     } catch {
       throw new Error(
@@ -240,8 +242,9 @@ export class ResellbizLiveRegistrar implements DomainRegistrar {
     );
     if (
       Object.keys(result).some(
-        (key) => !['status', 'isPremium'].includes(key),
+        (key) => !['status', 'isPremium', 'classkey'].includes(key),
       ) ||
+      (Object.hasOwn(result, 'classkey') && result.classkey !== 'domcno') ||
       (result.isPremium !== undefined &&
         result.isPremium !== false &&
         result.isPremium !== 'false')

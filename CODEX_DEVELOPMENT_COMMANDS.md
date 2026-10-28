@@ -5827,3 +5827,20 @@ imports, purchases or new automation. Validate locally, update the report and
 deliver source through the normal protected repository checks. Keep staging SMTP
 active and payment, hosting, registrar and WhatsApp disabled. Do not deploy,
 change staging records, contact a live provider or start a next command.
+
+## Command 140 — Registrar compatibility and pending staging release
+
+Owner-authorized on 2026-10-28: finish read-only provider connection checks, then
+fix and validate registrar compatibility and deploy all pending changes to
+`my.speedhost.bd`. Accept the ordinary `.com` availability class key without
+relaxing premium, status or unknown-field checks. Apply finite expanded lossless
+JSON limits only to multi-product cost pricing; keep smaller response limits and
+duplicate-key, prototype, depth, exact-money and transport safeguards elsewhere.
+Add synthetic regression coverage, validate and deliver source through the normal
+protected pull-request workflow. Verify exact-release CI and CodeQL and a fresh
+encrypted backup before staging cutover. Include pending invoice display/date,
+administrator identity/account and client-workspace changes. Preserve environment,
+logo, records and active SMTP; keep payment, hosting, registrar and WhatsApp disabled.
+Use bounded read-only staging smokes and distinguish connection/quote evidence from
+provisioning or registration acceptance. No order creation, provider mutation,
+existing-domain linking/adoption, native-currency approval or next product command.
