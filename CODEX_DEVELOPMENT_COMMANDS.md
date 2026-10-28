@@ -5768,3 +5768,19 @@ and unrelated settings, and validate the persisted values and provider boundarie
 Keep SMTP active and payment, hosting, registrar and automated WhatsApp disabled.
 Do not deploy, create/pay/issue invoices, send messages or invent fee/tax/review
 policies. Record redacted validation evidence, update the report and stop.
+
+### Command 132 fictional draft acceptance follow-up
+
+Owner-authorized on 2026-10-28: create one fictional staging invoice draft to
+inspect the approved business identity and manual instructions. Leave it unissued
+and unpaid; keep SMTP active and payment, hosting, registrar and WhatsApp disabled.
+Use an existing fictional customer and the protected administrator form. Verify
+stored snapshots, visible document fields, numbering and preservation without
+sending email or creating payment/service/provider operations. No deployment.
+
+Completed operationally with `INV-001004` (BDT 1.00, Draft, paid zero). Display
+acceptance found missing issuer phone/country and manual instructions in the admin
+document, plus inconsistent editor/document due dates. Record these limitations;
+do not claim complete rendering acceptance or expand into an unauthorized fix.
+Recommended next bounded command: implement the invoice display/date fixes locally,
+add regression coverage, validate and update the report without deploying.

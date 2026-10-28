@@ -1,5 +1,37 @@
 # Staging Deployment
 
+## Fictional billing draft acceptance (2026-10-28, Command 132)
+
+- Created exactly one administrator draft through the signed-in Speed profile:
+  `INV-001004`, for the existing fictional customer. One explicitly fictional
+  preview line totals BDT 1.00. Status remains `DRAFT`, paid amount zero,
+  issue/payment/cancellation timestamps absent, and no order/service is linked.
+  Do not issue, pay, cancel or send this acceptance record.
+- The rendered draft shows the approved business name, street/city address and
+  billing email. Its complete business identity snapshot matches the approved
+  private payload, including phone and country. The saved manual bank/bKash
+  instructions and manual WhatsApp proof requirements remain exact and unchanged.
+- **Display acceptance remains incomplete:** the administrator invoice document
+  does not render issuer phone, issuer country or payment instructions. Existing
+  source puts manual instructions in the customer payment section, outside the
+  shared invoice document. Customer-session, print and PDF delivery were not
+  exercised, and no full invoice/payment-instruction display pass is claimed.
+  Also, the draft editor shows October 29 while the document/ledger show October 30. Source converts the input to 23:59:59 UTC and renders it in browser local
+  time. Do not alter staging code or issue an invoice to investigate this.
+- Exact read-only checks confirm one new invoice/item, preserved historical
+  invoices/items, 29 unchanged business/email/outbox table fingerprints and every
+  setting value preserved except the expected numbering increment. No email,
+  outbox event, payment, order or provider operation was created. SMTP stays active;
+  payment/registrar switches false, WHM servers disabled and notification/WhatsApp
+  delivery disabled. Environment, logo, release and container IDs are unchanged;
+  all seven services are healthy and API health/readiness return 200.
+- Protected evidence is under
+  `/srv/webhost-billing-staging/acceptance/command132-draft-20261028/`.
+  The reviewed draft screenshot/helpers stay ignored locally. No deploy, migration,
+  restart or provider activation occurred. Next: separately authorize local fixes
+  for invoice identity/instruction rendering and consistent due-date presentation,
+  with regression validation and no deployment.
+
 ## Owner-approved billing configuration (2026-10-28, Command 132)
 
 - The owner supplied and approved real business/contact and manual bank/bKash
