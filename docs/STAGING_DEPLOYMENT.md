@@ -1,6 +1,77 @@
 # Staging Deployment
 
-## Command 140 release blocked before cutover (2026-10-28)
+## Command 140 staging release (2026-10-29)
+
+- **Status:** Deployed `b13d72f0c8ebf999a6c54ddae8497f384120765c`. Corrected automated
+  postflight and installed-adapter reads passed. Owner-assisted name/account/client
+  workspace and invoice contact/instructions/due-date acceptance passed.
+- **Source gates:** [PR 61](https://github.com/ebit101/webhost-billing/pull/61)
+  passed full CI, CodeQL and dependency review, including the actual production web
+  container. Its merge has the identical checked tree and independently passed
+  [exact-release CI](https://github.com/ebit101/webhost-billing/actions/runs/40743282031)
+  and [CodeQL](https://github.com/ebit101/webhost-billing/actions/runs/40743282019).
+  Office main fast-forwarded cleanly and its `.env` hash is unchanged. The Git
+  archive SHA-256 is
+  `e788b53f1c75c2b8a932bf991c836d855416837e5800954f61568611b14f8e40`.
+- **Fresh preflight and backup:** Seven healthy services, active SMTP, disabled
+  payment/registrar networking and real accounts/servers, disabled notification/
+  WhatsApp delivery, unchanged fictional Draft invoice and 29 business-table
+  fingerprints were recorded separately. Verified
+  `/srv/webhost-billing-staging/backups/webhost-billing-webhost_billing_staging-20261028T182334Z.dump.gpg`
+  for checksum, OpenPGP integrity, PostgreSQL archive structure and required tables.
+  This is same-host archive verification, not a completed off-site restore drill.
+- **Preserved evidence:** The failed first attempt remains under
+  `acceptance/command140-release-20261028/`. Retry logs and baselines are under
+  `/srv/webhost-billing-staging/acceptance/command140-release-20261029-retry1/`.
+  The unchanged repository release script verified another fresh backup before
+  migration/cutover. No new migration exists in this release.
+- **Administrator name:** A read-only check found the owner's saved name present
+  and different from the email, without exposing either value or changing data.
+  The owner screenshot still showed the old release before cutover. Browser control
+  was stopped by physical Escape; authenticated UI results are owner-assisted,
+  separate from server and fictional hosted-CI evidence. The owner confirmed the
+  sidebar name and compact account after the actual release, and also confirmed
+  the four-tab client workspace and tables.
+- **Cutover:** Verified
+  `/srv/webhost-billing-staging/backups/webhost-billing-webhost_billing_staging-20261028T184157Z.dump.gpg`
+  for checksum, OpenPGP integrity, PostgreSQL archive structure and required tables
+  before stopping application writers. Rollback inventory is
+  `/srv/webhost-billing-staging/rollback/release-20261028T184156Z-b13d72f0c8ebf999a6c54ddae8497f384120765c/`.
+  Thirty-six migrations remain complete, none unfinished and none newly applied.
+  Only API/web/worker/scheduler were recreated; runtime API is Node 24.22.1.
+- **Postflight:** Seven healthy services, zero application restart counts and one
+  scheduler. Infrastructure and unrelated running-container IDs, all 29 compared
+  business-table fingerprints, non-image-tag environment/mode and installation/
+  HTTPS-served logo hashes match preflight. SMTP is active; real hosting and registrar
+  accounts are disabled, payment/registrar flags false and notification/WhatsApp
+  delivery disabled. The fictional invoice remains Draft, unissued and paid zero.
+  Store/account/health/readiness/logo routes returned 200; protected API routes 401;
+  anonymous administrator pages redirected 307 to `/admin`; browser API origin passed.
+- **Operator check correction:** The canonical deployment completed healthy. Its
+  auxiliary postflight originally expected 200 on anonymous protected frontend pages,
+  exited 1 on their correct 307 redirect, and stopped its remaining assertions.
+  Inspected the exact responses, corrected only that expectation to a strict 307
+  sign-in target and reran complete postflight successfully. Original `deployment.log`,
+  `deployment.exit`, operator script and first postflight snapshots are retained;
+  `postflight-corrected.log` and `postflight-corrected.exit` record the successful
+  corrected check. No application change or redeployment was needed for this.
+- **Installed registrar compatibility:** The newly installed live adapter passed
+  the two GET-only calls that exposed the original parser failures. Availability
+  accepted the ordinary `.com` class key and returned the existing domain unavailable
+  for registration. Its 75,510-byte/5,667-node cost catalogue parsed losslessly into
+  exact minor units. Both HTTP statuses were 200; account and application networking
+  remain disabled. No registration, provisioning, purchase, nameserver/contact change,
+  local domain/client link or message was submitted. Native cost currency remains
+  unverified. Raw pricing/contact data and credentials stay outside Git.
+- **Owner acceptance and limit:** The owner confirmed the actual administrator name,
+  compact account and four-tab client workspace in Speed, then confirmed the supplied
+  phone/country/manual instructions and consistent editor/document due calendar date
+  on the fictional draft. Rendered-draft acceptance is closed; no invoice was issued,
+  paid or used for a live staging PDF test. The broader WHMCS billing/support tab
+  request and existing-domain linking are future bounded work, not features added
+  during this deployment.
+
+## Command 140 first attempt stopped before cutover (2026-10-28)
 
 - **Status:** The first image-build attempt failed before cutover. The existing
   `ed7a5941bd0b4287aaaacf5a4fb256c9879ce4ff` release and all seven services remain

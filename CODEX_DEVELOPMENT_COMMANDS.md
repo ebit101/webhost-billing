@@ -5852,3 +5852,13 @@ the corrected image and deliver through the same protected workflow before retry
 Keep the failed attempt/evidence, existing healthy release, environment/logo and
 provider boundaries intact. This necessary release repair does not authorize a
 new product command or a deployment before the new release checks pass.
+
+Command 140 deployment follow-up: released reviewed source `b13d72f` on staging
+after exact-commit full CI/CodeQL, including the corrected production-container
+build, and fresh encrypted backup verification. Automated preservation, health,
+authentication-boundary and installed GET-only registrar checks passed. The owner
+confirmed the administrator name, compact account and four-tab client workspace;
+invoice contact/instructions/due-date acceptance also passed. Preserve the failed build and corrected
+operator redirect-check evidence. The broader client billing/support tab request and
+existing-domain linking are future separately authorized work. No next product
+command or live-provider activation is approved by this completion record.
