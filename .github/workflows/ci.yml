@@ -115,6 +115,12 @@ jobs:
           NODE_ENV: production
         run: pnpm build
 
+      - name: Build production web container
+        run: >-
+          docker build --file apps/web/Dockerfile --target web
+          --build-arg NEXT_PUBLIC_API_URL=http://localhost:3001
+          --tag webhost-billing-web:ci .
+
       - name: Stop CI infrastructure
         if: always()
         run: docker compose down

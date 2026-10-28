@@ -9,6 +9,8 @@ apps/web/e2e/capture-demo-screenshots.ts
 **/dist
 **/node_modules
 **/*.spec.ts
+**/*.test.ts
+**/*.test.tsx
 **/test
 docs
 scripts

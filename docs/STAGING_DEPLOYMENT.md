@@ -1,5 +1,75 @@
 # Staging Deployment
 
+## Command 140 release blocked before cutover (2026-10-28)
+
+- **Status:** The first image-build attempt failed before cutover. The existing
+  `ed7a5941bd0b4287aaaacf5a4fb256c9879ce4ff` release and all seven services remain
+  healthy, with no writer stop, migration, environment/image-tag change or switch.
+  The attempted commit was `07c0f05e81dceb53c1ae73b11ddde665227fb589`, containing the
+  pending Command 132 invoice contact/instructions/date corrections, Command 138
+  administrator name/compact account page, Command 139 client workspace and
+  Command 140 ordinary-domain registrar compatibility fix. Premium domains remain
+  unsupported. Existing-domain adoption is outside this release.
+- **Source delivery:** [PR 60](https://github.com/ebit101/webhost-billing/pull/60)
+  passed full CI, CodeQL and dependency review at
+  `49c3d2efba295f8b76534361e781d4050b89ecda` and merged normally. Office main
+  fast-forwarded without reset, cleaning, stashing or force. Its tree matched
+  the checked PR source. Exact merge-commit
+  [CI](https://github.com/ebit101/webhost-billing/actions/runs/40734728435) and
+  [CodeQL](https://github.com/ebit101/webhost-billing/actions/runs/40734728381)
+  passed before deployment. Command 127 remains an ancestor. The uploaded Git
+  archive SHA-256 is
+  `bfb9a11a492750167321a4140c1ce1e600b29318fbaa258efd0a880dd78fce5a`.
+  The Office does not have `gh`; the operator wrapper used GitHub's check-runs
+  API with the same exact-SHA/name/status/conclusion requirements before invoking
+  the unchanged repository release script. No required check was bypassed.
+- **Container-only failure and correction:** The web image compiled application
+  code, then Next's TypeScript check failed because two `.test.tsx` files imported
+  `src/test/client-record-fixtures.ts`, while `.dockerignore` excluded every `test`
+  directory. Full checkout CI had passed because that fixture was present there.
+  The packaging correction excludes `.test.ts` and `.test.tsx` from production
+  context, consistent with the existing `.spec.ts`/test-directory exclusions.
+  Complete-checkout tests and type checks retain all fixtures and test cases.
+  CI now also builds the actual production web container to cover this missing
+  validation boundary. The corrected Linux production web image built successfully
+  locally, including compilation, TypeScript checks, static generation and final
+  runtime-image export. The two focused client-workspace files passed 18/18 tests;
+  workflow YAML parsing, formatting and whitespace checks passed. Reviewed source
+  delivery and the newly required hosted container gate must pass before retry.
+- **Pre-build backups:** Verified encrypted PostgreSQL archives at
+  `/srv/webhost-billing-staging/backups/webhost-billing-webhost_billing_staging-20261028T165019Z.dump.gpg`
+  and
+  `/srv/webhost-billing-staging/backups/webhost-billing-webhost_billing_staging-20261028T171706Z.dump.gpg`.
+  Verification covered checksum, OpenPGP integrity, PostgreSQL custom archive
+  structure and required tables. It was not an off-site restore drill. The normal
+  release script takes and verifies a further backup before migration/cutover.
+- **Preflight:** Seven services were healthy. Saved the prior release, non-image-tag
+  environment hash, owner-logo hash, service/container inventory and 29 business-table
+  fingerprints in the protected acceptance directory. SMTP is active; payment flags,
+  live registrar networking/accounts, real WHM servers and notification/WhatsApp
+  delivery remain disabled. The fictional `INV-001004` remains Draft, unissued,
+  unpaid and unchanged. No migration or Nginx/source deployment configuration differs
+  from the previous staging release.
+- **Real provider reads:** The owner's protected Rainbow connection test succeeded.
+  A separate TLS-validated read using the existing application WHM client confirmed
+  the exact `app-pkg` package, without creating an account or enabling the server.
+  GET-only registrar availability/pricing requests returned HTTP 200 and exposed the
+  parser incompatibilities. Further GET-only order-ID/details reads verified the
+  owner-selected existing domain, active provider state, immediate-reseller ownership,
+  contact references and nameserver fields. No local client/domain mapping, signup,
+  registration, renewal, transfer, nameserver/contact update or other mutation was
+  submitted. Native cost currency and actual mutation capabilities remain unverified.
+- **Evidence:** Protected server evidence is under
+  `/srv/webhost-billing-staging/acceptance/command140-release-20261028/`, with
+  separate pre-build backup evidence under `acceptance/deploy-preflight-*`.
+  Ignored operator helpers and redacted observations are in local `release-artifacts/`.
+  No credential, provider price/contact payload, owner payment destination or real
+  customer record is committed.
+
+The earlier entries below describe their historical release states. The failed
+attempt and logs are retained. No cutover or authenticated display acceptance for
+these pending changes is claimed yet.
+
 ## Local invoice correction prepared, not deployed (2026-10-28, Command 132)
 
 Local source now renders saved issuer phone/country, current manual instructions
