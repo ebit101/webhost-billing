@@ -5844,3 +5844,11 @@ logo, records and active SMTP; keep payment, hosting, registrar and WhatsApp dis
 Use bounded read-only staging smokes and distinguish connection/quote evidence from
 provisioning or registration acceptance. No order creation, provider mutation,
 existing-domain linking/adoption, native-currency approval or next product command.
+
+Command 140 deployment validation follow-up: the first production web container
+build exposed a test-fixture/context mismatch absent from checkout CI. Correct
+production test-file exclusions, add the actual web-container build to CI, validate
+the corrected image and deliver through the same protected workflow before retrying.
+Keep the failed attempt/evidence, existing healthy release, environment/logo and
+provider boundaries intact. This necessary release repair does not authorize a
+new product command or a deployment before the new release checks pass.
