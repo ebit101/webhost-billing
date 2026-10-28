@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { hash } from 'argon2';
 import { createPrismaClient } from '@webhost-billing/database';
 import { E2E_DATABASE_URL, E2E_SCHEMA, E2E_API_ORIGIN } from '../environment';
 import { assertBrowserDatabaseScope } from '../database-scope';
@@ -16,6 +17,7 @@ import {
 } from '../../src/test/client-record-fixtures';
 const prisma = createPrismaClient(E2E_DATABASE_URL);
 const customerId = clientId;
+const administratorEmail = 'client139-admin@example.test';
 const root = `/admin/customers/${customerId}`;
 const secondId = '13900000-0000-4000-8000-000000000006';
 const secondServiceId = '13900000-0000-4000-8000-000000000007';
@@ -31,6 +33,28 @@ const domains = [
 test.use({ trace: 'off', video: 'off' });
 test.beforeAll(async () => {
   await assertBrowserDatabaseScope(prisma, E2E_DATABASE_URL, E2E_SCHEMA);
+  // Keep these two sign-ins out of the shared lifecycle account's login budget.
+  await prisma.user.create({
+    data: {
+      email: administratorEmail,
+      passwordHash: await hash(E2E_ADMIN.password, {
+        type: 2,
+        memoryCost: 19456,
+        timeCost: 2,
+        parallelism: 1,
+      }),
+      role: 'ADMIN',
+      status: 'ACTIVE',
+      emailVerifiedAt: new Date(),
+      adminProfile: {
+        create: {
+          displayName: 'Fictional workspace administrator',
+          staffRole: 'FULL_ADMINISTRATOR',
+          isSuperAdmin: true,
+        },
+      },
+    },
+  });
   await prisma.user.create({
     data: {
       email: 'client139-browser@example.test',
@@ -118,7 +142,7 @@ for (const width of [1440, 375])
       });
     });
     await page.goto('/admin');
-    await page.getByLabel('Email address').fill(E2E_ADMIN.email);
+    await page.getByLabel('Email address').fill(administratorEmail);
     await page.getByLabel('Password', { exact: true }).fill(E2E_ADMIN.password);
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();
     await expect(
