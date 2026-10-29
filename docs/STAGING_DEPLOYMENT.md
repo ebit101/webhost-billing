@@ -1,5 +1,63 @@
 # Staging Deployment
 
+## Command 142 client profile tab release (2026-10-29)
+
+- **Status:** Deployed `9d1bcba6ed37fa87e9ef1b46124db0a1dc162c32`, including Command
+  141's Orders, Invoices, Payments, Support and Email history client-profile tabs.
+  Automated postflight and customer authorization passed. Owner-assisted visual
+  acceptance is pending; all live providers except the preserved SMTP remain off.
+- **Release gates:** Initial merge `99c151d` was held after its main CI exposed a
+  dialog-opening race in an existing order test (708/709 web tests passed). Wait
+  for the accessible dialog before querying its disabled submit button. This
+  changes no application behavior or test timeout. [PR 64](https://github.com/ebit101/webhost-billing/pull/64)
+  passed full CI, CodeQL and dependency review; the identical-tree merge independently
+  passed [CI](https://github.com/ebit101/webhost-billing/actions/runs/40816322529)
+  and [CodeQL](https://github.com/ebit101/webhost-billing/actions/runs/40816322523).
+  No required check was bypassed. Office `.env` is unchanged.
+- **Backup and cutover:** Verified preflight backup `20261029T035438Z.dump.gpg`;
+  the canonical release script verified a second encrypted archive before stopping
+  application writers:
+  `/srv/webhost-billing-staging/backups/webhost-billing-webhost_billing_staging-20261029T044955Z.dump.gpg`.
+  SHA-256: `c354d78c2622d6e0719eba741a23f8e092374908da7ad1cb80d0fa0c79dab2df`.
+  Checksum, OpenPGP integrity, archive structure and required tables passed. This
+  is same-host backup verification, not an off-site restore drill. Rollback inventory:
+  `/srv/webhost-billing-staging/rollback/release-20261029T044954Z-9d1bcba6ed37fa87e9ef1b46124db0a1dc162c32/`.
+- **Builds:** Node 24 / pinned pnpm 11.22.0 frozen builds completed for migration,
+  API, web and worker images. Registry retries recovered. Runtime API is Node
+  24.22.2. Git archive SHA-256:
+  `517d9f23765a664a05df62a480eca65e186e78d9191df763899b67e18afd5386`.
+- **Preservation:** Only API/web/worker/scheduler were recreated. All seven services
+  are healthy, application restart counts are zero, and exactly one scheduler runs.
+  PostgreSQL/Redis/Mailpit and unrelated running-container IDs are unchanged. All
+  32 compared table fingerprints, non-image-tag environment contents/mode `0600`,
+  installation logo and served HTTPS logo hashes match preflight. Thirty-six
+  migrations remain complete, none unfinished; no new migration was needed. SMTP
+  is active, real hosting and registrar accounts disabled, payment/registrar flags
+  false and notification/WhatsApp delivery disabled. The fictional `INV-001004`
+  remains Draft, unissued and paid zero.
+- **Automated smoke:** Public and readiness routes returned 200, anonymous
+  administrator pages including five new tab URLs redirected to `/admin`, and
+  protected APIs returned 401. API-origin validation passed. The existing fictional
+  customer's four owned resource families were readable; wrong-client scopes
+  returned 404, invalid UUIDs 400, and administrator lists/email history 403.
+  Sign-out invalidated the session. Signed-in `/login` used a valid HTTP 200
+  streaming redirect with explicit portal refresh meta/digest; the corrected
+  operator check validates that target rather than requiring only HTTP 307.
+  Original strict-helper evidence is retained; no application change or second
+  cutover was needed. No email or business mutation was submitted by acceptance.
+- **Visual acceptance:** Owner-prepared Speed was authenticated. A fresh Chrome
+  extension tab displayed the deployed nine-tab navigation, retained fictional
+  client, populated Orders table and exact-reference search. Subsequent input
+  timed out before dispatch; owner-assisted checks of all five tabs, search/clear
+  and read-only dialog closure are pending. No unsupported native URL-policy
+  workaround, MFA bypass or credential alteration was used.
+- **Evidence:** Guarded runner and postflight exit 0 under
+  `/srv/webhost-billing-staging/acceptance/command142-release-20261029/`. Post-smoke
+  preservation again matched all 32 fingerprints, environment, logo, provider
+  posture and container inventory. Protected helpers, payloads and backups remain
+  outside Git. Existing-domain linking, real provisioning and provider activation
+  remain separately authorized work.
+
 ## Command 140 staging release (2026-10-29)
 
 - **Status:** Deployed `b13d72f0c8ebf999a6c54ddae8497f384120765c`. Corrected automated
