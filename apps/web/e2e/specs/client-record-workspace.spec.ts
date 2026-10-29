@@ -127,11 +127,34 @@ for (const width of [1440, 375])
       const scope = url.searchParams.get('customerId');
       const denied = Boolean(selected && scope && scope !== customerId);
       const data =
-        url.pathname === '/domains'
-          ? scope && scope !== customerId
-            ? []
-            : domains
-          : (selected ?? []);
+        url.pathname === '/domains/administration/registrars'
+          ? [
+              {
+                id: '14300000-0000-4000-8000-000000000001',
+                name: 'Fictional disabled registrar',
+                module: 'logicboxes',
+                mode: 'Live',
+                enabled: false,
+                isDefault: false,
+                networkEnabled: false,
+                credentialVersion: 1,
+                maskedResellerId: '••••1234',
+                nativeCostConfirmed: false,
+                capabilities: {
+                  registration: false,
+                  renewal: false,
+                  transfer: false,
+                  dnsManagement: false,
+                  emailForwarding: false,
+                  idProtection: false,
+                },
+              },
+            ]
+          : url.pathname === '/domains'
+            ? scope && scope !== customerId
+              ? []
+              : domains
+            : (selected ?? []);
       await route.fulfill({
         status: denied ? 403 : 200,
         contentType: 'application/json',
@@ -184,6 +207,48 @@ for (const width of [1440, 375])
     await expect(
       page.getByRole('combobox', { name: 'Client', exact: true }),
     ).toHaveValue(customerId);
+    const linking = page.getByRole('button', {
+      name: 'Link existing domain',
+      exact: true,
+    });
+    await linking.click();
+    const linkDialog = page.getByRole('dialog', {
+      name: 'Link existing domain',
+      exact: true,
+    });
+    await expect(linkDialog).toBeVisible();
+    await linkDialog
+      .getByLabel('Registrar connection')
+      .selectOption('14300000-0000-4000-8000-000000000001');
+    await linkDialog
+      .getByLabel('Existing domain', { exact: true })
+      .fill('existing-example.com');
+    await linkDialog
+      .getByLabel('Type exact domain name')
+      .fill('existing-example.com');
+    await expect(
+      linkDialog.getByRole('button', {
+        name: 'Verify ownership and link domain',
+      }),
+    ).toBeDisabled();
+    await expect(
+      linkDialog.getByText(/does not enable providers/),
+    ).toBeVisible();
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth),
+    ).toBeLessThanOrEqual(width);
+    await page.screenshot({
+      path: `../../release-artifacts/command143-existing-domain-${width}.png`,
+      fullPage: true,
+    });
+    await page.keyboard.press('Escape');
+    await expect(linkDialog).not.toBeVisible();
+    await expect(linking).toBeFocused();
+    await linking.click();
+    await expect(
+      linkDialog.getByLabel('Existing domain', { exact: true }),
+    ).toHaveValue('existing-example.com');
+    await page.keyboard.press('Escape');
     await page.reload();
     await expect(
       page.getByRole('combobox', { name: 'Domains', exact: true }),

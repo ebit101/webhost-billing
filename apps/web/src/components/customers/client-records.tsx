@@ -19,6 +19,7 @@ import { Button } from '../ui/button';
 import { ErrorState, LoadingState } from '../ui/feedback-state';
 import { Card, fieldClass } from './customer-fields';
 import { DomainRecord } from '../domains/domain-record';
+import { ExistingDomainLink } from '../domains/existing-domain-link';
 import { formatMinor } from '../invoices/invoice-ui';
 import { serviceDate } from '../services/service-ui';
 
@@ -133,7 +134,10 @@ function Records({ customerId, kind, recordId, administrator = true }: Props) {
             ...('domainName' in row
               ? {
                   registrar: row.registrar,
-                  price: formatMinor(row.sellingAmount, row.currency),
+                  price:
+                    row.sellingAmount === null
+                      ? 'No billing record'
+                      : formatMinor(row.sellingAmount, row.currency),
                   expiry: serviceDate(row.expiresAt),
                 }
               : {}),
@@ -203,6 +207,12 @@ function Records({ customerId, kind, recordId, administrator = true }: Props) {
       }
     >
       {notice ? <p role="status">{notice}</p> : null}
+      {administrator && kind === 'domains' && customerId ? (
+        <ExistingDomainLink
+          customerId={customerId}
+          onLinked={(id) => router.push(href(id))}
+        />
+      ) : null}
       <div className="flex flex-wrap items-end justify-between gap-3">
         <label className="w-full max-w-xl text-sm font-semibold">
           {kind === 'domains' ? 'Domains' : 'Products/services'}

@@ -2933,6 +2933,34 @@ passed. After browser input timeouts, the owner confirmed all five tabs, search/
 and read-only-dialog checks in Speed. SMTP stays active and other providers disabled; this rollout does not
 authorize new provider operations or existing-domain adoption.
 
+## ADR-145 — Verify and link existing domains without registration billing
+
+- **Date:** 2026-10-29
+- **Status:** Accepted for owner-authorized local implementation under Command 143.
+- **Decision:** A full administrator with MFA selects an explicit client and registrar
+  connection and confirms the exact existing .com domain. GET-only discovery must
+  independently verify the provider order/domain, active direct reseller customer,
+  active registrant contact, nameservers and unexpired registration. Availability,
+  public DNS, manually entered remote IDs and an administrator status override are
+  not ownership proof. Network/account gates remain mandatory.
+- **Storage:** Existing links have an immutable origin, encrypted identity/contact
+  evidence, credential binding and initial ownership-check timestamp. They have no
+  registration quote, order item or invoice. SQL preserves the current combined
+  hosting/domain billing guard for ordinary registrations while enforcing the
+  distinct no-billing link shape. Client/account/order identity cannot be reassigned;
+  linked records cannot enter registration processing or be deleted.
+- **Management:** Revalidate current reseller/domain/contact ownership before linked
+  management, retaining existing confirmations, durable claims and reconciliation.
+  Nameserver, lock and contact actions reuse current guarded workflows. No renewal
+  billing terms, historical amounts or registration periods are invented; linked
+  renewals remain unavailable. No transfer, import/synchronization or premium pricing
+  workflow is added. A link is not a new registration or a payment event.
+- **Delivery boundary:** Validate with fictional PostgreSQL scopes and mocked HTTP
+  only. This source command authorizes no deployment, actual domain adoption, real
+  provider calls, purchases, activation or messages. Preserve active staging SMTP and
+  disabled payment/hosting/registrar/WhatsApp settings. Credentialed ownership and
+  real management acceptance require separate authorization after deployment.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

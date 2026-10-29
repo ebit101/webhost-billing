@@ -90,8 +90,16 @@ export class RegistrarProcessor {
     const locatedDomain = await this.prisma.domain.findUniqueOrThrow({
       where: { id: locator.domainId },
     });
+    const { invoiceId, quoteId, orderItemId } = locatedDomain;
+    if (
+      locatedDomain.origin === 'EXISTING' ||
+      !invoiceId ||
+      !quoteId ||
+      !orderItemId
+    )
+      return;
     const preparation = await this.prisma.$transaction(async (tx) => {
-      await lockDomainInvoice(tx, locatedDomain.invoiceId);
+      await lockDomainInvoice(tx, invoiceId);
       await tx.$queryRaw`SELECT id FROM domains WHERE id=${locator.domainId}::uuid FOR UPDATE`;
       await tx.$queryRaw`SELECT id FROM registrar_operations WHERE id=${operationId}::uuid FOR UPDATE`;
       // Cross-account selections must acquire account locks in a stable order.
@@ -135,6 +143,13 @@ export class RegistrarProcessor {
       if (
         operation.pollCount >= 10 ||
         (operation.claimedAt && operation.nextPollAt > new Date())
+      )
+        return null;
+      if (
+        domain.origin === 'EXISTING' ||
+        !domain.quoteId ||
+        !domain.orderItemId ||
+        !domain.invoiceId
       )
         return null;
       const quote = await tx.domainQuote.findUniqueOrThrow({
@@ -362,7 +377,7 @@ export class RegistrarProcessor {
           locator.selectionFingerprint ??
           (
             await this.prisma.domainQuote.findUniqueOrThrow({
-              where: { id: locatedDomain.quoteId },
+              where: { id: quoteId },
             })
           ).fingerprint;
         await provider.ensureContacts(intent, fingerprint);
@@ -380,7 +395,7 @@ export class RegistrarProcessor {
       return;
     }
     await this.prisma.$transaction(async (tx) => {
-      await lockDomainInvoice(tx, locatedDomain.invoiceId);
+      await lockDomainInvoice(tx, invoiceId);
       await tx.$queryRaw`SELECT id FROM domains WHERE id=${locator.domainId}::uuid FOR UPDATE`;
       await tx.$queryRaw`SELECT id FROM registrar_operations WHERE id=${operationId}::uuid FOR UPDATE`;
       const op = await tx.registrarOperation.findUniqueOrThrow({
@@ -441,7 +456,7 @@ export class RegistrarProcessor {
       });
       if (state === 'REGISTERED') {
         const item = await tx.orderItem.findUniqueOrThrow({
-          where: { id: locatedDomain.orderItemId },
+          where: { id: orderItemId },
         });
         const complete = await orderFulfillmentComplete(tx, item.orderId);
         await tx.order.update({

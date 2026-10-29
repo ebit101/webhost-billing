@@ -279,19 +279,22 @@ export const domainDetailSchema = z
     simulated: z.boolean(),
     autoRenew: z.literal(false),
     registrar: z.string().min(1).max(100),
-    registrationYears: z.literal(1),
+    origin: z.enum(['REGISTRATION', 'EXISTING']).optional(),
+    ownershipVerifiedAt: z.iso.datetime().optional(),
+    registrationYears: z.literal(1).nullable(),
     requestedAt: z.iso.datetime(),
-    sellingAmount: amount,
+    sellingAmount: amount.nullable(),
     financialAttention: z.boolean(),
-    invoiceId: z.uuid(),
-    invoiceStatus: invoiceStatusSchema,
-    orderId: z.uuid(),
-    balanceDue: amount,
+    invoiceId: z.uuid().nullable(),
+    invoiceStatus: invoiceStatusSchema.nullable(),
+    orderId: z.uuid().nullable(),
+    balanceDue: amount.nullable(),
     currency: z.literal('BDT'),
     nameservers: z.union([fictionalNameservers, registrarNameserversSchema]),
     agreement: z.enum([
       'fictional-registration-v1',
       'resellbiz-registration-v1',
+      'existing-domain-link-v1',
     ]),
     agreementUrl: resellbizSetupSchema.shape.agreementUrl.optional(),
     contactMappingVerified: z.boolean().optional(),
@@ -330,8 +333,68 @@ export const domainDetailSchema = z
       .max(100)
       .optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((value, context) => {
+    const linked = value.origin === 'EXISTING';
+    const noBilling =
+      value.invoiceId === null &&
+      value.invoiceStatus === null &&
+      value.orderId === null &&
+      value.balanceDue === null &&
+      value.sellingAmount === null &&
+      value.registrationYears === null;
+    const registrationBilling =
+      value.invoiceId !== null &&
+      value.invoiceStatus !== null &&
+      value.orderId !== null &&
+      value.balanceDue !== null &&
+      value.sellingAmount !== null &&
+      value.registrationYears === 1;
+    if (
+      linked
+        ? !noBilling ||
+          !value.ownershipVerifiedAt ||
+          value.simulated ||
+          !registrarNameserversSchema.safeParse(value.nameservers).success ||
+          value.agreement !== 'existing-domain-link-v1' ||
+          value.state !== 'REGISTERED'
+        : !registrationBilling ||
+          value.agreement === 'existing-domain-link-v1' ||
+          value.ownershipVerifiedAt !== undefined
+    )
+      context.addIssue({
+        code: 'custom',
+        message: 'Domain origin and billing evidence do not match',
+      });
+  });
 export type DomainDetail = z.infer<typeof domainDetailSchema>;
+
+export const existingDomainLinkRequestSchema = z
+  .object({
+    customerId: z.uuid(),
+    registrarAccountId: z.uuid(),
+    domainName: domainNameSchema.refine((value) => value.endsWith('.com')),
+    confirmation: domainNameSchema,
+    submissionKey: z.uuid(),
+  })
+  .strict()
+  .refine((value) => value.confirmation === value.domainName, {
+    message: 'Confirm the exact domain name',
+    path: ['confirmation'],
+  });
+export type ExistingDomainLinkRequest = z.infer<
+  typeof existingDomainLinkRequestSchema
+>;
+
+// Encrypted at rest, never serialized as customer-facing provider identity.
+export const existingDomainLinkEvidenceSchema = z
+  .object({
+    remoteCustomerId: z.string().regex(/^[1-9][0-9]{0,18}$/),
+    remoteContactId: z.string().regex(/^[1-9][0-9]{0,18}$/),
+    contact: resellbizContactSchema,
+    nameservers: registrarNameserversSchema,
+  })
+  .strict();
 
 export const domainActionRequestSchema = z.discriminatedUnion('kind', [
   z

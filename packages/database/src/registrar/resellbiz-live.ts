@@ -192,6 +192,10 @@ export interface ResellbizManagedState extends DomainManagement {
   orderId: string;
   contactIds: readonly string[];
 }
+type RegistrarManagedIntent = Pick<
+  RegistrarIntent,
+  'accountId' | 'customerId' | 'domainName' | 'nameservers'
+>;
 export class ResellbizLiveRegistrar implements DomainRegistrar {
   private readonly credentials: { resellerId: string; apiKey: string };
   constructor(
@@ -273,14 +277,16 @@ export class ResellbizLiveRegistrar implements DomainRegistrar {
       simulated: false,
     };
   }
-  private bind(intent: RegistrarIntent): ResellbizBinding {
+  private bind(
+    intent: RegistrarManagedIntent & { costCeiling?: bigint },
+  ): ResellbizBinding {
     this.domain(intent.domainName);
     registrarNameserversSchema.parse(intent.nameservers);
     if (
       !this.binding ||
       intent.accountId !== this.binding.accountId ||
       intent.customerId !== this.binding.localCustomerId ||
-      intent.costCeiling <= 0n
+      (intent.costCeiling ?? 0n) < 0n
     )
       throw new Error('Registrar ownership is unavailable.');
     identifier(this.binding.remoteCustomerId);
@@ -291,6 +297,8 @@ export class ResellbizLiveRegistrar implements DomainRegistrar {
     intent: RegistrarIntent,
     fingerprint: string,
   ): Promise<void> {
+    if (intent.costCeiling <= 0n)
+      throw new Error('Registration cost approval is required.');
     const contactSnapshot = resellbizContactSchema.parse(intent.contact);
     if (!/^[a-f0-9]{64}$/.test(fingerprint))
       throw new Error('Registrar contact evidence is unavailable.');
@@ -453,6 +461,8 @@ export class ResellbizLiveRegistrar implements DomainRegistrar {
       );
   }
   async registerOnce(intent: RegistrarIntent): Promise<void> {
+    if (intent.costCeiling <= 0n)
+      throw new Error('Registration cost approval is required.');
     const binding = this.bind(intent);
     // The processor persists a claim first. No provider idempotency or atomic cost cap is assumed.
     const quote = await this.quote(intent.domainName);
@@ -484,10 +494,21 @@ export class ResellbizLiveRegistrar implements DomainRegistrar {
     identifier(response.entityid);
   }
   async management(
-    intent: RegistrarIntent,
+    intent: RegistrarManagedIntent,
     orderId: string,
   ): Promise<ResellbizManagedState> {
     const binding = this.bind(intent);
+    const customer = record(
+      await this.call('/api/customers/details-by-id.json', {
+        'customer-id': binding.remoteCustomerId,
+      }),
+    );
+    if (
+      identifier(customer.customerid) !== binding.remoteCustomerId ||
+      identifier(customer.resellerid) !== this.credentials.resellerId ||
+      customer.customerstatus !== 'Active'
+    )
+      throw new Error('Registrar account ownership is not confirmed.');
     const result = record(
       await this.call('/api/domains/details.json', {
         'order-id': identifier(orderId),
@@ -573,6 +594,58 @@ export class ResellbizLiveRegistrar implements DomainRegistrar {
       orderId,
       contactIds,
     };
+  }
+  async inspectExisting(input: {
+    accountId: string;
+    customerId: string;
+    domainName: string;
+  }) {
+    const domainName = this.domain(input.domainName);
+    const orderId = identifier(
+      await this.call('/api/domains/orderid.json', {
+        'domain-name': domainName,
+      }),
+    );
+    const result = record(
+      await this.call('/api/domains/details.json', {
+        'order-id': orderId,
+        options: 'All',
+      }),
+    );
+    if (
+      identifier(result.entityid) !== orderId ||
+      result.domainname !== domainName ||
+      ![true, 'true'].includes(
+        result.isImmediateReseller as boolean | string,
+      ) ||
+      result.currentstatus !== 'Active'
+    )
+      throw new Error('Existing domain ownership is not confirmed.');
+    const remoteCustomerId = identifier(result.customerid);
+    const remoteContactId = identifier(result.registrantcontactid);
+    // Only an authenticated direct reseller/customer binding establishes ownership.
+    // Availability, public DNS and caller-supplied remote IDs are never evidence.
+    const bound = new ResellbizLiveRegistrar(this.credentials, this.transport, {
+      accountId: input.accountId,
+      localCustomerId: input.customerId,
+      remoteCustomerId,
+      remoteContactId,
+    });
+    const count = Number(result.noOfNameServers);
+    if (!Number.isInteger(count) || count < 2 || count > 5)
+      throw new Error('Existing nameserver evidence is unavailable.');
+    const nameservers = registrarNameserversSchema.parse(
+      Array.from({ length: count }, (_, index) => result[`ns${index + 1}`]),
+    );
+    const intent: RegistrarManagedIntent = {
+      ...input,
+      domainName,
+      nameservers,
+    };
+    const observed = await bound.management(intent, orderId);
+    if (!observed.contact || new Date(observed.expiresAt) <= new Date())
+      throw new Error('An active unexpired domain is required.');
+    return { remoteCustomerId, remoteContactId, observed };
   }
   async authorizationCode(
     intent: RegistrarIntent,
@@ -705,6 +778,8 @@ export class ResellbizLiveRegistrar implements DomainRegistrar {
     previousExpiry: Date,
     claimSubmission: () => Promise<void> = async () => {},
   ): Promise<void> {
+    if (intent.costCeiling <= 0n)
+      throw new Error('Renewal cost approval is required.');
     this.bind(intent);
     if (
       !Number.isFinite(previousExpiry.getTime()) ||

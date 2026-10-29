@@ -29,15 +29,23 @@ export function DomainRecord({
         </div>
         <div>
           <dt>Registration period</dt>
-          <dd>{domain.registrationYears} year</dd>
+          <dd>
+            {domain.registrationYears === null
+              ? 'Existing registration; period not imported'
+              : `${domain.registrationYears} year`}
+          </dd>
         </div>
         <div>
-          <dt>Request date</dt>
+          <dt>{domain.origin === 'EXISTING' ? 'Link date' : 'Request date'}</dt>
           <dd>{domain.requestedAt}</dd>
         </div>
         <div>
           <dt>Initial invoice amount</dt>
-          <dd>{money(domain.sellingAmount, domain.currency)}</dd>
+          <dd>
+            {domain.sellingAmount === null
+              ? 'No invoice created by linking'
+              : money(domain.sellingAmount, domain.currency)}
+          </dd>
         </div>
       </dl>
       <p>
@@ -45,10 +53,24 @@ export function DomainRecord({
         {sentenceCaseLabel(domain.state)} · Contact verification{' '}
         {sentenceCaseLabel(domain.verification)}
       </p>
-      <p>
-        Invoice {sentenceCaseLabel(domain.invoiceStatus)} · Balance{' '}
-        {money(domain.balanceDue, domain.currency)}
-      </p>
+      {domain.origin === 'EXISTING' ? (
+        <p>
+          Existing domain linked · Registrar-account ownership verified{' '}
+          {domain.ownershipVerifiedAt}. Linking did not register, transfer or
+          purchase this domain.
+        </p>
+      ) : (
+        <p>
+          Invoice{' '}
+          {domain.invoiceStatus
+            ? sentenceCaseLabel(domain.invoiceStatus)
+            : 'Unavailable'}{' '}
+          · Balance{' '}
+          {domain.balanceDue !== null
+            ? money(domain.balanceDue, domain.currency)
+            : 'Unavailable'}
+        </p>
+      )}
       {domain.financialAttention && (
         <p className="text-amber-800">
           Financial review required. A refund or cancellation does not undo a
@@ -64,34 +86,43 @@ export function DomainRecord({
       {!domain.expiresAt && <p>Registry expiry not yet confirmed.</p>}
       {administrator && (
         <p className="my-2 text-sm text-slate-600">
-          Registration date, renewal price and next billing date are not
-          established by the original registration snapshot. Use the management
-          section for current state and separately paid renewals.
+          {domain.origin === 'EXISTING'
+            ? 'Billing history and renewal terms were not imported. Management remains subject to fresh registrar-account ownership checks.'
+            : 'Registration date, renewal price and next billing date are not established by the original registration snapshot. Use the management section for current state and separately paid renewals.'}
         </p>
       )}
       <p>
-        Registration nameserver snapshot: {domain.nameservers.join(', ')} ·
-        Auto-renewal off
+        {domain.origin === 'EXISTING'
+          ? 'Nameservers when linked'
+          : 'Registration nameserver snapshot'}
+        : {domain.nameservers.join(', ')} ·
+        {domain.origin === 'EXISTING'
+          ? 'Application auto-renewal off'
+          : 'Auto-renewal off'}
       </p>
       <div className="my-3 flex flex-wrap gap-4">
-        <Link
-          className="text-blue-700 underline"
-          href={
-            administrator
-              ? `/admin/invoices/${domain.invoiceId}`
-              : `/portal/invoices/${domain.invoiceId}`
-          }
-        >
-          View invoice and payment
-        </Link>
+        {domain.invoiceId && (
+          <Link
+            className="text-blue-700 underline"
+            href={
+              administrator
+                ? `/admin/invoices/${domain.invoiceId}`
+                : `/portal/invoices/${domain.invoiceId}`
+            }
+          >
+            View invoice and payment
+          </Link>
+        )}
         {administrator && (
           <>
-            <Link
-              className="text-blue-700 underline"
-              href={`/admin/orders?orderId=${domain.orderId}`}
-            >
-              View order
-            </Link>
+            {domain.orderId && (
+              <Link
+                className="text-blue-700 underline"
+                href={`/admin/orders?orderId=${domain.orderId}`}
+              >
+                View order
+              </Link>
+            )}
             <Link
               className="text-blue-700 underline"
               href={`/admin/customers/${domain.customerId}`}
@@ -106,6 +137,7 @@ export function DomainRecord({
           domainId={domain.id}
           domainName={domain.domainName}
           administrator={administrator}
+          allowRenewal={domain.origin !== 'EXISTING'}
           contact={domain.contact}
           {...(domain.renewalCatalogueRevision
             ? {
@@ -119,13 +151,15 @@ export function DomainRecord({
       )}
       {administrator && (
         <>
-          <p>
-            Provider cost snapshot:{' '}
-            {domain.costAmount && domain.costCurrency
-              ? money(domain.costAmount, domain.costCurrency)
-              : 'Unavailable'}{' '}
-            · {domain.agreement}
-          </p>
+          {domain.origin !== 'EXISTING' && (
+            <p>
+              Provider cost snapshot:{' '}
+              {domain.costAmount && domain.costCurrency
+                ? money(domain.costAmount, domain.costCurrency)
+                : 'Unavailable'}{' '}
+              · {domain.agreement}
+            </p>
+          )}
           {domain.contact && (
             <div>
               <h3 className="text-sm font-semibold">
@@ -199,7 +233,7 @@ export function DomainRecord({
               </form>
             </details>
           )}
-          {!domain.dispatchClaimed && (
+          {domain.origin !== 'EXISTING' && !domain.dispatchClaimed && (
             <RegistrationApproval
               key={`${domain.id}:${domain.selectedRegistrarId ?? 'unapproved'}`}
               domain={domain}

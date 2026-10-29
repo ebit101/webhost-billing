@@ -166,6 +166,10 @@ export class DomainLifecycleService {
     this.administrator(auth);
     const request = domainActionRequestSchema.parse(raw);
     const context = await this.domains.managementContext(domainId, auth);
+    if (context.domain.origin === 'EXISTING' && request.kind === 'RENEW')
+      this.deny(
+        'Linked domains have no approved renewal billing terms. This action cannot purchase a renewal.',
+      );
     if (confirmation !== context.domain.domainName)
       this.deny('Confirm the exact domain name.');
     const id = randomUUID();
