@@ -33,12 +33,14 @@ export function DomainManagementPanel({
   administrator,
   contact,
   renewalPricing,
+  allowRenewal = true,
 }: {
   domainId: string;
   domainName: string;
   administrator: boolean;
   contact?: DomainContact;
   renewalPricing?: { amount: string | null; revision: number };
+  allowRenewal?: boolean;
 }) {
   const [observed, setObserved] = useState<DomainManagement | null>(null);
   const [actions, setActions] = useState<DomainAction[]>([]);
@@ -260,14 +262,16 @@ export function DomainManagementPanel({
                 <option value="NAMESERVERS">Change nameservers</option>
                 <option value="LOCK">Change transfer protection</option>
                 <option value="CONTACT">Change registrant contact</option>
-                <option
-                  value="RENEW"
-                  disabled={Boolean(renewalPricing && !renewalPricing.amount)}
-                >
-                  {renewalPricing && !renewalPricing.amount
-                    ? 'Renewal price unavailable'
-                    : 'Prepare paid one-year renewal'}
-                </option>
+                {allowRenewal && (
+                  <option
+                    value="RENEW"
+                    disabled={Boolean(renewalPricing && !renewalPricing.amount)}
+                  >
+                    {renewalPricing && !renewalPricing.amount
+                      ? 'Renewal price unavailable'
+                      : 'Prepare paid one-year renewal'}
+                  </option>
+                )}
               </select>
             </label>
             <label>

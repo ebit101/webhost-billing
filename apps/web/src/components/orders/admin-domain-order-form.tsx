@@ -161,6 +161,10 @@ export function AdminDomainOrderForm({ onCreated }: { onCreated: () => void }) {
           submissionKey: submissionKey.current,
         }),
       );
+      if (!result.invoiceId || result.origin === 'EXISTING')
+        throw new Error(
+          'The registration order invoice could not be confirmed.',
+        );
       setCreated({ invoiceId: result.invoiceId });
       setQuote(undefined);
       setNotice(

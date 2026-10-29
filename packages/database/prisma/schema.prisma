@@ -1137,12 +1137,16 @@ model DomainQuote {
 
 model Domain {
   id                       String    @id @default(uuid()) @db.Uuid
-  quoteId                  String    @unique @map("quote_id") @db.Uuid
+  quoteId                  String?   @unique @map("quote_id") @db.Uuid
   customerId               String    @map("customer_id") @db.Uuid
   accountId                String    @map("account_id") @db.Uuid
   executionAccountId       String?   @map("execution_account_id") @db.Uuid
-  orderItemId              String    @unique @map("order_item_id") @db.Uuid
-  invoiceId                String    @unique @map("invoice_id") @db.Uuid
+  orderItemId              String?   @unique @map("order_item_id") @db.Uuid
+  invoiceId                String?   @unique @map("invoice_id") @db.Uuid
+  origin                   String    @default("REGISTRATION") @db.VarChar(16)
+  linkCredentialId         String?   @map("link_credential_id") @db.Uuid
+  linkEvidenceCiphertext   String?   @map("link_evidence_ciphertext") @db.Text
+  ownershipVerifiedAt      DateTime? @map("ownership_verified_at") @db.Timestamptz(3)
   domainName               String    @unique @map("domain_name") @db.VarChar(253)
   submissionKey            String    @unique @map("submission_key") @db.Uuid
   state                    String    @default("AWAITING_PAYMENT") @db.VarChar(32)

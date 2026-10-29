@@ -30,6 +30,8 @@ import {
   type ResellbizSetup,
   domainActionRequestSchema,
   type DomainActionRequest,
+  existingDomainLinkRequestSchema,
+  type ExistingDomainLinkRequest,
 } from '@webhost-billing/shared';
 import { ZodValidationPipe } from '../../common/validation/zod-validation.pipe';
 import { CurrentAuth } from '../auth/decorators/current-auth.decorator';
@@ -38,13 +40,24 @@ import type { AuthRequestContext } from '../auth/auth.types';
 import { DomainService } from './domain.service';
 import { z } from 'zod';
 import { DomainLifecycleService } from './domain-lifecycle.service';
+import { ExistingDomainLinkService } from './existing-domain-link.service';
 
 @Controller('domains')
 export class DomainController {
   constructor(
     private readonly domains: DomainService,
     private readonly lifecycle: DomainLifecycleService,
+    private readonly existing: ExistingDomainLinkService,
   ) {}
+  @Post('existing-links')
+  @Roles('ADMIN')
+  async linkExisting(
+    @Body(new ZodValidationPipe(existingDomainLinkRequestSchema))
+    input: ExistingDomainLinkRequest,
+    @CurrentAuth() auth: AuthRequestContext,
+  ) {
+    return createApiSuccessResponse(await this.existing.link(input, auth));
+  }
   @Get('registrar/live')
   @Roles('ADMIN')
   async liveSettings(@CurrentAuth() auth: AuthRequestContext) {

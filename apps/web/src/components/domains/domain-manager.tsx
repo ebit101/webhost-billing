@@ -587,12 +587,18 @@ export function DomainManager({
             {
               key: 'invoice',
               header: 'Invoice',
-              render: (domain) => sentenceCaseLabel(domain.invoiceStatus),
+              render: (domain) =>
+                domain.invoiceStatus
+                  ? sentenceCaseLabel(domain.invoiceStatus)
+                  : 'No billing record',
             },
             {
               key: 'balance',
               header: 'Balance',
-              render: (domain) => money(domain.balanceDue, domain.currency),
+              render: (domain) =>
+                domain.balanceDue !== null
+                  ? money(domain.balanceDue, domain.currency)
+                  : 'Not applicable',
             },
             {
               key: 'date',

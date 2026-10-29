@@ -5898,3 +5898,14 @@ The authenticated browser showed all nine client tabs and the Orders table/searc
 after browser input timed out, the owner confirmed all five tabs, search/clear
 and read-only-dialog checks in Speed. Command 142 acceptance is complete;
 no repeat cutover, provider activation or next product command is authorized.
+
+## Command 143 — Link existing domains without registration
+
+Owner-authorized on 2026-10-29: implement existing-domain linking locally, with
+registrar-account ownership verified before management. Link an existing ordinary
+.com domain to an explicitly selected client and registrar connection without
+creating a registration quote, order, invoice, purchase or registrar customer/contact.
+Require full-administrator MFA and exact-domain confirmation. Preserve provider
+network/account gates, client ownership, credential binding, idempotency and audit.
+Use fictional mocked provider evidence for validation; keep real providers disabled,
+preserve active staging SMTP and do not deploy or modify staging records.

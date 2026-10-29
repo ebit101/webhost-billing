@@ -35,6 +35,7 @@ import {
   type ResellbizSetup,
   domainSelectionSnapshotSchema,
   registrarConnectionIdentitySchema,
+  existingDomainLinkEvidenceSchema,
 } from '@webhost-billing/shared';
 import { ApplicationException } from '../../common/errors/application.exception';
 import { allocateInvoiceNumber } from '../../common/identifiers/invoice-number';
@@ -403,6 +404,10 @@ export class DomainService {
     const domain = await this.prisma.domain.findUniqueOrThrow({
       where: { id },
     });
+    if (!domain.quoteId)
+      this.deny(
+        'Linked domains use verified existing ownership, not registration contact binding.',
+      );
     const account = await this.prisma.registrarAccount.findUniqueOrThrow({
       where: { id: domain.executionAccountId ?? domain.accountId },
     });
@@ -1200,7 +1205,7 @@ export class DomainService {
         const prior = await this.prisma.domain.findUnique({
           where: { submissionKey: input.submissionKey },
         });
-        const replayQuote = prior
+        const replayQuote = prior?.quoteId
           ? await this.prisma.domainQuote.findUnique({
               where: { id: prior.quoteId },
             })
@@ -1250,6 +1255,9 @@ export class DomainService {
         domain.customerId !== auth.identity.customerId)
     )
       this.deny('The domain request is unavailable.', HttpStatus.FORBIDDEN);
+    if (domain.origin === 'EXISTING') return this.existingDetail(domain, auth);
+    if (!domain.invoiceId || !domain.orderItemId || !domain.quoteId)
+      this.deny('Registration billing records are unavailable.');
     const invoice = await this.prisma.invoice.findUniqueOrThrow({
       where: { id: domain.invoiceId },
     });
@@ -1405,6 +1413,10 @@ export class DomainService {
     const domain = await this.prisma.domain.findUniqueOrThrow({
       where: { id },
     });
+    if (domain.origin === 'EXISTING' || !domain.quoteId || !domain.invoiceId)
+      this.deny(
+        'An existing domain cannot be registered or purchased through approval.',
+      );
     if (input.confirmation !== domain.domainName)
       this.deny('Type the exact domain name to approve.');
     const quote = await this.prisma.domainQuote.findUniqueOrThrow({
@@ -1450,10 +1462,13 @@ export class DomainService {
     );
     if (!cost.available || cost.costAmount > BigInt(input.costCeiling))
       this.deny('Availability or the approved native cost ceiling changed.');
+    const registrationInvoiceId = domain.invoiceId;
     await this.prisma.$transaction(async (tx) => {
-      await lockDomainInvoice(tx, domain.invoiceId);
+      await lockDomainInvoice(tx, registrationInvoiceId);
       await tx.$queryRaw`SELECT id FROM domains WHERE id=${id}::uuid FOR UPDATE`;
       const current = await tx.domain.findUniqueOrThrow({ where: { id } });
+      if (!current.invoiceId || current.origin === 'EXISTING')
+        this.deny('Registration billing records are unavailable.');
       const account = await tx.registrarAccount.findUniqueOrThrow({
         where: { id: selectedAccountId },
       });
@@ -1643,6 +1658,72 @@ export class DomainService {
       this.deny(
         'The customer account is not eligible for registrar operations.',
       );
+    if (domain.origin === 'EXISTING') {
+      if (
+        !domain.linkCredentialId ||
+        !domain.linkEvidenceCiphertext ||
+        !domain.ownershipVerifiedAt
+      )
+        this.deny('Existing domain ownership evidence is unavailable.');
+      const linkedCredential =
+        await this.prisma.registrarCredential.findUniqueOrThrow({
+          where: { id: domain.linkCredentialId },
+        });
+      const linkedIdentity = resellbizCredentialSchema.parse(
+        this.cipher.decrypt(
+          credentialBinding(account.id, linkedCredential.version, 'LIVE'),
+          linkedCredential.ciphertext,
+        ),
+      );
+      if (
+        linkedCredential.accountId !== account.id ||
+        linkedIdentity.resellerId !==
+          registrarIdentity(account.configuration).resellerId
+      )
+        this.deny('The linked registrar-account identity changed.');
+      const proof = existingDomainLinkEvidenceSchema.parse(
+        this.cipher.decrypt(
+          `resellbiz:existing-link:${id}`,
+          domain.linkEvidenceCiphertext,
+        ),
+      );
+      const provider = await this.liveProvider(
+        account.id,
+        {
+          localCustomerId: domain.customerId,
+          remoteCustomerId: proof.remoteCustomerId,
+          remoteContactId: proof.remoteContactId,
+        },
+        credentialId,
+      );
+      const intent: RegistrarIntent = {
+        operationId: id,
+        accountId: account.id,
+        customerId: domain.customerId,
+        domainName: domain.domainName,
+        nameservers: proof.nameservers,
+        contact: proof.contact,
+        costCeiling: 0n,
+      };
+      await this.reserveLiveRead(account.id, auth);
+      try {
+        await provider.management(intent, domain.providerOrderId);
+      } catch {
+        this.deny(
+          'Current registrar-account ownership could not be verified. No management action was sent.',
+        );
+      }
+      return {
+        domain,
+        account,
+        customer,
+        provider,
+        intent,
+        orderId: domain.providerOrderId,
+      };
+    }
+    if (!domain.quoteId)
+      this.deny('Registration ownership evidence is unavailable.');
     const quote = await this.prisma.domainQuote.findUniqueOrThrow({
       where: { id: domain.quoteId },
     });
@@ -1694,5 +1775,59 @@ export class DomainService {
   }
   async reserveManagementRead(accountId: string, auth: AuthRequestContext) {
     return this.reserveLiveRead(accountId, auth);
+  }
+  private async existingDetail(
+    domain: Prisma.DomainGetPayload<object>,
+    auth: AuthRequestContext,
+  ) {
+    const account = await this.prisma.registrarAccount.findUniqueOrThrow({
+      where: { id: domain.accountId },
+    });
+    if (auth.identity.role === 'ADMIN') this.administrator(auth);
+    if (!domain.linkEvidenceCiphertext || !domain.ownershipVerifiedAt)
+      this.deny('Existing domain evidence is unavailable.');
+    const proof = existingDomainLinkEvidenceSchema.parse(
+      this.cipher.decrypt(
+        `resellbiz:existing-link:${domain.id}`,
+        domain.linkEvidenceCiphertext,
+      ),
+    );
+    const profile = await this.prisma.registrarProfile.findUnique({
+      where: { accountId: domain.accountId },
+    });
+    return domainDetailSchema.parse({
+      id: domain.id,
+      domainName: domain.domainName,
+      origin: 'EXISTING',
+      ownershipVerifiedAt: domain.ownershipVerifiedAt.toISOString(),
+      state: domain.state,
+      verification: domain.verification,
+      expiresAt: domain.expiresAt?.toISOString() ?? null,
+      simulated: false,
+      autoRenew: false,
+      registrar: profile?.name ?? 'StarGate/UK2 (resell.biz)',
+      registrationYears: null,
+      requestedAt: domain.createdAt.toISOString(),
+      sellingAmount: null,
+      financialAttention: false,
+      invoiceId: null,
+      invoiceStatus: null,
+      orderId: null,
+      balanceDue: null,
+      currency: 'BDT',
+      nameservers: proof.nameservers,
+      agreement: 'existing-domain-link-v1',
+      ...(auth.identity.role === 'ADMIN'
+        ? {
+            customerId: domain.customerId,
+            accountId: account.id,
+            contactMappingVerified: true,
+            operationId: null,
+            dispatchClaimed: false,
+            eligibleRegistrars: [],
+            evidence: [],
+          }
+        : {}),
+    });
   }
 }

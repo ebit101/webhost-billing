@@ -32,6 +32,7 @@ import { hashOpaqueToken } from '../src/modules/auth/services/auth-token.service
 import { TotpService } from '../src/modules/auth/services/totp.service';
 import { DomainService } from '../src/modules/domains/domain.service';
 import { DomainAdministrationService } from '../src/modules/domains/domain-administration.service';
+import { ExistingDomainLinkService } from '../src/modules/domains/existing-domain-link.service';
 import type { AuthRequestContext } from '../src/modules/auth/auth.types';
 
 interface DomainResult {
@@ -45,6 +46,10 @@ interface DomainResult {
 }
 interface Success<T> {
   data: T;
+}
+function registrationReference(value: string | null): string {
+  if (!value) throw new Error('Expected a registration billing reference.');
+  return value;
 }
 describe('complete simulated registrar in isolated PostgreSQL (e2e)', () => {
   const schema = `registrar_test_${randomUUID().replaceAll('-', '')}`;
@@ -136,6 +141,160 @@ describe('complete simulated registrar in isolated PostgreSQL (e2e)', () => {
   beforeEach(async () => {
     customer = await account('CUSTOMER');
   });
+  async function existingLinkFixture() {
+    customer = await account('CUSTOMER');
+    const environment = app.get<ApiEnvironment>(API_ENVIRONMENT);
+    const identity = (
+      (await customer.get('/auth/me').expect(200)).body as Success<
+        AuthRequestContext['identity']
+      >
+    ).data;
+    if (identity.role !== 'CUSTOMER')
+      throw new Error('Expected fictional client');
+    const actor = {
+      identity: (
+        (await owner.get('/auth/me').expect(200)).body as Success<
+          AuthRequestContext['identity']
+        >
+      ).data,
+    } as AuthRequestContext;
+    const registrar = await prisma.registrarAccount.create({
+      data: {
+        mode: 'LIVE',
+        enabled: true,
+        configuration: { schemaVersion: 2, resellerId: '54321' },
+      },
+    });
+    await prisma.registrarProfile.create({
+      data: {
+        accountId: registrar.id,
+        name: 'Fictional existing-domain account',
+      },
+    });
+    const cipher = new RegistrarCipher(environment.CREDENTIAL_ENCRYPTION_KEY);
+    const credential = await prisma.registrarCredential.create({
+      data: {
+        accountId: registrar.id,
+        version: 1,
+        ciphertext: cipher.encrypt(credentialBinding(registrar.id, 1, 'LIVE'), {
+          resellerId: '54321',
+          apiKey: 'fictional'.repeat(4),
+        }),
+      },
+    });
+    const input = {
+      customerId: identity.customerId,
+      registrarAccountId: registrar.id,
+      domainName: `existing-${randomUUID()}.com`,
+      confirmation: '',
+      submissionKey: randomUUID(),
+    };
+    input.confirmation = input.domainName;
+    let foreign = false;
+    let expired = false;
+    let race: (() => Promise<void>) | undefined;
+    let fail = false;
+    let allowLock = false;
+    let locked = true;
+    const wire = jest
+      .spyOn(ResellbizHttpsTransport.prototype, 'request')
+      .mockImplementation(async (path) => {
+        if (fail) throw new Error('Fictional confidential provider error');
+        if (
+          path === '/api/domains/disable-theft-protection.json' &&
+          allowLock
+        ) {
+          locked = false;
+          return '{"entityid":"60001"}';
+        }
+        const values: Partial<Record<typeof path, unknown>> = {
+          '/api/domains/orderid.json': '60001',
+          '/api/domains/details.json': {
+            entityid: '60001',
+            domainname: input.domainName,
+            customerid: '60002',
+            isImmediateReseller: true,
+            currentstatus: 'Active',
+            endtime: expired ? '1000000' : '1900000000',
+            noOfNameServers: '2',
+            ns1: 'ns1.fictional-host.com',
+            ns2: 'ns2.fictional-host.com',
+            registrantcontactid: '60003',
+            admincontactid: '60004',
+            techcontactid: '60005',
+            billingcontactid: '60006',
+            raaVerificationStatus: 'Verified',
+            domsecret: 'do-not-export',
+          },
+          '/api/customers/details-by-id.json': {
+            customerid: '60002',
+            resellerid: foreign ? '99999' : '54321',
+            customerstatus: 'Active',
+          },
+          '/api/domains/locks.json': { transferlock: locked },
+          '/api/contacts/details.json': {
+            entityid: '60003',
+            customerid: '60002',
+            type: 'Contact',
+            currentstatus: 'Active',
+            name: 'Fictional registrant',
+            company: 'Example Test Studio',
+            emailaddr: 'registrant@example.test',
+            address1: '1 Test Street',
+            city: 'Dhaka',
+            state: 'Dhaka',
+            zip: '1000',
+            country: 'BD',
+            telnocc: '880',
+            telno: '1700000000',
+          },
+        };
+        if (!Object.hasOwn(values, path))
+          throw new Error('A non-read registrar path was called');
+        if (race && path === '/api/contacts/details.json') {
+          const run = race;
+          race = undefined;
+          await run();
+        }
+        return JSON.stringify(values[path]);
+      });
+    return {
+      environment,
+      actor,
+      registrar,
+      credential,
+      input,
+      wire,
+      foreign: () => {
+        foreign = true;
+      },
+      expired: () => {
+        expired = true;
+      },
+      fail: () => {
+        fail = true;
+      },
+      race: (run: () => Promise<void>) => {
+        race = run;
+      },
+      allowLock: () => {
+        allowLock = true;
+      },
+    };
+  }
+  async function existingLinkFinancialCounts() {
+    return Promise.all([
+      prisma.order.count(),
+      prisma.invoice.count(),
+      prisma.invoiceItem.count(),
+      prisma.payment.count(),
+      prisma.domainQuote.count(),
+      prisma.registrarOperation.count(),
+      prisma.registrarMapping.count(),
+      prisma.registrarPreparation.count(),
+      prisma.outboxEvent.count(),
+    ]);
+  }
   async function account(
     role: 'CUSTOMER' | 'FULL_ADMINISTRATOR' | 'BILLING_OPERATOR',
     mfa = true,
@@ -265,7 +424,7 @@ describe('complete simulated registrar in isolated PostgreSQL (e2e)', () => {
       customer,
       '/payments/manual/customer',
       {
-        invoiceId: domain.invoiceId,
+        invoiceId: registrationReference(domain.invoiceId),
         amount,
         submissionKey: randomUUID(),
         proof: {
@@ -652,7 +811,7 @@ describe('complete simulated registrar in isolated PostgreSQL (e2e)', () => {
     await pay(
       {
         id: domain.id,
-        invoiceId: domain.invoiceId,
+        invoiceId: registrationReference(domain.invoiceId),
         orderId: created.order.id,
         domainName: name,
         state: domain.state,
@@ -661,7 +820,7 @@ describe('complete simulated registrar in isolated PostgreSQL (e2e)', () => {
     );
     await approve({
       id: domain.id,
-      invoiceId: domain.invoiceId,
+      invoiceId: registrationReference(domain.invoiceId),
       orderId: created.order.id,
       domainName: name,
       state: domain.state,
@@ -791,7 +950,7 @@ describe('complete simulated registrar in isolated PostgreSQL (e2e)', () => {
       where: { id: domain.id },
     });
     const quote = await prisma.domainQuote.findUniqueOrThrow({
-      where: { id: stored.quoteId },
+      where: { id: registrationReference(stored.quoteId) },
     });
     const expired = await prisma.domainQuote.create({
       data: {
@@ -1456,7 +1615,7 @@ describe('complete simulated registrar in isolated PostgreSQL (e2e)', () => {
         );
       const initialInvoice = financialSnapshot(
         await prisma.invoice.findUniqueOrThrow({
-          where: { id: final.invoiceId },
+          where: { id: registrationReference(final.invoiceId) },
         }),
       );
       const newNames = ['ns3.fictional-host.com', 'ns4.fictional-host.com'];
@@ -1634,7 +1793,7 @@ describe('complete simulated registrar in isolated PostgreSQL (e2e)', () => {
       expect(
         financialSnapshot(
           await prisma.invoice.findUniqueOrThrow({
-            where: { id: final.invoiceId },
+            where: { id: registrationReference(final.invoiceId) },
           }),
         ),
       ).toBe(initialInvoice);
@@ -2471,6 +2630,368 @@ describe('complete simulated registrar in isolated PostgreSQL (e2e)', () => {
       expect(wire.mock.calls.length).toBe(readCalls);
     } finally {
       wire.mockRestore();
+    }
+  });
+  it('links an existing domain once with no billing or registration and retains client ownership and SQL guards', async () => {
+    const fixture = await existingLinkFixture();
+    try {
+      const before = await existingLinkFinancialCounts();
+      await mutation(customer, '/domains/existing-links', fixture.input, 403);
+      await mutation(billing, '/domains/existing-links', fixture.input, 403);
+      await mutation(unenrolled, '/domains/existing-links', fixture.input, 403);
+      await owner
+        .post('/domains/existing-links')
+        .send(fixture.input)
+        .expect(403);
+      await mutation(
+        owner,
+        '/domains/existing-links',
+        { ...fixture.input, confirmation: 'wrong.com' },
+        400,
+      );
+      await mutation(
+        owner,
+        '/domains/existing-links',
+        { ...fixture.input, remoteCustomerId: '99999' },
+        400,
+      );
+      expect(fixture.wire).not.toHaveBeenCalled();
+      const result = await mutation(
+        owner,
+        '/domains/existing-links',
+        fixture.input,
+        201,
+      );
+      const linked = domainDetailSchema.parse(
+        (result.body as Success<unknown>).data,
+      );
+      expect(linked).toMatchObject({
+        origin: 'EXISTING',
+        customerId: fixture.input.customerId,
+        state: 'REGISTERED',
+        invoiceId: null,
+        invoiceStatus: null,
+        orderId: null,
+        sellingAmount: null,
+        balanceDue: null,
+        registrationYears: null,
+        autoRenew: false,
+      });
+      expect(JSON.stringify(result.body)).not.toMatch(
+        /60002|60003|do-not-export|ciphertext|fictionalfictional/,
+      );
+      const stored = await prisma.domain.findUniqueOrThrow({
+        where: { id: linked.id },
+      });
+      expect(stored.quoteId).toBeNull();
+      expect(stored.invoiceId).toBeNull();
+      expect(stored.orderItemId).toBeNull();
+      expect(stored.linkCredentialId).toBe(fixture.credential.id);
+      expect(stored.linkEvidenceCiphertext).not.toContain(
+        'registrant@example.test',
+      );
+      const calls = fixture.wire.mock.calls.length;
+      const retry = await mutation(
+        owner,
+        '/domains/existing-links',
+        fixture.input,
+        201,
+      );
+      expect((retry.body as Success<{ id: string }>).data.id).toBe(linked.id);
+      expect(fixture.wire.mock.calls.length).toBe(calls);
+      await mutation(
+        owner,
+        '/domains/existing-links',
+        { ...fixture.input, submissionKey: randomUUID() },
+        409,
+      );
+      await mutation(
+        owner,
+        '/domains/existing-links',
+        {
+          ...fixture.input,
+          domainName: 'different.com',
+          confirmation: 'different.com',
+        },
+        409,
+      );
+      await customer.get(`/domains/${linked.id}`).expect(200);
+      await other.get(`/domains/${linked.id}`).expect(403);
+      const otherIdentity = (
+        (await other.get('/auth/me')).body as Success<
+          AuthRequestContext['identity']
+        >
+      ).data;
+      if (otherIdentity.role !== 'CUSTOMER')
+        throw new Error('Expected second client');
+      await owner
+        .get(`/domains/${linked.id}?customerId=${otherIdentity.customerId}`)
+        .expect(403);
+      await mutation(
+        owner,
+        `/domains/${linked.id}/approve`,
+        {
+          confirmation: linked.domainName,
+          costCeiling: '1000',
+          costCurrency: 'USD',
+        },
+        409,
+      );
+      await mutation(
+        owner,
+        `/domains/${linked.id}/actions`,
+        {
+          confirmation: linked.domainName,
+          request: {
+            kind: 'RENEW',
+            sellingAmount: '1000',
+            costCeiling: '1000',
+            acceptPriceChangeRisk: true,
+          },
+        },
+        409,
+      );
+      await expect(
+        prisma.domain.update({
+          where: { id: linked.id },
+          data: { origin: 'REGISTRATION' },
+        }),
+      ).rejects.toThrow();
+      await expect(
+        prisma.domain.update({
+          where: { id: linked.id },
+          data: { providerOrderId: '99999' },
+        }),
+      ).rejects.toThrow();
+      await expect(
+        prisma.domain.update({
+          where: { id: linked.id },
+          data: { customerId: otherIdentity.customerId },
+        }),
+      ).rejects.toThrow();
+      await expect(
+        prisma.domain.delete({ where: { id: linked.id } }),
+      ).rejects.toThrow();
+      await expect(
+        prisma.registrarOperation.create({
+          data: {
+            domainId: linked.id,
+            customerId: fixture.input.customerId,
+            accountId: fixture.registrar.id,
+            credentialId: fixture.credential.id,
+            actorUserId: fixture.actor.identity.userId,
+            costCeiling: 1000n,
+          },
+        }),
+      ).rejects.toThrow();
+      fixture.foreign();
+      await mutation(
+        owner,
+        `/domains/${linked.id}/actions`,
+        {
+          confirmation: linked.domainName,
+          request: { kind: 'LOCK', locked: false },
+        },
+        409,
+      );
+      expect(
+        await prisma.domainAction.count({ where: { domainId: linked.id } }),
+      ).toBe(0);
+      expect(await existingLinkFinancialCounts()).toEqual(before);
+      expect(
+        await prisma.activityLog.count({
+          where: { entityId: linked.id, action: 'EXISTING_DOMAIN_LINKED' },
+        }),
+      ).toBe(1);
+      expect(
+        fixture.wire.mock.calls.every(([path]) =>
+          [
+            '/api/domains/orderid.json',
+            '/api/domains/details.json',
+            '/api/customers/details-by-id.json',
+            '/api/domains/locks.json',
+            '/api/contacts/details.json',
+          ].includes(path),
+        ),
+      ).toBe(true);
+    } finally {
+      fixture.wire.mockRestore();
+    }
+  });
+  it('blocks disabled networking or account, foreign/expired/error evidence and settings changes without linking', async () => {
+    for (const mode of [
+      'network',
+      'disabled',
+      'foreign',
+      'expired',
+      'failure',
+      'pause',
+      'rotation',
+      'client',
+      'actor',
+    ] as const) {
+      const fixture = await existingLinkFixture();
+      try {
+        const before = await existingLinkFinancialCounts();
+        if (mode === 'network') {
+          const service = new ExistingDomainLinkService(
+            prisma,
+            { ...fixture.environment, RESELLBIZ_LIVE_ENABLED: false },
+            app.get(DomainAdministrationService),
+            app.get(DomainService),
+          );
+          await expect(
+            service.link(fixture.input, fixture.actor),
+          ).rejects.toThrow(/networking is disabled/);
+          expect(fixture.wire).not.toHaveBeenCalled();
+        } else {
+          const approving =
+            mode === 'actor' ? await account('FULL_ADMINISTRATOR') : owner;
+          if (mode === 'actor') {
+            const approvingIdentity = (
+              (await approving.get('/auth/me').expect(200)).body as Success<
+                AuthRequestContext['identity']
+              >
+            ).data;
+            fixture.race(async () => {
+              await prisma.user.update({
+                where: { id: approvingIdentity.userId },
+                data: { deletedAt: new Date() },
+              });
+            });
+          }
+          if (mode === 'disabled')
+            await prisma.registrarAccount.update({
+              where: { id: fixture.registrar.id },
+              data: { enabled: false },
+            });
+          if (mode === 'foreign') fixture.foreign();
+          if (mode === 'expired') fixture.expired();
+          if (mode === 'failure') fixture.fail();
+          if (mode === 'pause')
+            fixture.race(async () => {
+              await prisma.registrarAccount.update({
+                where: { id: fixture.registrar.id },
+                data: { enabled: false },
+              });
+            });
+          if (mode === 'rotation')
+            fixture.race(async () => {
+              await prisma.registrarCredential.create({
+                data: {
+                  accountId: fixture.registrar.id,
+                  version: 2,
+                  ciphertext: new RegistrarCipher(
+                    fixture.environment.CREDENTIAL_ENCRYPTION_KEY,
+                  ).encrypt(
+                    credentialBinding(fixture.registrar.id, 2, 'LIVE'),
+                    {
+                      resellerId: '54321',
+                      apiKey: 'rotatedfictional'.repeat(3),
+                    },
+                  ),
+                },
+              });
+            });
+          if (mode === 'client')
+            fixture.race(async () => {
+              await prisma.customer.update({
+                where: { id: fixture.input.customerId },
+                data: { status: 'INACTIVE' },
+              });
+            });
+          const result = await mutation(
+            approving,
+            '/domains/existing-links',
+            fixture.input,
+            mode === 'actor' ? 403 : 409,
+          );
+          expect(JSON.stringify(result.body)).not.toContain('confidential');
+          if (mode === 'disabled') expect(fixture.wire).not.toHaveBeenCalled();
+        }
+        expect(
+          await prisma.domain.count({
+            where: { domainName: fixture.input.domainName },
+          }),
+        ).toBe(0);
+        expect(await existingLinkFinancialCounts()).toEqual(before);
+      } finally {
+        fixture.wire.mockRestore();
+      }
+    }
+  });
+  it('manages a linked domain only after fresh ownership and preserves at-most-once claims without billing', async () => {
+    const fixture = await existingLinkFixture();
+    try {
+      const before = await existingLinkFinancialCounts();
+      const result = await mutation(
+        owner,
+        '/domains/existing-links',
+        fixture.input,
+        201,
+      );
+      const linked = domainDetailSchema.parse(
+        (result.body as Success<unknown>).data,
+      );
+      await mutation(
+        owner,
+        `/domains/${linked.id}/actions`,
+        {
+          confirmation: linked.domainName,
+          request: { kind: 'LOCK', locked: false },
+        },
+        201,
+      );
+      const action = await prisma.domainAction.findFirstOrThrow({
+        where: { domainId: linked.id },
+      });
+      await prisma.registrarAccount.update({
+        where: { id: fixture.registrar.id },
+        data: { enabled: false },
+      });
+      const callCount = fixture.wire.mock.calls.length;
+      await mutation(
+        owner,
+        `/domains/${linked.id}/actions/${action.id}/execute`,
+        { confirmation: linked.domainName },
+        409,
+      );
+      expect(fixture.wire.mock.calls.length).toBe(callCount);
+      expect(
+        (
+          await prisma.domainAction.findUniqueOrThrow({
+            where: { id: action.id },
+          })
+        ).claimedAt,
+      ).toBeNull();
+      await prisma.registrarAccount.update({
+        where: { id: fixture.registrar.id },
+        data: { enabled: true },
+      });
+      fixture.allowLock();
+      const url = `/domains/${linked.id}/actions/${action.id}/execute`;
+      await mutation(owner, url, { confirmation: linked.domainName }, 201);
+      await mutation(owner, url, { confirmation: linked.domainName }, 201);
+      expect(
+        (
+          await prisma.domainAction.findUniqueOrThrow({
+            where: { id: action.id },
+          })
+        ).state,
+      ).toBe('SUCCEEDED');
+      expect(
+        fixture.wire.mock.calls.filter(
+          ([path]) => path === '/api/domains/disable-theft-protection.json',
+        ),
+      ).toHaveLength(1);
+      expect(await existingLinkFinancialCounts()).toEqual(before);
+      expect(
+        fixture.wire.mock.calls.every(
+          ([path]) => !/register|renew|signup|add\.json/.test(path),
+        ),
+      ).toBe(true);
+    } finally {
+      fixture.wire.mockRestore();
     }
   });
 });

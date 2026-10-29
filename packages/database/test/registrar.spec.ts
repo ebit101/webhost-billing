@@ -248,6 +248,10 @@ function liveFixture() {
         },
         '/api/domains/orderid.json': '45678',
         '/api/domains/details.json': {
+          entityid: '45678',
+          noOfNameServers: '2',
+          ns1: liveIntent.nameservers[0],
+          ns2: liveIntent.nameservers[1],
           domainname: liveIntent.domainName,
           customerid: '23456',
           isImmediateReseller: 'true',
@@ -259,6 +263,7 @@ function liveFixture() {
           techcontactid: '34567',
           billingcontactid: '34567',
         },
+        '/api/domains/locks.json': { transferlock: 'true' },
       };
       return JSON.stringify(modifier(path, values[path]));
     },
@@ -280,6 +285,84 @@ function liveFixture() {
     }),
   };
 }
+test('existing domain discovery proves the direct reseller, domain and contact through reads only', async () => {
+  const fixture = liveFixture();
+  const result = await fixture.registrar.inspectExisting({
+    accountId: liveIntent.accountId,
+    customerId: liveIntent.customerId,
+    domainName: liveIntent.domainName,
+  });
+  assert.equal(result.observed.orderId, '45678');
+  assert.equal(result.remoteCustomerId, '23456');
+  assert.equal(result.remoteContactId, '34567');
+  assert.deepEqual(result.observed.contact, liveContact);
+  assert.deepEqual(result.observed.nameservers, liveIntent.nameservers);
+  assert.equal(result.observed.locked, true);
+  assert(
+    fixture.calls.every(({ path }) =>
+      [
+        '/api/domains/orderid.json',
+        '/api/domains/details.json',
+        '/api/customers/details-by-id.json',
+        '/api/domains/locks.json',
+        '/api/contacts/details.json',
+      ].includes(path),
+    ),
+  );
+});
+test('existing domain discovery rejects absent, foreign, inactive, expired and mismatched evidence without mutations', async () => {
+  const cases: Array<[ResellbizPath, Record<string, unknown>]> = [
+    ['/api/domains/details.json', { entityid: '99999' }],
+    ['/api/domains/details.json', { domainname: 'foreign.com' }],
+    ['/api/domains/details.json', { isImmediateReseller: false }],
+    ['/api/domains/details.json', { currentstatus: 'InActive' }],
+    ['/api/domains/details.json', { endtime: '1000000' }],
+    ['/api/domains/details.json', { noOfNameServers: '1000' }],
+    ['/api/customers/details-by-id.json', { resellerid: '99999' }],
+    ['/api/customers/details-by-id.json', { customerid: '99999' }],
+    ['/api/customers/details-by-id.json', { customerstatus: 'Suspended' }],
+    ['/api/contacts/details.json', { customerid: '99999' }],
+    ['/api/contacts/details.json', { entityid: '99999' }],
+    ['/api/contacts/details.json', { currentstatus: 'Suspended' }],
+  ];
+  for (const [target, changes] of cases) {
+    const fixture = liveFixture();
+    fixture.modify((path, value) =>
+      path === target
+        ? { ...(value as Record<string, unknown>), ...changes }
+        : value,
+    );
+    await assert.rejects(
+      fixture.registrar.inspectExisting({
+        accountId: liveIntent.accountId,
+        customerId: liveIntent.customerId,
+        domainName: liveIntent.domainName,
+      }),
+    );
+    assert(
+      fixture.calls.every(
+        ({ path }) =>
+          !['register', 'renew', 'modify', 'signup', 'add.json'].some((part) =>
+            path.includes(part),
+          ),
+      ),
+    );
+  }
+  const absent = liveFixture();
+  absent.modify((path, value) =>
+    path === '/api/domains/orderid.json'
+      ? { status: 'ERROR', message: 'private diagnostic' }
+      : value,
+  );
+  await assert.rejects(
+    absent.registrar.inspectExisting({
+      accountId: liveIntent.accountId,
+      customerId: liveIntent.customerId,
+      domainName: liveIntent.domainName,
+    }),
+  );
+});
+
 test('live quote is exact, isolated from mock mode and rejects unsupported/premium/claims/unknown values', async () => {
   const fixture = liveFixture();
   assert.equal(
