@@ -602,13 +602,16 @@ describe('order interfaces', () => {
       }),
     );
     render(<AdminOrderManager checkoutIntent={{ productId, priceId }} />);
+    const dialog = await screen.findByRole('dialog', {
+      name: 'Create hosting order',
+    });
     expect(
-      await screen.findByText(
+      await within(dialog).findByText(
         /This selection requests a new domain registration/,
       ),
     ).toBeTruthy();
     expect(
-      screen.getByRole('button', { name: 'Create order and invoice' }),
+      within(dialog).getByRole('button', { name: 'Create order and invoice' }),
     ).toHaveProperty('disabled', true);
   });
 
