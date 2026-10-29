@@ -7,13 +7,14 @@
 - **Last updated:** 2026-10-29
 - **Last recorded staging release:** Commands 132/138–140, `b13d72f0c8ebf999a6c54ddae8497f384120765c`, deployed on 2026-10-29 (Asia/Dhaka).
 - **Next command:** Authorize Command 142 — Deploy Command 141 to staging after backup verification, preserve environment/logo and active SMTP, keep other providers disabled, and accept the five client-profile tabs. Existing-domain linking remains separate work.
-- **Next command authorized:** Command 141 only. No deployment, live-provider action or next command is authorized.
+- **Next command authorized:** None after Command 141. Deployment, live-provider actions and the next command require separate authorization.
 
 ## Command Reports
 
 ### Command 141 — Client profile billing and communication tabs
 
 - **Status and date:** Completed and validated locally on 2026-10-29 (Asia/Dhaka). Not deployed; source delivery follows the protected repository workflow.
+- **Repository delivery:** [PR 63](https://github.com/ebit101/webhost-billing/pull/63) carries this command to `main` through the required full CI, CodeQL and dependency-review checks. Application implementation commit: `bd84c49cbd5a19bd8548e61960a28069fed24dba`. Hosted results remain inspectable on that pull request; deployment is excluded.
 - **Authorization:** Add Orders, Invoices, Payments, Support and Email history to the existing client profile, use compact tables, validate locally and update this report. Preserve provider states; no deployment.
 - **Implemented scope:** Five nested profile routes retain the selected client, header and nine-tab navigation. Tables show linked records, status, dates and relevant exact monetary values, with server-side search/status filtering, 20-row pagination, result counts, empty states and recoverable errors. Summary counts/recent records open their client tabs. Selecting a row opens separate read-only details; closing restores focus. Client switching clears record/filter state and ignores late responses.
 - **API and security:** Reuse existing customer-filtered order/invoice/payment/ticket lists. Optional expected customer IDs on their detail GETs are validated and checked before serialization; existing customer ownership and staff permissions remain enforced. Each nested server route independently checks its resource permission and retains restricted staff in the existing client context. New full-administrator-only paginated email history scopes by stored customer foreign key before filtering/counting/paging. Safe metadata and attempt codes only; bodies, tokens, provider message IDs/raw errors and send/retry actions are absent. Existing unlinked email history is excluded rather than inferred by address.
