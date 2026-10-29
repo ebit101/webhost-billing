@@ -664,27 +664,52 @@ test('complete hosting customer and administrator lifecycle', async ({
 
     const invoiceLink = page.getByRole('link', { name: /^INV-/ }).first();
     const invoiceHref = await invoiceLink.getAttribute('href');
-    expect(invoiceHref).toMatch(/^\/admin\/invoices\/[0-9a-f-]+$/i);
+    const invoiceLabel = (await invoiceLink.textContent())!.split(' · ')[0]!;
+    const beforeClientReads = await lifecycleRecord();
+    expect(invoiceHref).toBe(`/admin/customers/${customerId}/invoices`);
     await invoiceLink.click();
     await expect(page).toHaveURL(new RegExp(`${invoiceHref}$`));
+    await page.getByRole('button', { name: invoiceLabel, exact: true }).click();
+    const clientInvoice = page.getByRole('dialog', {
+      name: 'Invoices record',
+      exact: true,
+    });
     await expect(
-      page.getByRole('button', { name: 'Download PDF' }),
+      clientInvoice.getByRole('heading', { name: invoiceLabel, exact: true }),
     ).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(clientInvoice).not.toBeVisible();
 
     await page.goto(`/admin/customers/${customerId}`);
     await page.getByRole('link', { name: /Orders\s+1/ }).click();
-    await expect(page).toHaveURL(
-      new RegExp(`/admin/orders\\?customerId=${customerId}$`),
-    );
-    await expect(page.getByLabel('Customer filter')).toContainText(
-      `${E2E_CUSTOMER.firstName} ${E2E_CUSTOMER.lastName}`,
-    );
+    await expect(page).toHaveURL(`/admin/customers/${customerId}/orders`);
     await expect(
-      page.getByRole('row').filter({ hasText: E2E_PRODUCT.domain }),
+      page.getByRole('combobox', { name: 'Client', exact: true }),
+    ).toHaveValue(customerId);
+    await expect(
+      page.getByRole('row').filter({ hasText: E2E_PRODUCT.name }),
+    ).toBeVisible();
+    await page
+      .getByRole('button', { name: beforeClientReads.orderNumber, exact: true })
+      .click();
+    const clientOrder = page.getByRole('dialog', {
+      name: 'Orders record',
+      exact: true,
+    });
+    await expect(
+      clientOrder.getByRole('heading', {
+        name: beforeClientReads.orderNumber,
+        exact: true,
+      }),
     ).toBeVisible();
     await expect(
+      clientOrder.getByText(E2E_PRODUCT.domain, { exact: true }),
+    ).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(
       page.getByRole('link', { name: 'Clear customer filter' }),
-    ).toHaveAttribute('href', '/admin/orders?page=1&pageSize=20');
+    ).toHaveCount(0);
+    expect(await lifecycleRecord()).toEqual(beforeClientReads);
   });
 
   await test.step('administrator reviews and cancels a partial-payment policy change without mutating the seed', async () => {
