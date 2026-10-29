@@ -291,7 +291,9 @@ test('mobile customer and administrator complete a clearly simulated domain work
     await expect(
       admin.getByRole('heading', { name: domainName, exact: true }),
     ).toBeVisible();
-    await admin.getByLabel('Type exact domain name').fill(domainName);
+    await admin
+      .getByRole('textbox', { name: 'Type exact domain name', exact: true })
+      .fill(domainName);
     await admin
       .getByLabel('Registrar', { exact: true })
       .selectOption(selectedAccount.id);
