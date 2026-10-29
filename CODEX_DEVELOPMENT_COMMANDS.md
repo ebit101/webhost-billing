@@ -5909,3 +5909,16 @@ Require full-administrator MFA and exact-domain confirmation. Preserve provider
 network/account gates, client ownership, credential binding, idempotency and audit.
 Use fictional mocked provider evidence for validation; keep real providers disabled,
 preserve active staging SMTP and do not deploy or modify staging records.
+
+## Command 144 — Deploy existing-domain linking to staging
+
+Owner-authorized on 2026-10-30: deploy completed Command 143 to `my.speedhost.bd`.
+Require successful exact-release CI and CodeQL and a fresh verified encrypted
+backup before cutover. Preserve the environment, installation logo and business
+records. Keep SMTP active and payment, hosting, registrar and WhatsApp disabled.
+Apply the existing-domain schema migration through the canonical release script.
+Smoke-test health, authentication/role boundaries and the client linking dialog
+with disabled connections, then close it without submitting. Do not adopt a real
+domain, register/purchase anything, provision hosting, change provider data, send
+messages or alter billing records. Record actual results and remaining live-provider
+acceptance limits, deliver the report through protected checks and stop.

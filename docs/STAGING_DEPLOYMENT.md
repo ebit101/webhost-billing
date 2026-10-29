@@ -1,5 +1,50 @@
 # Staging Deployment
 
+## Command 144 existing-domain linking release (2026-10-30)
+
+- **Status:** Deployed Command 143 at `115512304107ed1defed0d7770739a3a0d85aac2`.
+  Automated postflight and authenticated Speed acceptance passed. No real domain
+  was linked and no registration, purchase, provisioning or management write ran.
+- **Gates and build:** The normal merge of [PR 66](https://github.com/ebit101/webhost-billing/pull/66)
+  independently passed exact-release [CI](https://github.com/ebit101/webhost-billing/actions/runs/40832413439)
+  and [CodeQL](https://github.com/ebit101/webhost-billing/actions/runs/40832413638).
+  Canonical Node 24/pnpm 11.22.0 frozen builds passed for all four images. Runtime
+  API is Node 24.22.2. Source archive SHA-256:
+  `f2def44d8fa96cdffcb1ad66ebbad5befb228d1ee74696de63f7ea75dff88fcb`.
+- **Verified backup:** Fresh preflight archive `20261029T192711Z.dump.gpg` passed.
+  The release script then verified a second encrypted archive before stopping writers:
+  `/srv/webhost-billing-staging/backups/webhost-billing-webhost_billing_staging-20261029T194028Z.dump.gpg`.
+  SHA-256: `69f0f4b43b4c93beb69df68fa9fe175516f4186644e0a3366a98853b639b2f5e`.
+  Checksum, OpenPGP integrity, PostgreSQL archive structure and required tables
+  passed; this is same-host verification, not an off-site restore drill. Rollback:
+  `/srv/webhost-billing-staging/rollback/release-20261029T194027Z-115512304107ed1defed0d7770739a3a0d85aac2/`.
+- **Migration and preservation:** Migration 37 applied; 37 complete and none
+  unfinished. All seven services are healthy, application restarts are zero, and
+  one scheduler runs. PostgreSQL/Redis/Mailpit and unrelated container IDs are
+  unchanged. All 32 business-table fingerprints match, projecting domain rows
+  without only the four added metadata columns; separate checks found zero
+  existing-origin links, populated link fields or missing billing references.
+  Environment contents apart from IMAGE_TAG, mode 0600 and installed/served logo
+  hashes are unchanged. Office environment is preserved. The fictional draft is
+  still unissued and unpaid. SMTP remains active; payment, hosting, registrar and
+  WhatsApp remain disabled.
+- **Smoke tests:** Public/readiness routes passed, anonymous administrator pages
+  redirected to sign-in and protected APIs returned 401. Linking returned 401
+  anonymously and 403 for an ordinary fictional customer. Normal customer sign-in,
+  explicit portal streaming redirect and sign-out/session rejection passed.
+  In authenticated Speed, the client Domains table/context and linking dialog
+  loaded. Matching fictional inputs plus the disabled registrar kept submission
+  disabled with the expected notice. Escape/focus restoration and draft retention
+  passed. Closed without submission and reloaded to discard transient input.
+- **Evidence and limits:** Runner/postflight exit 0 and final preservation passed
+  under `/srv/webhost-billing-staging/acceptance/command144-release-20261030/`.
+  Initial operator SQL quoting evidence is retained separately; corrected preflight
+  passed before launch. Helpers, backups and payloads remain outside Git. Real
+  ownership and provider writes remain separately authorized acceptance. Earlier
+  releases cannot read actual existing links with null registration billing; once
+  links exist, plan compatible rollback without deleting history. No next command
+  or provider activation is authorized.
+
 ## Command 142 client profile tab release (2026-10-29)
 
 - **Status:** Deployed `9d1bcba6ed37fa87e9ef1b46124db0a1dc162c32`, including Command
