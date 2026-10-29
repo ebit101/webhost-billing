@@ -135,8 +135,15 @@ export class OrderController {
   async detail(
     @Param('orderId', new ParseUUIDPipe()) orderId: string,
     @CurrentAuth() auth: AuthRequestContext,
+    @Query(
+      'customerId',
+      new ZodValidationPipe(orderListQuerySchema.shape.customerId),
+    )
+    customerId?: string,
   ) {
-    return createApiSuccessResponse(await this.orders.get(orderId, auth));
+    return createApiSuccessResponse(
+      await this.orders.get(orderId, auth, customerId),
+    );
   }
 
   @Patch(':orderId/status')

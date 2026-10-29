@@ -107,11 +107,13 @@ export function TicketConversation({
   saving,
   onReply,
   controls,
+  readOnly = false,
 }: {
   ticket?: TicketDetail;
   saving: boolean;
   onReply: (event: FormEvent<HTMLFormElement>) => void;
   controls?: ReactNode;
+  readOnly?: boolean;
 }) {
   if (!ticket) {
     return (
@@ -176,36 +178,38 @@ export function TicketConversation({
         ))}
       </ol>
 
-      <div className="border-t border-slate-200 p-5 sm:p-6">
-        {ticket.status === 'CLOSED' ? (
-          <p className="rounded-xl bg-slate-100 p-4 text-sm font-semibold text-slate-700">
-            This ticket is closed. An administrator must reopen it before a new
-            reply can be added.
-          </p>
-        ) : (
-          <form onSubmit={onReply} className="space-y-3">
-            <label className="block text-sm font-semibold text-slate-700">
-              Reply in plain text
-              <textarea
-                required
-                name="body"
-                rows={4}
-                maxLength={10_000}
-                className={fieldStyles}
-                placeholder="Write a clear reply without passwords or secret keys."
-              />
-            </label>
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-xs text-slate-500">
-                Attachments and HTML are not accepted in this release.
-              </p>
-              <Button disabled={saving} type="submit">
-                {saving ? 'Sending…' : 'Send reply'}
-              </Button>
-            </div>
-          </form>
-        )}
-      </div>
+      {!readOnly && (
+        <div className="border-t border-slate-200 p-5 sm:p-6">
+          {ticket.status === 'CLOSED' ? (
+            <p className="rounded-xl bg-slate-100 p-4 text-sm font-semibold text-slate-700">
+              This ticket is closed. An administrator must reopen it before a
+              new reply can be added.
+            </p>
+          ) : (
+            <form onSubmit={onReply} className="space-y-3">
+              <label className="block text-sm font-semibold text-slate-700">
+                Reply in plain text
+                <textarea
+                  required
+                  name="body"
+                  rows={4}
+                  maxLength={10_000}
+                  className={fieldStyles}
+                  placeholder="Write a clear reply without passwords or secret keys."
+                />
+              </label>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="text-xs text-slate-500">
+                  Attachments and HTML are not accepted in this release.
+                </p>
+                <Button disabled={saving} type="submit">
+                  {saving ? 'Sending…' : 'Send reply'}
+                </Button>
+              </div>
+            </form>
+          )}
+        </div>
+      )}
     </section>
   );
 }

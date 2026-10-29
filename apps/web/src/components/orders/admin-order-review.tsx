@@ -138,11 +138,14 @@ async function loadReview(
   customerId: string | undefined,
   signal: AbortSignal,
 ): Promise<ReviewResult> {
-  const response = await fetch(`${API_URL}/orders/${orderId}`, {
-    credentials: 'include',
-    cache: 'no-store',
-    signal,
-  });
+  const response = await fetch(
+    `${API_URL}/orders/${orderId}${customerId ? '?customerId=' + encodeURIComponent(customerId) : ''}`,
+    {
+      credentials: 'include',
+      cache: 'no-store',
+      signal,
+    },
+  );
   if (response.status === 403 || response.status === 404)
     return { kind: 'unavailable' };
   if (!response.ok) throw new Error('Order review request failed');

@@ -292,6 +292,15 @@ describe('Support tickets (e2e)', () => {
   it('lets administrators filter, assign, prioritize, reply, and close with audit evidence', async () => {
     const admin = request.agent(app.getHttpServer());
     const csrf = await authenticate(admin, ADMIN_EMAIL);
+    await admin.get(`/tickets/${ticketId}`).query({ customerId }).expect(200);
+    await admin
+      .get(`/tickets/${ticketId}`)
+      .query({ customerId: randomUUID() })
+      .expect(404);
+    await admin
+      .get(`/tickets/${ticketId}`)
+      .query({ customerId: 'invalid' })
+      .expect(400);
     const optionsResponse = await admin
       .get('/tickets/setup-options')
       .expect(200);

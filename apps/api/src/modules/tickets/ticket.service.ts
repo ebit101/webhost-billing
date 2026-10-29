@@ -232,8 +232,14 @@ export class TicketService {
   async get(
     ticketId: string,
     actor: AuthRequestContext,
+    customerId?: string,
   ): Promise<TicketDetail> {
     const ticket = await this.getRecord(ticketId);
+    if (
+      customerId &&
+      ticket.customerId.toLowerCase() !== customerId.toLowerCase()
+    )
+      throw this.notFound();
     this.assertOwnership(ticket, actor);
     return this.toDetail(ticket);
   }

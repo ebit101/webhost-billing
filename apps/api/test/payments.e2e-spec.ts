@@ -505,6 +505,18 @@ describe('Manual payments (e2e)', () => {
     expect(payments[0]).not.toHaveProperty('providerTransactionId');
     expect(payments[0]).not.toHaveProperty('proof.file');
     const selected = payments[0];
+    await admin
+      .get(`/payments/${selected.id}`)
+      .query({ customerId })
+      .expect(200);
+    await admin
+      .get(`/payments/${selected.id}`)
+      .query({ customerId: randomUUID() })
+      .expect(404);
+    await admin
+      .get(`/payments/${selected.id}`)
+      .query({ customerId: 'invalid' })
+      .expect(400);
     const readSnapshot = async () => ({
       invoice: await prisma.invoice.findUniqueOrThrow({
         where: { id: selected.invoiceId },

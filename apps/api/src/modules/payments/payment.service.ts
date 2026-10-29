@@ -516,8 +516,14 @@ export class PaymentService {
   async get(
     paymentId: string,
     actor: AuthRequestContext,
+    customerId?: string,
   ): Promise<ManualPayment> {
     const payment = await this.getRecord(paymentId);
+    if (
+      customerId &&
+      payment.invoice.customerId.toLowerCase() !== customerId.toLowerCase()
+    )
+      throw this.notFound();
     if (
       actor.identity.role === 'CUSTOMER' &&
       payment.invoice.customerId !== actor.identity.customerId

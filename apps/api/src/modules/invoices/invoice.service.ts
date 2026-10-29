@@ -602,8 +602,17 @@ export class InvoiceService {
     };
   }
 
-  async get(invoiceId: string, actor: AuthRequestContext): Promise<Invoice> {
+  async get(
+    invoiceId: string,
+    actor: AuthRequestContext,
+    customerId?: string,
+  ): Promise<Invoice> {
     const invoice = await this.getRecord(invoiceId);
+    if (
+      customerId &&
+      invoice.customerId.toLowerCase() !== customerId.toLowerCase()
+    )
+      throw this.notFound();
     if (
       actor.identity.role === 'CUSTOMER' &&
       actor.identity.customerId !== invoice.customerId

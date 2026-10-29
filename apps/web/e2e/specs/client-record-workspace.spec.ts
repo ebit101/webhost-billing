@@ -1,4 +1,11 @@
 import { expect, test } from '@playwright/test';
+import {
+  order,
+  invoice,
+  payment,
+  ticket,
+  email,
+} from '../../src/test/client-activity-fixtures';
 import { hash } from 'argon2';
 import { createPrismaClient } from '@webhost-billing/database';
 import { E2E_DATABASE_URL, E2E_SCHEMA, E2E_API_ORIGIN } from '../environment';
@@ -230,6 +237,154 @@ for (const width of [1440, 375])
     await expect(
       page.getByRole('heading', { name: 'Operational context', exact: true }),
     ).toBeVisible();
+    const { messages: _messages, ...ticketSummary } = ticket;
+    void _messages; // Conversation messages belong only to the detail response.
+    const activity = [
+      {
+        kind: 'orders',
+        label: 'Orders',
+        path: '/orders',
+        row: order,
+        detail: order,
+        reference: order.orderNumber,
+      },
+      {
+        kind: 'invoices',
+        label: 'Invoices',
+        path: '/invoices',
+        row: invoice,
+        detail: invoice,
+        reference: invoice.invoiceNumber,
+      },
+      {
+        kind: 'payments',
+        label: 'Payments',
+        path: '/payments',
+        row: payment,
+        detail: payment,
+        reference: payment.reference,
+      },
+      {
+        kind: 'support',
+        label: 'Support',
+        path: '/tickets',
+        row: ticketSummary,
+        detail: ticket,
+        reference: ticket.ticketNumber,
+      },
+      {
+        kind: 'email-history',
+        label: 'Email history',
+        path: '/email-notifications/customers/' + customerId,
+        row: email,
+        detail: email,
+        reference: email.subject,
+      },
+    ];
+    for (const item of activity) {
+      await page.route(E2E_API_ORIGIN + item.path + '**', async (route) => {
+        const request = route.request();
+        const url = new URL(request.url());
+        if (request.method() !== 'GET') {
+          writes.push(request.method());
+          await route.abort();
+          return;
+        }
+        const scope = url.searchParams.get('customerId');
+        expect(scope).toBe(item.kind === 'email-history' ? null : customerId);
+        const detail = url.pathname === item.path + '/' + item.row.id;
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify(
+            detail
+              ? { success: true, data: item.detail }
+              : {
+                  success: true,
+                  data: [item.row],
+                  pagination: {
+                    page: 1,
+                    pageSize: 20,
+                    totalItems: 1,
+                    totalPages: 1,
+                  },
+                },
+          ),
+        });
+      });
+      await nav.getByRole('link', { name: item.label, exact: true }).click();
+      await expect(page).toHaveURL(`${root}/${item.kind}`);
+      await expect(
+        nav.getByRole('link', { name: item.label, exact: true }),
+      ).toHaveAttribute('aria-current', 'page');
+      await expect(
+        page.getByRole('combobox', { name: 'Client', exact: true }),
+      ).toHaveValue(customerId);
+      const record = page.getByRole('button', {
+        name: item.reference,
+        exact: true,
+      });
+      await expect(record).toBeVisible();
+      const tableArea = page.getByRole('group', {
+        name: `Client ${item.label.toLowerCase()} — scroll horizontally`,
+        exact: true,
+      });
+      await expect(tableArea).toBeVisible();
+      if (width === 375)
+        expect(
+          (await page
+            .getByRole('textbox', { name: 'Search', exact: true })
+            .boundingBox())!.width,
+        ).toBeGreaterThanOrEqual(192);
+      expect(
+        await page.evaluate(() => document.documentElement.scrollWidth),
+      ).toBeLessThanOrEqual(width);
+      if (width === 375)
+        expect(
+          await tableArea.evaluate(
+            (element) => element.scrollWidth > element.clientWidth,
+          ),
+        ).toBe(true);
+      await record.click();
+      const dialog = page.getByRole('dialog', {
+        name: item.label + ' record',
+        exact: true,
+      });
+      await expect(dialog).toBeVisible();
+      if (item.kind === 'orders')
+        await expect(
+          dialog.getByText(order.orderNumber, { exact: true }),
+        ).toBeVisible();
+      if (item.kind === 'payments')
+        await expect(
+          dialog.getByRole('heading', { name: payment.reference, exact: true }),
+        ).toBeVisible();
+      await expect(
+        dialog.getByText('Loading record details', { exact: true }),
+      ).toHaveCount(0);
+      if (item.kind === 'support')
+        await expect(
+          dialog.getByText(ticket.messages[0]!.body, { exact: true }),
+        ).toBeVisible();
+      if (item.kind === 'invoices')
+        await expect(
+          dialog.getByText(invoice.businessIdentity.name, { exact: true }),
+        ).toBeVisible();
+      await expect(
+        dialog.getByRole('button', {
+          name: /Send reply|Issue invoice|Record payment|Resend/,
+        }),
+      ).toHaveCount(0);
+      await page.keyboard.press('Escape');
+      await expect(dialog).not.toBeVisible();
+      await expect(record).toBeFocused();
+      if (item.kind === 'email-history')
+        await page.screenshot({
+          path: `../../release-artifacts/command141-email-history-${width}.png`,
+          fullPage: true,
+        });
+    }
+    expect(writes).toEqual([]);
     await nav.getByRole('link', { name: 'Domains', exact: true }).click();
     await expect(
       page.getByRole('link', { name: domain.domainName, exact: true }),

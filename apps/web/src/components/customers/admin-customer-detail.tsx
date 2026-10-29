@@ -16,7 +16,6 @@ import {
   type ClientRecordSection,
 } from '../../lib/client-record-href';
 import { authMutation, authenticatedGet } from '../../lib/auth-api';
-import { adminCustomerFilterHref } from '../../lib/admin-customer-filter';
 import { formatMinor, invoiceDueDate } from '../invoices/invoice-ui';
 import { Button, buttonStyles } from '../ui/button';
 import { ConfirmationDialog } from '../ui/confirmation-dialog';
@@ -174,7 +173,7 @@ function CustomerDetailRequest({
     {
       label: 'Orders',
       count: customer.linked.counts.orders,
-      href: adminCustomerFilterHref('/admin/orders', customer.id),
+      href: clientRecordHref(customer.id, 'orders'),
     },
     {
       label: 'Services',
@@ -184,17 +183,17 @@ function CustomerDetailRequest({
     {
       label: 'Invoices',
       count: customer.linked.counts.invoices,
-      href: adminCustomerFilterHref('/admin/invoices', customer.id),
+      href: clientRecordHref(customer.id, 'invoices'),
     },
     {
       label: 'Payments',
       count: customer.linked.counts.payments,
-      href: adminCustomerFilterHref('/admin/payments', customer.id),
+      href: clientRecordHref(customer.id, 'payments'),
     },
     {
       label: 'Tickets',
       count: customer.linked.counts.tickets,
-      href: adminCustomerFilterHref('/admin/support', customer.id),
+      href: clientRecordHref(customer.id, 'support'),
     },
   ];
   return (
@@ -315,7 +314,7 @@ function CustomerDetailRequest({
                 id: item.id,
                 primary: sentenceCaseLabel(item.status),
                 secondary: `${formatMinor(item.total.amount, item.total.currency)} · ${businessDate(item.createdAt, timeZone)}`,
-                href: adminCustomerFilterHref('/admin/orders', customer.id),
+                href: clientRecordHref(customer.id, 'orders'),
               }))}
             />
             <LinkedList
@@ -335,7 +334,7 @@ function CustomerDetailRequest({
                 id: item.id,
                 primary: `${item.invoiceNumber} · ${sentenceCaseLabel(item.status)}`,
                 secondary: `${formatMinor(item.total.amount, item.total.currency)} · due ${invoiceDueDate(item.dueAt)}`,
-                href: `/admin/invoices/${item.id}`,
+                href: clientRecordHref(customer.id, 'invoices'),
               }))}
             />
             <LinkedList
@@ -345,7 +344,7 @@ function CustomerDetailRequest({
                 id: item.id,
                 primary: `${sentenceCaseLabel(item.kind)} · ${sentenceCaseLabel(item.status)}`,
                 secondary: `${formatMinor(item.amount.amount, item.amount.currency)} · ${item.invoiceNumber} · ${item.provider} · ${businessDate(item.createdAt, timeZone)}`,
-                href: adminCustomerFilterHref('/admin/payments', customer.id),
+                href: clientRecordHref(customer.id, 'payments'),
               }))}
             />
             <LinkedList
@@ -355,7 +354,7 @@ function CustomerDetailRequest({
                 id: item.id,
                 primary: `${item.ticketNumber} · ${item.subject}`,
                 secondary: `${sentenceCaseLabel(item.status)} · ${sentenceCaseLabel(item.priority)} · ${businessDate(item.updatedAt, timeZone)}`,
-                href: adminCustomerFilterHref('/admin/support', customer.id),
+                href: clientRecordHref(customer.id, 'support'),
               }))}
             />
           </div>
