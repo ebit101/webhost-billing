@@ -414,6 +414,15 @@ describe('Invoice management (e2e)', () => {
     const csrf = await csrfToken(admin);
     await login(admin, csrf, ADMIN_EMAIL);
     ledgerAdmin = admin;
+    await admin.get(`/invoices/${invoiceId}`).query({ customerId }).expect(200);
+    await admin
+      .get(`/invoices/${invoiceId}`)
+      .query({ customerId: randomUUID() })
+      .expect(404);
+    await admin
+      .get(`/invoices/${invoiceId}`)
+      .query({ customerId: 'invalid' })
+      .expect(400);
     const filteredResponse = await admin
       .get(`/invoices?pageSize=100&customerId=${customerId}`)
       .expect(200);

@@ -2907,6 +2907,25 @@ report-only update must pass its own delivery gate; stop for the recommended pha
 - **Boundary:** Optional expected-client UUIDs on domain list/detail and service detail reads are validated at the controller and enforced before detail serialization. Domain filtering happens in PostgreSQL before the existing 100-record limit. Invalid or mismatched client/record responses never render record controls; switching clients discards record selection. New nested routes retain domain/service full-administrator authorization rather than inheriting the broader customer-read permission.
 - **Consequence:** Client and record selectors remain bounded to 100 recent choices, retaining the current client and individually fetched selected older record. Domains keep the existing list bound; this does not implement all-history registrar search. The client service table retains its existing search, status, counts and pagination with a fixed parent scope. Existing guarded service operations remain on that client table; selected service details show saved application facts. Existing registrar forms are reused with their original explicit operation/payment/MFA guards. No schema, financial state, provisioning policy, live networking, migration/import or unsupported WHMCS feature is introduced.
 
+## ADR-144 — Read client billing and communication records in profile tabs
+
+Command 141 (2026-10-29) adds Orders, Invoices, Payments, Support and Email history
+beside the existing profile tabs. Client identity persists while collections use
+compact, customer-scoped tables with server-side search, status filters and paging.
+Record dialogs are read-only; existing global workflows retain their permissions
+and write controls. Expected client IDs are validated by detail APIs before record
+serialization, and browser responses are runtime-validated for scope and shape.
+Each server entry independently checks its existing resource permission.
+Restricted staff retain the existing client context and global billing/support
+workspaces; these expanded client-profile components remain full-administrator UI.
+
+Email history uses the stored customer foreign key, never an email-address match.
+Unlinked historical logs are excluded; changing an address does not transfer
+history between accounts. Expose only bounded delivery metadata and safe attempt
+codes, with no message bodies, tokens, raw diagnostics or send/retry controls.
+Sent means mail-provider acceptance, not proof of inbox delivery. No provider,
+database-schema, staging configuration or deployment change is authorized here.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

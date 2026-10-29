@@ -109,8 +109,15 @@ export class TicketController {
   async detail(
     @Param('ticketId', new ParseUUIDPipe()) ticketId: string,
     @CurrentAuth() auth: AuthRequestContext,
+    @Query(
+      'customerId',
+      new ZodValidationPipe(ticketListQuerySchema.shape.customerId),
+    )
+    customerId?: string,
   ) {
-    return createApiSuccessResponse(await this.tickets.get(ticketId, auth));
+    return createApiSuccessResponse(
+      await this.tickets.get(ticketId, auth, customerId),
+    );
   }
 
   @Post(':ticketId/replies')

@@ -456,13 +456,13 @@ describe('customer management interfaces', () => {
       screen
         .getByRole('link', { name: 'INV-001003 · Unpaid' })
         .getAttribute('href'),
-    ).toBe('/admin/invoices/71000000-0000-4000-8000-000000000003');
+    ).toBe(`/admin/customers/${summary.id}/invoices`);
     expect(
       screen.getByRole('link', { name: 'Paid' }).getAttribute('href'),
-    ).toBe(`/admin/orders?customerId=${summary.id}`);
+    ).toBe(`/admin/customers/${summary.id}/orders`);
     expect(
       screen.getByRole('link', { name: /Orders\s+1/ }).getAttribute('href'),
-    ).toBe(`/admin/orders?customerId=${summary.id}`);
+    ).toBe(`/admin/customers/${summary.id}/orders`);
   });
 
   it('shows bounded empty records and a recoverable load failure', async () => {

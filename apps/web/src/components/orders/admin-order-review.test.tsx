@@ -143,7 +143,7 @@ describe('read-only administrator order review', () => {
     ).toBeNull();
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(fetchMock.mock.calls.map(([input]) => String(input))).toEqual([
-      expect.stringMatching(`/orders/${id}$`),
+      `http://localhost:3001/orders/${id}?customerId=${customerId}`,
       expect.stringMatching('/settings$'),
     ]);
     expect(

@@ -1,5 +1,11 @@
-import { Controller, Get } from '@nestjs/common';
-import { createApiSuccessResponse } from '@webhost-billing/shared';
+import { Controller, Get, Param, ParseUUIDPipe, Query } from '@nestjs/common';
+import {
+  createApiSuccessResponse,
+  createPaginatedApiSuccessResponse,
+  clientEmailHistoryQuerySchema,
+  type ClientEmailHistoryQuery,
+} from '@webhost-billing/shared';
+import { ZodValidationPipe } from '../../common/validation/zod-validation.pipe';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { EmailNotificationService } from './email-notification.service';
 
@@ -11,5 +17,15 @@ export class EmailNotificationController {
   @Get()
   async recent() {
     return createApiSuccessResponse(await this.notifications.recent());
+  }
+
+  @Get('customers/:customerId')
+  async clientHistory(
+    @Param('customerId', new ParseUUIDPipe()) customerId: string,
+    @Query(new ZodValidationPipe(clientEmailHistoryQuerySchema))
+    query: ClientEmailHistoryQuery,
+  ) {
+    const result = await this.notifications.forCustomer(customerId, query);
+    return createPaginatedApiSuccessResponse(result.data, result.pagination);
   }
 }

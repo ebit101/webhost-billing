@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { paginationQuerySchema } from './pagination';
 
 export const emailTemplateKeys = [
   'email-verification',
@@ -136,3 +137,15 @@ export const emailLogSummarySchema = z.object({
 });
 
 export type EmailLogSummary = z.infer<typeof emailLogSummarySchema>;
+
+export const clientEmailHistoryQuerySchema = paginationQuerySchema.extend({
+  search: z.string().trim().max(200).optional(),
+  status: emailDeliveryStatusSchema.optional(),
+});
+export const clientEmailLogSummarySchema = emailLogSummarySchema.extend({
+  customerId: z.uuid(),
+});
+export type ClientEmailHistoryQuery = z.infer<
+  typeof clientEmailHistoryQuerySchema
+>;
+export type ClientEmailLogSummary = z.infer<typeof clientEmailLogSummarySchema>;

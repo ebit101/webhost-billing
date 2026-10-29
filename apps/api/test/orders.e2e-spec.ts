@@ -311,6 +311,15 @@ describe('Order creation (e2e)', () => {
     const admin = request.agent(app.getHttpServer());
     const adminCsrf = await csrfToken(admin);
     await login(admin, adminCsrf, ADMIN_EMAIL);
+    await admin.get(`/orders/${orderId}`).query({ customerId }).expect(200);
+    await admin
+      .get(`/orders/${orderId}`)
+      .query({ customerId: randomUUID() })
+      .expect(404);
+    await admin
+      .get(`/orders/${orderId}`)
+      .query({ customerId: 'invalid' })
+      .expect(400);
     const created = await admin
       .post('/orders/admin')
       .set('X-CSRF-Token', adminCsrf)

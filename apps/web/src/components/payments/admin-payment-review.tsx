@@ -150,7 +150,10 @@ async function loadReview(
     cache: 'no-store',
     signal,
   };
-  const response = await fetch(`${API_URL}/payments/${paymentId}`, options);
+  const response = await fetch(
+    `${API_URL}/payments/${paymentId}${customerId ? '?customerId=' + encodeURIComponent(customerId) : ''}`,
+    options,
+  );
   if (response.status === 403 || response.status === 404)
     return { kind: 'unavailable' };
   if (!response.ok) return { kind: 'error' };

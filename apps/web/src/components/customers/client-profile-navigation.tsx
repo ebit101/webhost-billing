@@ -74,6 +74,11 @@ export function ClientProfileNavigation({
             ['profile', 'Profile'],
             ['services', 'Products/services'],
             ['domains', 'Domains'],
+            ['orders', 'Orders'],
+            ['invoices', 'Invoices'],
+            ['payments', 'Payments'],
+            ['support', 'Support'],
+            ['email-history', 'Email history'],
           ] as const
         ).map(([value, label]) => (
           <Link

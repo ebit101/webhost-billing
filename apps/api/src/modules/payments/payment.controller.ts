@@ -142,8 +142,15 @@ export class PaymentController {
   async detail(
     @Param('paymentId', new ParseUUIDPipe()) paymentId: string,
     @CurrentAuth() auth: AuthRequestContext,
+    @Query(
+      'customerId',
+      new ZodValidationPipe(paymentListQuerySchema.shape.customerId),
+    )
+    customerId?: string,
   ) {
-    return createApiSuccessResponse(await this.payments.get(paymentId, auth));
+    return createApiSuccessResponse(
+      await this.payments.get(paymentId, auth, customerId),
+    );
   }
 
   @Patch(':paymentId/review')

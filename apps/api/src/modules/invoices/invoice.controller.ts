@@ -124,8 +124,15 @@ export class InvoiceController {
   async detail(
     @Param('invoiceId', new ParseUUIDPipe()) invoiceId: string,
     @CurrentAuth() auth: AuthRequestContext,
+    @Query(
+      'customerId',
+      new ZodValidationPipe(invoiceListQuerySchema.shape.customerId),
+    )
+    customerId?: string,
   ) {
-    return createApiSuccessResponse(await this.invoices.get(invoiceId, auth));
+    return createApiSuccessResponse(
+      await this.invoices.get(invoiceId, auth, customerId),
+    );
   }
 
   @Get(':invoiceId/pdf')

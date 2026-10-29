@@ -5862,3 +5862,14 @@ invoice contact/instructions/due-date acceptance also passed. Preserve the faile
 operator redirect-check evidence. The broader client billing/support tab request and
 existing-domain linking are future separately authorized work. No next product
 command or live-provider activation is approved by this completion record.
+
+## Command 141 — Client profile billing and communication tabs
+
+Owner-authorized on 2026-10-29: add Orders, Invoices, Payments, Support and Email
+history to the client profile, retaining client identity and compact tables.
+Reuse customer-scoped reads with search, status filters, pagination and separate
+read-only record details. Add safe, account-linked email history without exposing
+message bodies or authentication secrets. Preserve existing permission boundaries,
+validate locally, update the report and deliver through the protected repository
+workflow. Do not deploy, alter staging records, send email or activate providers.
+Preserve staging's active SMTP and disabled payment, hosting, registrar and WhatsApp.

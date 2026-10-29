@@ -452,8 +452,17 @@ export class OrderService {
     };
   }
 
-  async get(orderId: string, actor: AuthRequestContext): Promise<Order> {
+  async get(
+    orderId: string,
+    actor: AuthRequestContext,
+    customerId?: string,
+  ): Promise<Order> {
     const order = await this.getRecord(orderId);
+    if (
+      customerId &&
+      order.customerId.toLowerCase() !== customerId.toLowerCase()
+    )
+      throw this.notFound();
     if (
       actor.identity.role === 'CUSTOMER' &&
       actor.identity.customerId !== order.customerId

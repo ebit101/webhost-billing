@@ -1,6 +1,14 @@
 import { domainDetailSchema, serviceSchema } from '@webhost-billing/shared';
 export type ClientRecordSection =
-  'summary' | 'profile' | 'domains' | 'services';
+  | 'summary'
+  | 'profile'
+  | 'domains'
+  | 'services'
+  | 'orders'
+  | 'invoices'
+  | 'payments'
+  | 'support'
+  | 'email-history';
 export function clientRecordHref(
   customerId: string,
   section: ClientRecordSection = 'summary',
