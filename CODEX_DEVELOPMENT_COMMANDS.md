@@ -5873,3 +5873,19 @@ message bodies or authentication secrets. Preserve existing permission boundarie
 validate locally, update the report and deliver through the protected repository
 workflow. Do not deploy, alter staging records, send email or activate providers.
 Preserve staging's active SMTP and disabled payment, hosting, registrar and WhatsApp.
+
+## Command 142 — Deploy and accept the client profile tabs on staging
+
+Owner-authorized on 2026-10-29: deploy the completed Command 141 release to
+`my.speedhost.bd`. Verify exact-release repository checks and a fresh encrypted
+backup before cutover. Preserve the environment, logo, records and active SMTP;
+keep payment, hosting, registrar and WhatsApp disabled. Smoke-test the five new
+client tabs, scoped record reads, dialogs, authentication boundaries and compact
+layouts without changing business records or sending messages. Update the report.
+
+Necessary deployment-gate repair: the merged Command 141 check failed because an
+order test inspected a dialog's accessible controls before its opening effect.
+Wait for the visible hosting-order dialog, retain the disabled-button assertion,
+validate the test and deliver the correction through normal protected checks.
+No application behavior, provider activation, existing-domain adoption or next
+product command is authorized by this repair or deployment.

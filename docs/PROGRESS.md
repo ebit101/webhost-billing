@@ -2,14 +2,24 @@
 
 ## Status Summary
 
-- **Current command:** Command 141 — Client profile billing and communication tabs
-- **Current status:** Completed locally and validated; not deployed. Five client-profile tabs use compact scoped tables and read-only dialogs. Staging remains at `b13d72f`; SMTP remains active and other live providers disabled.
+- **Current command:** Command 142 — Deploy and accept the client profile tabs on staging
+- **Current status:** Deployment preparation in progress. The exact merge-commit CI gate failed on an order-test dialog-opening race; the bounded test correction passed 20/20 locally and is being delivered through protected checks. Staging remains healthy at `b13d72f`; no cutover, environment change or provider activation occurred.
 - **Last updated:** 2026-10-29
 - **Last recorded staging release:** Commands 132/138–140, `b13d72f0c8ebf999a6c54ddae8497f384120765c`, deployed on 2026-10-29 (Asia/Dhaka).
-- **Next command:** Authorize Command 142 — Deploy Command 141 to staging after backup verification, preserve environment/logo and active SMTP, keep other providers disabled, and accept the five client-profile tabs. Existing-domain linking remains separate work.
-- **Next command authorized:** None after Command 141. Deployment, live-provider actions and the next command require separate authorization.
+- **Next command:** Finish authorized Command 142 after the repaired release passes exact-commit checks: verify a fresh backup, deploy to staging and accept the five client-profile tabs. Existing-domain linking remains separate work.
+- **Next command authorized:** Command 142 only. No provider activation, registration, provisioning or next product command is authorized.
 
 ## Command Reports
+
+### Command 142 — Deploy and accept the client profile tabs on staging
+
+- **Status and date:** In progress on 2026-10-29 (Asia/Dhaka). Existing staging release remains unchanged and healthy; deployment is gated on validated source and a fresh verified backup.
+- **Authorization:** The owner requested deployment of completed Command 141. Preserve staging environment, installation logo, business records and active SMTP; keep payment, hosting, registrar and WhatsApp disabled. Exercise only bounded read-only acceptance and ordinary sign-in/sign-out; do not send email, change invoices/orders or contact providers.
+- **Release-gate finding:** Command 141's PR passed all checks, but exact merge `99c151d8f221f4c19b77d532fe07973fa41f030c` failed [main CI](https://github.com/ebit101/webhost-billing/actions/runs/40812691331) with 708/709 web tests passing. `order-management.test.tsx` found text mounted inside a still-hidden dialog, then queried its accessible submit button before the opening effect. Retain the failed run as evidence. CodeQL passed; staging was not changed.
+- **Necessary repair:** Wait for the accessible Create hosting order dialog and scope the new-domain warning/disabled-submit assertion to it. No application code, timeout, provider rule, financial behavior or schema is changed. The focused order suite passed 20/20 and changed-test lint passed. Full protected checks must pass on the repaired release before deployment.
+- **Files changed so far:** `apps/web/src/components/orders/order-management.test.tsx`, `CODEX_DEVELOPMENT_COMMANDS.md` and this report. Protected operator helpers, source archives, backups and snapshots remain outside Git.
+- **Preflight evidence:** Read-only SSH inspection confirmed the expected `b13d72f` release, mode-0600 environment, all seven services healthy and 66 GB available on the staging filesystem. Further provider, data, logo and fresh-backup checks precede cutover. No staging acceptance of the new tabs is claimed yet.
+- **Exact next action:** Finish this command's source checks, guarded backup/deployment and scoped tab acceptance. Do not start another command or activate providers.
 
 ### Command 141 — Client profile billing and communication tabs
 
