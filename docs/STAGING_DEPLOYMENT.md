@@ -5,7 +5,7 @@
 - **Status:** Deployed `9d1bcba6ed37fa87e9ef1b46124db0a1dc162c32`, including Command
   141's Orders, Invoices, Payments, Support and Email history client-profile tabs.
   Automated postflight and customer authorization passed. Owner-assisted visual
-  acceptance is pending; all live providers except the preserved SMTP remain off.
+  acceptance passed; all live providers except the preserved SMTP remain off.
 - **Release gates:** Initial merge `99c151d` was held after its main CI exposed a
   dialog-opening race in an existing order test (708/709 web tests passed). Wait
   for the accessible dialog before querying its disabled submit button. This
@@ -48,12 +48,14 @@
 - **Visual acceptance:** Owner-prepared Speed was authenticated. A fresh Chrome
   extension tab displayed the deployed nine-tab navigation, retained fictional
   client, populated Orders table and exact-reference search. Subsequent input
-  timed out before dispatch; owner-assisted checks of all five tabs, search/clear
-  and read-only dialog closure are pending. No unsupported native URL-policy
+  timed out before dispatch; the owner subsequently confirmed all five tabs retain
+  client identity and active navigation with compact tables/empty states. Orders
+  search/clear and opening/closing a read-only record dialog passed. These are
+  owner-reported Speed-profile results, not automated browser results. No unsupported native URL-policy
   workaround, MFA bypass or credential alteration was used.
 - **Evidence:** Guarded runner and postflight exit 0 under
   `/srv/webhost-billing-staging/acceptance/command142-release-20261029/`. Post-smoke
-  preservation again matched all 32 fingerprints, environment, logo, provider
+  preservation after the owner's walkthrough again matched all 32 fingerprints, environment, logo, provider
   posture and container inventory. Protected helpers, payloads and backups remain
   outside Git. Existing-domain linking, real provisioning and provider activation
   remain separately authorized work.

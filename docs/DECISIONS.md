@@ -2929,8 +2929,8 @@ database-schema, staging configuration or deployment change is authorized here.
 Operational follow-up (2026-10-29): the owner separately authorized deployment under
 Command 142. Release `9d1bcba` is installed after exact-release checks and encrypted
 backup verification, with automated preservation and security-boundary acceptance
-passed. Authenticated five-tab owner acceptance remains pending after browser input
-timeouts. SMTP stays active and other providers disabled; this rollout does not
+passed. After browser input timeouts, the owner confirmed all five tabs, search/clear
+and read-only-dialog checks in Speed. SMTP stays active and other providers disabled; this rollout does not
 authorize new provider operations or existing-domain adoption.
 
 ## Open Decisions
