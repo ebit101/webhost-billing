@@ -5889,3 +5889,12 @@ Wait for the visible hosting-order dialog, retain the disabled-button assertion,
 validate the test and deliver the correction through normal protected checks.
 No application behavior, provider activation, existing-domain adoption or next
 product command is authorized by this repair or deployment.
+
+Deployment follow-up (2026-10-29): release `9d1bcba` passed exact-release CI and
+CodeQL and was installed after fresh encrypted backup verification. Automated
+health, preservation and fictional-customer authorization checks passed. SMTP
+remains active and payment, hosting, registrar and WhatsApp remain disabled.
+The authenticated browser showed all nine client tabs and the Orders table/search;
+after browser input timed out, the owner confirmed all five tabs, search/clear
+and read-only-dialog checks in Speed. Command 142 acceptance is complete;
+no repeat cutover, provider activation or next product command is authorized.
