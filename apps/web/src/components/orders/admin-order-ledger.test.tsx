@@ -494,7 +494,9 @@ describe('administrator order ledger', () => {
     });
     const view = render(manager({ search: 'old' }));
     await user.click(
-      await screen.findByRole('button', { name: 'Create hosting order' }),
+      await screen.findByRole('button', {
+        name: 'Create hosting/domain order',
+      }),
     );
     await waitFor(() => expect(calls).toBe(1));
     const old = mock.mock.calls.find(
@@ -547,11 +549,11 @@ describe('administrator order ledger', () => {
       if (url.pathname === '/orders') return json(page([]));
     });
     const view = render(manager({ customerId }));
-    await userEvent
-      .setup()
-      .click(
-        await screen.findByRole('button', { name: 'Create hosting order' }),
-      );
+    await userEvent.setup().click(
+      await screen.findByRole('button', {
+        name: 'Create hosting/domain order',
+      }),
+    );
     await user.selectOptions(
       screen.getByLabelText('Customer', { exact: true }),
       customerId,
@@ -649,7 +651,7 @@ describe('administrator order ledger', () => {
       name: 'Review order ' + order.orderNumber,
     });
     await user.click(
-      screen.getByRole('button', { name: 'Create hosting order' }),
+      screen.getByRole('button', { name: 'Create hosting/domain order' }),
     );
     await user.selectOptions(
       screen.getByLabelText('Customer', { exact: true }),

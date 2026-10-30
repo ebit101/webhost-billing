@@ -519,6 +519,121 @@ describe('order interfaces', () => {
     expect(bodies[1]).not.toHaveProperty('total');
   });
 
+  it('submits one combined order with an explicitly unchecked registration choice and a catalogue price', async () => {
+    let submitted: Record<string, unknown> | undefined;
+    const domainId = '14900000-0000-4000-8000-000000000010';
+    const domainPriceId = '14900000-0000-4000-8000-000000000011';
+    const mock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.includes('/orders?')) return paginatedResponse([]);
+      if (url.includes('/customers?')) return paginatedResponse([customer]);
+      if (url.endsWith('/products'))
+        return jsonResponse({ success: true, data: [product] });
+      if (url.includes('/orders/admin/domain-options?'))
+        return jsonResponse({
+          success: true,
+          data: {
+            customerId,
+            prices: [
+              {
+                tld: 'com',
+                priceId: domainPriceId,
+                name: '.com domain',
+                amount: { amount: '189000', currency: 'BDT' },
+              },
+            ],
+            domains: [
+              {
+                id: domainId,
+                domainName: 'fictional-combined.com',
+                ownershipVerifiedAt: '2026-10-30T00:00:00.000Z',
+                expiresAt: '2030-01-01T00:00:00.000Z',
+              },
+            ],
+          },
+        });
+      if (url.endsWith('/auth/csrf'))
+        return jsonResponse({ success: true, data: { csrfToken: 'csrf' } });
+      if (url.endsWith('/orders/admin')) {
+        submitted = JSON.parse(String(init?.body)) as Record<string, unknown>;
+        return jsonResponse({
+          success: true,
+          data: { order, duplicate: false },
+        });
+      }
+      throw new Error('Unexpected request');
+    });
+    vi.stubGlobal('fetch', mock);
+    render(<AdminOrderManager />);
+    const user = userEvent.setup();
+    await user.click(
+      await screen.findByRole('button', {
+        name: 'Create hosting/domain order',
+      }),
+    );
+    const dialog = await screen.findByRole('dialog', {
+      name: 'Create hosting/domain order',
+    });
+    await user.selectOptions(
+      within(dialog).getByLabelText('Customer'),
+      customerId,
+    );
+    await user.selectOptions(within(dialog).getByLabelText('Price'), priceId);
+    await user.click(
+      within(dialog).getByRole('checkbox', {
+        name: 'Include domain billing in this order',
+      }),
+    );
+    expect(
+      within(dialog).getByRole('button', { name: 'Create order and invoice' }),
+    ).toHaveProperty('disabled', true);
+    expect(
+      within(dialog).getByRole('checkbox', {
+        name: 'Send registration to registrar',
+      }),
+    ).toHaveProperty('checked', false);
+    await within(dialog).findByRole('option', {
+      name: 'fictional-combined.com',
+    });
+    await user.selectOptions(
+      within(dialog).getByLabelText('Verified existing domain'),
+      domainId,
+    );
+    await user.selectOptions(
+      within(dialog).getByLabelText('Annual domain price'),
+      domainPriceId,
+    );
+    expect(
+      (within(dialog).getByLabelText('Requested domain') as HTMLInputElement)
+        .value,
+    ).toBe('fictional-combined.com');
+    await within(dialog).findByText(/Order total:.*2,015\.00/);
+    expect(
+      within(dialog).getByText('Setup fee (once):').nextElementSibling
+        ?.textContent,
+    ).toBe('BDT 5.00');
+    expect(
+      within(dialog).getByText('Hosting charge:').nextElementSibling
+        ?.textContent,
+    ).toBe('BDT 120.00');
+    await user.click(
+      within(dialog).getByRole('button', { name: 'Create order and invoice' }),
+    );
+    await waitFor(() =>
+      expect(submitted?.domainOrder).toEqual({
+        mode: 'EXISTING',
+        domainId,
+        priceId: domainPriceId,
+        sendToRegistrar: false,
+      }),
+    );
+    expect(submitted).not.toHaveProperty('amount');
+    expect(
+      mock.mock.calls.some(([url]) =>
+        /\/domains\/(admin\/quotes|existing-links)/.test(String(url)),
+      ),
+    ).toBe(false);
+  });
   it('submits the administrator preservation choice without changing prices', async () => {
     let submitted: Record<string, unknown> | undefined;
     vi.stubGlobal(
@@ -544,10 +659,12 @@ describe('order interfaces', () => {
     render(<AdminOrderManager />);
     const user = userEvent.setup();
     await user.click(
-      await screen.findByRole('button', { name: 'Create hosting order' }),
+      await screen.findByRole('button', {
+        name: 'Create hosting/domain order',
+      }),
     );
     const dialog = await screen.findByRole('dialog', {
-      name: 'Create hosting order',
+      name: 'Create hosting/domain order',
     });
     await user.selectOptions(
       within(dialog).getByLabelText('Customer'),
@@ -587,11 +704,11 @@ describe('order interfaces', () => {
       }),
     );
     render(<AdminOrderManager />);
-    await userEvent
-      .setup()
-      .click(
-        await screen.findByRole('button', { name: 'Create hosting order' }),
-      );
+    await userEvent.setup().click(
+      await screen.findByRole('button', {
+        name: 'Create hosting/domain order',
+      }),
+    );
     expect(
       await screen.findByRole('button', {
         name: 'Create order and invoice',
@@ -621,7 +738,7 @@ describe('order interfaces', () => {
       }),
     );
     render(<AdminOrderManager checkoutIntent={{ productId, priceId }} />);
-    await screen.findByRole('dialog', { name: 'Create hosting order' });
+    await screen.findByRole('dialog', { name: 'Create hosting/domain order' });
     await screen.findByText('Hosting selection carried forward');
     expect((screen.getByLabelText('Product') as HTMLSelectElement).value).toBe(
       productId,
@@ -657,11 +774,11 @@ describe('order interfaces', () => {
     );
     render(<AdminOrderManager checkoutIntent={{ productId, priceId }} />);
     const dialog = await screen.findByRole('dialog', {
-      name: 'Create hosting order',
+      name: 'Create hosting/domain order',
     });
     expect(
       await within(dialog).findByText(
-        /This selection requests a new domain registration/,
+        /This selection requests domain registration/,
       ),
     ).toBeTruthy();
     expect(
@@ -974,7 +1091,9 @@ describe('order interfaces', () => {
     const user = userEvent.setup();
     render(<AdminOrderManager />);
     await user.click(
-      await screen.findByRole('button', { name: 'Create hosting order' }),
+      await screen.findByRole('button', {
+        name: 'Create hosting/domain order',
+      }),
     );
     await user.click(
       await screen.findByRole('button', {

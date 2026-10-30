@@ -175,7 +175,7 @@ test('administrator finds older orders and reviews all items without business mu
   await expect(trigger).toHaveCount(0);
   expect(details).toEqual([]);
   await page
-    .getByRole('button', { name: 'Create hosting order', exact: true })
+    .getByRole('button', { name: 'Create hosting/domain order', exact: true })
     .click();
   const preservation = page.getByRole('checkbox', {
     name: /Keep existing website and email/,
@@ -197,8 +197,127 @@ test('administrator finds older orders and reviews all items without business mu
   await page
     .getByLabel('Internal note', { exact: true })
     .fill('Retain fictional draft');
+  // Browser-only fictional catalogue; backend ownership/payment guards are
+  // exercised against disposable PostgreSQL by domains.e2e-spec.ts.
+  const linkedDomainId = '14900000-0000-4000-8000-000000000050';
+  const domainPriceId = '14900000-0000-4000-8000-000000000051';
+  await page.route('**/orders/admin/domain-options?**', async (route) => {
+    expect(route.request().method()).toBe('GET');
+    await route.fulfill({
+      json: {
+        success: true,
+        data: {
+          customerId,
+          prices: [
+            {
+              tld: 'com',
+              priceId: domainPriceId,
+              name: 'Fictional .com',
+              amount: { amount: '189000', currency: 'BDT' },
+            },
+          ],
+          domains: [
+            {
+              id: linkedDomainId,
+              domainName: 'fictional-combined.com',
+              ownershipVerifiedAt: '2026-10-30T00:00:00.000Z',
+              expiresAt: '2030-01-01T00:00:00.000Z',
+            },
+          ],
+        },
+      },
+    });
+  });
+  const includeDomain = page.getByRole('checkbox', {
+    name: 'Include domain billing in this order',
+    exact: true,
+  });
+  await expect(includeDomain).not.toBeChecked();
+  await includeDomain.check();
+  await expect(
+    page.getByRole('checkbox', {
+      name: 'Send registration to registrar',
+      exact: true,
+    }),
+  ).not.toBeChecked();
+  await expect(
+    page.getByRole('button', { name: 'Create order and invoice', exact: true }),
+  ).toBeDisabled();
   await page
-    .getByRole('dialog', { name: 'Create hosting order', exact: true })
+    .getByRole('combobox', { name: 'Verified existing domain', exact: true })
+    .selectOption(linkedDomainId);
+  await page
+    .getByRole('combobox', { name: 'Annual domain price', exact: true })
+    .selectOption(domainPriceId);
+  await expect(
+    page.getByLabel('Requested domain', { exact: true }),
+  ).toHaveValue('fictional-combined.com');
+  await expect(
+    page.getByRole('button', { name: 'Create order and invoice', exact: true }),
+  ).toBeEnabled();
+  await page.route('**/domains/administration/registrars', async (route) => {
+    await route.fulfill({ json: { success: true, data: [] } });
+  });
+  await page
+    .getByRole('button', { name: 'Link existing domain', exact: true })
+    .click();
+  const linkDialog = page.getByRole('dialog', {
+    name: 'Link existing domain',
+    exact: true,
+  });
+  await expect(linkDialog).toBeVisible();
+  await expect(
+    linkDialog.getByRole('button', {
+      name: 'Verify ownership and link domain',
+      exact: true,
+    }),
+  ).toBeDisabled();
+  await page.keyboard.press('Escape');
+  await expect(linkDialog).toHaveCount(0);
+  await expect(
+    page.getByRole('dialog', {
+      name: 'Create hosting/domain order',
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Link existing domain', exact: true }),
+  ).toBeFocused();
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.screenshot({
+    path: 'test-results/command149-combined-desktop.png',
+  });
+  await page.setViewportSize({ width: 375, height: 900 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth + 1,
+    ),
+  ).toBe(true);
+  await page.screenshot({
+    path: 'test-results/command149-combined-mobile.png',
+  });
+  const creationDialog = page.getByRole('dialog', {
+    name: 'Create hosting/domain order',
+    exact: true,
+  });
+  expect(
+    await creationDialog.evaluate(
+      (element) => element.scrollWidth <= element.clientWidth + 1,
+    ),
+  ).toBe(true);
+  await page
+    .getByRole('button', { name: 'Create order and invoice', exact: true })
+    .scrollIntoViewIfNeeded();
+  await page.screenshot({
+    path: 'test-results/command149-combined-mobile-billing.png',
+  });
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await includeDomain.uncheck();
+  await page
+    .getByLabel('Requested domain', { exact: true })
+    .fill('unfinished-command88.example.test');
+  await page
+    .getByRole('dialog', { name: 'Create hosting/domain order', exact: true })
     .getByRole('button', { name: 'Close', exact: true })
     .click();
   await ledger.getByLabel('Orders per page').selectOption('100');
@@ -219,7 +338,7 @@ test('administrator finds older orders and reviews all items without business mu
     page.getByLabel('Requested domain', { exact: true }),
   ).toHaveValue('unfinished-command88.example.test');
   await page
-    .getByRole('button', { name: 'Create hosting order', exact: true })
+    .getByRole('button', { name: 'Create hosting/domain order', exact: true })
     .click();
   await expect(preservation).toBeChecked();
   await page.screenshot({
@@ -228,7 +347,7 @@ test('administrator finds older orders and reviews all items without business mu
   await expect(creationPrice).toHaveValue(E2E_PRODUCT.priceId);
   await expect(creationCustomer).toHaveValue(customerId);
   await page
-    .getByRole('dialog', { name: 'Create hosting order', exact: true })
+    .getByRole('dialog', { name: 'Create hosting/domain order', exact: true })
     .getByRole('button', { name: 'Close', exact: true })
     .click();
   await trigger.focus();

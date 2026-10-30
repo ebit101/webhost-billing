@@ -1185,6 +1185,19 @@ model RegistrarOperation {
   @@map("registrar_operations")
 }
 
+// A new initial billing order for an ownership-verified existing domain.
+// The original domain's no-registration origin/evidence remains unchanged.
+model ExistingDomainOrder {
+  domainId    String   @id @map("domain_id") @db.Uuid
+  orderItemId String   @unique @map("order_item_id") @db.Uuid
+  invoiceId   String   @map("invoice_id") @db.Uuid
+  customerId  String   @map("customer_id") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([customerId, createdAt])
+  @@map("existing_domain_orders")
+}
+
 model RegistrarEvidence {
   id          String   @id @default(uuid()) @db.Uuid
   operationId String   @map("operation_id") @db.Uuid

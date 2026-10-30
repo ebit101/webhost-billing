@@ -281,6 +281,18 @@ export const domainDetailSchema = z
     registrar: z.string().min(1).max(100),
     origin: z.enum(['REGISTRATION', 'EXISTING']).optional(),
     ownershipVerifiedAt: z.iso.datetime().optional(),
+    billingOrder: z
+      .object({
+        orderId: z.uuid(),
+        invoiceId: z.uuid(),
+        invoiceStatus: invoiceStatusSchema,
+        sellingAmount: amount,
+        balanceDue: amount,
+        currency: z.literal('BDT'),
+        billingPeriod: z.literal('ANNUAL'),
+      })
+      .strict()
+      .optional(),
     registrationYears: z.literal(1).nullable(),
     requestedAt: z.iso.datetime(),
     sellingAmount: amount.nullable(),
@@ -336,6 +348,11 @@ export const domainDetailSchema = z
   .strict()
   .superRefine((value, context) => {
     const linked = value.origin === 'EXISTING';
+    if (value.billingOrder && !linked)
+      context.addIssue({
+        code: 'custom',
+        message: 'Existing-domain billing requires a linked domain',
+      });
     const noBilling =
       value.invoiceId === null &&
       value.invoiceStatus === null &&

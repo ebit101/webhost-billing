@@ -32,6 +32,25 @@ export const hostingProvisioningModeSchema = z.enum([
 export type HostingProvisioningMode = z.infer<
   typeof hostingProvisioningModeSchema
 >;
+export const adminDomainOrderSnapshotSchema = z.discriminatedUnion(
+  'adminDomainAction',
+  [
+    z
+      .object({
+        adminDomainAction: z.literal('EXISTING'),
+        domainRecordId: z.uuid(),
+        sendToRegistrar: z.literal(false),
+      })
+      .strict(),
+    z
+      .object({
+        adminDomainAction: z.literal('REGISTRATION'),
+        domainRecordId: z.uuid(),
+        sendToRegistrar: z.literal(true),
+      })
+      .strict(),
+  ],
+);
 export function readHostingProvisioningMode(
   snapshot: unknown,
 ): HostingProvisioningMode {
@@ -71,6 +90,25 @@ export const createAdminOrderRequestSchema = orderSelectionSchema
   .extend({
     customerId: z.uuid(),
     hostingProvisioningMode: hostingProvisioningModeSchema.optional(),
+    domainOrder: z
+      .discriminatedUnion('mode', [
+        z
+          .object({
+            mode: z.literal('EXISTING'),
+            domainId: z.uuid(),
+            priceId: z.uuid(),
+            sendToRegistrar: z.literal(false),
+          })
+          .strict(),
+        z
+          .object({
+            mode: z.literal('REGISTRATION'),
+            quoteId: z.uuid(),
+            sendToRegistrar: z.literal(true),
+          })
+          .strict(),
+      ])
+      .optional(),
     notes: z.string().trim().min(1).max(2_000).optional(),
   })
   .strict();
@@ -93,6 +131,8 @@ export const orderItemSchema = z
     productPriceId: z.uuid(),
     productName: z.string().min(1).max(160),
     hostingProvisioningMode: hostingProvisioningModeSchema.optional(),
+    domainAction: z.enum(['EXISTING', 'REGISTRATION']).optional(),
+    domainId: z.uuid().optional(),
     description: z.string().max(2_000).nullable(),
     billingPeriod: hostingBillingPeriodSchema,
     unitAmount: moneySchema,
@@ -156,3 +196,36 @@ export type UpdateOrderStatusRequest = z.infer<
 export type OrderListQuery = z.infer<typeof orderListQuerySchema>;
 export type Order = z.infer<typeof orderSchema>;
 export type OrderCreationResult = z.infer<typeof orderCreationResultSchema>;
+
+export const adminOrderDomainOptionsSchema = z
+  .object({
+    customerId: z.uuid(),
+    prices: z
+      .array(
+        z
+          .object({
+            tld: z.string().min(1).max(50),
+            priceId: z.uuid(),
+            name: z.string().min(1).max(160),
+            amount: moneySchema,
+          })
+          .strict(),
+      )
+      .max(100),
+    domains: z
+      .array(
+        z
+          .object({
+            id: z.uuid(),
+            domainName: requestedDomainSchema,
+            ownershipVerifiedAt: z.iso.datetime(),
+            expiresAt: z.iso.datetime(),
+          })
+          .strict(),
+      )
+      .max(100),
+  })
+  .strict();
+export type AdminOrderDomainOptions = z.infer<
+  typeof adminOrderDomainOptionsSchema
+>;

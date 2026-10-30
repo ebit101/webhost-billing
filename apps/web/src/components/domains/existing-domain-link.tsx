@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { createPortal } from 'react-dom';
 import {
   domainDetailSchema,
   existingDomainLinkRequestSchema,
@@ -54,6 +55,7 @@ export function ExistingDomainLink({
   const ready = !!selected?.enabled && selected.networkEnabled;
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    event.stopPropagation();
     if (pending.current || !ready) return;
     const signature = JSON.stringify([
       customerId,
@@ -109,77 +111,81 @@ export function ExistingDomainLink({
   }
   return (
     <>
-      <Button variant="secondary" onClick={() => setOpen(true)}>
+      <Button type="button" variant="secondary" onClick={() => setOpen(true)}>
         Link existing domain
       </Button>
-      <RecordDialog
-        open={open}
-        title="Link existing domain"
-        busy={busy}
-        feedback={notice}
-        onClose={() => setOpen(false)}
-      >
-        <p className="text-sm">
-          Link an already registered ordinary .com domain to this client. The
-          selected registrar must prove active ownership. This does not
-          register, transfer or purchase a domain, create contacts, change
-          nameservers or create billing records.
-        </p>
-        <form
-          onSubmit={(event) => void submit(event)}
-          className="grid gap-4 sm:grid-cols-2"
-        >
-          <Field label="Existing domain">
-            <input
-              required
-              name="domainName"
-              className={fieldClass}
-              value={domainName}
-              onChange={(event) => setDomainName(event.target.value)}
-              placeholder="example.com"
-              disabled={busy}
-            />
-          </Field>
-          <Field label="Registrar connection">
-            <select
-              required
-              className={fieldClass}
-              value={accountId}
-              onChange={(event) => setAccountId(event.target.value)}
-              disabled={busy}
-            >
-              <option value="">Select registrar connection</option>
-              {accounts.map((account) => (
-                <option key={account.id} value={account.id}>
-                  {account.name}
-                  {!account.enabled || !account.networkEnabled
-                    ? ' · Disabled'
-                    : ''}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Type exact domain name">
-            <input
-              required
-              className={fieldClass}
-              value={confirmation}
-              onChange={(event) => setConfirmation(event.target.value)}
-              disabled={busy}
-            />
-          </Field>
-          {!ready && (
-            <p role="status" className="text-sm">
-              Verification is unavailable until the selected connection and
-              registrar networking are enabled separately. This form does not
-              enable providers.
+      {open &&
+        createPortal(
+          <RecordDialog
+            open={open}
+            title="Link existing domain"
+            busy={busy}
+            feedback={notice}
+            onClose={() => setOpen(false)}
+          >
+            <p className="text-sm">
+              Link an already registered ordinary .com domain to this client.
+              The selected registrar must prove active ownership. This does not
+              register, transfer or purchase a domain, create contacts, change
+              nameservers or create billing records.
             </p>
-          )}
-          <Button type="submit" disabled={busy || !ready}>
-            Verify ownership and link domain
-          </Button>
-        </form>
-      </RecordDialog>
+            <form
+              onSubmit={(event) => void submit(event)}
+              className="grid gap-4 sm:grid-cols-2"
+            >
+              <Field label="Existing domain">
+                <input
+                  required
+                  name="domainName"
+                  className={fieldClass}
+                  value={domainName}
+                  onChange={(event) => setDomainName(event.target.value)}
+                  placeholder="example.com"
+                  disabled={busy}
+                />
+              </Field>
+              <Field label="Registrar connection">
+                <select
+                  required
+                  className={fieldClass}
+                  value={accountId}
+                  onChange={(event) => setAccountId(event.target.value)}
+                  disabled={busy}
+                >
+                  <option value="">Select registrar connection</option>
+                  {accounts.map((account) => (
+                    <option key={account.id} value={account.id}>
+                      {account.name}
+                      {!account.enabled || !account.networkEnabled
+                        ? ' · Disabled'
+                        : ''}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Type exact domain name">
+                <input
+                  required
+                  className={fieldClass}
+                  value={confirmation}
+                  onChange={(event) => setConfirmation(event.target.value)}
+                  disabled={busy}
+                />
+              </Field>
+              {!ready && (
+                <p role="status" className="text-sm">
+                  Verification is unavailable until the selected connection and
+                  registrar networking are enabled separately. This form does
+                  not enable providers.
+                </p>
+              )}
+              <Button type="submit" disabled={busy || !ready}>
+                Verify ownership and link domain
+              </Button>
+            </form>
+          </RecordDialog>,
+          document.body,
+        )}
     </>
   );
 }

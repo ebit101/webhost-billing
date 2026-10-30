@@ -26,6 +26,7 @@ const expectedTables = [
   'domain_actions',
   'domain_catalogue_tlds',
   'domain_quotes',
+  'existing_domain_orders',
   'domains',
   'fake_registrar_registrations',
   'registrar_accounts',
@@ -225,6 +226,7 @@ async function verify(): Promise<void> {
       name !== 'currency_controls' &&
       name !== 'currency_installations' &&
       name !== 'registrar_profiles' &&
+      name !== 'existing_domain_orders' &&
       name !== 'notification_epochs' &&
       name !== 'notification_preferences' &&
       name !== 'notification_sources' &&

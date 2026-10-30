@@ -8,6 +8,7 @@ import {
 } from '@webhost-billing/config';
 import {
   createPrismaClient,
+  orderFulfillmentComplete,
   Prisma,
   type PrismaClient,
 } from '@webhost-billing/database';
@@ -46,6 +47,9 @@ interface DomainResult {
 }
 interface Success<T> {
   data: T;
+}
+function responseData<T = unknown>(response: { body: unknown }): T {
+  return (response.body as Success<T>).data;
 }
 function registrationReference(value: string | null): string {
   if (!value) throw new Error('Expected a registration billing reference.');
@@ -2993,5 +2997,731 @@ describe('complete simulated registrar in isolated PostgreSQL (e2e)', () => {
     } finally {
       fixture.wire.mockRestore();
     }
+  });
+
+  describe('administrator combined hosting/domain orders', () => {
+    it('accepts an admin live quote through HTTP mocks only, retaining disabled-network/account gates', async () => {
+      const fixture = await existingLinkFixture();
+      try {
+        fixture.wire.mockImplementation(async (path, parameters) => {
+          await Promise.resolve();
+          if (path === '/api/domains/available.json')
+            return JSON.stringify({
+              [`${String(parameters['domain-name'])}.com`]: {
+                status: 'available',
+              },
+            });
+          if (path === '/api/products/reseller-cost-price.json')
+            return '{"domcno":{"addnewdomain":{"1":10.99}}}';
+          throw new Error('Unexpected registrar path during combined order');
+        });
+        const administration = app.get(DomainAdministrationService);
+        await administration.setDefault(fixture.registrar.id, fixture.actor);
+        await prisma.registrarProfile.update({
+          where: { accountId: fixture.registrar.id },
+          data: { nativeCostConfirmed: true },
+        });
+        await administration.saveDefaults(
+          'dns',
+          { nameservers: ['ns1.fictional-host.com', 'ns2.fictional-host.com'] },
+          fixture.actor,
+        );
+        await administration.saveDefaults(
+          'policies',
+          {
+            agreementUrl: 'https://fictional-host.com/agreement',
+            customerTermsUrl: 'https://fictional-host.com/terms',
+            customerPrivacyUrl: 'https://fictional-host.com/privacy',
+          },
+          fixture.actor,
+        );
+        await catalogue(fixture.actor);
+        const offers = responseData<
+          {
+            id: string;
+            tld: string;
+            selectionConsentRevision: string;
+          }[]
+        >(await owner.get('/domains/offers').expect(200));
+        const offer = offers.find((o) => o.tld === 'com')!;
+        const name = `admin-live-${randomUUID()}.com`;
+        const quote = responseData<{ id: string }>(
+          await mutation(
+            owner,
+            '/domains/admin/quotes',
+            {
+              customerId: fixture.input.customerId,
+              offerId: offer.id,
+              selectionConsentRevision: offer.selectionConsentRevision,
+              domainName: name,
+              contact: {
+                name: 'Fictional registrant',
+                company: 'Fictional company',
+                address: '1 Test Street',
+                city: 'Dhaka',
+                region: 'Dhaka',
+                postalCode: '1000',
+                country: 'BD',
+                email: 'fictional@example.test',
+                phoneCountryCode: '880',
+                phone: '1700000000',
+              },
+              agreement: 'resellbiz-registration-v1',
+              customerPolicyConsent: true,
+              offlineConsent: {
+                method: 'WRITTEN',
+                reference: 'fictional-live-consent-149',
+                consentedAt: new Date().toISOString(),
+                attestation: true,
+              },
+            },
+            201,
+          ),
+        );
+        const input = {
+          ...(await hostingSelection(fixture.input.customerId, name)),
+          domainOrder: {
+            mode: 'REGISTRATION',
+            quoteId: quote.id,
+            sendToRegistrar: true,
+          },
+        };
+        const calls = fixture.wire.mock.calls.length;
+        fixture.environment.RESELLBIZ_LIVE_ENABLED = false;
+        await mutation(owner, '/orders/admin', input, 409);
+        fixture.environment.RESELLBIZ_LIVE_ENABLED = true;
+        await prisma.registrarAccount.update({
+          where: { id: fixture.registrar.id },
+          data: { enabled: false },
+        });
+        await mutation(owner, '/orders/admin', input, 409);
+        await prisma.registrarAccount.update({
+          where: { id: fixture.registrar.id },
+          data: { enabled: true },
+        });
+        const result = orderCreationResultSchema.parse(
+          responseData(await mutation(owner, '/orders/admin', input, 201)),
+        );
+        const domain = await prisma.domain.findUniqueOrThrow({
+          where: { quoteId: quote.id },
+        });
+        expect(result.order.total.amount).toBe('309500');
+        expect(domain.state).toBe('AWAITING_PAYMENT');
+        expect(
+          await prisma.registrarOperation.count({
+            where: { domainId: domain.id },
+          }),
+        ).toBe(0);
+        expect(fixture.wire.mock.calls.length).toBe(calls);
+        expect(
+          fixture.wire.mock.calls.every(
+            ([path]) =>
+              path === '/api/domains/available.json' ||
+              path === '/api/products/reseller-cost-price.json',
+          ),
+        ).toBe(true);
+      } finally {
+        fixture.environment.RESELLBIZ_LIVE_ENABLED = true;
+        fixture.wire.mockRestore();
+      }
+    });
+    async function hostingSelection(
+      customerId: string,
+      requestedDomain: string,
+    ) {
+      const product = await prisma.product.create({
+        data: {
+          slug: `admin-combined-${randomUUID()}`,
+          name: 'Fictional combined hosting',
+          status: 'ACTIVE',
+          publicVisible: false,
+          hostingPackageIdentifier: 'fictional_package',
+          prices: {
+            create: {
+              billingPeriod: 'MONTHLY',
+              currency: 'BDT',
+              amount: 120000n,
+              setupFee: 500n,
+              isActive: true,
+            },
+          },
+        },
+        include: { prices: true },
+      });
+      return {
+        customerId,
+        productId: product.id,
+        priceId: product.prices[0].id,
+        requestedDomain,
+        submissionKey: randomUUID(),
+        hostingProvisioningMode: 'PRESERVE_EXISTING' as const,
+      };
+    }
+    async function catalogue(actor: AuthRequestContext) {
+      const row = await prisma.domainCatalogueTld.findUnique({
+        where: { tld: 'com' },
+      });
+      await app.get(DomainAdministrationService).saveTld(
+        {
+          tld: 'com',
+          registrationAmount: '189000',
+          renewalAmount: null,
+          enabled: true,
+          featured: false,
+          displayOrder: 0,
+          preferredRegistrarId: null,
+          revision: row?.revision ?? 0,
+        },
+        actor,
+      );
+      return prisma.domainCatalogueTld.findUniqueOrThrow({
+        where: { tld: 'com' },
+      });
+    }
+    async function linkedSelection() {
+      const fixture = await existingLinkFixture();
+      const result = await mutation(
+        owner,
+        '/domains/existing-links',
+        fixture.input,
+        201,
+      );
+      const linked = domainDetailSchema.parse(
+        (result.body as Success<unknown>).data,
+      );
+      const tld = await catalogue(fixture.actor);
+      if (!tld.registrationPriceId) throw new Error('Expected catalogue price');
+      await prisma.registrarAccount.update({
+        where: { id: fixture.registrar.id },
+        data: { enabled: false },
+      });
+      fixture.environment.RESELLBIZ_LIVE_ENABLED = false;
+      fixture.wire.mockClear();
+      const input = {
+        ...(await hostingSelection(
+          fixture.input.customerId,
+          linked.domainName,
+        )),
+        domainOrder: {
+          mode: 'EXISTING' as const,
+          domainId: linked.id,
+          priceId: tld.registrationPriceId,
+          sendToRegistrar: false as const,
+        },
+      };
+      return { fixture, linked, input, tld };
+    }
+    it('bills a verified existing domain and hosting once with providers disabled, preserving its history', async () => {
+      const { fixture, linked, input } = await linkedSelection();
+      try {
+        const old = await prisma.domain.findUniqueOrThrow({
+          where: { id: linked.id },
+        });
+        const before = await Promise.all([
+          prisma.registrarOperation.count(),
+          prisma.domainAction.count(),
+          prisma.payment.count(),
+          prisma.domainQuote.count(),
+        ]);
+        const options = await owner
+          .get(`/orders/admin/domain-options?customerId=${linked.customerId}`)
+          .expect(200);
+        expect(
+          (
+            options.body as Success<{ domains: { id: string }[] }>
+          ).data.domains.some((d) => d.id === linked.id),
+        ).toBe(true);
+        let pendingCreation:
+          Promise<Awaited<ReturnType<typeof mutation>>[]> | undefined;
+        await prisma.$transaction(
+          async (tx) => {
+            await tx.$queryRaw`SELECT pg_advisory_xact_lock(510118)::text`;
+            pendingCreation = Promise.all([
+              mutation(owner, '/orders/admin', input, 201),
+              mutation(owner, '/orders/admin', input, 201),
+            ]);
+            let waiting = false;
+            for (let i = 0; i < 100; i++) {
+              const locks = await tx.$queryRaw<
+                { waiting: number }[]
+              >`SELECT COUNT(*)::integer AS waiting FROM pg_locks WHERE locktype='advisory' AND classid=0 AND objid=510118 AND NOT granted`;
+              if ((locks[0]?.waiting ?? 0) >= 2) {
+                waiting = true;
+                break;
+              }
+              await new Promise<void>((resolve) => setTimeout(resolve, 25));
+            }
+            expect(waiting).toBe(true);
+            // A concurrent ownership-link operation must still be able to take
+            // its actor/client locks while this order waits for the catalogue.
+            await tx.$queryRaw`SELECT id FROM users WHERE id=${fixture.actor.identity.userId}::uuid FOR UPDATE NOWAIT`;
+            await tx.$queryRaw`SELECT u.id FROM users u JOIN customers c ON c.user_id=u.id WHERE c.id=${input.customerId}::uuid FOR UPDATE OF u,c NOWAIT`;
+          },
+          { timeout: 10000 },
+        );
+        if (!pendingCreation)
+          throw new Error('Expected pending combined order');
+        const results = (await pendingCreation).map((response) =>
+          orderCreationResultSchema.parse(responseData(response)),
+        );
+        expect(results.map((result) => result.duplicate).sort()).toEqual([
+          false,
+          true,
+        ]);
+        expect(new Set(results.map((result) => result.order.id)).size).toBe(1);
+        const result = results.find((result) => !result.duplicate)!;
+        expect(result.order.total.amount).toBe('309500');
+        expect(result.order.invoice.total.amount).toBe('309500');
+        expect(result.order.invoice.status).toBe('UNPAID');
+        expect(
+          result.order.items.find((i) => i.kind === 'DOMAIN'),
+        ).toMatchObject({
+          domainAction: 'EXISTING',
+          domainId: linked.id,
+          billingPeriod: 'ANNUAL',
+          unitAmount: { amount: '189000' },
+        });
+        expect(
+          result.order.items.find((i) => i.kind === 'HOSTING')
+            ?.hostingProvisioningMode,
+        ).toBe('PRESERVE_EXISTING');
+        const invoiceId = result.order.invoice.id;
+        expect(
+          await prisma.invoice.count({ where: { orderId: result.order.id } }),
+        ).toBe(1);
+        expect(await prisma.invoiceItem.count({ where: { invoiceId } })).toBe(
+          3,
+        );
+        expect(
+          await prisma.outboxEvent.count({
+            where: { aggregateId: { in: [result.order.id, invoiceId] } },
+          }),
+        ).toBe(2);
+        const replay = orderCreationResultSchema.parse(
+          responseData(await mutation(owner, '/orders/admin', input, 201)),
+        );
+        expect(replay.duplicate).toBe(true);
+        expect(replay.order.id).toBe(result.order.id);
+        await mutation(
+          owner,
+          '/orders/admin',
+          { ...input, domainOrder: undefined },
+          409,
+        );
+        await mutation(
+          owner,
+          '/orders/admin',
+          {
+            ...input,
+            domainOrder: { ...input.domainOrder, priceId: randomUUID() },
+          },
+          409,
+        );
+        await mutation(
+          owner,
+          '/orders/admin',
+          { ...input, submissionKey: randomUUID() },
+          409,
+        );
+        const current = domainDetailSchema.parse(
+          responseData(await customer.get(`/domains/${linked.id}`).expect(200)),
+        );
+        expect(current).toMatchObject({
+          origin: 'EXISTING',
+          orderId: null,
+          invoiceId: null,
+          sellingAmount: null,
+          billingOrder: {
+            orderId: result.order.id,
+            invoiceId,
+            sellingAmount: '189000',
+            balanceDue: '309500',
+            billingPeriod: 'ANNUAL',
+          },
+        });
+        await other.get(`/domains/${linked.id}`).expect(403);
+        expect(
+          await prisma.domain.findUniqueOrThrow({ where: { id: linked.id } }),
+        ).toEqual(old);
+        expect(
+          await Promise.all([
+            prisma.registrarOperation.count(),
+            prisma.domainAction.count(),
+            prisma.payment.count(),
+            prisma.domainQuote.count(),
+          ]),
+        ).toEqual(before);
+        expect(fixture.wire).not.toHaveBeenCalled();
+        expect(
+          await prisma.$transaction((tx) =>
+            orderFulfillmentComplete(tx, result.order.id),
+          ),
+        ).toBe(false);
+        await expect(
+          prisma.existingDomainOrder.update({
+            where: { domainId: linked.id },
+            data: { customerId: randomUUID() },
+          }),
+        ).rejects.toThrow();
+        await expect(
+          prisma.existingDomainOrder.delete({ where: { domainId: linked.id } }),
+        ).rejects.toThrow();
+        const item = result.order.items.find((i) => i.kind === 'DOMAIN')!;
+        await expect(
+          prisma.orderItem.create({
+            data: {
+              orderId: result.order.id,
+              kind: 'DOMAIN',
+              productId: item.productId,
+              productPriceId: item.productPriceId,
+              productNameSnapshot: 'Fictional orphan',
+              billingPeriod: 'ANNUAL',
+              currency: 'BDT',
+              unitAmount: 1n,
+              lineTotal: 1n,
+              requestedDomain: linked.domainName,
+              provisioningSnapshot: {
+                adminDomainAction: 'EXISTING',
+                domainRecordId: linked.id,
+                sendToRegistrar: false,
+              },
+            },
+          }),
+        ).rejects.toThrow();
+        await expect(
+          prisma.orderItem.update({
+            where: { id: item.id },
+            data: {
+              provisioningSnapshot: {
+                adminDomainAction: 'REGISTRATION',
+                sendToRegistrar: true,
+                domainRecordId: linked.id,
+              },
+            },
+          }),
+        ).rejects.toThrow();
+        await expect(
+          prisma.order.update({
+            where: { id: result.order.id },
+            data: { status: 'COMPLETED' },
+          }),
+        ).rejects.toThrow();
+        await pay(
+          {
+            id: linked.id,
+            invoiceId,
+            orderId: result.order.id,
+            domainName: linked.domainName,
+            state: 'REGISTERED',
+          },
+          '309500',
+        );
+        const server = await prisma.server.create({
+          data: {
+            name: 'Fictional combined server',
+            hostname: `${randomUUID()}.example.test`,
+            status: 'ACTIVE',
+            adapterKey: 'fake-panel',
+          },
+        });
+        const serviceResult = await mutation(
+          owner,
+          '/services',
+          {
+            orderItemId: result.order.items.find((i) => i.kind === 'HOSTING')!
+              .id,
+            serverId: server.id,
+          },
+          201,
+        );
+        const serviceId = (
+          serviceResult.body as Success<{ service: { id: string } }>
+        ).data.service.id;
+        const csrf = responseData<{ csrfToken: string }>(
+          await owner.get('/auth/csrf'),
+        ).csrfToken;
+        await owner
+          .patch(`/services/${serviceId}/status`)
+          .set('X-CSRF-Token', csrf)
+          .send({ status: 'PROVISIONING' })
+          .expect(200);
+        await owner
+          .patch(`/services/${serviceId}/status`)
+          .set('X-CSRF-Token', csrf)
+          .send({
+            status: 'ACTIVE',
+            externalAccountId: 'fictional-combined-existing',
+            controlPanelUsername: 'fakeexisting',
+          })
+          .expect(200);
+        expect(
+          (
+            await prisma.order.findUniqueOrThrow({
+              where: { id: result.order.id },
+            })
+          ).status,
+        ).toBe('COMPLETED');
+        expect(
+          await prisma.$transaction((tx) =>
+            orderFulfillmentComplete(tx, result.order.id),
+          ),
+        ).toBe(true);
+        expect(fixture.wire).not.toHaveBeenCalled();
+        expect(
+          await prisma.domain.findUniqueOrThrow({ where: { id: linked.id } }),
+        ).toEqual(old);
+      } finally {
+        fixture.environment.RESELLBIZ_LIVE_ENABLED = true;
+        fixture.wire.mockRestore();
+      }
+    });
+    it('rejects cross-client, unverified, invalid-price and unauthorized requests atomically and serializes competing orders', async () => {
+      const { fixture, linked, input } = await linkedSelection();
+      try {
+        const before = await existingLinkFinancialCounts();
+        await request(app.getHttpServer())
+          .get(`/orders/admin/domain-options?customerId=${linked.customerId}`)
+          .expect(401);
+        await customer
+          .get(`/orders/admin/domain-options?customerId=${linked.customerId}`)
+          .expect(403);
+        await billing
+          .get(`/orders/admin/domain-options?customerId=${linked.customerId}`)
+          .expect(403);
+        await unenrolled
+          .get(`/orders/admin/domain-options?customerId=${linked.customerId}`)
+          .expect(403);
+        await mutation(billing, '/orders/admin', input, 403);
+        await mutation(unenrolled, '/orders/admin', input, 403);
+        await mutation(
+          owner,
+          '/orders/admin',
+          {
+            ...input,
+            domainOrder: { ...input.domainOrder, sendToRegistrar: true },
+          },
+          400,
+        );
+        await mutation(
+          owner,
+          '/orders/admin',
+          { ...input, domainOrder: { ...input.domainOrder, amount: '1' } },
+          400,
+        );
+        const otherId = responseData<{ customerId: string }>(
+          await other.get('/auth/me'),
+        ).customerId;
+        await mutation(
+          owner,
+          '/orders/admin',
+          { ...input, customerId: otherId },
+          409,
+        );
+        await mutation(
+          owner,
+          '/orders/admin',
+          { ...input, requestedDomain: 'another-fictional.com' },
+          409,
+        );
+        await mutation(
+          owner,
+          '/orders/admin',
+          {
+            ...input,
+            domainOrder: { ...input.domainOrder, priceId: randomUUID() },
+          },
+          409,
+        );
+        const client = await prisma.customer.findUniqueOrThrow({
+          where: { id: linked.customerId },
+        });
+        await prisma.user.update({
+          where: { id: client.userId },
+          data: { emailVerifiedAt: null },
+        });
+        await mutation(owner, '/orders/admin', input, 422);
+        await prisma.user.update({
+          where: { id: client.userId },
+          data: { emailVerifiedAt: new Date() },
+        });
+        const originalDomain = await prisma.domain.findUniqueOrThrow({
+          where: { id: linked.id },
+        });
+        await prisma.domain.update({
+          where: { id: linked.id },
+          data: { expiresAt: new Date('2020-01-01') },
+        });
+        await mutation(owner, '/orders/admin', input, 409);
+        await prisma.domain.update({
+          where: { id: linked.id },
+          data: { expiresAt: originalDomain.expiresAt },
+        });
+        const replacement = await catalogue(fixture.actor);
+        await mutation(owner, '/orders/admin', input, 409);
+        input.domainOrder.priceId = replacement.registrationPriceId!;
+        expect(await existingLinkFinancialCounts()).toEqual(before);
+        const responses = await Promise.all([
+          mutation(owner, '/orders/admin', input, [201, 409]),
+          mutation(
+            owner,
+            '/orders/admin',
+            { ...input, submissionKey: randomUUID() },
+            [201, 409],
+          ),
+        ]);
+        expect(responses.map((r) => r.status).sort()).toEqual([201, 409]);
+        expect(
+          await prisma.existingDomainOrder.count({
+            where: { domainId: linked.id },
+          }),
+        ).toBe(1);
+        expect(fixture.wire).not.toHaveBeenCalled();
+      } finally {
+        fixture.environment.RESELLBIZ_LIVE_ENABLED = true;
+        fixture.wire.mockRestore();
+      }
+    });
+    it('creates a registration intent without dispatch and keeps payment and separate approval mandatory', async () => {
+      const identity = responseData<{
+        customerId: string;
+      }>(await customer.get('/auth/me'));
+      const actor = {
+        identity: responseData<AuthRequestContext['identity']>(
+          await owner.get('/auth/me'),
+        ),
+      } as AuthRequestContext;
+      await catalogue(actor);
+      const fake = await prisma.registrarAccount.findFirstOrThrow({
+        where: { mode: 'FAKE' },
+      });
+      await prisma.registrarAccount.update({
+        where: { id: fake.id },
+        data: { enabled: true },
+      });
+      await app.get(DomainAdministrationService).setDefault(fake.id, actor);
+      await app
+        .get(DomainAdministrationService)
+        .saveDefaults(
+          'dns',
+          { nameservers: ['ns1.fictional-host.com', 'ns2.fictional-host.com'] },
+          actor,
+        );
+      await app.get(DomainAdministrationService).saveDefaults(
+        'policies',
+        {
+          agreementUrl: 'https://fictional-host.com/agreement',
+          customerTermsUrl: 'https://fictional-host.com/terms',
+          customerPrivacyUrl: 'https://fictional-host.com/privacy',
+        },
+        actor,
+      );
+      const offers = responseData<
+        {
+          id: string;
+          tld: string;
+          selectionConsentRevision?: string;
+        }[]
+      >(await customer.get('/domains/offers'));
+      const offer = offers.find((o) => o.tld === 'com')!;
+      const name = `admin-registration-${randomUUID()}.com`;
+      const quoted = await mutation(
+        owner,
+        '/domains/admin/quotes',
+        {
+          customerId: identity.customerId,
+          offerId: offer.id,
+          domainName: name,
+          selectionConsentRevision: offer.selectionConsentRevision,
+          contact: {
+            name: 'Fictional registrant',
+            company: 'Fictional company',
+            address: '1 Test Street',
+            city: 'Dhaka',
+            region: 'Dhaka',
+            postalCode: '1000',
+            country: 'BD',
+            email: 'fictional@example.test',
+            phoneCountryCode: '880',
+            phone: '1700000000',
+          },
+          agreement: 'fictional-registration-v1',
+          offlineConsent: {
+            method: 'PHONE',
+            reference: 'fictional-consent-149',
+            consentedAt: new Date().toISOString(),
+            attestation: true,
+          },
+        },
+        201,
+      );
+      const quoteId = (quoted.body as Success<{ id: string }>).data.id;
+      const input = {
+        ...(await hostingSelection(identity.customerId, name)),
+        domainOrder: { mode: 'REGISTRATION', quoteId, sendToRegistrar: true },
+      };
+      const before = await prisma.registrarOperation.count();
+      const result = orderCreationResultSchema.parse(
+        responseData(await mutation(owner, '/orders/admin', input, 201)),
+      );
+      expect(result.order.total.amount).toBe('309500');
+      const domain = await prisma.domain.findUniqueOrThrow({
+        where: { quoteId },
+      });
+      expect(domain.state).toBe('AWAITING_PAYMENT');
+      expect(result.order.items.find((i) => i.kind === 'DOMAIN')).toMatchObject(
+        { domainAction: 'REGISTRATION', domainId: domain.id },
+      );
+      const details = {
+        id: domain.id,
+        invoiceId: result.order.invoice.id,
+        orderId: result.order.id,
+        domainName: name,
+        state: domain.state,
+      };
+      const approval = {
+        confirmation: name,
+        costCeiling: '1000',
+        costCurrency: 'USD',
+        registrarAccountId: fake.id,
+      };
+      await mutation(owner, `/domains/${domain.id}/approve`, approval, 409);
+      expect(await prisma.registrarOperation.count()).toBe(before);
+      expect(
+        orderCreationResultSchema.parse(
+          responseData(await mutation(owner, '/orders/admin', input, 201)),
+        ).duplicate,
+      ).toBe(true);
+      await mutation(
+        owner,
+        '/orders/admin',
+        { ...input, domainOrder: undefined },
+        409,
+      );
+      await prisma.product.update({
+        where: { id: input.productId },
+        data: { publicVisible: true },
+      });
+      await mutation(
+        customer,
+        '/orders/checkout',
+        {
+          productId: input.productId,
+          priceId: input.priceId,
+          requestedDomain: name,
+          submissionKey: randomUUID(),
+          domainQuoteId: quoteId,
+        },
+        409,
+      );
+      await pay(details, '309500');
+      expect(await prisma.registrarOperation.count()).toBe(before);
+      await mutation(owner, `/domains/${domain.id}/approve`, approval, 201);
+      expect(await prisma.registrarOperation.count()).toBe(before + 1);
+      expect(
+        await prisma.$transaction((tx) =>
+          orderFulfillmentComplete(tx, result.order.id),
+        ),
+      ).toBe(false);
+    });
   });
 });

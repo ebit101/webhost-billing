@@ -268,6 +268,21 @@ function ReviewDetails({
             ) : null}
             <dl className="mt-3 grid gap-3 text-sm sm:grid-cols-2">
               <Fact label="Requested domain">{item.requestedDomain}</Fact>
+              {item.domainAction && (
+                <Fact label="Domain action">
+                  {item.domainAction === 'EXISTING'
+                    ? 'Existing domain service; registration off'
+                    : 'Registration request; separate paid approval required'}
+                </Fact>
+              )}
+              {item.domainId && (
+                <Link
+                  className="text-brand-700 underline"
+                  href={`/admin/customers/${order.customerId}/domains/${item.domainId}`}
+                >
+                  View client domain
+                </Link>
+              )}
               {item.kind !== 'DOMAIN' && (
                 <Fact label="Hosting setup">
                   {item.hostingProvisioningMode === 'PRESERVE_EXISTING'

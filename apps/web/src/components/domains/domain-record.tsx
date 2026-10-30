@@ -42,12 +42,44 @@ export function DomainRecord({
         <div>
           <dt>Initial invoice amount</dt>
           <dd>
-            {domain.sellingAmount === null
-              ? 'No invoice created by linking'
-              : money(domain.sellingAmount, domain.currency)}
+            {domain.billingOrder
+              ? money(
+                  domain.billingOrder.sellingAmount,
+                  domain.billingOrder.currency,
+                )
+              : domain.sellingAmount === null
+                ? 'No invoice created by linking'
+                : money(domain.sellingAmount, domain.currency)}
           </dd>
         </div>
       </dl>
+      {domain.billingOrder && (
+        <div className="mb-4 rounded-lg border border-slate-200 p-3 text-sm">
+          <p>
+            Domain service billing · Annual · Invoice{' '}
+            {sentenceCaseLabel(domain.billingOrder.invoiceStatus)}. This invoice
+            does not register or renew the domain.
+          </p>
+          <Link
+            className="text-brand-700 underline"
+            href={`${administrator ? '/admin' : '/portal'}/invoices/${domain.billingOrder.invoiceId}`}
+          >
+            View domain service invoice
+          </Link>
+          {administrator && (
+            <>
+              {' '}
+              ·{' '}
+              <Link
+                className="text-brand-700 underline"
+                href={`/admin/orders?orderId=${domain.billingOrder.orderId}`}
+              >
+                View combined order
+              </Link>
+            </>
+          )}
+        </div>
+      )}
       <p>
         {domain.simulated ? 'Simulated' : 'Live'} ·{' '}
         {sentenceCaseLabel(domain.state)} · Contact verification{' '}
