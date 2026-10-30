@@ -5964,3 +5964,35 @@ dialogs without creating an order/account. Do not provision hosting, link/regist
 domains, change DNS/mail, send messages or start another product command. Record
 actual acceptance and remaining live-provider limits, deliver the report through
 protected checks and stop.
+
+## Command 148 — Controlled hosting trial after preservation and payment checks
+
+Owner-authorized on 2026-10-30: resume the previously specified hosting-only trial
+with fresh DNS/mail/WHM and payment checks. Preserve the existing website/email and
+public DNS. Establish exact-domain/alias/zone and cluster-write safety, package and
+required read privileges before provider activation or hosting-account creation. Verify genuine bank receipt
+details before recording payment through normal billing. If every gate passes,
+use the approved client, a separate hidden product with the exact package and
+approved monthly price/no setup fee, PRESERVE_EXISTING snapshot and ordinary paid
+order/service/durable operation. Activate only the selected WHM server for the
+bounded trial and restore disabled provider posture afterward; never delete an
+account as cleanup. Retain prior exact order/invoice-email approval; review any
+additional transactional-email effect before triggering it. Keep SMTP active and
+payment, registrar and WhatsApp disabled. Do not register/link domains, change
+DNS/nameservers/contacts, migrate website/email, deploy source or bypass MFA/payment
+and reconciliation gates. Hold payment verification and provider mutations while
+preservation or settlement is unresolved. The already approved hidden product,
+hosting-only order and unpaid invoice can be prepared through normal administration,
+including the two explicitly approved order/invoice emails; this is not proof of
+payment or permission to provision. Record actual results and evidence limits; an incomplete trial must
+remain reported as incomplete.
+
+Command 148 follow-through on 2026-10-30: the owner reconfirmed actual BDT 1,200
+bank credit/reference, authorized payment-receipt/hosting-activation emails and
+explicitly requested payment and order activation. The owner identifies the
+selected WHM server as new and testing only, with no DNS cluster. Execute only
+the reviewed normal billing and durable provider flow; preserve the unknown
+historical bank timestamp honestly. Acceptance completed with invoice Paid,
+order Completed and one Active service; the selected WHM connection is restored
+Disabled. SMTP remains active; other providers stay disabled. No deployment or
+next command is authorized by this follow-through.

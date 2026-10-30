@@ -1,6 +1,6 @@
 # Existing-domain and hosting trial readiness
 
-Command 145, 2026-10-30 (Asia/Dhaka). Preparation only; no trial execution,
+Historical Command 145, 2026-10-30 (Asia/Dhaka). Preparation only; no trial execution,
 provider activation, application deployment or business configuration write.
 The owner subsequently requested hosting creation only, preserving the live
 website/email; the owner supplied a private payment reference and authorized the exact order/invoice
@@ -23,6 +23,46 @@ Keep the historical Command 145 finding below; live trial readiness still depend
 on fresh zone/cluster/public DNS/mail checks, provider read permissions, verified
 settlement and the previously approved exact customer emails. No live trial or
 provider activation is authorized by source deployment.
+
+## Command 148 trial acceptance
+
+Completed on 2026-10-30 (Asia/Dhaka). The owner reconfirmed the BDT 1,200 bank
+credit/reference and authorized payment receipt and hosting activation emails.
+Normal authenticated administration created one separate hidden product/price,
+one hosting-only order/invoice, one verified manual Bank transfer payment and one
+service with the exact app-pkg and PRESERVE_EXISTING snapshots. The invoice is
+Paid with zero balance, the order Completed and the service Active. The historical
+bank receipt timestamp was not supplied; the payment note states that the entry
+records the owner's confirmation now, without inventing a historical date.
+
+A new verified encrypted backup preceded the payment/provider work. Fresh reads
+found zero accounts, the exact package, no target primary account and no visible
+domain owner. The owner reports a new testing-only server with no DNS cluster.
+The prior exact zone/IP inventory permission refusals remain visibility limits;
+no access was expanded or refusal treated as proof of universal absence.
+
+A fresh normal connection test passed. The selected WHM connection was temporarily
+activated and one ordinary durable Create account operation succeeded on attempt 1,
+without retry or direct state edits. Separate exact-account and account-scoped mail
+reads verified app-pkg, an unsuspended account and remote/nonaccepting mail routing.
+Eight recursive routing record sets and the apex HTTPS redirect match the baseline;
+all four authoritative nameservers still agree with original A/MX/NS and canonical
+www HTTPS HEAD remains 200. No public DNS/nameserver/contact change, migration,
+registrar linking, registration or purchase occurred.
+
+The WHM connection is Disabled again while the created hosted account/service
+remains active. SMTP stays active; payment gateways, live registrars and WhatsApp
+remain disabled. All four authorized ordinary emails were accepted by SMTP once
+each; inbox receipt is not independently proved. Final scoped existing-record,
+metadata, saved-server credential/configuration, environment/logo, container-ID
+and seven-service health checks passed. No source deployment or application
+change occurred. See [the complete report](PROGRESS.md).
+
+Private target, payment reference, record identifiers and provider payloads remain
+outside Git. The owner's DD-MM-YYYY display requirement remains unimplemented in
+this operational command. Recommended next: Command 149 — Review the trial client
+portal and hosting handover without changing public DNS/mail, credentials or
+provider settings. No next command is authorized.
 
 ## Historical creation blocker discovered during Command 145
 
