@@ -2961,6 +2961,38 @@ authorize new provider operations or existing-domain adoption.
   disabled payment/hosting/registrar/WhatsApp settings. Credentialed ownership and
   real management acceptance require separate authorization after deployment.
 
+## ADR-146 — Pin existing website/email preservation to hosting provisioning
+
+- **Date:** 2026-10-30.
+- **Scope:** Owner-authorized local Command 146; no deployment or real operation.
+- **Decision:** An administrator may select Keep existing website and email for a
+  hosting-only order. Snapshot `PRESERVE_EXISTING`; normal/guest/customer orders
+  snapshot `STANDARD`. Clients cannot inject the administrator choice or raw panel
+  parameters. Preserve the exact package and selected mode across order replay,
+  paid-order service creation and durable operation retries; a changed-mode replay
+  is a conflict. SQL freezes the new snapshots, rejects invalid modes and requires
+  a service to retain its source order snapshot. Existing snapshots without the
+  key remain valid and are not backfilled. Standard response shapes stay unchanged.
+- **Provider behavior:** Explicit `forcedns=0` on creation forbids overwriting an
+  existing DNS zone. Preservation adds `mxcheck=remote`; standard mail behavior is
+  unchanged. Verify the remote/nonaccepting setting for the exact account/domain
+  after creation and before accepting an existing deterministic account as replay.
+  Failed or ambiguous evidence holds the operation Inconsistent, with no automatic
+  retry, routing correction, second creation or deletion. Existing durable claims,
+  disabled-server checks, verified-payment gate and credential redaction remain.
+- **Narrow verification read:** WHM's authenticated API 2 bridge is permitted only
+  for exact `Email/getalwaysaccept`, one user/domain and no extra parameters or
+  mutation flag. Share TLS/public-host validation, timeout/size bounds and error
+  redaction with the WHM transport. Validate the response identity and remote mode.
+  [cPanel documents this read](https://api.docs.cpanel.net/cpanel-api-2/cpanel-api-2-modules-email/cpanel-api-2-functions-email-getalwaysaccept)
+  as deprecated but with no equivalent UAPI function. Unsupported/malformed reads
+  fail closed; no write fallback is allowed.
+- **Operating limit:** These are requested and verified server mail settings and a
+  no-overwrite policy, not proof of unchanged authoritative DNS across a real
+  cluster. Fresh domain/alias/zone/cluster checks and public DNS/mail baselines remain
+  prerequisites for an authorized live trial. No website/email migration, registrar
+  action, public nameserver change or external provider acceptance is implied.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

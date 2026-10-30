@@ -1,4 +1,7 @@
-import type { HostingAccount } from '@webhost-billing/shared';
+import type {
+  HostingAccount,
+  HostingProvisioningMode,
+} from '@webhost-billing/shared';
 
 export interface HostingPanelConnection {
   serverId: string;
@@ -15,6 +18,7 @@ export interface CreateHostingAccountInput {
   packageIdentifier: string;
   contactEmail: string;
   idempotencyKey: string;
+  hostingProvisioningMode?: HostingProvisioningMode;
 }
 
 export interface HostingAccountReference {

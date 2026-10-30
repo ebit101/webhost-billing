@@ -268,6 +268,13 @@ function ReviewDetails({
             ) : null}
             <dl className="mt-3 grid gap-3 text-sm sm:grid-cols-2">
               <Fact label="Requested domain">{item.requestedDomain}</Fact>
+              {item.kind !== 'DOMAIN' && (
+                <Fact label="Hosting setup">
+                  {item.hostingProvisioningMode === 'PRESERVE_EXISTING'
+                    ? 'Keep existing website and email'
+                    : 'Standard hosting'}
+                </Fact>
+              )}
               <Fact label="Billing period">
                 {sentenceCaseLabel(item.billingPeriod)}
               </Fact>

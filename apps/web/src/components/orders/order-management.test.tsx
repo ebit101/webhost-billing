@@ -519,6 +519,60 @@ describe('order interfaces', () => {
     expect(bodies[1]).not.toHaveProperty('total');
   });
 
+  it('submits the administrator preservation choice without changing prices', async () => {
+    let submitted: Record<string, unknown> | undefined;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input);
+        if (url.includes('/orders?')) return paginatedResponse([]);
+        if (url.includes('/customers?')) return paginatedResponse([customer]);
+        if (url.endsWith('/products'))
+          return jsonResponse({ success: true, data: [product] });
+        if (url.endsWith('/auth/csrf'))
+          return jsonResponse({ success: true, data: { csrfToken: 'csrf' } });
+        if (url.endsWith('/orders/admin')) {
+          submitted = JSON.parse(String(init?.body)) as Record<string, unknown>;
+          return jsonResponse({
+            success: true,
+            data: { order, duplicate: false },
+          });
+        }
+        throw new Error('Unexpected request');
+      }),
+    );
+    render(<AdminOrderManager />);
+    const user = userEvent.setup();
+    await user.click(
+      await screen.findByRole('button', { name: 'Create hosting order' }),
+    );
+    const dialog = await screen.findByRole('dialog', {
+      name: 'Create hosting order',
+    });
+    await user.selectOptions(
+      within(dialog).getByLabelText('Customer'),
+      customerId,
+    );
+    await user.selectOptions(within(dialog).getByLabelText('Price'), priceId);
+    await user.type(
+      within(dialog).getByLabelText('Requested domain'),
+      'preserved.example.test',
+    );
+    await user.click(
+      within(dialog).getByRole('checkbox', {
+        name: /Keep existing website and email/,
+      }),
+    );
+    await user.click(
+      within(dialog).getByRole('button', { name: 'Create order and invoice' }),
+    );
+    await waitFor(() =>
+      expect(submitted?.hostingProvisioningMode).toBe('PRESERVE_EXISTING'),
+    );
+    expect(submitted).not.toHaveProperty('amount');
+    expect(submitted).not.toHaveProperty('mxcheck');
+  });
+
   it('loads administrator order creation and state controls', async () => {
     vi.stubGlobal(
       'fetch',
@@ -942,6 +996,7 @@ describe('order interfaces', () => {
     );
     await screen.findAllByText(/created with unpaid invoice/);
     expect(body).toEqual({
+      hostingProvisioningMode: 'STANDARD',
       customerId,
       productId,
       priceId,

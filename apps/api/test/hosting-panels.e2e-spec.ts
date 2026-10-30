@@ -33,7 +33,11 @@ import { PRISMA_CLIENT } from '../src/infrastructure/database/database.module';
 import { API_ENVIRONMENT } from '../src/infrastructure/environment/environment.module';
 import { PasswordHasherService } from '../src/modules/auth/services/password-hasher.service';
 import { FakeHostingPanel } from '../src/modules/hosting-panels/fake-hosting-panel';
-import { CpanelWhmHttpClient } from '../src/modules/hosting-panels/cpanel-whm-http.client';
+import type { HostingPanelConnection } from '../src/modules/hosting-panels/hosting-panel.interface';
+import {
+  CpanelWhmHttpClient,
+  type WhmApiEnvelope,
+} from '../src/modules/hosting-panels/cpanel-whm-http.client';
 
 const ADMIN_EMAIL = 'command15-admin@example.test';
 const CUSTOMER_EMAIL = 'command15-customer@example.test';
@@ -57,7 +61,10 @@ describe('Hosting panel operations (e2e)', () => {
   let primaryServiceId = '';
   let setupAdmin: ReturnType<typeof request.agent>;
   let setupCsrf = '';
-  const whmCall = jest.fn();
+  const whmCall = jest.fn<
+    Promise<WhmApiEnvelope>,
+    [HostingPanelConnection, string, Readonly<Record<string, string>>, boolean]
+  >();
 
   beforeAll(async () => {
     moduleFixture = await Test.createTestingModule({ imports: [AppModule] })
@@ -412,6 +419,115 @@ describe('Hosting panel operations (e2e)', () => {
       .expect(403);
   });
 
+  it('retains preservation in the durable operation, replay and ambiguous-result hold', async () => {
+    const server = await prisma.server.findUniqueOrThrow({
+      where: { hostname: CONFIG_SERVER_HOSTNAME },
+    });
+    await prisma.server.update({
+      where: { id: server.id },
+      data: { status: 'ACTIVE' },
+    });
+    try {
+      for (const remote of [true, false]) {
+        const domain = remote
+          ? 'preserve-success.example.test'
+          : 'preserve-held.example.test';
+        const id = await createPendingService(domain, true);
+        await prisma.service.update({
+          where: { id },
+          data: { serverId: server.id },
+        });
+        let created = false;
+        let username = '';
+        whmCall.mockReset();
+        whmCall.mockImplementation(
+          async (
+            _connection: unknown,
+            fn: string,
+            params: Record<string, string>,
+          ) => {
+            await new Promise<void>((resolve) => setImmediate(resolve));
+            if (fn === 'createacct') {
+              expect(params).toMatchObject({
+                forcedns: '0',
+                mxcheck: 'remote',
+              });
+              created = true;
+              username = params.username ?? '';
+              return { metadata: { result: 1 }, data: {} };
+            }
+            if (fn === 'accountsummary')
+              return created
+                ? {
+                    metadata: { result: 1 },
+                    data: {
+                      acct: [
+                        {
+                          user: username,
+                          domain,
+                          plan: 'cmd15_package',
+                          suspended: 0,
+                        },
+                      ],
+                    },
+                  }
+                : { metadata: { result: 0, reason: 'Account does not exist' } };
+            if (fn === 'cpanel')
+              return {
+                metadata: { result: 1 },
+                data: [
+                  {
+                    domain,
+                    mxcheck: remote ? 'remote' : 'local',
+                    alwaysaccept: remote ? 0 : 1,
+                  },
+                ],
+              };
+            throw new Error('Unexpected provider call');
+          },
+        );
+        const input = { type: 'CREATE_ACCOUNT', submissionKey: randomUUID() };
+        const result = await postResult(
+          setupAdmin,
+          setupCsrf,
+          `/hosting-panel/services/${id}/operations`,
+          input,
+        );
+        expect(result.operation.status).toBe(
+          remote ? 'SUCCEEDED' : 'INCONSISTENT',
+        );
+        const service = await prisma.service.findUniqueOrThrow({
+          where: { id },
+        });
+        expect(service.status).toBe(remote ? 'ACTIVE' : 'PROVISION_FAILED');
+        const calls = whmCall.mock.calls.length;
+        const replay = await postResult(
+          setupAdmin,
+          setupCsrf,
+          `/hosting-panel/services/${id}/operations`,
+          input,
+        );
+        expect(replay.operation.id).toBe(result.operation.id);
+        expect(whmCall).toHaveBeenCalledTimes(calls);
+        expect(
+          whmCall.mock.calls.filter((c) => c[1] === 'createacct'),
+        ).toHaveLength(1);
+        if (!remote)
+          await setupAdmin
+            .post(`/hosting-panel/operations/${result.operation.id}/retry`)
+            .set('X-CSRF-Token', setupCsrf)
+            .send({ submissionKey: randomUUID() })
+            .expect(422);
+      }
+    } finally {
+      whmCall.mockReset();
+      await prisma.server.update({
+        where: { id: server.id },
+        data: { status: 'DISABLED' },
+      });
+    }
+  });
+
   it('tests the server and provisions exactly one account idempotently', async () => {
     const admin = request.agent(app.getHttpServer());
     const csrf = await authenticate(admin, ADMIN_EMAIL);
@@ -700,7 +816,10 @@ describe('Hosting panel operations (e2e)', () => {
     if (app) await app.close();
   });
 
-  async function createPendingService(domain: string): Promise<string> {
+  async function createPendingService(
+    domain: string,
+    preserve = false,
+  ): Promise<string> {
     const startedAt = new Date();
     const nextDueAt = new Date(startedAt);
     nextDueAt.setUTCMonth(nextDueAt.getUTCMonth() + 1);
@@ -726,6 +845,9 @@ describe('Hosting panel operations (e2e)', () => {
             requestedDomain: domain,
             provisioningSnapshot: {
               hostingPackageIdentifier: 'cmd15_package',
+              ...(preserve
+                ? { hostingProvisioningMode: 'PRESERVE_EXISTING' }
+                : {}),
             },
           },
         },
@@ -745,6 +867,9 @@ describe('Hosting panel operations (e2e)', () => {
           productNameSnapshot: 'Command Fifteen Hosting',
           provisioningSnapshot: {
             hostingPackageIdentifier: 'cmd15_package',
+            ...(preserve
+              ? { hostingProvisioningMode: 'PRESERVE_EXISTING' }
+              : {}),
           },
           billingPeriod: BillingPeriod.MONTHLY,
           recurringAmount: 15_000n,

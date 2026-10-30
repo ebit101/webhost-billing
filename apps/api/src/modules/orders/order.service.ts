@@ -9,6 +9,7 @@ import {
   type PrismaClient,
 } from '@webhost-billing/database';
 import {
+  readHostingProvisioningMode,
   POSTGRES_BIGINT_MAX,
   PROJECT_NAME,
   createPaginationMeta,
@@ -82,6 +83,13 @@ export class OrderService {
       allowPendingVerification?: boolean;
     },
   ): Promise<OrderCreationResult> {
+    if ('hostingProvisioningMode' in input && source !== 'ADMIN') {
+      throw new ApplicationException({
+        status: HttpStatus.FORBIDDEN,
+        code: 'FORBIDDEN',
+        message: 'Only administrators can choose hosting preservation.',
+      });
+    }
     const duplicate = await this.findBySubmissionKey(input.submissionKey);
     if (duplicate) return this.duplicateResult(duplicate, input);
 
@@ -212,6 +220,10 @@ export class OrderService {
                   requestedDomain: input.requestedDomain,
                   provisioningSnapshot: {
                     productSlug: price.product.slug,
+                    hostingProvisioningMode:
+                      'hostingProvisioningMode' in input
+                        ? (input.hostingProvisioningMode ?? 'STANDARD')
+                        : 'STANDARD',
                     hostingPackageIdentifier:
                       price.product.hostingPackageIdentifier,
                   },
@@ -613,6 +625,7 @@ export class OrderService {
       item.productId !== input.productId ||
       item.productPriceId !== input.priceId ||
       item.requestedDomain !== input.requestedDomain ||
+      readHostingProvisioningMode(item.provisioningSnapshot) !== 'STANDARD' ||
       existing.items.some((entry) => entry.kind === 'DOMAIN')
     ) {
       throw new ApplicationException({
@@ -645,6 +658,10 @@ export class OrderService {
       item?.productId !== input.productId ||
       item.productPriceId !== input.priceId ||
       item.requestedDomain !== input.requestedDomain ||
+      readHostingProvisioningMode(item.provisioningSnapshot) !==
+        ('hostingProvisioningMode' in input
+          ? (input.hostingProvisioningMode ?? 'STANDARD')
+          : 'STANDARD') ||
       (registration?.quoteId ?? undefined) !== requestedQuoteId
     ) {
       throw new ApplicationException({
@@ -704,6 +721,11 @@ export class OrderService {
         productId: item.productId,
         productPriceId: item.productPriceId,
         productName: item.productNameSnapshot,
+        ...(item.kind === 'HOSTING' &&
+        readHostingProvisioningMode(item.provisioningSnapshot) ===
+          'PRESERVE_EXISTING'
+          ? { hostingProvisioningMode: 'PRESERVE_EXISTING' }
+          : {}),
         description: item.descriptionSnapshot,
         billingPeriod: item.billingPeriod,
         unitAmount: serializeMoney(item.unitAmount, item.currency),

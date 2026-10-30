@@ -25,6 +25,25 @@ export const requestedDomainSchema = z
       );
   }, 'Enter a valid domain without a protocol, path, or trailing dot');
 
+export const hostingProvisioningModeSchema = z.enum([
+  'STANDARD',
+  'PRESERVE_EXISTING',
+]);
+export type HostingProvisioningMode = z.infer<
+  typeof hostingProvisioningModeSchema
+>;
+export function readHostingProvisioningMode(
+  snapshot: unknown,
+): HostingProvisioningMode {
+  const parsed = z
+    .object({
+      hostingProvisioningMode: hostingProvisioningModeSchema.optional(),
+    })
+    .passthrough()
+    .parse(snapshot ?? {});
+  return parsed.hostingProvisioningMode ?? 'STANDARD';
+}
+
 const orderSelectionSchema = z
   .object({
     productId: z.uuid(),
@@ -51,6 +70,7 @@ export const guestHostingCheckoutRequestSchema = registrationRequestSchema
 export const createAdminOrderRequestSchema = orderSelectionSchema
   .extend({
     customerId: z.uuid(),
+    hostingProvisioningMode: hostingProvisioningModeSchema.optional(),
     notes: z.string().trim().min(1).max(2_000).optional(),
   })
   .strict();
@@ -72,6 +92,7 @@ export const orderItemSchema = z
     productId: z.uuid(),
     productPriceId: z.uuid(),
     productName: z.string().min(1).max(160),
+    hostingProvisioningMode: hostingProvisioningModeSchema.optional(),
     description: z.string().max(2_000).nullable(),
     billingPeriod: hostingBillingPeriodSchema,
     unitAmount: moneySchema,

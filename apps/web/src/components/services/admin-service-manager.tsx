@@ -147,6 +147,9 @@ export function AdminServiceManager({
           </Link>
           <p className="mt-1 text-xs text-slate-500">
             {service.productName} · {service.billingPeriod.toLowerCase()}
+            {service.hostingProvisioningMode === 'PRESERVE_EXISTING' && (
+              <span className="block">Keep existing website and email</span>
+            )}
           </p>
         </div>
       ),

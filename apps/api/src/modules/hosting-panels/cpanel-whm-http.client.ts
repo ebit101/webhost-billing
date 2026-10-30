@@ -107,13 +107,30 @@ export class CpanelWhmHttpClient {
     parameters: Readonly<Record<string, string>>,
     mutation: boolean,
   ): Promise<WhmApiEnvelope> {
+    const mailRead = functionName === 'cpanel';
+    if (
+      mailRead &&
+      (mutation ||
+        parameters.cpanel_jsonapi_apiversion !== '2' ||
+        parameters.cpanel_jsonapi_module !== 'Email' ||
+        parameters.cpanel_jsonapi_func !== 'getalwaysaccept' ||
+        !parameters.cpanel_jsonapi_user ||
+        !parameters.domain ||
+        Object.keys(parameters).length !== 5)
+    ) {
+      throw new HostingPanelProviderError(
+        'PERMANENT',
+        'CPANEL_REQUEST_REJECTED',
+        'Only the exact mail-routing read is supported.',
+      );
+    }
     this.validateConnection(connection);
     await this.validatePublicResolution(connection.hostname, mutation);
     const url = new URL(
       `/json-api/${encodeURIComponent(functionName)}`,
       `https://${connection.hostname}:${connection.port}`,
     );
-    url.searchParams.set('api.version', '1');
+    if (!mailRead) url.searchParams.set('api.version', '1');
     for (const [key, value] of Object.entries(parameters)) {
       url.searchParams.set(key, value);
     }
@@ -177,7 +194,24 @@ export class CpanelWhmHttpClient {
     }
 
     try {
-      return whmEnvelopeSchema.parse(JSON.parse(text));
+      const json: unknown = JSON.parse(text);
+      if (mailRead) {
+        const result = z
+          .object({
+            cpanelresult: z.object({
+              apiversion: z.literal(2),
+              module: z.literal('Email'),
+              func: z.literal('getalwaysaccept'),
+              event: z.object({
+                result: z.union([z.literal(0), z.literal(1)]),
+              }),
+              data: z.unknown(),
+            }),
+          })
+          .parse(json).cpanelresult;
+        return { metadata: { result: result.event.result }, data: result.data };
+      }
+      return whmEnvelopeSchema.parse(json);
     } catch {
       throw this.invalidResponse(mutation);
     }

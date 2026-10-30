@@ -12,6 +12,7 @@ import {
   type PrismaClient,
 } from '@webhost-billing/database';
 import {
+  readHostingProvisioningMode,
   createPaginationMeta,
   cpanelServerConfigurationSchema,
   managedCpanelServerSchema,
@@ -809,6 +810,9 @@ export class HostingPanelService {
       const created = await withHostingPanelTimeout(
         panel.createAccount(connection, {
           serviceReference: service.id,
+          hostingProvisioningMode: readHostingProvisioningMode(
+            service.provisioningSnapshot,
+          ),
           domain: service.domain ?? '',
           packageIdentifier: this.packageIdentifier(
             service.provisioningSnapshot,
@@ -1100,6 +1104,7 @@ export class HostingPanelService {
       throw this.invalid('The assigned server is not active for new accounts.');
     }
     if (input.type === 'CREATE_ACCOUNT') {
+      readHostingProvisioningMode(service.provisioningSnapshot);
       if (
         service.status !== ServiceStatus.PENDING &&
         service.status !== ServiceStatus.PROVISION_FAILED

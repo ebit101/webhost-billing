@@ -16,6 +16,7 @@ import {
 import {
   apiErrorResponseSchema,
   apiSuccessResponseSchema,
+  serviceCreationResultSchema,
   orderCreationResultSchema,
   orderSchema,
   paginatedApiSuccessResponseSchema,
@@ -392,6 +393,150 @@ describe('Order creation (e2e)', () => {
     });
     expect(audit.some((entry) => entry.entityId === orderId)).toBe(true);
     expect(audit.some((entry) => entry.entityId === adminOrder.id)).toBe(true);
+  });
+
+  it('pins administrator preservation through order replay and service creation without weakening payment or SQL guards', async () => {
+    const admin = request.agent(app.getHttpServer());
+    const csrf = await csrfToken(admin);
+    await login(admin, csrf, ADMIN_EMAIL);
+    const body = {
+      customerId,
+      productId,
+      priceId: activePriceId,
+      requestedDomain: 'preserved.example.test',
+      submissionKey: randomUUID(),
+      hostingProvisioningMode: 'PRESERVE_EXISTING',
+    };
+    const result = await admin
+      .post('/orders/admin')
+      .set('X-CSRF-Token', csrf)
+      .send(body)
+      .expect(201);
+    const order = apiSuccessResponseSchema(orderCreationResultSchema).parse(
+      result.body,
+    ).data.order;
+    expect(order.items[0]?.hostingProvisioningMode).toBe('PRESERVE_EXISTING');
+    const item = await prisma.orderItem.findUniqueOrThrow({
+      where: { id: order.items[0].id },
+    });
+    await admin
+      .post('/orders/admin')
+      .set('X-CSRF-Token', csrf)
+      .send(body)
+      .expect(201);
+    await admin
+      .post('/orders/admin')
+      .set('X-CSRF-Token', csrf)
+      .send({ ...body, hostingProvisioningMode: 'STANDARD' })
+      .expect(409);
+    await expect(
+      prisma.orderItem.update({
+        where: { id: item.id },
+        data: {
+          provisioningSnapshot: {
+            hostingPackageIdentifier: 'changed',
+            hostingProvisioningMode: 'STANDARD',
+          },
+        },
+      }),
+    ).rejects.toThrow();
+    await expect(
+      prisma.orderItem.create({
+        data: {
+          ...item,
+          id: randomUUID(),
+          provisioningSnapshot: { hostingProvisioningMode: null },
+        },
+      }),
+    ).rejects.toThrow();
+    const server = await prisma.server.create({
+      data: {
+        name: 'Command146 fixture server',
+        hostname: 'command146.example.test',
+        adapterKey: 'fake-panel',
+        status: 'ACTIVE',
+      },
+    });
+    try {
+      await admin
+        .post('/services')
+        .set('X-CSRF-Token', csrf)
+        .send({ orderItemId: item.id, serverId: server.id })
+        .expect(422);
+      // Fictional settlement fixture only; real payment APIs remain unchanged.
+      await prisma.order.update({
+        where: { id: order.id },
+        data: { status: 'PAID' },
+      });
+      const created = await admin
+        .post('/services')
+        .set('X-CSRF-Token', csrf)
+        .send({ orderItemId: item.id, serverId: server.id })
+        .expect(201);
+      const returned = apiSuccessResponseSchema(
+        serviceCreationResultSchema,
+      ).parse(created.body).data.service;
+      const service = await prisma.service.findUniqueOrThrow({
+        where: { id: returned.id },
+      });
+      expect(service.provisioningSnapshot).toEqual(item.provisioningSnapshot);
+      expect(returned.hostingProvisioningMode).toBe('PRESERVE_EXISTING');
+      await expect(
+        prisma.service.update({
+          where: { id: service.id },
+          data: {
+            provisioningSnapshot: {
+              hostingPackageIdentifier: 'changed',
+              hostingProvisioningMode: 'STANDARD',
+            },
+          },
+        }),
+      ).rejects.toThrow();
+      const {
+        id: _id,
+        createdAt: _created,
+        updatedAt: _updated,
+        ...data
+      } = service;
+      void _id;
+      void _created;
+      void _updated;
+      await prisma.service.delete({ where: { id: service.id } });
+      await expect(
+        prisma.service.create({
+          data: {
+            ...data,
+            provisioningSnapshot: { hostingPackageIdentifier: 'downgraded' },
+          },
+        }),
+      ).rejects.toThrow();
+      const legacy = await prisma.service.create({
+        data: {
+          ...data,
+          orderItemId: null,
+          provisioningSnapshot: { hostingPackageIdentifier: 'legacy' },
+        },
+      });
+      await expect(
+        prisma.service.update({
+          where: { id: legacy.id },
+          data: { orderItemId: item.id },
+        }),
+      ).rejects.toThrow();
+    } finally {
+      await prisma.service.deleteMany({ where: { serverId: server.id } });
+      await prisma.server.delete({ where: { id: server.id } });
+    }
+    const customer = request.agent(app.getHttpServer());
+    const token = await csrfToken(customer);
+    await login(customer, token, CUSTOMER_EMAIL);
+    const { customerId: _customer, ...selection } = body;
+    void _customer;
+    await customer
+      .post('/orders/checkout')
+      .set('X-CSRF-Token', token)
+      .send({ ...selection, submissionKey: randomUUID() })
+      .expect(400);
   });
 
   it('keeps historical order and invoice amounts unchanged after repricing', async () => {

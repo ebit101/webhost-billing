@@ -1,3 +1,4 @@
+import { hostingProvisioningModeSchema } from './orders';
 import { z } from 'zod';
 import { moneySchema } from './money';
 import { requestedDomainSchema } from './orders';
@@ -28,6 +29,7 @@ export const serviceSchema = z
     productId: z.uuid(),
     productPriceId: z.uuid(),
     productName: z.string().min(1).max(160),
+    hostingProvisioningMode: hostingProvisioningModeSchema.optional(),
     productDescription: z.string().max(10_000).nullable(),
     server: serviceServerSchema,
     status: serviceStatusSchema,

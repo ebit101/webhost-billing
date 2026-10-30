@@ -216,6 +216,11 @@ function ReviewDetails({
               {sentenceCaseLabel(service.status)}
             </Fact>
             <Fact label="Historical product">{service.productName}</Fact>
+            <Fact label="Hosting setup">
+              {service.hostingProvisioningMode === 'PRESERVE_EXISTING'
+                ? 'Keep existing website and email'
+                : 'Standard hosting'}
+            </Fact>
             <Fact label="Historical description">
               {service.productDescription ?? 'Not recorded'}
             </Fact>

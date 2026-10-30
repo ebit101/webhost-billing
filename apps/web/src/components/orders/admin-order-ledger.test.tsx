@@ -614,6 +614,7 @@ describe('administrator order ledger', () => {
     const body = JSON.parse(String(writes[0]![1]?.body));
     expect(JSON.parse(String(writes[1]![1]?.body))).toEqual(body);
     expect(body).toEqual({
+      hostingProvisioningMode: 'STANDARD',
       customerId,
       productId: otherProduct.id,
       priceId: otherId,

@@ -52,7 +52,10 @@ function missing(): WhmApiEnvelope {
 }
 
 function setup() {
-  const call = jest.fn();
+  const call = jest.fn<
+    Promise<WhmApiEnvelope>,
+    [HostingPanelConnection, string, Readonly<Record<string, string>>, boolean]
+  >();
   const panel = new CpanelWhmHostingPanel({
     call,
   } as unknown as CpanelWhmHttpClient);
@@ -117,8 +120,100 @@ describe('CpanelWhmHostingPanel', () => {
         plan: 'starter_plan',
         contactemail: 'owner@example.test',
         showpass: 'n',
+        forcedns: '0',
       },
       true,
+    );
+  });
+
+  it('requests remote delivery without DNS overwrite and verifies routing on create and replay', async () => {
+    const { call, panel } = setup();
+    const serviceReference = '10000000-0000-4000-8000-000000000099';
+    const username = `w${createHash('sha256').update(serviceReference).digest('hex').slice(0, 15)}`;
+    const account = summary(username, 'preserved.example.test', 'starter_plan');
+    const routing = response([
+      { domain: 'preserved.example.test', mxcheck: 'remote', alwaysaccept: 0 },
+    ]);
+    call
+      .mockResolvedValueOnce(missing())
+      .mockResolvedValueOnce(missing())
+      .mockResolvedValueOnce(response({}, 'createacct'))
+      .mockResolvedValueOnce(account)
+      .mockResolvedValueOnce(routing);
+    const input = {
+      serviceReference,
+      domain: 'preserved.example.test',
+      packageIdentifier: 'starter_plan',
+      contactEmail: 'owner@example.test',
+      idempotencyKey: 'preserve',
+      hostingProvisioningMode: 'PRESERVE_EXISTING' as const,
+    };
+    await expect(panel.createAccount(connection, input)).resolves.toMatchObject(
+      { created: true },
+    );
+    expect(call).toHaveBeenNthCalledWith(
+      3,
+      connection,
+      'createacct',
+      expect.objectContaining({
+        mxcheck: 'remote',
+        forcedns: '0',
+        showpass: 'n',
+      }),
+      true,
+    );
+    call.mockClear();
+    call.mockResolvedValueOnce(account).mockResolvedValueOnce(routing);
+    await expect(panel.createAccount(connection, input)).resolves.toMatchObject(
+      { created: false },
+    );
+    expect(call.mock.calls.map((c) => c[1])).toEqual([
+      'accountsummary',
+      'cpanel',
+    ]);
+    call.mockClear();
+    call
+      .mockResolvedValueOnce(account)
+      .mockResolvedValueOnce(
+        response([{ domain: input.domain, mxcheck: 'local', alwaysaccept: 1 }]),
+      );
+    await expect(panel.createAccount(connection, input)).rejects.toMatchObject({
+      kind: 'INCONSISTENT',
+    });
+    expect(call.mock.calls.map((c) => c[1])).toEqual([
+      'accountsummary',
+      'cpanel',
+    ]);
+  });
+  it.each([
+    undefined,
+    [],
+    [{ domain: 'wrong.example.test', mxcheck: 'remote', alwaysaccept: 0 }],
+    [{ domain: 'preserved.example.test', mxcheck: 'remote', alwaysaccept: 1 }],
+  ])('holds ambiguous mail evidence for reconciliation', async (data) => {
+    const { call, panel } = setup();
+    const serviceReference = '10000000-0000-4000-8000-000000000099';
+    const username = `w${createHash('sha256').update(serviceReference).digest('hex').slice(0, 15)}`;
+    call
+      .mockResolvedValueOnce(missing())
+      .mockResolvedValueOnce(missing())
+      .mockResolvedValueOnce(response({}, 'createacct'))
+      .mockResolvedValueOnce(
+        summary(username, 'preserved.example.test', 'starter_plan'),
+      )
+      .mockResolvedValueOnce(response(data));
+    await expect(
+      panel.createAccount(connection, {
+        serviceReference,
+        domain: 'preserved.example.test',
+        packageIdentifier: 'starter_plan',
+        contactEmail: 'owner@example.test',
+        idempotencyKey: 'preserve',
+        hostingProvisioningMode: 'PRESERVE_EXISTING',
+      }),
+    ).rejects.toMatchObject({ kind: 'INCONSISTENT' });
+    expect(call.mock.calls.filter((c) => c[1] === 'createacct')).toHaveLength(
+      1,
     );
   });
 
