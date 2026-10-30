@@ -3025,6 +3025,8 @@ authorize new provider operations or existing-domain adoption.
 - **Coordination and rollback:** Use the existing registrar lock order: quote
   when present, catalogue, then actor/client and domain. Waiting for catalogue
   coordination must not hold actor/client locks needed by ownership linking.
+  Recheck the submission key after acquiring the locks: an exact concurrent
+  retry returns the committed order before testing its consumed domain/quote.
   Earlier application versions do not fulfill the new existing-domain billing
   association; rollback after creating these orders requires a compatible plan
   that preserves the association and all financial history.

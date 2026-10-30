@@ -3231,17 +3231,21 @@ describe('complete simulated registrar in isolated PostgreSQL (e2e)', () => {
             options.body as Success<{ domains: { id: string }[] }>
           ).data.domains.some((d) => d.id === linked.id),
         ).toBe(true);
-        let pendingCreation: ReturnType<typeof mutation> | undefined;
+        let pendingCreation:
+          Promise<Awaited<ReturnType<typeof mutation>>[]> | undefined;
         await prisma.$transaction(
           async (tx) => {
             await tx.$queryRaw`SELECT pg_advisory_xact_lock(510118)::text`;
-            pendingCreation = mutation(owner, '/orders/admin', input, 201);
+            pendingCreation = Promise.all([
+              mutation(owner, '/orders/admin', input, 201),
+              mutation(owner, '/orders/admin', input, 201),
+            ]);
             let waiting = false;
             for (let i = 0; i < 100; i++) {
               const locks = await tx.$queryRaw<
-                { waiting: boolean }[]
-              >`SELECT EXISTS(SELECT 1 FROM pg_locks WHERE locktype='advisory' AND classid=0 AND objid=510118 AND NOT granted) AS waiting`;
-              if (locks[0]?.waiting) {
+                { waiting: number }[]
+              >`SELECT COUNT(*)::integer AS waiting FROM pg_locks WHERE locktype='advisory' AND classid=0 AND objid=510118 AND NOT granted`;
+              if ((locks[0]?.waiting ?? 0) >= 2) {
                 waiting = true;
                 break;
               }
@@ -3257,9 +3261,15 @@ describe('complete simulated registrar in isolated PostgreSQL (e2e)', () => {
         );
         if (!pendingCreation)
           throw new Error('Expected pending combined order');
-        const result = orderCreationResultSchema.parse(
-          responseData(await pendingCreation),
+        const results = (await pendingCreation).map((response) =>
+          orderCreationResultSchema.parse(responseData(response)),
         );
+        expect(results.map((result) => result.duplicate).sort()).toEqual([
+          false,
+          true,
+        ]);
+        expect(new Set(results.map((result) => result.order.id)).size).toBe(1);
+        const result = results.find((result) => !result.duplicate)!;
         expect(result.order.total.amount).toBe('309500');
         expect(result.order.invoice.total.amount).toBe('309500');
         expect(result.order.invoice.status).toBe('UNPAID');

@@ -149,6 +149,21 @@ export class OrderService {
           });
         }
 
+        if (adminDomain) {
+          // Another request may have committed while this one waited for the
+          // catalogue lock. Resolve an exact replay before testing availability
+          // of the domain/quote that the winning request has now consumed.
+          const persisted = await transaction.order.findUnique({
+            where: { submissionKey: input.submissionKey },
+            include: orderInclude,
+          });
+          if (persisted)
+            return {
+              orderId: persisted.id,
+              replay: await this.duplicateResult(persisted, input),
+            };
+        }
+
         const now = new Date();
         const price = await transaction.productPrice.findFirst({
           where: {
@@ -476,15 +491,18 @@ export class OrderService {
             },
           },
         });
-        return order.id;
+        return { orderId: order.id, replay: undefined };
       };
       const created = options?.transaction
         ? await persist(options.transaction)
         : await this.prisma.$transaction(persist);
-      return orderCreationResultSchema.parse({
-        order: await this.getUnchecked(created, options?.transaction),
-        duplicate: false,
-      });
+      return (
+        created.replay ??
+        orderCreationResultSchema.parse({
+          order: await this.getUnchecked(created.orderId, options?.transaction),
+          duplicate: false,
+        })
+      );
     } catch (error) {
       if (this.isUniqueConstraintError(error)) {
         const racedDuplicate = await this.findBySubmissionKey(
