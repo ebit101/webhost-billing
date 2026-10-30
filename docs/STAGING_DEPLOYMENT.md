@@ -1,5 +1,60 @@
 # Staging Deployment
 
+## Command 150 combined administrator order release (2026-10-30)
+
+- **Status:** Deployed `289d00e8a15b6117c82fb2eb3cd7b3941456c535`, containing
+  Command 149's combined hosting/domain billing, default-off registration choice,
+  verified existing-domain association and separate payment/dispatch gates.
+  Automated postflight and authenticated Speed inspection passed. No new order,
+  invoice, payment, domain link, message or provider action was created.
+- **Source gates:** Normal merge of [PR 72](https://github.com/ebit101/webhost-billing/pull/72),
+  with independent exact-release [CI](https://github.com/ebit101/webhost-billing/actions/runs/41091097339)
+  and [CodeQL](https://github.com/ebit101/webhost-billing/actions/runs/41091097510)
+  success. PR dependency review passed; main's PR-only job was correctly skipped.
+  Four canonical Node 24/pnpm 11.22.0 frozen image builds passed. Installed API
+  runtime is Node 24.22.2. Source archive SHA-256:
+  `782ff2a76d43c92a8426d8c27e7684224e768f425eed87479134015ea4409bba`.
+- **Backup and migration:** Fresh preflight archive
+  `20261030T164847Z.dump.gpg` passed. The canonical script verified another fresh
+  encrypted archive immediately before stopping application writers:
+  `/srv/webhost-billing-staging/backups/webhost-billing-webhost_billing_staging-20261030T170316Z.dump.gpg`.
+  SHA-256: `ad54051b424cd2b356357f1ef5ca8022ef31a106324e0ed700fc75a553cc5353`.
+  Checksum, OpenPGP integrity, archive structure and required tables passed;
+  same-host verification is not an off-site restore drill. Migration 39 applied,
+  with 39 complete and none unfinished. Exact source/applied checksum, three
+  enabled guards, four validated restrictive foreign keys, one deferred binding
+  trigger and four invoker functions passed. No legacy order-item backfill or
+  initial-domain billing association exists. Rollback inventory:
+  `/srv/webhost-billing-staging/rollback/release-20261030T170315Z-289d00e8a15b6117c82fb2eb3cd7b3941456c535/`.
+- **Preservation:** All 36 full-row business/email/outbox/notification table
+  fingerprints match through acceptance, including the paid trial and saved
+  domain ownership evidence. The fictional draft stays unissued and unpaid.
+  Environment apart from IMAGE_TAG, mode 0600, installed/served logo and Office
+  environment are preserved. Seven services are healthy, application restarts
+  are zero and exactly one scheduler runs. Infrastructure and unrelated container
+  IDs match. SMTP remains active; payment gateways, real WHM connections, live
+  registrar accounts/networking and WhatsApp/new notification delivery remain off.
+- **Smoke tests:** Public health/readiness/origin/logo checks passed. Anonymous
+  protected routes reject or redirect; fictional customer administrator order,
+  domain-options and ownership-link requests return 403. Customer domain intent
+  and preservation-policy injection return 400. Signed-in login redirects to the
+  portal, and sign-out invalidates the session. Speed form inspection passed
+  default-off dispatch, hosting/setup breakdown, missing catalogue-price blocking,
+  registration contact/consent requirements, disabled ownership linking,
+  nested Escape/focus restoration, retained draft and full-reload reset.
+  Historical order/invoice links, client context and saved domain table/details
+  load read-only. Screenshot inspected; returned to dashboard without submission.
+- **Evidence and limits:** Deployment/postflight exit 0 and repeated preservation
+  checks passed under
+  `/srv/webhost-billing-staging/acceptance/command150-release-20261030/`.
+  No repeat cutover or application repair was needed. Private helpers/payloads,
+  logs and backups stay outside Git; report delivery does not require deployment.
+  No annual domain catalogue price is configured, so full new combined billing
+  remains unexercised on staging. Do not adopt or recharge earlier manual trial
+  invoices. Future combined associations require a compatible rollback plan;
+  earlier application versions cannot fulfill them. Catalogue changes, orders
+  and provider actions require their own authorization.
+
 ## Command 147 hosting preservation release (2026-10-30)
 
 - **Status:** Deployed `9b912841f90fbe681da3a62acf24d3838a64da46`, containing
