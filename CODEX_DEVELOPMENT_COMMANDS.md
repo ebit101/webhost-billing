@@ -5996,3 +5996,43 @@ historical bank timestamp honestly. Acceptance completed with invoice Paid,
 order Completed and one Active service; the selected WHM connection is restored
 Disabled. SMTP remains active; other providers stay disabled. No deployment or
 next command is authorized by this follow-through.
+
+Further owner steering: the initial hosting-only order omitted the expected client
+domain record. Link the already registered domain to the same client after fresh
+registrar-account ownership checks; never send registration, renewal, purchase or
+DNS/contact changes. The owner explicitly approved the necessary temporary
+API-only registrar window followed by restoring disabled posture. Linking has
+completed through the normal form and both registrar gates are disabled again.
+The owner requests a domain charge, but no catalogue .com price or approved
+selling amount/term exists; do not invent it, reuse the hosting receipt or rewrite
+the paid hosting invoice. Record the requested future admin order control:
+Send registration to registrar, unchecked by default; off means internal activation
+only, on uses the independently validated registration path. Existing registered
+domains must never be sent for registration. This flow is not implemented by the
+current operational command, and source deployment remains unauthorized.
+
+The owner subsequently supplied BDT 1,890. Exactly one separate one-year domain
+invoice Draft is prepared through normal administration, due 31-10-2026, paid 0
+and balance 189000 BDT minor units. Proposed annual terms and issuance with its
+additional customer invoice email await the owner decision. No domain payment,
+registration/renewal or email was sent by creating this draft; the paid hosting
+invoice remains unchanged. Keep report closure/PR merge held until the decision
+and resulting validation are recorded.
+
+Final owner approval: issue the BDT 1,890 one-year domain invoice, send its new
+invoice email to the saved client and leave it Unpaid. Issuance and the single
+SMTP delivery succeeded; balance is 189000 minor units, paid 0, no domain payment
+or registrar operation/action. Operational acceptance is complete; the prior
+closure hold is resolved. The combined admin order/registration-checkbox feature
+remains separate recommended local work, with no new source command started.
+
+Final payment follow-through: after the explanation that Paid means funds were
+received, the owner confirmed Paid and requested an arbitrary reference. Record
+that attestation through normal manual payment with an explicitly internal
+confirmation identifier; never present it as an actual bank transaction number
+or invent a historical bank timestamp. Exactly one payment is now recorded,
+the domain invoice is Paid with zero balance and its normal receipt email was
+accepted once by SMTP. Fresh verified backup and scoped preservation checks
+passed. Hosting and the linked domain remain active, all other provider gates
+Disabled and SMTP active. The previous payment/report hold is resolved. No
+registration/renewal/purchase, source deployment or next command was performed.

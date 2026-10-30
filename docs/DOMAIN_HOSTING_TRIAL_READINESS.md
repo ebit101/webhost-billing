@@ -26,7 +26,7 @@ provider activation is authorized by source deployment.
 
 ## Command 148 trial acceptance
 
-Completed on 2026-10-30 (Asia/Dhaka). The owner reconfirmed the BDT 1,200 bank
+Hosting/payment execution passed on 2026-10-30 (Asia/Dhaka). The owner reconfirmed the BDT 1,200 bank
 credit/reference and authorized payment receipt and hosting activation emails.
 Normal authenticated administration created one separate hidden product/price,
 one hosting-only order/invoice, one verified manual Bank transfer payment and one
@@ -48,7 +48,8 @@ reads verified app-pkg, an unsuspended account and remote/nonaccepting mail rout
 Eight recursive routing record sets and the apex HTTPS redirect match the baseline;
 all four authoritative nameservers still agree with original A/MX/NS and canonical
 www HTTPS HEAD remains 200. No public DNS/nameserver/contact change, migration,
-registrar linking, registration or purchase occurred.
+registration or purchase occurred during hosting execution. The subsequently
+authorized existing-domain linking is recorded below.
 
 The WHM connection is Disabled again while the created hosted account/service
 remains active. SMTP stays active; payment gateways, live registrars and WhatsApp
@@ -56,13 +57,60 @@ remain disabled. All four authorized ordinary emails were accepted by SMTP once
 each; inbox receipt is not independently proved. Final scoped existing-record,
 metadata, saved-server credential/configuration, environment/logo, container-ID
 and seven-service health checks passed. No source deployment or application
-change occurred. See [the complete report](PROGRESS.md).
+change occurred during hosting execution. See [the current report](PROGRESS.md).
+
+The owner then identified the missing client domain record and authorized linking
+the existing domain, expressly without registration. Fresh installed-provider
+GET-only reads proved direct reseller/customer/contact ownership and Active,
+unexpired state. After a newly verified encrypted backup and explicit approval,
+only the API registrar-networking flag and selected saved connection were enabled
+temporarily for the normal authenticated link form. Worker/scheduler networking
+stayed off; no registration job or domain action existed. Exactly one Existing
+domain now belongs to the selected client, state Registered, with encrypted
+ownership/contact evidence and application auto-renewal off. No order, invoice,
+email, registrar purchase or remote management mutation was created by linking.
+
+The selected registrar and API networking are Disabled again. The API was recreated
+twice using the same image, with the real environment/logo unchanged; non-API
+containers did not restart and all seven services are healthy. All 35 pre-window
+table fingerprints match excluding only the exact new domain row and the selected
+profile's owner-confirmed USD cost flag. Paid hosting and existing financial/email
+records are unchanged. Public website/mail routing again matches the baseline.
+
+The .com catalogue has no selling-price entry. The owner subsequently supplied
+BDT 1,890; one separate one-year domain invoice Draft is saved, paid 0, balance
+189000 minor units and due 31-10-2026. The owner then approved the annual terms,
+issuance and additional customer email while leaving it unpaid. The normal action
+issued it once; the invoice is Unpaid with zero payments and one SMTP-accepted
+invoice-created email, attempt 1. Scoped preservation and seven-service health passed.
+No registration, renewal, transfer, DNS or contact action was submitted.
+Do not invent another payment, reuse the hosting receipt or rewrite its paid invoice. The owner also specifies a combined admin-order flow
+with an unchecked-by-default Send registration to registrar checkbox: off means
+internal activation only, on uses the separately validated registration path.
+This checkbox/combined-order feature is not yet implemented. Combined ordering
+and automatic domain renewal billing remain separate work; current activation and
+the approved manual invoice are complete. No automatic annual renewal billing
+was established by the separate invoice.
+
+The owner subsequently requested payment and, after the meaning of Paid was
+explained, confirmed Paid. One manual payment of 189000 BDT minor units was
+recorded through the normal authenticated form with a clearly labelled internal
+confirmation identifier. No bank transaction number or historical bank timestamp
+was supplied or invented; the note preserves that limitation. Settlement is
+owner-attested. The domain invoice is now Paid with zero balance and one
+successful payment; its payment-received email was accepted once by SMTP.
+Fresh verified backup 20261030T143132Z preceded the write. All 35 scoped
+existing-table fingerprints, frozen issued-invoice contents, environment/logo,
+container IDs and seven-service health checks passed. Hosting remains Paid/Active,
+the existing domain Registered, SMTP active and other provider gates disabled.
+No registration, renewal, purchase or domain action was submitted.
 
 Private target, payment reference, record identifiers and provider payloads remain
 outside Git. The owner's DD-MM-YYYY display requirement remains unimplemented in
-this operational command. Recommended next: Command 149 — Review the trial client
-portal and hosting handover without changing public DNS/mail, credentials or
-provider settings. No next command is authorized.
+this operational command. Authorize Command 149 — Implement the combined admin hosting/domain order
+flow locally with catalogue pricing and the explicit registration checkbox,
+preserving financial history and keeping providers disabled. No source deployment
+or next development command has started.
 
 ## Historical creation blocker discovered during Command 145
 
