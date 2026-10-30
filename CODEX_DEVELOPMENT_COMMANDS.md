@@ -6051,3 +6051,28 @@ disabled-provider gates and historical invoices/services/domain evidence. Test
 locally with fictional isolated databases and mocked providers, update reports
 and deliver through normal protected Git checks. Do not deploy, access staging,
 enable real providers, send messages, purchase domains or alter real client data.
+
+## Command 150 — Staging deployment of the combined administrator order flow
+
+Owner-authorized on 2026-10-30: deploy completed Command 149 to my.speedhost.bd
+after a fresh verified encrypted backup. Require exact-release CI/CodeQL and the
+normal protected delivery path. Preserve environment, installed logo, historical
+client/financial/service/domain records and active SMTP. Keep payment gateways,
+real hosting connections, live registrar accounts/networking and WhatsApp/new
+notification delivery disabled. Apply the pending migration and smoke-test
+anonymous/customer authorization, default-off registration, catalogue blocking,
+ownership-link gating and read-only client/order/invoice/domain navigation in
+the signed-in Speed profile. Do not create orders, invoices, payments or domain
+links; send messages; obtain live quotes; register/purchase/renew domains; or
+provision hosting. Update reports and stop after protected report delivery.
+
+Completed release: `289d00e8a15b6117c82fb2eb3cd7b3941456c535`. Fresh preflight
+and cutover backup verification passed; all 39 migrations are complete. Seven
+healthy services, preserved environment/logo and all 36 monitored table
+fingerprints passed. SMTP remains active and other providers disabled.
+Automated authorization, normal fictional customer sign-in/sign-out and
+authenticated Speed form/history inspection passed without business writes.
+No annual catalogue price was configured and the paid trial was not adopted
+or recharged. Next recommendation, not authorization: Command 151 — Confirm
+and prepare catalogue pricing for future combined orders after reviewing prior
+manual billing. This report does not authorize another deployment or order.
