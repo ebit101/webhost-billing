@@ -14,14 +14,19 @@ hosting-only order. It is not a new domain registration or a WHMCS import.
 
 Command 146 implements the explicit administrator preservation choice locally:
 remote mail routing, no existing-zone overwrite, frozen order/service snapshots
-and a bounded read to verify mail routing after creation/replay. It is not deployed
-and no real account is created. Keep the historical Command 145 finding below;
-live trial readiness still depends on deployment authorization, fresh zone/cluster
-checks, verified settlement and the previously approved exact customer emails.
+and a bounded read to verify mail routing after creation/replay. Command 147
+separately deployed it at `9b912841f90fbe681da3a62acf24d3838a64da46` on 2026-10-30.
+Migration 38, disabled-provider smoke and authenticated Speed dialog/legacy reviews
+passed; SMTP stayed active and no real account/order or message was created.
+See [the deployment report](PROGRESS.md).
+Keep the historical Command 145 finding below; live trial readiness still depends
+on fresh zone/cluster/public DNS/mail checks, provider read permissions, verified
+settlement and the previously approved exact customer emails. No live trial or
+provider activation is authorized by source deployment.
 
-## Creation blocker discovered during preparation
+## Historical creation blocker discovered during Command 145
 
-The installed cPanel adapter sends account username/domain/package/contact fields
+At Command 145, the installed cPanel adapter sent account username/domain/package/contact fields
 without an explicit `mxcheck` mail-routing mode or `forcedns` policy. WHM's
 [account-creation specification](https://api.docs.cpanel.net/specifications/whm.openapi/account-creation)
 documents `mxcheck` defaulting to local delivery and `forcedns` defaulting to no
@@ -30,12 +35,13 @@ untouched. No matching primary account alone does not establish current DNS-zone
 mail-routing or alias placement, and unchanged public nameservers alone does not
 prove server-local mail delivery is preserved.
 
-Stop before account creation. First implement and validate explicit preservation
-intent for this hosting path, including reviewed mail routing and no DNS overwrite,
-then deploy it only under separate authorization. Do not patch a running container,
+Command 145 stopped before account creation. Command 146 implemented and validated
+the explicit preservation intent and Command 147 deployed it separately. The live
+DNS/mail/provider and verified-settlement gates above remain. Do not patch a running container,
 call `createacct` outside Billing's durable operation, force service state or bypass
 payment controls. This preparation creates no product, order, invoice or account.
-The requested real hosting remains unfulfilled until this blocker is resolved.
+The requested real hosting remains unfulfilled until those live prerequisites pass
+and a separately authorized durable hosting operation succeeds.
 
 ## Approved scope and observed readiness
 
