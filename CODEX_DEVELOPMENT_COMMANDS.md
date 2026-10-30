@@ -5922,3 +5922,20 @@ with disabled connections, then close it without submitting. Do not adopt a real
 domain, register/purchase anything, provision hosting, change provider data, send
 messages or alter billing records. Record actual results and remaining live-provider
 acceptance limits, deliver the report through protected checks and stop.
+
+## Command 145 — Prepare the domain and hosting trial
+
+Owner-authorized on 2026-10-30: review current staging readiness for the selected
+existing client/domain, saved Rainbow server and `app-pkg`. Confirm the client,
+hosting billing terms, existing live website/email safeguards and registrar currency
+requirements. Inspect only saved configuration and source, distinguish historical
+provider evidence from fresh acceptance, and present exact later activation/trial
+steps and blockers for approval. Keep SMTP active and all other real providers
+disabled. Do not change product mappings, create orders/payments, link domains,
+provision hosting, send messages or deploy in this readiness command. The owner's
+follow-up requested hosting creation only while preserving the live website/email
+and reported payment received. Perform only its necessary bounded GET-only WHM
+package/exact-domain preflight with saved credentials and connections still disabled;
+stop real creation if mail/DNS preservation cannot be established. Protect real client/domain
+identifiers outside Git. Validate documentation, update the report, deliver it through
+protected checks and stop before the next command.
