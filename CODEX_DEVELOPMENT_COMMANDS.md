@@ -6036,3 +6036,18 @@ accepted once by SMTP. Fresh verified backup and scoped preservation checks
 passed. Hosting and the linked domain remain active, all other provider gates
 Disabled and SMTP active. The previous payment/report hold is resolved. No
 registration/renewal/purchase, source deployment or next command was performed.
+
+## Command 149 — Complete the administrator hosting/domain order flow locally
+
+Owner-authorized on 2026-10-30: implement one administrator order and invoice for
+hosting plus a domain using catalogue prices. Keep Send registration to registrar
+unchecked by default. Unchecked billing requires this client's existing,
+ownership-verified domain and never submits registration; linking a new existing
+domain retains its separate verified-ownership operation. Checked registration
+requires recorded customer consent and a current quote; creation does not dispatch
+registration. Verified payment and separate registrar approval remain mandatory.
+Retain hosting-only orders, website/mail preservation, idempotency, client scope,
+disabled-provider gates and historical invoices/services/domain evidence. Test
+locally with fictional isolated databases and mocked providers, update reports
+and deliver through normal protected Git checks. Do not deploy, access staging,
+enable real providers, send messages, purchase domains or alter real client data.

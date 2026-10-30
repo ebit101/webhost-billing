@@ -65,6 +65,27 @@ beforeEach(() => {
   api.get.mockResolvedValue([connection]);
 });
 afterEach(cleanup);
+it('links inside the order form without submitting the outer order', async () => {
+  api.mutate.mockResolvedValue(linked);
+  const outer = vi.fn((event: { preventDefault: () => void }) =>
+    event.preventDefault(),
+  );
+  const completed = vi.fn();
+  render(
+    <form onSubmit={outer}>
+      <ExistingDomainLink customerId={clientId} onLinked={completed} />
+    </form>,
+  );
+  const dialog = await open();
+  expect(outer).not.toHaveBeenCalled();
+  fireEvent.submit(
+    within(dialog)
+      .getByRole('button', { name: 'Verify ownership and link domain' })
+      .closest('form')!,
+  );
+  await waitFor(() => expect(completed).toHaveBeenCalledWith(linked.id));
+  expect(outer).not.toHaveBeenCalled();
+});
 async function open() {
   fireEvent.click(screen.getByRole('button', { name: 'Link existing domain' }));
   const dialog = await screen.findByRole('dialog', {
@@ -159,6 +180,50 @@ it('rejects a returned record from a different client', async () => {
   );
   await within(dialog).findByText(/does not match this client/);
   expect(completed).not.toHaveBeenCalled();
+});
+it('shows separately associated billing without inventing a new registration or enabling renewal', async () => {
+  api.get.mockImplementation(async (path: string) =>
+    path.endsWith('/actions') ? [] : null,
+  );
+  const invoiceId = '14900000-0000-4000-8000-000000000020';
+  const orderId = '14900000-0000-4000-8000-000000000021';
+  render(
+    <DomainRecord
+      domain={{
+        ...linked,
+        billingOrder: {
+          orderId,
+          invoiceId,
+          invoiceStatus: 'UNPAID',
+          sellingAmount: '189000',
+          balanceDue: '309000',
+          currency: 'BDT',
+          billingPeriod: 'ANNUAL',
+        },
+      }}
+      administrator
+      busy={false}
+      perform={async (action) => {
+        await action();
+      }}
+    />,
+  );
+  expect(screen.getByText('BDT 1890.00')).toBeTruthy();
+  expect(
+    screen.getByRole('link', { name: 'View domain service invoice' }),
+  ).toHaveProperty(
+    'href',
+    expect.stringContaining(`/admin/invoices/${invoiceId}`),
+  );
+  expect(
+    screen.getByRole('link', { name: 'View combined order' }),
+  ).toHaveProperty('href', expect.stringContaining(orderId));
+  expect(screen.getByText(/does not register or renew/)).toBeTruthy();
+  expect(
+    screen.queryByRole('button', {
+      name: /Approve registration|Create renewal invoice/,
+    }),
+  ).toBeNull();
 });
 it('shows a linked record without invoice/order/registration or renewal purchase controls', async () => {
   api.get.mockImplementation(async (path: string) =>

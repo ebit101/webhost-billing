@@ -751,7 +751,7 @@ export class DomainService {
   }
   async adminQuote(input: AdminDomainQuoteRequest, auth: AuthRequestContext) {
     this.administrator(auth);
-    this.requireSimulation();
+    this.requireRuntime();
     const consentedAt = new Date(input.offlineConsent.consentedAt);
     if (consentedAt > new Date())
       this.deny('The recorded customer consent cannot be dated in the future.');
@@ -783,10 +783,6 @@ export class DomainService {
     const account = await this.prisma.registrarAccount.findUniqueOrThrow({
       where: { id: offer.accountId },
     });
-    if (offlineConsent && account.mode !== 'FAKE')
-      this.deny(
-        'Admin-assisted orders currently support simulated registrar offers only.',
-      );
     this.requireAccount(account);
     const catalogueContext = await this.administration.catalogueContext(
       offer.tld,
@@ -942,15 +938,17 @@ export class DomainService {
     quoteId: string,
     customerId: string,
     domainName: string,
+    options: { adminAssisted?: boolean } = {},
   ) {
-    this.requireSimulation();
+    if (options.adminAssisted) this.requireRuntime();
+    else this.requireSimulation();
     await tx.$queryRaw`SELECT id FROM domain_quotes WHERE id=${quoteId}::uuid FOR UPDATE`;
     const quote = await tx.domainQuote.findUnique({ where: { id: quoteId } });
     if (
       !quote ||
       quote.customerId !== customerId ||
       quote.domainName !== domainName ||
-      quote.offlineConsent !== null ||
+      Boolean(quote.offlineConsent) !== Boolean(options.adminAssisted) ||
       quote.expiresAt <= new Date()
     )
       this.deny('This domain quote is unavailable. Request a new quote.');
@@ -962,8 +960,13 @@ export class DomainService {
     const account = await tx.registrarAccount.findUniqueOrThrow({
       where: { id: quote.accountId },
     });
-    if (offer.accountId !== account.id || account.mode !== 'FAKE')
-      this.deny('Only simulated domain offers can be combined with hosting.');
+    if (
+      offer.accountId !== account.id ||
+      (!options.adminAssisted && account.mode !== 'FAKE')
+    )
+      this.deny('This domain offer cannot be combined through this route.');
+    if (options.adminAssisted)
+      adminOfflineConsentEvidenceSchema.parse(quote.offlineConsent);
     this.requireAccount(account);
     const selection = quote.selectionSnapshot
       ? domainSelectionSnapshotSchema.parse(quote.selectionSnapshot)
@@ -996,6 +999,9 @@ export class DomainService {
       price.currency !== 'BDT' ||
       price.amount <= 0n ||
       price.setupFee !== 0n ||
+      price.billingPeriod !== 'ANNUAL' ||
+      (price.validFrom !== null && price.validFrom > new Date()) ||
+      (price.validUntil !== null && price.validUntil <= new Date()) ||
       price.amount !== quote.sellingAmount
     )
       this.deny('The domain offer changed. Request a new quote.');
@@ -1795,11 +1801,39 @@ export class DomainService {
     const profile = await this.prisma.registrarProfile.findUnique({
       where: { accountId: domain.accountId },
     });
+    const binding = await this.prisma.existingDomainOrder.findUnique({
+      where: { domainId: domain.id },
+    });
+    const billingInvoice = binding
+      ? await this.prisma.invoice.findFirstOrThrow({
+          where: { id: binding.invoiceId, customerId: domain.customerId },
+          select: { id: true, orderId: true, status: true, balanceDue: true },
+        })
+      : null;
+    const billingItem = binding
+      ? await this.prisma.orderItem.findUniqueOrThrow({
+          where: { id: binding.orderItemId },
+          select: { orderId: true, lineTotal: true },
+        })
+      : null;
     return domainDetailSchema.parse({
       id: domain.id,
       domainName: domain.domainName,
       origin: 'EXISTING',
       ownershipVerifiedAt: domain.ownershipVerifiedAt.toISOString(),
+      ...(billingInvoice?.orderId && billingItem
+        ? {
+            billingOrder: {
+              orderId: billingItem.orderId,
+              invoiceId: billingInvoice.id,
+              invoiceStatus: billingInvoice.status,
+              sellingAmount: billingItem.lineTotal.toString(),
+              balanceDue: billingInvoice.balanceDue.toString(),
+              currency: 'BDT',
+              billingPeriod: 'ANNUAL',
+            },
+          }
+        : {}),
       state: domain.state,
       verification: domain.verification,
       expiresAt: domain.expiresAt?.toISOString() ?? null,

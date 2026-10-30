@@ -8,6 +8,15 @@
 
 **Technical identifier:** `webhost-billing`
 
+**Administrator order direction — 2026-10-30:** Command 149 adds optional domain
+billing to the hosting order and a single combined invoice. An unchecked Send
+registration to registrar choice bills a verified existing domain without a
+registrar operation. Checked mode creates a quoted, consented registration
+request, subject to verified payment and separate approval before dispatch.
+Preserve original linking evidence and historical financial records. Initial
+existing-domain billing does not import or schedule renewal terms. This local
+implementation does not authorize deployment or live-provider activation.
+
 **Owner direction — 2026-10-11:** Further currency development is on hold. Existing
 foundations remain inactive; no selection, conversion, adoption or financial-history
 backfill is approved. Resume focus on the core hosting workflow and migration/launch

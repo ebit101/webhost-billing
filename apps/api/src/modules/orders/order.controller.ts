@@ -38,6 +38,7 @@ import { AuthRateLimit } from '../auth/decorators/rate-limit.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { GuestCheckoutService } from './guest-checkout.service';
 import { OrderService } from './order.service';
+import { AdminOrderDomainService } from './admin-order-domain.service';
 
 @Controller('orders')
 export class OrderController {
@@ -46,6 +47,7 @@ export class OrderController {
   constructor(
     private readonly orders: OrderService,
     private readonly guestCheckout: GuestCheckoutService,
+    private readonly adminDomains: AdminOrderDomainService,
     @Inject(API_ENVIRONMENT) environment: ApiEnvironment,
   ) {
     this.auditSecret = environment.SESSION_SECRET;
@@ -119,6 +121,21 @@ export class OrderController {
       customerId: auth.identity.customerId,
     });
     return createPaginatedApiSuccessResponse(result.data, result.pagination);
+  }
+
+  @Get('admin/domain-options')
+  @Roles('ADMIN')
+  async domainOptions(
+    @Query(
+      'customerId',
+      new ZodValidationPipe(orderListQuerySchema.shape.customerId.unwrap()),
+    )
+    customerId: string,
+    @CurrentAuth() auth: AuthRequestContext,
+  ) {
+    return createApiSuccessResponse(
+      await this.adminDomains.options(customerId, auth),
+    );
   }
 
   @Get()

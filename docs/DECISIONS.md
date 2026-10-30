@@ -2993,6 +2993,42 @@ authorize new provider operations or existing-domain adoption.
   prerequisites for an authorized live trial. No website/email migration, registrar
   action, public nameserver change or external provider acceptance is implied.
 
+## ADR-147 — Separate combined domain billing from registrar dispatch
+
+- **Date:** 2026-10-30. Owner-authorized local Command 149.
+- **Decision:** Add an explicit optional domain line to the administrator hosting
+  order. Send registration to registrar starts unchecked. Existing mode selects
+  this client's registered, unexpired, ownership-verified link and the current
+  enabled TLD catalogue's immutable annual BDT price. Billing requires no registrar
+  connection or availability call. It creates no registration/renewal request,
+  automatic renewal date or provider action. Missing prices are never zero prices.
+- **History:** Store the new initial billing association in append-only
+  `existing_domain_orders`; retain the original domain's absent registration
+  quote/order/invoice fields, encrypted link evidence and observed registry expiry.
+  Domain details separately show combined billing. Do not retrofit old manual
+  invoices, paid orders or linked domains. A linked domain has at most one initial
+  combined billing association; future renewal billing remains separate work.
+- **Registration:** Explicit checked mode requires an administrator quote with
+  recorded client consent and current catalogue/DNS/policy scope. Support the
+  existing live adapter only behind its existing account/network gates. One unpaid
+  combined invoice does not authorize a registrar operation: verified payment,
+  separately selected/approved registrar, cost ceiling and durable dispatch gates
+  still apply. Customer/guest routes cannot supply the administrator choice;
+  their existing simulated combined route retains its limits.
+- **Integrity:** Full administrator MFA, fresh actor/client checks, row/catalogue
+  locks, strict request shapes, integer totals and submission replay identity are
+  required. SQL freezes new action snapshots, validates matching billing/domain
+  associations at commit and forbids historical adoption/deletion. Hosting and
+  domains remain separate fulfillment states; a verified link never substitutes
+  for an active hosting service. The earlier domain-only simulated form remains
+  unchanged. No real provider setting or record changes in this command.
+- **Coordination and rollback:** Use the existing registrar lock order: quote
+  when present, catalogue, then actor/client and domain. Waiting for catalogue
+  coordination must not hold actor/client locks needed by ownership linking.
+  Earlier application versions do not fulfill the new existing-domain billing
+  association; rollback after creating these orders requires a compatible plan
+  that preserves the association and all financial history.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

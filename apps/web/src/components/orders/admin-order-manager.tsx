@@ -31,6 +31,10 @@ import { errorMessage, formatMinor, orderTone } from './order-ui';
 import { AdminOrderReview } from './admin-order-review';
 import { AdminOrderLedger } from './admin-order-ledger';
 import { AdminDomainOrderForm } from './admin-domain-order-form';
+import {
+  AdminOrderDomainFields,
+  type AdminDomainDraft,
+} from './admin-order-domain-fields';
 import Link from 'next/link';
 import {
   adminOrderHref,
@@ -55,6 +59,7 @@ export function AdminOrderManager({
     customerFilter,
   };
   customerFilter = applied.customerFilter;
+  const filteredCustomerId = customerFilter.customerId;
   const [readRevision, setReadRevision] = useState(0);
   const [customers, setCustomers] = useState<CustomerSummary[]>([]);
   const [filteredCustomer, setFilteredCustomer] = useState<CustomerDetail>();
@@ -62,6 +67,12 @@ export function AdminOrderManager({
   const [selectedProductId, setSelectedProductId] = useState('');
   const [selectedPriceId, setSelectedPriceId] = useState('');
   const [requestedDomain, setRequestedDomain] = useState('');
+  const [selectedCustomerId, setSelectedCustomerId] = useState(
+    filteredCustomerId ?? '',
+  );
+  const [includeDomain, setIncludeDomain] = useState(false);
+  const [domainDraft, setDomainDraft] = useState<AdminDomainDraft>();
+  const [domainBusy, setDomainBusy] = useState(false);
   const [draftNeedsRegistration, setDraftNeedsRegistration] = useState(false);
   const [selectionUnavailable, setSelectionUnavailable] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -72,7 +83,6 @@ export function AdminOrderManager({
   const [review, setReview] = useState<{ id: string; sequence: number }>();
   const reviewSequence = useRef(0);
   const reviewTrigger = useRef<HTMLButtonElement | null>(null);
-  const filteredCustomerId = customerFilter.customerId;
   const scope = `${adminOrderQueryString(applied.query)}:${applied.invalid}:${customerFilter.invalid}`;
   const [reviewScope, setReviewScope] = useState(scope);
   const checkoutProductId = checkoutIntent?.productId;
@@ -154,6 +164,9 @@ export function AdminOrderManager({
   );
   const activePrices =
     selectedProduct?.prices.filter((price) => price.isActive) ?? [];
+  const selectedPrice = activePrices.find(
+    (price) => price.id === selectedPriceId,
+  );
   const columns = useMemo<DataColumn<Order>[]>(
     () => [
       {
@@ -277,6 +290,16 @@ export function AdminOrderManager({
   async function createOrder(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
+    if (saving || domainBusy) return;
+    if (
+      (includeDomain && !domainDraft) ||
+      (draftNeedsRegistration && domainDraft?.request.mode !== 'REGISTRATION')
+    ) {
+      setError(
+        'Complete the domain selection and price before creating the combined order.',
+      );
+      return;
+    }
     const values = new FormData(form);
     if (!submissionKey.current) submissionKey.current = crypto.randomUUID();
     setReview(undefined);
@@ -297,6 +320,9 @@ export function AdminOrderManager({
             values.get('preserveExisting') === 'on'
               ? 'PRESERVE_EXISTING'
               : 'STANDARD',
+          ...(includeDomain && domainDraft
+            ? { domainOrder: domainDraft.request }
+            : {}),
           ...(values.get('notes')
             ? { notes: String(values.get('notes')) }
             : {}),
@@ -305,6 +331,9 @@ export function AdminOrderManager({
       submissionKey.current = '';
       form.reset();
       setRequestedDomain('');
+      setDomainDraft(undefined);
+      setIncludeDomain(false);
+      setSelectedCustomerId('');
       if (checkoutIntent) clearOrderDraft();
       setNotice(
         `${result.order.orderNumber} created with unpaid invoice ${result.order.invoice.invoiceNumber}.`,
@@ -371,14 +400,14 @@ export function AdminOrderManager({
       {notice ? <Message tone="success">{notice}</Message> : null}
       <div className="flex flex-wrap gap-3">
         <RecordAction
-          label="Create hosting order"
+          label="Create hosting/domain order"
           initialOpen={Boolean(checkoutIntent)}
-          busy={saving}
+          busy={saving || domainBusy}
           feedback={error || notice}
         >
           <Card
-            title="Create a hosting order"
-            description="Create a hosting order and unpaid invoice for a customer. The API revalidates the customer, product, active price, domain, and every total."
+            title="Create a hosting/domain order"
+            description="Choose one client and hosting plan. Optionally include an existing domain service or a registration request in the same unpaid invoice."
           >
             {checkoutIntent && (
               <div className="mb-5 rounded-xl border border-brand-200 bg-brand-50 p-4 text-sm text-slate-800">
@@ -405,11 +434,9 @@ export function AdminOrderManager({
                 role="alert"
                 className="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950"
               >
-                This selection requests a new domain registration. The
-                administrator hosting form creates hosting-only orders. Use a
-                customer account for a combined hosting and domain invoice, or
-                create a separate domain order below with recorded offline
-                consent.
+                This selection requests domain registration. Include domain
+                billing below, explicitly select registration and obtain a quote
+                with recorded customer consent before creating the order.
               </p>
             )}
             <form
@@ -418,7 +445,17 @@ export function AdminOrderManager({
             >
               <label className="block text-sm font-semibold text-slate-700">
                 Customer
-                <select name="customerId" required className={fieldClass}>
+                <select
+                  name="customerId"
+                  required
+                  className={fieldClass}
+                  value={selectedCustomerId}
+                  disabled={saving || domainBusy}
+                  onChange={(e) => {
+                    setSelectedCustomerId(e.target.value);
+                    setDomainDraft(undefined);
+                  }}
+                >
                   <option value="">Select customer</option>
                   {customers
                     .filter((customer) => customer.status === 'ACTIVE')
@@ -477,9 +514,37 @@ export function AdminOrderManager({
                 placeholder="example.com"
                 required
                 value={requestedDomain}
-                onChange={(event) => setRequestedDomain(event.target.value)}
+                readOnly={saving || domainBusy}
+                onChange={(event) => {
+                  setRequestedDomain(event.target.value.trim().toLowerCase());
+                  setDomainDraft(undefined);
+                }}
               />
               <Field label="Internal note" name="notes" />
+              <label className="md:col-span-2 xl:col-span-5 text-sm font-semibold">
+                <input
+                  type="checkbox"
+                  checked={includeDomain}
+                  disabled={saving || domainBusy}
+                  onChange={(e) => {
+                    setIncludeDomain(e.target.checked);
+                    setDomainDraft(undefined);
+                  }}
+                  className="mr-2"
+                />
+                Include domain billing in this order
+              </label>
+              {includeDomain && (
+                <AdminOrderDomainFields
+                  key={selectedCustomerId}
+                  customerId={selectedCustomerId}
+                  domainName={requestedDomain}
+                  onDomainName={setRequestedDomain}
+                  onSelection={setDomainDraft}
+                  onBusy={setDomainBusy}
+                  disabled={saving}
+                />
+              )}
               <label className="md:col-span-2 xl:col-span-5 text-sm">
                 <input
                   type="checkbox"
@@ -495,10 +560,69 @@ export function AdminOrderManager({
                 </span>
               </label>
               <div className="md:col-span-2 xl:col-span-5">
+                {selectedPrice && (
+                  <dl className="mb-2 flex flex-wrap gap-x-5 gap-y-1 text-sm text-slate-600">
+                    <div className="flex gap-1">
+                      <dt>Hosting charge:</dt>
+                      <dd>
+                        {formatMinor(
+                          selectedPrice.amount.amount,
+                          selectedPrice.amount.currency,
+                        )}
+                      </dd>
+                    </div>
+                    <div className="flex gap-1">
+                      <dt>Setup fee (once):</dt>
+                      <dd>
+                        {formatMinor(
+                          selectedPrice.setupFee.amount,
+                          selectedPrice.setupFee.currency,
+                        )}
+                      </dd>
+                    </div>
+                    {includeDomain && domainDraft && (
+                      <div className="flex gap-1">
+                        <dt>Domain service (one year):</dt>
+                        <dd>{formatMinor(domainDraft.amount, 'BDT')}</dd>
+                      </div>
+                    )}
+                  </dl>
+                )}
+                {selectedPriceId && (
+                  <p className="mb-3 text-sm font-semibold">
+                    Order total:{' '}
+                    {formatMinor(
+                      (
+                        BigInt(
+                          activePrices.find((p) => p.id === selectedPriceId)
+                            ?.amount.amount ?? '0',
+                        ) +
+                        BigInt(
+                          activePrices.find((p) => p.id === selectedPriceId)
+                            ?.setupFee.amount ?? '0',
+                        ) +
+                        BigInt(
+                          includeDomain ? (domainDraft?.amount ?? '0') : '0',
+                        )
+                      ).toString(),
+                      selectedProduct?.prices.find(
+                        (p) => p.id === selectedPriceId,
+                      )?.amount.currency ?? 'BDT',
+                    )}
+                    {includeDomain && !domainDraft
+                      ? ' · Select a valid domain and price to complete the total.'
+                      : ''}
+                  </p>
+                )}
                 <Button
                   type="submit"
                   disabled={
-                    saving || !customers.length || draftNeedsRegistration
+                    saving ||
+                    domainBusy ||
+                    !customers.length ||
+                    (includeDomain && !domainDraft) ||
+                    (draftNeedsRegistration &&
+                      domainDraft?.request.mode !== 'REGISTRATION')
                   }
                 >
                   <Icon name="plus" className="size-4" />

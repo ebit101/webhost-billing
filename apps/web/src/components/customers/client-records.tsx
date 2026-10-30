@@ -134,8 +134,12 @@ function Records({ customerId, kind, recordId, administrator = true }: Props) {
             ...('domainName' in row
               ? {
                   registrar: row.registrar,
-                  price:
-                    row.sellingAmount === null
+                  price: row.billingOrder
+                    ? formatMinor(
+                        row.billingOrder.sellingAmount,
+                        row.billingOrder.currency,
+                      )
+                    : row.sellingAmount === null
                       ? 'No billing record'
                       : formatMinor(row.sellingAmount, row.currency),
                   expiry: serviceDate(row.expiresAt),

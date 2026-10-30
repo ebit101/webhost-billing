@@ -1,4 +1,5 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import {
   CustomerStatus,
   InvoiceStatus,
@@ -10,6 +11,7 @@ import {
 } from '@webhost-billing/database';
 import {
   readHostingProvisioningMode,
+  adminDomainOrderSnapshotSchema,
   POSTGRES_BIGINT_MAX,
   PROJECT_NAME,
   createPaginationMeta,
@@ -33,6 +35,7 @@ import { allocateInvoiceNumber } from '../../common/identifiers/invoice-number';
 import { PRISMA_CLIENT } from '../../infrastructure/database/database.module';
 import type { AuthRequestContext } from '../auth/auth.types';
 import { DomainService } from '../domains/domain.service';
+import { AdminOrderDomainService } from './admin-order-domain.service';
 
 type CreateOrderInput = (
   CreateAdminOrderRequest | CreateCustomerOrderRequest
@@ -71,11 +74,19 @@ export class OrderService {
   constructor(
     @Inject(PRISMA_CLIENT) private readonly prisma: PrismaClient,
     private readonly domains: DomainService,
+    private readonly adminDomains: AdminOrderDomainService,
   ) {}
 
   async create(
     input: CreateOrderInput,
-    actor: { identity: { userId: string } },
+    actor: {
+      identity: {
+        userId: string;
+        role?: string;
+        staffRole?: string;
+        twoFactorEnabled?: boolean;
+      };
+    },
     context: SecurityRequestContext,
     source: 'ADMIN' | 'CUSTOMER',
     options?: {
@@ -83,6 +94,16 @@ export class OrderService {
       allowPendingVerification?: boolean;
     },
   ): Promise<OrderCreationResult> {
+    const adminDomain = 'domainOrder' in input ? input.domainOrder : undefined;
+    if (adminDomain) {
+      if (source !== 'ADMIN')
+        throw new ApplicationException({
+          status: HttpStatus.FORBIDDEN,
+          code: 'FORBIDDEN',
+          message: 'Only administrators can choose domain order actions.',
+        });
+      this.adminDomains.authorize(actor);
+    }
     if ('hostingProvisioningMode' in input && source !== 'ADMIN') {
       throw new ApplicationException({
         status: HttpStatus.FORBIDDEN,
@@ -95,12 +116,23 @@ export class OrderService {
 
     try {
       const persist = async (transaction: Prisma.TransactionClient) => {
+        if (adminDomain) {
+          // Match the registrar paths: quote (when present), catalogue, then
+          // actor/client. Ownership linking locks catalogue before its actor;
+          // taking the client first can deadlock with linking or quote creation.
+          if (adminDomain.mode === 'REGISTRATION')
+            await transaction.$queryRaw`SELECT id FROM domain_quotes WHERE id=${adminDomain.quoteId}::uuid FOR UPDATE`;
+          await transaction.$queryRaw`SELECT pg_advisory_xact_lock(510118)::text`;
+          await this.adminDomains.lockActor(transaction, actor.identity.userId);
+          await transaction.$queryRaw`SELECT u.id FROM users u JOIN customers c ON c.user_id=u.id WHERE c.id=${input.customerId}::uuid FOR UPDATE OF u,c`;
+        }
         const customer = await transaction.customer.findFirst({
           where: {
             id: input.customerId,
             deletedAt: null,
             status: CustomerStatus.ACTIVE,
             user: {
+              ...(adminDomain ? { emailVerifiedAt: { not: null } } : {}),
               status: options?.allowPendingVerification
                 ? { in: [UserStatus.ACTIVE, UserStatus.PENDING_VERIFICATION] }
                 : UserStatus.ACTIVE,
@@ -160,18 +192,40 @@ export class OrderService {
         }
 
         const domainQuoteId =
-          source === 'CUSTOMER' && 'domainQuoteId' in input
-            ? input.domainQuoteId
-            : undefined;
+          adminDomain?.mode === 'REGISTRATION'
+            ? adminDomain.quoteId
+            : source === 'CUSTOMER' && 'domainQuoteId' in input
+              ? input.domainQuoteId
+              : undefined;
         const domain = domainQuoteId
           ? await this.domains.quoteForHostingOrder(
               transaction,
               domainQuoteId,
               customer.id,
               input.requestedDomain,
+              { adminAssisted: Boolean(adminDomain) },
             )
           : null;
-        if (domain && price.currency !== 'BDT') {
+        const existingDomain =
+          adminDomain?.mode === 'EXISTING'
+            ? await this.adminDomains.existingSelection(
+                transaction,
+                adminDomain.domainId,
+                adminDomain.priceId,
+                customer.id,
+                input.requestedDomain,
+              )
+            : null;
+        const domainAmount =
+          existingDomain?.price.amount ?? domain?.quote.sellingAmount ?? 0n;
+        const domainPrice = existingDomain?.price ?? domain?.price;
+        const domainRecordId = existingDomain?.domain.id ?? randomUUID();
+        const domainDescription = existingDomain
+          ? `Annual domain service for ${input.requestedDomain}; existing registration, no registration or renewal submitted.`
+          : domain?.account.mode === 'LIVE'
+            ? `Registration of ${input.requestedDomain} for one year; separate approval required.`
+            : 'Simulated one-year domain registration; no external calls or charges.';
+        if ((domain || existingDomain) && price.currency !== 'BDT') {
           throw new ApplicationException({
             status: HttpStatus.UNPROCESSABLE_ENTITY,
             code: 'UNPROCESSABLE_ENTITY',
@@ -179,17 +233,14 @@ export class OrderService {
           });
         }
         const hostingTotal = price.amount + price.setupFee;
-        if (
-          domain &&
-          domain.quote.sellingAmount > POSTGRES_BIGINT_MAX - hostingTotal
-        ) {
+        if (domainAmount > POSTGRES_BIGINT_MAX - hostingTotal) {
           throw new ApplicationException({
             status: HttpStatus.UNPROCESSABLE_ENTITY,
             code: 'UNPROCESSABLE_ENTITY',
             message: 'The combined order total exceeds the supported range.',
           });
         }
-        const total = hostingTotal + (domain?.quote.sellingAmount ?? 0n);
+        const total = hostingTotal + domainAmount;
         const order = await transaction.order.create({
           data: {
             orderNumber: createHumanReadableNumber('ORD', now),
@@ -197,7 +248,7 @@ export class OrderService {
             customerId: customer.id,
             status: OrderStatus.AWAITING_PAYMENT,
             currency: price.currency,
-            subtotal: price.amount + (domain?.quote.sellingAmount ?? 0n),
+            subtotal: price.amount + domainAmount,
             setupTotal: price.setupFee,
             total,
             customerEmailSnapshot: customer.user.email,
@@ -228,20 +279,28 @@ export class OrderService {
                       price.product.hostingPackageIdentifier,
                   },
                 },
-                ...(domain
+                ...(domainPrice
                   ? [
                       {
                         kind: 'DOMAIN' as const,
-                        productId: domain.price.productId,
-                        productPriceId: domain.price.id,
-                        productNameSnapshot: domain.price.product.name,
-                        descriptionSnapshot:
-                          'Simulated one-year domain registration; no external calls or charges.',
+                        productId: domainPrice.productId,
+                        productPriceId: domainPrice.id,
+                        productNameSnapshot: domainPrice.product.name,
+                        descriptionSnapshot: domainDescription,
                         billingPeriod: 'ANNUAL' as const,
                         currency: 'BDT',
-                        unitAmount: domain.quote.sellingAmount,
-                        lineTotal: domain.quote.sellingAmount,
-                        requestedDomain: domain.quote.domainName,
+                        unitAmount: domainAmount,
+                        lineTotal: domainAmount,
+                        requestedDomain: input.requestedDomain,
+                        ...(adminDomain
+                          ? {
+                              provisioningSnapshot: {
+                                adminDomainAction: adminDomain.mode,
+                                sendToRegistrar: adminDomain.sendToRegistrar,
+                                domainRecordId,
+                              },
+                            }
+                          : {}),
                       },
                     ]
                   : []),
@@ -316,16 +375,18 @@ export class OrderService {
                       },
                     ]
                   : []),
-                ...(domain && domainItem
+                ...(domainPrice && domainItem
                   ? [
                       {
                         orderItemId: domainItem.id,
                         linePosition: price.setupFee > 0n ? 3 : 2,
-                        descriptionSnapshot: `Simulated registration of ${domain.quote.domainName} for one year`,
+                        descriptionSnapshot: adminDomain
+                          ? domainDescription
+                          : `Simulated registration of ${input.requestedDomain} for one year`,
                         currency: 'BDT',
                         quantity: 1,
-                        unitAmount: domain.quote.sellingAmount,
-                        lineTotal: domain.quote.sellingAmount,
+                        unitAmount: domainAmount,
+                        lineTotal: domainAmount,
                       },
                     ]
                   : []),
@@ -337,6 +398,7 @@ export class OrderService {
           if (!domainItem) throw new Error('Domain order item creation failed');
           const registration = await transaction.domain.create({
             data: {
+              id: domainRecordId,
               quoteId: domain.quote.id,
               customerId: customer.id,
               accountId: domain.account.id,
@@ -349,9 +411,31 @@ export class OrderService {
           await transaction.activityLog.create({
             data: {
               actorUserId: actor.identity.userId,
-              action: 'SIMULATED_DOMAIN_ORDER_CREATED',
+              action:
+                domain.account.mode === 'LIVE'
+                  ? 'DOMAIN_ORDER_CREATED'
+                  : 'SIMULATED_DOMAIN_ORDER_CREATED',
               entityType: 'DOMAIN',
               entityId: registration.id,
+              metadata: { orderId: order.id, invoiceId: invoice.id },
+            },
+          });
+        }
+        if (existingDomain && domainItem) {
+          await transaction.existingDomainOrder.create({
+            data: {
+              domainId: existingDomain.domain.id,
+              orderItemId: domainItem.id,
+              invoiceId: invoice.id,
+              customerId: customer.id,
+            },
+          });
+          await transaction.activityLog.create({
+            data: {
+              actorUserId: actor.identity.userId,
+              action: 'EXISTING_DOMAIN_ORDER_CREATED',
+              entityType: 'DOMAIN',
+              entityId: existingDomain.domain.id,
               metadata: { orderId: order.id, invoiceId: invoice.id },
             },
           });
@@ -647,7 +731,18 @@ export class OrderService {
     const item = existing.items.find((entry) => entry.kind === 'HOSTING');
     const domainItem = existing.items.find((entry) => entry.kind === 'DOMAIN');
     const requestedQuoteId =
-      'domainQuoteId' in input ? input.domainQuoteId : undefined;
+      'domainOrder' in input && input.domainOrder?.mode === 'REGISTRATION'
+        ? input.domainOrder.quoteId
+        : 'domainQuoteId' in input
+          ? input.domainQuoteId
+          : undefined;
+    const selection = 'domainOrder' in input ? input.domainOrder : undefined;
+    const snapshot = adminDomainOrderSnapshotSchema.safeParse(
+      domainItem?.provisioningSnapshot,
+    );
+    const domainMode = snapshot.success
+      ? snapshot.data.adminDomainAction
+      : undefined;
     const registration = domainItem
       ? await this.prisma.domain.findUnique({
           where: { orderItemId: domainItem.id },
@@ -662,7 +757,12 @@ export class OrderService {
         ('hostingProvisioningMode' in input
           ? (input.hostingProvisioningMode ?? 'STANDARD')
           : 'STANDARD') ||
-      (registration?.quoteId ?? undefined) !== requestedQuoteId
+      (registration?.quoteId ?? undefined) !== requestedQuoteId ||
+      domainMode !== selection?.mode ||
+      (selection?.mode === 'EXISTING' &&
+        (!snapshot.success ||
+          snapshot.data.domainRecordId !== selection.domainId ||
+          domainItem?.productPriceId !== selection.priceId))
     ) {
       throw new ApplicationException({
         status: HttpStatus.CONFLICT,
@@ -721,6 +821,18 @@ export class OrderService {
         productId: item.productId,
         productPriceId: item.productPriceId,
         productName: item.productNameSnapshot,
+        ...(item.kind === 'DOMAIN' &&
+        adminDomainOrderSnapshotSchema.safeParse(item.provisioningSnapshot)
+          .success
+          ? {
+              domainAction: adminDomainOrderSnapshotSchema.parse(
+                item.provisioningSnapshot,
+              ).adminDomainAction,
+              domainId: adminDomainOrderSnapshotSchema.parse(
+                item.provisioningSnapshot,
+              ).domainRecordId,
+            }
+          : {}),
         ...(item.kind === 'HOSTING' &&
         readHostingProvisioningMode(item.provisioningSnapshot) ===
           'PRESERVE_EXISTING'
