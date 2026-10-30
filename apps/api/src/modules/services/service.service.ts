@@ -8,6 +8,7 @@ import {
   type PrismaClient,
 } from '@webhost-billing/database';
 import {
+  readHostingProvisioningMode,
   createPaginationMeta,
   hostingBillingPeriodSchema,
   serializeMoney,
@@ -516,6 +517,10 @@ export class ServiceService {
       productId: service.productId,
       productPriceId: service.productPriceId,
       productName: service.productNameSnapshot,
+      ...(readHostingProvisioningMode(service.provisioningSnapshot) ===
+      'PRESERVE_EXISTING'
+        ? { hostingProvisioningMode: 'PRESERVE_EXISTING' }
+        : {}),
       productDescription: service.productDescriptionSnapshot,
       server: this.serverSummary(service.server),
       status: service.status,

@@ -97,6 +97,8 @@ export class CpanelWhmHostingPanel implements HostingPanel {
         input.domain,
         input.packageIdentifier,
       );
+      if (input.hostingProvisioningMode === 'PRESERVE_EXISTING')
+        await this.verifyRemoteMail(connection, existingByUsername);
       return { account: existingByUsername, created: false };
     }
     const existingByDomain = await this.lookupAccount(connection, {
@@ -117,6 +119,10 @@ export class CpanelWhmHostingPanel implements HostingPanel {
         plan: input.packageIdentifier,
         contactemail: input.contactEmail,
         showpass: 'n',
+        forcedns: '0',
+        ...(input.hostingProvisioningMode === 'PRESERVE_EXISTING'
+          ? { mxcheck: 'remote' }
+          : {}),
       },
       true,
     );
@@ -128,7 +134,52 @@ export class CpanelWhmHostingPanel implements HostingPanel {
       input.domain,
       input.packageIdentifier,
     );
+    if (input.hostingProvisioningMode === 'PRESERVE_EXISTING')
+      await this.verifyRemoteMail(connection, account);
     return { account, created: true };
+  }
+
+  private async verifyRemoteMail(
+    connection: HostingPanelConnection,
+    account: HostingAccount,
+  ): Promise<void> {
+    try {
+      const result = await this.http.call(
+        connection,
+        'cpanel',
+        {
+          cpanel_jsonapi_user: account.username,
+          cpanel_jsonapi_apiversion: '2',
+          cpanel_jsonapi_module: 'Email',
+          cpanel_jsonapi_func: 'getalwaysaccept',
+          domain: account.domain,
+        },
+        false,
+      );
+      this.assertSuccess(result, false);
+      const rows = z
+        .array(
+          z
+            .object({
+              domain: z.string(),
+              mxcheck: z.literal('remote'),
+              alwaysaccept: z.union([
+                z.literal(0),
+                z.literal('0'),
+                z.literal(false),
+              ]),
+            })
+            .passthrough(),
+        )
+        .length(1)
+        .parse(result.data);
+      if (rows[0]?.domain !== account.domain)
+        throw new Error('Domain mismatch');
+    } catch {
+      throw this.inconsistent(
+        'The account mail routing could not be verified as remote. Reconcile it before retrying; no mail routing was changed by verification.',
+      );
+    }
   }
 
   async getAccount(

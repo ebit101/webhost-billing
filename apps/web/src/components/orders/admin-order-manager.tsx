@@ -293,6 +293,10 @@ export function AdminOrderManager({
           priceId: String(values.get('priceId')),
           requestedDomain: String(values.get('requestedDomain')),
           submissionKey: submissionKey.current,
+          hostingProvisioningMode:
+            values.get('preserveExisting') === 'on'
+              ? 'PRESERVE_EXISTING'
+              : 'STANDARD',
           ...(values.get('notes')
             ? { notes: String(values.get('notes')) }
             : {}),
@@ -476,6 +480,20 @@ export function AdminOrderManager({
                 onChange={(event) => setRequestedDomain(event.target.value)}
               />
               <Field label="Internal note" name="notes" />
+              <label className="md:col-span-2 xl:col-span-5 text-sm">
+                <input
+                  type="checkbox"
+                  name="preserveExisting"
+                  className="mr-2"
+                />
+                Keep existing website and email
+                <span className="mt-1 block text-slate-600">
+                  Use remote mail delivery and forbid overwriting an existing
+                  DNS zone. No website/email migration or registrar nameserver
+                  change. Review existing DNS and cluster placement before
+                  provisioning.
+                </span>
+              </label>
               <div className="md:col-span-2 xl:col-span-5">
                 <Button
                   type="submit"

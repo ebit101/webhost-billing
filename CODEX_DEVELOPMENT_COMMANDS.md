@@ -5939,3 +5939,15 @@ package/exact-domain preflight with saved credentials and connections still disa
 stop real creation if mail/DNS preservation cannot be established. Protect real client/domain
 identifiers outside Git. Validate documentation, update the report, deliver it through
 protected checks and stop before the next command.
+
+## Command 146 — Preserve existing website/email during hosting creation
+
+Owner-authorized on 2026-10-30: implement and validate the mail/DNS-preservation
+fix locally. Add an explicit administrator hosting-order choice, retain it in
+immutable order/service provisioning snapshots and normal durable operations,
+request remote mail routing without overwriting existing DNS zones, and require
+safe mail-routing verification including replay. Preserve legacy/standard behavior,
+financial and provider gates, idempotency and reconciliation. Test with fictional
+local databases and mocked providers. Update the report and deliver through the
+protected repository workflow. Do not deploy, access staging/customer records,
+enable providers, send email, register/link domains or create a real account.

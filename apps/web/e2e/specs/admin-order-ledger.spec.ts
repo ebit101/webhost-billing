@@ -177,6 +177,11 @@ test('administrator finds older orders and reviews all items without business mu
   await page
     .getByRole('button', { name: 'Create hosting order', exact: true })
     .click();
+  const preservation = page.getByRole('checkbox', {
+    name: /Keep existing website and email/,
+  });
+  await expect(preservation).not.toBeChecked();
+  await preservation.check();
   const creationCustomer = page.getByRole('combobox', { name: /^Customer\b/ });
   const creationPrice = page.getByRole('combobox', { name: /^Price\b/ });
   await expect(creationCustomer).toHaveCount(1);
@@ -216,6 +221,10 @@ test('administrator finds older orders and reviews all items without business mu
   await page
     .getByRole('button', { name: 'Create hosting order', exact: true })
     .click();
+  await expect(preservation).toBeChecked();
+  await page.screenshot({
+    path: 'test-results/command146-preservation-dialog.png',
+  });
   await expect(creationPrice).toHaveValue(E2E_PRODUCT.priceId);
   await expect(creationCustomer).toHaveValue(customerId);
   await page

@@ -10,6 +10,15 @@ Exact client/domain identifiers and provider evidence stay in protected operator
 records, outside Git. This is a one-client existing-domain trial, with a separate
 hosting-only order. It is not a new domain registration or a WHMCS import.
 
+## Command 146 source follow-up
+
+Command 146 implements the explicit administrator preservation choice locally:
+remote mail routing, no existing-zone overwrite, frozen order/service snapshots
+and a bounded read to verify mail routing after creation/replay. It is not deployed
+and no real account is created. Keep the historical Command 145 finding below;
+live trial readiness still depends on deployment authorization, fresh zone/cluster
+checks, verified settlement and the previously approved exact customer emails.
+
 ## Creation blocker discovered during preparation
 
 The installed cPanel adapter sends account username/domain/package/contact fields
@@ -138,10 +147,12 @@ link, product mapping or provider activation was performed. Prior registrar GET
 evidence and owner currency/receipt statements remain distinct from fresh provider
 acceptance and recorded financial evidence.
 
-Recommended next command: **Command 146 — Implement explicit live website/email
-preservation for parallel hosting locally**, including mail-routing/no-DNS-overwrite
-intent in the normal durable provisioning path and tests. Do not deploy, enable
-providers or create a real account in that source command. Hosting-only trial
-execution resumes after separately approved deployment and genuine payment review.
+Recommended next command after Command 146 validation: **Command 147 — Deploy the
+preservation fix to staging after fresh verified backup**, preserving environment,
+logo, records and active SMTP. Keep all other real providers disabled and inspect
+only the new form/review controls and protected boundaries. Do not create an order
+or account in deployment acceptance. Real hosting execution resumes separately
+after fresh DNS/alias/cluster baselines and genuine payment review; retain the
+owner's exact existing order/invoice-email approval.
 
 See [progress](PROGRESS.md) for Command 145 results and the exact next command.

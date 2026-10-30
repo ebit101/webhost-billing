@@ -69,6 +69,57 @@ describe('CpanelWhmHttpClient', () => {
     expect(request?.redirect).toBe('error');
   });
 
+  it('allows only the exact authenticated mail-routing read through API 2', async () => {
+    const fetchMock = mockFetch().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          cpanelresult: {
+            apiversion: 2,
+            module: 'Email',
+            func: 'getalwaysaccept',
+            event: { result: 1 },
+            data: [
+              {
+                domain: 'mail.example.test',
+                mxcheck: 'remote',
+                alwaysaccept: 0,
+              },
+            ],
+          },
+        }),
+      ),
+    );
+    const client = new CpanelWhmHttpClient(
+      environment,
+      fetchMock,
+      publicLookup,
+    );
+    const parameters = {
+      cpanel_jsonapi_user: 'fictional',
+      cpanel_jsonapi_apiversion: '2',
+      cpanel_jsonapi_module: 'Email',
+      cpanel_jsonapi_func: 'getalwaysaccept',
+      domain: 'mail.example.test',
+    };
+    await expect(
+      client.call(connection, 'cpanel', parameters, false),
+    ).resolves.toMatchObject({
+      metadata: { result: 1 },
+      data: [{ mxcheck: 'remote' }],
+    });
+    const url = fetchMock.mock.calls[0]?.[0] as URL;
+    expect(url.searchParams.has('api.version')).toBe(false);
+    expect(url.searchParams.get('cpanel_jsonapi_func')).toBe('getalwaysaccept');
+    for (const changed of [
+      { ...parameters, cpanel_jsonapi_func: 'setalwaysaccept' },
+      { ...parameters, mxcheck: 'local' },
+    ])
+      await expect(
+        client.call(connection, 'cpanel', changed, false),
+      ).rejects.toMatchObject({ kind: 'PERMANENT' });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it('normalizes authentication and uncertain mutation failures', async () => {
     const fetchMock = mockFetch().mockResolvedValueOnce(
       new Response('', { status: 403 }),
