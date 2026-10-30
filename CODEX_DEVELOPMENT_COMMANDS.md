@@ -5964,3 +5964,75 @@ dialogs without creating an order/account. Do not provision hosting, link/regist
 domains, change DNS/mail, send messages or start another product command. Record
 actual acceptance and remaining live-provider limits, deliver the report through
 protected checks and stop.
+
+## Command 148 — Controlled hosting trial after preservation and payment checks
+
+Owner-authorized on 2026-10-30: resume the previously specified hosting-only trial
+with fresh DNS/mail/WHM and payment checks. Preserve the existing website/email and
+public DNS. Establish exact-domain/alias/zone and cluster-write safety, package and
+required read privileges before provider activation or hosting-account creation. Verify genuine bank receipt
+details before recording payment through normal billing. If every gate passes,
+use the approved client, a separate hidden product with the exact package and
+approved monthly price/no setup fee, PRESERVE_EXISTING snapshot and ordinary paid
+order/service/durable operation. Activate only the selected WHM server for the
+bounded trial and restore disabled provider posture afterward; never delete an
+account as cleanup. Retain prior exact order/invoice-email approval; review any
+additional transactional-email effect before triggering it. Keep SMTP active and
+payment, registrar and WhatsApp disabled. Do not register/link domains, change
+DNS/nameservers/contacts, migrate website/email, deploy source or bypass MFA/payment
+and reconciliation gates. Hold payment verification and provider mutations while
+preservation or settlement is unresolved. The already approved hidden product,
+hosting-only order and unpaid invoice can be prepared through normal administration,
+including the two explicitly approved order/invoice emails; this is not proof of
+payment or permission to provision. Record actual results and evidence limits; an incomplete trial must
+remain reported as incomplete.
+
+Command 148 follow-through on 2026-10-30: the owner reconfirmed actual BDT 1,200
+bank credit/reference, authorized payment-receipt/hosting-activation emails and
+explicitly requested payment and order activation. The owner identifies the
+selected WHM server as new and testing only, with no DNS cluster. Execute only
+the reviewed normal billing and durable provider flow; preserve the unknown
+historical bank timestamp honestly. Acceptance completed with invoice Paid,
+order Completed and one Active service; the selected WHM connection is restored
+Disabled. SMTP remains active; other providers stay disabled. No deployment or
+next command is authorized by this follow-through.
+
+Further owner steering: the initial hosting-only order omitted the expected client
+domain record. Link the already registered domain to the same client after fresh
+registrar-account ownership checks; never send registration, renewal, purchase or
+DNS/contact changes. The owner explicitly approved the necessary temporary
+API-only registrar window followed by restoring disabled posture. Linking has
+completed through the normal form and both registrar gates are disabled again.
+The owner requests a domain charge, but no catalogue .com price or approved
+selling amount/term exists; do not invent it, reuse the hosting receipt or rewrite
+the paid hosting invoice. Record the requested future admin order control:
+Send registration to registrar, unchecked by default; off means internal activation
+only, on uses the independently validated registration path. Existing registered
+domains must never be sent for registration. This flow is not implemented by the
+current operational command, and source deployment remains unauthorized.
+
+The owner subsequently supplied BDT 1,890. Exactly one separate one-year domain
+invoice Draft is prepared through normal administration, due 31-10-2026, paid 0
+and balance 189000 BDT minor units. Proposed annual terms and issuance with its
+additional customer invoice email await the owner decision. No domain payment,
+registration/renewal or email was sent by creating this draft; the paid hosting
+invoice remains unchanged. Keep report closure/PR merge held until the decision
+and resulting validation are recorded.
+
+Final owner approval: issue the BDT 1,890 one-year domain invoice, send its new
+invoice email to the saved client and leave it Unpaid. Issuance and the single
+SMTP delivery succeeded; balance is 189000 minor units, paid 0, no domain payment
+or registrar operation/action. Operational acceptance is complete; the prior
+closure hold is resolved. The combined admin order/registration-checkbox feature
+remains separate recommended local work, with no new source command started.
+
+Final payment follow-through: after the explanation that Paid means funds were
+received, the owner confirmed Paid and requested an arbitrary reference. Record
+that attestation through normal manual payment with an explicitly internal
+confirmation identifier; never present it as an actual bank transaction number
+or invent a historical bank timestamp. Exactly one payment is now recorded,
+the domain invoice is Paid with zero balance and its normal receipt email was
+accepted once by SMTP. Fresh verified backup and scoped preservation checks
+passed. Hosting and the linked domain remain active, all other provider gates
+Disabled and SMTP active. The previous payment/report hold is resolved. No
+registration/renewal/purchase, source deployment or next command was performed.
