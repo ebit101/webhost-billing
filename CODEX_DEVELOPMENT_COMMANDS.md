@@ -5951,3 +5951,16 @@ financial and provider gates, idempotency and reconciliation. Test with fictiona
 local databases and mocked providers. Update the report and deliver through the
 protected repository workflow. Do not deploy, access staging/customer records,
 enable providers, send email, register/link domains or create a real account.
+
+## Command 147 — Deploy hosting mail/DNS preservation to staging
+
+Owner-authorized on 2026-10-30: deploy completed Command 146 to `my.speedhost.bd`
+after exact-release CI/CodeQL and fresh encrypted backup verification. Preserve
+environment, installation logo, business records and active SMTP. Keep payment,
+real hosting servers, registrar and WhatsApp disabled. Apply migration 38 through
+the canonical release script; smoke-test health, authentication/role boundaries,
+the administrator preservation choice and legacy read-only reviews. Close unsaved
+dialogs without creating an order/account. Do not provision hosting, link/register
+domains, change DNS/mail, send messages or start another product command. Record
+actual acceptance and remaining live-provider limits, deliver the report through
+protected checks and stop.

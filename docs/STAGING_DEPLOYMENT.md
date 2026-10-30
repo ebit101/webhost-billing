@@ -1,5 +1,56 @@
 # Staging Deployment
 
+## Command 147 hosting preservation release (2026-10-30)
+
+- **Status:** Deployed `9b912841f90fbe681da3a62acf24d3838a64da46`, containing
+  Command 146's explicit administrator website/email-preservation choice,
+  immutable provisioning snapshots and guarded remote-mail verification.
+  Automated acceptance and authenticated Speed inspection passed. No order,
+  account, provider activation, email or DNS/mail change was performed.
+- **Source gates:** Normal merge of [PR 69](https://github.com/ebit101/webhost-billing/pull/69),
+  with independent exact-release [CI](https://github.com/ebit101/webhost-billing/actions/runs/41021729534)
+  and [CodeQL](https://github.com/ebit101/webhost-billing/actions/runs/41021729707)
+  success. PR dependency review passed; main's PR-only job was correctly skipped.
+  Source archive SHA-256:
+  `2ea045d3004d67bd0f6ead1ad1a48aed1557df8f0963597a9745f6f103705746`.
+- **Backup and migration:** Verified fresh preflight archive
+  `20261030T080835Z.dump.gpg`. After four Node 24/pnpm 11.22.0 frozen image builds,
+  the canonical script verified the fresh cutover archive before stopping writers:
+  `/srv/webhost-billing-staging/backups/webhost-billing-webhost_billing_staging-20261030T082427Z.dump.gpg`.
+  SHA-256: `3fc6d876bf3383204d60610969cfdd51e4cc81277e26c3595792e134601ea3b4`.
+  Checksum, OpenPGP integrity, archive structure and required tables passed;
+  same-host verification is not an off-site restore drill. Migration 38 applied:
+  38 complete, none unfinished. Read-only checks verified its exact source checksum,
+  two validated constraints, two enabled snapshot guards and invoker function.
+  Rollback inventory:
+  `/srv/webhost-billing-staging/rollback/release-20261030T082425Z-9b912841f90fbe681da3a62acf24d3838a64da46/`.
+- **Preservation:** All 32 full-row business-table fingerprints and five
+  supplemental email/outbox fingerprints match after acceptance. No legacy
+  provisioning snapshot was backfilled. Environment contents apart from IMAGE_TAG,
+  mode 0600 and installed/HTTPS-served logo match. Seven services are healthy,
+  application restarts are zero, exactly one scheduler runs, and infrastructure
+  plus unrelated container IDs are unchanged. Runtime Node is 24.22.2. SMTP is
+  active; payment flags, registrar networking, real WHM servers/live registrar
+  accounts and notification/WhatsApp delivery remain disabled. The fictional draft
+  is still unissued and unpaid; Office environment is unchanged.
+- **Smoke tests:** Public/readiness/origin/logo checks passed; anonymous protected
+  pages redirect to sign-in and APIs deny access. A fictional customer received
+  403 for administrator order creation/linking and 400 for preservation-policy
+  injection into customer checkout, with no order created. Signed-in login redirects
+  explicitly to the portal, and sign-out invalidates the session. In authenticated
+  Speed, the compact creation dialog shows an unchecked preservation choice and
+  its limits. Selection, Escape/focus restoration, reopening retained draft and
+  full-reload reset passed. Existing fictional order/service reviews load as Standard
+  hosting. Closed without submitting and returned to the dashboard; screenshot inspected.
+- **Evidence and limits:** Deployment/postflight exit 0 and final preservation
+  passed under `/srv/webhost-billing-staging/acceptance/command147-release-20261030/`.
+  No application repair or repeat cutover was needed. Helpers, snapshots and secrets
+  stay outside Git; this report does not require redeployment. No real preserved-mode
+  order, remote-mail read or account creation was attempted. Fresh exact-domain,
+  alias/zone/cluster, public DNS/mail and settlement checks remain before a separately
+  authorized hosting trial. ADR-146's no-overwrite/remote-mail request is not proof
+  of unchanged authoritative DNS across a live cluster.
+
 ## Command 144 existing-domain linking release (2026-10-30)
 
 - **Status:** Deployed Command 143 at `115512304107ed1defed0d7770739a3a0d85aac2`.
