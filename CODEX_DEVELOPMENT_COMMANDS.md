@@ -6076,3 +6076,27 @@ No annual catalogue price was configured and the paid trial was not adopted
 or recharged. Next recommendation, not authorization: Command 151 — Confirm
 and prepare catalogue pricing for future combined orders after reviewing prior
 manual billing. This report does not authorize another deployment or order.
+
+## Command 151 — Configure annual domain catalogue pricing before another combined order
+
+Owner-authorized on 2026-10-30: configure the annual .com selling price in the
+existing staging catalogue. The owner explicitly confirmed BDT 1,890 for one
+year and leaving renewal pricing unconfigured, after clarification that this
+price also supplies future new-registration quotes and initial existing-domain
+billing. Verify a fresh encrypted backup, use normal MFA-protected full-admin
+settings, and validate the stored price and combined-form selection. Preserve
+all prior records, environment, logo and active SMTP. Keep payment, hosting,
+registrar and WhatsApp disabled. Do not create another order, invoice, payment,
+domain link, quote or message; register/purchase/renew a domain; provision
+hosting; or recharge/retrofit the previously paid trial. No deployment needed.
+
+Completed configuration: ordinary .com, BDT 189000 minor units, annual, setup
+fee 0, renewal null/unavailable, enabled catalogue revision 1, not featured and
+no preferred-registrar override. Exactly one normal save created its product,
+immutable price and audit. Reload and combined-form availability passed. All
+37 scoped pre-existing table fingerprints, environment/logo/release and
+running container IDs are preserved; SMTP remains active and other providers
+disabled. No new registrar offer or initial-domain billing association exists.
+Deliver the report through protected Git checks and stop. Next recommendation,
+not authorization: Command 152 — Prepare the next combined order with a
+confirmed client/domain and billing terms after reviewing earlier paid records.
