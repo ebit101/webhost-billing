@@ -5,7 +5,7 @@ source and automated evidence exist; it does not mean the feature has passed the
 credentialed staging, operator, provider, or production acceptance required for live
 use.
 
-Updated 2026-10-31 through Command 158. The repository capability column describes
+Updated 2026-11-01 through Command 159. The repository capability column describes
 current `main`, not the older immutable `v0.1.0-alpha.1` source archive. The isolated
 one-command demo has its own intentionally limited fixtures and no live providers.
 
@@ -44,6 +44,12 @@ and 39 migrations. This is database-only evidence; immutable recurring backup, s
 escrow, full application recovery, incident routing, host hardening and multi-service
 capacity acceptance remain open. The global domain list still stops at 100 records.
 See the [current readiness review](PRODUCTION_READINESS_REVIEW.md).
+
+Command 159 adds reviewed build-tool dependency fixes and an enforced deepmerge
+source patch with 28 installed security/compatibility cases. The raw full audit
+retains two documented version-based warnings and no high findings; the production
+audit is clear. See [the remediation register](TOOLCHAIN_SECURITY_REMEDIATION.md).
+No staging deployment or production approval follows from source validation.
 
 Command 156 passed 62 related fictional API/database cases for combined orders,
 sample-payment review, actual fake hosting success, temporary retry, uncertain

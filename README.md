@@ -18,7 +18,7 @@ support without reproducing the worldwide feature set of WHMCS.
 
 ## Latest development status
 
-Updated 2026-10-31, through Command 158. These capabilities describe current `main`;
+Updated 2026-11-01, through Command 159. These capabilities describe current `main`;
 the immutable `v0.1.0-alpha.1` evaluation release is an older source snapshot.
 
 - **Client workspace:** Summary, Profile, Products/services, Domains, Orders,
@@ -202,6 +202,7 @@ live installation or authorize staff creation/deployment.
 - `docs/OBSERVABILITY.md` — structured logging, correlation, health/readiness, operational metrics, and administrator alert policy
 - `docs/BACKUP_AND_RECOVERY.md` — encrypted PostgreSQL backups, isolated restores, migration recovery, secrets recovery, and disaster checklist
 - `docs/PRODUCTION_READINESS_REVIEW.md` — current operating gates, validated recovery repairs, workload limits and remaining production blockers
+- `docs/TOOLCHAIN_SECURITY_REMEDIATION.md` — reviewed build-tool updates, enforced source patch, installed regressions and raw audit applicability
 - `docs/PRODUCTION_DEPLOYMENT.md` — production Compose/Nginx topology, HTTPS, secrets, storage, migration, deployment, and rollback runbooks
 - `docs/CODEX_WORKFLOW.md` — human-directed AI-assisted development path, evidence, authority, and attribution
 - `docs/SAFE_EVALUATION_DEMO.md` — isolated one-command fictional demo, walkthrough, commands, and screenshots

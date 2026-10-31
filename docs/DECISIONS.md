@@ -3076,6 +3076,23 @@ authorize new provider operations or existing-domain adoption.
   domain inventory's 100-record cap is a remaining functional scale gap. Review
   results do not authorize deployment, provider purchases or host access changes.
 
+## ADR-150 — Consumer-scoped toolchain security remediation
+
+- **Date:** 2026-10-31. Command 159.
+- **Decision:** Use supported Vite/Vitest patches and align lint Zod with existing
+  runtime 4.6.6. Upgrade modern named-API glob/minimatch consumers with compatibility
+  acceptance while retaining legacy callable/callback APIs. Enforce an exact 4.3.1
+  deepmerge patch for source, CommonJS and UMD target/source prototype-key guards.
+- **Evidence:** Resolve actual build-tool consumers and run bounded security and
+  compatibility probes, including filesystem cancellation and mock code/path
+  safety. Require complete frozen-install, lint/type/package/API/browser/build
+  acceptance before delivery; do not change business rules to make tools pass.
+- **Audit limits:** Raw scanner warnings remain visible for locally patched
+  deepmerge and legacy minimatch without the reported optimization routine.
+  Preserve version identity and specific applicability evidence; no advisory
+  suppression, blanket exception or zero-full-graph claim. Prefer reviewed upstream
+  fixes when available. No deployment or production approval follows from this work.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

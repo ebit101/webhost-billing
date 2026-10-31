@@ -8,14 +8,18 @@ overrides:
   'brace-expansion@^5': 5.0.12
   deepmerge-ts: 8.0.0
   fast-uri: 3.1.9
+  'glob@>=9': 14.0.2
   handlebars: 4.7.10
   'js-yaml@^3': 3.15.2
   'js-yaml@^4': 4.3.2
   mysql2: 3.23.1
+  'minimatch@>=9': 11.0.1
   'multer@^2': 2.5.0
   'proxy-addr@^2.0.7': 2.0.8
   qs: 6.16.1
   'source-map-js@^1.0.0': 1.2.2
+  vite: 7.3.7
+  zod: 4.6.6
 allowBuilds:
   '@prisma/engines': true
   argon2: true
@@ -30,4 +34,5 @@ minimumReleaseAgeExclude:
   - '@nestjs/testing@11.2.7'
 patchedDependencies:
   braces@3.0.3: patches/braces@3.0.3.patch
+  deepmerge@4.3.1: patches/deepmerge@4.3.1.patch
   sprintf-js@1.0.3: patches/sprintf-js@1.0.3.patch

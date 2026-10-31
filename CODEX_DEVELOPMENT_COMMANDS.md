@@ -6324,3 +6324,25 @@ updates, focused regressions and full frozen-install/lint/type/package/API/brows
 validation. Keep database history, runtime contracts and provider posture unchanged; do not
 waive advisories or deploy. Return to complete global domain inventory pagination, search,
 counts and bounded summaries with the fictional multi-service profile afterward.
+
+## Command 159 — Remediate development/build dependency advisories locally
+
+Owner-authorized on 2026-10-31: remediate the eleven findings recorded by Command 158.
+Review upstream fixes and actual consumer APIs, preserve runtime contracts and database
+history, use compatible targeted updates or an enforced exact-version security patch,
+and add bounded regression checks. Keep raw scanner findings visible; do not waive
+advisories, invent fixed releases or force new callable/callback APIs onto legacy tools.
+
+Run frozen install, installed security probes, lint, types, package/API/invariant/browser
+tests and production builds against disposable fictional data and fake providers. Keep
+the Office environment and original containers unchanged. Update the readiness/security
+report, record residual scanner applicability honestly and deliver through protected Git
+checks. Do not access/deploy staging, enable providers, mutate real records or send mail.
+SMTP stays active and the other live providers remain disabled.
+
+Local acceptance completed on 2026-11-01; see the Command 159 report for exact
+results, retained raw audit warnings and initial local resource/driver failures.
+Canonical package and browser checks must pass protected CI before normal delivery.
+Exact next recommendation, not authorization: Command 160 — Complete global domain
+inventory pagination, search, counts and bounded summaries locally, with fictional
+multi-service workload validation. Keep provider posture unchanged and do not deploy.

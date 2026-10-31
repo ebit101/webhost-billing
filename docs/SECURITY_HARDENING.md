@@ -74,6 +74,16 @@ compatible remediation and complete toolchain regression validation. Existing
 targeted patches do not waive unrelated advisories, and production-only audit
 clearance does not imply the full graph is clear. Keep development servers private.
 
+Command 159 follow-up, 2026-10-31: reviewed upstream tooling updates and a mandatory
+exact-version deepmerge patch pass 28 installed security/compatibility cases. The
+raw full audit now reports 0 high, 1 moderate and 1 low findings; it still exits
+nonzero. Retained legacy minimatch lacks the reported amplification routine, and
+the deepmerge warning identifies the version containing the enforced source patch.
+No scanner warning is ignored or waived. See the
+[remediation register](TOOLCHAIN_SECURITY_REMEDIATION.md) for actual-consumer probes,
+source applicability and full acceptance results. This does not update staging or
+close unrelated production operating gates.
+
 - Payment bundles, WHM tokens, action-delivery tokens, and MFA secrets use provider/purpose-bound authenticated encryption. Configuration responses expose only safe status/masking data.
 - Production session and encryption secrets must be distinct non-placeholder values of at least 48 characters. Store them outside Git and rotate using the documented maintenance procedures.
 - Errors use stable safe messages. Unknown exceptions, raw provider responses, credentials, passwords, action tokens, MFA secrets/codes, session tokens, ticket bodies, and IP addresses are excluded from logs and API errors.

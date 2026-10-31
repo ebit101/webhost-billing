@@ -15,6 +15,10 @@ const handlebarsChild = resolve(
   repositoryRoot,
   'scripts/security/handlebars-security-child.mjs',
 );
+const toolchainChild = resolve(
+  repositoryRoot,
+  'scripts/security/toolchain-security-child.mjs',
+);
 const allowedEnvironment = new Set([
   'path',
   'pathext',
@@ -79,7 +83,7 @@ test('reviewed query parser preserves ordinary pagination and array serializatio
   }
 });
 
-test('both exact-version patches are registered and required', () => {
+test('exact-version patches are registered and required', () => {
   const workspace = readFileSync(
     resolve(repositoryRoot, 'pnpm-workspace.yaml'),
     'utf8',
@@ -91,6 +95,7 @@ test('both exact-version patches are registered and required', () => {
   for (const [name, version] of [
     ['braces', '3.0.3'],
     ['sprintf-js', '1.0.3'],
+    ['deepmerge', '4.3.1'],
   ]) {
     const file = `patches/${name}@${version}.patch`;
     assert.ok(workspace.includes(`${name}@${version}: ${file}`));
@@ -104,6 +109,49 @@ test('both exact-version patches are registered and required', () => {
     /allowUnusedPatches:\s*true|ignorePatchFailures:\s*true/,
   );
 });
+
+for (const name of [
+  'consumer-resolution',
+  'zod-bounds',
+  'modern-match-bounds',
+  'legacy-match-compatibility',
+  'glob-compatibility',
+  'glob-cancellation',
+  'deepmerge-poisoning',
+  'deepmerge-compatibility',
+  'mocker-source',
+  'mocker-redirect',
+]) {
+  test(`installed build-tool security: ${name}`, { timeout: 20_000 }, () => {
+    const result = spawnSync(
+      process.execPath,
+      [
+        '--max-old-space-size=128',
+        '--stack-size=512',
+        '--unhandled-rejections=strict',
+        toolchainChild,
+        name,
+      ],
+      {
+        cwd: repositoryRoot,
+        env: environment,
+        encoding: 'utf8',
+        timeout: 15_000,
+        maxBuffer: 64 * 1024,
+        windowsHide: true,
+      },
+    );
+    assert.equal(
+      result.error,
+      undefined,
+      'Bounded security probe did not complete',
+    );
+    assert.equal(result.signal, null, 'Bounded security probe was terminated');
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(result.stdout.trim(), `${name}: passed`);
+    assert.equal(result.stderr, '');
+  });
+}
 
 test('every container pnpm install layer receives the registered patches first', () => {
   for (const file of [
