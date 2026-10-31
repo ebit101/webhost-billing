@@ -95,6 +95,11 @@ jobs:
       - name: Run critical invariant tests
         run: pnpm test:invariants
 
+      - name: Run isolated backup and recovery acceptance
+        env:
+          COMMAND28_RECOVERY_DRILL_CONFIRMATION: RESET_COMMAND28_FICTIONAL_DATABASES
+        run: pnpm backup:test-recovery
+
       - name: Install Chromium for browser tests
         run: pnpm --filter @webhost-billing/web exec playwright install --with-deps chromium
 

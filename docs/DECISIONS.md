@@ -3050,23 +3050,54 @@ authorize new provider operations or existing-domain adoption.
   linked domain Registered with registration off and no registrar dispatch. This
   local change does not authorize deployment, real payment or provider activation.
 
+## ADR-149 — Matching-release recovery and explicit production-readiness gates
+
+- **Date:** 2026-10-31. Command 158.
+- **Decision:** Verify all current tables and exact trusted migration names/checksums,
+  rejecting unfinished history. Accept only raw/LF/CRLF variants computed from the
+  matching reviewed SQL; never rewrite applied history or normalize historical SQL.
+  Compare complete row-content fingerprints as well as counts. Hash rows inside
+  PostgreSQL using one read-only repeatable-read transaction per database; retain
+  duplicates and no plaintext customer rows in comparison files.
+- **Evidence:** Eight fast inventory/checksum tests and the actual isolated encrypted
+  recovery drill passed, including missing newer tables, equal-count alteration,
+  corruption, migration tampering and destructive-target refusals. An encrypted
+  Office PC copy was retrieved and restored into a network-isolated temporary
+  database: 56 tables and 39 migrations matched; data-only restore took 14 seconds.
+  This is not full application RTO, managed immutable storage or secret escrow.
+- **Operating target:** The owner selected bank receipts with controlled WHM and
+  registrar APIs, and 200 customers who may own multiple services. A fictional
+  600-service/600-domain, two-admin profile is an assessment assumption, not a
+  production limit. Keep SMTP active and other live providers disabled. The old
+  suggested bank-reconciliation Command 158 was declined and superseded by this
+  review. No particular unpaid invoice must be paid to finish the review.
+- **Limits:** Production remains NO-GO pending recovery/monitoring/access/capacity,
+  separately approved provider actions and final operating sign-off. The global
+  domain inventory's 100-record cap is a remaining functional scale gap. Review
+  results do not authorize deployment, provider purchases or host access changes.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:
 
 1. Production approval, credentials, and go-live runbook for bKash and/or SSLCOMMERZ after sandbox acceptance.
 2. Dedicated cPanel development reseller/token, hostname, outbound-IP allowlist, disposable packages/account/domain, and explicitly approved manual mutation window. WHM API-token authentication is selected and implemented.
-3. SMTP delivery provider for staging and production.
+3. Staging SMTP is configured and selected delivery was accepted. Production sender
+   reputation, SPF/DKIM/DMARC, quotas, bounce handling, rotation and incident routing
+   still require evidence; keep staging SMTP active.
 4. Resell.biz/StarGate/UK2 is the owner-selected LogicBoxes brand (ADR-126). Genuine
    demo identity and API/IP access, account-specific contracts/status vocabulary,
    contact/registrant agreements, TLD/prices/charge controls and exact sandbox acceptance
-   inputs remain open. Command 49 is design only; no credentialed or live acceptance.
+   inputs remain open for mutating acceptance. Later commands implemented the
+   adapter and verified saved-account reads and ownership-bound existing-domain
+   links; registration/renewal/management mutations are not fully accepted.
 5. Remaining Speed Host operating inputs and `DRAFT-OPS-1` D5–D8 decisions in
    `docs/PRODUCTION_BUSINESS_POLICIES.md`. Existing identity, currency, optional-tax,
    renewal defaults and D1–D4 rules are owner-approved; actual catalogue/legacy mapping,
-   payment destinations, operators/staffing, cancellation safeguards, retention, contacts,
+   production mapping, operators/staffing, cancellation safeguards, retention, contacts,
    windows, gap evidence and final launch approval remain open. No approved value is applied
-   to production by the policy record.
+   to production by the policy record. Staging identity/manual destinations and
+   annual .com initial pricing were separately accepted; renewal stays unconfigured.
 6. Exact shared-server provider/account ID, plan/region/cost, recovery controls, named
    infrastructure/rollback owners, and off-site immutable backup destination.
 7. Currency implementation/activation under ADR-080: exact enabled sale/collection

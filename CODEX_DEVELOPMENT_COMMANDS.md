@@ -6273,3 +6273,54 @@ or modified. Next recommendation remains separately authorized Command 158 —
 Reconcile actual bank receipt before recording the pending combined invoice's
 payment, with verified amount/date/reference and receipt-email authorization.
 Keep fulfillment and live providers disabled. Stop after this documentation task.
+
+## Command 158 — Production-readiness review and local operational gap closure
+
+Owner-authorized on 2026-10-31, replacing the declined bank-reconciliation proposal:
+review production readiness for bank payments with controlled WHM and registrar API
+actions. Target 200 customers who may have multiple services; use an explicitly
+labelled fictional 600-service/600-domain, two-admin assessment profile. The primary
+role is Super admin and alerts should use the saved administrator email. The owner
+reports on-server backups only; independent recurring storage and a backup operator
+remain unconfirmed. Keep personal contacts, credentials and actual data outside Git.
+
+Close locally testable recovery gaps and review renewal safeguards. Read-only staging
+inspection, fresh encrypted backup, restricted encrypted independent-host copy and
+isolated restore must preserve the installed release, environment, logo, business
+history and unrelated services. Do not record a real payment, enable a provider,
+send messages, purchase/register/renew, change DNS/mail/contacts, alter SSH/firewall
+or promote production. SMTP stays active and other live providers disabled.
+
+Implemented matching-release recovery verification for all 56 tables, exact trusted
+migration names/checksums and no unfinished history, plus full row-content comparison.
+Accept only raw/LF/CRLF variants computed from reviewed SQL; rewrite neither SQL nor
+applied history. Eight inventory/checksum cases and the encrypted fictional drill
+pass, including corruption, missing newer tables, equal-count alteration, changed/
+unfinished migrations and source/existing-target refusals. CI now runs that drill.
+One renewal API case and seven worker/calendar/scheduler cases pass with fake providers.
+
+The production audit found a moderate qs serialization advisory. Updated the existing
+override to upstream 6.16.1 and its lockfile references, added three actual runtime
+consumer regression cases and passed all 18 tooling/runtime security cases, frozen
+install and a clean production audit. This is a source repair; installed staging
+images are unchanged. No unrelated dependency upgrade or vulnerability waiver.
+
+A verified encrypted staging snapshot was copied to restricted Office storage without
+its passphrase, retrieved and restored into a temporary network-isolated database.
+All 56 table contents and 39 migrations match; the database-only restore took 14 seconds.
+Full application RTO, managed immutable retention and independent key escrow remain open.
+The global domain inventory's 100-row cap is a remaining scale gap. Record the fictional
+read baseline and final preservation checks in the report without declaring a production
+capacity limit. Refresh runbooks and the launch gate register; production stays NO-GO.
+
+The full dependency graph still reports 11 development/build advisories (2 high,
+7 moderate and 2 low). Runtime production audit clearance does not close these;
+compatible toolchain remediation is now the next priority. Keep dev servers private.
+
+Deliver the validated repairs and readiness documentation through protected Git checks
+and stop without deploying. Exact next recommendation, not authorization: Command 159 —
+Remediate remaining development/build dependency advisories locally with reviewed compatible
+updates, focused regressions and full frozen-install/lint/type/package/API/browser/build
+validation. Keep database history, runtime contracts and provider posture unchanged; do not
+waive advisories or deploy. Return to complete global domain inventory pagination, search,
+counts and bounded summaries with the fictional multi-service profile afterward.

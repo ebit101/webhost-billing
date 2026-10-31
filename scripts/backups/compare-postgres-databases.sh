@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -euo pipefail
+umask 077
 
 script_directory=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 # shellcheck source=common.sh
@@ -15,10 +16,15 @@ backup_validate_recovery_database_name "$restored_database"
 backup_require_runtime
 backup_database_exists "$source_database" || backup_die "The source database does not exist."
 backup_database_exists "$restored_database" || backup_die "The restored database does not exist."
+backup_verify_database_release "$source_database"
+backup_verify_database_release "$restored_database"
 
 comparison_directory=$(mktemp -d)
 cleanup() {
-  rm -rf -- "$comparison_directory"
+  rm -f -- "$comparison_directory/source-counts" "$comparison_directory/restored-counts" \
+    "$comparison_directory/source-migrations" "$comparison_directory/restored-migrations" \
+    "$comparison_directory/source-fingerprint" "$comparison_directory/restored-fingerprint"
+  rmdir -- "$comparison_directory"
 }
 trap cleanup EXIT
 
@@ -70,5 +76,10 @@ done
 cmp --silent "$source_migrations" "$restored_migrations" ||
   backup_die "Source and restored migration histories differ."
 
+backup_capture_database_fingerprint "$source_database" >"$comparison_directory/source-fingerprint"
+backup_capture_database_fingerprint "$restored_database" >"$comparison_directory/restored-fingerprint"
+cmp --silent "$comparison_directory/source-fingerprint" "$comparison_directory/restored-fingerprint" ||
+  backup_die "Source and restored row contents differ, even if their counts match."
+
 "$script_directory/verify-restored-database.sh" "$restored_database"
-printf 'Compared %s table counts and complete migration history; source and restored databases match.\n' "${#tables[@]}"
+printf 'Compared %s table counts, full row contents and exact release migration history; source and restored databases match.\n' "${#tables[@]}"

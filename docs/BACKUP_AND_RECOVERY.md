@@ -1,4 +1,4 @@
-# PostgreSQL Backup and Recovery
+# PostgreSQL backup and recovery
 
 This runbook covers the Webhost Billing PostgreSQL system of record. The supplied scripts stream a PostgreSQL custom-format dump directly into OpenPGP symmetric AES-256 encryption. A plaintext database dump is never written to disk.
 
@@ -24,6 +24,7 @@ Logical dumps are not point-in-time recovery. Production should add provider-man
 - GnuPG, SHA-256 tools, Docker Compose, and a PostgreSQL image matching the server major version.
 - A random passphrase file containing at least 32 bytes with mode `0400` or `0600`, provided from protected storage.
 - A restricted backup destination. The repository ignores `backups/` and encrypted dump artifacts, but ignore rules are not access control.
+- The reviewed source release matching the database, including its migration SQL. Current verification requires all 56 public tables and exactly the completed migrations present in those sources; it rejects unfinished history, missing/extra tables and untrusted checksums. Use historical release sources for historical backups.
 
 Example local-only key preparation:
 
@@ -64,6 +65,11 @@ pnpm backup:verify \
 
 A useful backup must pass all four checks: encrypted-file checksum, OpenPGP decryption/integrity, PostgreSQL archive parsing, and presence of required application/migration tables. A successful archive-list check still does not replace an isolated restore.
 
+Creation also verifies the source database against its matching release before labelling
+the artifact verified. Use the installed pre-upgrade release for the pre-migration backup.
+Do not rewrite migration history to satisfy this gate. Preserve a failed/mismatched
+database and its protected evidence for a separately reviewed forensic recovery.
+
 ## Restore into an isolated database
 
 Never restore directly over the active database. The restore script accepts only a new lowercase database beginning with `webhost_billing_restore_`, refuses an existing target, and requires confirmation containing the exact target name.
@@ -76,7 +82,12 @@ RECOVERY_CONFIRMATION=RESTORE_TO_webhost_billing_restore_20260826 \
   webhost_billing_restore_20260826
 ```
 
-The restore uses `--single-transaction`, `--exit-on-error`, no ownership, and no privileges. If restore fails, only the newly created allowed target is removed. On success, structural verification checks table and migration presence, critical relationships, order/invoice arithmetic, and safe row-count totals.
+The restore uses `--single-transaction`, `--exit-on-error`, no ownership, and no privileges. If restore fails, only the newly created allowed target is removed. On success, structural verification checks the complete release table inventory, exact successful migration names/checksums, absence of unfinished history, critical relationships, order/invoice arithmetic, and safe row-count totals.
+
+Checksum verification computes only raw, LF and CRLF forms of trusted migration SQL,
+consistent with [Prisma's checksum handling](https://raw.githubusercontent.com/prisma/prisma-engines/main/schema-engine/connectors/schema-connector/src/checksum.rs).
+It preserves lone carriage returns and missing final newlines, rejects changed SQL,
+and changes neither source SQL nor stored history. A matching name alone is insufficient.
 
 Then:
 
@@ -89,7 +100,9 @@ Then:
 7. Start isolated API/web processes with workers, scheduler, SMTP, payment, and cPanel mutations disabled. Test login, customer ownership, invoice totals/PDF, payment history, service states, and audit history.
 8. Perform authenticated read-only provider reconciliation for recent payments and hosting operations before enabling callbacks or workers.
 
-For two local databases, the following command compares all 30 important table counts, complete successful migration history, critical relationships, and financial calculations:
+For two isolated databases, the following command compares all 56 table counts,
+exact release migration history and full row contents, then checks critical relationships
+and financial calculations:
 
 ```bash
 pnpm backup:verify-restore webhost_billing_restore_20260826
@@ -98,6 +111,14 @@ scripts/backups/compare-postgres-databases.sh \
   webhost_billing_restore_20260826
 ```
 
+Each content fingerprint uses one read-only repeatable-read snapshot, UTC serialization,
+and SHA-256 hashes for every row, including duplicates and migration history. Only hashes
+leave PostgreSQL; the comparison writes no plaintext customer rows. Different content with
+equal counts is rejected. Compare against a quiescent source or an independently captured
+fingerprint of the backup point. Later legitimate writes to a live source are not evidence
+of restore corruption, and separately timed reads are not a shared snapshot. This comparison
+does not prove application, key, sequence or external-provider recovery by itself.
+
 ## Fictional automated recovery drill
 
 The drill is intentionally destructive only to these exact databases:
@@ -105,7 +126,14 @@ The drill is intentionally destructive only to these exact databases:
 - `webhost_billing_backup_source_command28`
 - `webhost_billing_restore_command28`
 
-It recreates the source, deploys all migrations, loads the reserved `.test` seed, validates it, creates and verifies an encrypted backup, proves that a corrupted encrypted copy is rejected, restores it, compares 30 table counts and migration history, reruns migration deployment/status, and verifies the restored relationships. The temporary databases, encrypted artifact, and generated passphrase are removed on exit.
+It recreates the source, deploys all migrations, loads the reserved `.test` seed, validates it,
+creates and verifies an encrypted backup, restores it and compares all 56 tables and their
+full row contents. Negative cases reject corrupted ciphertext, genuine archives missing
+notification or combined-order history, equal-count row alteration, arbitrary migration
+checksums, unfinished migrations, a source target and replacement of an existing target.
+A trusted LF/CRLF checksum variant passes. A clean second restore must pass migration
+deployment/status and relationship verification. The temporary databases, encrypted artifact,
+generated passphrase and private GnuPG home are removed on exit; personal keyrings are untouched.
 
 ```bash
 COMMAND28_RECOVERY_DRILL_CONFIRMATION=RESET_COMMAND28_FICTIONAL_DATABASES \
@@ -113,6 +141,26 @@ COMMAND28_RECOVERY_DRILL_CONFIRMATION=RESET_COMMAND28_FICTIONAL_DATABASES \
 ```
 
 The script never connects to the ordinary `webhost_billing` database and cannot accept a production target name.
+
+CI runs this actual encrypted recovery drill against the fixed fictional databases.
+`pnpm test:recovery-inventory` separately checks inventory agreement and checksum byte
+handling without a database. The Command 158 local drill passed with 39 migrations;
+its approximately 19-minute multi-case Windows run is not a production restore time.
+
+## Command 158 retrieval evidence
+
+On 2026-10-31 a newly verified encrypted staging snapshot was copied to an access-restricted
+Office PC directory without its passphrase, then retrieved and verified again. It restored
+into a temporary PostgreSQL container with no network, no published ports and only temporary
+data storage. All 56 table contents matched the snapshot fingerprint, all 39 migrations
+matched and financial/relationship checks passed. The data-only restore took 14 seconds;
+no application workers, provider calls or email delivery were started. The temporary
+container was removed and staging business fingerprints, environment and logo were preserved.
+
+This is interim independent-host retrieval evidence. It does not establish immutable
+off-site retention, an automatic six-hour cadence, independent secret escrow, or recovery
+of core billing access within four hours. Those gates remain open in the
+[readiness review](PRODUCTION_READINESS_REVIEW.md).
 
 ## Application configuration and secrets recovery
 
@@ -187,4 +235,8 @@ PostgreSQL is the system of record; Redis/BullMQ is a durable delivery layer but
 
 ## Production launch blockers
 
-Before production, select the off-site immutable destination, secret manager, backup scheduler, alert destination, retention/legal deletion policy, managed PostgreSQL/WAL option, and Redis backup/recovery approach. Perform one restore drill on staging hardware and measure the real RPO/RTO. A successful backup command without a tested isolated restoration is not launch-ready.
+Before production, select the off-site immutable destination, secret manager, backup scheduler,
+alert destination, retention/legal deletion policy, managed PostgreSQL/WAL option and Redis
+recovery approach. Command 158 passed encrypted retrieval and isolated database restoration
+on staging hardware; complete the full application/key/configuration drill and measure actual
+RPO/RTO. A successful data restore alone is not launch-ready.
