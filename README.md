@@ -18,13 +18,17 @@ support without reproducing the worldwide feature set of WHMCS.
 
 ## Latest development status
 
-Updated 2026-11-01, through Command 159. These capabilities describe current `main`;
+Updated 2026-11-01, through Command 160. These capabilities describe current `main`;
 the immutable `v0.1.0-alpha.1` evaluation release is an older source snapshot.
 
 - **Client workspace:** Summary, Profile, Products/services, Domains, Orders,
   Invoices, Payments, Support and Email history retain the selected client.
   Record collections use compact tables with scoped search, filters, pagination
   and separate details where implemented. Product groups organize the catalogue.
+- **Domain inventory:** The administrator list has database pagination, literal
+  client/domain search, status/origin filters, complete counts and compact summaries.
+  Links retain client ownership, and browsing does not contact a registrar. See
+  [the inventory contract](docs/DOMAIN_INVENTORY.md) for compatibility and limits.
 - **Billing and orders:** Administrators can combine hosting and an annual domain
   service in one order and invoice. An existing domain must be linked through
   registrar-account ownership verification. Registration dispatch defaults off;

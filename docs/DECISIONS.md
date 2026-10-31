@@ -3093,6 +3093,27 @@ authorize new provider operations or existing-domain adoption.
   suppression, blanket exception or zero-full-graph claim. Prefer reviewed upstream
   fixes when available. No deployment or production approval follows from this work.
 
+## ADR-151 — Complete global domain reads without expanding sensitive detail lists
+
+- **Date:** 2026-11-01. Command 160.
+- **Decision:** Add a canonical full-administrator inventory read model with
+  validated pagination/search/state/origin/client filters, complete matching counts
+  and six bounded status totals. Preserve the legacy portal/client detail-array
+  contract and existing individual ownership/MFA/provider checks.
+- **Consistency:** Read an explicit SQL projection and grouped counts in one
+  read-only Repeatable Read transaction. Use requested time and UUID descending
+  for deterministic ties; bind all values and treat search metacharacters literally.
+  No per-row detail expansion, decryption, provider read or record mutation.
+- **Semantics:** Match existing effective Awaiting approval behavior for a paid
+  awaiting-payment registration without changing stored registration state. Show
+  associated invoice balance as exact minor units, including linked-domain billing;
+  do not infer new prices, renewals or provider success.
+- **Interface and limits:** Persist filters in a fixed local URL, fail closed on
+  malformed selection/payloads, ignore stale reads and link into client-owned
+  detail routes. Validate complete fictional multi-service inventory and responsive
+  browsing. Offset pages may change between reads. This source repair does not
+  deploy, establish a production capacity limit or close unrelated operating gates.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

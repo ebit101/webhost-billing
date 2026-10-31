@@ -5,7 +5,7 @@ source and automated evidence exist; it does not mean the feature has passed the
 credentialed staging, operator, provider, or production acceptance required for live
 use.
 
-Updated 2026-11-01 through Command 159. The repository capability column describes
+Updated 2026-11-01 through Command 160. The repository capability column describes
 current `main`, not the older immutable `v0.1.0-alpha.1` source archive. The isolated
 one-command demo has its own intentionally limited fixtures and no live providers.
 
@@ -42,7 +42,12 @@ acceptance passed locally. An independently stored encrypted snapshot was retrie
 restored into a network-isolated temporary database in 14 seconds, matching 56 tables
 and 39 migrations. This is database-only evidence; immutable recurring backup, secret
 escrow, full application recovery, incident routing, host hardening and multi-service
-capacity acceptance remain open. The global domain list still stops at 100 records.
+capacity acceptance remain open. Installed staging still uses the earlier bounded
+domain list. Command 160 adds a complete paginated administrator inventory in source,
+with literal client/domain search, state/origin filters, full counts and lightweight
+summaries. Fictional API acceptance covers 200 clients, 600 services and 600 domains
+with two administrators; this is not a production capacity limit or deployment.
+See [the inventory contract](DOMAIN_INVENTORY.md).
 See the [current readiness review](PRODUCTION_READINESS_REVIEW.md).
 
 Command 159 adds reviewed build-tool dependency fixes and an enforced deepmerge

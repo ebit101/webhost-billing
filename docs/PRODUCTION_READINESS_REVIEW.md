@@ -57,7 +57,7 @@ records, raw provider payloads or personal alert destinations.
 | Bank payment process                      | Implemented; operator evidence required for real receipts | Use verified bank credits and duplicate-reference controls. Fictional samples are not real bank evidence. Online payment gateways may remain disabled for the selected launch mode.                                                                                                                                                 |
 | SMTP and communication                    | Partial                                                   | Selected staging messages were accepted and customer verification was reported successful. Production SPF/DKIM/DMARC, sender reputation, quotas, bounce handling, rotation and incident delivery still require evidence. No test message is sent in this review.                                                                    |
 | Monitoring and incident alerts            | Open                                                      | Health/readiness and an administrator operational view exist. Super admin and the saved admin email are owner-selected; an independent monitor, confirmed recipient mapping, tested delivery, escalation and backup contact are not established.                                                                                    |
-| Shared-host security and capacity         | Blocked                                                   | Protected host-access findings need remediation, resource budgets are unset and the global domain inventory stops at 100 records. Confirm console recovery and unrelated-service ownership before access changes; do not infer production limits from a read baseline.                                                              |
+| Shared-host security and capacity         | Blocked                                                   | Protected host-access findings need remediation, resource budgets are unset and the installed global domain inventory stops at 100 records (source closure in Command 160 awaits deployment). Confirm console recovery and unrelated-service ownership before access changes; do not infer production limits from a read baseline.  |
 | Production separation and release         | Open                                                      | Approve target, independent secrets/database/queues, compatible rollback images, final source/image digests, vulnerability review and cutover. Do not silently promote seeded staging accounts or reuse staging secrets.                                                                                                            |
 | Business policies and staffing            | Partial                                                   | D1–D4 were accepted and staging billing identity/instructions were configured. D5–D8, lawful retention, named primary/backup contacts, maintenance/incident communication and final sign-off remain open.                                                                                                                           |
 
@@ -148,6 +148,17 @@ median 97.99 ms, p95 366.08 ms and maximum 492.20 ms. The global domain response
 only 100 of 600 records, so inventory acceptance is **blocked**. No provider operation,
 email attempt or outbox event was added. These figures describe one short API-only
 read run under laboratory limits, not a throughput, write-load or production guarantee.
+
+Command 160 closes the source API completeness gap with the canonical paginated
+`GET /domains/inventory` administrator read model. Five local API cases passed against
+200 fictional clients, 600 services and 600 domains with one to five of each per client.
+Two administrators each enumerated every domain through six bounded pages; all 200
+client scopes matched and business fingerprints stayed unchanged. No detail fan-out,
+decryption or registrar request is needed. The old full-detail array remains bounded
+for portal/client compatibility; it is not the global inventory contract. See the
+[inventory contract](DOMAIN_INVENTORY.md) and Command 160 report for complete UI/build
+acceptance. Installed staging remains unchanged; deployment and operational capacity,
+financial-write/provider/recovery/host gates still need separate acceptance.
 
 ## Operating acceptance still required
 

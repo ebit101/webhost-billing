@@ -8,6 +8,11 @@ and will be called out in release notes.
 
 ## [Unreleased]
 
+- Added complete administrator domain inventory pagination, literal client/domain
+  search, status/origin filters and matching counts. Lightweight read-only summaries
+  avoid detail decryption/fan-out, preserve owning-client links and keep provider
+  actions separate. See [the inventory contract](docs/DOMAIN_INVENTORY.md).
+
 - Remediated build-tool dependencies with supported Vite/Vitest/Zod updates,
   reviewed modern glob/minimatch updates and a mandatory deepmerge prototype-key
   patch. Added ten bounded installed-consumer probes. Raw audit retains two

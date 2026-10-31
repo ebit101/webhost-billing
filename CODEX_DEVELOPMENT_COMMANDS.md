@@ -6346,3 +6346,31 @@ Canonical package and browser checks must pass protected CI before normal delive
 Exact next recommendation, not authorization: Command 160 — Complete global domain
 inventory pagination, search, counts and bounded summaries locally, with fictional
 multi-service workload validation. Keep provider posture unchanged and do not deploy.
+
+## Command 160 — Complete the global domain inventory locally
+
+Owner-authorized on 2026-11-01. Replace the global administrator page's 100-record
+ceiling and local-only search with a complete paginated database inventory, matching
+counts, state/origin/client filters and bounded list summaries. Preserve staff/client
+authorization, financial state and client-owned record navigation. Retain existing
+portal/detail contracts and provider actions; do not expand scope to renewal or import.
+
+Validate fictional 200-client multi-service/domain data and two administrators,
+older-record discovery, scope/role rejection, stable pages, count consistency,
+read-only behavior, URL/history/stale-read handling and responsive tables. Run source,
+API, browser and production-build acceptance; update the report and readiness limits,
+then deliver through protected Git checks. Keep Office work/environment and original
+containers. No staging access/deployment, real records, external provider calls or mail.
+SMTP stays active on staging and other providers remain disabled.
+
+Local acceptance completed on 2026-11-01: 135 API integration cases including the
+200-client/600-domain workload, 747 full web cases before the final rapid-filter
+regression and 42 affected web cases afterward, six affected browser cases across
+the recorded runs, four staff cases, lint/types, production build and production
+audit passed. The report records corrected failures and limits. Required hosted
+CI, CodeQL and dependency review must pass before normal main delivery.
+
+Exact next recommendation, not authorization: Command 161 — Deploy validated Commands
+158–160 (recovery/runtime/toolchain repairs and domain inventory) to staging after fresh
+encrypted-backup verification, preserving environment,
+logo and provider posture, with read-only pagination/search/count/role/link smoke tests.

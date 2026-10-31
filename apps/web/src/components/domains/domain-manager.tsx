@@ -37,13 +37,21 @@ type Quote = DomainQuote;
 type Domain = DomainDetail;
 import { Field, labels, contactFields, money } from './domain-fields';
 import { domainRecordHref } from '../../lib/client-record-href';
+import { AdminDomainInventory } from './admin-domain-inventory';
+import {
+  readAdminDomainQuery,
+  type AdminDomainSelection,
+} from '../../lib/admin-domain-inventory-query';
 export function DomainManager({
   administrator = false,
   initialIntent,
+  inventorySelection = readAdminDomainQuery({}),
 }: {
   administrator?: boolean;
   initialIntent?: DomainIntent;
+  inventorySelection?: AdminDomainSelection;
 }) {
+  const [inventoryRevision, setInventoryRevision] = useState(0);
   const [selectedOffer, setSelectedOffer] = useState(
     initialIntent?.domainOfferId ?? '',
   );
@@ -84,8 +92,11 @@ export function DomainManager({
     };
   }, [administrator]);
   async function refresh() {
+    if (administrator) setInventoryRevision((value) => value + 1);
     const [records, prices] = await Promise.all([
-      authenticatedGet<Domain[]>('/domains'),
+      administrator
+        ? Promise.resolve([])
+        : authenticatedGet<Domain[]>('/domains'),
       authenticatedGet<Offer[]>('/domains/offers'),
     ]);
     setDomains(domainDetailSchema.array().parse(records));
@@ -102,7 +113,9 @@ export function DomainManager({
     void (async () => {
       try {
         const [records, prices] = await Promise.all([
-          authenticatedGet<Domain[]>('/domains'),
+          administrator
+            ? Promise.resolve([])
+            : authenticatedGet<Domain[]>('/domains'),
           authenticatedGet<Offer[]>('/domains/offers'),
         ]);
         if (active) {
@@ -198,8 +211,12 @@ export function DomainManager({
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Domain registration"
-        description="Domain requests, separate invoice/payment states and explicit administrator approval."
+        title={administrator ? 'Domains' : 'Domain registration'}
+        description={
+          administrator
+            ? 'Browse saved domains, review matching totals and open the owning client profile.'
+            : 'Domain requests, separate invoice/payment states and explicit administrator approval.'
+        }
       />
       <p className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
         Offers and records marked simulated make no external calls. Live offers
@@ -530,106 +547,113 @@ export function DomainManager({
           </Card>
         </RecordAction>
       )}
-      <section aria-label="Domain requests" className="space-y-4">
-        <p className="text-sm text-slate-600">
-          Latest 100 domain requests, newest first.
-        </p>
-        {!domains.length && <p>No domain requests yet.</p>}
-        <label className="block text-sm font-semibold">
-          Search domains
-          <input
-            type="search"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            className={fieldClass}
-          />
-        </label>
-        <p className="text-sm">
-          {
-            domains.filter((domain) =>
-              domain.domainName.includes(search.trim().toLowerCase()),
-            ).length
-          }{' '}
-          matching requests
-        </p>
-        <DataTable
-          caption="Domain requests"
-          rows={domains.filter((domain) =>
-            domain.domainName.includes(search.trim().toLowerCase()),
-          )}
-          rowKey={(domain) => domain.id}
-          columns={[
-            {
-              key: 'domain',
-              header: 'Domain',
-              render: (domain) => (
-                <Link
-                  prefetch={false}
-                  href={domainRecordHref(domain, administrator)}
-                  className="font-semibold text-brand-700 hover:underline"
-                >
-                  {domain.domainName}
-                </Link>
-              ),
-            },
-            {
-              key: 'registrar',
-              header: 'Registrar',
-              render: (domain) =>
-                domain.registrar +
-                (domain.simulated ? ' · Simulated' : ' · Live'),
-            },
-            {
-              key: 'status',
-              header: 'Status',
-              render: (domain) => sentenceCaseLabel(domain.state),
-            },
-            {
-              key: 'invoice',
-              header: 'Invoice',
-              render: (domain) =>
-                domain.invoiceStatus
-                  ? sentenceCaseLabel(domain.invoiceStatus)
-                  : 'No billing record',
-            },
-            {
-              key: 'balance',
-              header: 'Balance',
-              render: (domain) =>
-                domain.balanceDue !== null
-                  ? money(domain.balanceDue, domain.currency)
-                  : 'Not applicable',
-            },
-            {
-              key: 'date',
-              header: 'Requested',
-              render: (domain) =>
-                new Date(domain.requestedAt).toLocaleDateString('en-GB'),
-            },
-            {
-              key: 'expiry',
-              header: 'Expiry',
-              render: (domain) =>
-                domain.expiresAt
-                  ? new Date(domain.expiresAt).toLocaleDateString('en-GB')
-                  : 'Not confirmed',
-            },
-            {
-              key: 'actions',
-              header: 'Actions',
-              render: (domain) => (
-                <Link
-                  prefetch={false}
-                  href={domainRecordHref(domain, administrator)}
-                  className="font-semibold text-brand-700 hover:underline"
-                >
-                  View <span className="sr-only">{domain.domainName}</span>
-                </Link>
-              ),
-            },
-          ]}
+      {administrator ? (
+        <AdminDomainInventory
+          selection={inventorySelection}
+          revision={inventoryRevision}
         />
-      </section>
+      ) : (
+        <section aria-label="Domain requests" className="space-y-4">
+          <p className="text-sm text-slate-600">
+            Latest 100 domain requests, newest first.
+          </p>
+          {!domains.length && <p>No domain requests yet.</p>}
+          <label className="block text-sm font-semibold">
+            Search domains
+            <input
+              type="search"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              className={fieldClass}
+            />
+          </label>
+          <p className="text-sm">
+            {
+              domains.filter((domain) =>
+                domain.domainName.includes(search.trim().toLowerCase()),
+              ).length
+            }{' '}
+            matching requests
+          </p>
+          <DataTable
+            caption="Domain requests"
+            rows={domains.filter((domain) =>
+              domain.domainName.includes(search.trim().toLowerCase()),
+            )}
+            rowKey={(domain) => domain.id}
+            columns={[
+              {
+                key: 'domain',
+                header: 'Domain',
+                render: (domain) => (
+                  <Link
+                    prefetch={false}
+                    href={domainRecordHref(domain, administrator)}
+                    className="font-semibold text-brand-700 hover:underline"
+                  >
+                    {domain.domainName}
+                  </Link>
+                ),
+              },
+              {
+                key: 'registrar',
+                header: 'Registrar',
+                render: (domain) =>
+                  domain.registrar +
+                  (domain.simulated ? ' · Simulated' : ' · Live'),
+              },
+              {
+                key: 'status',
+                header: 'Status',
+                render: (domain) => sentenceCaseLabel(domain.state),
+              },
+              {
+                key: 'invoice',
+                header: 'Invoice',
+                render: (domain) =>
+                  domain.invoiceStatus
+                    ? sentenceCaseLabel(domain.invoiceStatus)
+                    : 'No billing record',
+              },
+              {
+                key: 'balance',
+                header: 'Balance',
+                render: (domain) =>
+                  domain.balanceDue !== null
+                    ? money(domain.balanceDue, domain.currency)
+                    : 'Not applicable',
+              },
+              {
+                key: 'date',
+                header: 'Requested',
+                render: (domain) =>
+                  new Date(domain.requestedAt).toLocaleDateString('en-GB'),
+              },
+              {
+                key: 'expiry',
+                header: 'Expiry',
+                render: (domain) =>
+                  domain.expiresAt
+                    ? new Date(domain.expiresAt).toLocaleDateString('en-GB')
+                    : 'Not confirmed',
+              },
+              {
+                key: 'actions',
+                header: 'Actions',
+                render: (domain) => (
+                  <Link
+                    prefetch={false}
+                    href={domainRecordHref(domain, administrator)}
+                    className="font-semibold text-brand-700 hover:underline"
+                  >
+                    View <span className="sr-only">{domain.domainName}</span>
+                  </Link>
+                ),
+              },
+            ]}
+          />
+        </section>
+      )}
     </div>
   );
 }
