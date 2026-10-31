@@ -8,6 +8,8 @@
 - Staging application version tested: `b2b2d61`
 - Production mutation authorized by Command 32: **No**
 - Current production decision: **NO-GO**
+- Current review: Command 158, 2026-10-31; see the [readiness gate register](PRODUCTION_READINESS_REVIEW.md).
+- Current installed staging source: `6e5856facabdfa336fff697dae622b63f6610cdd`, 39 completed migrations. The preparation versions above are historical.
 
 Command 33 policy checkpoint, 2026-10-06: Shahadat Hossain, Administrator, approved
 `DRAFT-OPS-1` groups D1–D4 as written. Payment/order/cancellation/refund rules are now
@@ -21,11 +23,14 @@ angle-bracket placeholder, attach evidence for every gate, obtain the business o
 written approval, and then use the separate explicit production-deployment command from
 `CODEX_DEVELOPMENT_COMMANDS.md`. Stop if the target, release, owner, or evidence differs.
 
-The production release must be rebuilt from the final approved commit. Staging proved the
-core application and shared-host topology with fictional data, TLS-required Mailpit, fake
-payment/hosting contracts, all 21 migrations, and seven healthy processes. It did not prove
-real SMTP delivery, bKash/SSLCOMMERZ acceptance, cPanel/WHM behavior, public alerting, an
-off-site restore, or a production target.
+The production release must be rebuilt from the final approved commit. Current staging
+has seven healthy processes and 39 completed migrations. Since the original preparation,
+selected real SMTP delivery, controlled WHM creation with mail/DNS preservation and
+registrar ownership/linking reads have passed. Command 158 adds independent-host encrypted
+retrieval and a timed, isolated database-only restore. These partial checks do not establish
+full provider acceptance, managed immutable backup/secret recovery, public incident delivery,
+representative capacity, or an approved production target. See the current review for the
+exact limits; do not treat the old fictional checkpoint as the latest evidence.
 
 ## Non-negotiable boundaries
 
@@ -78,25 +83,28 @@ and the corresponding provider stays disabled.
 | -------------------------------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Production target identity             | **BLOCKED — SHARED EXCEPTION**     | Owner selected the current shared host and read-only capacity passed, but exact provider/server plan/cost/owners, production SSH, firewall, patching, encryption, resource limits and recovery evidence in `docs/PRODUCTION_INFRASTRUCTURE_AUDIT.md` remain required |
 | Current production backup              | **BLOCKED**                        | Recovery owner verifies a fresh pre-migration encrypted backup at the approved off-site immutable destination; a new empty installation records an empty baseline plus infrastructure recovery evidence                                                              |
-| Tested restoration                     | **PARTIAL**                        | Command 30 local recovery passed and Command 31 backup integrity passed; recovery owner must complete and time an isolated restore on production-like hardware                                                                                                       |
+| Tested restoration                     | **PARTIAL**                        | Command 158 retrieved an independently stored encrypted copy and restored all 56 tables/39 migrations in an isolated container; data-only restore took 14 seconds. Full application/key/configuration recovery within the four-hour target remains open.             |
 | Secrets and escrow                     | **BLOCKED**                        | Security owner supplies independent production secrets from an approved manager, separately escrows historical encryption key/backup passphrase, and proves recovery without printing values                                                                         |
 | HTTPS and DNS                          | **PARTIAL — SAME ORIGIN SELECTED** | Owner selected `my.speedhost.bd` for both web and API. Its current staging DNS/TLS works; production cutover/rollback, A/AAAA scope, certificate renewal monitoring, exact route allowlist and shared Nginx review remain required                                   |
 | Migration plan                         | **READY FOR REVIEW**               | Release/database owners review all pending SQL, take backup, run one migration tool once, and prove clean status                                                                                                                                                     |
 | Rollback plan                          | **READY BUT UNASSIGNED**           | Owner names rollback operator, prior compatible image/digests, pre-migration restore point, thresholds and decision authority                                                                                                                                        |
 | Maintenance communication              | **BLOCKED**                        | Communication owner approves audience, channel, start/end updates, status location and incident message                                                                                                                                                              |
-| Gateway production configuration       | **MANUAL-FIRST SELECTED**          | Owner approved the proposed `MANUAL_FIRST` launch mode in Command 33. Keep bKash/SSLCOMMERZ production credentials absent and verify only approved manual instructions/evidence are exposed                                                                          |
-| Hosting-panel production configuration | **MANUAL-FIRST SELECTED**          | Owner approved the proposed `MANUAL_FIRST` launch mode in Command 33. Keep every production WHM token absent, perform provisioning outside the application, and record only verified service state                                                                   |
-| SMTP reputation/configuration          | **BLOCKED**                        | Email owner verifies sender, authenticated TLS, SPF, DKIM, DMARC, bounce path, quotas, credential rotation and fictional delivery                                                                                                                                    |
+| Gateway production configuration       | **BANK PAYMENTS SELECTED**         | Command 158 retains reviewed bank receipts and approved instructions. Online gateways may remain disabled; samples do not verify real payment.                                                                                                                       |
+| Hosting-panel production configuration | **CONTROLLED API TARGET; BLOCKED** | Command 158 selects controlled WHM actions as the planning target. Complete credential scope, egress, disposable lifecycle/failure/reconciliation acceptance and exact operation approval before enabling any connection.                                            |
+| Registrar production configuration     | **CONTROLLED API TARGET; BLOCKED** | Ownership/linking reads have passed. Separately authorize disposable registration/renewal/management targets, charges and reconciliation; billing an existing domain never submits registration or changes registry expiry.                                          |
+| SMTP reputation/configuration          | **PARTIAL**                        | Selected staging SMTP delivery passed and SMTP stays active. Production sender, TLS, SPF/DKIM/DMARC, bounce handling, quotas, rotation and incident delivery still need evidence.                                                                                    |
 | Monitoring and alerts                  | **BLOCKED**                        | Monitoring owner configures external UI/API/readiness, process, database/Redis, queue/outbox, provider, SMTP, renewal, certificate, clock, disk and backup-age alerts to tested contacts                                                                             |
 | First-renewal schedule                 | **PARTIAL**                        | Owner approved Asia/Dhaka, 14-day lead, 7/3/1 reminders and 3-day grace. First eligible services, exact first-run date/window, supervision owner and suspension review remain blocked                                                                                |
 | Termination automation disabled        | **PASS**                           | No scheduler event or worker handler exists for termination; retain manual confirmation and review this invariant in the final release gate                                                                                                                          |
-| Business/legal settings                | **BLOCKED**                        | Owner completes and approves `docs/PRODUCTION_BUSINESS_POLICIES.md`: identity, currency, numbering, order review, manual proof, cancellation/refund and retention. Tax input/custom wording is optional under B6–B7; no legal exemption is inferred.                 |
+| Business/legal settings                | **PARTIAL; LAUNCH BLOCKED**        | D1–D4 and staging identity/manual instructions were accepted. Complete D5–D8, retention, named contacts, maintenance/incident handling and final production sign-off. No legal exemption is inferred.                                                                |
 | Image supply chain                     | **PARTIAL**                        | Local non-root images passed; production needs approved registry, vulnerability scan, signature/provenance and digest-pinned release record                                                                                                                          |
 | Initial administrator                  | **PREPARED**                       | One-time utility exists; operator creates only the first admin from a protected password file, removes that file, verifies the audit entry, and enrolls TOTP before exposure                                                                                         |
 
 ### Permitted first-launch provider modes
 
-Choose and sign exactly one option for payment and one for hosting:
+The Command 158 owner direction is bank payment with controlled WHM and registrar API
+actions. It supersedes the earlier manual-hosting planning choice, but authorizes no
+production activation. Complete and sign the exact operating scope at launch:
 
 - **Manual-first payment:** keep bKash and SSLCOMMERZ inactive. Publish only approved
   cash/bank/manual-payment instructions and require administrator verification.
@@ -109,7 +117,10 @@ Choose and sign exactly one option for payment and one for hosting:
 - **Automated cPanel:** remains blocked until credentialed disposable-account acceptance
   passes and production egress is restricted to the approved WHM address/port.
 
-UK2Group is outside this launch in every mode.
+Resell.biz/StarGate/UK2 now has an implemented LogicBoxes adapter. Controlled registrar
+actions are part of the selected planning target, conditional on exact account, egress,
+ownership, consent, cost and action acceptance. Keep its account and networking disabled
+until the separately authorized window; premium registration is outside the selected scope.
 
 ## Required approval record
 
@@ -128,6 +139,7 @@ Pre-migration backup object/version/checksum:
 Restore-drill date and measured RPO/RTO:
 Payment mode:
 Hosting mode:
+Registrar account/actions/cost ceilings:
 SMTP provider/sender:
 First renewal date/timezone/policy:
 Maintenance start/end and communication channel:
@@ -322,7 +334,8 @@ verify the audit record before public exposure.
 
 ## Phase 6 — Start without background or renewal automation
 
-Keep the manual payment gateway selected and leave every cPanel server token unconfigured.
+Keep bank/manual payment selected and every hosting/registrar connection disabled.
+Do not install production tokens until their exact provider gates pass.
 Start core traffic, but not the worker or scheduler:
 
 ```bash

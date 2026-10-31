@@ -11,6 +11,7 @@ target_database=$1
 backup_validate_recovery_database_name "$target_database"
 backup_require_runtime
 backup_database_exists "$target_database" || backup_die "The recovery database does not exist."
+backup_verify_database_release "$target_database"
 
 verification_result=$(
   backup_compose exec -T \

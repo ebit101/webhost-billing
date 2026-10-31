@@ -8,6 +8,15 @@ and will be called out in release notes.
 
 ## [Unreleased]
 
+- Strengthened recovery verification to cover all 56 tables, exact matching-release
+  migration checksums and full row contents. Added eight inventory/checksum tests
+  and encrypted restore acceptance in CI. Command 158 verified independent-host
+  encrypted retrieval and a 14-second isolated database-only restore; recurring
+  off-site backups, secret escrow, full application recovery, incident routing,
+  host hardening and multi-service capacity acceptance remain open. See the
+  [production-readiness review](docs/PRODUCTION_READINESS_REVIEW.md); production
+  remains `NO-GO` and no application deployment is included.
+
 ### Changed
 
 - Refreshed the public project overview and capability matrix through Command 157

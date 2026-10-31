@@ -2,6 +2,13 @@
 
 ## Control status
 
+Command 158 update, 2026-10-31: see the [current readiness review](PRODUCTION_READINESS_REVIEW.md)
+for refreshed protected host observations, encrypted independent-host retrieval and isolated
+database restoration. This document retains its original audit history. Host-access
+hardening, resource allocation, recurring independent backups and incident routing remain
+unaccepted; production remains **NO-GO**. Do not publish fresh live access-policy findings
+or infer production capacity from a healthy shared host.
+
 - Command: 34 — Select and Audit Production Infrastructure
 - Audit date: 2026-08-26
 - Audit mode: Read-only SSH with strict pinned-host-key checking

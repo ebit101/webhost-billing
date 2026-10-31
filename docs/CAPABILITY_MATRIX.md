@@ -5,7 +5,7 @@ source and automated evidence exist; it does not mean the feature has passed the
 credentialed staging, operator, provider, or production acceptance required for live
 use.
 
-Updated 2026-10-31 through Command 157. The repository capability column describes
+Updated 2026-10-31 through Command 158. The repository capability column describes
 current `main`, not the older immutable `v0.1.0-alpha.1` source archive. The isolated
 one-command demo has its own intentionally limited fixtures and no live providers.
 
@@ -35,6 +35,15 @@ multi-currency accounting, and automatic permanent hosting termination are outsi
 the authorized scope.
 
 ## Production status
+
+Command 158 strengthened recovery with all 56 tables, exact trusted release migrations
+and full row-content comparison. Eight inventory/checksum cases and encrypted recovery
+acceptance passed locally. An independently stored encrypted snapshot was retrieved and
+restored into a network-isolated temporary database in 14 seconds, matching 56 tables
+and 39 migrations. This is database-only evidence; immutable recurring backup, secret
+escrow, full application recovery, incident routing, host hardening and multi-service
+capacity acceptance remain open. The global domain list still stops at 100 records.
+See the [current readiness review](PRODUCTION_READINESS_REVIEW.md).
 
 Command 156 passed 62 related fictional API/database cases for combined orders,
 sample-payment review, actual fake hosting success, temporary retry, uncertain

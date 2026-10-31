@@ -16,6 +16,7 @@ database_name=${BACKUP_DATABASE_NAME:-}
 backup_validate_database_name "$database_name"
 backup_require_passphrase_file "$passphrase_file"
 backup_require_runtime
+backup_verify_database_release "$database_name"
 
 umask 077
 mkdir -p -- "$output_directory"
