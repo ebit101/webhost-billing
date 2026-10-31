@@ -113,11 +113,14 @@ test.beforeAll(async () => {
       email: `browser160-${index}@example.test`,
       role: 'CUSTOMER',
       status: 'ACTIVE',
-      emailVerifiedAt: new Date(),
+      createdAt: new Date('2026-01-01T00:00:00Z'),
+      emailVerifiedAt: new Date('2026-01-01T00:00:00Z'),
     })),
   });
   await prisma.customer.createMany({
     data: Array.from({ length: 70 }, (_, index) => ({
+      // Historical inventory must not displace other journeys' recent-client fixtures.
+      createdAt: new Date('2026-01-01T00:00:00Z'),
       id: id(2000 + index),
       userId: id(1000 + index),
       customerNumber: `CUS-BROWSER160-${index}`,
