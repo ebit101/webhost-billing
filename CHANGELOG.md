@@ -8,6 +8,12 @@ and will be called out in release notes.
 
 ## [Unreleased]
 
+- Remediated build-tool dependencies with supported Vite/Vitest/Zod updates,
+  reviewed modern glob/minimatch updates and a mandatory deepmerge prototype-key
+  patch. Added ten bounded installed-consumer probes. Raw audit retains two
+  documented version-based warnings and no high findings; no warning is suppressed.
+  See the [remediation register](docs/TOOLCHAIN_SECURITY_REMEDIATION.md).
+
 - Updated the pinned qs runtime dependency to upstream 6.16.1 for
   [GHSA-6pq8-jhm2-2vcw](https://github.com/advisories/GHSA-6pq8-jhm2-2vcw), with three
   regression cases through actual runtime consumers. All 18 tooling/runtime security
