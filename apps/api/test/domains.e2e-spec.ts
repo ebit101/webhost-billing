@@ -22,6 +22,7 @@ import {
 import {
   PARTIAL_PAYMENT_POLICY_CONFIRMATION,
   domainDetailSchema,
+  domainInventoryResponseSchema,
   orderCreationResultSchema,
   hostingPanelOperationResultSchema,
   manualPaymentCreationResultSchema,
@@ -477,6 +478,46 @@ describe('complete simulated registrar in isolated PostgreSQL (e2e)', () => {
       { confirmation: 'Enable simulated registrar', sellingAmount: '150000' },
       403,
     );
+  });
+  it('filters inventory by effective payment state without changing registration or dispatching a provider', async () => {
+    const domain = await purchase('inventory160');
+    const path = '/domains/inventory?search=' + domain.domainName;
+    const initial = domainInventoryResponseSchema.parse(
+      (await owner.get(path).expect(200)).body,
+    );
+    expect(initial.pagination.totalItems).toBe(1);
+    expect(initial.summary.AWAITING_PAYMENT).toBe(1);
+    expect(initial.data[0]).toMatchObject({
+      id: domain.id,
+      state: 'AWAITING_PAYMENT',
+      invoiceStatus: 'UNPAID',
+      origin: 'REGISTRATION',
+      balanceDue: '150000',
+    });
+    await pay(domain);
+    const before = await existingLinkFinancialCounts();
+    const paid = domainInventoryResponseSchema.parse(
+      (await owner.get(path + '&state=AWAITING_APPROVAL').expect(200)).body,
+    );
+    expect(paid.summary.AWAITING_APPROVAL).toBe(1);
+    expect(paid.data[0]).toMatchObject({
+      id: domain.id,
+      state: 'AWAITING_APPROVAL',
+      invoiceStatus: 'PAID',
+      balanceDue: '0',
+    });
+    const noLongerUnpaid = domainInventoryResponseSchema.parse(
+      (await owner.get(path + '&state=AWAITING_PAYMENT').expect(200)).body,
+    );
+    expect(noLongerUnpaid.pagination.totalItems).toBe(0);
+    expect(await existingLinkFinancialCounts()).toEqual(before);
+    expect(
+      (await prisma.domain.findUniqueOrThrow({ where: { id: domain.id } }))
+        .state,
+    ).toBe('AWAITING_PAYMENT');
+    expect(
+      await prisma.registrarOperation.count({ where: { domainId: domain.id } }),
+    ).toBe(0);
   });
   it('lets a full administrator record offline consent and create an unpaid domain order for a customer', async () => {
     const identity = await customer.get('/auth/me').expect(200);

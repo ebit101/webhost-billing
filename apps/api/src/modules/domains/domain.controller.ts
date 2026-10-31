@@ -32,6 +32,8 @@ import {
   type DomainActionRequest,
   existingDomainLinkRequestSchema,
   type ExistingDomainLinkRequest,
+  domainInventoryQuerySchema,
+  type DomainInventoryQuery,
 } from '@webhost-billing/shared';
 import { ZodValidationPipe } from '../../common/validation/zod-validation.pipe';
 import { CurrentAuth } from '../auth/decorators/current-auth.decorator';
@@ -41,6 +43,7 @@ import { DomainService } from './domain.service';
 import { z } from 'zod';
 import { DomainLifecycleService } from './domain-lifecycle.service';
 import { ExistingDomainLinkService } from './existing-domain-link.service';
+import { DomainInventoryService } from './domain-inventory.service';
 
 @Controller('domains')
 export class DomainController {
@@ -48,7 +51,18 @@ export class DomainController {
     private readonly domains: DomainService,
     private readonly lifecycle: DomainLifecycleService,
     private readonly existing: ExistingDomainLinkService,
+    private readonly inventory: DomainInventoryService,
   ) {}
+  @Get('inventory')
+  @Header('Cache-Control', 'private, no-store, max-age=0')
+  @Roles('ADMIN')
+  async inventoryList(
+    @Query(new ZodValidationPipe(domainInventoryQuerySchema))
+    query: DomainInventoryQuery,
+    @CurrentAuth() auth: AuthRequestContext,
+  ) {
+    return this.inventory.list(query, auth);
+  }
   @Post('existing-links')
   @Roles('ADMIN')
   async linkExisting(

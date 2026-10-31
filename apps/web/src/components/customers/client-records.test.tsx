@@ -21,6 +21,10 @@ import {
 import { ClientRecords } from './client-records';
 import { ClientProfileNavigation } from './client-profile-navigation';
 import { DomainManager } from '../domains/domain-manager';
+import {
+  inventoryPage,
+  inventoryRow,
+} from '../../test/domain-inventory-fixtures';
 import { DomainOwnerRedirect } from '../domains/domain-owner-redirect';
 import {
   clientRecordHref,
@@ -48,7 +52,10 @@ beforeEach(() => {
   );
   api.page.mockResolvedValue({ data: [service] });
 });
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
 describe('client-owned record workspace', () => {
   it('retains profile tabs and switches clients without carrying the selected record', async () => {
     api.page.mockResolvedValue({
@@ -221,8 +228,23 @@ describe('client-owned record workspace', () => {
     expect(screen.queryByRole('link', { name: /Customer/ })).toBeNull();
   });
   it('global domain names and View links both navigate into client context', async () => {
-    api.get.mockImplementation(async (path: string) =>
-      path === '/domains' ? [domain] : [],
+    api.get.mockResolvedValue([]);
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify(
+            inventoryPage([
+              {
+                ...inventoryRow,
+                id: domainId,
+                customerId: clientId,
+                domainName: domain.domainName,
+              },
+            ]),
+          ),
+        ),
+      ),
     );
     render(<DomainManager administrator />);
     for (const name of [domain.domainName, 'View ' + domain.domainName])

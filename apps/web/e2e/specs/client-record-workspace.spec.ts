@@ -7,6 +7,10 @@ import {
   email,
 } from '../../src/test/client-activity-fixtures';
 import { hash } from 'argon2';
+import {
+  inventoryPage,
+  inventoryRow,
+} from '../../src/test/domain-inventory-fixtures';
 import { createPrismaClient } from '@webhost-billing/database';
 import { E2E_DATABASE_URL, E2E_SCHEMA, E2E_API_ORIGIN } from '../environment';
 import { assertBrowserDatabaseScope } from '../database-scope';
@@ -125,6 +129,32 @@ for (const width of [1440, 375])
         (row) => url.pathname === '/domains/' + row.id,
       );
       const scope = url.searchParams.get('customerId');
+      if (url.pathname === '/domains/inventory') {
+        const rows = domains
+          .map((entry) => ({
+            ...inventoryRow,
+            id: entry.id,
+            customerId,
+            domainName: entry.domainName,
+            state: entry.state,
+            origin: entry.origin ?? 'REGISTRATION',
+            invoiceId: entry.invoiceId,
+            invoiceStatus: entry.invoiceStatus,
+            balanceDue: entry.balanceDue,
+            requestedAt: entry.requestedAt,
+          }))
+          .sort(
+            (left, right) =>
+              right.requestedAt.localeCompare(left.requestedAt) ||
+              right.id.localeCompare(left.id),
+          );
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify(inventoryPage(rows)),
+        });
+        return;
+      }
       const denied = Boolean(selected && scope && scope !== customerId);
       const data =
         url.pathname === '/domains/administration/registrars'
