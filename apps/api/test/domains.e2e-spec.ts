@@ -23,6 +23,9 @@ import {
   PARTIAL_PAYMENT_POLICY_CONFIRMATION,
   domainDetailSchema,
   orderCreationResultSchema,
+  hostingPanelOperationResultSchema,
+  manualPaymentCreationResultSchema,
+  serviceCreationResultSchema,
 } from '@webhost-billing/shared';
 import request from 'supertest';
 import type { App } from 'supertest/types';
@@ -34,6 +37,7 @@ import { TotpService } from '../src/modules/auth/services/totp.service';
 import { DomainService } from '../src/modules/domains/domain.service';
 import { DomainAdministrationService } from '../src/modules/domains/domain-administration.service';
 import { ExistingDomainLinkService } from '../src/modules/domains/existing-domain-link.service';
+import { FakeHostingPanel } from '../src/modules/hosting-panels/fake-hosting-panel';
 import type { AuthRequestContext } from '../src/modules/auth/auth.types';
 
 interface DomainResult {
@@ -3128,6 +3132,7 @@ describe('complete simulated registrar in isolated PostgreSQL (e2e)', () => {
     async function hostingSelection(
       customerId: string,
       requestedDomain: string,
+      setupFee = 500n,
     ) {
       const product = await prisma.product.create({
         data: {
@@ -3141,7 +3146,7 @@ describe('complete simulated registrar in isolated PostgreSQL (e2e)', () => {
               billingPeriod: 'MONTHLY',
               currency: 'BDT',
               amount: 120000n,
-              setupFee: 500n,
+              setupFee,
               isActive: true,
             },
           },
@@ -3178,7 +3183,7 @@ describe('complete simulated registrar in isolated PostgreSQL (e2e)', () => {
         where: { tld: 'com' },
       });
     }
-    async function linkedSelection() {
+    async function linkedSelection(setupFee = 500n) {
       const fixture = await existingLinkFixture();
       const result = await mutation(
         owner,
@@ -3201,6 +3206,7 @@ describe('complete simulated registrar in isolated PostgreSQL (e2e)', () => {
         ...(await hostingSelection(
           fixture.input.customerId,
           linked.domainName,
+          setupFee,
         )),
         domainOrder: {
           mode: 'EXISTING' as const,
@@ -3475,6 +3481,343 @@ describe('complete simulated registrar in isolated PostgreSQL (e2e)', () => {
         fixture.wire.mockRestore();
       }
     });
+    it.each(['success', 'temporary failure', 'uncertain result'] as const)(
+      'fulfills a fictional BDT 3,090 existing-domain order safely through the fake panel: %s',
+      async (scenario) => {
+        const { fixture, linked, input } = await linkedSelection(0n);
+        const panel = app.get(FakeHostingPanel);
+        const originalCreate = panel.createAccount.bind(panel);
+        let accountsCreated = 0;
+        const accountIds = new Set<string>();
+        const create = jest
+          .spyOn(panel, 'createAccount')
+          .mockImplementation(async (connection, requested) => {
+            expect(requested.hostingProvisioningMode).toBe('PRESERVE_EXISTING');
+            const result = await originalCreate(connection, requested);
+            if (result.created) accountsCreated++;
+            accountIds.add(result.account.externalAccountId);
+            if (scenario === 'uncertain result')
+              throw new Error('Fictional response lost after account creation');
+            return result;
+          });
+        try {
+          const domainBefore = await prisma.domain.findUniqueOrThrow({
+            where: { id: linked.id },
+          });
+          const registrarBefore = await Promise.all([
+            prisma.registrarOperation.count(),
+            prisma.domainAction.count(),
+            prisma.domainQuote.count(),
+            prisma.fakeRegistrarRegistration.count(),
+          ]);
+          const emailLogsBefore = await prisma.emailLog.count();
+          const created = orderCreationResultSchema.parse(
+            responseData(await mutation(owner, '/orders/admin', input, 201)),
+          );
+          expect(created.order.status).toBe('AWAITING_PAYMENT');
+          expect(created.order.total.amount).toBe('309000');
+          expect(created.order.invoice).toMatchObject({
+            status: 'UNPAID',
+            total: { amount: '309000' },
+            balanceDue: { amount: '309000' },
+          });
+          const orderId = created.order.id;
+          const invoiceId = created.order.invoice.id;
+          const hostingItem = created.order.items.find(
+            (i) => i.kind === 'HOSTING',
+          );
+          const domainItem = created.order.items.find(
+            (i) => i.kind === 'DOMAIN',
+          );
+          if (!hostingItem || !domainItem)
+            throw new Error('Expected both order items');
+          expect(hostingItem.hostingProvisioningMode).toBe('PRESERVE_EXISTING');
+          expect(domainItem).toMatchObject({
+            domainAction: 'EXISTING',
+            domainId: linked.id,
+          });
+          expect(await prisma.invoice.count({ where: { orderId } })).toBe(1);
+          const invoiceItems = await prisma.invoiceItem.findMany({
+            where: { invoiceId },
+            orderBy: { linePosition: 'asc' },
+          });
+          expect(invoiceItems.map((i) => i.lineTotal)).toEqual([
+            120000n,
+            189000n,
+          ]);
+          const orderReplay = orderCreationResultSchema.parse(
+            responseData(await mutation(owner, '/orders/admin', input, 201)),
+          );
+          expect(orderReplay).toMatchObject({
+            duplicate: true,
+            order: { id: orderId },
+          });
+          const server = await prisma.server.create({
+            data: {
+              name: `Fictional flow ${randomUUID()}`,
+              hostname: `${randomUUID()}.example.test`,
+              status: 'ACTIVE',
+              adapterKey: 'fake-panel',
+            },
+          });
+          const serviceInput = {
+            orderItemId: hostingItem.id,
+            serverId: server.id,
+          };
+          await mutation(owner, '/services', serviceInput, 422);
+          const paymentInput = {
+            invoiceId,
+            amount: '309000',
+            submissionKey: randomUUID(),
+            proof: {
+              method: 'BANK_TRANSFER',
+              reference: `SAMPLE-ONLY-${randomUUID()}`,
+              payerName: 'Fictional flow payer',
+              note: 'Isolated automated sample; no actual bank credit.',
+            },
+          };
+          const submitted = manualPaymentCreationResultSchema.parse(
+            responseData(
+              await mutation(
+                customer,
+                '/payments/manual/customer',
+                paymentInput,
+                201,
+              ),
+            ),
+          );
+          expect(submitted.payment.state).toBe('PENDING');
+          await mutation(owner, '/services', serviceInput, 422);
+          expect(
+            (
+              await prisma.invoice.findUniqueOrThrow({
+                where: { id: invoiceId },
+              })
+            ).amountPaid,
+          ).toBe(0n);
+          const csrf = responseData<{ csrfToken: string }>(
+            await owner.get('/auth/csrf').expect(200),
+          ).csrfToken;
+          await owner
+            .patch(`/payments/${submitted.payment.id}/review`)
+            .set('X-CSRF-Token', csrf)
+            .send({ action: 'VERIFY' })
+            .expect(200);
+          expect(
+            await prisma.invoice.findUniqueOrThrow({
+              where: { id: invoiceId },
+            }),
+          ).toMatchObject({
+            status: 'PAID',
+            amountPaid: 309000n,
+            balanceDue: 0n,
+          });
+          expect(
+            (await prisma.order.findUniqueOrThrow({ where: { id: orderId } }))
+              .status,
+          ).toBe('PAID');
+          expect(
+            await prisma.service.count({
+              where: { orderItemId: hostingItem.id },
+            }),
+          ).toBe(0);
+          expect(create).not.toHaveBeenCalled();
+          const serviceResult = serviceCreationResultSchema.parse(
+            responseData(await mutation(owner, '/services', serviceInput, 201)),
+          );
+          const serviceId = serviceResult.service.id;
+          const serviceReplay = serviceCreationResultSchema.parse(
+            responseData(await mutation(owner, '/services', serviceInput, 201)),
+          );
+          expect(serviceReplay).toMatchObject({
+            duplicate: true,
+            service: { id: serviceId },
+          });
+          expect(serviceResult.service.status).toBe('PENDING');
+          expect(
+            (await prisma.order.findUniqueOrThrow({ where: { id: orderId } }))
+              .status,
+          ).toBe('PROCESSING');
+          expect(
+            await prisma.$transaction((tx) =>
+              orderFulfillmentComplete(tx, orderId),
+            ),
+          ).toBe(false);
+          const operationPath = `/hosting-panel/services/${serviceId}/operations`;
+          const operationInput = {
+            type: 'CREATE_ACCOUNT',
+            submissionKey: randomUUID(),
+          };
+          await mutation(customer, operationPath, operationInput, 403);
+          if (scenario === 'temporary failure')
+            panel.failNext('TEMPORARY', 'FAKE_FLOW_BUSY');
+          const first = hostingPanelOperationResultSchema.parse(
+            responseData(
+              await mutation(owner, operationPath, operationInput, 201),
+            ),
+          );
+          let completed = first;
+          const firstReplay = hostingPanelOperationResultSchema.parse(
+            responseData(
+              await mutation(owner, operationPath, operationInput, 201),
+            ),
+          );
+          expect(firstReplay).toMatchObject({
+            duplicate: true,
+            operation: { id: first.operation.id },
+          });
+          expect(create).toHaveBeenCalledTimes(1);
+          if (scenario !== 'success') {
+            expect(first.operation).toMatchObject({
+              status:
+                scenario === 'temporary failure' ? 'FAILED' : 'INCONSISTENT',
+              retryable: scenario === 'temporary failure',
+            });
+            expect(
+              (
+                await prisma.service.findUniqueOrThrow({
+                  where: { id: serviceId },
+                })
+              ).status,
+            ).toBe('PROVISION_FAILED');
+            expect(
+              (await prisma.order.findUniqueOrThrow({ where: { id: orderId } }))
+                .status,
+            ).toBe('PROCESSING');
+            expect(
+              await prisma.$transaction((tx) =>
+                orderFulfillmentComplete(tx, orderId),
+              ),
+            ).toBe(false);
+            // A fresh key must not bypass the bounded retry or uncertain-result hold.
+            await mutation(
+              owner,
+              operationPath,
+              { ...operationInput, submissionKey: randomUUID() },
+              422,
+            );
+            expect(create).toHaveBeenCalledTimes(1);
+            const retryPath = `/hosting-panel/operations/${first.operation.id}/retry`;
+            const retryInput = { submissionKey: randomUUID() };
+            if (scenario === 'temporary failure') {
+              expect(accountsCreated).toBe(0);
+              completed = hostingPanelOperationResultSchema.parse(
+                responseData(await mutation(owner, retryPath, retryInput, 201)),
+              );
+              expect(completed.operation).toMatchObject({
+                status: 'SUCCEEDED',
+                attemptNumber: 2,
+                retryOfOperationId: first.operation.id,
+              });
+              const retryReplay = hostingPanelOperationResultSchema.parse(
+                responseData(await mutation(owner, retryPath, retryInput, 201)),
+              );
+              expect(retryReplay).toMatchObject({
+                duplicate: true,
+                operation: { id: completed.operation.id },
+              });
+              await mutation(
+                owner,
+                retryPath,
+                { submissionKey: randomUUID() },
+                409,
+              );
+              expect(
+                await prisma.hostingPanelOperation.count({
+                  where: { retryOfOperationId: first.operation.id },
+                }),
+              ).toBe(1);
+              expect(create).toHaveBeenCalledTimes(2);
+            } else {
+              await mutation(owner, retryPath, retryInput, 422);
+              expect(create).toHaveBeenCalledTimes(1);
+            }
+          }
+          expect(accountsCreated).toBe(1);
+          expect(accountIds.size).toBe(1);
+          const service = await prisma.service.findUniqueOrThrow({
+            where: { id: serviceId },
+          });
+          if (scenario === 'uncertain result') {
+            expect(service.status).toBe('PROVISION_FAILED');
+            expect(service.externalAccountId).toBeNull();
+            expect(
+              (await prisma.order.findUniqueOrThrow({ where: { id: orderId } }))
+                .status,
+            ).toBe('PROCESSING');
+          } else {
+            expect(completed.operation.status).toBe('SUCCEEDED');
+            expect(service.status).toBe('ACTIVE');
+            expect(service.externalAccountId).toBe(
+              completed.operation.account?.externalAccountId,
+            );
+            expect(accountIds.has(service.externalAccountId ?? '')).toBe(true);
+            expect(
+              (await prisma.order.findUniqueOrThrow({ where: { id: orderId } }))
+                .status,
+            ).toBe('COMPLETED');
+            expect(
+              await prisma.$transaction((tx) =>
+                orderFulfillmentComplete(tx, orderId),
+              ),
+            ).toBe(true);
+          }
+          expect(
+            await prisma.service.count({
+              where: { orderItemId: hostingItem.id },
+            }),
+          ).toBe(1);
+          expect(await prisma.payment.count({ where: { invoiceId } })).toBe(1);
+          const billingLink =
+            await prisma.existingDomainOrder.findUniqueOrThrow({
+              where: { domainId: linked.id },
+            });
+          expect(billingLink).toMatchObject({
+            orderItemId: domainItem.id,
+            invoiceId,
+            customerId: input.customerId,
+          });
+          expect(
+            await prisma.domain.findUniqueOrThrow({ where: { id: linked.id } }),
+          ).toEqual(domainBefore);
+          expect(
+            await Promise.all([
+              prisma.registrarOperation.count(),
+              prisma.domainAction.count(),
+              prisma.domainQuote.count(),
+              prisma.fakeRegistrarRegistration.count(),
+            ]),
+          ).toEqual(registrarBefore);
+          expect(fixture.wire).not.toHaveBeenCalled();
+          const events = await prisma.outboxEvent.findMany({
+            where: {
+              aggregateId: {
+                in: [orderId, invoiceId, submitted.payment.id, serviceId],
+              },
+            },
+          });
+          expect(events.map((e) => e.eventType).sort()).toEqual(
+            [
+              'EMAIL_ORDER_RECEIVED',
+              'EMAIL_INVOICE_CREATED',
+              'EMAIL_PAYMENT_RECEIVED',
+              ...(scenario === 'uncertain result'
+                ? []
+                : ['EMAIL_SERVICE_PROVISIONED']),
+            ].sort(),
+          );
+          expect(
+            events.every((e) => e.status === 'PENDING' && e.attemptCount === 0),
+          ).toBe(true);
+          expect(await prisma.emailLog.count()).toBe(emailLogsBefore);
+        } finally {
+          create.mockRestore();
+          fixture.environment.RESELLBIZ_LIVE_ENABLED = true;
+          fixture.wire.mockRestore();
+        }
+      },
+    );
+
     it('rejects cross-client, unverified, invalid-price and unauthorized requests atomically and serializes competing orders', async () => {
       const { fixture, linked, input } = await linkedSelection();
       try {

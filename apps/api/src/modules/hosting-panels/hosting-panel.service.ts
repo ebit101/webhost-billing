@@ -708,6 +708,13 @@ export class HostingPanelService {
         if (running) {
           throw this.conflict('Another hosting operation is already running.');
         }
+        if (input.type === 'CREATE_ACCOUNT') {
+          await this.assertAccountCreationAttempt(
+            transaction,
+            serviceId,
+            options,
+          );
+        }
         const operation = await transaction.hostingPanelOperation.create({
           data: {
             serviceId,
@@ -885,6 +892,63 @@ export class HostingPanelService {
       metadata = { terminated: true };
     }
     return { account, loginUrl, metadata };
+  }
+
+  private async assertAccountCreationAttempt(
+    transaction: Prisma.TransactionClient,
+    serviceId: string,
+    options: ExecutionOptions,
+  ): Promise<void> {
+    // The service row is locked: a fresh key cannot reset retry history, and
+    // competing retry requests cannot both append children to one attempt.
+    if (!options.retryOfOperationId) {
+      const previous = await transaction.hostingPanelOperation.findFirst({
+        where: { serviceId, type: 'CREATE_ACCOUNT' },
+        select: { id: true },
+      });
+      if (previous) {
+        throw this.invalid(
+          'Account creation was already attempted. Use its safe retry action or reconcile the existing account.',
+        );
+      }
+      return;
+    }
+    const original = await transaction.hostingPanelOperation.findUnique({
+      where: { id: options.retryOfOperationId },
+    });
+    if (
+      !original ||
+      original.serviceId !== serviceId ||
+      original.type !== 'CREATE_ACCOUNT' ||
+      original.status !== HostingPanelOperationStatus.FAILED ||
+      !original.retryable ||
+      original.attemptNumber >= MAX_MANUAL_ATTEMPTS ||
+      options.attemptNumber !== original.attemptNumber + 1
+    ) {
+      throw this.invalid(
+        'Only a safely retryable failed account creation can be retried.',
+      );
+    }
+    const child = await transaction.hostingPanelOperation.findFirst({
+      where: { retryOfOperationId: original.id },
+      select: { id: true },
+    });
+    if (child) {
+      throw this.conflict('This hosting operation already has a manual retry.');
+    }
+    const uncertain = await transaction.hostingPanelOperation.findFirst({
+      where: {
+        serviceId,
+        type: 'CREATE_ACCOUNT',
+        status: HostingPanelOperationStatus.INCONSISTENT,
+      },
+      select: { id: true },
+    });
+    if (uncertain) {
+      throw this.invalid(
+        'Reconcile the uncertain account creation before retrying.',
+      );
+    }
   }
 
   private async completeSuccess(
