@@ -6123,3 +6123,29 @@ Report delivery requires normal protected Git checks. Next recommendation,
 not authorization: Command 153 — Verify and link this existing domain through
 a separately authorized temporary API-only registrar window, then restore it
 disabled, with no billing, messages, registration, renewal or DNS/contact change.
+
+## Command 153 — Verify and link the existing domain through an authorised temporary registrar API window
+
+Owner-authorized on 2026-10-31: verify registrar-account ownership and link the
+existing domain selected in Command 152 to the selected client. Verify a fresh
+encrypted backup first. Use the saved account/credentials and normal MFA-protected
+full-admin forms, with only a temporary API networking/account activation window.
+Keep worker/scheduler registrar dispatch off, preserve active SMTP and leave
+payment/hosting/WhatsApp disabled. Submit no registration, transfer, purchase,
+renewal, billing, payment, contact/nameserver/mail change or hosting operation.
+Restore account and API networking disabled and validate preservation afterward.
+
+Completed: fresh backup verified; built-in read-only activation check passed;
+normal ownership discovery linked exactly one Existing / Registered domain
+with encrypted evidence. Account/network restored off with the same API image,
+unchanged environment/logo/release and unchanged non-API containers. All 37
+monitored table fingerprints match excluding only that domain and the single
+catalogue offer reference created by normal activation. No financial/email
+record, registrar operation, domain action or initial billing association was
+created. Public DNS and registry expiry match. The post-closure combined-order
+preview shows BDT 3,090 with registration unchecked and preservation selected;
+it was closed without submission. Private input/evidence stays outside Git.
+Deliver the report through protected Git checks and stop. Next recommendation,
+not authorization: Command 154 — Create the prepared combined order and one
+unpaid BDT 3,090 invoice with its normal order/invoice emails. No payment,
+provisioning, registrar mutation, DNS/contact change or deployment in that step.
