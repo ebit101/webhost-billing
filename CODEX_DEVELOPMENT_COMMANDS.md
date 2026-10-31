@@ -6203,3 +6203,29 @@ the test/report changes through protected Git checks and stop. Next recommendati
 not authorization: Command 156 — Reconcile actual bank settlement and authorize
 the normal receipt before recording a real manual payment. No fulfillment or
 deployment in that payment command.
+
+## Command 156 — Validate the complete hosting/domain order flow locally with fictional data and fake providers
+
+Owner-authorized on 2026-10-31: run local fictional lifecycle acceptance rather
+than the actual-bank-reconciliation task previously suggested for this command
+number. Test a combined BDT 3,090 order, sample payment, fake hosting activation,
+safe failure/retry and an existing domain with registration unchecked. Keep
+staging SMTP active and other live providers disabled. Do not record real payment,
+send customer messages, provision real hosting, submit registrar actions or deploy.
+
+Completed locally: 62 tests passed across five related API suites. Three new
+connected cases verify combined billing and payment gates, actual fake-panel
+success, safe temporary retry and a response lost after account creation. Existing
+domain history stays unchanged with one initial billing association and no
+registrar job. Message events remain queued without delivery. The regression
+exposed a fresh-key retry bypass; account creation now retains history under the
+service-row lock, requires a safe bounded retry parent, permits one child and
+holds uncertain results. A five-attempt-limit test rejects both a sixth retry and
+a fresh-key reset without another provider call. ADR-148 records the fix.
+Disposable PostgreSQL/Redis and all 39 migrations isolate the fictional data;
+only the identified test containers are removed. Office environment and existing
+containers are preserved. No staging business action or deployment occurred.
+Deliver through protected Git checks and stop. Next recommendation, not
+authorization: Command 157 — Deploy the validated retry guard to staging after
+a fresh verified backup, preserving environment/logo, keeping SMTP active and
+other live providers disabled, with smoke tests and no real billing/fulfillment.

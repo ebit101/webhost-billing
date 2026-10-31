@@ -777,6 +777,66 @@ describe('Hosting panel operations (e2e)', () => {
       .expect(409);
   });
 
+  it('keeps the five-attempt creation limit when a new submission key is supplied', async () => {
+    const serviceId = await createPendingService('bounded-retry.example.test');
+    const create = jest.spyOn(fakePanel, 'createAccount');
+    try {
+      fakePanel.failNext('TEMPORARY', 'FAKE_BOUNDED_BUSY');
+      let result = await postResult(
+        setupAdmin,
+        setupCsrf,
+        `/hosting-panel/services/${serviceId}/operations`,
+        { type: 'CREATE_ACCOUNT', submissionKey: randomUUID() },
+      );
+      for (let attempt = 2; attempt <= 5; attempt++) {
+        expect(result.operation).toMatchObject({
+          status: 'FAILED',
+          attemptNumber: attempt - 1,
+          retryable: true,
+        });
+        const previousId = result.operation.id;
+        fakePanel.failNext('TEMPORARY', 'FAKE_BOUNDED_BUSY');
+        result = await postResult(
+          setupAdmin,
+          setupCsrf,
+          `/hosting-panel/operations/${previousId}/retry`,
+          { submissionKey: randomUUID() },
+        );
+        expect(result.operation).toMatchObject({
+          status: 'FAILED',
+          attemptNumber: attempt,
+          retryOfOperationId: previousId,
+        });
+        expect(
+          await prisma.hostingPanelOperation.count({
+            where: { retryOfOperationId: previousId },
+          }),
+        ).toBe(1);
+      }
+      await setupAdmin
+        .post(`/hosting-panel/operations/${result.operation.id}/retry`)
+        .set('X-CSRF-Token', setupCsrf)
+        .send({ submissionKey: randomUUID() })
+        .expect(422);
+      await setupAdmin
+        .post(`/hosting-panel/services/${serviceId}/operations`)
+        .set('X-CSRF-Token', setupCsrf)
+        .send({ type: 'CREATE_ACCOUNT', submissionKey: randomUUID() })
+        .expect(422);
+      expect(create).toHaveBeenCalledTimes(5);
+      expect(
+        await prisma.hostingPanelOperation.count({
+          where: { serviceId, type: 'CREATE_ACCOUNT' },
+        }),
+      ).toBe(5);
+      expect(
+        await prisma.service.findUniqueOrThrow({ where: { id: serviceId } }),
+      ).toMatchObject({ status: 'PROVISION_FAILED', externalAccountId: null });
+    } finally {
+      create.mockRestore();
+    }
+  });
+
   it('holds provider inconsistency and refuses unsafe retry', async () => {
     const serviceId = await createPendingService('inconsistent.example.test');
     const admin = request.agent(app.getHttpServer());

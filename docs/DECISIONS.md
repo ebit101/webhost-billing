@@ -3031,6 +3031,25 @@ authorize new provider operations or existing-domain adoption.
   association; rollback after creating these orders requires a compatible plan
   that preserves the association and all financial history.
 
+## ADR-148 — Preserve hosting account-creation retry history across submission keys
+
+- **Date:** 2026-10-31. Command 156 local fictional lifecycle acceptance.
+- **Finding:** The dedicated retry route rejects uncertain results and bounds
+  attempts, but a fresh Create account submission could start again from a failed
+  service, losing the retry chain and bypassing the uncertain-result hold.
+- **Decision:** After locking the service row and honoring exact replay, reject
+  a fresh account-creation key if any earlier creation attempt exists. Subsequent
+  attempts must use the existing safe retry action. Under that same lock,
+  revalidate the original service/type, Failed and retryable state, five-attempt
+  bound and incremented attempt number; allow only one child per attempt and
+  reject creation while an uncertain creation remains. Existing history is not
+  rewritten or adopted. A recorded payment remains separate from fulfillment.
+- **Acceptance and limits:** Test a complete fictional BDT 3,090 combined order
+  through sample payment and the actual fake hosting adapter, including temporary
+  failure recovery and a response lost after account creation. Keep an existing
+  linked domain Registered with registration off and no registrar dispatch. This
+  local change does not authorize deployment, real payment or provider activation.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:
