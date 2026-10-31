@@ -55,6 +55,18 @@ MFA is available but not silently forced onto an existing administrator. Enroll 
 
 ## Secrets, logs, and audit
 
+Command 158 dependency checkpoint, 2026-10-31: the production audit identified
+[GHSA-6pq8-jhm2-2vcw](https://github.com/advisories/GHSA-6pq8-jhm2-2vcw), a moderate
+qs comma-serialization denial-of-service issue. The existing workspace override
+now pins the [upstream fixed 6.16.1 release](https://github.com/ljharb/qs/releases/tag/v6.16.1).
+Actual Express/body-parser consumers resolve that version; new regression cases
+exercise hostile/null-prototype objects and ordinary query compatibility. All
+18 installed tooling/runtime security cases, frozen install and `pnpm audit --prod`
+pass, with no known production dependency advisories at this checkpoint. This does
+not claim every development advisory is absent or the installed staging images are
+updated. Existing exact-version tooling patches remain mandatory and tested.
+Production remains NO-GO under the [current gate register](PRODUCTION_READINESS_REVIEW.md).
+
 - Payment bundles, WHM tokens, action-delivery tokens, and MFA secrets use provider/purpose-bound authenticated encryption. Configuration responses expose only safe status/masking data.
 - Production session and encryption secrets must be distinct non-placeholder values of at least 48 characters. Store them outside Git and rotate using the documented maintenance procedures.
 - Errors use stable safe messages. Unknown exceptions, raw provider responses, credentials, passwords, action tokens, MFA secrets/codes, session tokens, ticket bodies, and IP addresses are excluded from logs and API errors.

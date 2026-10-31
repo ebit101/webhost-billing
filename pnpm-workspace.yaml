@@ -14,7 +14,7 @@ overrides:
   mysql2: 3.23.1
   'multer@^2': 2.5.0
   'proxy-addr@^2.0.7': 2.0.8
-  qs: 6.16.0
+  qs: 6.16.1
   'source-map-js@^1.0.0': 1.2.2
 allowBuilds:
   '@prisma/engines': true

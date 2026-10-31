@@ -6299,6 +6299,12 @@ pass, including corruption, missing newer tables, equal-count alteration, change
 unfinished migrations and source/existing-target refusals. CI now runs that drill.
 One renewal API case and seven worker/calendar/scheduler cases pass with fake providers.
 
+The production audit found a moderate qs serialization advisory. Updated the existing
+override to upstream 6.16.1 and its lockfile references, added three actual runtime
+consumer regression cases and passed all 18 tooling/runtime security cases, frozen
+install and a clean production audit. This is a source repair; installed staging
+images are unchanged. No unrelated dependency upgrade or vulnerability waiver.
+
 A verified encrypted staging snapshot was copied to restricted Office storage without
 its passphrase, retrieved and restored into a temporary network-isolated database.
 All 56 table contents and 39 migrations match; the database-only restore took 14 seconds.

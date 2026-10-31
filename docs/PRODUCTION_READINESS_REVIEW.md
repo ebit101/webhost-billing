@@ -3,7 +3,7 @@
 ## Decision and scope
 
 - Review: Command 158, started 2026-10-31 (Asia/Dhaka).
-- Source baseline: `8b1235222c8311a2029b8ffd6ee1a33704525aba`, plus this command's locally validated recovery changes.
+- Source baseline: `8b1235222c8311a2029b8ffd6ee1a33704525aba`, plus this command's validated recovery and runtime dependency repairs.
 - Installed staging release: `6e5856facabdfa336fff697dae622b63f6610cdd`.
 - Production decision: **NO-GO**. A closed source defect is not a passed operating gate.
 - Owner-selected first-launch direction: bank payments with controlled WHM and registrar API actions.
@@ -83,6 +83,17 @@ source-database targeting and replacement of an existing recovery database. Its 
 home and cleanup paths are isolated. CI runs this actual backup/restore acceptance,
 in addition to the fast inventory regression tests. Final results are recorded in
 [the command report](PROGRESS.md).
+
+The production dependency audit also found the moderate
+[qs comma-serialization advisory](https://github.com/advisories/GHSA-6pq8-jhm2-2vcw).
+Updated only the existing qs override from 6.16.0 to the upstream fixed 6.16.1 and
+its lockfile references. Three new runtime-consumer regression cases cover the
+actual Express/body-parser resolution, hostile/null-prototype serialization and
+normal query compatibility. All 18 tooling/runtime security cases and a frozen
+install pass; `pnpm audit --prod` reports no known vulnerabilities at this review.
+That audit result does not cover installed staging or all development dependencies.
+No application image was deployed; rebuild and verify the final reviewed release
+before claiming the installed environment includes this repair.
 
 ## Workload assessment
 

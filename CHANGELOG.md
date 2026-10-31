@@ -8,6 +8,12 @@ and will be called out in release notes.
 
 ## [Unreleased]
 
+- Updated the pinned qs runtime dependency to upstream 6.16.1 for
+  [GHSA-6pq8-jhm2-2vcw](https://github.com/advisories/GHSA-6pq8-jhm2-2vcw), with three
+  regression cases through actual runtime consumers. All 18 tooling/runtime security
+  cases pass and the current source production dependency audit is clear. No staging
+  deployment is included; production acceptance remains separate.
+
 - Strengthened recovery verification to cover all 56 tables, exact matching-release
   migration checksums and full row contents. Added eight inventory/checksum tests
   and encrypted restore acceptance in CI. Command 158 verified independent-host

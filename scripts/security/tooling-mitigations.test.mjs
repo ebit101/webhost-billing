@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
+import { createRequire } from 'node:module';
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -27,6 +28,56 @@ const environment = Object.fromEntries(
     allowedEnvironment.has(key.toLowerCase()),
   ),
 );
+
+function runtimeQueryStringConsumers() {
+  const api = createRequire(resolve(repositoryRoot, 'apps/api/package.json'));
+  const platform = createRequire(api.resolve('@nestjs/platform-express'));
+  const express = createRequire(platform.resolve('express'));
+  const bodyParser = createRequire(express.resolve('body-parser'));
+  return [express, bodyParser].map((consumer) => ({
+    qs: consumer('qs'),
+    version: consumer('qs/package.json').version,
+  }));
+}
+
+test('runtime query parsers resolve the reviewed qs security release', () => {
+  for (const consumer of runtimeQueryStringConsumers()) {
+    assert.equal(consumer.version, '6.16.1');
+  }
+});
+
+test('comma serialization handles hostile and null-prototype input without throwing', () => {
+  for (const { qs } of runtimeQueryStringConsumers()) {
+    for (const input of [
+      qs.parse('items[0][toString]=x', { allowPrototypes: true }),
+      JSON.parse('{"items":[{"toString":"x"}]}'),
+      qs.parse('items[0][name]=value', { plainObjects: true }),
+    ]) {
+      for (const encodeValuesOnly of [false, true]) {
+        assert.doesNotThrow(() =>
+          qs.stringify(input, { arrayFormat: 'comma', encodeValuesOnly }),
+        );
+      }
+    }
+  }
+});
+
+test('reviewed query parser preserves ordinary pagination and array serialization', () => {
+  for (const { qs } of runtimeQueryStringConsumers()) {
+    assert.deepEqual(qs.parse('page=2&pageSize=100&filters[status]=active'), {
+      page: '2',
+      pageSize: '100',
+      filters: { status: 'active' },
+    });
+    assert.equal(
+      qs.stringify(
+        { search: 'one two', status: ['active', 'pending'] },
+        { arrayFormat: 'comma' },
+      ),
+      'search=one%20two&status=active%2Cpending',
+    );
+  }
+});
 
 test('both exact-version patches are registered and required', () => {
   const workspace = readFileSync(
