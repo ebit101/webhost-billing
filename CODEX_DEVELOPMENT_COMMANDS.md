@@ -6149,3 +6149,30 @@ Deliver the report through protected Git checks and stop. Next recommendation,
 not authorization: Command 154 — Create the prepared combined order and one
 unpaid BDT 3,090 invoice with its normal order/invoice emails. No payment,
 provisioning, registrar mutation, DNS/contact change or deployment in that step.
+
+## Command 154 — Create the prepared combined order and one unpaid invoice for BDT 3,090
+
+Owner-authorized on 2026-10-31: create the combined hosting/existing-domain order
+prepared in Commands 152–153, with its one issued Unpaid BDT 3,090 invoice and
+normal order-received/invoice-created emails to the saved client. Recheck client,
+prices, linked ownership and duplicates; verify a fresh encrypted backup first.
+Use the normal full-administrator form in Speed, with registration unchecked
+and website/email preservation selected. Keep SMTP active and payment, real
+hosting, registrar, WhatsApp and new alert delivery disabled. No payment,
+provisioning, purchase, registration, renewal, DNS/contact change or deployment.
+
+Completed: submitted once, creating one Awaiting payment order with Monthly
+hosting at BDT 1,200, zero setup and Annual existing-domain service at BDT 1,890.
+Its single issued invoice has two lines, total/balance BDT 3,090, paid amount 0
+and normal due date 31-10-2026. One append-only existing-domain billing association
+was added; original ownership/expiry/evidence remains unchanged. Two normal
+transactional emails have one successful SMTP attempt each; inbox receipt is
+not independently confirmed. New notification/WhatsApp entries remain Disabled,
+with zero attempts. All 37 prior-table fingerprints match after exact validated
+new-row exclusions and one invoice-counter increment. Environment, logo, release,
+containers, catalogue, previous paid history and provider posture are preserved.
+Private identifiers/evidence remain outside Git. Deliver the report through
+protected Git checks and stop. Next recommendation, not authorization: Command
+155 — Reconcile actual bank settlement for this invoice and record a manual
+payment only with verified amount, receipt date and reference, plus explicit
+receipt-email authorization. Leave fulfillment and registrar actions disabled.
