@@ -95,6 +95,18 @@ That audit result does not cover installed staging or all development dependenci
 No application image was deployed; rebuild and verify the final reviewed release
 before claiming the installed environment includes this repair.
 
+The separate all-dependency audit reports 11 development/build findings: two high,
+seven moderate and two low. The high paths include
+[Vite's Windows editor integration](https://github.com/advisories/GHSA-587h-7wmj-h5pm)
+and [Zod collection validation](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5)
+through the lint toolchain. Runtime shared Zod is already pinned to 4.6.6; the
+production-only audit is clear. Other affected tools include Vitest's mocker,
+minimatch, glob and deepmerge. These findings are unresolved, not waived by existing
+tooling patches or a passing high-severity production-only audit. Keep development
+servers private and review compatible fixes rather than forcing incompatible major
+versions through all consumers. Remediation and full toolchain regression acceptance
+are the next recommended command before returning to the domain inventory work.
+
 ## Workload assessment
 
 The owner targets 200 customers and explicitly allows multiple services per customer.

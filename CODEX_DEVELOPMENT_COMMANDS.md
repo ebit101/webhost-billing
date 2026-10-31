@@ -6313,9 +6313,14 @@ The global domain inventory's 100-row cap is a remaining scale gap. Record the f
 read baseline and final preservation checks in the report without declaring a production
 capacity limit. Refresh runbooks and the launch gate register; production stays NO-GO.
 
-Deliver only the validated recovery/source documentation through protected Git checks
+The full dependency graph still reports 11 development/build advisories (2 high,
+7 moderate and 2 low). Runtime production audit clearance does not close these;
+compatible toolchain remediation is now the next priority. Keep dev servers private.
+
+Deliver the validated repairs and readiness documentation through protected Git checks
 and stop without deploying. Exact next recommendation, not authorization: Command 159 —
-Add complete global domain inventory pagination, search, counts and bounded list summaries
-locally, preserving client ownership/staff authorization, then validate the fictional
-200-customer multi-service inventory. Keep SMTP active and other providers disabled;
-do not deploy or submit real billing/fulfillment actions.
+Remediate remaining development/build dependency advisories locally with reviewed compatible
+updates, focused regressions and full frozen-install/lint/type/package/API/browser/build
+validation. Keep database history, runtime contracts and provider posture unchanged; do not
+waive advisories or deploy. Return to complete global domain inventory pagination, search,
+counts and bounded summaries with the fictional multi-service profile afterward.
