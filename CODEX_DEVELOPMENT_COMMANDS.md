@@ -6229,3 +6229,27 @@ Deliver through protected Git checks and stop. Next recommendation, not
 authorization: Command 157 — Deploy the validated retry guard to staging after
 a fresh verified backup, preserving environment/logo, keeping SMTP active and
 other live providers disabled, with smoke tests and no real billing/fulfillment.
+
+## Command 157 — Deploy the validated hosting retry fix to staging
+
+Owner-authorized on 2026-10-31: deploy the validated Command 156 guard to staging.
+Verify a fresh encrypted backup first, preserve environment/logo and all business
+history, keep SMTP active and payment/real hosting/registrar/WhatsApp disabled.
+Smoke-test the installed guard and application without recording payment,
+creating staging fixtures, contacting providers or sending customer messages.
+
+Completed: deployed exact main `6e5856facabdfa336fff697dae622b63f6610cdd` after
+independent CI/CodeQL success and two verified backups. Four canonical frozen
+Node 24/pnpm 11.22.0 image builds passed; 39 migrations remain complete with none
+pending or unfinished. Installed ten-case guard smoke and fake-adapter replay,
+health/routes/origin checks and signed-in Speed read-only acceptance passed.
+All 37 full-row business-table fingerprints match without exclusions, including
+the pending Unpaid BDT 3,090 invoice with no payment or service. Seven services
+are healthy with zero application restarts and one scheduler; infrastructure,
+unrelated containers, environment except IMAGE_TAG, logo and provider posture
+are preserved. No real financial/fulfillment/provider action or message occurred.
+Private evidence and helpers remain outside Git. Deliver this report through
+normal protected Git checks and stop. Next recommendation, not authorization:
+Command 158 — Reconcile actual bank receipt for the pending combined invoice;
+record payment only after verified amount/date/reference, duplicate checks and
+explicit receipt-email authorization. Keep fulfillment and live providers off.

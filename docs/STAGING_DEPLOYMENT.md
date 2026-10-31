@@ -1,5 +1,60 @@
 # Staging Deployment
 
+## Command 157 hosting retry guard release (2026-10-31)
+
+- **Status:** Deployed `6e5856facabdfa336fff697dae622b63f6610cdd`, containing
+  Command 156's account-creation retry-history guard. New submission keys cannot
+  bypass the five-attempt bound or uncertain-result hold. Deployment/postflight
+  exit 0 and signed-in Speed read-only acceptance passed. No staging business
+  record, customer message or provider operation was created.
+- **Source gates:** Normal merge of [PR 79](https://github.com/ebit101/webhost-billing/pull/79),
+  with independent exact-release [CI](https://github.com/ebit101/webhost-billing/actions/runs/41180243156)
+  and [CodeQL](https://github.com/ebit101/webhost-billing/actions/runs/41180243246)
+  success. PR dependency review passed; main's PR-only job was correctly skipped.
+  The only application-code difference from prior installed `289d00e8a15b6117c82fb2eb3cd7b3941456c535`
+  is the hosting-panel service guard. No dependency, schema, migration, asset or
+  deployment configuration changed. Four canonical Node 24/pnpm 11.22.0 frozen
+  image builds passed; installed API runtime is Node 24.22.2. Archive SHA-256:
+  `4b269f5a75a0cd36a327c5415b7ccc63b006b5e5030d580c0eb83b0b89cf0bb0`.
+- **Backups and migration:** Fresh preflight archive
+  `20261031T072717Z.dump.gpg` passed. Immediately before stopping writers, the
+  canonical script verified a second fresh encrypted archive:
+  `/srv/webhost-billing-staging/backups/webhost-billing-webhost_billing_staging-20261031T075546Z.dump.gpg`.
+  SHA-256: `5d2f7ed7158ed5a187121c1aa5c7dff44d94fdf906b51ab9969bf6bb2f003659`.
+  Checksum, OpenPGP integrity, archive structure and required tables passed;
+  same-host verification is not an off-site restore drill. No migration was
+  pending: 39 complete and none unfinished. Rollback inventory:
+  `/srv/webhost-billing-staging/rollback/release-20261031T075545Z-6e5856facabdfa336fff697dae622b63f6610cdd/`.
+  Prior releases/images remain available; no prune or restore was performed.
+- **Preservation:** All 37 full-row business/email/outbox/notification table
+  fingerprints match without exclusions. The draft stays unissued/unpaid,
+  prior paid trial history is intact and the pending combined invoice remains
+  Unpaid, balance BDT 3,090, with no payment or service. Existing-domain ownership,
+  encrypted evidence, initial billing association and preservation/dispatch choices
+  are unchanged. Environment apart from IMAGE_TAG, mode 0600, installed/served
+  logo and Office environment match. Seven services are healthy, four application
+  containers use the target tag with zero restarts and exactly one scheduler runs.
+  Infrastructure/unrelated container IDs match. SMTP remains active; payment,
+  real WHM, live registrar accounts/networking and WhatsApp/new notifications remain off.
+- **Acceptance:** Ten installed guard cases and actual in-memory fake-adapter
+  replay passed without Nest/Prisma bootstrap, persistent writes, live-provider
+  calls or email delivery. These checks are separate from Command 156's 62 passing
+  API/database lifecycle cases. Public HTTPS, health/readiness/origin and logo
+  passed; anonymous protected pages redirect and API reads plus sentinel creation
+  reject with 401. In Speed, service/operation tables and a fictional service's
+  read-only review load correctly. The pending combined invoice shows its two
+  original lines, zero paid and the correct Unpaid total/balance. The service
+  screenshot was visually reviewed. No operational action was clicked; only the
+  temporary inspection tab was closed.
+- **Evidence and limits:** Protected deployment/postflight evidence remains at
+  `/srv/webhost-billing-staging/acceptance/command157-release-20261031/`.
+  Slow registry downloads were non-failing; no repeat cutover or repair was needed.
+  Private helpers, logs, credentials, identities and backups stay outside Git.
+  Report-only delivery needs no redeployment. Actual bank credit and live
+  WHM/registrar behavior are not validated by this release. Future payment and
+  fulfillment require their own authorization and evidence; no DNS/mail/contact
+  change, registrar purchase or customer message was submitted.
+
 ## Command 150 combined administrator order release (2026-10-30)
 
 - **Status:** Deployed `289d00e8a15b6117c82fb2eb3cd7b3941456c535`, containing
