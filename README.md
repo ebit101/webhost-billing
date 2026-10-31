@@ -16,6 +16,48 @@ support without reproducing the worldwide feature set of WHMCS.
 > providers. Production remains `NO-GO` until every acceptance gate documented under
 > `docs/` has passed.
 
+## Latest development status
+
+Updated 2026-10-31, through Command 157. These capabilities describe current `main`;
+the immutable `v0.1.0-alpha.1` evaluation release is an older source snapshot.
+
+- **Client workspace:** Summary, Profile, Products/services, Domains, Orders,
+  Invoices, Payments, Support and Email history retain the selected client.
+  Record collections use compact tables with scoped search, filters, pagination
+  and separate details where implemented. Product groups organize the catalogue.
+- **Billing and orders:** Administrators can combine hosting and an annual domain
+  service in one order and invoice. An existing domain must be linked through
+  registrar-account ownership verification. Registration dispatch defaults off;
+  billing an existing domain does not register, renew or change it. Manual payment
+  verification and deliberate fulfillment remain separate steps.
+- **Account access:** Administrator MFA remains required for every new sign-in.
+  Remember this device extends the signed-in session without bypassing MFA.
+  Signed-in `/login` visitors return to their administrator or customer workspace.
+  Administrators can resend customer verification emails and see saved staff names.
+- **Invoices and communication:** Invoice documents include business contact and
+  manual payment instructions, with a consistent persisted due calendar date.
+  Admin and Client notification lists/history and important-alert-only WhatsApp
+  handling are implemented; delivery is disabled by default. Queueing or provider
+  acceptance is not proof of inbox receipt.
+- **Hosting safeguards:** Explicit website/email preservation, separate payment
+  and provisioning states, idempotent account creation, at most five safe attempts
+  and held uncertain results prevent blind creation retries. A new submission key
+  cannot reset creation history or bypass reconciliation.
+
+Command 156 passed 62 fictional API/database lifecycle cases using fake providers,
+including combined billing, sample-payment review, successful hosting, temporary
+retry and a response lost after account creation. Command 157 deployed the validated
+retry fix `6e5856facabdfa336fff697dae622b63f6610cdd` to operator-controlled staging
+after backup verification, with installed-guard smoke tests and read-only acceptance.
+Staging SMTP remains active; payment, real hosting, registrar and WhatsApp providers
+remain disabled. This evidence does not establish production readiness or actual
+bank settlement, and staging is not a public evaluation target.
+
+See the [capability matrix](docs/CAPABILITY_MATRIX.md),
+[latest command reports](docs/PROGRESS.md),
+[staging deployment record](docs/STAGING_DEPLOYMENT.md) and
+[unreleased changelog](CHANGELOG.md#unreleased) for scope, evidence and remaining gates.
+
 ## Human-directed Codex workflow
 
 This repository is being developed through a documented, command-by-command workflow
@@ -47,7 +89,7 @@ The workspace uses Node.js 24 LTS, pnpm, TypeScript, PostgreSQL, Prisma, Redis, 
 
 ## Requirements
 
-- Node.js 24 LTS and pnpm 11.22, or Docker
+- Node.js 24 LTS and pinned pnpm 11.22.0, or Docker
 - Git
 
 ## Safe local evaluation

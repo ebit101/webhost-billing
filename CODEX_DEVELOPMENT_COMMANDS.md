@@ -6253,3 +6253,23 @@ normal protected Git checks and stop. Next recommendation, not authorization:
 Command 158 — Reconcile actual bank receipt for the pending combined invoice;
 record payment only after verified amount/date/reference, duplicate checks and
 explicit receipt-email authorization. Keep fulfillment and live providers off.
+
+## GitHub project information refresh — Documentation follow-up after Command 157
+
+Owner-authorized on 2026-10-31: update GitHub project information to reflect the
+latest validated work. Refresh README, capability matrix, unreleased changelog
+and public repository About description/topics using the existing implementation
+and command reports. Preserve technical-preview/production limitations, the older
+immutable alpha tag and human-directed AI-assisted development positioning.
+Validate documentation, record the follow-up and deliver through protected Git
+checks. This does not authorize the suggested Command 158, a release/tag, deployment,
+provider activation, message or financial/service/domain operation.
+
+Public description/topics updated and read back, retaining all original topics
+and unrelated repository settings. Current-source capabilities and Command 156–157
+validation/deployment evidence are documented separately from the safe demo and
+production acceptance. Only project documentation changes; staging is not accessed
+or modified. Next recommendation remains separately authorized Command 158 —
+Reconcile actual bank receipt before recording the pending combined invoice's
+payment, with verified amount/date/reference and receipt-email authorization.
+Keep fulfillment and live providers disabled. Stop after this documentation task.

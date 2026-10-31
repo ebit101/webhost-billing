@@ -10,6 +10,30 @@ and will be called out in release notes.
 
 ### Changed
 
+- Refreshed the public project overview and capability matrix through Command 157
+  on 2026-10-31. Current `main`, operator-controlled staging and the older immutable
+  alpha source release have separate evidence and acceptance boundaries. Production
+  remains `NO-GO`; no new tag or public release is created by this documentation update.
+- Added grouped product administration, compact record tables and a client workspace
+  with Summary, Profile, Products/services, Domains, Orders, Invoices, Payments,
+  Support and Email history, retaining ownership, staff permissions and client context.
+- Added combined administrator hosting/domain orders with one invoice, verified
+  existing-domain linking and default-off registrar dispatch. Existing-domain billing
+  does not register or renew a domain; verified payment remains separate from fulfillment.
+- Added remembered administrator sessions without bypassing MFA on a new sign-in,
+  authenticated `/login` redirects, administrator verification-email resend, saved
+  staff-name display and compact account settings. Invoice documents now include
+  business contact/payment instructions and consistent persisted due calendar dates.
+- Added Admin/Client notification lists and history with a closed important-alert
+  WhatsApp set, including new invoices and overdue notices. New alert delivery is
+  disabled by default and remains disabled on staging.
+- Added explicit website/email-preservation snapshots for hosting and closed a
+  fresh-key account-creation retry bypass: retain history under the service-row lock,
+  require a safe retry parent, bound attempts to five, permit one retry child and
+  hold uncertain results. Command 156 passed 62 related fictional API/database cases;
+  Command 157 deployed the guard after verified backups and bounded staging acceptance.
+  No actual bank settlement or live-provider acceptance follows from those tests.
+
 - Customer service inventory gains ownership-bound URL search/status and pages
   beyond 100 records, complete runtime validation, stale-read protection and
   honest GET-only recovery. Existing service cards, detail links and deliberate
