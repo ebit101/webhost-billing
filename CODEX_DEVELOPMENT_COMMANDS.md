@@ -6176,3 +6176,30 @@ protected Git checks and stop. Next recommendation, not authorization: Command
 155 — Reconcile actual bank settlement for this invoice and record a manual
 payment only with verified amount, receipt date and reference, plus explicit
 receipt-email authorization. Leave fulfillment and registrar actions disabled.
+
+## Command 155 — Validate an isolated fictional sample payment
+
+Owner-authorized on 2026-10-31, with an explicit scope change: actual bank receipt
+verification lacks settlement evidence, and the owner selected an isolated
+fictional sample-payment test instead of marking the staging invoice Paid.
+Keep that invoice Unpaid. Run only local fictional API/database acceptance;
+do not send a customer receipt, activate providers, provision hosting, submit
+registrar actions or deploy. SMTP on staging remains active and other live
+providers disabled. A sample is never actual bank verification.
+
+Completed: a fresh disposable PostgreSQL/Redis environment applied all 39
+migrations and passed seven manual-payment integration tests. Added a fictional
+two-line BDT 3,090 case: one payment settles the local fixture, an exact replay
+returns the same payment, and duplicate reference reuse is rejected without
+settling another invoice. One receipt event stays Pending with zero attempts;
+mail and fulfillment counts do not change. Existing concurrency, authorization,
+overpayment/partial-policy, refund/reversal and audit cases pass. Corrected only
+test fixture login isolation and a typed date assertion after the first run.
+Disposable container identities were verified before cleanup; original Office
+containers and environment are preserved. Fresh read-only staging checks still
+show an Unpaid BDT 3,090 balance, no payment or service and unchanged provider
+posture. No actual bank receipt is verified or payment recorded there. Deliver
+the test/report changes through protected Git checks and stop. Next recommendation,
+not authorization: Command 156 — Reconcile actual bank settlement and authorize
+the normal receipt before recording a real manual payment. No fulfillment or
+deployment in that payment command.

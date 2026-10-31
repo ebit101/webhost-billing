@@ -30,6 +30,7 @@ import { API_ENVIRONMENT } from '../src/infrastructure/environment/environment.m
 import { PasswordHasherService } from '../src/modules/auth/services/password-hasher.service';
 
 const ADMIN_EMAIL = 'command11-admin@example.test';
+const SAMPLE_ADMIN_EMAIL = 'sample-payment-admin@example.test';
 const CUSTOMER_EMAIL = 'command11-customer@example.test';
 const OTHER_EMAIL = 'command11-other@example.test';
 const PASSWORD = 'command eleven secure password';
@@ -76,6 +77,18 @@ describe('Manual payments (e2e)', () => {
         emailVerifiedAt: new Date(),
         adminProfile: {
           create: { displayName: 'Command Eleven Admin', isSuperAdmin: true },
+        },
+      },
+    });
+    await prisma.user.create({
+      data: {
+        email: SAMPLE_ADMIN_EMAIL,
+        passwordHash,
+        role: UserRole.ADMIN,
+        status: UserStatus.ACTIVE,
+        emailVerifiedAt: new Date(),
+        adminProfile: {
+          create: { displayName: 'Fictional sample admin', isSuperAdmin: true },
         },
       },
     });
@@ -555,12 +568,115 @@ describe('Manual payments (e2e)', () => {
     ).toBeGreaterThanOrEqual(5);
   });
 
+  it('settles a fictional two-line BDT 3,090 invoice once without delivery or fulfillment', async () => {
+    const invoiceId = await createInvoice(309_000n, [120_000n, 189_000n]);
+    const admin = request.agent(app.getHttpServer());
+    const csrf = await csrfToken(admin);
+    await login(admin, csrf, SAMPLE_ADMIN_EMAIL);
+    const before = {
+      services: await prisma.service.count(),
+      hostingOperations: await prisma.hostingPanelOperation.count(),
+      registrarOperations: await prisma.registrarOperation.count(),
+      domainActions: await prisma.domainAction.count(),
+      emailLogs: await prisma.emailLog.count(),
+    };
+    const reference = `SAMPLE-ONLY-${randomUUID()}`;
+    const body = {
+      ...paymentBody(invoiceId, '309000', reference),
+      proof: {
+        method: 'BANK_TRANSFER',
+        reference,
+        payerName: 'Fictional sample payer',
+        note: 'Isolated automated test only; no actual bank credit or real customer payment.',
+      },
+    };
+    const first = await admin
+      .post('/payments/manual/admin')
+      .set('X-CSRF-Token', csrf)
+      .send(body)
+      .expect(201);
+    const recorded = apiSuccessResponseSchema(
+      manualPaymentCreationResultSchema,
+    ).parse(first.body).data;
+    expect(recorded.duplicate).toBe(false);
+    expect(recorded.payment).toMatchObject({
+      invoiceId,
+      state: 'VERIFIED',
+      reference: body.proof.reference,
+      amount: { amount: '309000', currency: 'BDT' },
+      proof: { note: body.proof.note },
+    });
+    const replay = await admin
+      .post('/payments/manual/admin')
+      .set('X-CSRF-Token', csrf)
+      .send(body)
+      .expect(201);
+    expect(
+      apiSuccessResponseSchema(manualPaymentCreationResultSchema).parse(
+        replay.body,
+      ).data,
+    ).toMatchObject({ duplicate: true, payment: { id: recorded.payment.id } });
+    const invoice = await prisma.invoice.findUniqueOrThrow({
+      where: { id: invoiceId },
+      include: { items: { orderBy: { linePosition: 'asc' } } },
+    });
+    expect(invoice).toMatchObject({
+      status: 'PAID',
+      total: 309_000n,
+      amountPaid: 309_000n,
+      balanceDue: 0n,
+    });
+    expect(invoice.paidAt).toBeInstanceOf(Date);
+    expect(invoice.items.map((item) => item.lineTotal)).toEqual([
+      120_000n,
+      189_000n,
+    ]);
+    expect(await prisma.payment.count({ where: { invoiceId } })).toBe(1);
+    const receiptEvents = await prisma.outboxEvent.findMany({
+      where: {
+        aggregateType: 'PAYMENT',
+        aggregateId: recorded.payment.id,
+        eventType: 'EMAIL_PAYMENT_RECEIVED',
+      },
+    });
+    expect(receiptEvents).toHaveLength(1);
+    expect(receiptEvents[0]).toMatchObject({
+      status: 'PENDING',
+      attemptCount: 0,
+    });
+    expect({
+      services: await prisma.service.count(),
+      hostingOperations: await prisma.hostingPanelOperation.count(),
+      registrarOperations: await prisma.registrarOperation.count(),
+      domainActions: await prisma.domainAction.count(),
+      emailLogs: await prisma.emailLog.count(),
+    }).toEqual(before);
+    const duplicateInvoiceId = await createInvoice(309_000n);
+    await admin
+      .post('/payments/manual/admin')
+      .set('X-CSRF-Token', csrf)
+      .send({
+        ...body,
+        invoiceId: duplicateInvoiceId,
+        submissionKey: randomUUID(),
+      })
+      .expect(409);
+    expect(
+      await prisma.invoice.findUniqueOrThrow({
+        where: { id: duplicateInvoiceId },
+      }),
+    ).toMatchObject({ status: 'UNPAID', amountPaid: 0n, balanceDue: 309_000n });
+    expect(
+      await prisma.payment.count({ where: { invoiceId: duplicateInvoiceId } }),
+    ).toBe(0);
+  });
+
   afterAll(async () => {
     await cleanup(true);
     await app.close();
   });
 
-  async function createInvoice(total: bigint) {
+  async function createInvoice(total: bigint, lineAmounts = [total]) {
     const now = new Date();
     const invoice = await prisma.invoice.create({
       data: {
@@ -586,14 +702,14 @@ describe('Manual payments (e2e)', () => {
         issuedAt: now,
         dueAt: new Date(now.getTime() + 86_400_000),
         items: {
-          create: {
-            linePosition: 1,
+          create: lineAmounts.map((amount, index) => ({
+            linePosition: index + 1,
             descriptionSnapshot: 'Command 11 test invoice',
             currency: 'BDT',
             quantity: 1,
-            unitAmount: total,
-            lineTotal: total,
-          },
+            unitAmount: amount,
+            lineTotal: amount,
+          })),
         },
       },
     });
@@ -640,7 +756,11 @@ describe('Manual payments (e2e)', () => {
 
   async function cleanup(restoreSetting: boolean) {
     const users = await prisma.user.findMany({
-      where: { email: { in: [ADMIN_EMAIL, CUSTOMER_EMAIL, OTHER_EMAIL] } },
+      where: {
+        email: {
+          in: [ADMIN_EMAIL, SAMPLE_ADMIN_EMAIL, CUSTOMER_EMAIL, OTHER_EMAIL],
+        },
+      },
       select: { id: true, customer: { select: { id: true } } },
     });
     const userIds = users.map((user) => user.id);
