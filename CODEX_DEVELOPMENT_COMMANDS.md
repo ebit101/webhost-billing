@@ -6100,3 +6100,26 @@ disabled. No new registrar offer or initial-domain billing association exists.
 Deliver the report through protected Git checks and stop. Next recommendation,
 not authorization: Command 152 — Prepare the next combined order with a
 confirmed client/domain and billing terms after reviewing earlier paid records.
+
+## Command 152 — Prepare the next combined hosting/domain order
+
+Owner-authorized on 2026-10-31: prepare, without submitting, a combined order
+for the owner-selected saved client and exact domain. The owner confirmed
+Rainbow / app-pkg, BDT 1,200 monthly and no setup fee. Apply the already accepted
+.com catalogue price of BDT 1,890 for one year to the planning summary, with
+renewal unconfigured. Preserve existing website/email and all paid history.
+Keep registration unchecked, SMTP active and other providers disabled. Do not
+create orders, invoices, payments, domain links, quotes or messages; activate
+providers; register/purchase/renew domains; provision hosting; or deploy.
+
+Preparation completed: exact client/product/price eligibility, Billing duplicate
+review, public registration/DNS evidence and an unsaved Speed form were checked.
+Proposed first-invoice line total is BDT 3,090. Public registration does not
+establish account ownership. The selected existing domain is not linked, so
+the form correctly blocks submission. No paid trial was selected again. All
+37 monitored full-row table fingerprints, environment/logo/release and running
+container IDs are unchanged. Private inputs and proposal remain outside Git.
+Report delivery requires normal protected Git checks. Next recommendation,
+not authorization: Command 153 — Verify and link this existing domain through
+a separately authorized temporary API-only registrar window, then restore it
+disabled, with no billing, messages, registration, renewal or DNS/contact change.
