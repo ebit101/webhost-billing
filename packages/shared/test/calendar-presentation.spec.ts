@@ -10,8 +10,8 @@ import {
 describe('day/month/year presentation', () => {
   it('retains the UTC meaning of raw timestamp labels', () => {
     assert.equal(
-      formatUtcTimestamp('2026-11-02T00:05:00.000Z'),
-      '02/11/2026, 00:05 UTC',
+      formatUtcTimestamp('2026-11-02T00:05:37.456Z'),
+      '02/11/2026, 00:05:37.456 UTC',
     );
     assert.equal(formatUtcTimestamp(null), '—');
   });
