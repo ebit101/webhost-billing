@@ -218,7 +218,140 @@ describe('product and pricing interfaces', () => {
     expect(await screen.findByDisplayValue('business_pkg')).toBeTruthy();
     expect(screen.getByDisplayValue('30 GB SSD')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Move to draft' })).toBeTruthy();
-    expect(screen.getByText('Yearly · BDT 240000 minor units')).toBeTruthy();
+    expect(screen.getByText('Yearly · BDT 2,400.00')).toBeTruthy();
+  });
+
+  it('loads active prices by period and currency without reusing retired or unmatched prices', async () => {
+    const user = userEvent.setup();
+    mockPriceCatalogue({
+      ...product,
+      prices: [
+        {
+          ...product.prices[0]!,
+          id: '80000000-0000-4000-8000-000000000007',
+          isActive: false,
+          amount: { amount: '9900', currency: 'BDT' },
+        },
+        product.prices[0]!,
+        {
+          ...product.prices[0]!,
+          id: monthlyPriceId,
+          billingPeriod: 'MONTHLY',
+          amount: { amount: '150000', currency: 'BDT' },
+          setupFee: { amount: '2500', currency: 'BDT' },
+        },
+        {
+          ...product.prices[0]!,
+          id: '80000000-0000-4000-8000-000000000005',
+          amount: { amount: '9900', currency: 'USD' },
+          setupFee: { amount: '500', currency: 'USD' },
+        },
+      ],
+    });
+    await openPricing(user);
+    expect(screen.getByLabelText('Price')).toHaveProperty('value', '1500.00');
+    expect(screen.getByLabelText('Setup fee')).toHaveProperty('value', '25.00');
+    await user.selectOptions(screen.getByLabelText('Billing period'), 'ANNUAL');
+    expect(screen.getByLabelText('Price')).toHaveProperty('value', '2400.00');
+    await user.clear(screen.getByLabelText('Currency'));
+    await user.type(screen.getByLabelText('Currency'), 'USD');
+    expect(screen.getByLabelText('Price')).toHaveProperty('value', '99.00');
+    expect(screen.getByLabelText('Setup fee')).toHaveProperty('value', '5.00');
+    await user.selectOptions(
+      screen.getByLabelText('Billing period'),
+      'QUARTERLY',
+    );
+    expect(screen.getByLabelText('Price')).toHaveProperty('value', '');
+    expect(screen.getByLabelText('Setup fee')).toHaveProperty('value', '0');
+    expect(screen.getByText(/No active price for this period/)).toBeTruthy();
+  });
+
+  it('saves direct amounts as a new price version and reloads the returned current price', async () => {
+    const user = userEvent.setup();
+    const fetch = mockPriceCatalogue(product);
+    await openPricing(user);
+    expect(screen.getByLabelText('Billing period')).toHaveProperty(
+      'value',
+      'ANNUAL',
+    );
+    expect(screen.getByLabelText('Price')).toHaveProperty('value', '2400.00');
+    await user.clear(screen.getByLabelText('Price'));
+    await user.type(screen.getByLabelText('Price'), '1500.05');
+    await user.clear(screen.getByLabelText('Setup fee'));
+    await user.type(screen.getByLabelText('Setup fee'), '25.10');
+    await user.click(screen.getByRole('button', { name: 'Save price' }));
+    await within(
+      screen.getByRole('dialog', { name: 'Business Hosting' }),
+    ).findByText('Price saved as a new version.');
+    const request = fetch.mock.calls.find(([url]) =>
+      url.endsWith(`/products/${productId}/prices`),
+    );
+    expect(request?.[1]?.method).toBe('POST');
+    expect(JSON.parse(String(request?.[1]?.body))).toEqual({
+      billingPeriod: 'ANNUAL',
+      currency: 'BDT',
+      amount: '150005',
+      setupFee: '2510',
+    });
+    expect(screen.getByLabelText('Price')).toHaveProperty('value', '1500.05');
+    expect(screen.getByLabelText('Setup fee')).toHaveProperty('value', '25.10');
+    expect(screen.getByText('Yearly · BDT 1,500.05')).toBeTruthy();
+    expect(screen.getByText('Yearly · BDT 2,400.00')).toBeTruthy();
+    expect(screen.getByText('Retired')).toBeTruthy();
+  });
+
+  it('blocks invalid money before sending and retains edits after an API failure', async () => {
+    const user = userEvent.setup();
+    const fetch = mockPriceCatalogue(product, true);
+    await openPricing(user);
+    await user.clear(screen.getByLabelText('Price'));
+    await user.type(screen.getByLabelText('Price'), '1500.001');
+    await user.click(screen.getByRole('button', { name: 'Save price' }));
+    await within(
+      screen.getByRole('dialog', { name: 'Business Hosting' }),
+    ).findByText(/Price must be a non-negative amount/);
+    expect(fetch.mock.calls.some(([url]) => url.includes('/prices'))).toBe(
+      false,
+    );
+    await user.clear(screen.getByLabelText('Price'));
+    await user.type(screen.getByLabelText('Price'), '1500.25');
+    await user.click(screen.getByRole('button', { name: 'Save price' }));
+    await within(
+      screen.getByRole('dialog', { name: 'Business Hosting' }),
+    ).findByText('Price could not be saved.');
+    expect(screen.getByLabelText('Price')).toHaveProperty('value', '1500.25');
+    expect(screen.getByText('Yearly · BDT 2,400.00')).toBeTruthy();
+    expect(screen.queryByText('Price saved as a new version.')).toBeNull();
+  });
+
+  it('converts the optional first price when creating a product', async () => {
+    const user = userEvent.setup();
+    const fetch = mockPriceCatalogue(product);
+    render(<AdminProductManager />);
+    await screen.findByRole('button', { name: 'Business Hosting' });
+    await user.click(screen.getByRole('button', { name: 'Create product' }));
+    const dialog = within(
+      screen.getByRole('dialog', { name: 'Create draft product' }),
+    );
+    await user.type(dialog.getByLabelText('Name'), 'Fictional hosting');
+    await user.type(dialog.getByLabelText('Slug'), 'fictional-hosting');
+    await user.type(dialog.getByLabelText('Price'), '1500');
+    await user.clear(dialog.getByLabelText('Setup fee'));
+    await user.type(dialog.getByLabelText('Setup fee'), '25.50');
+    await user.click(dialog.getByRole('button', { name: 'Create draft' }));
+    await screen.findByRole('status');
+    const request = fetch.mock.calls.find(
+      ([url, options]) =>
+        url.endsWith('/products') && options?.method === 'POST',
+    );
+    expect(JSON.parse(String(request?.[1]?.body)).prices).toEqual([
+      {
+        billingPeriod: 'MONTHLY',
+        currency: 'BDT',
+        amount: '150000',
+        setupFee: '2550',
+      },
+    ]);
   });
 
   it('compares periods and carries the selected product and price to checkout', async () => {
@@ -420,4 +553,65 @@ function jsonResponse(body: unknown) {
     status: 200,
     headers: { 'Content-Type': 'application/json' },
   });
+}
+
+async function openPricing(user: ReturnType<typeof userEvent.setup>) {
+  render(<AdminProductManager />);
+  await user.click(
+    await screen.findByRole('button', { name: 'Business Hosting' }),
+  );
+  await user.click(screen.getByRole('button', { name: 'Pricing' }));
+}
+
+function mockPriceCatalogue(current: Product, fail = false) {
+  const fetch = vi.fn(async (url: string, options?: RequestInit) => {
+    if (url.endsWith('/auth/csrf'))
+      return jsonResponse({
+        success: true,
+        data: { csrfToken: 'fictional-token' },
+      });
+    if (url.endsWith('/products/groups'))
+      return jsonResponse({ success: true, data: [] });
+    if (options?.method === 'POST') {
+      if (fail)
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: { message: 'Price could not be saved.' },
+          }),
+          { status: 400, headers: { 'Content-Type': 'application/json' } },
+        );
+      const body = JSON.parse(String(options.body)) as {
+        billingPeriod: 'MONTHLY' | 'QUARTERLY' | 'ANNUAL';
+        currency: string;
+        amount: string;
+        setupFee: string;
+      };
+      if (url.endsWith('/prices'))
+        return jsonResponse({
+          success: true,
+          data: {
+            ...current,
+            prices: [
+              ...current.prices.map((price) => ({ ...price, isActive: false })),
+              {
+                ...current.prices[0],
+                id: monthlyPriceId,
+                isActive: true,
+                billingPeriod: body.billingPeriod,
+                amount: { amount: body.amount, currency: body.currency },
+                setupFee: { amount: body.setupFee, currency: body.currency },
+              },
+            ],
+          },
+        });
+      return jsonResponse({
+        success: true,
+        data: { ...current, id: '80000000-0000-4000-8000-000000000006' },
+      });
+    }
+    return jsonResponse({ success: true, data: [current] });
+  });
+  vi.stubGlobal('fetch', fetch);
+  return fetch;
 }

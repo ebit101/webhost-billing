@@ -19,6 +19,7 @@ import { RecordAction, RecordDialog } from '../ui/record-dialog';
 import { formatMinor } from '../invoices/invoice-ui';
 import { PageHeader } from '../ui/page-header';
 import { StatusBadge } from '../ui/status-badge';
+import { priceForInput, productPriceFromForm } from './product-price-input';
 
 const nullableFields = [
   'description',
@@ -105,19 +106,10 @@ export function AdminProductManager() {
       const value = raw[field];
       if (typeof value === 'string' && value) body[field] = value;
     }
-    if (amount) {
-      body.prices = [
-        {
-          billingPeriod: raw.billingPeriod,
-          currency: raw.currency,
-          amount,
-          setupFee: String(raw.setupFee || '0'),
-        },
-      ];
-    }
     setSaving(true);
     setError('');
     try {
+      if (amount.trim()) body.prices = [productPriceFromForm(raw)];
       const created = await authMutation<Product>('/products', 'POST', body);
       setProducts((current) => [...current, created].sort(byDisplayOrder));
       setSelected(created);
@@ -161,18 +153,18 @@ export function AdminProductManager() {
     if (!selected) return;
     const form = event.currentTarget;
     const raw = valuesFromForm(form);
-    await mutate(
-      `/products/${selected.id}/prices`,
-      'POST',
-      {
-        billingPeriod: raw.billingPeriod,
-        currency: raw.currency,
-        amount: raw.amount,
-        setupFee: raw.setupFee || '0',
-      },
-      'Price saved as a new version.',
-    );
-    form.reset();
+    try {
+      const price = productPriceFromForm(raw);
+      await mutate(
+        `/products/${selected.id}/prices`,
+        'POST',
+        price,
+        'Price saved as a new version.',
+      );
+    } catch (caught) {
+      setError(errorMessage(caught));
+      setNotice('');
+    }
   }
 
   async function changeStatus(status: 'DRAFT' | 'ACTIVE' | 'ARCHIVED') {
@@ -552,6 +544,7 @@ export function AdminProductManager() {
             className={productTab === 'pricing' ? 'grid gap-5' : 'hidden'}
           >
             <PriceForm
+              product={selected}
               saving={saving}
               archived={selected.status === 'ARCHIVED'}
               onSubmit={definePrice}
@@ -703,45 +696,91 @@ function ProductEditor({
 }
 
 function PriceForm({
+  product,
   saving,
   archived,
   onSubmit,
 }: {
+  product: Product;
   saving: boolean;
   archived: boolean;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }) {
+  const initial =
+    product.prices.find(
+      (price) =>
+        price.isActive &&
+        price.amount.currency === 'BDT' &&
+        price.billingPeriod === 'MONTHLY',
+    ) ??
+    product.prices.find(
+      (price) => price.isActive && price.amount.currency === 'BDT',
+    ) ??
+    product.prices.find((price) => price.isActive);
+  const [period, setPeriod] = useState(initial?.billingPeriod ?? 'MONTHLY');
+  const [currency, setCurrency] = useState(initial?.amount.currency ?? 'BDT');
+  const active = product.prices.find(
+    (price) =>
+      price.isActive &&
+      price.billingPeriod === period &&
+      price.amount.currency === currency,
+  );
+  const inputKey = `${period}:${currency}:${active?.id ?? 'new'}`;
   return (
     <Card
-      title="Define price"
+      title={active ? 'Edit price' : 'Add price'}
       description="Saving the same period and currency retires the previous active version."
     >
-      <form className="grid gap-4" onSubmit={onSubmit}>
+      <form className="grid gap-4 sm:grid-cols-2" onSubmit={onSubmit}>
         <label className="text-sm font-semibold text-slate-700">
           Billing period
           <select
             className={fieldClass}
             name="billingPeriod"
-            defaultValue="MONTHLY"
+            value={period}
+            onChange={(event) => setPeriod(event.target.value as typeof period)}
           >
             <option value="MONTHLY">Monthly</option>
             <option value="QUARTERLY">Quarterly</option>
             <option value="ANNUAL">Yearly</option>
           </select>
         </label>
-        <Field label="Currency" name="currency" required defaultValue="BDT" />
         <Field
-          label="Amount in minor units"
+          label="Currency"
+          name="currency"
+          required
+          maxLength={3}
+          value={currency}
+          onChange={(event) => setCurrency(event.target.value.toUpperCase())}
+        />
+        <p className="text-sm text-slate-500 sm:col-span-2">
+          {active
+            ? `Current price loaded in ${currency}. Enter the full amount, for example 1500.00.`
+            : `No active price for this period and currency. Enter the full amount, for example 1500.00 in BDT.`}
+        </p>
+        <Field
+          key={`amount:${inputKey}`}
+          label="Price"
           name="amount"
           required
-          placeholder="120000"
+          defaultValue={
+            active ? priceForInput(active.amount.amount, currency) : ''
+          }
+          placeholder="1500.00"
         />
         <Field
-          label="Setup fee in minor units"
+          key={`setup:${inputKey}`}
+          label="Setup fee"
           name="setupFee"
-          defaultValue="0"
+          defaultValue={
+            active ? priceForInput(active.setupFee.amount, currency) : '0'
+          }
         />
-        <Button type="submit" disabled={saving || archived}>
+        <Button
+          type="submit"
+          className="sm:col-span-2"
+          disabled={saving || archived}
+        >
           Save price
         </Button>
       </form>
@@ -764,11 +803,13 @@ function PriceHistory({ product }: { product: Product }) {
             >
               <div>
                 <p className="text-sm font-bold text-slate-900">
-                  {periodLabel(price.billingPeriod)} · {minor(price.amount)}
+                  {periodLabel(price.billingPeriod)} ·{' '}
+                  {formatMinor(price.amount.amount, price.amount.currency)}
                 </p>
                 <p className="mt-1 text-xs text-slate-500">
-                  Setup {minor(price.setupFee)} ·{' '}
-                  {new Date(price.createdAt).toLocaleDateString('en-GB')}
+                  Setup{' '}
+                  {formatMinor(price.setupFee.amount, price.setupFee.currency)}{' '}
+                  · {new Date(price.createdAt).toLocaleDateString('en-GB')}
                 </p>
               </div>
               <StatusBadge tone={price.isActive ? 'success' : 'neutral'}>
@@ -871,12 +912,12 @@ function CreateProductDialog({
           </select>
         </label>
         <Field label="Currency" name="currency" defaultValue="BDT" />
-        <Field label="Amount in minor units" name="amount" />
-        <Field
-          label="Setup fee in minor units"
-          name="setupFee"
-          defaultValue="0"
-        />
+        <p className="text-sm text-slate-500 sm:col-span-2">
+          Enter full amounts in the selected currency, for example 1500.00 in
+          BDT.
+        </p>
+        <Field label="Price" name="amount" placeholder="1500.00" />
+        <Field label="Setup fee" name="setupFee" defaultValue="0" />
         {error ? (
           <p
             role="alert"
@@ -984,7 +1025,4 @@ function periodLabel(period: string) {
   return period === 'ANNUAL'
     ? 'Yearly'
     : period.charAt(0) + period.slice(1).toLowerCase();
-}
-function minor(value: { amount: string; currency: string }) {
-  return `${value.currency} ${value.amount} minor units`;
 }

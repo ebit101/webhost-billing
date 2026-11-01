@@ -6461,3 +6461,17 @@ closed without merging following the owner's batching direction. Preserve its
 commits and any completed check evidence. No further push or new PR is authorized
 by this command. Continue with the next owner-specified local change; validate
 and push the combined batch only when requested. Deployment remains separate.
+
+## Command 164 — Show current product prices in normal currency amounts
+
+Owner-authorized on 2026-11-02 by the product-pricing screenshot and request to
+show the current price and accept direct currency amounts. Load the active price
+and setup fee for the selected product, period and currency. Use normal amounts
+in edit/create forms and history, for example BDT 1,500.00 rather than 150000 minor
+units. Unmatched period/currency pairs must not reuse another price. Retain the
+existing versioned-price API, immutable history and integer-minor-unit storage;
+convert decimal strings exactly without floating-point arithmetic. Validate
+prefill, switching, conversion limits, new-version submission and failed-save
+retention. Update the report and create a focused local commit, retaining the
+pending Command 163 work for the later owner-requested batch. Do not push, create
+a PR, deploy, activate currencies or change SMTP/providers. Stop after this command.

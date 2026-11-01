@@ -3169,6 +3169,22 @@ authorize new provider operations or existing-domain adoption.
   checks only when failures, new changes or unresolved risks justify them. Do not
   wait on or launch per-command hosted CI solely for a small report update.
 
+## ADR-155 — Edit current product prices using normal currency amounts
+
+- **Date:** 2026-11-02. Command 164, explicitly owner-authorized.
+- **Decision:** Product price forms load the matching active price/setup fee and
+  accept decimal currency amounts, including the optional first product price.
+  History uses the existing currency renderer. An unmatched period/currency pair
+  shows an empty new-price form; retired prices never supply the current values.
+- **Exactness and history:** Convert with strings/BigInt and the existing money
+  renderer's fractional precision. Reject overprecision, malformed/negative values,
+  zero prices and overflow before mutation. Preserve integer-string API/storage,
+  immutable price versions and historical customer/invoice snapshots. Failed
+  requests retain edits; successful saves use the returned current version.
+- **Bounds:** This changes presentation and entry only. It does not activate the
+  held currency foundations, reprice existing services, deploy, send messages or
+  change any live-provider setting. Retain local work for owner-requested batches.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

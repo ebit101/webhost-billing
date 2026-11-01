@@ -2,14 +2,26 @@
 
 ## Status Summary
 
-- **Current command:** Command 163 — Compact navigation, consistent dates and actionable dashboards
-- **Current status:** Command 163 local implementation, affected tests, browser/layout acceptance, lint/types and production build passed. The owner now requires local development/commits across multiple changes, followed by one requested batch push directly to main. PR 87 is closed without merging; no further push or deployment. Command 162's independent recovery gates remain open. Production remains NO-GO.
+- **Current command:** Command 164 — Show current product prices in normal currency amounts
+- **Current status:** Command 164 local implementation and focused validation passed. Product pricing loads the active amount/setup fee and accepts normal currency amounts instead of minor units. Retain Commands 163–164 for the owner's later batch push; no PR, push or deployment. Command 162's independent recovery gates remain open. Production remains NO-GO.
 - **Last updated:** 2026-11-02
 - **Last recorded staging release:** Command 161, `e2c207a72511b13578dba84e63979ea794449455`, deployed on 2026-11-01 (Asia/Dhaka).
-- **Next action:** Finish recording current validation, keep the changes committed locally and stop. Continue only with the owner's next specified local change; publish the accumulated validated batch when asked. Deployment remains separately authorized.
-- **Next command authorized:** Command 163 only for this interface request. Command 162 remains independently open; no paid storage, application deployment, provider activation, financial action or message is implicitly authorized.
+- **Next action:** Keep Command 164 committed locally and stop. Continue only with the owner's next specified local change; validate and publish the accumulated batch when asked. Deployment remains separately authorized.
+- **Next command authorized:** Command 164 only for this product-pricing request. Command 162 remains independently open; no paid storage, application deployment, provider activation, financial action or message is implicitly authorized.
 
 ## Command Reports
+
+### Command 164 — Show current product prices in normal currency amounts
+
+- **Status and date:** Implemented and focused local validation passed on 2026-11-02 (Asia/Dhaka). Keep the focused commit in the pending delivery batch. No push, PR or deployment.
+- **Owner scope and cause:** The product Pricing tab used an empty new-definition form with a minor-unit placeholder, even when a current price existed. Load the matching active price and show/edit normal currency amounts, including setup fees and price history.
+- **Implementation:** Prefer the active monthly BDT price initially, then another active BDT price, then the first active price. Changing period/currency loads only its active matching amount/setup fee; an unmatched pair opens an explicitly empty new-price form. Render BDT 150000 as BDT 1,500.00 in history and 1500.00 in editable fields. The optional first price in Create product uses the same full-amount entry. Saving posts a new version through the existing endpoint and reloads its returned active price; failed saves retain the entered values.
+- **Money and history:** String/BigInt conversion uses the existing currency renderer's fractional precision, rejects malformed/negative/overprecision/out-of-range amounts, and enforces a positive price with a non-negative setup fee before submission. API payloads stay canonical integer strings and within PostgreSQL BIGINT limits. No floating-point money arithmetic, historical price mutation, customer-service repricing, invoice rewrite or currency activation.
+- **Files:** `apps/web/src/components/products/admin-product-manager.tsx`, new `product-price-input.ts` and its tests, updated `product-management.test.tsx`, the command registry, ADR-155 and this report. No dependencies, backend contracts, schemas or migrations changed.
+- **Validation:** Node 24.20.0 and pinned pnpm 11.22.0. Both affected Vitest files pass: 29/29 tests covering initial prefill, period/currency switching, retired/unmatched prices, exact large/decimal/zero-fee conversions, invalid inputs, immutable version requests, saved-price reload, failed-save retention and new-product conversion. Affected ESLint and web TypeScript checks passed. The first component run exposed three test selectors matching duplicated feedback or an incorrect dialog title; scoped the intended feedback/dialog and the rerun passed without changing product behavior or weakening assertions. Formatting/whitespace and staged secret scanning are recorded with the local commit. Full accumulated-batch validation and installed-browser acceptance remain for separately requested publication/deployment; neither is claimed here.
+- **Additional check boundary:** The optional whole-repository Markdown links run was stopped after the focused checks completed; it is not counted as passing, and the chained contributor-path check did not run. Neither is required for the pricing conversion, and broader documentation validation remains part of the later requested batch.
+- **Preservation and limits:** Office `.env` SHA-256 matches the pre-task value. No staging access, real record, message or provider operation. Staging SMTP remains active and payment/hosting/registrar/WhatsApp settings are untouched. Existing pending Command 163 commits are retained. Independent recovery and production acceptance remain open.
+- **Exact recommended next command:** Await the owner's next specified local change. When the owner requests the batch push, validate the accumulated Commands 163–164, reconcile safely and publish directly to main subject to actual repository rules. Deployment requires separate authorization. Stop here.
 
 ### Command 163 — Compact navigation, consistent dates and actionable dashboards
 
