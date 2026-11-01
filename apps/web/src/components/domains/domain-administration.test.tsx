@@ -139,6 +139,35 @@ describe('separate registrar connections', () => {
   });
 });
 describe('TLD catalogue', () => {
+  it.each(['.net', '.org', '.co.uk', '.technology'])(
+    'saves a priced enabled %s extension without a registrar operation',
+    async (extension) => {
+      const user = userEvent.setup();
+      render(<TldManager />);
+      await user.click(await screen.findByRole('button', { name: 'Add TLD' }));
+      await user.type(screen.getByLabelText('TLD'), extension);
+      await user.type(
+        screen.getByLabelText('One-year registration price (BDT)'),
+        '1890.00',
+      );
+      await user.click(screen.getByLabelText('Offer registration'));
+      await user.click(
+        screen.getByRole('button', { name: 'Save TLD pricing' }),
+      );
+      await screen.findByText(/TLD revision saved/);
+      expect(api.mutate).toHaveBeenCalledExactlyOnceWith(
+        '/domains/administration/tlds',
+        'PUT',
+        expect.objectContaining({
+          tld: extension.slice(1),
+          registrationAmount: '189000',
+          renewalAmount: null,
+          enabled: true,
+          revision: 0,
+        }),
+      );
+    },
+  );
   it('edits exact BDT prices separately from credentials and posts a revision', async () => {
     render(<TldManager />);
     await userEvent

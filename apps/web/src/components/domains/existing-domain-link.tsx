@@ -73,7 +73,7 @@ export function ExistingDomainLink({
     });
     if (!parsed.success) {
       setNotice(
-        'Enter an ordinary .com domain and type the same domain to confirm.',
+        'Enter an ordinary domain and type the same domain to confirm.',
       );
       return;
     }
@@ -124,8 +124,8 @@ export function ExistingDomainLink({
             onClose={() => setOpen(false)}
           >
             <p className="text-sm">
-              Link an already registered ordinary .com domain to this client.
-              The selected registrar must prove active ownership. This does not
+              Link an already registered ordinary domain to this client. The
+              selected registrar must prove active ownership. This does not
               register, transfer or purchase a domain, create contacts, change
               nameservers or create billing records.
             </p>

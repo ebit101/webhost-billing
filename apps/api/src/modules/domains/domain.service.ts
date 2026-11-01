@@ -31,6 +31,7 @@ import {
   domainContactSchema,
   resellbizContactSchema,
   domainNameSchema,
+  domainExtension,
   adminOfflineConsentEvidenceSchema,
   type ResellbizSetup,
   domainSelectionSnapshotSchema,
@@ -623,7 +624,7 @@ export class DomainService {
     });
     const catalogueResults = [];
     for (const catalogue of managed) {
-      if (!catalogue.enabled || catalogue.tld !== 'com') continue;
+      if (!catalogue.enabled) continue;
       let context;
       try {
         context = await this.administration.catalogueContext(catalogue.tld);
@@ -778,7 +779,7 @@ export class DomainService {
     const offer = await this.prisma.domainOffer.findUnique({
       where: { id: input.offerId },
     });
-    if (!offer || !input.domainName.endsWith(`.${offer.tld}`))
+    if (!offer || domainExtension(input.domainName) !== offer.tld)
       this.deny('Select a matching supported domain offer.');
     const account = await this.prisma.registrarAccount.findUniqueOrThrow({
       where: { id: offer.accountId },
@@ -1288,7 +1289,7 @@ export class DomainService {
       where: { accountId: account.id },
     });
     const catalogue = await this.prisma.domainCatalogueTld.findUnique({
-      where: { tld: domain.domainName.split('.').at(-1) ?? '' },
+      where: { tld: domainExtension(domain.domainName) },
     });
     const globalDefault = await this.prisma.registrarProfile.findFirst({
       where: { isDefault: true },

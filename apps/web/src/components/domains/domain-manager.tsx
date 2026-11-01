@@ -338,10 +338,11 @@ export function DomainManager({
         >
           <Card title="Request a domain quote">
             <p className="mb-4 text-sm">
-              Only ordinary ASCII .com and .net names, one year, one domain.
-              Fixed fictional nameservers apply only to simulation. Live
-              nameservers are displayed below. Provider cost is independent of
-              the BDT selling price.
+              Ordinary ASCII names matching the selected extension, one year,
+              one domain. Registrar and registry requirements apply. Fixed
+              fictional nameservers apply only to simulation. Live nameservers
+              are displayed below. Provider cost is independent of the BDT
+              selling price.
             </p>
             <form
               onSubmit={(event) => void requestQuote(event)}

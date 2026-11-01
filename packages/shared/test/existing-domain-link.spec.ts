@@ -15,9 +15,16 @@ test('existing-domain requests require explicit client/account, exact canonical 
     submissionKey: randomUUID(),
   };
   assert(existingDomainLinkRequestSchema.safeParse(input).success);
+  for (const domainName of ['other.net', 'example.org', 'example.co.uk'])
+    assert(
+      existingDomainLinkRequestSchema.safeParse({
+        ...input,
+        domainName,
+        confirmation: domainName,
+      }).success,
+    );
   for (const changes of [
     { confirmation: 'other.com' },
-    { domainName: 'other.net', confirmation: 'other.net' },
     { domainName: 'https://existing-example.com' },
     { customerId: 'bad' },
     { submissionKey: '' },

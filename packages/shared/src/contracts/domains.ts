@@ -1,11 +1,33 @@
 import { z } from 'zod';
 import { invoiceStatusSchema } from './states';
 
+export const domainExtensionSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .max(50)
+  .regex(/^[a-z]{2,63}(?:\.[a-z]{2,63})*$/);
+
 export const domainNameSchema = z
   .string()
   .trim()
   .toLowerCase()
-  .regex(/^(?!xn--)[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.(com|net)$/);
+  .max(253)
+  .regex(
+    /^(?!xn--)[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.[a-z]{2,63}(?:\.[a-z]{2,63})*$/,
+  )
+  .refine(
+    (name) =>
+      domainExtensionSchema.safeParse(name.slice(name.indexOf('.') + 1))
+        .success,
+  );
+
+// One registrant label followed by the exact configured extension (e.g. co.uk).
+// Matching just the final label would misbill co.uk as uk or accept subdomains.
+export function domainExtension(name: string): string {
+  const canonical = domainNameSchema.parse(name);
+  return canonical.slice(canonical.indexOf('.') + 1);
+}
 const text = z.string().trim().min(1).max(160);
 export const domainContactSchema = z
   .object({
@@ -223,7 +245,7 @@ export const fakeRegistrarSettingsSchema = z
 export const domainOfferSchema = z
   .object({
     id: z.uuid(),
-    tld: z.enum(['com', 'net']),
+    tld: domainExtensionSchema,
     years: z.literal(1),
     sellingAmount: positiveAmount,
     currency: z.literal('BDT'),
@@ -390,7 +412,7 @@ export const existingDomainLinkRequestSchema = z
   .object({
     customerId: z.uuid(),
     registrarAccountId: z.uuid(),
-    domainName: domainNameSchema.refine((value) => value.endsWith('.com')),
+    domainName: domainNameSchema,
     confirmation: domainNameSchema,
     submissionKey: z.uuid(),
   })

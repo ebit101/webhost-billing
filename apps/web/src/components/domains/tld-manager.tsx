@@ -124,7 +124,7 @@ export function TldManager() {
       );
     } catch {
       setError(
-        'Enter a valid extension and positive BDT prices. Only priced ordinary .com registrations can be enabled; blank means unavailable, not free.',
+        'Enter a valid extension and positive BDT prices. Offering registration requires a price; leave unavailable prices blank, not zero.',
       );
     }
   }
@@ -160,13 +160,13 @@ export function TldManager() {
         <Link href="/admin/domains">Domain requests</Link>
       </nav>
       <p className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm">
-        The supported live path is ordinary .com registration and manual renewal
-        for one year. Other TLDs can be kept as disabled catalogue drafts. An
-        enabled extension also needs an enabled default or preferred registrar
-        and configured DNS defaults and policies before customers can order it.
-        Transfers, premium domains, automatic registration, DNS-management
-        add-ons, email forwarding and paid identity protection are not
-        supported.
+        Add any ordinary extension, including multi-part extensions such as
+        co.uk. Registration and manual renewal use one-year prices. An enabled
+        extension needs an enabled default or preferred registrar and configured
+        DNS defaults and policies before customers can order it. Registrar
+        availability, pricing and registry requirements still apply. Transfers,
+        premium domains, automatic registration, DNS-management add-ons, email
+        forwarding and paid identity protection are not supported.
       </p>
       {error && (
         <p role="alert" className="text-red-700">

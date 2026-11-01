@@ -3200,6 +3200,32 @@ authorize new provider operations or existing-domain adoption.
   Failed requests retain edits. No real transaction, message, provider activation,
   held currency feature, publication or deployment is authorized by this UI fix.
 
+## ADR-157 — Open TLD catalogue pricing with exact suffix and registrar cost binding
+
+- **Date:** 2026-11-02. Command 166, explicitly owner-authorized.
+- **Decision:** Permit priced ordinary ASCII catalogue extensions beyond `.com`,
+  including multi-part suffixes within the existing 50-character catalogue bound.
+  A domain is one registrant label followed by its exact configured extension;
+  `sub.example.com` cannot use a `.com` offer and `.co.uk` must not use `.uk` prices.
+  Extend offer storage and canonical-name SQL checks through an additive migration.
+- **Provider evidence:** Bind native one-year costs to the exact-name availability
+  response's validated pricing class. Preserve only documented legacy fallbacks
+  for com/net/org/biz/info and reject conflicting classes. Unknown products need
+  explicit class evidence and their own cost entry; never fall back to `.com`.
+  Preserve premium/claims/EAP and ambiguous-response rejection.
+- **Registry limits:** Catalogue configuration is separate from live fulfillment.
+  Known registry-specific contact/eligibility paths remain unavailable for live
+  registration until those forms exist; surface capability accurately and reject
+  before registration. Ordinary ASCII names, one-year terms and existing payment,
+  consent, account, native-USD, approval and dispatch gates remain. IDN, premium,
+  transfer, add-on and automatic-registration features are not added.
+- **Sources and bounds:** The owner's [Supersite list](https://speedhostbd.supersite2.srsportal.com/domain-registration/domain-registration-price.php)
+  is a reference, not price authority. See the official [availability contract](https://manage.resellerclub.com/kb/answer/764),
+  [cost structure](https://manage.resellerclub.com/kb/answer/1029), [product keys](https://manage.resellerclub.com/kb/answer/1918)
+  and [registration requirements](https://manage.resellerclub.com/kb/answer/752).
+  No public price import, real provider call, record mutation, deployment or push
+  is authorized. Retain the tested local commit in the owner's pending batch.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

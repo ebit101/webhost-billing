@@ -6490,3 +6490,20 @@ Validate display/defaults, selection changes, precision/limits, retries and both
 payment/product regressions. Update the report and commit locally with the pending
 batch. Do not push, create a PR, deploy, record an actual payment, send customer
 messages or change SMTP/providers. Stop after this command.
+
+## Command 166 — Open the TLD catalogue beyond .com
+
+Owner-authorized on 2026-11-02 by “Open for any tlds,” with the supplied reseller
+Supersite price list as reference. Open ordinary ASCII extension catalogue entry,
+pricing and enablement beyond .com, including multi-part suffixes. Remove matching
+shared/API/database/adapter/UI restrictions without borrowing another extension's
+price. Keep positive exact BDT selling amounts, one-year terms, provider-native
+cost checks, premium/claims/EAP rejection, verified payment, separate approval and
+single-dispatch/reconciliation safeguards. Registry-specific information must not
+be invented; keep those live registrations unavailable until the required form
+exists. Preserve existing linking ownership proofs and historical prices/billing.
+Validate normal and multi-part extensions, stale/bulk/missing-price boundaries,
+registrar cost-class binding, isolated migration and fictional order fulfillment.
+Update the report and commit locally with the pending batch. Do not import public
+selling prices automatically, deploy, enable providers, send real messages or
+register/purchase/renew/change a real domain. Stop after this command.

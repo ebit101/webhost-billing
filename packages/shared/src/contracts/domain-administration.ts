@@ -2,6 +2,7 @@ import { z } from 'zod';
 import {
   registrarNameserversSchema,
   resellbizCredentialSchema,
+  domainExtensionSchema,
 } from './domains';
 
 const positiveMoney = z.string().regex(/^[1-9][0-9]{0,14}$/);
@@ -85,11 +86,7 @@ export const registrarConnectionToggleSchema = z
   .strict();
 const tldFields = z
   .object({
-    tld: z
-      .string()
-      .trim()
-      .toLowerCase()
-      .regex(/^[a-z]{2,24}(?:\.[a-z]{2,24})?$/),
+    tld: domainExtensionSchema,
     registrationAmount: positiveMoney.nullable(),
     renewalAmount: positiveMoney.nullable(),
     enabled: z.boolean(),
@@ -100,10 +97,11 @@ const tldFields = z
   })
   .strict();
 export const domainTldRequestSchema = tldFields.refine(
-  (value) =>
-    !value.enabled ||
-    (value.tld === 'com' && value.registrationAmount !== null),
-  { message: 'Only priced ordinary .com registrations can be enabled.' },
+  (value) => !value.enabled || value.registrationAmount !== null,
+  {
+    message:
+      'Set a positive registration price before offering this extension.',
+  },
 );
 export const domainTldSchema = tldFields
   .extend({

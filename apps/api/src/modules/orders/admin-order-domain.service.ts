@@ -3,6 +3,7 @@ import { Prisma, type PrismaClient } from '@webhost-billing/database';
 import {
   adminOrderDomainOptionsSchema,
   serializeMoney,
+  domainExtension,
 } from '@webhost-billing/shared';
 import { ApplicationException } from '../../common/errors/application.exception';
 import { PRISMA_CLIENT } from '../../infrastructure/database/database.module';
@@ -183,7 +184,7 @@ export class AdminOrderDomainService {
       where: {
         enabled: true,
         registrationPriceId: priceId,
-        tld: domainName.split('.').at(-1),
+        tld: domainExtension(domainName),
       },
     });
     const price = await tx.productPrice.findFirst({

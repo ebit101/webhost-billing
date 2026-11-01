@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import { randomUUID } from 'node:crypto';
 import {
   domainNameSchema,
+  domainExtension,
   domainQuoteRequestSchema,
   domainQuoteSchema,
 } from '@webhost-billing/shared';
@@ -124,9 +125,17 @@ test('hosting-only and domain-only orders keep their completion rules', async ()
 test('ordinary names and consent fail closed', () => {
   assert.equal(domainNameSchema.parse('Example.COM'), 'example.com');
   for (const name of [
-    'xn--test.com',
-    'sub.example.com',
     'example.org',
+    'example.net',
+    'example.co.uk',
+    'example.technology',
+  ])
+    assert.equal(domainNameSchema.parse(name), name);
+  assert.equal(domainExtension('Example.CO.UK'), 'co.uk');
+  assert.notEqual(domainExtension('sub.example.com'), 'com');
+  for (const name of [
+    'xn--test.com',
+    'example..com',
     '-a.com',
     'a-.net',
     'é.com',
@@ -363,7 +372,7 @@ test('existing domain discovery rejects absent, foreign, inactive, expired and m
   );
 });
 
-test('live quote is exact, isolated from mock mode and rejects unsupported/premium/claims/unknown values', async () => {
+test('live quote is exact, isolated from mock mode and rejects missing evidence/premium/claims/unknown values', async () => {
   const fixture = liveFixture();
   assert.equal(
     (await fixture.registrar.quote(liveIntent.domainName)).costAmount,
@@ -430,6 +439,83 @@ test('live availability accepts only the ordinary .com class key without changin
     await assert.rejects(fixture.registrar.quote(liveIntent.domainName));
     assert.equal(fixture.calls.length, 1);
   }
+});
+
+test('quotes and renewal costs use each exact extension and its own registrar pricing class', async () => {
+  for (const [tld, classkey] of [
+    ['net', 'dotnet'],
+    ['org', 'domorg'],
+    ['co.com', 'centralniccocom'],
+    ['technology', 'donutsgroup1'],
+  ]) {
+    const fixture = liveFixture();
+    const name = `fictional-example.${tld}`;
+    fixture.modify((path, value) => {
+      if (path === '/api/domains/available.json')
+        return { [name]: { status: 'available', classkey } };
+      if (path === '/api/products/reseller-cost-price.json')
+        return {
+          domcno: {
+            addnewdomain: { '1': '1.00' },
+            renewdomain: { '1': '2.00' },
+          },
+          [classkey!]: {
+            addnewdomain: { '1': '19.90' },
+            renewdomain: { '1': '21.25' },
+          },
+        };
+      return value;
+    });
+    assert.equal((await fixture.registrar.quote(name)).costAmount, 1990n);
+    assert.equal(await fixture.registrar.renewalCost(name), 2125n);
+    assert.equal(
+      fixture.calls[0]!.parameters['domain-name'],
+      'fictional-example',
+    );
+    assert.equal(fixture.calls[0]!.parameters.tlds, tld);
+    assert(fixture.calls.every(({ path }) => !path.endsWith('/register.json')));
+    fixture.modify((path, value) =>
+      path === '/api/domains/available.json'
+        ? { [name]: { status: 'available', classkey } }
+        : value,
+    );
+    await assert.rejects(fixture.registrar.quote(name)); // no fallback to .com price
+  }
+});
+
+test('non-legacy pricing classes require valid provider evidence and reject premium or claims for every extension', async () => {
+  const fixture = liveFixture();
+  for (const availability of [
+    { status: 'available' },
+    { status: 'available', classkey: '__proto__' },
+    { status: 'available', classkey: 'dottechnology', costHash: {} },
+    {
+      status: 'available',
+      classkey: 'dottechnology',
+      'tm-claims-key': 'claim',
+    },
+    { status: 'available', classkey: 'dottechnology', isPremium: true },
+    { status: 'unknown', classkey: 'dottechnology' },
+  ]) {
+    fixture.modify((path, value) =>
+      path === '/api/domains/available.json'
+        ? { 'example.technology': availability }
+        : value,
+    );
+    await assert.rejects(fixture.registrar.quote('example.technology'));
+  }
+});
+
+test('registry-specific registration facts are not invented when opening catalogue extensions', async () => {
+  const fixture = liveFixture();
+  for (const name of [
+    'example.co.uk',
+    'example.com.au',
+    'example.ca',
+    'example.asia',
+  ])
+    await assert.rejects(fixture.registrar.quote(name), /registry-specific/);
+  assert.equal(fixture.calls.length, 0);
 });
 
 test('live multi-product pricing keeps exact money within endpoint-specific parser limits', async () => {

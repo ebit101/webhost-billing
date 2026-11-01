@@ -149,7 +149,9 @@ export function AdminOrderDomainFields({
     (d) => d.id === domainId && d.domainName === domainName,
   );
   const price = options?.prices.find(
-    (p) => p.priceId === priceId && domainName.endsWith('.' + p.tld),
+    (p) =>
+      p.priceId === priceId &&
+      domainName.split('.').slice(1).join('.') === p.tld,
   );
   useEffect(() => {
     if (send && quote?.domainName === domainName)
@@ -305,7 +307,11 @@ export function AdminOrderDomainFields({
             >
               <option value="">Select catalogue price</option>
               {options?.prices
-                .filter((p) => !domainName || domainName.endsWith('.' + p.tld))
+                .filter(
+                  (p) =>
+                    !domainName ||
+                    domainName.split('.').slice(1).join('.') === p.tld,
+                )
                 .map((p) => (
                   <option key={p.priceId} value={p.priceId}>
                     .{p.tld} · {formatMinor(p.amount.amount, p.amount.currency)}{' '}

@@ -53,7 +53,7 @@ test('connection configuration contains no price, DNS, endpoint or policy author
       false,
     );
 });
-test('unimplemented TLDs stay disabled and absence never becomes a free sale', () => {
+test('any valid extension can be priced and enabled, but absence never becomes a free sale', () => {
   const request = {
     tld: 'com',
     registrationAmount: '100001',
@@ -67,7 +67,7 @@ test('unimplemented TLDs stay disabled and absence never becomes a free sale', (
   assert.equal(domainTldRequestSchema.safeParse(request).success, true);
   assert.equal(
     domainTldRequestSchema.safeParse({ ...request, tld: 'org' }).success,
-    false,
+    true,
   );
   assert.equal(
     domainTldRequestSchema.safeParse({ ...request, registrationAmount: null })
@@ -83,10 +83,14 @@ test('unimplemented TLDs stay disabled and absence never becomes a free sale', (
     domainTldRequestSchema.safeParse({
       ...request,
       tld: 'com.bd',
-      enabled: false,
+      enabled: true,
     }).success,
     true,
   );
+  for (const tld of ['net', 'co.uk', 'technology', 'org.in'])
+    assert(domainTldRequestSchema.safeParse({ ...request, tld }).success);
+  for (const tld of ['.net', 'net/path', 'a..net', '-net', 'net.'])
+    assert(!domainTldRequestSchema.safeParse({ ...request, tld }).success);
 });
 test('bulk review is bounded and requires a selected operation', () => {
   const entries = [{ id: '80000000-0000-4000-8000-000000000118', revision: 1 }];

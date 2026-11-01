@@ -1,4 +1,5 @@
-import { domainNameSchema } from '@webhost-billing/shared';
+import { domainNameSchema, domainExtension } from '@webhost-billing/shared';
+import { requireStandardRegistryContact } from './registry-requirements';
 import type {
   DomainRegistrar,
   RegistrarIntent,
@@ -111,6 +112,29 @@ export function losslessRegistrarJson(
     throw new Error('Invalid registrar response.');
   }
 }
+// Legacy ordinary products may omit classkey. Other products must identify their
+// pricing class in the exact-domain availability response; never use .com cost.
+export function registrarProductKey(tld: string, classkey: unknown): string {
+  const legacy: Readonly<Record<string, string>> = {
+    com: 'domcno',
+    net: 'dotnet',
+    org: 'domorg',
+    biz: 'dombiz',
+    info: 'dominfo',
+  };
+  const known = Object.hasOwn(legacy, tld) ? legacy[tld] : undefined;
+  const key = classkey === undefined ? known : classkey;
+  if (
+    typeof key !== 'string' ||
+    !/^[a-z][a-z0-9]{1,63}$/.test(key) ||
+    (known && key !== known)
+  )
+    throw new Error(
+      'Registrar pricing class is not established for this extension.',
+    );
+  return key;
+}
+
 export function registrarDecimalMinor(value: unknown): bigint {
   if (
     typeof value !== 'string' ||
@@ -188,7 +212,9 @@ export class LogicBoxesSandboxRegistrar implements DomainRegistrar {
   }
   async quote(domainName: string): Promise<RegistrarQuote> {
     const name = domainNameSchema.parse(domainName);
-    const [label, tld] = name.split('.');
+    const tld = domainExtension(name);
+    requireStandardRegistryContact(tld);
+    const label = name.slice(0, name.indexOf('.'));
     const availability = record(
       record(
         await this.call('/api/domains/available.json', 'GET', {
@@ -210,7 +236,8 @@ export class LogicBoxesSandboxRegistrar implements DomainRegistrar {
     const prices = record(
       await this.call('/api/products/reseller-cost-price.json', 'GET', {}),
     );
-    const cost = record(record(prices['domcno'])['addnewdomain'])['1'];
+    const key = registrarProductKey(tld, availability.classkey);
+    const cost = record(record(prices[key])['addnewdomain'])['1'];
     return {
       available: true,
       costAmount: registrarDecimalMinor(cost),

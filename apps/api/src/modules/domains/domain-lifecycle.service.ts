@@ -11,6 +11,7 @@ import {
   domainActionRequestSchema,
   domainActionSchema,
   domainManagementSchema,
+  domainExtension,
   PROJECT_NAME,
   type DomainActionRequest,
 } from '@webhost-billing/shared';
@@ -202,7 +203,7 @@ export class DomainLifecycleService {
       if (request.kind === 'RENEW') {
         await tx.$queryRaw`SELECT pg_advisory_xact_lock(510118)::text`;
         const catalogue = await tx.domainCatalogueTld.findUnique({
-          where: { tld: current.domainName.split('.').at(-1) ?? '' },
+          where: { tld: domainExtension(current.domainName) },
         });
         if (
           catalogue &&

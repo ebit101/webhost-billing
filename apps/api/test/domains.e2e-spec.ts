@@ -4108,4 +4108,178 @@ describe('complete simulated registrar in isolated PostgreSQL (e2e)', () => {
       ).toBe(false);
     });
   });
+
+  it('prices and invoices arbitrary exact extensions, then fulfills only an explicitly approved fictional order', async () => {
+    const administration = app.get(DomainAdministrationService);
+    const actor = {
+      identity: responseData(await owner.get('/auth/me').expect(200)),
+    } as AuthRequestContext;
+    const fake = await prisma.registrarAccount.findFirstOrThrow({
+      where: { mode: 'FAKE' },
+    });
+    await prisma.registrarAccount.update({
+      where: { id: fake.id },
+      data: { enabled: true },
+    });
+    await administration.setDefault(fake.id, actor);
+    await administration.saveDefaults(
+      'dns',
+      { nameservers: ['ns1.fictional-host.com', 'ns2.fictional-host.com'] },
+      actor,
+    );
+    await administration.saveDefaults(
+      'policies',
+      {
+        agreementUrl: 'https://fictional-host.com/domain-policy',
+        customerTermsUrl: 'https://fictional-host.com/terms',
+        customerPrivacyUrl: 'https://fictional-host.com/privacy',
+      },
+      actor,
+    );
+    const extensions = ['net', 'org', 'co.uk', 'photography'];
+    for (const tld of extensions) {
+      const old = await prisma.domainCatalogueTld.findUnique({
+        where: { tld },
+      });
+      await administration.saveTld(
+        {
+          tld,
+          registrationAmount: '189000',
+          renewalAmount: '209000',
+          enabled: false,
+          featured: false,
+          displayOrder: 100,
+          preferredRegistrarId: fake.id,
+          revision: old?.revision ?? 0,
+        },
+        actor,
+      );
+    }
+    const rows = await prisma.domainCatalogueTld.findMany({
+      where: { tld: { in: extensions } },
+    });
+    await administration.bulk(
+      {
+        entries: rows.map(({ id, revision }) => ({ id, revision })),
+        enabled: true,
+        confirmation: 'Apply TLD changes',
+      },
+      actor,
+    );
+    const catalogue = await administration.tlds(actor);
+    for (const tld of extensions)
+      expect(catalogue.find((entry) => entry.tld === tld)).toMatchObject({
+        enabled: true,
+        registrationSupported: tld !== 'co.uk',
+        registrationAmount: '189000',
+        renewalAmount: '209000',
+      });
+    const offers = responseData<
+      { id: string; tld: string; selectionConsentRevision: string }[]
+    >(await customer.get('/domains/offers').expect(200));
+    const before = await prisma.registrarOperation.count();
+    let sample: DomainResult | undefined;
+    for (const tld of extensions) {
+      const offer = offers.find((entry) => entry.tld === tld)!;
+      expect(offer).toBeDefined();
+      const domainName = `fictional-${randomUUID()}.${tld}`;
+      const input = {
+        offerId: offer.id,
+        domainName,
+        contact: {
+          name: 'Fictional registrant',
+          company: 'Fictional business',
+          address: '1 Test Street',
+          city: 'Dhaka',
+          region: 'Dhaka',
+          postalCode: '1000',
+          country: 'BD',
+          email: 'fictional@example.test',
+          phoneCountryCode: '880',
+          phone: '1700000000',
+        },
+        agreement: 'fictional-registration-v1',
+        consent: true,
+        selectionConsentRevision: offer.selectionConsentRevision,
+      };
+      await mutation(
+        customer,
+        '/domains/quotes',
+        { ...input, domainName: `sub.example.${tld}` },
+        409,
+      );
+      const quote = responseData<{ id: string; sellingAmount: string }>(
+        await mutation(customer, '/domains/quotes', input, 201),
+      );
+      expect(quote.sellingAmount).toBe('189000');
+      const order = responseData<DomainResult>(
+        await mutation(
+          customer,
+          '/domains/orders',
+          { quoteId: quote.id, submissionKey: randomUUID() },
+          201,
+        ),
+      );
+      const saved = await prisma.domain.findUniqueOrThrow({
+        where: { id: order.id },
+      });
+      expect(saved.domainName).toBe(domainName);
+      expect(saved.state).toBe('AWAITING_PAYMENT');
+      const billing = await prisma.invoice.findUniqueOrThrow({
+        where: { id: order.invoiceId },
+      });
+      expect(billing.total).toBe(189000n);
+      expect(billing.status).toBe('UNPAID');
+      if (tld === 'net') sample = { ...order, domainName };
+    }
+    expect(await prisma.registrarOperation.count()).toBe(before);
+    if (!sample) throw new Error('Expected a fictional .net sample');
+    await pay(sample, '189000');
+    const approved = responseData<DomainResult>(
+      await mutation(
+        owner,
+        `/domains/${sample.id}/approve`,
+        {
+          confirmation: sample.domainName,
+          costCeiling: '1000',
+          costCurrency: 'USD',
+          registrarAccountId: fake.id,
+        },
+        201,
+      ),
+    );
+    await processor.process(approved.operationId!);
+    await processor.process(approved.operationId!);
+    expect(
+      (await prisma.domain.findUniqueOrThrow({ where: { id: sample.id } }))
+        .state,
+    ).toBe('REGISTERED');
+    expect(
+      await prisma.fakeRegistrarRegistration.count({
+        where: { operationId: approved.operationId! },
+      }),
+    ).toBe(1);
+    const net = await prisma.domainCatalogueTld.findUniqueOrThrow({
+      where: { tld: 'net' },
+    });
+    const price = await prisma.productPrice.findUniqueOrThrow({
+      where: { id: net.registrationPriceId! },
+    });
+    await administration.saveTld(
+      {
+        tld: 'net',
+        registrationAmount: '199000',
+        renewalAmount: '219000',
+        enabled: true,
+        featured: false,
+        displayOrder: 100,
+        preferredRegistrarId: fake.id,
+        revision: net.revision,
+      },
+      actor,
+    );
+    expect(
+      await prisma.productPrice.findUniqueOrThrow({ where: { id: price.id } }),
+    ).toEqual(price);
+  });
 });

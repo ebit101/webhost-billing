@@ -1104,7 +1104,7 @@ model DomainOffer {
   accountId   String @map("account_id") @db.Uuid
   productId   String @map("product_id") @db.Uuid
   priceId     String @map("price_id") @db.Uuid
-  tld         String @db.VarChar(8)
+  tld         String @db.VarChar(50)
   nameservers Json
 
   @@unique([accountId, tld])

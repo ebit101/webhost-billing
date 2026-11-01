@@ -1,5 +1,28 @@
 # StarGate/UK2 registration
 
+## Local TLD catalogue expansion — Command 166
+
+The owner authorized catalogue pricing beyond `.com` on 02/11/2026. Ordinary ASCII
+extensions and multi-part suffixes use exact configured-extension matching across
+offers, quotes, existing-domain billing and renewal lookup. The new additive
+`20261102000100_domain_offer_tld_length` migration widens offers and replaces the
+old com/net SQL restrictions while retaining canonical-name checks and historical
+records. This source change is local and does not update the installed release.
+
+Registrar availability identifies the applicable product cost class; the one-year
+registration and renewal cost must exist under that class. Missing/conflicting
+evidence, premium/claims/EAP flags and unknown outcomes fail closed. Catalogue
+pricing can be saved for extensions with additional registry requirements, but
+the live path rejects known contact/eligibility workflows that the form does not
+yet collect. IDNs, transfers and premium/add-on features remain outside this scope.
+Payment, approval, ownership and single-dispatch requirements are unchanged.
+
+The owner's [reseller catalogue](https://speedhostbd.supersite2.srsportal.com/domain-registration/domain-registration-price.php)
+was inspected as a reference; its public selling prices are not imported or used
+as native registrar costs. Official contracts: [availability](https://manage.resellerclub.com/kb/answer/764),
+[cost pricing](https://manage.resellerclub.com/kb/answer/1029), [product keys](https://manage.resellerclub.com/kb/answer/1918)
+and [registration requirements](https://manage.resellerclub.com/kb/answer/752).
+
 The [live rollout section](#live-resellbiz-rollout-for-command-51) records the separately
 authorized Command 51 implementation and its pending operational acceptance.
 

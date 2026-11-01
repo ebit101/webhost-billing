@@ -6,6 +6,7 @@ import {
   RegistrarCipher,
   credentialBinding,
   ResellbizLiveRegistrar,
+  standardRegistryContactSupported,
 } from '@webhost-billing/database/registrar';
 import {
   createRegistrarConnectionSchema,
@@ -13,6 +14,7 @@ import {
   registrarConnectionIdentitySchema,
   domainTldListSchema,
   domainTldRequestSchema,
+  domainExtensionSchema,
   domainTldBulkSchema,
   domainPolicySchema,
   domainDnsDefaultsSchema,
@@ -402,7 +404,7 @@ export class DomainAdministrationService {
       take: 100,
     });
     const tlds = await tx.domainCatalogueTld.findMany({
-      where: { tld: 'com', registrationPriceId: { not: null } },
+      where: { registrationPriceId: { not: null } },
       take: 1000,
     });
     for (const account of accounts)
@@ -494,8 +496,10 @@ export class DomainAdministrationService {
             renewalAmount: row.renewalAmount?.toString() ?? null,
             currency: 'BDT',
             years: 1,
-            registrationSupported: row.tld === 'com',
-            renewalSupported: row.tld === 'com',
+            registrationSupported:
+              domainExtensionSchema.safeParse(row.tld).success &&
+              standardRegistryContactSupported(row.tld),
+            renewalSupported: domainExtensionSchema.safeParse(row.tld).success,
             transferSupported: false,
           };
         }),
@@ -596,7 +600,11 @@ export class DomainAdministrationService {
           this.deny(
             'A selected TLD changed. Refresh before applying the batch.',
           );
-        if (input.enabled && (old.tld !== 'com' || !old.registrationPriceId))
+        if (
+          input.enabled &&
+          (!domainExtensionSchema.safeParse(old.tld).success ||
+            !old.registrationPriceId)
+        )
           this.deny('A selected TLD cannot be enabled for registration.');
         await tx.domainCatalogueTld.update({
           where: { id: entry.id },
@@ -628,7 +636,11 @@ export class DomainAdministrationService {
       where: { tld },
     });
     if (!catalogue) return null;
-    if (!catalogue.enabled || !catalogue.registrationPriceId || tld !== 'com')
+    if (
+      !catalogue.enabled ||
+      !catalogue.registrationPriceId ||
+      !domainExtensionSchema.safeParse(tld).success
+    )
       this.deny('This TLD is unavailable for registration.');
     const dnsRow = await this.prisma.setting.findUnique({
       where: { key: 'domains.dns-defaults' },
@@ -685,6 +697,10 @@ export class DomainAdministrationService {
     const originId =
       accountId ?? catalogue.preferredRegistrarId ?? globalDefault;
     const origin = accounts.find((entry) => entry.id === originId);
+    if (origin?.mode === 'LIVE' && !standardRegistryContactSupported(tld))
+      this.deny(
+        'This extension needs registry-specific registrant details before API registration. Its catalogue pricing can still be saved.',
+      );
     const sameMode = eligible.filter(
       (entry) =>
         accounts.find((account) => account.id === entry.id)?.mode ===

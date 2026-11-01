@@ -2,6 +2,7 @@ import { request as httpsRequest } from 'node:https';
 import { randomInt } from 'node:crypto';
 import {
   domainNameSchema,
+  domainExtension,
   resellbizCredentialSchema,
   registrarNameserversSchema,
   resellbizContactSchema,
@@ -17,7 +18,9 @@ import type {
 import {
   losslessRegistrarJson,
   registrarDecimalMinor,
+  registrarProductKey,
 } from './logicboxes-sandbox';
+import { requireStandardRegistryContact } from './registry-requirements';
 
 const paths = {
   '/api/domains/available.json': ['domaincheck.httpapi.com', 'GET'],
@@ -228,19 +231,16 @@ export class ResellbizLiveRegistrar implements DomainRegistrar {
     }
   }
   private domain(name: string): string {
-    const canonical = domainNameSchema.parse(name);
-    if (!canonical.endsWith('.com'))
-      throw new Error(
-        'Only ordinary one-year .com registrations are supported in the live pilot.',
-      );
-    return canonical;
+    return domainNameSchema.parse(name);
   }
-  private async available(name: string): Promise<boolean> {
+  private async availability(name: string) {
+    name = this.domain(name);
+    const tld = domainExtension(name);
     const result = record(
       record(
         await this.call('/api/domains/available.json', {
-          'domain-name': name.slice(0, -4),
-          tlds: 'com',
+          'domain-name': name.slice(0, name.indexOf('.')),
+          tlds: tld,
         }),
       )[name],
     );
@@ -248,7 +248,6 @@ export class ResellbizLiveRegistrar implements DomainRegistrar {
       Object.keys(result).some(
         (key) => !['status', 'isPremium', 'classkey'].includes(key),
       ) ||
-      (Object.hasOwn(result, 'classkey') && result.classkey !== 'domcno') ||
       (result.isPremium !== undefined &&
         result.isPremium !== false &&
         result.isPremium !== 'false')
@@ -260,15 +259,22 @@ export class ResellbizLiveRegistrar implements DomainRegistrar {
       )
     )
       throw new Error('Domain availability is unknown.');
-    return result.status === 'available';
+    return {
+      available: result.status === 'available',
+      productKey: registrarProductKey(tld, result.classkey),
+    };
+  }
+  private async available(name: string): Promise<boolean> {
+    return (await this.availability(name)).available;
   }
   async quote(name: string): Promise<RegistrarQuote> {
     name = this.domain(name);
-    const available = await this.available(name);
+    requireStandardRegistryContact(domainExtension(name));
+    const { available, productKey } = await this.availability(name);
     const prices = record(
       await this.call('/api/products/reseller-cost-price.json', {}),
     );
-    const cost = record(record(prices.domcno).addnewdomain)['1'];
+    const cost = record(record(prices[productKey]).addnewdomain)['1'];
     return {
       available,
       costAmount: registrarDecimalMinor(cost),
@@ -762,12 +768,13 @@ export class ResellbizLiveRegistrar implements DomainRegistrar {
       throw new Error('Contact change needs reconciliation.');
     // IRTP/verification messages are not copied into logs or interpreted as completed consent.
   }
-  async renewalCost(): Promise<bigint> {
+  async renewalCost(name: string): Promise<bigint> {
+    const { productKey } = await this.availability(name);
     const result = record(
       await this.call('/api/products/reseller-cost-price.json', {}),
     );
     const cost = registrarDecimalMinor(
-      record(record(result.domcno).renewdomain)['1'],
+      record(record(result[productKey]).renewdomain)['1'],
     );
     if (cost <= 0n) throw new Error('Renewal price is not established.');
     return cost;
@@ -784,7 +791,7 @@ export class ResellbizLiveRegistrar implements DomainRegistrar {
     if (
       !Number.isFinite(previousExpiry.getTime()) ||
       previousExpiry.getTime() % 1000 !== 0 ||
-      (await this.renewalCost()) > intent.costCeiling
+      (await this.renewalCost(intent.domainName)) > intent.costCeiling
     )
       throw new Error('Renewal cost or expiry preflight did not match.');
     await claimSubmission();

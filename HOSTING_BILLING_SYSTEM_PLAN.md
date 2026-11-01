@@ -8,6 +8,17 @@
 
 **Technical identifier:** `webhost-billing`
 
+**TLD catalogue direction — 2026-11-02:** Command 166 removes the historical
+`.com`-only catalogue restriction. Allow priced ordinary ASCII extensions,
+including `.net`, `.org` and multi-part suffixes, with exact extension matching
+through quotes, orders and renewal pricing. Use registrar-reported pricing classes
+instead of borrowing `.com` costs. Catalogue eligibility does not bypass registry
+contact/eligibility requirements; extensions needing additional inputs may be
+priced but must stop before live registration until those inputs are supported.
+One-year terms, positive BDT prices, no premium/claims/EAP purchases, verified
+payment, separate approval and disabled-provider gates remain. No deployment,
+live call, real registration or automatic price import is authorized.
+
 **Administrator order direction — 2026-10-30:** Command 149 adds optional domain
 billing to the hosting order and a single combined invoice. An unchecked Send
 registration to registrar choice bills a verified existing domain without a

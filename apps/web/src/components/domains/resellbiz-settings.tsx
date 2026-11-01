@@ -64,9 +64,10 @@ export function ResellbizSettingsPanel() {
     <Card title="Live resell.biz registrar">
       <div className="space-y-4">
         <p>
-          Real account, real charges. This is not a sandbox. Only ordinary .com
-          registrations for one year are supported. Auto-renewal, transfers,
-          cancellation and deletion are not available.
+          Real account, real charges. This is not a sandbox. Ordinary domains
+          use one-year registration prices for their exact extension. Registrar
+          and registry requirements apply. Auto-renewal, transfers, cancellation
+          and deletion are not available.
         </p>
         <p>
           Use a dedicated reseller account and allowlist this server’s outbound
