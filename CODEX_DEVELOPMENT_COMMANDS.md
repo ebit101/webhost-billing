@@ -6391,3 +6391,37 @@ Exact next recommendation, not authorization: Command 162 — Establish independ
 encrypted backup and recovery acceptance after obtaining the owner's off-site
 destination and named recovery contacts. No paid storage or production launch is
 authorized by this recommendation.
+
+## Command 162 — Independent backup and recovery acceptance
+
+Owner-authorized on 2026-11-01. Obtain the owner's existing independent destination,
+recovery operators and secure key-escrow facts before transferring sensitive backup
+artifacts or claiming independent recovery. No paid storage or application deployment
+is implicit. Keep staging SMTP active and payment/hosting/registrar/WhatsApp disabled.
+
+Use the [acceptance checklist](docs/INDEPENDENT_RECOVERY_ACCEPTANCE.md): verify a fresh
+encrypted backup and its matching-release consistency reference, transfer and retrieve
+through the approved destination, use independent key recovery, restore only into an
+owned isolated disposable target, and verify complete table/migration/content integrity.
+Keep credentials, contacts and operational artifacts outside Git. Record actual timing,
+cadence/retention/alert evidence and every remaining gate; do not substitute database-only
+restoration for full application recovery or send alerts without explicit authorization.
+
+Current preflight passes. The owner reports no off-site destination, requests the
+WHMCS backup model and is unsure of independent key escrow; no backup operator
+beyond the primary was supplied. The checklist maps the official WHMCS workflow
+without activating remote delivery, sending backup email or changing the existing
+six-hour recovery-point target. The owner subsequently chose existing encrypted
+backup scripts only. Prepare and validate an inactive systemd service/timer and
+operator-owned configuration for the existing verified creator; no administrator
+page, remote sender or automatic deletion. Local unit/calendar/lock/failure checks
+do not prove host activation or independent recovery. Host-specific configuration
+and activation are reviewed separately from source preparation. Following the
+owner's existing-script selection, staging's reviewed configuration was installed,
+one fresh encrypted backup passed verification and the six-hour timer was enabled.
+The installed application release, existing passphrase and provider posture were
+preserved. Remote delivery remains inactive and no recurring trigger has yet been
+observed. Continue Command 162 when the required destination, key and operator
+facts exist.
+Do not invent a Command 163 scope or close independent operating acceptance before
+the required evidence exists.

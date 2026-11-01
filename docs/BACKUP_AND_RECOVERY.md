@@ -70,6 +70,92 @@ the artifact verified. Use the installed pre-upgrade release for the pre-migrati
 Do not rewrite migration history to satisfy this gate. Preserve a failed/mismatched
 database and its protected evidence for a separately reviewed forensic recovery.
 
+## Optional host schedule for existing scripts
+
+Command 162 supplies an inactive Linux/systemd configuration in
+[`deploy/backup-schedule`](../deploy/backup-schedule/backup.env.example). It uses the existing
+creation script, including matching-release checks and encrypted archive
+verification, without a new administrator page, remote sender or retention deleter.
+It is not installed or enabled automatically by application deployment.
+
+Before host activation, the operator must review these three files:
+
+- [`backup.env.example`](../deploy/backup-schedule/backup.env.example): choose the exact
+  database, Compose project/files and protected output/passphrase paths. The
+  deliberately invalid database/project placeholders must be replaced. The file
+  contains paths, not passwords; the application environment and passphrase remain
+  separate protected files. Systemd reads this file; do not execute or source it.
+- [`webhost-billing-backup.service`](../deploy/backup-schedule/webhost-billing-backup.service):
+  adapt both `/opt/webhost-billing/current` paths to the reviewed installed release
+  path. Use the installed matching recovery source, not arbitrary checkout code.
+  The root service requires Docker access, uses umask 0077 and a private temporary
+  directory, and keeps its GnuPG home/lock in a mode-0700 state directory.
+- [`webhost-billing-backup.timer`](../deploy/backup-schedule/webhost-billing-backup.timer):
+  runs at 00:00, 06:00, 12:00 and 18:00 UTC (06:00, 12:00, 18:00 and 00:00
+  Asia/Dhaka). A persistent timer catches up once after downtime; it does not
+  reconstruct missed snapshots. The six-hour recovery point is a target, not a
+  guarantee during outages, failed or long-running backups.
+
+Systemd does not start another instance while this oneshot is running. The
+additional nonblocking lock prevents overlap with manual invocations using the
+same lock. Lock conflict exits 75 and is a failure, never a verified backup.
+The two-hour timeout or any script failure marks the service failed. Do not use
+`SuccessExitStatus=75`, automatic restart loops or `RemainAfterExit=yes`.
+
+Prepare an operator-owned copy of the units and configuration outside the source
+tree. Keep the configuration, Compose environment and passphrase mode 0600 or
+0400, and the backup directory mode 0700. Review ownership and free space. Do not
+regenerate an existing passphrase or copy secrets into the repository. Create no
+timer on this Windows workstation; the configuration targets the Linux host.
+
+After host-specific review and owner authorization, install reviewed copies as
+`/etc/webhost-billing/backup.env` and
+`/etc/systemd/system/webhost-billing-backup.{service,timer}` (root-owned mode 0644
+units). Validate them on that
+host before loading or enabling:
+
+```bash
+systemd-analyze verify /etc/systemd/system/webhost-billing-backup.service /etc/systemd/system/webhost-billing-backup.timer
+systemd-analyze calendar --iterations=5 '*-*-* 00,06,12,18:00:00 UTC'
+systemctl daemon-reload
+systemctl start webhost-billing-backup.service
+systemctl status webhost-billing-backup.service --no-pager
+journalctl -u webhost-billing-backup.service --no-pager -n 50
+```
+
+Inspect the new archive and both sidecars and verify it again using the existing
+`backup:verify` command. Only after that succeeds, enable the timer:
+
+```bash
+systemctl enable --now webhost-billing-backup.timer
+systemctl list-timers webhost-billing-backup.timer --all --no-pager
+```
+
+For later manual backups use `systemctl start webhost-billing-backup.service` to
+share the same lock. The existing deployment backup is a separate path; coordinate
+it with this service during maintenance. There is no automatic archive deletion:
+monitor disk usage and apply an approved retention policy only after verifying
+independent copies. Do not remove the newest valid recovery point to make space.
+
+Check service result, last verified archive age and next timer deadline after
+each run. `systemctl is-active` alone is insufficient: a successful oneshot is
+normally inactive afterward. Failures remain in status/journal until a later
+successful run or explicit reset; no email alert or remote delivery is configured.
+Stopping/disabling the timer stops future triggers but does not stop an already
+running backup or remove archives. Keep failed-run diagnostics and investigate
+before resetting status or restarting.
+
+This same-host configuration does not close off-site, key-escrow, backup-operator,
+immutable retention or application-recovery acceptance. See the
+[independent acceptance checklist](INDEPENDENT_RECOVERY_ACCEPTANCE.md).
+
+On 2026-11-01 Command 162 applied the owner's existing-script choice on staging:
+the reviewed service passed a manual verified encrypted backup, then its six-hour
+timer was enabled. The installed application release and existing passphrase were
+preserved. The next scheduled trigger is not evidence that a recurring run has
+completed; the first manual result and host configuration are distinct from
+off-site transfer, independent decryption and full application recovery.
+
 ## Restore into an isolated database
 
 Never restore directly over the active database. The restore script accepts only a new lowercase database beginning with `webhost_billing_restore_`, refuses an existing target, and requires confirmation containing the exact target name.
