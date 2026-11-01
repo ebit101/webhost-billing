@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import Link from 'next/link';
 import { Icon, type IconName } from '../ui/icon';
 
 export function MetricCard({
@@ -7,12 +8,14 @@ export function MetricCard({
   detail,
   icon,
   tone = 'brand',
+  href,
 }: {
   label: string;
   value: string;
   detail: ReactNode;
   icon: IconName;
   tone?: 'brand' | 'emerald' | 'amber' | 'slate';
+  href: string;
 }) {
   const colors = {
     brand: 'bg-brand-50 text-brand-700',
@@ -22,7 +25,10 @@ export function MetricCard({
   } as const;
 
   return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <Link
+      href={href}
+      className="block rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-brand-400 hover:bg-brand-50/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+    >
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-sm font-medium text-slate-500">{label}</p>
@@ -37,6 +43,9 @@ export function MetricCard({
         </span>
       </div>
       <div className="mt-4 text-xs leading-5 text-slate-500">{detail}</div>
-    </article>
+      <span className="mt-3 block text-xs font-semibold text-brand-700">
+        View details →
+      </span>
+    </Link>
   );
 }

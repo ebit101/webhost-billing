@@ -16,6 +16,8 @@ export function Field({
   placeholder,
   maxLength,
   readOnly,
+  pattern,
+  title,
 }: {
   label: string;
   name: string;
@@ -28,6 +30,8 @@ export function Field({
   placeholder?: string;
   maxLength?: number;
   readOnly?: boolean;
+  pattern?: string;
+  title?: string;
 }) {
   return (
     <label className="block text-sm font-semibold text-slate-700">
@@ -44,6 +48,8 @@ export function Field({
         placeholder={placeholder}
         maxLength={maxLength}
         readOnly={readOnly}
+        pattern={pattern}
+        title={title}
       />
     </label>
   );

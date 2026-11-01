@@ -75,6 +75,24 @@ describe('administrator dashboard', () => {
     expect(await screen.findByText('BDT 842.00')).toBeTruthy();
     expect(screen.getByText('128')).toBeTruthy();
     expect(screen.getByText('Payment Verified By Admin')).toBeTruthy();
+    expect(screen.getByLabelText('From')).toHaveProperty('value', '01/08/2026');
+    expect(screen.getByLabelText('To')).toHaveProperty('value', '25/08/2026');
+    for (const [label, href] of [
+      ['Collected revenue', '/admin/payments'],
+      ['Outstanding balance', '/admin/invoices'],
+      ['Overdue balance', '/admin/invoices?status=OVERDUE'],
+      ['Active services', '/admin/services?status=ACTIVE'],
+      ['Suspended services', '/admin/services?status=SUSPENDED'],
+      ['Pending orders', '/admin/orders'],
+      ['Open tickets', '/admin/support'],
+      ['Failed automation jobs', '/admin/automation'],
+    ]) {
+      expect(
+        screen
+          .getByRole('link', { name: new RegExp(`^${label}`) })
+          .getAttribute('href'),
+      ).toBe(href);
+    }
 
     await user.click(screen.getByRole('button', { name: 'Apply period' }));
     await waitFor(() =>
@@ -85,6 +103,8 @@ describe('administrator dashboard', () => {
       ).toBe(true),
     );
 
+    await user.clear(screen.getByLabelText('From'));
+    await user.type(screen.getByLabelText('From'), '02/08/2026');
     await user.click(screen.getByRole('button', { name: /Customers CSV/ }));
     await waitFor(() => {
       const call = fetchMock.mock.calls.find(([url]) =>
@@ -94,6 +114,20 @@ describe('administrator dashboard', () => {
       expect(call?.[1]?.body).toContain('2026-08-01');
       expect(createObjectURL).toHaveBeenCalled();
     });
+  });
+
+  it('rejects an impossible calendar date without requesting another dashboard', async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.fn().mockResolvedValue(success(dashboard));
+    vi.stubGlobal('fetch', fetchMock);
+    render(<AdminDashboard />);
+    await screen.findByText('BDT 842.00');
+    await user.clear(screen.getByLabelText('From'));
+    await user.type(screen.getByLabelText('From'), '31/02/2026');
+    await user.click(screen.getByRole('button', { name: 'Apply period' }));
+    expect(screen.getByRole('alert').textContent).toContain('dd/mm/yyyy');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(screen.getByText('BDT 842.00')).toBeTruthy();
   });
 });
 

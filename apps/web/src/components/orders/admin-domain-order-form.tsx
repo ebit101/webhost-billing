@@ -1,4 +1,5 @@
 'use client';
+import { parseCalendarDateTime } from '@webhost-billing/shared';
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import {
@@ -102,7 +103,9 @@ export function AdminDomainOrderForm({ onCreated }: { onCreated: () => void }) {
     const revision = formRevision.current;
     const form = new FormData(event.currentTarget);
     const selected = offers.find((entry) => entry.id === offerId);
-    const consentDate = new Date(String(form.get('consentedAt')));
+    const consentDate = new Date(
+      parseCalendarDateTime(String(form.get('consentedAt'))) ?? '',
+    );
     const input = adminDomainQuoteRequestSchema.safeParse({
       customerId,
       offerId,
@@ -322,7 +325,10 @@ export function AdminDomainOrderForm({ onCreated }: { onCreated: () => void }) {
           <input
             className={fieldClass}
             name="consentedAt"
-            type="datetime-local"
+            type="text"
+            placeholder="dd/mm/yyyy hh:mm"
+            pattern="[0-9]{2}/[0-9]{2}/[0-9]{4} [0-9]{2}:[0-9]{2}"
+            title="Use dd/mm/yyyy hh:mm (local time)"
             required
           />
         </label>
@@ -352,7 +358,7 @@ export function AdminDomainOrderForm({ onCreated }: { onCreated: () => void }) {
           <p className="mb-3 text-sm font-semibold">
             {quote.domainName} ·{' '}
             {formatMinor(quote.sellingAmount, quote.currency)} · quote expires{' '}
-            {new Date(quote.expiresAt).toLocaleString()}
+            {new Date(quote.expiresAt).toLocaleString('en-GB')}
           </p>
           <Button disabled={busy} onClick={() => void createOrder()}>
             {busy ? 'Creating…' : 'Create order and unpaid invoice'}

@@ -75,7 +75,7 @@ describe('InvoicePdfService', () => {
       for (const expected of [
         invoice.businessIdentity.phone,
         invoice.businessIdentity.countryCode,
-        '2026-10-29',
+        '29/10/2026',
         'Payment instructions',
         'Fictional bank: TEST-123',
         'Invoice number and transaction ID required.',

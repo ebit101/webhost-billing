@@ -152,11 +152,11 @@ describe('read-only administrator manual-payment review', () => {
       'BDT 90,071,992,547,404.93',
     );
     for (const [label, value] of [
-      ['Received', '3 Oct 2026, 22:00'],
-      ['Reviewed', '3 Oct 2026, 23:00'],
-      ['Verified', '4 Oct 2026, 00:00'],
-      ['Created', '3 Oct 2026, 21:00'],
-      ['Updated', '4 Oct 2026, 01:00'],
+      ['Received', '03/10/2026, 22:00'],
+      ['Reviewed', '03/10/2026, 23:00'],
+      ['Verified', '04/10/2026, 00:00'],
+      ['Created', '03/10/2026, 21:00'],
+      ['Updated', '04/10/2026, 01:00'],
     ])
       expect(fact(label!)).toBe(value);
     expect(screen.getByText(/Dates shown in America\/New_York/)).toBeTruthy();

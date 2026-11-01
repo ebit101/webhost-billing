@@ -118,8 +118,8 @@ function tone(status: EmailLogSummary['status']) {
 }
 
 function formatDate(value: string): string {
-  return new Intl.DateTimeFormat('en-BD', {
-    dateStyle: 'medium',
+  return new Intl.DateTimeFormat('en-GB', {
+    dateStyle: 'short',
     timeStyle: 'short',
   }).format(new Date(value));
 }

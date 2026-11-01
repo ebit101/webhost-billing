@@ -1,3 +1,4 @@
+import { formatCalendarDate } from '@webhost-billing/shared';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import {
   sentenceCaseLabel,
@@ -676,7 +677,7 @@ function cityLine(identity: Invoice['businessIdentity']): string | undefined {
 }
 
 function date(value: string | null): string {
-  return value ? value.slice(0, 10) : '—';
+  return formatCalendarDate(value);
 }
 
 function statusLabel(status: Invoice['status']): string {

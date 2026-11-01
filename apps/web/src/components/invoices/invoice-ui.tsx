@@ -1,3 +1,4 @@
+import { formatCalendarDate } from '@webhost-billing/shared';
 import type { InvoiceStatus } from '@webhost-billing/shared';
 import { formatMinor } from '../orders/order-ui';
 
@@ -17,11 +18,11 @@ export function invoiceError(error: unknown) {
 }
 
 export function invoiceDate(value: string | null) {
-  return value ? new Date(value).toLocaleDateString() : '—';
+  return value ? new Date(value).toLocaleDateString('en-GB') : '—';
 }
 
 // Draft dates and PDF due dates use the persisted UTC calendar day. Do not
 // reinterpret the end-of-day timestamp in the viewer's browser time zone.
 export function invoiceDueDate(value: string) {
-  return value.slice(0, 10);
+  return formatCalendarDate(value);
 }

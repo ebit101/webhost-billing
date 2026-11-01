@@ -406,7 +406,7 @@ export function AutomationManager() {
                       {run.succeededCount} succeeded · {run.failedCount} failed
                     </td>
                     <td className="px-4 py-3 text-slate-600">
-                      {new Date(run.startedAt).toLocaleString()}
+                      {new Date(run.startedAt).toLocaleString('en-GB')}
                     </td>
                   </tr>
                 ))}

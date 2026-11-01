@@ -80,6 +80,14 @@ const models: EmailTemplateModel[] = [
 
 describe('EmailTemplateCatalog', () => {
   const catalog = new EmailTemplateCatalog();
+  it('renders customer-facing due dates and expiry dates as dd/mm/yyyy', () => {
+    const invoice = models.find((model) => model.key === 'invoice-created')!;
+    const verification = models.find(
+      (model) => model.key === 'email-verification',
+    )!;
+    expect(catalog.render(invoice, branding).text).toContain('01/09/2026');
+    expect(catalog.render(verification, branding).text).toContain('26/08/2026');
+  });
 
   it.each(models.map((model) => [model.key, model] as const))(
     'renders responsive HTML and a plain-text fallback for %s',

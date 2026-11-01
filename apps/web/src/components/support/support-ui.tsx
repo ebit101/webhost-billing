@@ -44,7 +44,7 @@ export function priorityTone(priority: TicketPriority): StatusTone {
 export function formatTicketDate(value: string | null): string {
   if (!value) return 'No reply yet';
   return new Intl.DateTimeFormat('en-GB', {
-    dateStyle: 'medium',
+    dateStyle: 'short',
     timeStyle: 'short',
   }).format(new Date(value));
 }

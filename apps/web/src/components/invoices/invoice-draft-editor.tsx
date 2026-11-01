@@ -1,4 +1,5 @@
 'use client';
+import { formatCalendarDate, parseCalendarDate } from '@webhost-billing/shared';
 
 import type { Invoice } from '@webhost-billing/shared';
 import { useState, type FormEvent } from 'react';
@@ -24,12 +25,13 @@ export function InvoiceDraftEditor({
     setSaving(true);
     setError('');
     try {
+      const selectedDate = parseCalendarDate(String(values.get('dueAt')));
+      if (!selectedDate)
+        throw new Error('Enter a valid due date as dd/mm/yyyy.');
       onSaved(
         await authMutation<Invoice>(`/invoices/${invoice.id}/draft`, 'PATCH', {
           currency: String(values.get('currency')).toUpperCase(),
-          dueAt: new Date(
-            `${String(values.get('dueAt'))}T23:59:59.000Z`,
-          ).toISOString(),
+          dueAt: new Date(`${selectedDate}T23:59:59.000Z`).toISOString(),
           creditTotal: String(values.get('creditTotal')),
           items: invoice.items.map((item) => ({
             description: String(values.get(`description:${item.id}`)),
@@ -77,8 +79,10 @@ export function InvoiceDraftEditor({
           <Field
             label="Due date"
             name="dueAt"
-            type="date"
-            defaultValue={invoice.dueAt.slice(0, 10)}
+            placeholder="dd/mm/yyyy"
+            pattern="[0-9]{2}/[0-9]{2}/[0-9]{4}"
+            title="Use dd/mm/yyyy"
+            defaultValue={formatCalendarDate(invoice.dueAt)}
             required
           />
           <Field

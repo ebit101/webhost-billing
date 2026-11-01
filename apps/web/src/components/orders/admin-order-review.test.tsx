@@ -102,8 +102,8 @@ describe('read-only administrator order review', () => {
     expect(
       screen.getByText(/Payment is not proof of hosting provisioning/),
     ).toBeTruthy();
-    expect(screen.getByText('3 Oct 2026, 22:00')).toBeTruthy();
-    expect(screen.getByText('2026-10-05')).toBeTruthy();
+    expect(screen.getByText('03/10/2026, 22:00')).toBeTruthy();
+    expect(screen.getByText('05/10/2026')).toBeTruthy();
     expect(
       screen.getByText(/Fictional Customer · review82@example.test/),
     ).toBeTruthy();

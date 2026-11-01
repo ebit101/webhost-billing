@@ -146,7 +146,7 @@ describe('invoice interfaces', () => {
       ).toHaveLength(1);
       expect(document.textContent).toContain(instructions);
       expect(document.querySelector('script')).toBeNull();
-      expect(within(document).getByText('2026-10-29')).toBeTruthy();
+      expect(within(document).getByText('29/10/2026')).toBeTruthy();
       expect(
         fetchMock.mock.calls.every(
           ([, init]) => !init?.method || init.method === 'GET',
@@ -192,7 +192,7 @@ describe('invoice interfaces', () => {
     render(<InvoiceDetail invoiceId={invoiceId} mode="admin" />);
     await screen.findByText(invoice.invoiceNumber);
     expect((screen.getByLabelText('Due date') as HTMLInputElement).value).toBe(
-      '2026-10-29',
+      '29/10/2026',
     );
     expect(screen.getByText(invoiceDueDate(dueAt))).toBeTruthy();
     fireEvent.submit(
@@ -228,7 +228,7 @@ describe('invoice interfaces', () => {
     expect(link.getAttribute('href')).toBe(`/portal/invoices/${invoice.id}`);
     expect(screen.getByText('BDT 256.00')).toBeTruthy();
     expect(screen.getByRole('cell', { name: 'Unpaid' })).toBeTruthy();
-    expect(screen.getByRole('cell', { name: '2026-09-01' })).toBeTruthy();
+    expect(screen.getByRole('cell', { name: '01/09/2026' })).toBeTruthy();
   });
 
   it('renders historical snapshots and a working printable view', async () => {

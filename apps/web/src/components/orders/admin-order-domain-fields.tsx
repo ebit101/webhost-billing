@@ -1,4 +1,5 @@
 'use client';
+import { parseCalendarDateTime } from '@webhost-billing/shared';
 
 import { useEffect, useRef, useState } from 'react';
 import {
@@ -182,7 +183,7 @@ export function AdminOrderDomainFields({
     invalidate();
     setError('');
     const selected = offers.find((o) => o.id === offerId);
-    const date = new Date(consentedAt);
+    const date = new Date(parseCalendarDateTime(consentedAt) ?? '');
     const parsed = adminDomainQuoteRequestSchema.safeParse({
       customerId,
       offerId,
@@ -393,7 +394,10 @@ export function AdminOrderDomainFields({
             Consent date and time
             <input
               className={fieldClass}
-              type="datetime-local"
+              type="text"
+              placeholder="dd/mm/yyyy hh:mm"
+              pattern="[0-9]{2}/[0-9]{2}/[0-9]{4} [0-9]{2}:[0-9]{2}"
+              title="Use dd/mm/yyyy hh:mm (local time)"
               required
               value={consentedAt}
               onChange={(e) => setConsentedAt(e.target.value)}

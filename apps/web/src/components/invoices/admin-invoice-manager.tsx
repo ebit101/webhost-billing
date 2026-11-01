@@ -1,4 +1,5 @@
 'use client';
+import { formatCalendarDate, parseCalendarDate } from '@webhost-billing/shared';
 
 import type {
   BusinessIdentity,
@@ -239,8 +240,10 @@ export function AdminInvoiceManager({
                 <Field
                   label="Due date"
                   name="dueAt"
-                  type="date"
-                  defaultValue={tomorrowDate()}
+                  placeholder="dd/mm/yyyy"
+                  pattern="[0-9]{2}/[0-9]{2}/[0-9]{4}"
+                  title="Use dd/mm/yyyy"
+                  defaultValue={formatCalendarDate(tomorrowDate())}
                   required
                 />
               </div>
@@ -436,5 +439,7 @@ function tomorrowDate() {
 }
 
 function dateInputToIso(value: string) {
-  return new Date(`${value}T23:59:59.000Z`).toISOString();
+  const selectedDate = parseCalendarDate(value);
+  if (!selectedDate) throw new Error('Enter a valid due date as dd/mm/yyyy.');
+  return new Date(`${selectedDate}T23:59:59.000Z`).toISOString();
 }

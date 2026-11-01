@@ -768,7 +768,7 @@ function PriceHistory({ product }: { product: Product }) {
                 </p>
                 <p className="mt-1 text-xs text-slate-500">
                   Setup {minor(price.setupFee)} ·{' '}
-                  {new Date(price.createdAt).toLocaleDateString()}
+                  {new Date(price.createdAt).toLocaleDateString('en-GB')}
                 </p>
               </div>
               <StatusBadge tone={price.isActive ? 'success' : 'neutral'}>

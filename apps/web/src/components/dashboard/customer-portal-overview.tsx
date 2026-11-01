@@ -321,6 +321,7 @@ export function CustomerPortalOverview({ customerId }: { customerId: string }) {
       >
         <MetricCard
           label="Services"
+          href="/portal/services"
           value={String(counts.services)}
           icon="server"
           tone="brand"
@@ -328,6 +329,7 @@ export function CustomerPortalOverview({ customerId }: { customerId: string }) {
         />
         <MetricCard
           label="Invoices"
+          href="/portal/invoices"
           value={String(counts.invoices)}
           icon="invoice"
           tone="amber"
@@ -335,6 +337,7 @@ export function CustomerPortalOverview({ customerId }: { customerId: string }) {
         />
         <MetricCard
           label="Support tickets"
+          href="/portal/support"
           value={String(counts.tickets)}
           icon="support"
           tone="emerald"
@@ -342,6 +345,7 @@ export function CustomerPortalOverview({ customerId }: { customerId: string }) {
         />
         <MetricCard
           label="Account status"
+          href="/portal/profile"
           value={sentenceCaseLabel(customer.status)}
           icon="activity"
           tone="slate"

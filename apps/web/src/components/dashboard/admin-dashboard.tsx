@@ -1,4 +1,5 @@
 'use client';
+import { formatCalendarDate, parseCalendarDate } from '@webhost-billing/shared';
 import { sentenceCaseLabel } from '@webhost-billing/shared';
 
 import type {
@@ -35,8 +36,8 @@ export function AdminDashboard() {
     try {
       const result = await authenticatedGet<DashboardResponse>(path);
       setDashboard(result);
-      setFrom(result.period.from);
-      setTo(result.period.to);
+      setFrom(formatCalendarDate(result.period.from));
+      setTo(formatCalendarDate(result.period.to));
     } catch (requestError) {
       setError(message(requestError));
     } finally {
@@ -50,8 +51,8 @@ export function AdminDashboard() {
       .then((result) => {
         if (!active) return;
         setDashboard(result);
-        setFrom(result.period.from);
-        setTo(result.period.to);
+        setFrom(formatCalendarDate(result.period.from));
+        setTo(formatCalendarDate(result.period.to));
       })
       .catch((requestError: unknown) => {
         if (active) setError(message(requestError));
@@ -66,16 +67,25 @@ export function AdminDashboard() {
 
   async function applyPeriod(event: FormEvent) {
     event.preventDefault();
-    await load(`/dashboard?${new URLSearchParams({ from, to })}`);
+    const fromDate = parseCalendarDate(from);
+    const toDate = parseCalendarDate(to);
+    if (!fromDate || !toDate || fromDate > toDate) {
+      setError('Enter valid dates as dd/mm/yyyy, with From no later than To.');
+      return;
+    }
+    await load(
+      `/dashboard?${new URLSearchParams({ from: fromDate, to: toDate })}`,
+    );
   }
 
   async function exportReport(resource: ReportResource) {
+    if (!dashboard) return;
     setExporting(resource);
     setError('');
     try {
       const download = await authenticatedDownload(
         `/reports/exports/${resource}`,
-        { from, to },
+        { from: dashboard.period.from, to: dashboard.period.to },
       );
       const url = URL.createObjectURL(download.blob);
       const anchor = document.createElement('a');
@@ -118,7 +128,7 @@ export function AdminDashboard() {
         align: 'right',
         render: (row) =>
           new Intl.DateTimeFormat('en-GB', {
-            dateStyle: 'medium',
+            dateStyle: 'short',
             timeStyle: 'short',
             timeZone: dashboard?.timeZone,
           }).format(new Date(row.createdAt)),
@@ -155,7 +165,7 @@ export function AdminDashboard() {
   return (
     <div className="grid gap-8">
       <PageHeader
-        eyebrow={`Updated ${new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium', timeStyle: 'short', timeZone: dashboard.timeZone }).format(new Date(dashboard.generatedAt))}`}
+        eyebrow={`Updated ${new Intl.DateTimeFormat('en-GB', { dateStyle: 'short', timeStyle: 'short', timeZone: dashboard.timeZone }).format(new Date(dashboard.generatedAt))}`}
         title="Business overview"
         description={`Live operational and financial data in ${dashboard.currency}, using ${dashboard.timeZone} business dates.`}
       />
@@ -189,16 +199,18 @@ export function AdminDashboard() {
       >
         <MetricCard
           label="Collected revenue"
+          href="/admin/payments"
           value={formatMinor(
             metrics.collectedRevenue.amount,
             dashboard.currency,
           )}
           icon="payment"
           tone="emerald"
-          detail={`${from} to ${to} · charges less refunds and reversals`}
+          detail={`${formatCalendarDate(dashboard.period.from)} to ${formatCalendarDate(dashboard.period.to)} · charges less refunds and reversals`}
         />
         <MetricCard
           label="Outstanding balance"
+          href="/admin/invoices"
           value={formatMinor(
             metrics.outstandingBalance.amount,
             dashboard.currency,
@@ -209,6 +221,7 @@ export function AdminDashboard() {
         />
         <MetricCard
           label="Overdue balance"
+          href="/admin/invoices?status=OVERDUE"
           value={formatMinor(metrics.overdueBalance.amount, dashboard.currency)}
           icon="alert"
           tone="amber"
@@ -216,6 +229,7 @@ export function AdminDashboard() {
         />
         <MetricCard
           label="Active services"
+          href="/admin/services?status=ACTIVE"
           value={String(metrics.activeServices)}
           icon="server"
           tone="brand"
@@ -223,6 +237,7 @@ export function AdminDashboard() {
         />
         <MetricCard
           label="Suspended services"
+          href="/admin/services?status=SUSPENDED"
           value={String(metrics.suspendedServices)}
           icon="server"
           tone="amber"
@@ -230,6 +245,7 @@ export function AdminDashboard() {
         />
         <MetricCard
           label="Pending orders"
+          href="/admin/orders"
           value={String(metrics.pendingOrders)}
           icon="order"
           tone="brand"
@@ -237,6 +253,7 @@ export function AdminDashboard() {
         />
         <MetricCard
           label="Open tickets"
+          href="/admin/support"
           value={String(metrics.openTickets)}
           icon="support"
           tone="slate"
@@ -244,6 +261,7 @@ export function AdminDashboard() {
         />
         <MetricCard
           label="Failed automation jobs"
+          href="/admin/automation"
           value={String(metrics.failedAutomationJobs)}
           icon="activity"
           tone="amber"
@@ -270,10 +288,10 @@ export function AdminDashboard() {
                 <div
                   key={point.date}
                   className="group flex min-w-3 flex-1 flex-col items-center justify-end gap-2"
-                  title={`${point.date}: ${formatMinor(point.amount, dashboard.currency)}`}
+                  title={`${formatCalendarDate(point.date)}: ${formatMinor(point.amount, dashboard.currency)}`}
                 >
                   <span className="sr-only">
-                    {point.date}:{' '}
+                    {formatCalendarDate(point.date)}:{' '}
                     {formatMinor(point.amount, dashboard.currency)}
                   </span>
                   <div
@@ -285,8 +303,8 @@ export function AdminDashboard() {
             })}
           </div>
           <div className="mt-2 flex justify-between text-xs text-slate-600">
-            <span>{from}</span>
-            <span>{to}</span>
+            <span>{formatCalendarDate(dashboard.period.from)}</span>
+            <span>{formatCalendarDate(dashboard.period.to)}</span>
           </div>
         </section>
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -352,7 +370,10 @@ function DateField({
       {label}
       <input
         required
-        type="date"
+        type="text"
+        placeholder="dd/mm/yyyy"
+        pattern="[0-9]{2}/[0-9]{2}/[0-9]{4}"
+        title="Use dd/mm/yyyy"
         value={value}
         onChange={(event) => onChange(event.target.value)}
         className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium normal-case tracking-normal text-slate-900"

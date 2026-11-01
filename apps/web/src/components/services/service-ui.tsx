@@ -10,7 +10,7 @@ export function serviceTone(status: ServiceStatus): StatusTone {
 
 export function serviceDate(value: string | null): string {
   return value
-    ? new Intl.DateTimeFormat('en', { dateStyle: 'medium' }).format(
+    ? new Intl.DateTimeFormat('en-GB', { dateStyle: 'short' }).format(
         new Date(value),
       )
     : '—';

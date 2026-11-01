@@ -27,7 +27,17 @@ The dashboard returns the twelve newest `ActivityLog` records, newest first. It 
 
 ## API and exports
 
-- `GET /dashboard?from=YYYY-MM-DD&to=YYYY-MM-DD` — administrator-only typed dashboard response. Omit both dates for month to date.
+- `GET /dashboard?from=YYYY-MM-DD&to=YYYY-MM-DD` — administrator-only typed dashboard response. Omit both dates for seven inclusive business dates ending today. Calendar boundaries use the configured business timezone, including across month/year changes. Explicit periods retain the 366-day maximum.
+
+The interface displays and accepts dates as `dd/mm/yyyy`, independently of browser
+locale. Date/time labels retain their contextual timezone and time; invoice due
+dates retain the persisted UTC calendar day. API requests/responses, CSV exports
+and stored timestamps remain ISO/UTC. Draft period edits do not change the loaded
+metrics, chart dates or export period until Apply succeeds. Summary cards link to
+the corresponding authorized inventories; active/suspended service and overdue
+invoice links apply supported status filters, while other destinations show their
+full relevant inventories.
+
 - `POST /reports/exports/customers` — current non-deleted customer snapshot.
 - `POST /reports/exports/invoices` — invoices created during the selected business-date period.
 - `POST /reports/exports/payments` — payment transactions created during the selected business-date period.

@@ -3133,6 +3133,25 @@ authorize new provider operations or existing-domain adoption.
   release. Record configuration/manual-run evidence separately from observed
   recurring runs, independent recovery and production approval.
 
+## ADR-153 — Use day/month/year presentation and a seven-day dashboard default
+
+- **Date:** 2026-11-02. Command 163, explicitly owner-authorized.
+- **Decision:** Human-facing app dates use dd/mm/yyyy with existing timezone
+  semantics. Date/time displays retain their time and timezone; date-only invoice
+  fields retain the stored UTC calendar day. Parse form dates strictly and reject
+  impossible days before mutation. API values, stored timestamps, technical audit
+  metadata and machine-readable CSV exports retain ISO/UTC interoperability.
+- **Dashboard:** Default to seven inclusive configured business dates ending
+  today (or an explicitly supplied end date). Explicit ordered periods and the
+  366-day limit remain. Cards open existing authorized record pages; service and
+  overdue-invoice links use supported status filters. Other links open their full
+  relevant inventories without claiming a narrower unsupported filter. Charts,
+  exports and descriptions use the applied period, not unsubmitted form edits.
+- **Interface and bounds:** Compact the administrator rail while retaining mobile
+  tap targets and active/focus states. Make admin/customer summary cards real
+  keyboard-accessible links. No application deployment, schema/financial-history
+  changes, live-provider calls or changes to staging SMTP/backups are authorized.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

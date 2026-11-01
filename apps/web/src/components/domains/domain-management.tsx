@@ -1,4 +1,5 @@
 'use client';
+import { formatUtcTimestamp } from '@webhost-billing/shared';
 import Link from 'next/link';
 import { useEffect, useState, type FormEvent } from 'react';
 import {
@@ -187,7 +188,7 @@ export function DomainManagementPanel({
           </div>
           <div>
             <dt>Observed expiry</dt>
-            <dd>{observed.expiresAt}</dd>
+            <dd>{formatUtcTimestamp(observed.expiresAt)}</dd>
           </div>
           <div>
             <dt>Contact verification</dt>
@@ -195,7 +196,7 @@ export function DomainManagementPanel({
           </div>
           <div>
             <dt>Last registrar check</dt>
-            <dd>{observed.observedAt}</dd>
+            <dd>{formatUtcTimestamp(observed.observedAt)}</dd>
           </div>
         </dl>
       ) : (
@@ -448,7 +449,7 @@ export function DomainManagementPanel({
         >
           <p>
             {sentenceCaseLabel(action.kind)} · {sentenceCaseLabel(action.state)}{' '}
-            · {action.createdAt}
+            · {formatUtcTimestamp(action.createdAt)}
           </p>
           {action.invoiceId && (
             <Link

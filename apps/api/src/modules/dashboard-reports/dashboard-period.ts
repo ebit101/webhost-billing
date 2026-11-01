@@ -68,8 +68,8 @@ export function resolveDashboardPeriod(
   now = new Date(),
 ): DashboardPeriod {
   const today = businessDate(now, timeZone);
-  const from = query.from ?? `${today.slice(0, 8)}01`;
   const to = query.to ?? today;
+  const from = query.from ?? addCalendarDays(to, -6);
   const days = Math.round(
     (Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) /
       86_400_000,

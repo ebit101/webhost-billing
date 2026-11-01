@@ -10,7 +10,7 @@ export function paymentTone(state: ManualPaymentState): StatusTone {
 
 export function paymentDate(value: string | null) {
   return value
-    ? new Intl.DateTimeFormat('en', { dateStyle: 'medium' }).format(
+    ? new Intl.DateTimeFormat('en-GB', { dateStyle: 'short' }).format(
         new Date(value),
       )
     : '—';

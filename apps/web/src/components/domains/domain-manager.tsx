@@ -1,4 +1,5 @@
 'use client';
+import { formatUtcTimestamp } from '@webhost-billing/shared';
 
 import Link from 'next/link';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
@@ -250,8 +251,8 @@ export function DomainManager({
                       {offer.costAmount && offer.costCurrency
                         ? money(offer.costAmount, offer.costCurrency)
                         : 'Unavailable'}{' '}
-                      · Observed {offer.observedAt}. Exact domain cost is
-                      checked again at approval.
+                      · Observed {formatUtcTimestamp(offer.observedAt)}. Exact
+                      domain cost is checked again at approval.
                     </li>
                   ))}
               </ul>
@@ -526,7 +527,7 @@ export function DomainManager({
                       {money(quote.costAmount, 'USD')} simulated provider cost.
                     </>
                   )}
-                  Quote expires {quote.expiresAt}.
+                  Quote expires {formatUtcTimestamp(quote.expiresAt)}.
                 </p>
                 <Button
                   disabled={busy}

@@ -259,7 +259,7 @@ function formatMoney(amount: bigint, currency: string): string {
 
 function formatDate(value: Date): string {
   return new Intl.DateTimeFormat('en-GB', {
-    dateStyle: 'medium',
+    dateStyle: 'short',
     timeZone: 'UTC',
   }).format(value);
 }

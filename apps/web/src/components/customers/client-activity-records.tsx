@@ -230,7 +230,7 @@ function Records({
   }
   if (!valid) return <ErrorState description="Invalid client selection." />;
   const date = (value: string) =>
-    new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium', timeZone }).format(
+    new Intl.DateTimeFormat('en-GB', { dateStyle: 'short', timeZone }).format(
       new Date(value),
     );
   return (
@@ -525,7 +525,7 @@ function RecordDetail({
               header: 'Started',
               render: (attempt) =>
                 new Intl.DateTimeFormat('en-GB', {
-                  dateStyle: 'medium',
+                  dateStyle: 'short',
                   timeStyle: 'short',
                   timeZone,
                 }).format(new Date(attempt.startedAt)),

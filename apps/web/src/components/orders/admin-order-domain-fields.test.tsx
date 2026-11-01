@@ -142,7 +142,7 @@ async function registrationQuote() {
     'Country code': 'BD',
     'Phone country code': '880',
     'Phone number': '1700000000',
-    'Consent date and time': '2026-10-29T12:00',
+    'Consent date and time': '29/10/2026 12:00',
     'Consent record reference': 'fictional-consent-149',
   }))
     fireEvent.change(screen.getByLabelText(label, { exact: true }), {

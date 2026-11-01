@@ -192,7 +192,7 @@ function ReviewDetails({
     value
       ? new Intl.DateTimeFormat('en-GB', {
           timeZone,
-          dateStyle: 'medium',
+          dateStyle: 'short',
           timeStyle: 'short',
         }).format(new Date(value))
       : 'Not recorded';

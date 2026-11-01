@@ -111,7 +111,7 @@ describe('selected administrator service read', () => {
       expect(screen.getByText(service.productDescription!)).toBeTruthy();
       expect(container.querySelector('b, script, form, input')).toBeNull();
       expect(screen.getByText('BDT 90,071,992,547,409.93')).toBeTruthy();
-      expect(screen.getAllByText('4 Oct 2026, 02:00').length).toBe(3);
+      expect(screen.getAllByText('04/10/2026, 02:00').length).toBe(3);
       expect(screen.getByText(/Dates shown in Asia\/Dhaka/)).toBeTruthy();
       expect(
         screen.getByText(/current profile, not a historical invoice snapshot/),

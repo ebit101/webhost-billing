@@ -510,8 +510,8 @@ function LinkedList({
 }
 
 function businessDate(value: string, timeZone: string) {
-  return new Intl.DateTimeFormat('en-BD', {
-    dateStyle: 'medium',
+  return new Intl.DateTimeFormat('en-GB', {
+    dateStyle: 'short',
     timeZone,
   }).format(new Date(value));
 }

@@ -176,7 +176,7 @@ export function AdminOrderManager({
           <div>
             <p className="font-bold text-slate-950">{order.orderNumber}</p>
             <p className="mt-1 text-xs text-slate-500">
-              {new Date(order.placedAt).toLocaleString()}
+              {new Date(order.placedAt).toLocaleString('en-GB')}
             </p>
           </div>
         ),

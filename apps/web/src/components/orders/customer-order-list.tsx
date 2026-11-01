@@ -41,7 +41,7 @@ const columns: DataColumn<Order>[] = [
       <div>
         <p className="font-bold text-slate-950">{order.orderNumber}</p>
         <p className="text-xs text-slate-500">
-          {new Date(order.placedAt).toLocaleDateString()}
+          {new Date(order.placedAt).toLocaleDateString('en-GB')}
         </p>
       </div>
     ),

@@ -6425,3 +6425,26 @@ observed. Continue Command 162 when the required destination, key and operator
 facts exist.
 Do not invent a Command 163 scope or close independent operating acceptance before
 the required evidence exists.
+
+## Command 163 — Compact navigation, consistent dates and actionable dashboards
+
+Separately owner-authorized on 2026-11-02 through the supplied dashboard example
+and explicit clarification that dd/mm/yyyy applies app-wide. Implement locally:
+compact administrator menu spacing, seven inclusive business dates by default on
+the dashboard, and reachable summary-card links. Apply numeric day/month/year
+presentation throughout admin/customer views, date-entry forms, invoice documents
+and generated email templates. Retain ISO/UTC transport, machine-readable exports,
+stored timestamps, invoice calendar-day semantics, existing permissions and all
+financial/provider workflows. Validate parsing, timezone/calendar boundaries,
+record links, document/form consistency and affected application behavior. Record
+results and deliver through normal protected Git checks. Do not deploy or change
+SMTP/provider/backup settings. Command 162's independent recovery gates stay open.
+
+Local acceptance covers shared parsing, API period/PDF and worker email tests,
+affected web cases, actual US-locale browser navigation/layout checks, all app
+lint/type checks and production build. Corrected old display-date assertions and
+new browser-harness selectors without weakening timeouts or changing stored
+timestamps. Fresh protected validation is required for normal main delivery.
+Exact next recommendation, not authorization: Command 164 — Deploy validated
+Command 163 to staging with a verified fresh encrypted backup and read-only UI
+smoke tests, preserving environment, logo, SMTP/provider posture and backup setup.

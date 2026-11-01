@@ -445,8 +445,8 @@ describe('customer management interfaces', () => {
     ).toBeTruthy();
     expect(screen.getAllByText(/BDT 1,200\.00/).length).toBeGreaterThan(0);
     expect(screen.queryByText(/minor units/i)).toBeNull();
-    const businessDate = new Intl.DateTimeFormat('en-BD', {
-      dateStyle: 'medium',
+    const businessDate = new Intl.DateTimeFormat('en-GB', {
+      dateStyle: 'short',
       timeZone: 'Asia/Dhaka',
     }).format(new Date('2026-01-01T20:30:00.000Z'));
     expect(

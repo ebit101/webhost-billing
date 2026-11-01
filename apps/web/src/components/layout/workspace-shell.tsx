@@ -110,7 +110,7 @@ export function WorkspaceShell({
           }
           className="mt-3 flex-1 overflow-y-auto px-3 pb-6"
         >
-          <ul className="grid gap-1">
+          <ul className={mode === 'admin' ? 'grid gap-0' : 'grid gap-1'}>
             {navigation.map((item) => {
               const active =
                 pathname === item.href ||
@@ -122,7 +122,7 @@ export function WorkspaceShell({
                     href={item.href}
                     onClick={() => setMenuOpen(false)}
                     aria-current={active ? 'page' : undefined}
-                    className={`flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+                    className={`flex ${mode === 'admin' ? 'min-h-11 lg:min-h-8' : 'min-h-11'} items-center gap-3 rounded-xl px-3 py-1.5 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
                       active
                         ? 'bg-brand-700 text-white shadow-lg shadow-brand-950/25'
                         : 'text-slate-300 hover:bg-white/8 hover:text-white'

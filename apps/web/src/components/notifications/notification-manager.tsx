@@ -178,7 +178,7 @@ export function NotificationManager() {
     {
       key: 'date',
       header: 'Created',
-      render: (item) => new Date(item.createdAt).toLocaleString(),
+      render: (item) => new Date(item.createdAt).toLocaleString('en-GB'),
     },
     {
       key: 'action',
@@ -210,7 +210,7 @@ export function NotificationManager() {
     {
       key: 'date',
       header: 'Queued',
-      render: (item) => new Date(item.queuedAt).toLocaleString(),
+      render: (item) => new Date(item.queuedAt).toLocaleString('en-GB'),
     },
   ];
   return (

@@ -1,6 +1,10 @@
 'use client';
 import Link from 'next/link';
-import { sentenceCaseLabel, type DomainDetail } from '@webhost-billing/shared';
+import {
+  sentenceCaseLabel,
+  formatUtcTimestamp,
+  type DomainDetail,
+} from '@webhost-billing/shared';
 import { authMutation } from '../../lib/auth-api';
 import { Card, fieldClass } from '../customers/customer-fields';
 import { Button } from '../ui/button';
@@ -37,7 +41,7 @@ export function DomainRecord({
         </div>
         <div>
           <dt>{domain.origin === 'EXISTING' ? 'Link date' : 'Request date'}</dt>
-          <dd>{domain.requestedAt}</dd>
+          <dd>{formatUtcTimestamp(domain.requestedAt)}</dd>
         </div>
         <div>
           <dt>Initial invoice amount</dt>
@@ -88,8 +92,8 @@ export function DomainRecord({
       {domain.origin === 'EXISTING' ? (
         <p>
           Existing domain linked · Registrar-account ownership verified{' '}
-          {domain.ownershipVerifiedAt}. Linking did not register, transfer or
-          purchase this domain.
+          {formatUtcTimestamp(domain.ownershipVerifiedAt)}. Linking did not
+          register, transfer or purchase this domain.
         </p>
       ) : (
         <p>
@@ -112,7 +116,7 @@ export function DomainRecord({
       {domain.expiresAt && (
         <p>
           Observed {domain.simulated ? 'simulated ' : ''}expiry:{' '}
-          {domain.expiresAt}
+          {formatUtcTimestamp(domain.expiresAt)}
         </p>
       )}
       {!domain.expiresAt && <p>Registry expiry not yet confirmed.</p>}
@@ -292,7 +296,8 @@ export function DomainRecord({
           <ul className="mt-3 text-sm">
             {domain.evidence?.map((evidence, index) => (
               <li key={index}>
-                {sentenceCaseLabel(evidence.code)} · {evidence.createdAt}
+                {sentenceCaseLabel(evidence.code)} ·{' '}
+                {formatUtcTimestamp(evidence.createdAt)}
               </li>
             ))}
           </ul>

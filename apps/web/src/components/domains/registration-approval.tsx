@@ -74,9 +74,9 @@ export function RegistrationApproval({
         <p className="sm:col-span-2 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm">
           Customer consent recorded by an administrator:{' '}
           {domain.offlineConsent.method.toLowerCase().replace('_', ' ')} on{' '}
-          {new Date(domain.offlineConsent.consentedAt).toLocaleString()}. Record
-          reference: {domain.offlineConsent.reference}. Review the registrant
-          details and verified payment before approval.
+          {new Date(domain.offlineConsent.consentedAt).toLocaleString('en-GB')}.
+          Record reference: {domain.offlineConsent.reference}. Review the
+          registrant details and verified payment before approval.
         </p>
       )}
       <label className="text-sm font-semibold">
