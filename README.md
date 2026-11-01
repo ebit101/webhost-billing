@@ -18,7 +18,7 @@ support without reproducing the worldwide feature set of WHMCS.
 
 ## Latest development status
 
-Updated 2026-11-01, through Command 160. These capabilities describe current `main`;
+Updated 2026-11-01, through Command 161. These capabilities describe current `main`;
 the immutable `v0.1.0-alpha.1` evaluation release is an older source snapshot.
 
 - **Client workspace:** Summary, Profile, Products/services, Domains, Orders,
@@ -53,6 +53,9 @@ including combined billing, sample-payment review, successful hosting, temporary
 retry and a response lost after account creation. Command 157 deployed the validated
 retry fix `6e5856facabdfa336fff697dae622b63f6610cdd` to operator-controlled staging
 after backup verification, with installed-guard smoke tests and read-only acceptance.
+Command 161 deployed validated recovery/toolchain repairs and the complete domain
+inventory at `e2c207a72511b13578dba84e63979ea794449455`, with fresh verified backups,
+installed read-model checks and signed-in pagination/search/client-link acceptance.
 Staging SMTP remains active; payment, real hosting, registrar and WhatsApp providers
 remain disabled. This evidence does not establish production readiness or actual
 bank settlement, and staging is not a public evaluation target.
