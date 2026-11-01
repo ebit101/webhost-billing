@@ -75,7 +75,11 @@ with one to five domains and services each, 600 of each, and two administrators.
 These are acceptance assumptions, not an approved production capacity limit.
 The [command report](PROGRESS.md) records actual checks, results and constraints.
 
-This is local source work. Staging remains on its previously recorded release
-until a separately authorized deployment. Keep SMTP active there and payment,
-hosting, registrar and WhatsApp disabled. Production remains NO-GO under the
+Command 161 installed this read model on staging at
+`e2c207a72511b13578dba84e63979ea794449455`. Read-only installed checks and signed-in
+Speed acceptance enumerate the two actual saved domains, with matching pagination,
+search/filter counts and client-owned links. No records or provider operations were
+created. The larger fictional workload is separate from this staging smoke.
+Keep SMTP active there and payment, hosting, registrar and WhatsApp disabled.
+Production remains NO-GO under the
 [readiness review](PRODUCTION_READINESS_REVIEW.md).

@@ -1,5 +1,55 @@
 # Staging Deployment
 
+## Command 161 recovery and global domain inventory release (2026-11-01)
+
+- **Status:** Deployed and accepted `e2c207a72511b13578dba84e63979ea794449455`,
+  containing validated Commands 158–160: complete recovery checks, reviewed runtime/
+  build-tool dependency mitigations and the complete administrator domain inventory.
+  Deployment/postflight and installed/Speed read-only acceptance pass. No schema,
+  migration, business-record, provider-setting or customer-message change.
+- **Provenance:** Exact-release [CI](https://github.com/ebit101/webhost-billing/actions/runs/41242546045)
+  and [CodeQL](https://github.com/ebit101/webhost-billing/actions/runs/41242546113)
+  pass; PR 84 dependency review passed. Four canonical Node 24/pnpm 11.22.0 frozen
+  image builds passed serially. Installed API Node is 24.22.2. Source archive SHA-256:
+  `5347fbedd731a91e6d27a39bb9821099d9e54fff930486d5b55fcfcd06b9c50f`.
+- **Backup and rollback:** Fresh preflight `20261101T025521Z.dump.gpg` passed the
+  validated full 56-table/archive and 39-migration source checks before builds.
+  The canonical script verified another encrypted archive before stopping writers:
+  `/srv/webhost-billing-staging/backups/webhost-billing-webhost_billing_staging-20261101T030919Z.dump.gpg`.
+  Its checksum, OpenPGP integrity, archive structure and full required-table inventory
+  pass the installed updated verifier. Cutover archive SHA-256:
+  `3e4d2a70ad10313075b79e1b6fccfd494629d887f1fbfc017958465e047017fc`.
+  Rollback inventory:
+  `/srv/webhost-billing-staging/rollback/release-20261101T030918Z-e2c207a72511b13578dba84e63979ea794449455/`.
+  No migration is pending; 39 are complete and none unfinished. No restore or prune.
+- **Preservation:** All 37 full-row business/email/outbox/notification fingerprints
+  match through browser acceptance, without exclusions. Environment apart from
+  IMAGE_TAG, mode 0600, installed/served logo, Office environment, infrastructure
+  and unrelated container IDs match. Seven services are healthy, four application
+  containers use the release tag with zero restarts and exactly one scheduler runs.
+  SMTP stays active; payment, real WHM, registrar accounts/networking and WhatsApp/
+  new-notification delivery remain disabled. Only application containers were replaced.
+- **Acceptance:** The installed compiled read model pages both actual domains,
+  matches full counts/order, finds the older record, validates client/status/origin
+  filters and invoice summaries, and rejects restricted in-process roles and invalid
+  filters. Zero provider HTTP calls, sessions created or external actions. This does
+  not substitute for a credentialed HTTP staff/customer or provider trial. Public
+  health/readiness/origin/logo pass; anonymous protected routes redirect or deny,
+  including inventory 401. Eleven signed-in Speed checks cover pagination/history,
+  search/reload, filters/empty counts, clear/scope retention, invalid scope and
+  client-owned detail navigation. Full layout visually inspected; temporary tab
+  closed and original authenticated dashboard refreshed. No save or operational action.
+- **Corrections and limits:** A private preflight driver initially expected API-only
+  payment flags on workers. Component-specific checks corrected that expectation
+  without modifying configuration or replacing the baseline. Registry warnings
+  were non-failing; no build or cutover repeat. Known raw-version dependency warnings
+  remain documented; Dependabot's legacy-minimatch update attempts could not resolve
+  an update. Exact-release validation and production audit pass. Protected evidence:
+  `/srv/webhost-billing-staging/acceptance/command161-release-20261101/`.
+  Same-host backup verification and two-domain staging smoke do not establish
+  independent off-site recovery, live-provider acceptance or production capacity.
+  Production remains NO-GO. Report-only delivery needs no deployment.
+
 ## Command 157 hosting retry guard release (2026-10-31)
 
 - **Status:** Deployed `6e5856facabdfa336fff697dae622b63f6610cdd`, containing

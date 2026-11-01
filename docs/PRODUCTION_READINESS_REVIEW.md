@@ -47,7 +47,7 @@ records, raw provider payloads or personal alert destinations.
 | Gate                                      | Current assessment                                        | Evidence and remaining closure                                                                                                                                                                                                                                                                                                      |
 | ----------------------------------------- | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Application source and billing boundaries | Implemented; production acceptance separate               | Existing protected CI covers billing, authorization and fake-provider workflows. Command 156 passed 62 related API cases; payment and fulfillment remain separate.                                                                                                                                                                  |
-| Release/schema recovery checks            | Source repair validated locally                           | All 56 tables and exact trusted release migrations are required. Eight unit cases and the actual encrypted drill passed, including missing newer tables, equal-count alteration, changed/unfinished migrations and destructive-target refusals. Protected CI is required for delivery.                                              |
+| Release/schema recovery checks            | Installed repair validated; operations separate           | All 56 tables and exact trusted release migrations are required. Eight unit cases and the actual encrypted drill passed, including missing newer tables, equal-count alteration, changed/unfinished migrations and destructive-target refusals. Command 161 installed strict recovery verification on staging.                      |
 | Current encrypted server backup           | Verified snapshot; schedule still open                    | Fresh encrypted checksum, OpenPGP integrity and archive checks passed. Prove an automated cadence, failure alert and approved retention before closing the recurring-backup gate.                                                                                                                                                   |
 | Independent backup and secret recovery    | Interim copy/retrieval passed; operating gate open        | Encrypted snapshot copied to a restricted Office PC directory without its passphrase, retrieved and restored successfully. Managed immutable retention, recurring copies and independent key recovery are not established.                                                                                                          |
 | Timed restoration                         | Database-only restoration passed; full RTO open           | Retrieved snapshot restored in 14 seconds into a temporary container with no network or published ports; all 56 table contents and 39 migrations matched. Workers/providers stayed off and the container was removed. Core billing access, keys/configuration/images/DNS and operator recovery within four hours remain unmeasured. |
@@ -57,7 +57,7 @@ records, raw provider payloads or personal alert destinations.
 | Bank payment process                      | Implemented; operator evidence required for real receipts | Use verified bank credits and duplicate-reference controls. Fictional samples are not real bank evidence. Online payment gateways may remain disabled for the selected launch mode.                                                                                                                                                 |
 | SMTP and communication                    | Partial                                                   | Selected staging messages were accepted and customer verification was reported successful. Production SPF/DKIM/DMARC, sender reputation, quotas, bounce handling, rotation and incident delivery still require evidence. No test message is sent in this review.                                                                    |
 | Monitoring and incident alerts            | Open                                                      | Health/readiness and an administrator operational view exist. Super admin and the saved admin email are owner-selected; an independent monitor, confirmed recipient mapping, tested delivery, escalation and backup contact are not established.                                                                                    |
-| Shared-host security and capacity         | Blocked                                                   | Protected host-access findings need remediation, resource budgets are unset and the installed global domain inventory stops at 100 records (source closure in Command 160 awaits deployment). Confirm console recovery and unrelated-service ownership before access changes; do not infer production limits from a read baseline.  |
+| Shared-host security and capacity         | Blocked                                                   | Protected host-access findings need remediation and resource budgets are unset. Command 161 closes the installed inventory gap. Confirm console recovery and unrelated-service ownership before access changes; production host/workload gates remain open.                                                                         |
 | Production separation and release         | Open                                                      | Approve target, independent secrets/database/queues, compatible rollback images, final source/image digests, vulnerability review and cutover. Do not silently promote seeded staging accounts or reuse staging secrets.                                                                                                            |
 | Business policies and staffing            | Partial                                                   | D1–D4 were accepted and staging billing identity/instructions were configured. D5–D8, lawful retention, named primary/backup contacts, maintenance/incident communication and final sign-off remain open.                                                                                                                           |
 
@@ -128,11 +128,11 @@ staff concurrency are test assumptions, not owner-approved production limits.
 Billing record capacity and a WHM server's licensed/account capacity are separate.
 Do not raise an actual server limit to make a billing benchmark pass.
 
-The installed global domain endpoint takes at most 100 rows and expands detail for
-each row, including additional database reads and decryption. It has no complete
-global pagination/count/search contract. Customer scoping occurs before the bound,
-but the global inventory cannot present all domains in this profile. This functional
-gap blocks full inventory acceptance regardless of observed response latency.
+At the Command 158 baseline, the installed legacy global domain endpoint took at most 100 rows and expanded detail for
+each row, including additional database reads and decryption. It had no complete
+global pagination/count/search contract. Customer scoping occurred before the bound,
+but the global inventory could not present all domains in this profile. This functional
+gap blocked that baseline's full inventory acceptance regardless of observed response latency.
 
 An internal-only, resource-capped laboratory uses the existing installed API artifact,
 a new disposable database/Redis pair, fictional records, two synthetic authenticated
@@ -145,7 +145,7 @@ The baseline passed 329 authenticated GETs with zero HTTP errors. All 200 custom
 and 600 services were reachable through their pages, and all 600 domains were checked
 through their owning client scopes. The two-session measurement covered 120 reads:
 median 97.99 ms, p95 366.08 ms and maximum 492.20 ms. The global domain response returned
-only 100 of 600 records, so inventory acceptance is **blocked**. No provider operation,
+only 100 of 600 records, so that baseline's global inventory acceptance was **blocked**. No provider operation,
 email attempt or outbox event was added. These figures describe one short API-only
 read run under laboratory limits, not a throughput, write-load or production guarantee.
 
@@ -157,7 +157,7 @@ client scopes matched and business fingerprints stayed unchanged. No detail fan-
 decryption or registrar request is needed. The old full-detail array remains bounded
 for portal/client compatibility; it is not the global inventory contract. See the
 [inventory contract](DOMAIN_INVENTORY.md) and Command 160 report for complete UI/build
-acceptance. Installed staging remains unchanged; deployment and operational capacity,
+acceptance. Command 161 deployed the read model at `e2c207a72511b13578dba84e63979ea794449455` and passed installed/Speed read-only acceptance across its two actual domains. No business records or provider actions were created. The earlier 100-of-600 baseline remains historical evidence; the canonical global endpoint now pages completely. Operational capacity,
 financial-write/provider/recovery/host gates still need separate acceptance.
 
 ## Operating acceptance still required

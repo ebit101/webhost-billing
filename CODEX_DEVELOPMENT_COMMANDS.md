@@ -6374,3 +6374,20 @@ Exact next recommendation, not authorization: Command 161 — Deploy validated C
 158–160 (recovery/runtime/toolchain repairs and domain inventory) to staging after fresh
 encrypted-backup verification, preserving environment,
 logo and provider posture, with read-only pagination/search/count/role/link smoke tests.
+
+## Command 161 — Deploy validated Commands 158–160 to staging
+
+Owner-authorized on 2026-11-01. Deploy the validated main release containing the
+recovery/runtime/toolchain repairs and complete global domain inventory to
+`my.speedhost.bd`. Verify a fresh encrypted backup before cutover, preserve the
+environment and owner logo, keep SMTP active and payment/hosting/registrar/WhatsApp
+disabled. Validate release provenance, health, installed inventory pagination/search/
+counts/roles and client-owned navigation without creating or changing business
+records, messages or provider operations. Preserve unrelated services and Office work.
+
+Record the actual backup/cutover/rollback, validation, preservation and limitations;
+close the report through normal protected Git delivery. Stop after Command 161.
+Exact next recommendation, not authorization: Command 162 — Establish independent
+encrypted backup and recovery acceptance after obtaining the owner's off-site
+destination and named recovery contacts. No paid storage or production launch is
+authorized by this recommendation.

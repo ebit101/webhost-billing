@@ -120,6 +120,11 @@ documented version-based findings. The Office environment and both original
 running container identities match, and all owned test containers were removed.
 See the command report for counts, initial failures and the protected delivery gate.
 
-The current staging images are unchanged. Source dependency and patch acceptance
-does not update installed environments or close unrelated operating gates. Keep
-SMTP active and payment, real hosting, registrar and WhatsApp disabled there.
+Command 161 rebuilt and deployed the validated source at
+`e2c207a72511b13578dba84e63979ea794449455` to staging with Node 24 and frozen pinned
+pnpm image builds. Production dependency audit passed exact-release CI; this does
+not clear the two documented raw full-graph warnings. Later Dependabot legacy-minimatch
+update attempts reported `security_update_not_possible`; no additional upgrade or
+waiver is claimed. See [the deployment record](STAGING_DEPLOYMENT.md).
+Staging installation does not close unrelated operating gates. Keep SMTP active and
+payment, real hosting, registrar and WhatsApp disabled there.

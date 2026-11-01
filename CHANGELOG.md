@@ -8,6 +8,11 @@ and will be called out in release notes.
 
 ## [Unreleased]
 
+- Deployed validated recovery/toolchain repairs and the complete global domain
+  inventory to operator-controlled staging, with fresh encrypted-backup verification,
+  installed and signed-in read-only acceptance and preservation of business records,
+  environment, logo and provider posture. See [the deployment record](docs/STAGING_DEPLOYMENT.md).
+
 - Added complete administrator domain inventory pagination, literal client/domain
   search, status/origin filters and matching counts. Lightweight read-only summaries
   avoid detail decryption/fan-out, preserve owning-client links and keep provider
