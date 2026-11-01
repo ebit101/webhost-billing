@@ -6416,7 +6416,12 @@ backup scripts only. Prepare and validate an inactive systemd service/timer and
 operator-owned configuration for the existing verified creator; no administrator
 page, remote sender or automatic deletion. Local unit/calendar/lock/failure checks
 do not prove host activation or independent recovery. Host-specific configuration
-and activation remain separate from this source preparation. Continue Command 162
-when the required destination, key and operator facts exist.
+and activation are reviewed separately from source preparation. Following the
+owner's existing-script selection, staging's reviewed configuration was installed,
+one fresh encrypted backup passed verification and the six-hour timer was enabled.
+The installed application release, existing passphrase and provider posture were
+preserved. Remote delivery remains inactive and no recurring trigger has yet been
+observed. Continue Command 162 when the required destination, key and operator
+facts exist.
 Do not invent a Command 163 scope or close independent operating acceptance before
 the required evidence exists.

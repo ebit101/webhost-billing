@@ -3127,6 +3127,11 @@ authorize new provider operations or existing-domain adoption.
   is separate from source preparation. No off-site destination is available and
   independent key recovery is unconfirmed; local scheduling templates cannot close
   independent storage, escrow, operator, retention, alert or full recovery gates.
+- **Staging application:** Following the owner's existing-script choice, review
+  host-specific paths, verify a fresh encrypted backup through the installed
+  service, then enable its timer. Preserve the existing passphrase and application
+  release. Record configuration/manual-run evidence separately from observed
+  recurring runs, independent recovery and production approval.
 
 ## Open Decisions
 

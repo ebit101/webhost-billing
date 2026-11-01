@@ -29,10 +29,13 @@ cPanel account backup covers this installation. Active application SMTP is not
 authorization to send backups.
 
 The owner chose configuration of the existing encrypted backup scripts only.
-The local [host schedule configuration](BACKUP_AND_RECOVERY.md#optional-host-schedule-for-existing-scripts)
+The reviewed [host schedule configuration](BACKUP_AND_RECOVERY.md#optional-host-schedule-for-existing-scripts)
 uses the verified creation script with a six-hour systemd timer and overlap lock.
 No administrator page, remote delivery or automatic retention deletion is added.
-Host activation is separate; these templates do not prove an operating schedule,
+After local validation and host-specific review, Command 162 installed the
+configuration on staging, verified one fresh encrypted backup and enabled the
+timer. No application deployment, remote delivery or archive deletion occurred.
+This first manual run does not prove an observed recurring/off-site cadence,
 independent restoration or full application recovery.
 
 ## Acceptance gates
@@ -82,8 +85,13 @@ still matches its recorded checksum and its directory has inheritance disabled.
 Staging remains healthy with SMTP active and other live providers disabled. No
 project-named backup cron entry or systemd timer was found by the bounded check;
 external jobs, provider snapshots and jobs with unrelated names remain unverified.
-No new destination, credential, retention policy or key escrow is approved by this
-document. Production remains NO-GO until the applicable operating gates are closed.
+The later staging service configuration passed its first manual encrypted backup
+and now has an enabled six-hour timer. Its protected host evidence confirms the
+environment, passphrase, logo, container identities and 37 monitored business-table
+fingerprints are preserved, with SMTP active and other providers disabled. No
+recurring trigger has yet been observed. No new destination, credential, retention
+policy or key escrow is approved by this document. Production remains NO-GO until
+the applicable operating gates are closed.
 
 Use [the recovery runbook](BACKUP_AND_RECOVERY.md) for exact source/restore guards
 and [the readiness review](PRODUCTION_READINESS_REVIEW.md) for the remaining launch

@@ -108,7 +108,7 @@ tree. Keep the configuration, Compose environment and passphrase mode 0600 or
 regenerate an existing passphrase or copy secrets into the repository. Create no
 timer on this Windows workstation; the configuration targets the Linux host.
 
-After separate host-activation authorization, install reviewed copies as
+After host-specific review and owner authorization, install reviewed copies as
 `/etc/webhost-billing/backup.env` and
 `/etc/systemd/system/webhost-billing-backup.{service,timer}` (root-owned mode 0644
 units). Validate them on that
@@ -148,6 +148,13 @@ before resetting status or restarting.
 This same-host configuration does not close off-site, key-escrow, backup-operator,
 immutable retention or application-recovery acceptance. See the
 [independent acceptance checklist](INDEPENDENT_RECOVERY_ACCEPTANCE.md).
+
+On 2026-11-01 Command 162 applied the owner's existing-script choice on staging:
+the reviewed service passed a manual verified encrypted backup, then its six-hour
+timer was enabled. The installed application release and existing passphrase were
+preserved. The next scheduled trigger is not evidence that a recurring run has
+completed; the first manual result and host configuration are distinct from
+off-site transfer, independent decryption and full application recovery.
 
 ## Restore into an isolated database
 
