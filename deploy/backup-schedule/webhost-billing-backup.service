@@ -1,0 +1,20 @@
+[Unit]
+Description=Create and verify an encrypted Webhost Billing database backup
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=/opt/webhost-billing/current
+EnvironmentFile=/etc/webhost-billing/backup.env
+Environment=GNUPGHOME=/var/lib/webhost-billing-backup
+StateDirectory=webhost-billing-backup
+StateDirectoryMode=0700
+UMask=0077
+PrivateTmp=yes
+NoNewPrivileges=yes
+TimeoutStartSec=2h
+StandardOutput=journal
+StandardError=journal
+ExecStart=/usr/bin/flock --nonblock --conflict-exit-code 75 /var/lib/webhost-billing-backup/backup.lock /bin/bash /opt/webhost-billing/current/scripts/backups/create-postgres-backup.sh ${BACKUP_OUTPUT_DIRECTORY} ${BACKUP_PASSPHRASE_FILE}

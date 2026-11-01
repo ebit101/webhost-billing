@@ -3114,6 +3114,20 @@ authorize new provider operations or existing-domain adoption.
   browsing. Offset pages may change between reads. This source repair does not
   deploy, establish a production capacity limit or close unrelated operating gates.
 
+## ADR-152 — Schedule the existing encrypted backup scripts without a new UI
+
+- **Date:** 2026-11-01. Command 162 owner clarification.
+- **Decision:** Provide inactive operator-configured systemd units that invoke the
+  existing encrypted PostgreSQL creator with its matching-release/archive checks.
+  Keep the six-hour target, a persistent UTC timer, nonblocking overlap lock,
+  private GnuPG state and visible nonzero failures. A scheduled backup is separate
+  from application worker/scheduler processes and sends no customer mail.
+- **Boundaries:** No administrator backup page, automatic deletion, remote sender,
+  provider activation or application deployment. Host-specific review/activation
+  is separate from source preparation. No off-site destination is available and
+  independent key recovery is unconfirmed; local scheduling templates cannot close
+  independent storage, escrow, operator, retention, alert or full recovery gates.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:
