@@ -35,6 +35,7 @@ import { StatusBadge } from '../ui/status-badge';
 import { paymentDate, paymentError, paymentTone } from './payment-ui';
 import { GatewayFailurePanel } from './gateway-failure-panel';
 import { AdminPaymentReview } from './admin-payment-review';
+import { moneyForInput, moneyToMinor } from '../../lib/money-input';
 
 export function AdminPaymentManager({
   customerFilter = emptyAdminCustomerFilter,
@@ -61,6 +62,7 @@ function PaymentWorkspace({
 }) {
   const [payments, setPayments] = useState<ManualPayment[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [recordInvoiceId, setRecordInvoiceId] = useState('');
   const [filteredCustomer, setFilteredCustomer] = useState<CustomerDetail>();
   const [settings, setSettings] = useState<PaymentSettings>({
     partialPaymentsEnabled: false,
@@ -122,6 +124,9 @@ function PaymentWorkspace({
 
   const payableInvoices = invoices.filter(
     (invoice) => invoice.status === 'UNPAID' || invoice.status === 'OVERDUE',
+  );
+  const recordInvoice = payableInvoices.find(
+    (invoice) => invoice.id === recordInvoiceId,
   );
 
   const columns: DataColumn<ManualPayment>[] = [
@@ -257,12 +262,20 @@ function PaymentWorkspace({
     setSaving(true);
     clearMessages();
     try {
+      const invoice = payableInvoices.find(
+        (item) => item.id === String(values.get('invoiceId')),
+      );
+      if (!invoice) throw new Error('Select a payable invoice.');
+      const amount = paymentAmount(
+        String(values.get('amount')),
+        invoice.currency,
+      );
       const result = await authMutation<ManualPaymentCreationResult>(
         '/payments/manual/admin',
         'POST',
         {
           invoiceId: String(values.get('invoiceId')),
-          amount: String(values.get('amount')),
+          amount,
           submissionKey: recordKey.current,
           proof: {
             method: String(values.get('method')),
@@ -281,6 +294,7 @@ function PaymentWorkspace({
       await refreshInvoice(result.payment.invoiceId);
       recordKey.current = '';
       form.reset();
+      setRecordInvoiceId('');
       setNotice('Verified manual payment recorded and invoice recalculated.');
     } catch (caught) {
       setError(paymentError(caught));
@@ -329,7 +343,10 @@ function PaymentWorkspace({
         'POST',
         {
           kind: adjustment.kind,
-          amount: String(values.get('amount')),
+          amount: paymentAmount(
+            String(values.get('amount')),
+            adjustment.payment.amount.currency,
+          ),
           submissionKey: adjustmentKey.current,
           reference: String(values.get('reference')),
           ...(String(values.get('note')).trim()
@@ -414,29 +431,44 @@ function PaymentWorkspace({
               Record verified payment
             </h2>
             <p className="mt-1 text-sm text-slate-600">
-              Values are integer minor units. The server derives currency and
-              applies the invoice balance transactionally.
+              Enter the amount received in the invoice currency, for example
+              3090.00 for BDT 3,090.00. Record only a payment you have verified.
             </p>
             <form onSubmit={record} className="mt-5 grid gap-4 md:grid-cols-2">
               <label className="text-sm font-semibold text-slate-700 md:col-span-2">
                 Payable invoice
-                <select className={fieldClass} name="invoiceId" required>
+                <select
+                  className={fieldClass}
+                  name="invoiceId"
+                  required
+                  value={recordInvoiceId}
+                  onChange={(event) => setRecordInvoiceId(event.target.value)}
+                >
                   <option value="">Select invoice</option>
                   {payableInvoices.map((invoice) => (
                     <option key={invoice.id} value={invoice.id}>
                       {invoice.invoiceNumber} — {invoice.customerName} — balance{' '}
-                      {invoice.balanceDue.amount} {invoice.currency}
+                      {formatMinor(invoice.balanceDue.amount, invoice.currency)}
                     </option>
                   ))}
                 </select>
               </label>
               <label className="text-sm font-semibold text-slate-700">
-                Amount
+                Amount{recordInvoice ? ` (${recordInvoice.currency})` : ''}
                 <input
+                  key={`${recordInvoiceId}:${recordInvoice?.balanceDue.amount ?? ''}`}
                   className={fieldClass}
                   name="amount"
-                  inputMode="numeric"
-                  pattern="[0-9]+"
+                  inputMode="decimal"
+                  disabled={!recordInvoice}
+                  defaultValue={
+                    recordInvoice
+                      ? moneyForInput(
+                          recordInvoice.balanceDue.amount,
+                          recordInvoice.currency,
+                        )
+                      : ''
+                  }
                   required
                 />
               </label>
@@ -464,7 +496,7 @@ function PaymentWorkspace({
                 <textarea className={fieldClass} name="note" rows={2} />
               </label>
               <div className="md:col-span-2">
-                <Button disabled={saving} type="submit">
+                <Button disabled={saving || !recordInvoice} type="submit">
                   Record verified payment
                 </Button>
               </div>
@@ -524,8 +556,12 @@ function PaymentWorkspace({
             </h2>
             <p className="mt-1 text-sm text-slate-600">
               Original {adjustment.payment.reference} remains unchanged.
-              Refundable amount: {adjustment.payment.refundableAmount.amount}{' '}
-              {adjustment.payment.refundableAmount.currency}.
+              Refundable amount:{' '}
+              {formatMinor(
+                adjustment.payment.refundableAmount.amount,
+                adjustment.payment.refundableAmount.currency,
+              )}
+              .
             </p>
             <form
               onSubmit={createAdjustment}
@@ -535,7 +571,11 @@ function PaymentWorkspace({
                 className={fieldClass}
                 aria-label="Adjustment amount"
                 name="amount"
-                defaultValue={adjustment.payment.refundableAmount.amount}
+                defaultValue={moneyForInput(
+                  adjustment.payment.refundableAmount.amount,
+                  adjustment.payment.refundableAmount.currency,
+                )}
+                inputMode="decimal"
                 required
               />
               <input
@@ -627,6 +667,12 @@ function PaymentWorkspace({
       </section>
     </div>
   );
+}
+
+function paymentAmount(value: string, currency: string) {
+  const amount = moneyToMinor(value, currency, 'Amount');
+  if (amount === '0') throw new Error('Amount must be greater than zero.');
+  return amount;
 }
 
 function Message({

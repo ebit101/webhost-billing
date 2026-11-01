@@ -611,7 +611,7 @@ describe('payment workspace review boundaries and existing mutations', () => {
       target: { value: invoiceId },
     });
     fireEvent.change(form.querySelector('[name="amount"]')!, {
-      target: { value: '12000' },
+      target: { value: '120.00' },
     });
     fireEvent.change(form.querySelector('[name="reference"]')!, {
       target: { value: 'RECORDED-84' },
@@ -677,6 +677,13 @@ describe('payment workspace review boundaries and existing mutations', () => {
           name: kind === 'REFUND' ? 'Refund' : 'Reverse',
         }),
       );
+      expect(screen.getByLabelText('Adjustment amount')).toHaveProperty(
+        'value',
+        '90071992547404.93',
+      );
+      expect(
+        screen.getByText(/Refundable amount: BDT 90,071,992,547,404.93/),
+      ).toBeTruthy();
       await user.type(
         screen.getByRole('textbox', { name: 'Adjustment reference' }),
         'ADJUST-84',

@@ -6475,3 +6475,18 @@ prefill, switching, conversion limits, new-version submission and failed-save
 retention. Update the report and create a focused local commit, retaining the
 pending Command 163 work for the later owner-requested batch. Do not push, create
 a PR, deploy, activate currencies or change SMTP/providers. Stop after this command.
+
+## Command 165 — Show and enter normal amounts in administrator payments
+
+Owner-authorized on 2026-11-02 by the Record payment screenshot exposing raw
+minor-unit balances, following the normal-price entry direction. Format payable
+invoice choices as currency amounts and prefill the selected invoice's balance in
+normal units. Administrator payment and refund/reversal entry accepts normal
+decimal amounts and converts exactly to the existing integer-string API. Derive
+currency from the owning invoice/payment, reject invalid amounts before mutation
+and retain server settlement, verified-proof, append-only and idempotency rules.
+Reuse the tested product-entry conversion without enabling currency foundations.
+Validate display/defaults, selection changes, precision/limits, retries and both
+payment/product regressions. Update the report and commit locally with the pending
+batch. Do not push, create a PR, deploy, record an actual payment, send customer
+messages or change SMTP/providers. Stop after this command.

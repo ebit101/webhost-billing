@@ -202,6 +202,137 @@ describe('manual payment interfaces', () => {
     );
   });
 
+  it('shows normal invoice balances and prefills the selected invoice amount', async () => {
+    const user = userEvent.setup();
+    const otherInvoice = {
+      ...invoice,
+      id: '10000000-0000-4000-8000-000000000115',
+      invoiceNumber: 'INV-FICTIONAL-2',
+      balanceDue: { amount: '309000', currency: 'BDT' },
+    };
+    const fetch = paymentWorkspace([invoice, otherInvoice]);
+    render(<AdminPaymentManager />);
+    await user.click(
+      await screen.findByRole('button', { name: 'Record payment' }),
+    );
+    expect(
+      screen.getByRole('option', {
+        name: `${invoice.invoiceNumber} — Manual Payer — balance BDT 120.00`,
+      }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('option', {
+        name: 'INV-FICTIONAL-2 — Manual Payer — balance BDT 3,090.00',
+      }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('button', { name: 'Record verified payment' }),
+    ).toHaveProperty('disabled', true);
+    await user.selectOptions(
+      screen.getByLabelText('Payable invoice'),
+      invoiceId,
+    );
+    expect(screen.getByLabelText('Amount (BDT)')).toHaveProperty(
+      'value',
+      '120.00',
+    );
+    await user.clear(screen.getByLabelText('Amount (BDT)'));
+    await user.type(screen.getByLabelText('Amount (BDT)'), '50');
+    await user.selectOptions(
+      screen.getByLabelText('Payable invoice'),
+      otherInvoice.id,
+    );
+    expect(screen.getByLabelText('Amount (BDT)')).toHaveProperty(
+      'value',
+      '3090.00',
+    );
+    await user.selectOptions(screen.getByLabelText('Payable invoice'), '');
+    expect(screen.getByLabelText('Amount')).toHaveProperty('value', '');
+    expect(screen.getByLabelText('Amount')).toHaveProperty('disabled', true);
+    expect(
+      fetch.mock.calls.some(([, options]) => options?.method === 'POST'),
+    ).toBe(false);
+  });
+
+  it('records a normal decimal amount using the existing exact minor-unit API', async () => {
+    const user = userEvent.setup();
+    const current = {
+      ...invoice,
+      balanceDue: { amount: '309025', currency: 'BDT' },
+    };
+    const fetch = paymentWorkspace([current]);
+    render(<AdminPaymentManager />);
+    await user.click(
+      await screen.findByRole('button', { name: 'Record payment' }),
+    );
+    await user.selectOptions(
+      screen.getByLabelText('Payable invoice'),
+      invoiceId,
+    );
+    expect(screen.getByLabelText('Amount (BDT)')).toHaveProperty(
+      'value',
+      '3090.25',
+    );
+    await user.type(
+      screen.getByLabelText('Reference'),
+      'FICTIONAL-BANK-REFERENCE',
+    );
+    await user.click(
+      screen.getByRole('button', { name: 'Record verified payment' }),
+    );
+    await screen.findAllByText(
+      'Verified manual payment recorded and invoice recalculated.',
+    );
+    const write = fetch.mock.calls.find(
+      ([url, options]) =>
+        url.endsWith('/payments/manual/admin') && options?.method === 'POST',
+    );
+    expect(JSON.parse(String(write?.[1]?.body))).toMatchObject({
+      invoiceId,
+      amount: '309025',
+      proof: { method: 'BANK_TRANSFER', reference: 'FICTIONAL-BANK-REFERENCE' },
+    });
+    expect(screen.getByLabelText('Payable invoice')).toHaveProperty(
+      'value',
+      '',
+    );
+    expect(screen.getByLabelText('Amount')).toHaveProperty('value', '');
+  });
+
+  it.each(['0', '-1', '3090.001', '1e3', '3,090', '92233720368547758.08'])(
+    'rejects invalid payment amount %s before any mutation',
+    async (amount) => {
+      const user = userEvent.setup();
+      const fetch = paymentWorkspace();
+      render(<AdminPaymentManager />);
+      await user.click(
+        await screen.findByRole('button', { name: 'Record payment' }),
+      );
+      await user.selectOptions(
+        screen.getByLabelText('Payable invoice'),
+        invoiceId,
+      );
+      fireEvent.change(screen.getByLabelText('Amount (BDT)'), {
+        target: { value: amount },
+      });
+      await user.type(
+        screen.getByLabelText('Reference'),
+        'FICTIONAL-BANK-REFERENCE',
+      );
+      await user.click(
+        screen.getByRole('button', { name: 'Record verified payment' }),
+      );
+      await screen.findByRole('alert');
+      expect(screen.getByLabelText('Amount (BDT)')).toHaveProperty(
+        'value',
+        amount,
+      );
+      expect(
+        fetch.mock.calls.some(([, options]) => options?.method === 'POST'),
+      ).toBe(false);
+    },
+  );
+
   it('shows enabled sandbox gateways as distinct checkout choices', async () => {
     vi.stubGlobal(
       'fetch',
@@ -248,4 +379,48 @@ function paginatedResponse(data: unknown[]) {
       totalPages: data.length ? 1 : 0,
     },
   });
+}
+
+function paymentWorkspace(invoices: Invoice[] = [invoice]) {
+  const fetch = vi.fn(async (url: string, options?: RequestInit) => {
+    if (url.endsWith('/auth/csrf'))
+      return jsonResponse({
+        success: true,
+        data: { csrfToken: 'fictional-token' },
+      });
+    if (options?.method === 'POST') {
+      const body = JSON.parse(String(options.body)) as { amount: string };
+      return jsonResponse({
+        success: true,
+        data: {
+          payment: {
+            ...pendingPayment,
+            state: 'VERIFIED',
+            amount: { amount: body.amount, currency: 'BDT' },
+          },
+          duplicate: false,
+        },
+      });
+    }
+    if (url.includes('/payments/settings'))
+      return jsonResponse({
+        success: true,
+        data: { partialPaymentsEnabled: false },
+      });
+    if (url.includes('/payment-gateways/failures'))
+      return jsonResponse({ success: true, data: [] });
+    if (url.includes('/invoices?')) return paginatedResponse(invoices);
+    if (url.endsWith(`/invoices/${invoiceId}`))
+      return jsonResponse({
+        success: true,
+        data: {
+          ...invoice,
+          status: 'PAID',
+          balanceDue: { amount: '0', currency: 'BDT' },
+        },
+      });
+    return paginatedResponse([]);
+  });
+  vi.stubGlobal('fetch', fetch);
+  return fetch;
 }

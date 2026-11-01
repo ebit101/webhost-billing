@@ -19,7 +19,8 @@ import { RecordAction, RecordDialog } from '../ui/record-dialog';
 import { formatMinor } from '../invoices/invoice-ui';
 import { PageHeader } from '../ui/page-header';
 import { StatusBadge } from '../ui/status-badge';
-import { priceForInput, productPriceFromForm } from './product-price-input';
+import { moneyForInput } from '../../lib/money-input';
+import { productPriceFromForm } from './product-price-input';
 
 const nullableFields = [
   'description',
@@ -764,7 +765,7 @@ function PriceForm({
           name="amount"
           required
           defaultValue={
-            active ? priceForInput(active.amount.amount, currency) : ''
+            active ? moneyForInput(active.amount.amount, currency) : ''
           }
           placeholder="1500.00"
         />
@@ -773,7 +774,7 @@ function PriceForm({
           label="Setup fee"
           name="setupFee"
           defaultValue={
-            active ? priceForInput(active.setupFee.amount, currency) : '0'
+            active ? moneyForInput(active.setupFee.amount, currency) : '0'
           }
         />
         <Button

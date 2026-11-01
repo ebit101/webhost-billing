@@ -2,14 +2,25 @@
 
 ## Status Summary
 
-- **Current command:** Command 164 — Show current product prices in normal currency amounts
-- **Current status:** Command 164 local implementation and focused validation passed. Product pricing loads the active amount/setup fee and accepts normal currency amounts instead of minor units. Retain Commands 163–164 for the owner's later batch push; no PR, push or deployment. Command 162's independent recovery gates remain open. Production remains NO-GO.
+- **Current command:** Command 165 — Show and enter normal amounts in administrator payments
+- **Current status:** Command 165 local implementation and focused validation passed. Administrator invoice choices, payment amounts and refund/reversal forms use normal currency amounts. Retain Commands 163–165 for the owner's later batch push; no PR, push or deployment. Command 162's independent recovery gates remain open. Production remains NO-GO.
 - **Last updated:** 2026-11-02
 - **Last recorded staging release:** Command 161, `e2c207a72511b13578dba84e63979ea794449455`, deployed on 2026-11-01 (Asia/Dhaka).
-- **Next action:** Keep Command 164 committed locally and stop. Continue only with the owner's next specified local change; validate and publish the accumulated batch when asked. Deployment remains separately authorized.
-- **Next command authorized:** Command 164 only for this product-pricing request. Command 162 remains independently open; no paid storage, application deployment, provider activation, financial action or message is implicitly authorized.
+- **Next action:** Keep Command 165 committed locally and stop. Continue only with the owner's next specified local change; validate and publish the accumulated batch when asked. Deployment remains separately authorized.
+- **Next command authorized:** Command 165 only for this payment-amount request. Command 162 remains independently open; no paid storage, application deployment, provider activation, financial action or message is implicitly authorized.
 
 ## Command Reports
+
+### Command 165 — Show and enter normal amounts in administrator payments
+
+- **Status and date:** Implemented and focused local validation passed on 2026-11-02 (Asia/Dhaka). Retain the focused local commit with the pending batch; no push, PR or deployment.
+- **Owner scope and cause:** The screenshot exposed raw integer-minor-unit invoice balances in Record payment. BDT 309000 represents BDT 3,090.00, not a larger invoice. Apply the preceding normal-price entry direction to the administrator payment workspace.
+- **Implementation:** Payable invoice options use formatted currency balances. Selecting an invoice loads its full outstanding amount, shows the invoice currency beside Amount and accepts decimal entry, for example 3090.00. Changing or clearing selection replaces the amount with that invoice's balance or an empty disabled field. Submission stays disabled without a payable selection. Refund/reversal available balances and editable defaults also use normal amounts. Failed requests retain edits; successful recording clears selection and amount.
+- **Money and financial boundaries:** Extracted Command 164's exact conversion into web `lib/money-input.ts`, reused by product and payment forms. Derive payment currency from the selected invoice and adjustment currency from the original payment. Parse strings with BigInt, reject malformed/negative/zero/overprecision/overflow amounts before mutation and send existing canonical integer-string payloads. Preserve server-side settlement policy, full/partial-payment validation, verified-bank-proof requirements, submission-key retry behavior and append-only adjustment contracts. No existing invoice or payment was changed and no provider was contacted.
+- **Files:** New `apps/web/src/lib/money-input.ts`; administrator payment manager and both payment test files; product manager, product-price request helper and its tests updated to reuse the utility; command registry, ADR-156 and this report. No dependencies, backend contracts, schemas or migrations changed.
+- **Validation:** Node 24.20.0 and pinned pnpm 11.22.0. Four affected Vitest suites pass, 73/73 tests: normal balance labels/defaults, switching/clearing invoices, exact payment API conversion, invalid amounts blocked before any POST, payment retry bodies/submission keys, lossless large refund/reversal conversion and prior product pricing behavior. Focused ESLint and web `tsc --noEmit` pass. Formatting, Git whitespace and staged secret scanning accompany the local commit. Full batch CI/build and installed-browser acceptance remain for separately authorized delivery/deployment; neither is claimed here.
+- **Preservation and limits:** Office `.env` SHA-256 is unchanged. No staging access, payment recording, customer email or live-provider action. SMTP/provider settings are untouched: staging SMTP stays active and payment/hosting/registrar/WhatsApp providers stay disabled. This task covers the administrator payment workspace; customer reference entry and other financial forms retain their existing contracts. Production and independent recovery acceptance remain open.
+- **Exact recommended next command:** Await the owner's next specified local change. When the owner requests the batch push, validate accumulated Commands 163–165, reconcile normally and publish to main subject to actual repository rules. Deploy only with separate authorization. Stop here.
 
 ### Command 164 — Show current product prices in normal currency amounts
 

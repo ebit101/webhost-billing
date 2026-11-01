@@ -3185,6 +3185,21 @@ authorize new provider operations or existing-domain adoption.
   held currency foundations, reprice existing services, deploy, send messages or
   change any live-provider setting. Retain local work for owner-requested batches.
 
+## ADR-156 — Use normal currency amounts in administrator payment entry
+
+- **Date:** 2026-11-02. Command 165, following the owner's payment screenshot.
+- **Decision:** Format payable invoice balances and prefill full balance amounts
+  in normal currency units. Use the same decimal entry for refunds/reversals.
+  Derive currency from the owning invoice/payment, not a freely entered field.
+  Changing invoice selection must replace its previous amount; clearing selection
+  clears/disables entry. A prefilled amount is not evidence of bank receipt.
+- **Exactness and scope:** Reuse Command 164's string/BigInt conversion from a web
+  money-input utility, including precision and BIGINT limits. Require positive
+  transaction amounts and preserve integer-string payloads, server settlement
+  validation, verified-proof requirements, retry keys and append-only history.
+  Failed requests retain edits. No real transaction, message, provider activation,
+  held currency feature, publication or deployment is authorized by this UI fix.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

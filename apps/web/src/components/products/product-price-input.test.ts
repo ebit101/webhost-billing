@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
-  priceForInput,
-  priceToMinor,
-  productPriceFromForm,
-} from './product-price-input';
+  moneyForInput as priceForInput,
+  moneyToMinor as priceToMinor,
+} from '../../lib/money-input';
+import { productPriceFromForm } from './product-price-input';
 
 describe('product price entry', () => {
   it.each([
