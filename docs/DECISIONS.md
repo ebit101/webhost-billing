@@ -3152,6 +3152,23 @@ authorize new provider operations or existing-domain adoption.
   keyboard-accessible links. No application deployment, schema/financial-history
   changes, live-provider calls or changes to staging SMTP/backups are authorized.
 
+## ADR-154 — Keep validated development local and publish owner-requested batches
+
+- **Date:** 2026-11-02. Explicit owner workflow direction during Command 163.
+- **Decision:** Keep focused local commits and per-command reports across multiple
+  authorized changes. Do not create a PR or push automatically for each command.
+  When the owner requests publication, validate the accumulated batch and use a
+  normal direct push to `main`, reconciling safely without rewriting history.
+- **Restrictions and existing work:** Preserve branch protections and report an
+  actual restriction rather than bypassing it or creating an unapproved PR.
+  External contributors still use PRs. PR 87 was already opened; close it without
+  merging and retain its published commits/check evidence. Preserve later local
+  batch commits. No deployment or provider change follows from Git publication.
+- **Validation effort:** Use focused affected checks while iterating. Run the full
+  required validation once for the requested delivery batch and expand/repeat
+  checks only when failures, new changes or unresolved risks justify them. Do not
+  wait on or launch per-command hosted CI solely for a small report update.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

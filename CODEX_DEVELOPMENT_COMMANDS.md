@@ -6,6 +6,17 @@ This document contains an ordered sequence of copy-paste prompts for developing 
 
 **Project identifier:** `webhost-billing`
 
+**Owner Git workflow — 2026-11-02:** Keep development, validation and focused
+commits local across multiple authorized changes. Do not push or create a PR
+automatically for each command. When the owner asks to push the accumulated
+batch, validate the entire batch and use normal direct delivery to `origin/main`,
+without force-pushing or bypassing protections. An actual restriction requiring
+a PR must be reported for owner approval. This direction supersedes earlier
+per-command push/PR instructions below. Deployment remains separately authorized.
+Use focused affected checks while developing. Comprehensive validation belongs
+to the requested delivery batch; repeat or expand it only for actual changes,
+failures or unresolved risks rather than for each small edit/report update.
+
 Run one command at a time and do not advance while required checks are failing. The prompts follow the outcome-focused structure recommended by the [official OpenAI model guidance](https://developers.openai.com/api/docs/guides/latest-model#prompting-best-practices): state the goal, constraints, authorization boundaries, evidence, and success criteria.
 
 **Owner direction — 2026-10-11:** Further currency development is on hold. Command 117
@@ -6437,14 +6448,16 @@ and generated email templates. Retain ISO/UTC transport, machine-readable export
 stored timestamps, invoice calendar-day semantics, existing permissions and all
 financial/provider workflows. Validate parsing, timezone/calendar boundaries,
 record links, document/form consistency and affected application behavior. Record
-results and deliver through normal protected Git checks. Do not deploy or change
+results locally and retain the validated commits for the owner's later batch
+push. Do not deploy or change
 SMTP/provider/backup settings. Command 162's independent recovery gates stay open.
 
 Local acceptance covers shared parsing, API period/PDF and worker email tests,
 affected web cases, actual US-locale browser navigation/layout checks, all app
 lint/type checks and production build. Corrected old display-date assertions and
 new browser-harness selectors without weakening timeouts or changing stored
-timestamps. Fresh protected validation is required for normal main delivery.
-Exact next recommendation, not authorization: Command 164 — Deploy validated
-Command 163 to staging with a verified fresh encrypted backup and read-only UI
-smoke tests, preserving environment, logo, SMTP/provider posture and backup setup.
+timestamps. PR 87 had already been created under the earlier workflow; it is
+closed without merging following the owner's batching direction. Preserve its
+commits and any completed check evidence. No further push or new PR is authorized
+by this command. Continue with the next owner-specified local change; validate
+and push the combined batch only when requested. Deployment remains separate.

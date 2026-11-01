@@ -57,6 +57,7 @@
 - Preserve unrelated existing work.
 - Add or update tests with every business-rule change.
 - Run validation proportional to the change. Do not claim a check passed unless it was executed successfully.
+- While iterating locally, prefer focused affected checks. Run comprehensive validation for the accumulated delivery batch when requested; do not repeat full CI for every small change or prose-only report update. Expand checks when failures or unresolved risks justify it.
 - Record unresolved failures and constraints honestly.
 - Keep generated and dependency artifacts out of Git unless the project explicitly requires them.
 
@@ -64,7 +65,9 @@
 
 - Execute only the command currently authorized by the user.
 - The canonical Git remote is `https://github.com/ebit101/webhost-billing.git` and the delivery branch is `main`.
-- After a command passes its required validation, update its report, create a focused commit, reconcile with the remote without force-pushing, and push the completed command to `origin/main`.
+- Owner workflow (2026-11-02): develop and validate locally, update the report and create focused local commits. Accumulate multiple authorized changes before publishing; do not push or create a pull request automatically after each command.
+- When the owner asks to push the accumulated batch, validate the complete batch, reconcile with the remote without force-pushing and use a normal direct push to `origin/main`. Preserve pending local batch commits between commands.
+- Use a pull request only when the owner requests one or explicitly approves it to satisfy an actual repository restriction. Do not change or bypass GitHub protections; report an actual blocked push instead of silently changing the workflow.
 - Never force-push, rewrite published history, or push failing/unverified command work.
 - After every command, update `docs/PROGRESS.md` with:
   - command number and title;

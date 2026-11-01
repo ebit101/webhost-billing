@@ -96,8 +96,13 @@ or invariant suites documented in `docs/DEVELOPMENT.md` and
 
 - Write clear imperative commit subjects.
 - Keep unrelated refactoring out of a behavioral fix.
-- All changes are reviewed through pull requests; do not ask maintainers to merge
+- External contributions use pull requests; do not ask maintainers to merge
   failing or unverified work.
+- Owner-directed development follows the owner's 2026-11-02 workflow: validate
+  and commit locally, accumulate related changes, then push one validated batch
+  directly to `main` when requested. No automatic push or PR per command. Preserve
+  branch protections; obtain explicit approval for a PR if a real restriction
+  prevents the requested direct delivery.
 - A maintainer may request security, migration, provider, accessibility, or
   backwards-compatibility changes before merge.
 
