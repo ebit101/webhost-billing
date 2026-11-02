@@ -44,7 +44,7 @@ describe('public order draft', () => {
       saveOrderDraft({
         ...selection,
         domainChoice: 'REGISTER',
-        requestedDomain: 'example.test',
+        requestedDomain: 'example..test',
       }),
     ).toBe(false);
     expect(
@@ -64,4 +64,22 @@ describe('public order draft', () => {
     expect(readOrderDraft(selection)).toBeUndefined();
     expect(localStorage.getItem('webhost-order-draft')).toBeNull();
   });
+
+  it.each(['example.net', 'example.org', 'example.co.uk', 'example.test'])(
+    'retains %s for later catalogue and registrar review',
+    (requestedDomain) => {
+      expect(
+        saveOrderDraft({
+          ...selection,
+          domainChoice: 'REGISTER',
+          requestedDomain,
+        }),
+      ).toBe(true);
+      expect(readOrderDraft(selection)).toEqual({
+        ...selection,
+        domainChoice: 'REGISTER',
+        requestedDomain,
+      });
+    },
+  );
 });

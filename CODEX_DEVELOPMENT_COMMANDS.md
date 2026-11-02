@@ -6566,3 +6566,20 @@ Keep application delivery gates and encrypted provider configuration inactive.
 No customer/test message, phone migration, broad access expansion, deployment,
 push or PR is implied. Record pending owner/Meta actions honestly and continue this
 command until its remaining setup inputs and provider review are resolved.
+
+## Command 171 — Publish the accumulated batch and deploy to staging
+
+Owner-authorized on 2026-11-02: push all accumulated changes and deploy them to
+the existing my.speedhost.bd staging installation. Validate Commands 163–170 as a
+delivery batch, repair observed failures and safely reconcile with origin/main.
+Use a normal direct main push; do not force, change protections or create a PR
+without explicit authorization if the actual push is blocked. Require exact-release
+hosted checks before cutover. Verify fresh encrypted backups, preserve installation
+environment/logo and business records, apply only the pending reviewed migration,
+and smoke-test dates, links, direct prices/payments, ordinary TLDs and disabled
+notification behavior without issuing/paying records or sending messages. Keep
+SMTP active and payment, hosting, registrar and WhatsApp providers disabled.
+Command 170's private Meta access/approval and genuine bKash acceptance remain open;
+deployment does not activate them or approve production. Record resource/validation
+constraints and actual release evidence. Clean up only explicitly authorized,
+verified regenerable cache paths; preserve Docker data, backups and unrelated work.
