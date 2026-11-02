@@ -132,7 +132,7 @@ test('administrator inspects service facts and customer without business mutatio
   await expect(review).toContainText('Provision failed');
   await expect(review).toContainText('<b>Fictional provisioning failure</b>');
   await expect(review).toContainText('BDT 120.00');
-  await expect(review).toContainText('4 Oct 2026, 02:00');
+  await expect(review).toContainText('04/10/2026, 02:00');
   await expect(review).toContainText('Dates shown in Asia/Dhaka');
   await expect(review).toContainText(
     'current profile, not a historical invoice snapshot',
