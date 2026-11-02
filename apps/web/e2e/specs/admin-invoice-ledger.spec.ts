@@ -60,6 +60,7 @@ test('administrator searches older invoices with URL context without business mu
     page.getByRole('button', { name: 'Sign in', exact: true }),
   ).toBeHidden();
   const before = await snapshot();
+  const expectedGlobalTotal = before.invoices.length;
   const writes: string[] = [];
   const detailReads: string[] = [];
   page.on('request', (request) => {
@@ -163,15 +164,33 @@ test('administrator searches older invoices with URL context without business mu
   await expect(
     page.getByRole('link', { name: 'Clear customer filter' }),
   ).toHaveAttribute('href', '/admin/invoices?page=1&pageSize=20');
+  const globalRead = page.waitForResponse((response) => {
+    const url = new URL(response.url());
+    return url.pathname === '/invoices' && !url.searchParams.has('customerId');
+  });
   await ledger.getByRole('button', { name: 'Clear customer scope' }).click();
-  await expect(ledger).toContainText('106 matching invoices');
+  expect((await globalRead).status()).toBe(200);
+  await expect(ledger).toContainText(
+    `${expectedGlobalTotal} matching invoices`,
+  );
   await expect(ledger).toContainText(
     'All customers (unfiltered customer scope)',
   );
   expect(new URL(page.url()).searchParams.has('customerId')).toBe(false);
+  // Global pagination can place this older fixture beyond the first page.
+  await ledger
+    .getByLabel('Search invoices')
+    .fill(E2E_HEALTHY_CUSTOMER.invoiceNumber);
+  await ledger.getByRole('button', { name: 'Search', exact: true }).click();
+  await expect(ledger).toContainText('1 matching invoices · 1–1 · Page 1 of 1');
+  expect(new URL(page.url()).searchParams.has('customerId')).toBe(false);
   await expect(
     ledger.getByRole('link', { name: E2E_HEALTHY_CUSTOMER.invoiceNumber }),
   ).toBeVisible();
+  await page.goBack();
+  await expect(ledger).toContainText(
+    `${expectedGlobalTotal} matching invoices`,
+  );
   await page.goBack();
   await expect(ledger).toContainText('105 matching invoices');
   await ledger

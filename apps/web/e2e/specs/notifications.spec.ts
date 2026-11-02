@@ -4,7 +4,10 @@ import { mkdir, readFile, readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { hash } from 'argon2';
 import { createPrismaClient } from '@webhost-billing/database';
-import { DEFAULT_RENEWAL_AUTOMATION_POLICY } from '@webhost-billing/shared';
+import {
+  DEFAULT_RENEWAL_AUTOMATION_POLICY,
+  invoiceAddressSchema,
+} from '@webhost-billing/shared';
 import {
   parseApiEnvironment,
   parseWorkerEnvironment,
@@ -41,6 +44,14 @@ const delivery = new NotificationDeliveryService(
   new WhatsAppPreviewAdapter(output),
 );
 const suffix = randomUUID();
+const fictionalInvoiceAddress = invoiceAddressSchema.parse({
+  line1: '137 Fictional Road',
+  line2: null,
+  city: 'Dhaka',
+  region: null,
+  postalCode: null,
+  countryCode: 'BD',
+});
 const adminEmail = `notifications-admin-${suffix}@example.test`;
 const clientEmail = `notifications-client-${suffix}@example.test`;
 const secondEmail = `notifications-other-${suffix}@example.test`;
@@ -116,10 +127,20 @@ test('notification plan: automatic important WhatsApp, own history, previews, st
         balanceDue: 9007199254740993n,
         customerNameSnapshot: 'Fictional Customer',
         customerEmailSnapshot: email,
-        customerAddressSnapshot: { countryCode: 'BD' },
+        customerAddressSnapshot: fictionalInvoiceAddress,
         businessIdentitySnapshot: { name: 'Fictional Speed Host' },
         issuedAt: new Date(Date.now() - 2 * 86400000),
         dueAt: new Date(Date.now() - 86400000),
+        items: {
+          create: {
+            linePosition: 1,
+            descriptionSnapshot: 'Fictional notification invoice',
+            quantity: 1,
+            currency: 'BDT',
+            unitAmount: 9007199254740993n,
+            lineTotal: 9007199254740993n,
+          },
+        },
       },
     });
   }
@@ -890,7 +911,7 @@ test('final suspension notices respect current policy and never change hosting o
       balanceDue: 100000n,
       customerNameSnapshot: 'Fictional final warning',
       customerEmailSnapshot: user.email,
-      customerAddressSnapshot: { countryCode: 'BD' },
+      customerAddressSnapshot: fictionalInvoiceAddress,
       businessIdentitySnapshot: { name: 'Fictional Speed Host' },
       issuedAt: new Date(now.getTime() - 4 * 86400000),
       dueAt,
@@ -1068,7 +1089,7 @@ async function createCalendarDomains(
           balanceDue: 100000n,
           customerNameSnapshot: 'Fictional calendar customer',
           customerEmailSnapshot: email,
-          customerAddressSnapshot: { countryCode: 'BD' },
+          customerAddressSnapshot: fictionalInvoiceAddress,
           businessIdentitySnapshot: { name: 'Fictional Speed Host' },
           issuedAt: new Date(),
           dueAt: expiresAt,
