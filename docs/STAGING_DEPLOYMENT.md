@@ -1,5 +1,61 @@
 # Staging Deployment
 
+## Command 171 accumulated batch release (2026-11-02)
+
+- **Status:** Deployed and accepted `0e69add43cc1df8351a9c2485cb27afc6e7a22f3`
+  at `https://my.speedhost.bd`. Includes the accumulated navigation/date, decimal
+  pricing/payment, ordinary-TLD and disabled sandbox/WhatsApp preparation changes.
+  Genuine provider access and independent recovery remain open. This closing
+  documentation changes no runtime files and needs no redeployment.
+- **Protected delivery:** Owner approved the PR path after the initial ordinary
+  owner push reported rule bypasses. [PR 89](https://github.com/ebit101/webhost-billing/pull/89)
+  merged normally after successful corrected-head CI, CodeQL and dependency review.
+  Exact-release [CI](https://github.com/ebit101/webhost-billing/actions/runs/41473226782)
+  and [CodeQL](https://github.com/ebit101/webhost-billing/actions/runs/41473226788)
+  then passed before deployment. Browser-fixture repairs retained production guards,
+  complete snapshots, zero-write assertions and original deadlines. Final acceptance
+  includes all 788 frontend cases, 36 browser journeys and four staff browser checks.
+  No protection setting, force push or special bypass API was used for the correction.
+- **Archive and builds:** Source archive SHA-256:
+  `fb8ea4e06fa82c1e929ed8b95ee04f335c17329d52cdc9b95e96868a467e5def`.
+  Four canonical Node 24/pnpm 11.22.0 frozen builds passed serially. The private
+  launch guard compared the deploy script with the exact checked source archive.
+  Installed API Node is 24.22.2. Registry/deprecation warnings were non-failing.
+- **Backup and migration:** Fresh encrypted pre-build backup `20261102T155704Z.dump.gpg`
+  passed checksum, OpenPGP integrity, archive structure and required-table checks.
+  The canonical script verified another backup before stopping application writers:
+  `/srv/webhost-billing-staging/backups/webhost-billing-webhost_billing_staging-20261102T161250Z.dump.gpg`.
+  Cutover backup SHA-256:
+  `51c41809c5b857754a7cabf3a07a58a2ffc96ff0106be06a0eefb8cb94ed739e`.
+  Rollback inventory:
+  `/srv/webhost-billing-staging/rollback/release-20261102T161246Z-0e69add43cc1df8351a9c2485cb27afc6e7a22f3/`.
+  Applied only `20261102000100_domain_offer_tld_length`; 40 trusted migrations
+  complete, zero unfinished. Installed recovery verification checks the complete
+  56-table release inventory. No restore, financial backfill or image pruning.
+- **Installed acceptance:** Deployment/postflight exit 0; seven healthy services,
+  four application images at the release tag with zero restarts, one scheduler,
+  preserved infrastructure/unrelated container IDs. Public HTTPS health/readiness,
+  API origin and logo pass; anonymous protected pages redirect and APIs deny access.
+  Compiled domain pagination/search/filter/ownership/invoice checks and batch invoice,
+  payment, product and notification reads pass. Batch reads enforce PostgreSQL
+  read-only sessions. Zero provider HTTP calls, new sessions or external actions.
+- **Speed acceptance:** Reloaded the existing profile after its connection changed.
+  Eight read-only checks cover compact navigation, dd/mm/yyyy, a seven-day default,
+  eight linked metrics and a working filtered destination; current decimal product
+  price/setup prefill and teal selected tab; decimal invoice balances/payment prefill;
+  ordinary/multi-part TLD guidance and unsaved pricing form; important issued/overdue
+  invoice alerts, disabled-delivery banner, alert history and transactional history.
+  Closed every form unsaved, returned to the dashboard and reviewed a private screenshot.
+  No payment, save, resend, export, provider or security action was submitted.
+- **Preservation and limits:** All 37 original business/email/outbox/notification
+  fingerprints match through final browser acceptance, without exclusions or
+  rebaselining. Environment apart from IMAGE_TAG, mode 0600, installed/served logo
+  and Office environment are preserved. SMTP stays active; payment, real WHM,
+  registrar and WhatsApp/new-alert delivery remain disabled; no Meta credential row.
+  Evidence: `/srv/webhost-billing-staging/acceptance/command171-release-20261102/`.
+  Same-host backup checks do not certify off-site recovery, real bKash/Meta access,
+  approved message delivery, live-provider operations or production readiness.
+
 ## Command 161 recovery and global domain inventory release (2026-11-01)
 
 - **Status:** Deployed and accepted `e2c207a72511b13578dba84e63979ea794449455`,
