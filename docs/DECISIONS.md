@@ -3299,3 +3299,22 @@ The following decisions are intentionally unresolved and must be selected before
   deployment or push. No incoming messaging/delivery webhook or Delivered/Read claim.
   Genuine sender/template/delivery acceptance and database-backed concurrency tests
   remain open. See [the implementation guide](WHATSAPP_NOTIFICATIONS.md).
+
+## ADR-160 — Initialize Prisma database sessions in UTC
+
+- **Date:** 2026-11-02. Command 169, repair found during real PostgreSQL acceptance.
+- **Evidence:** On a PostgreSQL 18.6 server using Asia/Dhaka, the installed
+  adapter-pg 7.10.0 timestamp normalizer replaces the timestamptz offset with UTC
+  without adjusting the wall clock. A database-generated notification epoch was
+  read six hours in the future, excluding committed invoice and failure events.
+  ORM-written event instants remained correct, exposing the mismatch.
+- **Decision:** Request UTC through the startup options of every pooled Prisma
+  connection. Preserve existing connection parameters and search-path options;
+  place the UTC option last so a conflicting server/URL timezone cannot override
+  it. Do not change stored data, migration history, business timezone, notification
+  cutover or presentation rules. No upstream dependency changes are required.
+- **Validation:** The isolated acceptance explicitly supplies a conflicting
+  Asia/Dhaka connection option and compares the ORM epoch with PostgreSQL's exact
+  epoch milliseconds. Existing invoice/failure projection assertions, concurrency,
+  recipient locking and replay checks then pass against real PostgreSQL. Browser
+  and genuine Meta delivery acceptance remain separate.

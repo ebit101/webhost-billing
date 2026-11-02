@@ -6539,3 +6539,16 @@ with fictional records and injected HTTP transports, update the report and commi
 locally in the accumulated delivery batch. No Meta enrollment, credential entry,
 live messages, provider activation, deployment, push or PR is authorized. Genuine
 provider/database/browser acceptance stays open until its prerequisites exist.
+
+## Command 169 — Finish WhatsApp database acceptance and secret scanning locally
+
+Owner-authorized on 2026-11-02. Complete Command 168's PostgreSQL-backed acceptance
+and secret scanning, repair observed failures and update the project report. Use
+fresh, explicitly owned fictional schemas and blocked external HTTP. Verify actual
+projection uniqueness, authorization, recipient preference locking, committed
+submission claims, replay/uncertainty handling and encrypted configuration reads.
+Preserve the owner's environment, pending commits and Docker data. Portable verified
+tools may replace unavailable Docker for local acceptance; record that distinction.
+Keep live sending disabled and do not enroll a sender, enter genuine credentials,
+send a message, activate another provider, push, create a PR or deploy. Commit the
+focused validated changes locally and stop.

@@ -123,10 +123,31 @@ authorization. Obtain the phone-number ID and token privately, confirm the inten
 sender mapping and template approvals, then test only authorized fictional/test
 recipients in the separately approved environment. Preserve SMTP and other providers.
 
-Office Docker is currently unavailable. Database-backed transaction/concurrency and
-browser acceptance, and the pinned secret scan, remain pending for the later delivery
-batch. Run those checks before publication/activation; mock ledger tests do not close
-the database-backed acceptance gate.
+Command 169 completes PostgreSQL-backed acceptance through
+`pnpm test:whatsapp:database`. The driver creates and migrates a fresh marked,
+loopback-only schema, skips general demo seeds, forces process-level sending gates
+off and drops only that verified schema. Ten cases cover actual projection/role
+scope, locks, claim-before-send, concurrent/replayed delivery, uncertain and lost
+acknowledgements, encrypted configuration, private previews and unchanged fictional
+financial records. Provider branches use injected HTTP/adapters; external fetch is
+blocked. CI has a dedicated step, while ordinary worker tests skip this opt-in suite.
+
+The real database run exposed an installed adapter-pg timestamp-normalization issue
+under a non-UTC server timezone. Shared Prisma connections now request UTC at startup,
+preserving search-path options. A conflicting-timezone regression compares ORM and
+database epoch milliseconds. No stored timestamp or migration history is rewritten.
+
+Docker remains unavailable because its Secrets Engine socket cannot be accessed.
+Local acceptance used checksum-verified portable EDB PostgreSQL 18.6 and Gitleaks
+8.30.1, matching the CI image's scanner version. Complete Git history and staged
+changes are scanned with the unchanged repository rules and redacted output. This
+is native scanner evidence, not a claim that the Docker image ran. The task-owned
+PostgreSQL runtime is stopped and removed after checks; no application/dev server,
+worker, scheduler, SMTP or live provider is started.
+
+Installed-browser acceptance, genuine Meta credentials/sender/template approval and
+authorized-recipient delivery remain pending for separately authorized work. Local
+database and secret-scanning closure does not authorize activation or deployment.
 
 Official references reviewed on 02/11/2026: [Meta Cloud API collection](https://www.postman.com/meta/whatsapp-business-platform/documentation/wlk6lh4/whatsapp-cloud-api),
 [Meta template component reference](https://whatsapp.github.io/WhatsApp-Nodejs-SDK/api-reference/types/component_object/)

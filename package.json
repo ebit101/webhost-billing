@@ -9,6 +9,7 @@
     "node": ">=24.0.0 <25"
   },
   "scripts": {
+    "test:whatsapp:database": "pnpm --filter @webhost-billing/web exec tsx e2e/run-api-tests.ts whatsapp",
     "build": "pnpm -r --workspace-concurrency=1 --if-present build",
     "build:packages": "pnpm --filter @webhost-billing/config build && pnpm --filter @webhost-billing/shared build && pnpm --filter @webhost-billing/database build && pnpm --filter @webhost-billing/queue build",
     "backup:create": "scripts/backups/create-postgres-backup.sh",

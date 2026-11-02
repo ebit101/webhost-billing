@@ -92,6 +92,9 @@ jobs:
       - name: Run API integration tests
         run: pnpm --filter @webhost-billing/web exec tsx e2e/run-api-tests.ts
 
+      - name: Run isolated WhatsApp database acceptance with blocked external delivery
+        run: pnpm test:whatsapp:database
+
       - name: Run critical invariant tests
         run: pnpm test:invariants
 

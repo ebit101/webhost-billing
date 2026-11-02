@@ -12,15 +12,16 @@ async function main() {
   await prepareEnvironment(false);
   try {
     const seedArgs = ['--filter', '@webhost-billing/database', 'db:seed'];
-    execFileSync(
-      process.platform === 'win32'
-        ? (process.env.ComSpec ?? 'cmd.exe')
-        : 'pnpm',
-      process.platform === 'win32'
-        ? ['/d', '/s', '/c', 'pnpm', ...seedArgs]
-        : seedArgs,
-      { cwd: '../..', env: e2eApiEnvironment, stdio: 'inherit' },
-    );
+    if (process.argv[2] !== 'whatsapp')
+      execFileSync(
+        process.platform === 'win32'
+          ? (process.env.ComSpec ?? 'cmd.exe')
+          : 'pnpm',
+        process.platform === 'win32'
+          ? ['/d', '/s', '/c', 'pnpm', ...seedArgs]
+          : seedArgs,
+        { cwd: '../..', env: e2eApiEnvironment, stdio: 'inherit' },
+      );
     const args =
       process.argv[2] === 'packages'
         ? ['test']
@@ -52,17 +53,46 @@ async function main() {
                           : 'test/domains.e2e-spec.ts',
                   ]),
             ]
-          : process.argv[2] === 'invariants'
-            ? ['test:invariants']
-            : process.argv[2] === 'worker'
-              ? ['--filter', '@webhost-billing/worker', 'test']
-              : ['--filter', '@webhost-billing/api', 'test:e2e', '--runInBand'];
+          : process.argv[2] === 'whatsapp'
+            ? [
+                '--filter',
+                '@webhost-billing/worker',
+                'exec',
+                'cross-env',
+                'NODE_OPTIONS=--experimental-vm-modules',
+                'jest',
+                '--runInBand',
+                '--runTestsByPath',
+                'src/notifications/notification-database.integration.spec.ts',
+              ]
+            : process.argv[2] === 'invariants'
+              ? ['test:invariants']
+              : process.argv[2] === 'worker'
+                ? ['--filter', '@webhost-billing/worker', 'test']
+                : [
+                    '--filter',
+                    '@webhost-billing/api',
+                    'test:e2e',
+                    '--runInBand',
+                  ];
     execFileSync(
       process.platform === 'win32'
         ? (process.env.ComSpec ?? 'cmd.exe')
         : 'pnpm',
       process.platform === 'win32' ? ['/d', '/s', '/c', 'pnpm', ...args] : args,
-      { cwd: '../..', env: e2eApiEnvironment, stdio: 'inherit' },
+      {
+        cwd: '../..',
+        env:
+          process.argv[2] === 'whatsapp'
+            ? {
+                ...e2eApiEnvironment,
+                WEBHOST_WHATSAPP_DATABASE_ACCEPTANCE: '1',
+                NOTIFICATION_DELIVERY_MODE: 'disabled',
+                WHATSAPP_LIVE_ENABLED: 'false',
+              }
+            : e2eApiEnvironment,
+        stdio: 'inherit',
+      },
     );
   } finally {
     const prisma = createPrismaClient(E2E_DATABASE_URL);
