@@ -6,6 +6,7 @@ const environment: ApiEnvironment = {
   NOTIFICATION_DELIVERY_MODE: 'disabled',
   WHATSAPP_LIVE_ENABLED: false,
   RESELLBIZ_LIVE_ENABLED: false,
+  VIRTUALIZOR_API_ENABLED: false,
   PORT: 3001,
   DATABASE_URL: 'postgresql://example.test/database',
   REDIS_URL: 'redis://example.test',

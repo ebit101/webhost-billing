@@ -16,16 +16,16 @@ import {
   createApiSuccessResponse,
   createPaginatedApiSuccessResponse,
   configureCpanelServerRequestSchema,
-  createCpanelServerRequestSchema,
-  updateCpanelServerRequestSchema,
+  createServerRequestSchema,
+  updateServerRequestSchema,
   removeCpanelServerRequestSchema,
   executeHostingOperationRequestSchema,
   hostingPanelOperationListQuerySchema,
   retryHostingOperationRequestSchema,
   testHostingConnectionRequestSchema,
   type ConfigureCpanelServerRequest,
-  type CreateCpanelServerRequest,
-  type UpdateCpanelServerRequest,
+  type CreateServerRequest,
+  type UpdateServerRequest,
   type RemoveCpanelServerRequest,
   type ExecuteHostingOperationRequest,
   type HostingPanelOperationListQuery,
@@ -40,6 +40,7 @@ import type { AuthRequestContext } from '../auth/auth.types';
 import { CurrentAuth } from '../auth/decorators/current-auth.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { HostingPanelService } from './hosting-panel.service';
+import { ServerAdministrationService } from './server-administration.service';
 
 @Controller('hosting-panel')
 export class HostingPanelController {
@@ -47,6 +48,7 @@ export class HostingPanelController {
 
   constructor(
     private readonly hostingPanels: HostingPanelService,
+    private readonly servers: ServerAdministrationService,
     @Inject(API_ENVIRONMENT) environment: ApiEnvironment,
   ) {
     this.auditSecret = environment.SESSION_SECRET;
@@ -55,19 +57,19 @@ export class HostingPanelController {
   @Get('servers')
   @Roles('ADMIN')
   async listServers(@CurrentAuth() auth: AuthRequestContext) {
-    return createApiSuccessResponse(await this.hostingPanels.listServers(auth));
+    return createApiSuccessResponse(await this.servers.list(auth));
   }
 
   @Post('servers')
   @Roles('ADMIN')
   async createServer(
-    @Body(new ZodValidationPipe(createCpanelServerRequestSchema))
-    input: CreateCpanelServerRequest,
+    @Body(new ZodValidationPipe(createServerRequestSchema))
+    input: CreateServerRequest,
     @CurrentAuth() auth: AuthRequestContext,
     @Req() request: Request,
   ) {
     return createApiSuccessResponse(
-      await this.hostingPanels.createServer(input, auth, this.context(request)),
+      await this.servers.create(input, auth, this.context(request)),
     );
   }
 
@@ -75,18 +77,13 @@ export class HostingPanelController {
   @Roles('ADMIN')
   async updateServer(
     @Param('serverId', new ParseUUIDPipe()) serverId: string,
-    @Body(new ZodValidationPipe(updateCpanelServerRequestSchema))
-    input: UpdateCpanelServerRequest,
+    @Body(new ZodValidationPipe(updateServerRequestSchema))
+    input: UpdateServerRequest,
     @CurrentAuth() auth: AuthRequestContext,
     @Req() request: Request,
   ) {
     return createApiSuccessResponse(
-      await this.hostingPanels.updateServer(
-        serverId,
-        input,
-        auth,
-        this.context(request),
-      ),
+      await this.servers.update(serverId, input, auth, this.context(request)),
     );
   }
 
@@ -100,11 +97,7 @@ export class HostingPanelController {
     @Req() request: Request,
   ) {
     return createApiSuccessResponse(
-      await this.hostingPanels.removeServer(
-        serverId,
-        auth,
-        this.context(request),
-      ),
+      await this.servers.remove(serverId, auth, this.context(request)),
     );
   }
 

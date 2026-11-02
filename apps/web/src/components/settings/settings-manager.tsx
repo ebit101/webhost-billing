@@ -632,7 +632,7 @@ export function SettingsManager() {
               className="mt-5 inline-flex text-sm font-bold text-cyan-700 hover:text-cyan-900"
               href="/admin/services"
             >
-              Manage WHM servers →
+              Manage servers →
             </Link>
           </div>
         </div>

@@ -6583,3 +6583,18 @@ Command 170's private Meta access/approval and genuine bKash acceptance remain o
 deployment does not activate them or approve production. Record resource/validation
 constraints and actual release evidence. Clean up only explicitly authorized,
 verified regenerable cache paths; preserve Docker data, backups and unrelated work.
+
+## Command 172 — Add typed server administration and Virtualizor configuration
+
+Owner-authorized on 2026-11-03: rename WHM servers to Servers, add a server-type
+dropdown and type-specific fields for cPanel, VPS nodes (Virtualizor), Vultr Cloud
+and ShoutCast, and show a Server type column in the server list. Preserve existing
+cPanel service bindings, activation policy and operation history. Encrypt all new
+provider credentials, never return their values, and use strict provider-specific
+request schemas. Keep new provider records disabled and outside cPanel provisioning.
+Prepare a bounded Virtualizor Admin API connection adapter with an independent
+network gate disabled by default. The owner said no testing now: do not perform a
+live connection test or request credentials; use only local fictional/mock checks.
+Vultr/ShoutCast are configuration-only, and VPS creation/lifecycle acceptance is
+separate. Update the report and make a focused local commit. No push, deployment,
+provider activation, infrastructure change or external mutation is authorized.

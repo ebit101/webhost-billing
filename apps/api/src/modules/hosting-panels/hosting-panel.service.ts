@@ -52,6 +52,7 @@ import type {
   HostingPanelConnection,
 } from './hosting-panel.interface';
 import { HostingPanelRegistry } from './hosting-panel.registry';
+import { VirtualizorClient } from './virtualizor.client';
 
 const MAX_MANUAL_ATTEMPTS = 5;
 
@@ -99,6 +100,7 @@ export class HostingPanelService {
     @Inject(API_ENVIRONMENT) environment: ApiEnvironment,
     private readonly registry: HostingPanelRegistry,
     private readonly credentialCipher: CpanelCredentialCipher,
+    private readonly virtualizor: VirtualizorClient,
   ) {
     this.fingerprintKey = environment.CREDENTIAL_ENCRYPTION_KEY;
     this.panelTimeoutMilliseconds = environment.HOSTING_PANEL_TIMEOUT_MS;
@@ -572,9 +574,12 @@ export class HostingPanelService {
           'The server configuration changed. Run a new connection test.',
         );
       }
-      const panel = this.registry.get(server.adapterKey);
       providerResult = await withHostingPanelTimeout(
-        panel.testConnection(this.connection(server)),
+        server.adapterKey === 'virtualizor'
+          ? this.virtualizor.testConnection(this.connection(server))
+          : this.registry
+              .get(server.adapterKey)
+              .testConnection(this.connection(server)),
         this.panelTimeoutMilliseconds,
         false,
       );

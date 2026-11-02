@@ -21,6 +21,8 @@ import {
   cpanelServerConfigurationSchema,
   managedCpanelServerSchema,
   managedCpanelServerListSchema,
+  managedServerSchema,
+  managedServerListSchema,
   hostingPanelOperationResultSchema,
   paginatedApiSuccessResponseSchema,
   hostingPanelOperationSchema,
@@ -47,6 +49,7 @@ const PRODUCT_SLUG = 'command-fifteen-hosting';
 const SERVER_HOSTNAME = 'command15-whm.example.test';
 const CONFIG_SERVER_HOSTNAME = 'command16-whm.example.test';
 const MANAGED_SERVER_HOSTNAME = 'command121-whm.example.test';
+const TYPED_SERVER_HOSTNAME = 'command172-node.example.test';
 
 describe('Hosting panel operations (e2e)', () => {
   let app: INestApplication<App>;
@@ -353,6 +356,113 @@ describe('Hosting panel operations (e2e)', () => {
         .parse(after.body)
         .data.some((server) => server.server.id === created.server.id),
     ).toBe(false);
+  });
+
+  it('saves a typed Virtualizor server with encrypted credentials, preserves safe edits and blocks activation without any provider call', async () => {
+    const admin = setupAdmin;
+    const csrf = setupCsrf;
+    const input = {
+      serverType: 'VIRTUALIZOR',
+      name: 'Command 172 fictional node',
+      hostname: TYPED_SERVER_HOSTNAME,
+      port: 443,
+      maxAccounts: 15,
+      credentials: {
+        apiKey: 'command172-fictional-key',
+        apiPassword: 'command172-fictional-password',
+      },
+    };
+    await admin.post('/hosting-panel/servers').send(input).expect(403);
+    const createdResponse = await admin
+      .post('/hosting-panel/servers')
+      .set('X-CSRF-Token', csrf)
+      .send(input)
+      .expect(201);
+    const created = apiSuccessResponseSchema(managedServerSchema).parse(
+      createdResponse.body,
+    ).data;
+    expect(created.server).toMatchObject({
+      adapterKey: 'virtualizor',
+      status: 'DISABLED',
+    });
+    expect(created).toMatchObject({
+      port: 443,
+      apiUsername: null,
+      credentialConfigured: true,
+    });
+    expect(JSON.stringify(createdResponse.body)).not.toContain(
+      input.credentials.apiKey,
+    );
+    expect(JSON.stringify(createdResponse.body)).not.toContain(
+      input.credentials.apiPassword,
+    );
+    const saved = await prisma.server.findUniqueOrThrow({
+      where: { id: created.server.id },
+    });
+    expect(saved.credentialsCiphertext).not.toContain(input.credentials.apiKey);
+    expect(saved.credentialsCiphertext).not.toContain(
+      input.credentials.apiPassword,
+    );
+    const listing = await admin.get('/hosting-panel/servers').expect(200);
+    expect(
+      apiSuccessResponseSchema(managedServerListSchema)
+        .parse(listing.body)
+        .data.some(
+          (item) =>
+            item.server.id === created.server.id &&
+            item.server.adapterKey === 'virtualizor',
+        ),
+    ).toBe(true);
+    await admin
+      .patch(`/hosting-panel/servers/${created.server.id}`)
+      .set('X-CSRF-Token', csrf)
+      .send({ serverType: 'VIRTUALIZOR', name: 'Renamed fictional node' })
+      .expect(200);
+    const renamed = await prisma.server.findUniqueOrThrow({
+      where: { id: created.server.id },
+    });
+    expect(renamed.credentialsCiphertext).toBe(saved.credentialsCiphertext);
+    expect(renamed.port).toBe(443);
+    expect(renamed.maxAccounts).toBe(15);
+    await admin
+      .patch(`/hosting-panel/servers/${created.server.id}`)
+      .set('X-CSRF-Token', csrf)
+      .send({ serverType: 'VIRTUALIZOR', status: 'ACTIVE' })
+      .expect(400);
+    await admin
+      .patch(`/hosting-panel/servers/${created.server.id}`)
+      .set('X-CSRF-Token', csrf)
+      .send({
+        serverType: 'VIRTUALIZOR',
+        credentials: { apiKey: 'incomplete' },
+      })
+      .expect(400);
+    await admin
+      .patch(`/hosting-panel/servers/${created.server.id}`)
+      .set('X-CSRF-Token', csrf)
+      .send({ serverType: 'SHOUTCAST', name: 'Wrong provider' })
+      .expect(409);
+    const audits = await prisma.activityLog.findMany({
+      where: { entityId: created.server.id },
+    });
+    expect(JSON.stringify(audits)).not.toContain(input.credentials.apiKey);
+    expect(JSON.stringify(audits)).not.toContain(input.credentials.apiPassword);
+    // Saving and editing never create a connection-test or provisioning operation.
+    expect(
+      await prisma.hostingPanelOperation.count({
+        where: { serverId: created.server.id },
+      }),
+    ).toBe(0);
+    await admin
+      .delete(`/hosting-panel/servers/${created.server.id}`)
+      .set('X-CSRF-Token', csrf)
+      .send({ confirmation: 'REMOVE_SERVER' })
+      .expect(200);
+    const removed = await prisma.server.findUniqueOrThrow({
+      where: { id: created.server.id },
+    });
+    expect(removed.deletedAt).not.toBeNull();
+    expect(removed.credentialsCiphertext).toBeNull();
   });
 
   it('encrypts and audits administrator-only cPanel server configuration', async () => {
@@ -1021,6 +1131,7 @@ describe('Hosting panel operations (e2e)', () => {
                   SERVER_HOSTNAME,
                   CONFIG_SERVER_HOSTNAME,
                   MANAGED_SERVER_HOSTNAME,
+                  TYPED_SERVER_HOSTNAME,
                 ],
               },
             },
@@ -1059,6 +1170,7 @@ describe('Hosting panel operations (e2e)', () => {
             SERVER_HOSTNAME,
             CONFIG_SERVER_HOSTNAME,
             MANAGED_SERVER_HOSTNAME,
+            TYPED_SERVER_HOSTNAME,
           ],
         },
       },

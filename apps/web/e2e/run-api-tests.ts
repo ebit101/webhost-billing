@@ -29,7 +29,8 @@ async function main() {
             process.argv[2] === 'smtp' ||
             process.argv[2] === 'products' ||
             process.argv[2] === 'customers' ||
-            process.argv[2] === 'orders'
+            process.argv[2] === 'orders' ||
+            process.argv[2] === 'hosting'
           ? [
               '--filter',
               '@webhost-billing/api',
@@ -46,11 +47,13 @@ async function main() {
                 : [
                     process.argv[2] === 'products'
                       ? 'test/products.e2e-spec.ts'
-                      : process.argv[2] === 'smtp'
-                        ? 'test/smtp-settings.e2e-spec.ts'
-                        : process.argv[2] === 'orders'
-                          ? 'test/orders.e2e-spec.ts'
-                          : 'test/domains.e2e-spec.ts',
+                      : process.argv[2] === 'hosting'
+                        ? 'test/hosting-panels.e2e-spec.ts'
+                        : process.argv[2] === 'smtp'
+                          ? 'test/smtp-settings.e2e-spec.ts'
+                          : process.argv[2] === 'orders'
+                            ? 'test/orders.e2e-spec.ts'
+                            : 'test/domains.e2e-spec.ts',
                   ]),
             ]
           : process.argv[2] === 'whatsapp'

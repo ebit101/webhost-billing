@@ -3249,6 +3249,35 @@ authorize new provider operations or existing-domain adoption.
   and [execute proof](https://developer.bka.sh/v1.2.0-beta/docs/execute-payment-1).
   Unit/mocked service tests are source validation, not a genuine sandbox payment.
 
+## ADR-161 — Typed server configuration with isolated provider credentials
+
+- **Date:** 2026-11-03. Command 172, owner-authorized server administration change.
+- **Decision:** Use the existing server adapter key as the persisted server type.
+  Present cPanel, Virtualizor VPS node, Vultr Cloud and ShoutCast labels in the
+  selector and list. Existing cPanel rows need no migration or credential rewrite.
+  Keep provider identity immutable; a different provider needs a separate record.
+- **Credentials:** Preserve cPanel API and activation rules. Encrypt complete new
+  provider credential objects with the existing authenticated server-bound cipher.
+  Virtualizor requires API key/password, Vultr an API key and ShoutCast an
+  administrator password. Responses/audits expose presence and safe metadata.
+  Retain credentials on ordinary edits, require complete replacement pairs for
+  Virtualizor rotation and replacement credentials on endpoint changes.
+- **Integration boundary:** Use the fixed HTTPS Virtualizor Admin API server-list
+  read, documented adminapikey/adminapipass authentication and 4085/443 ports.
+  Pin public DNS addresses at the socket, verify TLS, reject redirects, bound
+  response size/time and normalize failures without provider URLs or raw text.
+  VIRTUALIZOR_API_ENABLED defaults false and blocks DNS/networking. Reuse existing
+  idempotent test history. The owner deferred live testing.
+- **Scope:** New provider records stay disabled. Existing provider-neutral hosting
+  lifecycle remains cPanel/fake-only; a connection read is not VPS provisioning
+  acceptance. Vultr/ShoutCast are configuration-only. The existing unique hostname
+  rule permits one Vultr API endpoint record. VPS product mappings, fulfillment,
+  lifecycle actions and live acceptance need separate bounded work. No dependency,
+  migration, billing-state, secret-file or deployed-installation change.
+- **Sources:** [Virtualizor Admin API authentication](https://www.virtualizor.com/api-automation)
+  and [server-list contract](https://www.virtualizor.com/docs/admin-api/list-servers/).
+  Documentation research is not provider acceptance.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

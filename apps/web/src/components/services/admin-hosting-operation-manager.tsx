@@ -177,7 +177,7 @@ export function AdminHostingOperationManager({
       const tokenInput = form.elements.namedItem('apiToken');
       if (tokenInput instanceof HTMLInputElement) tokenInput.value = '';
       setNotice(
-        'cPanel/WHM configuration encrypted and saved. Open WHM servers to test the connection and activate it for new accounts.',
+        'cPanel/WHM configuration encrypted and saved. Open Servers to test the connection and activate it for new accounts.',
       );
     } catch (caught) {
       setError(serviceError(caught));

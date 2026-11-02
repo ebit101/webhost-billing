@@ -63,6 +63,16 @@ both in the portal and may pay later. Verified payment and separate administrato
 approval remain prerequisites for registration. Keep online customer ordering
 available as a secondary path.
 
+**Typed server administration — 2026-11-03:** Command 172 renames the menu and
+page to Servers and adds a server-type selector plus a Server type list column.
+Support cPanel, VPS nodes using Virtualizor, Vultr Cloud and ShoutCast with separate
+validated credential fields. Preserve existing cPanel lifecycle operations. New
+provider records remain disabled and cannot enter cPanel provisioning. Virtualizor
+has a bounded Admin API connection adapter behind an independent disabled network
+gate; the owner deferred live testing. VPS provisioning/lifecycle work and genuine
+provider acceptance remain separate. Vultr and ShoutCast are configuration-only.
+No deployment, provider activation or live call is authorized.
+
 **WHM server administration — 2026-10-17:** Administrators can add, edit, test,
 activate, pause and retire cPanel/WHM servers in the billing interface. New
 servers start disabled, use encrypted API tokens, and need a successful connection

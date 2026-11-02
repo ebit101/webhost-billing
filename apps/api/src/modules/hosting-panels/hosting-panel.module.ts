@@ -11,6 +11,12 @@ import { FakeHostingPanel } from './fake-hosting-panel';
 import { HostingPanelController } from './hosting-panel.controller';
 import { HostingPanelRegistry } from './hosting-panel.registry';
 import { HostingPanelService } from './hosting-panel.service';
+import { ServerAdministrationService } from './server-administration.service';
+import {
+  VirtualizorClient,
+  VIRTUALIZOR_REQUEST,
+  virtualizorHttpsRequest,
+} from './virtualizor.client';
 
 @Module({
   controllers: [HostingPanelController],
@@ -27,6 +33,9 @@ import { HostingPanelService } from './hosting-panel.service';
     FakeHostingPanel,
     HostingPanelRegistry,
     HostingPanelService,
+    ServerAdministrationService,
+    VirtualizorClient,
+    { provide: VIRTUALIZOR_REQUEST, useValue: virtualizorHttpsRequest },
   ],
   exports: [
     CpanelCredentialCipher,

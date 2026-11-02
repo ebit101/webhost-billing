@@ -63,7 +63,7 @@ function isPublicIpv4(address: string): boolean {
   );
 }
 
-function isPublicAddress(address: string): boolean {
+export function isPublicAddress(address: string): boolean {
   const family = isIP(address);
   if (family === 4) return isPublicIpv4(address);
   if (family !== 6) return false;

@@ -32,6 +32,7 @@ export const e2eApiEnvironment: Record<string, string> = {
   BKASH_ENABLED: 'false',
   SSLCOMMERZ_ENABLED: 'false',
   RESELLBIZ_LIVE_ENABLED: 'false',
+  VIRTUALIZOR_API_ENABLED: 'false',
   EMAIL_TRANSPORT: 'preview',
   API_PORT: '3201',
   DATABASE_URL: E2E_DATABASE_URL,

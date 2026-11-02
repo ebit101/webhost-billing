@@ -127,6 +127,7 @@ const apiEnvironmentObjectSchema = serverEnvironmentSchema
       .max(30_000)
       .default(10_000),
     RESELLBIZ_LIVE_ENABLED: environmentBooleanSchema,
+    VIRTUALIZOR_API_ENABLED: environmentBooleanSchema,
     BKASH_ENABLED: environmentBooleanSchema,
     BKASH_SANDBOX_BASE_URL: z
       .url()

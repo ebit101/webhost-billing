@@ -1,4 +1,7 @@
-import type { ManagedCpanelServer } from '@webhost-billing/shared';
+import type {
+  ManagedCpanelServer,
+  ManagedServer,
+} from '@webhost-billing/shared';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -61,7 +64,7 @@ describe('WHM server administration', () => {
       vi.fn().mockReturnValueOnce('wrong').mockReturnValueOnce('REMOVE_SERVER'),
     );
     render(<AdminWhmServerManager />);
-    expect(await screen.findByText('No WHM servers')).toBeTruthy();
+    expect(await screen.findByText('No servers')).toBeTruthy();
     expect(screen.queryByRole('textbox', { name: 'Server name' })).toBeNull();
     await user.click(screen.getByRole('button', { name: 'Add new server' }));
     await user.type(
@@ -111,7 +114,7 @@ describe('WHM server administration', () => {
       fetchMock.mock.calls.filter(([, init]) => init?.method === 'DELETE'),
     ).toHaveLength(0);
     await user.click(screen.getByRole('button', { name: 'Remove server' }));
-    expect(await screen.findByText('No WHM servers')).toBeTruthy();
+    expect(await screen.findByText('No servers')).toBeTruthy();
     const removal = fetchMock.mock.calls.find(
       ([, init]) => init?.method === 'DELETE',
     );
@@ -151,6 +154,12 @@ describe('WHM server administration', () => {
     vi.stubGlobal('fetch', fetchMock);
     render(<AdminWhmServerManager />);
     expect(await screen.findByText('2 servers')).toBeTruthy();
+    expect(
+      screen.getByRole('columnheader', { name: 'Server type' }),
+    ).toBeTruthy();
+    expect(screen.getAllByRole('cell', { name: 'cPanel server' })).toHaveLength(
+      2,
+    );
     expect(screen.getByRole('cell', { name: 'Fictional WHM' })).toBeTruthy();
     expect(screen.getByRole('cell', { name: 'Backup WHM' })).toBeTruthy();
     expect(screen.queryByRole('textbox', { name: 'Server name' })).toBeNull();
@@ -188,5 +197,140 @@ describe('WHM server administration', () => {
     expect(JSON.parse(String(update?.[1]?.body))).not.toHaveProperty(
       'apiToken',
     );
+  });
+  it('switches provider fields, clears credentials across types and saves a Virtualizor node without testing it', async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.fn(
+      async (request: RequestInfo | URL, init?: RequestInit) => {
+        if (String(request).endsWith('/auth/csrf'))
+          return success({ csrfToken: 'x'.repeat(32) });
+        if (init?.method === 'POST') return success(server);
+        return success([]);
+      },
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    render(<AdminWhmServerManager />);
+    await screen.findByText('No servers');
+    await user.click(screen.getByRole('button', { name: 'Add new server' }));
+    await user.type(
+      screen.getByLabelText('WHM API token'),
+      'FictionalCpanelToken123456',
+    );
+    await user.selectOptions(
+      screen.getByLabelText('Server type'),
+      'VIRTUALIZOR',
+    );
+    expect(screen.queryByLabelText('WHM username')).toBeNull();
+    expect(screen.queryByLabelText('WHM API token')).toBeNull();
+    expect(screen.getByLabelText('HTTPS port')).toHaveProperty('value', '4085');
+    await user.type(
+      screen.getByLabelText('Virtualizor API key'),
+      'discard-this-key',
+    );
+    await user.selectOptions(screen.getByLabelText('Server type'), 'VULTR');
+    expect(screen.getByLabelText('API hostname')).toHaveProperty(
+      'value',
+      'api.vultr.com',
+    );
+    expect(screen.queryByLabelText('Virtualizor API password')).toBeNull();
+    expect(screen.getByText(/Configuration only/)).toBeTruthy();
+    await user.selectOptions(screen.getByLabelText('Server type'), 'SHOUTCAST');
+    expect(
+      screen.getByLabelText('ShoutCast administrator password'),
+    ).toBeTruthy();
+    expect(screen.queryByLabelText('Vultr API key')).toBeNull();
+    await user.selectOptions(
+      screen.getByLabelText('Server type'),
+      'VIRTUALIZOR',
+    );
+    expect(screen.getByLabelText('Virtualizor API key')).toHaveProperty(
+      'value',
+      '',
+    );
+    await user.type(screen.getByLabelText('Server name'), 'Fictional node');
+    await user.type(
+      screen.getByLabelText('Virtualizor master hostname'),
+      'node.example.test',
+    );
+    await user.type(
+      screen.getByLabelText('Virtualizor API key'),
+      'fictional-key',
+    );
+    await user.type(
+      screen.getByLabelText('Virtualizor API password'),
+      'fictional-pass',
+    );
+    await user.click(
+      screen.getByRole('button', { name: 'Add disabled server' }),
+    );
+    await screen.findByText(/Server saved as disabled/);
+    const writes = fetchMock.mock.calls.filter(
+      ([, init]) => init?.method === 'POST',
+    );
+    expect(writes).toHaveLength(1);
+    expect(JSON.parse(String(writes[0]?.[1]?.body))).toEqual({
+      name: 'Fictional node',
+      hostname: 'node.example.test',
+      port: 4085,
+      serverType: 'VIRTUALIZOR',
+      maxAccounts: null,
+      credentials: { apiKey: 'fictional-key', apiPassword: 'fictional-pass' },
+    });
+  });
+  it('shows a Virtualizor type in the list and edits it without resending retained credentials or offering activation', async () => {
+    const user = userEvent.setup();
+    const node: ManagedServer = {
+      ...server,
+      server: {
+        ...server.server,
+        name: 'Fictional node',
+        adapterKey: 'virtualizor',
+        hostname: 'node.example.test',
+      },
+      port: 4085,
+      apiUsername: null,
+    };
+    const fetchMock = vi.fn(
+      async (request: RequestInfo | URL, init?: RequestInit) => {
+        if (String(request).endsWith('/auth/csrf'))
+          return success({ csrfToken: 'x'.repeat(32) });
+        return success(init?.method === 'PATCH' ? node : [node]);
+      },
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    render(<AdminWhmServerManager />);
+    expect(
+      await screen.findByRole('cell', {
+        name: 'VPS node server (Virtualizor)',
+      }),
+    ).toBeTruthy();
+    await user.click(
+      screen.getByRole('button', { name: 'Edit Fictional node' }),
+    );
+    expect(screen.getByLabelText('Server type')).toHaveProperty(
+      'value',
+      'VPS node server (Virtualizor)',
+    );
+    expect(screen.getByLabelText('New API key (optional)')).toHaveProperty(
+      'value',
+      '',
+    );
+    expect(screen.queryByRole('option', { name: 'Active' })).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    await screen.findByText('Server changes saved.');
+    const update = fetchMock.mock.calls.find(
+      ([, init]) => init?.method === 'PATCH',
+    );
+    expect(JSON.parse(String(update?.[1]?.body))).toEqual({
+      serverType: 'VIRTUALIZOR',
+      name: 'Fictional node',
+      hostname: 'node.example.test',
+      port: 4085,
+      maxAccounts: 10,
+      status: 'DISABLED',
+    });
+    expect(
+      fetchMock.mock.calls.filter(([url]) => String(url).endsWith('/test')),
+    ).toHaveLength(0);
   });
 });
