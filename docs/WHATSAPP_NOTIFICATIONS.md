@@ -137,13 +137,16 @@ under a non-UTC server timezone. Shared Prisma connections now request UTC at st
 preserving search-path options. A conflicting-timezone regression compares ORM and
 database epoch milliseconds. No stored timestamp or migration history is rewritten.
 
-Docker remains unavailable because its Secrets Engine socket cannot be accessed.
-Local acceptance used checksum-verified portable EDB PostgreSQL 18.6 and Gitleaks
-8.30.1, matching the CI image's scanner version. Complete Git history and staged
-changes are scanned with the unchanged repository rules and redacted output. This
-is native scanner evidence, not a claim that the Docker image ran. The task-owned
-PostgreSQL runtime is stopped and removed after checks; no application/dev server,
-worker, scheduler, SMTP or live provider is started.
+Initial acceptance used checksum-verified portable EDB PostgreSQL 18.6 and Gitleaks
+8.30.1 while Docker was unavailable. After the owner restored Docker on 02/11/2026,
+the same 10 database cases passed with all 40 migrations in a disposable, resource-
+limited PostgreSQL container using CI's pinned image, including a non-UTC server
+timezone. The exact pinned Gitleaks container also scanned all 378 existing commits
+with no leaks; the report-only follow-up is scanned separately before committing.
+Repository rules and redacted output are unchanged. Both temporary database runtimes
+were removed after verified cleanup, with the original local PostgreSQL/Redis
+containers and Office environment preserved. No application/dev server, worker,
+scheduler, SMTP or live provider is started by acceptance.
 
 Installed-browser acceptance, genuine Meta credentials/sender/template approval and
 authorized-recipient delivery remain pending for separately authorized work. Local
