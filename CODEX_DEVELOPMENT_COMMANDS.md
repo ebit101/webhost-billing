@@ -6552,3 +6552,17 @@ tools may replace unavailable Docker for local acceptance; record that distincti
 Keep live sending disabled and do not enroll a sender, enter genuine credentials,
 send a message, activate another provider, push, create a PR or deploy. Commit the
 focused validated changes locally and stop.
+
+## Command 170 — Prepare Meta WhatsApp test access and approved templates
+
+Owner-authorized on 2026-11-02 for the privately recorded intended sender. Inspect
+the existing Meta account and sender before onboarding anything. Preserve existing
+registrations, apps, credentials, webhooks and unrelated templates. Prepare and
+review important Admin/Client Utility templates with exact four-parameter contracts,
+prioritizing new/overdue invoices, and record actual Meta submission/approval status.
+Help the owner establish private, least-privilege test access and verify identifiers;
+do not request secrets in chat or treat browser login as application-token proof.
+Keep application delivery gates and encrypted provider configuration inactive.
+No customer/test message, phone migration, broad access expansion, deployment,
+push or PR is implied. Record pending owner/Meta actions honestly and continue this
+command until its remaining setup inputs and provider review are resolved.

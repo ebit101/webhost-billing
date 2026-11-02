@@ -1,0 +1,457 @@
+{
+  "status": "LOCAL_PROPOSAL_NOT_APPROVAL_EVIDENCE",
+  "schemaVersion": 1,
+  "language": "en_US",
+  "liveSendingEnabled": false,
+  "instructions": "Review in WhatsApp Manager for the verified owning WABA. Meta must approve each exact name/language/body/category. Nothing in this file is an access token or an activation instruction.",
+  "templates": [
+    {
+      "key": "client-invoice-issued",
+      "audience": "CUSTOMER",
+      "label": "Invoice issued",
+      "priority": "invoice-first",
+      "approvalStatus": "CHECK_ACTUAL_META_STATUS",
+      "request": {
+        "name": "whb_client_invoice_issued_v1",
+        "language": "en_US",
+        "category": "UTILITY",
+        "components": [
+          {
+            "type": "BODY",
+            "text": "Billing update from {{1}}. Invoice {{2}} has been issued for your account. {{3}} Review the invoice in your client portal: {{4}}. Sign in to view its details.",
+            "example": {
+              "body_text": [
+                [
+                  "Example hosting",
+                  "INV-TEST-0170",
+                  "Balance due: BDT 3900.00; due 02/11/2026",
+                  "https://billing.example.test/portal/invoices"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "client-overdue-notice",
+      "audience": "CUSTOMER",
+      "label": "Overdue notice",
+      "priority": "invoice-first",
+      "approvalStatus": "CHECK_ACTUAL_META_STATUS",
+      "request": {
+        "name": "whb_client_overdue_notice_v2",
+        "language": "en_US",
+        "category": "UTILITY",
+        "components": [
+          {
+            "type": "BODY",
+            "text": "Overdue invoice notice from {{1}} regarding invoice {{2}} on your account. {{3}} Review the unpaid balance in your client portal: {{4}}. Sign in to view this billing notice.",
+            "example": {
+              "body_text": [
+                [
+                  "Example hosting",
+                  "INV-TEST-0170",
+                  "Balance due: BDT 3900.00; due 02/11/2026",
+                  "https://billing.example.test/portal/invoices"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "client-final-warning",
+      "audience": "CUSTOMER",
+      "label": "Final suspension warning",
+      "priority": "important-alert",
+      "approvalStatus": "CHECK_ACTUAL_META_STATUS",
+      "request": {
+        "name": "whb_client_final_warning_v1",
+        "language": "en_US",
+        "category": "UTILITY",
+        "components": [
+          {
+            "type": "BODY",
+            "text": "Hosting renewal notice from {{1}}. Invoice {{2}} remains unpaid and a linked hosting service is approaching its suspension deadline. {{3}} Review the invoice: {{4}}. Sign in to view the current account status.",
+            "example": {
+              "body_text": [
+                [
+                  "Example hosting",
+                  "INV-TEST-0170",
+                  "Balance due: BDT 3900.00; due 02/11/2026",
+                  "https://billing.example.test/portal/invoices"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "client-service-suspended",
+      "audience": "CUSTOMER",
+      "label": "Service suspended",
+      "priority": "important-alert",
+      "approvalStatus": "CHECK_ACTUAL_META_STATUS",
+      "request": {
+        "name": "whb_client_service_suspended_v1",
+        "language": "en_US",
+        "category": "UTILITY",
+        "components": [
+          {
+            "type": "BODY",
+            "text": "Service status update from {{1}}. A hosting service on your account has been suspended. Notice reference: {{2}}. {{3}} Review your service: {{4}}. Sign in to view its details.",
+            "example": {
+              "body_text": [
+                [
+                  "Example hosting",
+                  "10000000-0000-4000-8000-000000000170",
+                  "Your service suspension is confirmed. Review the service in your portal.",
+                  "https://billing.example.test/portal/services"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "client-service-restored",
+      "audience": "CUSTOMER",
+      "label": "Service restored",
+      "priority": "important-alert",
+      "approvalStatus": "CHECK_ACTUAL_META_STATUS",
+      "request": {
+        "name": "whb_client_service_restored_v1",
+        "language": "en_US",
+        "category": "UTILITY",
+        "components": [
+          {
+            "type": "BODY",
+            "text": "Service status update from {{1}}. A hosting service on your account has been restored. Notice reference: {{2}}. {{3}} Review your service: {{4}}. Sign in to view its details.",
+            "example": {
+              "body_text": [
+                [
+                  "Example hosting",
+                  "10000000-0000-4000-8000-000000000170",
+                  "Your service reactivation is confirmed.",
+                  "https://billing.example.test/portal/services"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "client-domain-expiry-warning",
+      "audience": "CUSTOMER",
+      "label": "Final domain expiry warning",
+      "priority": "important-alert",
+      "approvalStatus": "CHECK_ACTUAL_META_STATUS",
+      "request": {
+        "name": "whb_client_domain_expiry_warning_v1",
+        "language": "en_US",
+        "category": "UTILITY",
+        "components": [
+          {
+            "type": "BODY",
+            "text": "Domain expiry notice from {{1}}. A domain on your account is approaching expiry. Notice reference: {{2}}. {{3}} Review your domain: {{4}}. Sign in to view its details.",
+            "example": {
+              "body_text": [
+                [
+                  "Example hosting",
+                  "10000000-0000-4000-8000-000000000170",
+                  "Your domain is approaching expiry. Review it promptly.",
+                  "https://billing.example.test/portal/domains"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "client-urgent-support",
+      "audience": "CUSTOMER",
+      "label": "Urgent support update",
+      "priority": "important-alert",
+      "approvalStatus": "CHECK_ACTUAL_META_STATUS",
+      "request": {
+        "name": "whb_client_urgent_support_v1",
+        "language": "en_US",
+        "category": "UTILITY",
+        "components": [
+          {
+            "type": "BODY",
+            "text": "Urgent support update from {{1}} about a ticket on your account. Notice reference: {{2}}. {{3}} Review your support ticket: {{4}}. Sign in to read the update.",
+            "example": {
+              "body_text": [
+                [
+                  "Example hosting",
+                  "10000000-0000-4000-8000-000000000170",
+                  "An urgent support ticket needs your attention.",
+                  "https://billing.example.test/portal/support"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "admin-invoice-issued",
+      "audience": "ADMIN",
+      "label": "Invoice issued",
+      "priority": "invoice-first",
+      "approvalStatus": "CHECK_ACTUAL_META_STATUS",
+      "request": {
+        "name": "whb_admin_invoice_issued_v1",
+        "language": "en_US",
+        "category": "UTILITY",
+        "components": [
+          {
+            "type": "BODY",
+            "text": "Administrator billing alert from {{1}}. Customer invoice {{2}} has been issued. {{3}} Review the invoice in the admin area: {{4}}. Sign in with your administrator account.",
+            "example": {
+              "body_text": [
+                [
+                  "Example hosting",
+                  "INV-TEST-0170",
+                  "Balance due: BDT 3900.00; due 02/11/2026",
+                  "https://billing.example.test/admin/invoices"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "admin-overdue-notice",
+      "audience": "ADMIN",
+      "label": "Invoice overdue",
+      "priority": "invoice-first",
+      "approvalStatus": "CHECK_ACTUAL_META_STATUS",
+      "request": {
+        "name": "whb_admin_overdue_notice_v1",
+        "language": "en_US",
+        "category": "UTILITY",
+        "components": [
+          {
+            "type": "BODY",
+            "text": "Administrator billing alert from {{1}}. Customer invoice {{2}} is overdue. {{3}} Review its current balance in the admin area: {{4}}. Sign in with your administrator account.",
+            "example": {
+              "body_text": [
+                [
+                  "Example hosting",
+                  "INV-TEST-0170",
+                  "Balance due: BDT 3900.00; due 02/11/2026",
+                  "https://billing.example.test/admin/invoices"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "admin-payment-review",
+      "audience": "ADMIN",
+      "label": "Payment verification needed",
+      "priority": "important-alert",
+      "approvalStatus": "CHECK_ACTUAL_META_STATUS",
+      "request": {
+        "name": "whb_admin_payment_review_v1",
+        "language": "en_US",
+        "category": "UTILITY",
+        "components": [
+          {
+            "type": "BODY",
+            "text": "Administrator billing update from {{1}}. A manual payment claim is awaiting review for a customer invoice. Notice reference: {{2}}. {{3}} Open the payment record: {{4}}. This notice does not confirm receipt of funds.",
+            "example": {
+              "body_text": [
+                [
+                  "Example hosting",
+                  "10000000-0000-4000-8000-000000000170",
+                  "A manual-payment claim needs verification. It is not proof of payment.",
+                  "https://billing.example.test/admin/payments"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "admin-urgent-support",
+      "audience": "ADMIN",
+      "label": "Urgent support update",
+      "priority": "important-alert",
+      "approvalStatus": "CHECK_ACTUAL_META_STATUS",
+      "request": {
+        "name": "whb_admin_urgent_support_v1",
+        "language": "en_US",
+        "category": "UTILITY",
+        "components": [
+          {
+            "type": "BODY",
+            "text": "Support case update from {{1}} for the administrator handling an existing customer ticket. Notice reference: {{2}}. {{3}} Review the urgent ticket in the support queue: {{4}}. This is an update about an open support request.",
+            "example": {
+              "body_text": [
+                [
+                  "Example hosting",
+                  "10000000-0000-4000-8000-000000000170",
+                  "An urgent support ticket needs attention.",
+                  "https://billing.example.test/admin/support"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "admin-provisioning-problem",
+      "audience": "ADMIN",
+      "label": "Hosting operation needs attention",
+      "priority": "important-alert",
+      "approvalStatus": "CHECK_ACTUAL_META_STATUS",
+      "request": {
+        "name": "whb_admin_provisioning_problem_v1",
+        "language": "en_US",
+        "category": "UTILITY",
+        "components": [
+          {
+            "type": "BODY",
+            "text": "Hosting operation update from {{1}} for the administrator managing an existing customer service. Notice reference: {{2}}. {{3}} Review the operation record: {{4}}. Check its current outcome before attempting a retry.",
+            "example": {
+              "body_text": [
+                [
+                  "Example hosting",
+                  "10000000-0000-4000-8000-000000000170",
+                  "A hosting operation failed or has an uncertain outcome. Review before retrying.",
+                  "https://billing.example.test/admin/automation"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "admin-domain-problem",
+      "audience": "ADMIN",
+      "label": "Domain operation needs attention",
+      "priority": "important-alert",
+      "approvalStatus": "CHECK_ACTUAL_META_STATUS",
+      "request": {
+        "name": "whb_admin_domain_problem_v1",
+        "language": "en_US",
+        "category": "UTILITY",
+        "components": [
+          {
+            "type": "BODY",
+            "text": "Domain operation update from {{1}} for the administrator managing an existing customer domain. Notice reference: {{2}}. {{3}} Review the operation record: {{4}}. Check its current outcome before attempting a retry.",
+            "example": {
+              "body_text": [
+                [
+                  "Example hosting",
+                  "10000000-0000-4000-8000-000000000170",
+                  "A domain operation failed or has an uncertain outcome. Review before retrying.",
+                  "https://billing.example.test/admin/domains"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "admin-security-alert",
+      "audience": "ADMIN",
+      "label": "Account security changed",
+      "priority": "important-alert",
+      "approvalStatus": "CHECK_ACTUAL_META_STATUS",
+      "request": {
+        "name": "whb_admin_security_alert_v1",
+        "language": "en_US",
+        "category": "UTILITY",
+        "components": [
+          {
+            "type": "BODY",
+            "text": "Account change notice from {{1}}. Settings on your administrator account have changed. Notice reference: {{2}}. {{3}} Review the current account settings: {{4}}. Contact the business owner if this change was unexpected.",
+            "example": {
+              "body_text": [
+                [
+                  "Example hosting",
+                  "10000000-0000-4000-8000-000000000170",
+                  "Your administrator account security changed. Review your account.",
+                  "https://billing.example.test/admin"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "admin-delivery-failure",
+      "audience": "ADMIN",
+      "label": "Notification delivery needs attention",
+      "priority": "important-alert",
+      "approvalStatus": "CHECK_ACTUAL_META_STATUS",
+      "request": {
+        "name": "whb_admin_delivery_failure_v1",
+        "language": "en_US",
+        "category": "UTILITY",
+        "components": [
+          {
+            "type": "BODY",
+            "text": "Notification status update from {{1}} for the administrator reviewing an existing account message. Notice reference: {{2}}. {{3}} Review the delivery record: {{4}}. This notice does not confirm message delivery.",
+            "example": {
+              "body_text": [
+                [
+                  "Example hosting",
+                  "10000000-0000-4000-8000-000000000170",
+                  "A notification failed or has an uncertain outcome. Review the failed background job.",
+                  "https://billing.example.test/admin/automation"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "admin-automation-failure",
+      "audience": "ADMIN",
+      "label": "Automation needs attention",
+      "priority": "important-alert",
+      "approvalStatus": "CHECK_ACTUAL_META_STATUS",
+      "request": {
+        "name": "whb_admin_automation_failure_v1",
+        "language": "en_US",
+        "category": "UTILITY",
+        "components": [
+          {
+            "type": "BODY",
+            "text": "Background job status update from {{1}} for the administrator reviewing an existing operation. Notice reference: {{2}}. {{3}} Review the job record: {{4}}. Check its current outcome before attempting a retry.",
+            "example": {
+              "body_text": [
+                [
+                  "Example hosting",
+                  "10000000-0000-4000-8000-000000000170",
+                  "A background operation failed or requires reconciliation.",
+                  "https://billing.example.test/admin/automation"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
