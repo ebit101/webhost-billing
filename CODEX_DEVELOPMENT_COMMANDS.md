@@ -6507,3 +6507,20 @@ registrar cost-class binding, isolated migration and fictional order fulfillment
 Update the report and commit locally with the pending batch. Do not import public
 selling prices automatically, deploy, enable providers, send real messages or
 register/purchase/renew/change a real domain. Stop after this command.
+
+## Command 167 — Prepare and validate bKash sandbox integration
+
+Owner-authorized on 2026-11-02 by “Integrate bkash sandbox.” The existing Tokenized
+Checkout adapter remains sandbox-only. Review the current official versioned
+contract, fix response/payment identity and endpoint-isolation gaps, and validate
+exact decimal amounts, checkout compatibility, callbacks, reconciliation and token
+reuse with injected HTTP mocks. Keep live payments and other providers disabled;
+do not deploy or record a payment against a real invoice. Update the report and
+commit the validated source locally for the pending batch.
+
+The owner confirms sandbox credentials/access are not available. Give the official
+access route and a private credential-entry procedure; do not use production keys,
+request secrets in chat or substitute third-party credentials. Credentialed sandbox
+acceptance requires issued sandbox credentials, a separately authorized reachable
+HTTPS environment and fictional data. Record that acceptance as pending until it
+actually runs; source/mock validation is not a genuine provider pass.

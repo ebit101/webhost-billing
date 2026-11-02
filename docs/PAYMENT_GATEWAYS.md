@@ -63,6 +63,10 @@ The fake checkout URL is a non-production placeholder. There is deliberately no 
 
 ## bKash sandbox
 
+Command 167 (02/11/2026) prepares the existing v1.2.0-beta sandbox adapter for
+credentialed acceptance. The owner does not yet have sandbox access. Local tests
+use injected HTTP responses; they do not establish a genuine bKash connection.
+
 The bKash adapter implements the official Tokenized Checkout flow. A provider-returned checkout URL is accepted only when it is credential-free HTTPS on a pinned supported bKash sandbox checkout hostname; arbitrary provider-controlled redirects are rejected before persistence or navigation.
 
 1. grant and cache a short-lived token using the sandbox app key/secret and username/password;
@@ -70,6 +74,49 @@ The bKash adapter implements the official Tokenized Checkout flow. A provider-re
 3. receive the browser callback containing `paymentID` and status;
 4. on a successful return, execute the payment from the API server;
 5. after an uncertain execute response, query the payment by `paymentID` before deciding its state.
+
+Execute and query evidence must name the exact requested payment ID. Mismatched,
+unknown or contradictory evidence remains unresolved and cannot settle an invoice.
+Amounts must be exact decimal strings; JSON numeric amounts are rejected. A
+provided API status code must indicate success. Accept the documented `bkashURL`
+field and the existing `bKashURL` compatibility field only when unambiguous, then
+apply the sandbox checkout-host checks. Raw provider error text is not retained as
+a customer-visible failure reason. Reuse an in-flight token request for concurrent
+checkouts to avoid duplicate authentication; credential-revision isolation remains.
+
+The adapter checks its pinned sandbox API URL at every request boundary, including
+when administrator-stored credentials activate it independently of bootstrap
+environment flags. A production/custom API destination is rejected before any
+credential or request is sent. Existing invoice/merchant/currency/amount/transaction
+and replay checks still govern settlement; a browser return alone proves nothing.
+
+### Obtain sandbox access
+
+1. Start with the [official developer portal](https://developer.bka.sh/) and the
+   [versioned Tokenized Checkout guide](https://developer.bka.sh/v1.2.0-beta/docs/create-payment-1).
+   If credentials have not been issued, use bKash's [Online Business enquiry](https://www.bkash.com/en/business)
+   to request Tokenized Checkout sandbox access for this integration. Request the
+   sandbox app key, app secret, API username/password and published test-wallet
+   instructions. Do not substitute a merchant wallet PIN or production keys.
+2. Once issued, enter the bundle privately through the existing administrator
+   settings credential form or the approved local secret store. Keep manual
+   payments selected until a controlled test window is authorized. No secrets,
+   sandbox OTP/PIN or access token belongs in Git, chat, reports or screenshots.
+3. The planned staging callback is
+   `https://my.speedhost.bd/payment-gateways/bkash/callback`. Verify its HTTPS
+   reachability and the API/web origins in the authorized test environment first;
+   this source command neither deploys nor certifies that public callback.
+4. Use a fictional customer and invoice with the provider's sandbox test wallet.
+   Confirm success, cancel/failure, unknown outcome, amount/currency/identity
+   mismatches and duplicate returns. Inspect the authoritative ledger, and verify
+   one settlement only after authenticated execute/query proof. Keep hosting,
+   registrar, WhatsApp and all live payment operations disabled.
+
+Official contract references: [token management](https://developer.bka.sh/v1.2.0-beta/docs/token-management-overview-3),
+[create payment](https://developer.bka.sh/v1.2.0-beta/docs/create-payment-1) and
+[execute payment](https://developer.bka.sh/v1.2.0-beta/docs/execute-payment-1).
+The portal also publishes V2 documentation; this command preserves the installed
+adapter's versioned protocol rather than silently mixing versions or credentials.
 
 The callback is navigation, not a signed webhook and never settles from query-string values alone. The server requires the stored payment/session identity and bKash's authenticated execute/query response. A completed transaction must still match the stored invoice, amount, currency, and unique transaction ID.
 

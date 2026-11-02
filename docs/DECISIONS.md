@@ -3226,6 +3226,29 @@ authorize new provider operations or existing-domain adoption.
   No public price import, real provider call, record mutation, deployment or push
   is authorized. Retain the tested local commit in the owner's pending batch.
 
+## ADR-158 — Bind bKash sandbox evidence to the requested payment
+
+- **Date:** 2026-11-02. Command 167, owner-authorized sandbox integration request.
+- **Decision:** Prepare the existing v1.2.0-beta adapter without deployment or live
+  activation. Pin the API at every actual request boundary, independent of how
+  credentials are selected. Accept the documented lowercase checkout URL field
+  alongside the existing compatible spelling only when their values agree.
+- **Payment proof:** Require execute/query responses to match the requested
+  payment ID, exact decimal-string amounts and any supplied successful API code.
+  Unknown states or contradictory evidence remain pending for reconciliation;
+  mismatched execute evidence can recover only through a query of the expected
+  payment. Do not repeat execution or preserve raw provider failure text.
+  Keep all existing financial settlement and callback replay guards.
+- **Authentication and access:** Share in-flight token acquisition while retaining
+  credential-revision cache binding. The owner has no sandbox credentials yet;
+  genuine acceptance remains pending official access, private credential entry
+  and a reachable authorized HTTPS test environment with fictional records.
+  No production keys, public credential substitutions, real customer payments,
+  deployment, other-provider activation or automatic push is authorized.
+- **Contract:** Retain the [versioned bKash flow](https://developer.bka.sh/v1.2.0-beta/docs/create-payment-1)
+  and [execute proof](https://developer.bka.sh/v1.2.0-beta/docs/execute-payment-1).
+  Unit/mocked service tests are source validation, not a genuine sandbox payment.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

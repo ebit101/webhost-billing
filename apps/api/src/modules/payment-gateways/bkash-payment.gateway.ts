@@ -29,15 +29,27 @@ const tokenSchema = z
   .object({
     id_token: z.string().min(1),
     expires_in: z.coerce.number().int().positive(),
+    statusCode: z.literal('0000').optional(),
   })
   .passthrough();
 
 const createSchema = z
   .object({
     paymentID: z.string().min(1).max(191),
-    bKashURL: z.url(),
+    bkashURL: z.url().optional(),
+    bKashURL: z.url().optional(),
+    statusCode: z.literal('0000').optional(),
   })
-  .passthrough();
+  .passthrough()
+  .refine((response) => Boolean(response.bkashURL ?? response.bKashURL))
+  .refine(
+    (response) =>
+      !response.bkashURL ||
+      !response.bKashURL ||
+      response.bkashURL === response.bKashURL,
+  );
+
+const BKASH_SANDBOX_API = 'https://tokenized.sandbox.bka.sh/v1.2.0-beta';
 
 const BKASH_CHECKOUT_HOSTS = new Set([
   'sandbox.payment.bkash.com',
@@ -66,8 +78,12 @@ const transactionSchema = z
     paymentID: z.string().min(1).max(191),
     trxID: z.string().min(1).max(191).optional(),
     transactionStatus: z.string().min(1).max(100),
-    amount: z.union([z.string(), z.number()]).transform(String),
+    amount: z
+      .string()
+      .max(32)
+      .regex(/^(0|[1-9]\d*)(?:\.\d{1,2})?$/),
     currency: z.string().length(3),
+    statusCode: z.literal('0000').optional(),
     completedTime: z.string().optional(),
     createTime: z.string().optional(),
     statusMessage: z.string().max(500).optional(),
@@ -88,6 +104,10 @@ export class BkashPaymentGateway implements PaymentGateway {
   readonly mode = 'SANDBOX' as const;
   readonly merchantId = 'bkash-sandbox';
   private token: CachedToken | null = null;
+  private pendingToken: {
+    credentialRevision: string;
+    promise: Promise<string>;
+  } | null = null;
 
   constructor(
     @Inject(API_ENVIRONMENT) private readonly environment: ApiEnvironment,
@@ -100,7 +120,7 @@ export class BkashPaymentGateway implements PaymentGateway {
   ): Promise<GatewayPaymentSession> {
     this.assertBdt(input.currency);
     const response = await this.http.request({
-      url: `${this.environment.BKASH_SANDBOX_BASE_URL}/tokenized/checkout/create`,
+      url: `${this.sandboxBaseUrl()}/tokenized/checkout/create`,
       method: 'POST',
       headers: await this.authenticatedHeaders(),
       body: JSON.stringify({
@@ -125,7 +145,7 @@ export class BkashPaymentGateway implements PaymentGateway {
     const session = this.parse(createSchema, response.body, 'UNKNOWN');
     return {
       providerSessionId: session.paymentID,
-      checkoutUrl: safeCheckoutUrl(session.bKashURL),
+      checkoutUrl: safeCheckoutUrl(session.bkashURL ?? session.bKashURL!),
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
     };
   }
@@ -144,7 +164,7 @@ export class BkashPaymentGateway implements PaymentGateway {
   ): Promise<NormalizedPaymentEvent> {
     try {
       const response = await this.http.request({
-        url: `${this.environment.BKASH_SANDBOX_BASE_URL}/tokenized/checkout/execute`,
+        url: `${this.sandboxBaseUrl()}/tokenized/checkout/execute`,
         method: 'POST',
         headers: await this.authenticatedHeaders(),
         body: JSON.stringify({ paymentID: input.providerSessionId }),
@@ -179,7 +199,7 @@ export class BkashPaymentGateway implements PaymentGateway {
     paymentId: string,
   ): Promise<GatewayTransactionStatus> {
     const response = await this.http.request({
-      url: `${this.environment.BKASH_SANDBOX_BASE_URL}/tokenized/checkout/payment/status`,
+      url: `${this.sandboxBaseUrl()}/tokenized/checkout/payment/status`,
       method: 'POST',
       headers: await this.authenticatedHeaders(),
       body: JSON.stringify({ paymentID: paymentId }),
@@ -190,7 +210,7 @@ export class BkashPaymentGateway implements PaymentGateway {
       throw this.unknown('bKash could not confirm the payment status.');
     }
     const transaction = this.parse(transactionSchema, response.body, 'UNKNOWN');
-    return this.toStatus(transaction);
+    return this.toStatus(transaction, paymentId);
   }
 
   extractProviderTransactionId(event: NormalizedPaymentEvent): string | null {
@@ -217,8 +237,22 @@ export class BkashPaymentGateway implements PaymentGateway {
     ) {
       return this.token.value;
     }
+    if (this.pendingToken?.credentialRevision === credentials.revision)
+      return this.pendingToken.promise;
+    const promise = this.grantAccessToken(credentials);
+    this.pendingToken = { credentialRevision: credentials.revision, promise };
+    try {
+      return await promise;
+    } finally {
+      if (this.pendingToken?.promise === promise) this.pendingToken = null;
+    }
+  }
+
+  private async grantAccessToken(
+    credentials: ResolvedCredentials<BkashCredentials>,
+  ): Promise<string> {
     const response = await this.http.request({
-      url: `${this.environment.BKASH_SANDBOX_BASE_URL}/tokenized/checkout/token/grant`,
+      url: `${this.sandboxBaseUrl()}/tokenized/checkout/token/grant`,
       method: 'POST',
       headers: {
         accept: 'application/json',
@@ -249,7 +283,7 @@ export class BkashPaymentGateway implements PaymentGateway {
     transaction: z.infer<typeof transactionSchema>,
     input: CompleteGatewaySessionInput,
   ): NormalizedPaymentEvent {
-    const status = this.toStatus(transaction);
+    const status = this.toStatus(transaction, input.providerSessionId);
     return this.statusToEvent(status, input);
   }
 
@@ -274,8 +308,28 @@ export class BkashPaymentGateway implements PaymentGateway {
 
   private toStatus(
     transaction: z.infer<typeof transactionSchema>,
+    expectedPaymentId: string,
   ): GatewayTransactionStatus {
+    if (transaction.paymentID !== expectedPaymentId)
+      throw this.unknown(
+        'bKash returned a different payment identity. Reconciliation is required.',
+      );
     const providerStatus = transaction.transactionStatus.toLowerCase();
+    if (
+      ![
+        'completed',
+        'initiated',
+        'pending',
+        'refunded',
+        'failed',
+        'cancelled',
+        'canceled',
+        'expired',
+      ].includes(providerStatus)
+    )
+      throw this.unknown(
+        'bKash returned an unrecognized payment state. Reconciliation is required.',
+      );
     const status =
       providerStatus === 'completed'
         ? 'SUCCEEDED'
@@ -294,11 +348,7 @@ export class BkashPaymentGateway implements PaymentGateway {
       currency: transaction.currency.toUpperCase(),
       occurredAt,
       failureReason:
-        status === 'FAILED'
-          ? (transaction.errorMessage ??
-            transaction.statusMessage ??
-            'bKash reported payment failure.')
-          : null,
+        status === 'FAILED' ? 'bKash reported payment failure.' : null,
     };
   }
 
@@ -306,6 +356,14 @@ export class BkashPaymentGateway implements PaymentGateway {
     if (!value) return new Date();
     const parsed = new Date(value);
     return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
+  }
+
+  private sandboxBaseUrl(): string {
+    // Stored credentials can activate this adapter independently of environment
+    // bootstrap flags. Enforce sandbox isolation at every actual request boundary.
+    if (this.environment.BKASH_SANDBOX_BASE_URL !== BKASH_SANDBOX_API)
+      throw this.providerFailure('bKash must use the pinned sandbox endpoint.');
+    return BKASH_SANDBOX_API;
   }
 
   private async providerCredentials(): Promise<
