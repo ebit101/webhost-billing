@@ -32,3 +32,4 @@ export * from './contracts/domains';
 export * from './contracts/domain-inventory';
 export * from './contracts/domain-administration';
 export * from './contracts/notifications';
+export * from './contracts/whatsapp';

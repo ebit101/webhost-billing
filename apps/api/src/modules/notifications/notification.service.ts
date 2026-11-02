@@ -40,7 +40,11 @@ export class NotificationService {
         : accountPhone
           ? `••••${accountPhone.slice(-4)}`
           : null,
-      deliveryMode: this.environment.NOTIFICATION_DELIVERY_MODE,
+      deliveryMode:
+        this.environment.NOTIFICATION_DELIVERY_MODE === 'live' &&
+        !this.environment.WHATSAPP_LIVE_ENABLED
+          ? 'disabled'
+          : this.environment.NOTIFICATION_DELIVERY_MODE,
     });
   }
 

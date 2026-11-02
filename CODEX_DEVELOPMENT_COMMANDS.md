@@ -6524,3 +6524,18 @@ request secrets in chat or substitute third-party credentials. Credentialed sand
 acceptance requires issued sandbox credentials, a separately authorized reachable
 HTTPS environment and fictional data. Record that acceptance as pending until it
 actually runs; source/mock validation is not a genuine provider pass.
+
+## Command 168 — Integrate important WhatsApp alerts locally
+
+Owner-authorized on 2026-11-02, with Meta WhatsApp Cloud API explicitly selected.
+Integrate important Admin and Client alerts, including new and overdue invoices,
+into the existing reference-only notification pipeline. Use encrypted provider
+configuration, approved template mappings, exact sender/recipient validation,
+disabled-by-default independent networking gates, private previews and explicit
+uncertain-submission handling that prevents automatic duplicate sends. Retain the
+owner's sender intent privately outside Git. Preserve automatic important-alert
+preferences, staff/client authorization and current transactional SMTP. Validate
+with fictional records and injected HTTP transports, update the report and commit
+locally in the accumulated delivery batch. No Meta enrollment, credential entry,
+live messages, provider activation, deployment, push or PR is authorized. Genuine
+provider/database/browser acceptance stays open until its prerequisites exist.

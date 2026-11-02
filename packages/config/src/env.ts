@@ -66,8 +66,16 @@ function isSecureOrLoopbackOrigin(value: string): boolean {
 
 const infrastructureEnvironmentSchema = z.object({
   NOTIFICATION_DELIVERY_MODE: z
-    .enum(['disabled', 'preview'])
+    .enum(['disabled', 'preview', 'live'])
     .default('disabled'),
+  // Independent gate. Credentials or notification preferences never enable networking.
+  WHATSAPP_LIVE_ENABLED: z.preprocess(
+    (value) => (typeof value === 'boolean' ? String(value) : value),
+    z
+      .enum(['true', 'false'])
+      .default('false')
+      .transform((value) => value === 'true'),
+  ),
   DATABASE_URL: postgresUrlSchema,
   REDIS_URL: redisUrlSchema,
   BULLMQ_PREFIX: z

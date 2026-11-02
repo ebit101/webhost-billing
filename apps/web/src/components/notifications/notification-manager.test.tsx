@@ -16,6 +16,59 @@ function response(data: unknown, pagination?: unknown) {
   );
 }
 describe('notification interfaces', () => {
+  it('lists important admin invoice alerts and distinguishes acceptance from delivery and uncertain submissions', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) => {
+        if (url.endsWith('/catalog'))
+          return response(
+            notificationCatalog.filter((item) => item.audience === 'ADMIN'),
+          );
+        if (url.endsWith('/preferences'))
+          return response({
+            whatsAppEnabled: true,
+            maskedPhone: null,
+            deliveryMode: 'live',
+          });
+        return response(
+          ['ACCEPTED', 'SUBMITTING', 'UNKNOWN'].map((status, index) => ({
+            id: `80000000-0000-4000-8000-00000000000${index}`,
+            key: 'admin-invoice-issued',
+            channel: 'WHATSAPP',
+            status,
+            createdAt: '2026-11-02T00:00:00.000Z',
+            completedAt: null,
+          })),
+          { page: 1, pageSize: 25, totalItems: 3, totalPages: 1 },
+        );
+      }),
+    );
+    const user = userEvent.setup();
+    render(<NotificationManager />);
+    const table = within(
+      await screen.findByRole('table', { name: 'Notification list' }),
+    );
+    for (const name of ['Invoice issued', 'Invoice overdue']) {
+      expect(
+        within(table.getByRole('cell', { name }).closest('tr')!).getByText(
+          'Important alert',
+        ),
+      ).toBeTruthy();
+    }
+    expect(
+      screen.getByText(/Provider acceptance does not confirm delivery/),
+    ).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: 'Alert history' }));
+    await screen.findByRole('cell', {
+      name: 'Accepted by WhatsApp (delivery unconfirmed)',
+    });
+    expect(
+      screen.getAllByRole('cell', {
+        name: 'Submission needs review — do not resend',
+      }),
+    ).toHaveLength(2);
+    expect(screen.queryByText('Delivered')).toBeNull();
+  });
   it('lists important invoices and overdue notices and saves automatic WhatsApp preferences without opt-in', async () => {
     const fetch = vi.fn(async (url: string, options?: RequestInit) => {
       if (url.endsWith('/catalog'))
@@ -56,9 +109,7 @@ describe('notification interfaces', () => {
     expect(dialog.queryByText(/consent/i)).toBeNull();
     await user.click(dialog.getByRole('checkbox'));
     await user.click(dialog.getByRole('button', { name: 'Save preferences' }));
-    await dialog.findByText(
-      'Notification preferences saved. Live delivery remains disabled.',
-    );
+    await dialog.findByText('Notification preferences saved.');
     const patch = fetch.mock.calls.find(
       ([, options]) => options?.method === 'PATCH',
     );

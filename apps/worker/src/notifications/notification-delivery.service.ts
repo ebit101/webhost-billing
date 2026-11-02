@@ -20,6 +20,10 @@ import {
   WHATSAPP_NOTIFICATION_ADAPTER,
   type WhatsAppNotificationAdapter,
 } from './whatsapp-preview.adapter';
+import {
+  WhatsAppProviderError,
+  type WhatsAppNotificationMessage,
+} from './whatsapp-message';
 
 @Injectable()
 export class NotificationDeliveryService {
@@ -32,6 +36,12 @@ export class NotificationDeliveryService {
 
   async deliver(job: BackgroundJobData): Promise<void> {
     let failed = false;
+    let submission:
+      | {
+          message: WhatsAppNotificationMessage;
+          metadata: Prisma.InputJsonObject;
+        }
+      | undefined;
     await this.prisma.$transaction(
       async (tx) => {
         const event = await tx.outboxEvent.findUnique({
@@ -89,6 +99,8 @@ export class NotificationDeliveryService {
           (entry.status !== 'QUEUED' &&
             !(
               entry.status === 'FAILED' &&
+              this.environment.NOTIFICATION_DELIVERY_MODE === 'preview' &&
+              this.whatsApp.key === 'preview' &&
               job.failureKind === 'TEMPORARY' &&
               job.manualRetryAllowed === true
             ))
@@ -134,6 +146,8 @@ export class NotificationDeliveryService {
         if (
           key.data === 'client-invoice-issued' ||
           key.data === 'client-overdue-notice' ||
+          key.data === 'admin-invoice-issued' ||
+          key.data === 'admin-overdue-notice' ||
           key.data === 'client-final-warning'
         ) {
           const invoice =
@@ -145,11 +159,14 @@ export class NotificationDeliveryService {
               : null;
           if (
             !invoice ||
-            invoice.customerId !== current.customer?.id ||
+            (current.role === 'CUSTOMER' &&
+              invoice.customerId !== current.customer?.id) ||
             !invoice.issuedAt ||
             invoice.status === 'DRAFT' ||
             invoice.status === 'CANCELLED' ||
-            (key.data !== 'client-invoice-issued' &&
+            (!['client-invoice-issued', 'admin-invoice-issued'].includes(
+              key.data,
+            ) &&
               (invoice.balanceDue <= 0n ||
                 !['UNPAID', 'OVERDUE'].includes(invoice.status)))
           )
@@ -234,7 +251,13 @@ export class NotificationDeliveryService {
         }
         let destination = current.email;
         if (entry.channel === 'WHATSAPP') {
-          if (this.whatsApp.key !== 'preview') suppressed = true;
+          if (!['preview', 'meta'].includes(this.whatsApp.key))
+            suppressed = true;
+          if (
+            this.environment.NOTIFICATION_DELIVERY_MODE === 'preview' &&
+            this.whatsApp.key !== 'preview'
+          )
+            suppressed = true;
           if (
             !definition.whatsApp ||
             current.notificationPreference?.whatsAppEnabled === false
@@ -267,7 +290,13 @@ export class NotificationDeliveryService {
           suppressed = true;
         if (
           suppressed ||
-          this.environment.NOTIFICATION_DELIVERY_MODE !== 'preview'
+          (this.environment.NOTIFICATION_DELIVERY_MODE !== 'preview' &&
+            !(
+              entry.channel === 'WHATSAPP' &&
+              this.environment.NOTIFICATION_DELIVERY_MODE === 'live' &&
+              this.environment.WHATSAPP_LIVE_ENABLED &&
+              this.whatsApp.key === 'meta'
+            ))
         ) {
           await tx.notificationEntry.update({
             where: { id: entry.id },
@@ -316,6 +345,44 @@ export class NotificationDeliveryService {
             : '';
         const text = `${branding.brandName}\n\n${definition.label}\n\n${definition.description}\n${counts}\nSign in to view details: ${url}\n\nLocal preview only. No message was delivered externally.`;
         const attemptCount = entry.attemptCount + 1;
+        const message: WhatsAppNotificationMessage = {
+          id: entry.id,
+          key: key.data,
+          recipient: destination,
+          text,
+          brandName: branding.brandName,
+          reference: entry.id,
+          detail: definition.description,
+          publicWebUrl: this.environment.EMAIL_PUBLIC_WEB_URL,
+        };
+        if (
+          entry.channel === 'WHATSAPP' &&
+          typeof metadata.invoiceId === 'string'
+        ) {
+          const invoice = await tx.invoice.findUnique({
+            where: { id: metadata.invoiceId },
+          });
+          if (invoice) {
+            message.reference = invoice.invoiceNumber;
+            message.detail = `Balance due: ${invoice.currency} ${decimalBdt(invoice.balanceDue)}; due ${new Intl.DateTimeFormat('en-GB', { dateStyle: 'short', timeZone: 'UTC' }).format(invoice.dueAt)}`;
+          }
+        }
+        if (
+          entry.channel === 'WHATSAPP' &&
+          this.environment.NOTIFICATION_DELIVERY_MODE === 'live'
+        ) {
+          // Commit a durable claim BEFORE touching the network. A crash or timeout
+          // must leave a visible review state, never an automatically repeatable send.
+          await tx.notificationEntry.update({
+            where: { id: entry.id },
+            data: { status: 'SUBMITTING', attemptCount, failureCode: null },
+          });
+          submission = {
+            message,
+            metadata: metadata as Prisma.InputJsonObject,
+          };
+          return;
+        }
         try {
           if (entry.channel === 'EMAIL') {
             const adapter = new PreviewEmailAdapter(this.environment);
@@ -337,12 +404,9 @@ export class NotificationDeliveryService {
               await adapter.close();
             }
           } else {
-            await this.whatsApp.send({
-              id: entry.id,
-              key: key.data,
-              recipient: destination,
-              text,
-            });
+            const result = await this.whatsApp.send(message);
+            if (result.status !== 'PREVIEWED')
+              throw new Error('Preview unavailable.');
           }
           await tx.notificationEntry.update({
             where: { id: entry.id },
@@ -368,6 +432,43 @@ export class NotificationDeliveryService {
       },
       { timeout: 30000 },
     );
+    if (submission) {
+      const { message, metadata } = submission;
+      try {
+        const result = await this.whatsApp.send(message);
+        if (result.status === 'PREVIEWED')
+          throw new WhatsAppProviderError('UNKNOWN');
+        await this.prisma.notificationEntry.updateMany({
+          where: { id: message.id, status: 'SUBMITTING' },
+          data: {
+            status: result.status,
+            completedAt: new Date(),
+            failureCode: null,
+            ...(result.status === 'ACCEPTED'
+              ? {
+                  metadata: {
+                    ...metadata,
+                    provider: 'meta',
+                    providerMessageId: result.providerMessageId,
+                  },
+                }
+              : {}),
+          },
+        });
+      } catch (error: unknown) {
+        const kind =
+          error instanceof WhatsAppProviderError ? error.kind : 'UNKNOWN';
+        await this.prisma.notificationEntry.updateMany({
+          where: { id: message.id, status: 'SUBMITTING' },
+          data: {
+            status: kind === 'UNKNOWN' ? 'UNKNOWN' : 'FAILED',
+            completedAt: new Date(),
+            failureCode: `WHATSAPP_${kind}`,
+          },
+        });
+        // No automatic retry of a submission: the provider has no deduplication key.
+      }
+    }
     if (failed)
       throw new BackgroundJobError(
         'TEMPORARY',
@@ -375,6 +476,10 @@ export class NotificationDeliveryService {
         'Local notification preview is unavailable.',
       );
   }
+}
+
+function decimalBdt(value: bigint): string {
+  return `${value / 100n}.${(value % 100n).toString().padStart(2, '0')}`;
 }
 
 function record(value: unknown): Record<string, unknown> {

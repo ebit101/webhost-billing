@@ -21,6 +21,7 @@ x-app-security: &app-security
 
 x-worker-environment: &worker-environment
   NOTIFICATION_DELIVERY_MODE: ${NOTIFICATION_DELIVERY_MODE:-disabled}
+  WHATSAPP_LIVE_ENABLED: ${WHATSAPP_LIVE_ENABLED:-false}
   NODE_ENV: production
   DATABASE_URL_FILE: /run/secrets/database_url
   REDIS_URL_FILE: /run/secrets/redis_url
@@ -154,6 +155,7 @@ services:
       NODE_ENV: production
       API_PORT: 3001
       NOTIFICATION_DELIVERY_MODE: ${NOTIFICATION_DELIVERY_MODE:-disabled}
+      WHATSAPP_LIVE_ENABLED: ${WHATSAPP_LIVE_ENABLED:-false}
       DATABASE_URL_FILE: /run/secrets/database_url
       REDIS_URL_FILE: /run/secrets/redis_url
       SESSION_SECRET_FILE: /run/secrets/session_secret

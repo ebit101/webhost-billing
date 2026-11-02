@@ -124,9 +124,7 @@ export function NotificationManager() {
         },
       );
       setPreferences(result);
-      setNotice(
-        'Notification preferences saved. Live delivery remains disabled.',
-      );
+      setNotice('Notification preferences saved.');
     } catch {
       setError(
         'Preferences could not be saved. Use an international number beginning with + and try again.',
@@ -173,7 +171,11 @@ export function NotificationManager() {
           ? 'Local preview saved'
           : item.status === 'SUPPRESSED'
             ? 'Skipped'
-            : sentenceCaseLabel(item.status),
+            : item.status === 'ACCEPTED'
+              ? 'Accepted by WhatsApp (delivery unconfirmed)'
+              : item.status === 'SUBMITTING' || item.status === 'UNKNOWN'
+                ? 'Submission needs review — do not resend'
+                : sentenceCaseLabel(item.status),
     },
     {
       key: 'date',
@@ -271,7 +273,9 @@ export function NotificationManager() {
         <p className="rounded-xl border border-brand-200 bg-brand-50 p-3 text-sm text-brand-900">
           {preferences.deliveryMode === 'preview'
             ? 'Local preview only. This feature sends no external messages.'
-            : 'New alert delivery is disabled. Alerts are recorded without sending. Existing transactional email uses its current email settings.'}
+            : preferences.deliveryMode === 'live'
+              ? 'Important WhatsApp alerts require an active provider configuration and approved templates. Provider acceptance does not confirm delivery. New alert emails remain disabled; existing transactional email uses its current settings.'
+              : 'New alert delivery is disabled. Alerts are recorded without sending. Existing transactional email uses its current email settings.'}
         </p>
       ) : null}
       {error ? <p role="alert">{error}</p> : null}

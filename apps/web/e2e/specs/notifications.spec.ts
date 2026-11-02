@@ -361,9 +361,7 @@ test('notification plan: automatic important WhatsApp, own history, previews, st
       .getByRole('button', { name: 'Save preferences', exact: true })
       .click();
     await expect(
-      dialog.getByText(
-        'Notification preferences saved. Live delivery remains disabled.',
-      ),
+      dialog.getByText('Notification preferences saved.'),
     ).toBeVisible();
     expect(
       (

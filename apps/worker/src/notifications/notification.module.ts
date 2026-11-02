@@ -8,7 +8,12 @@ import {
 } from '@nestjs/common';
 import type { WorkerEnvironment } from '@webhost-billing/config';
 import { BackgroundWorker } from '@webhost-billing/queue';
-import { WorkerDatabaseModule } from '../infrastructure/database.module';
+import {
+  WorkerDatabaseModule,
+  WORKER_PRISMA,
+} from '../infrastructure/database.module';
+import type { PrismaClient } from '@webhost-billing/database';
+import { MetaWhatsAppAdapter } from './meta-whatsapp.adapter';
 import {
   WORKER_ENVIRONMENT,
   WorkerEnvironmentModule,
@@ -95,9 +100,15 @@ class NotificationScheduler
     NotificationConsumer,
     {
       provide: WHATSAPP_NOTIFICATION_ADAPTER,
-      inject: [WORKER_ENVIRONMENT],
-      useFactory: (environment: WorkerEnvironment) =>
-        new WhatsAppPreviewAdapter(environment.EMAIL_PREVIEW_DIRECTORY),
+      inject: [WORKER_ENVIRONMENT, WORKER_PRISMA],
+      useFactory: (environment: WorkerEnvironment, prisma: PrismaClient) =>
+        environment.NOTIFICATION_DELIVERY_MODE === 'live'
+          ? new MetaWhatsAppAdapter(
+              prisma,
+              environment.CREDENTIAL_ENCRYPTION_KEY,
+              environment.WHATSAPP_LIVE_ENABLED,
+            )
+          : new WhatsAppPreviewAdapter(environment.EMAIL_PREVIEW_DIRECTORY),
     },
   ],
 })

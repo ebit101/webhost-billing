@@ -18,6 +18,8 @@ describe('notification policy', () => {
         'admin-automation-failure',
         'admin-delivery-failure',
         'admin-domain-problem',
+        'admin-invoice-issued',
+        'admin-overdue-notice',
         'admin-payment-review',
         'admin-provisioning-problem',
         'admin-security-alert',

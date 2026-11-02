@@ -15,6 +15,10 @@ describe('private WhatsApp preview adapter', () => {
         key: 'client-invoice-issued' as const,
         recipient: '+8801700000137',
         text: 'Fictional invoice available',
+        brandName: 'Example hosting',
+        reference: 'INV-TEST',
+        detail: 'Fictional invoice available',
+        publicWebUrl: 'https://billing.example.test',
       };
       await adapter.send(message);
       await adapter.send(message);
@@ -22,7 +26,7 @@ describe('private WhatsApp preview adapter', () => {
       expect(files).toHaveLength(1);
       expect(files[0]).toMatch(/^[a-f0-9]{64}\.json$/);
       const file = join(directory, 'whatsapp', files[0]);
-      expect(JSON.parse(await readFile(file, 'utf8'))).toEqual({
+      expect(JSON.parse(await readFile(file, 'utf8'))).toMatchObject({
         key: message.key,
         recipient: '••••0137',
         text: message.text,

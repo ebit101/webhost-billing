@@ -194,6 +194,25 @@ export const notificationCatalog = [
     existingEmail: false,
   },
   {
+    key: 'admin-invoice-issued',
+    audience: 'ADMIN',
+    label: 'Invoice issued',
+    description: 'A new customer invoice is available for review.',
+    path: '/admin/invoices',
+    whatsApp: true,
+    existingEmail: false,
+  },
+  {
+    key: 'admin-overdue-notice',
+    audience: 'ADMIN',
+    label: 'Invoice overdue',
+    description:
+      'A customer invoice is overdue. Review its outstanding balance.',
+    path: '/admin/invoices',
+    whatsApp: true,
+    existingEmail: false,
+  },
+  {
     key: 'admin-customer-verified',
     audience: 'ADMIN',
     label: 'Customer verified',
@@ -329,6 +348,9 @@ export const notificationStatusSchema = z.enum([
   'PREVIEWED',
   'SUPPRESSED',
   'FAILED',
+  'SUBMITTING',
+  'ACCEPTED',
+  'UNKNOWN',
 ]);
 export const notificationPreferencesRequestSchema = z
   .object({
@@ -345,7 +367,7 @@ export type NotificationPreferencesRequest = z.infer<
 export const notificationPreferencesSchema = z.object({
   whatsAppEnabled: z.boolean(),
   maskedPhone: z.string().nullable(),
-  deliveryMode: z.enum(['disabled', 'preview']),
+  deliveryMode: z.enum(['disabled', 'preview', 'live']),
 });
 export type NotificationPreferences = z.infer<
   typeof notificationPreferencesSchema

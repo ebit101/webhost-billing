@@ -56,7 +56,7 @@ export class NotificationProjectionService {
           UNION ALL SELECT 'automation:' || id::text, 'AUTOMATION', id, completed_at FROM automation_runs WHERE completed_at >= ${epoch.startedAt} AND status IN ('FAILED','PARTIALLY_SUCCEEDED')
           UNION ALL SELECT 'registrar:' || id::text, 'REGISTRAR', id, created_at FROM registrar_evidence WHERE created_at >= ${epoch.startedAt} AND code IN ('OWNERSHIP_AND_EXPIRY_CONFIRMED','PROVIDER_REJECTED','MANUAL_RECONCILIATION_REQUIRED')
           UNION ALL SELECT 'failed-outbox:' || id::text, 'FAILED_OUTBOX', id, updated_at FROM outbox_events WHERE updated_at >= ${epoch.startedAt} AND status = 'FAILED' AND event_type <> 'NOTIFICATION_DELIVERY_REQUESTED'
-          UNION ALL SELECT 'failed-notification:' || id::text, 'EMAIL', id, completed_at FROM notification_entries WHERE completed_at >= ${epoch.startedAt} AND status = 'FAILED' AND key NOT IN ('admin-delivery-failure','admin-automation-failure')
+          UNION ALL SELECT 'failed-notification:' || id::text, 'EMAIL', id, completed_at FROM notification_entries WHERE completed_at >= ${epoch.startedAt} AND status IN ('FAILED','UNKNOWN') AND key NOT IN ('admin-delivery-failure','admin-automation-failure')
         ) source WHERE NOT EXISTS (SELECT 1 FROM notification_sources done WHERE done.key = source.key)
         ORDER BY source."createdAt",source.key LIMIT 100
       `);
@@ -137,7 +137,10 @@ export class NotificationProjectionService {
         const id = randomUUID();
         const status = suppressed
           ? 'SUPPRESSED'
-          : this.environment.NOTIFICATION_DELIVERY_MODE === 'preview'
+          : this.environment.NOTIFICATION_DELIVERY_MODE === 'preview' ||
+              (channel === 'WHATSAPP' &&
+                this.environment.NOTIFICATION_DELIVERY_MODE === 'live' &&
+                this.environment.WHATSAPP_LIVE_ENABLED)
             ? 'QUEUED'
             : 'DISABLED';
         const created = await tx.notificationEntry.createMany({
@@ -369,7 +372,7 @@ export class NotificationProjectionService {
           (event.eventType !== 'EMAIL_OVERDUE_NOTICE' ||
             (['UNPAID', 'OVERDUE'].includes(invoice.status) &&
               invoice.balanceDue > 0n))
-        )
+        ) {
           await this.emit(
             tx,
             event.eventType === 'EMAIL_INVOICE_CREATED'
@@ -379,6 +382,16 @@ export class NotificationProjectionService {
             { customerId: invoice.customerId },
             { invoiceId: invoice.id },
           );
+          await this.emit(
+            tx,
+            event.eventType === 'EMAIL_INVOICE_CREATED'
+              ? 'admin-invoice-issued'
+              : 'admin-overdue-notice',
+            `${event.eventType}:${invoice.id}`,
+            {},
+            { invoiceId: invoice.id },
+          );
+        }
       } else if (
         event.eventType === 'EMAIL_SERVICE_SUSPENDED' ||
         event.eventType === 'EMAIL_SERVICE_REACTIVATED'

@@ -3278,3 +3278,24 @@ The following decisions are intentionally unresolved and must be selected before
    freshness/deviation/override/quote/rounding policies, reporting valuations and protected
    WHMCS source/target/credit treatment. BDT default and USD preferred secondary are the
    owner-directed target, not approved live collection or a completed implementation.
+
+## ADR-159 — Prepare guarded Meta WhatsApp alerts with explicit uncertain outcomes
+
+- **Date:** 2026-11-02. Command 168, owner-authorized; Meta Cloud API selected.
+- **Decision:** Connect important Admin/Client notifications to approved Cloud API
+  templates, adding administrator issued/overdue invoice notices. Retain account
+  ownership, full-administrator business-alert scope, automatic preferences and
+  encrypted recipient overrides. Never use the sender as an implicit recipient.
+- **Gates and protection:** Delivery defaults disabled; preview cannot network.
+  Live mode requires an independent false-by-default gate and an enabled encrypted
+  configuration. Validate the actual phone-number ID/sender pair before submission,
+  pin the Graph host, bound requests/responses and redact raw provider errors.
+  Template parameters contain no authentication links, credentials or bank details.
+- **Idempotency:** Persist a Submitting claim before the network call. A validated
+  response is Accepted, not Delivered. Preserve Unknown or interrupted Submitting
+  states for review and never automatically resubmit; Meta callback correlation is
+  not an idempotency key. Existing ledger uniqueness and source cutover remain.
+- **Bounds:** No provider enrollment, settings write, message, live flag change,
+  deployment or push. No incoming messaging/delivery webhook or Delivered/Read claim.
+  Genuine sender/template/delivery acceptance and database-backed concurrency tests
+  remain open. See [the implementation guide](WHATSAPP_NOTIFICATIONS.md).

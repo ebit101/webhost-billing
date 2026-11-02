@@ -107,6 +107,15 @@ Command 53's MFA enrollment and remembered-factor work remains separate.
 
 ## 1. Executive Summary
 
+**WhatsApp integration direction — 2026-11-02:** Command 168 adds a local Meta
+Cloud API transport for important Admin/Client alerts, including invoice issue and
+overdue alerts for both audiences. Keep networking disabled behind independent
+deployment and encrypted-configuration gates. Use approved event templates and
+sender/recipient binding checks. Commit a submission claim before the provider
+call, distinguish acceptance from delivery and never automatically resend an
+uncertain submission. Existing SMTP and other providers remain unchanged. No live
+sender enrollment, external message, deployment or production acceptance is implied.
+
 **Notification direction — 2026-10-27:** Command 137 adds Admin and Client
 notification tables and account-owned history. Existing transactional email
 continues through its current pipeline. Missing account/security/operations

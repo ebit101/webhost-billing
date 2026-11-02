@@ -14,6 +14,7 @@ import type { AuthRequestContext } from '../auth/auth.types';
 const environment = {
   NODE_ENV: 'test',
   NOTIFICATION_DELIVERY_MODE: 'disabled',
+  WHATSAPP_LIVE_ENABLED: false,
   RESELLBIZ_LIVE_ENABLED: false,
   PORT: 3001,
   DATABASE_URL: 'postgresql://example.test/database',
