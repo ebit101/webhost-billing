@@ -2,14 +2,22 @@
 
 ## Status Summary
 
-- **Current command:** Command 187 — Add read-only customer support sessions
-- **Current status:** Command 187 is implemented locally. The database-backed support session check and Command 186 mail delivery verification are pending.
+- **Current command:** Command 188 — Verify read-only customer support sessions end to end
+- **Current status:** Customer support sessions passed local database-backed API and Chromium verification. Command 186 mail delivery verification is pending.
 - **Last updated:** 2026-11-03
 - **Last recorded staging release:** Command 177, `887862020de1e472f303f359b793dccbedfb9b07`, deployed on 2026-11-03 (Asia/Dhaka).
-- **Next action:** Await authorization to verify the support session end to end with fictional data.
-- **Next command authorized:** None after Command 187.
+- **Next action:** Await authorization to verify customer email two-step sign-in and marketing consent with fictional data and a local mail provider.
+- **Next command authorized:** None after Command 188.
 
 ## Command Reports
+
+### Command 188 — Verify read-only customer support sessions end to end
+
+- Verified locally on 2026-11-03 (Asia/Dhaka). No deployment ran.
+- Added `apps/web/e2e/specs/customer-support-session.spec.ts` and recorded the command in the registry. The browser test exercises the reason prompt, read-only banner, customer scope, expiry exit screen, and return to the original customer record with the same administrator cookie. It also verifies audit entries and rejects a support operator at the API.
+- Applied all 43 migrations, including `20261103000300_customer_support_sessions`, to isolated PostgreSQL test environments with local Redis. Passed 10 database-backed API authentication tests, the Chromium support session test, and the browser test type check. The tests reject blank reasons, writes, cross-customer reads, and ending the session without CSRF protection. They verify the administrator and customer IDs, reason, and start and end actions in the audit trail.
+- Verified the 15-minute deadline at creation and moved the fictional session's expiry into the past to test enforcement and recovery. The browser test uses a dedicated administrator fixture. Command 186 email delivery remains a separate verification task.
+- The recommended next command is to verify optional customer email two-step sign-in and marketing consent end to end with fictional accounts and a local mail provider, including delivery, code expiry, and consent withdrawal.
 
 ### Command 187 — Add read-only customer support sessions
 

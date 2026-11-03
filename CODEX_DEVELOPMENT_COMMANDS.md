@@ -6708,3 +6708,11 @@ Owner-authorized on 2026-11-03. Let full administrators open an active,
 verified customer's portal in read-only mode with a required support reason,
 audited start and end, and an explicit End session action. Validate and commit
 locally. No deployment.
+
+## Command 188 — Verify read-only customer support sessions end to end
+
+Owner-authorized on 2026-11-03. Apply the support-session migration to an
+isolated local database. Verify the full-administrator restriction, required
+and audited support reason, customer ownership, blocked writes, expiry, and
+return to the original administrator session with fictional accounts. Record
+the results locally. No deployment.
