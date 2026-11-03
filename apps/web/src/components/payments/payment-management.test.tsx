@@ -139,7 +139,7 @@ describe('manual payment interfaces', () => {
     ).toBeTruthy();
   });
 
-  it('submits structured customer proof without a file field', async () => {
+  it('prefills a decimal customer amount and submits proof in exact minor units', async () => {
     const user = userEvent.setup();
     const createdPayment = { ...pendingPayment, reference: 'NEW-UI-REFERENCE' };
     const fetchMock = vi
@@ -162,6 +162,10 @@ describe('manual payment interfaces', () => {
       }),
     ).toBeTruthy();
     expect(screen.queryByLabelText(/file/i)).toBeNull();
+    const amount = screen.getByRole('textbox', { name: 'Amount (BDT)' });
+    expect(amount).toHaveProperty('value', '120.00');
+    await user.clear(amount);
+    await user.type(amount, '119.95');
     await user.type(
       screen.getByRole('textbox', { name: 'Transaction/reference ID' }),
       'NEW-UI-REFERENCE',
@@ -170,10 +174,8 @@ describe('manual payment interfaces', () => {
       screen.getByRole('textbox', { name: 'Payer name (optional)' }),
       'Manual Payer',
     );
-    fireEvent.submit(
-      screen
-        .getByRole('button', { name: 'Submit payment reference' })
-        .closest('form')!,
+    await user.click(
+      screen.getByRole('button', { name: 'Submit payment reference' }),
     );
     expect(
       await screen.findByText(
@@ -190,7 +192,7 @@ describe('manual payment interfaces', () => {
     expect(body).not.toHaveProperty('file');
     expect(body).toMatchObject({
       invoiceId,
-      amount: '12000',
+      amount: '11995',
       proof: {
         method: 'BANK_TRANSFER',
         reference: 'NEW-UI-REFERENCE',

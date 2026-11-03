@@ -6723,3 +6723,9 @@ Owner-authorized on 2026-11-03. Verify the customer profile settings and
 email sign-in end to end with fictional accounts and a local mail provider.
 Check code delivery, expiry, and consent withdrawal. Record the results
 locally. No deployment.
+
+## Command 190 — Display customer manual payment amounts in invoice currency
+
+Owner-authorized on 2026-11-03. Show the balance in the invoice currency on
+the customer portal manual payment form. Convert decimal entries to exact
+integer minor units when submitting the payment reference.

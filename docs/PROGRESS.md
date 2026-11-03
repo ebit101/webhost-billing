@@ -2,14 +2,21 @@
 
 ## Status Summary
 
-- **Current command:** Command 189 — Verify customer email two-step sign-in and marketing consent
-- **Current status:** Customer email sign-in and marketing consent passed isolated browser and mail-preview verification.
+- **Current command:** Command 190 — Display customer manual payment amounts in invoice currency
+- **Current status:** The customer portal manual payment amount now displays in the invoice currency locally.
 - **Last updated:** 2026-11-03
 - **Last recorded staging release:** Command 177, `887862020de1e472f303f359b793dccbedfb9b07`, deployed on 2026-11-03 (Asia/Dhaka).
 - **Next action:** Await authorization to rehearse pilot setup and manual payment with fictional data.
-- **Next command authorized:** None after Command 189.
+- **Next command authorized:** None after Command 190.
 
 ## Command Reports
+
+### Command 190 — Display customer manual payment amounts in invoice currency
+
+- Implemented locally on 2026-11-03 (Asia/Dhaka).
+- Updated `apps/web/src/components/payments/customer-manual-payment.tsx` and its regression in `payment-management.test.tsx`. The form labels the amount with the invoice currency and prefills the balance as a decimal. It converts edited amounts to exact integer strings before submitting the existing payment request.
+- Passed 29 focused tests, the web type check, and the Git diff check. The regression verifies a `120.00` prefill and a `119.95` entry submitted as `11995`. No deployment ran.
+- The recommended next command is to rehearse one-plan pilot setup and manual payment with fictional data, including duplicate submission and settlement checks.
 
 ### Command 189 — Verify customer email two-step sign-in and marketing consent
 

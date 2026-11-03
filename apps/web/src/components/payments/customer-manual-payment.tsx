@@ -8,6 +8,7 @@ import type {
 } from '@webhost-billing/shared';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { authMutation, authenticatedPaginatedGet } from '../../lib/auth-api';
+import { moneyForInput, moneyToMinor } from '../../lib/money-input';
 import { formatMinor } from '../invoices/invoice-ui';
 import { Button } from '../ui/button';
 import { EmptyState } from '../ui/feedback-state';
@@ -45,17 +46,22 @@ export function CustomerManualPayment({ invoice }: { invoice: Invoice }) {
     event.preventDefault();
     const form = event.currentTarget;
     const values = new FormData(form);
-    if (!submissionKey.current) submissionKey.current = crypto.randomUUID();
     setSaving(true);
     setError('');
     setNotice('');
     try {
+      const amount = moneyToMinor(
+        String(values.get('amount')),
+        invoice.currency,
+        'Amount',
+      );
+      if (!submissionKey.current) submissionKey.current = crypto.randomUUID();
       const result = await authMutation<ManualPaymentCreationResult>(
         '/payments/manual/customer',
         'POST',
         {
           invoiceId: invoice.id,
-          amount: String(values.get('amount')),
+          amount,
           submissionKey: submissionKey.current,
           proof: {
             method: String(values.get('method')),
@@ -106,13 +112,15 @@ export function CustomerManualPayment({ invoice }: { invoice: Invoice }) {
       {payable ? (
         <form onSubmit={submit} className="grid gap-4 md:grid-cols-2">
           <label className="text-sm font-semibold text-slate-700">
-            Amount in minor units
+            Amount ({invoice.currency})
             <input
               className={fieldClass}
               name="amount"
-              inputMode="numeric"
-              pattern="[0-9]+"
-              defaultValue={invoice.balanceDue.amount}
+              inputMode="decimal"
+              defaultValue={moneyForInput(
+                invoice.balanceDue.amount,
+                invoice.currency,
+              )}
               required
             />
           </label>
