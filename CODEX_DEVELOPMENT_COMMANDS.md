@@ -6695,3 +6695,9 @@ run focused checks. No deployment.
 Owner-authorized on 2026-11-03. Tighten desktop sidebar spacing, show the
 customer's profile name and logout action, add a header account menu, and
 display the installed portal version.
+
+## Command 186 — Add customer email verification and marketing consent
+
+Owner-authorized on 2026-11-03. Add optional email two-step verification
+and marketing consent to Profile & security. Keep marketing consent off
+until the customer explicitly opts in. Validate and commit locally.

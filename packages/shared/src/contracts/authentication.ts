@@ -74,10 +74,35 @@ export const twoFactorDisableRequestSchema = z
 export const twoFactorRequiredResponseSchema = z
   .object({
     requiresTwoFactor: z.literal(true),
+    method: z.literal('email').optional(),
     challengeToken: z.string().min(32).max(256),
     expiresAt: z.iso.datetime({ offset: true }),
   })
   .strict();
+
+export const customerSecurityPreferenceUpdateSchema = z.union([
+  z
+    .object({ emailTwoStep: z.boolean(), password: z.string().min(1).max(128) })
+    .strict(),
+  z.object({ marketingConsent: z.boolean() }).strict(),
+]);
+
+export const customerEmailLoginRequestSchema = z
+  .object({
+    challengeToken: z.string().min(32).max(256),
+    code: z
+      .string()
+      .trim()
+      .regex(/^\d{6}$/),
+  })
+  .strict();
+
+export type CustomerSecurityPreferenceUpdate = z.infer<
+  typeof customerSecurityPreferenceUpdateSchema
+>;
+export type CustomerEmailLoginRequest = z.infer<
+  typeof customerEmailLoginRequestSchema
+>;
 
 export const twoFactorStatusSchema = z
   .object({

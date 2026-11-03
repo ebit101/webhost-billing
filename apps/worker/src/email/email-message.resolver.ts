@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { createHash } from 'node:crypto';
 import type { WorkerEnvironment } from '@webhost-billing/config';
 import { OutboxStatus, type PrismaClient } from '@webhost-billing/database';
 import { BackgroundJobError } from '@webhost-billing/queue';
@@ -76,6 +77,57 @@ export class EmailMessageResolver {
     payload: Record<string, unknown>,
     aggregateId: string,
   ): Promise<ResolvedEmailMessage> {
+    if (eventType === 'AUTH_CUSTOMER_EMAIL_CODE_REQUESTED') {
+      const recipientEmail = requiredString(payload, 'recipientEmail');
+      const challenge = await this.prisma.customerEmailChallenge.findFirst({
+        where: {
+          id: requiredUuid(payload, 'challengeId'),
+          userId: aggregateId,
+          usedAt: null,
+          expiresAt: { gt: new Date() },
+          user: {
+            email: recipientEmail,
+            role: 'CUSTOMER',
+            status: 'ACTIVE',
+            deletedAt: null,
+            emailVerifiedAt: { not: null },
+            customerSecurityPreference: { emailTwoStep: true },
+          },
+        },
+        include: { user: { include: { customer: true } } },
+      });
+      if (
+        !challenge ||
+        challenge.credentialBinding !==
+          createHash('sha256')
+            .update(
+              JSON.stringify([
+                challenge.user.email,
+                challenge.user.passwordHash,
+              ]),
+            )
+            .digest('hex')
+      )
+        throw permanent('EMAIL_ACTION_TOKEN_UNAVAILABLE');
+      let code: string;
+      try {
+        code = this.tokenCipher.decrypt(challenge.deliveryCiphertext);
+      } catch {
+        throw permanent('EMAIL_ACTION_TOKEN_UNREADABLE');
+      }
+      if (!/^\d{6}$/.test(code))
+        throw permanent('EMAIL_ACTION_TOKEN_UNREADABLE');
+      return this.render(
+        recipientEmail,
+        {
+          key: 'customer-email-code',
+          code,
+          expiresAt: challenge.expiresAt,
+          recipientName: customerName(challenge.user.customer),
+        },
+        challenge.user.customer?.id,
+      );
+    }
     if (
       eventType === 'AUTH_EMAIL_VERIFICATION_REQUESTED' ||
       eventType === 'AUTH_PASSWORD_RESET_REQUESTED'

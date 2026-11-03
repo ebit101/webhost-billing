@@ -142,6 +142,49 @@ describe('administrator login security', () => {
 });
 
 describe('customer checkout sign-in', () => {
+  it('sends customer email codes to the customer verification endpoint', async () => {
+    const user = userEvent.setup();
+    const challengeToken = 'fictional-customer-email-challenge-token';
+    const fetchMock = vi.fn(
+      async (request: RequestInfo | URL, _init?: RequestInit) => {
+        if (String(request).endsWith('/auth/csrf'))
+          return success({ csrfToken: 'x'.repeat(96) });
+        if (String(request).endsWith('/auth/login'))
+          return success({
+            requiresTwoFactor: true,
+            method: 'email',
+            challengeToken,
+            expiresAt: new Date().toISOString(),
+          });
+        return success({ identity: { role: 'CUSTOMER' } });
+      },
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    render(<LoginForm />);
+    await user.type(
+      screen.getByLabelText('Email address'),
+      'customer@example.test',
+    );
+    await user.type(screen.getByLabelText('Password'), 'a-private-password');
+    await user.click(screen.getByRole('button', { name: 'Sign in' }));
+    expect(
+      await screen.findByText(/six-digit code sent to your verified email/),
+    ).toBeTruthy();
+    expect(navigation.push).not.toHaveBeenCalled();
+    await user.type(screen.getByLabelText('Authentication code'), '012345');
+    await user.click(
+      screen.getByRole('button', { name: 'Verify and sign in' }),
+    );
+    await waitFor(() =>
+      expect(navigation.push).toHaveBeenCalledWith('/portal'),
+    );
+    expect(
+      fetchMock.mock.calls.find(([request]) =>
+        String(request).endsWith('/auth/login/email-code'),
+      )?.[1]?.body,
+    ).toBe(JSON.stringify({ challengeToken, code: '012345' }));
+  });
+
   it.each([
     ['CUSTOMER', intent, `/checkout?${query}`],
     ['CUSTOMER', undefined, '/portal'],

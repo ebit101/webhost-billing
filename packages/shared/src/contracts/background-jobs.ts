@@ -95,6 +95,10 @@ const exactOutboxRoutes: Readonly<Record<string, OutboxQueueRoute>> = {
     queueName: 'emails',
     jobName: 'send-auth-email',
   },
+  AUTH_CUSTOMER_EMAIL_CODE_REQUESTED: {
+    queueName: 'emails',
+    jobName: 'send-auth-email',
+  },
   EMAIL_ORDER_RECEIVED: {
     queueName: 'emails',
     jobName: 'send-order-email',

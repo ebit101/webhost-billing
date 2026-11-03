@@ -11,6 +11,7 @@ import { Button } from '../ui/button';
 import { ErrorState, LoadingState } from '../ui/feedback-state';
 import { PageHeader } from '../ui/page-header';
 import { StatusBadge } from '../ui/status-badge';
+import { CustomerSecurityPreferences } from './customer-security-preferences';
 import {
   Card,
   Field,
@@ -184,34 +185,37 @@ export function CustomerProfile() {
             </div>
           </form>
         </Card>
-        <Card
-          title="Change password"
-          description="Changing your password signs out every active session, including this one."
-        >
-          <form className="grid gap-4" onSubmit={changePassword}>
-            <Field
-              label="Current password"
-              name="currentPassword"
-              type="password"
-              required
-              autoComplete="current-password"
-            />
-            <Field
-              label="New password"
-              name="newPassword"
-              type="password"
-              required
-              autoComplete="new-password"
-            />
-            <p className="text-xs leading-5 text-slate-500">
-              Use at least 12 characters. Your new password must differ from the
-              current one.
-            </p>
-            <Button type="submit" disabled={saving}>
-              {saving ? 'Changing…' : 'Change password'}
-            </Button>
-          </form>
-        </Card>
+        <div className="grid content-start gap-6">
+          <Card
+            title="Change password"
+            description="Changing your password signs out every active session, including this one."
+          >
+            <form className="grid gap-4" onSubmit={changePassword}>
+              <Field
+                label="Current password"
+                name="currentPassword"
+                type="password"
+                required
+                autoComplete="current-password"
+              />
+              <Field
+                label="New password"
+                name="newPassword"
+                type="password"
+                required
+                autoComplete="new-password"
+              />
+              <p className="text-xs leading-5 text-slate-500">
+                Use at least 12 characters. Your new password must differ from
+                the current one.
+              </p>
+              <Button type="submit" disabled={saving}>
+                {saving ? 'Changing…' : 'Change password'}
+              </Button>
+            </form>
+          </Card>
+          <CustomerSecurityPreferences />
+        </div>
       </div>
     </div>
   );

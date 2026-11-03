@@ -50,6 +50,8 @@ const expectedTables = [
   'currency_policy_revisions',
   'currency_selection_intents',
   'currency_unit_definitions',
+  'customer_email_challenges',
+  'customer_security_preferences',
   'customers',
   'email_attempts',
   'email_logs',

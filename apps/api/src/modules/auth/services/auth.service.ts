@@ -14,6 +14,8 @@ import {
   type AuthenticatedIdentity,
   type AuthenticationSession,
   type CustomerProfileSummary,
+  type CustomerEmailLoginRequest,
+  type CustomerSecurityPreferenceUpdate,
   type LoginRequest,
   type PasswordResetConfirmation,
   type RegistrationRequest,
@@ -24,7 +26,7 @@ import {
   type TwoFactorSetupResponse,
   type TwoFactorStatus,
 } from '@webhost-billing/shared';
-import { randomUUID, timingSafeEqual } from 'node:crypto';
+import { randomInt, randomUUID, timingSafeEqual } from 'node:crypto';
 import { ApplicationException } from '../../../common/errors/application.exception';
 import type { SecurityRequestContext } from '../../../common/http/request-context';
 import { PRISMA_CLIENT } from '../../../infrastructure/database/database.module';
@@ -70,6 +72,7 @@ export interface LoginResult {
 
 export interface TwoFactorChallengeResult {
   requiresTwoFactor: true;
+  method?: 'email';
   challengeToken: string;
   expiresAt: string;
 }
@@ -479,6 +482,58 @@ export class AuthService {
       throw this.invalidCredentialsException();
     }
 
+    if (user.role === UserRole.CUSTOMER) {
+      return this.prisma.$transaction(async (transaction) => {
+        const current = await this.lockCustomer(transaction, user.id);
+        if (!current || current.passwordHash !== user.passwordHash) {
+          throw this.invalidCredentialsException();
+        }
+        const now = new Date();
+        if (!current.customerSecurityPreference?.emailTwoStep) {
+          return this.createSession(transaction, current, context, now, false);
+        }
+        const challengeToken = this.tokens.generate();
+        const code = String(randomInt(1_000_000)).padStart(6, '0');
+        const expiresAt = new Date(now.getTime() + 5 * 60 * 1_000);
+        await transaction.customerEmailChallenge.updateMany({
+          where: { userId: current.id, usedAt: null },
+          data: { usedAt: now, deliveryCiphertext: 'superseded' },
+        });
+        const challenge = await transaction.customerEmailChallenge.create({
+          data: {
+            userId: current.id,
+            tokenHash: hashOpaqueToken(challengeToken),
+            credentialBinding: hashOpaqueToken(
+              JSON.stringify([current.email, current.passwordHash]),
+            ),
+            deliveryCiphertext: this.tokenCipher.encrypt(code),
+            ipAddressHash: context.ipAddressHash,
+            expiresAt,
+          },
+        });
+        await transaction.outboxEvent.create({
+          data: {
+            aggregateType: 'USER',
+            aggregateId: current.id,
+            eventType: 'AUTH_CUSTOMER_EMAIL_CODE_REQUESTED',
+            idempotencyKey: `auth-customer-email-code:${challenge.id}`,
+            payload: {
+              schemaVersion: 1,
+              challengeId: challenge.id,
+              recipientEmail: current.email,
+            },
+            status: OutboxStatus.PENDING,
+          },
+        });
+        return {
+          requiresTwoFactor: true,
+          method: 'email',
+          challengeToken,
+          expiresAt: expiresAt.toISOString(),
+        };
+      });
+    }
+
     const identity = this.toIdentity(user);
     if (user.role === UserRole.ADMIN && user.adminTotpCredential?.enabledAt) {
       const challengeToken = this.tokens.generate();
@@ -574,6 +629,175 @@ export class AuthService {
         current: true,
       },
     };
+  }
+
+  async getCustomerSecurityPreferences(auth: AuthRequestContext) {
+    const userId = this.customerSecurityUserId(auth);
+    const preference = await this.prisma.customerSecurityPreference.findUnique({
+      where: { userId },
+      select: { emailTwoStep: true, marketingConsent: true },
+    });
+    return preference ?? { emailTwoStep: false, marketingConsent: false };
+  }
+
+  async updateCustomerSecurityPreferences(
+    auth: AuthRequestContext,
+    input: CustomerSecurityPreferenceUpdate,
+  ) {
+    const userId = this.customerSecurityUserId(auth);
+    return this.prisma.$transaction(async (transaction) => {
+      const user = await this.lockCustomer(transaction, userId);
+      const now = new Date();
+      const session = await transaction.authSession.findFirst({
+        where: {
+          id: auth.sessionId,
+          userId,
+          revokedAt: null,
+          expiresAt: { gt: now },
+        },
+        select: { id: true },
+      });
+      if (!user || !session) throw this.invalidCredentialsException();
+      const changes =
+        'emailTwoStep' in input
+          ? { emailTwoStep: input.emailTwoStep }
+          : { marketingConsent: input.marketingConsent };
+      if ('emailTwoStep' in input) {
+        if (
+          !user.passwordHash ||
+          !(await this.passwords.verify(user.passwordHash, input.password))
+        ) {
+          throw this.invalidCredentialsException();
+        }
+        if (
+          input.emailTwoStep !==
+          (user.customerSecurityPreference?.emailTwoStep ?? false)
+        ) {
+          await transaction.customerEmailChallenge.updateMany({
+            where: { userId, usedAt: null },
+            data: { usedAt: now, deliveryCiphertext: 'superseded' },
+          });
+          await transaction.authSession.updateMany({
+            where: { userId, id: { not: auth.sessionId }, revokedAt: null },
+            data: {
+              revokedAt: now,
+              revokedReason: 'CUSTOMER_EMAIL_TWO_STEP_CHANGED',
+            },
+          });
+        }
+      }
+      const preference = user.customerSecurityPreference;
+      if (
+        'emailTwoStep' in input
+          ? input.emailTwoStep !== (preference?.emailTwoStep ?? false)
+          : input.marketingConsent !== (preference?.marketingConsent ?? false)
+      ) {
+        await transaction.activityLog.create({
+          data: {
+            actorUserId: userId,
+            action: 'CUSTOMER_SECURITY_PREFERENCE_CHANGED',
+            entityType: 'USER',
+            entityId: userId,
+            metadata: changes,
+          },
+        });
+      }
+      return transaction.customerSecurityPreference.upsert({
+        where: { userId },
+        create: { userId, ...changes },
+        update: changes,
+        select: { emailTwoStep: true, marketingConsent: true },
+      });
+    });
+  }
+
+  async completeCustomerEmailLogin(
+    input: CustomerEmailLoginRequest,
+    context: SecurityRequestContext,
+  ): Promise<LoginResult> {
+    const tokenHash = hashOpaqueToken(input.challengeToken);
+    const lookup = await this.prisma.customerEmailChallenge.findUnique({
+      where: { tokenHash },
+      select: { userId: true },
+    });
+    if (!lookup) throw this.invalidTwoFactorException();
+
+    const result = await this.prisma.$transaction(async (transaction) => {
+      const user = await this.lockCustomer(transaction, lookup.userId);
+      const challenge = await transaction.customerEmailChallenge.findUnique({
+        where: { tokenHash },
+      });
+      const now = new Date();
+      if (
+        !user?.customerSecurityPreference?.emailTwoStep ||
+        !challenge ||
+        challenge.usedAt ||
+        challenge.expiresAt <= now ||
+        challenge.failedAttempts >= 5 ||
+        challenge.ipAddressHash !== context.ipAddressHash ||
+        challenge.credentialBinding !==
+          hashOpaqueToken(JSON.stringify([user.email, user.passwordHash]))
+      )
+        return null;
+
+      const code = this.tokenCipher.decrypt(challenge.deliveryCiphertext);
+      if (!equalHexDigest(hashOpaqueToken(input.code), hashOpaqueToken(code))) {
+        await transaction.customerEmailChallenge.update({
+          where: { id: challenge.id },
+          data: {
+            failedAttempts: { increment: 1 },
+            ...(challenge.failedAttempts === 4
+              ? { usedAt: now, deliveryCiphertext: 'exhausted' }
+              : {}),
+          },
+        });
+        return null;
+      }
+      await transaction.customerEmailChallenge.update({
+        where: { id: challenge.id },
+        data: { usedAt: now, deliveryCiphertext: 'consumed' },
+      });
+      return this.createSession(transaction, user, context, now, true, 'email');
+    });
+    if (!result) throw this.invalidTwoFactorException();
+    return result;
+  }
+
+  private customerSecurityUserId(auth: AuthRequestContext): string {
+    if (auth.identity.role !== 'CUSTOMER') {
+      throw new ApplicationException({
+        status: HttpStatus.FORBIDDEN,
+        code: 'FORBIDDEN',
+        message: 'Customer access is required.',
+      });
+    }
+    return auth.identity.userId;
+  }
+
+  private async lockCustomer(
+    transaction: Prisma.TransactionClient,
+    userId: string,
+  ) {
+    // Serialize password sign-in, code consumption, and preference changes.
+    await transaction.$queryRaw`SELECT id FROM users WHERE id = ${userId}::uuid FOR UPDATE`;
+    const user = await transaction.user.findUnique({
+      where: { id: userId },
+      include: {
+        customer: { select: { id: true } },
+        customerSecurityPreference: true,
+      },
+    });
+    if (
+      !user ||
+      user.role !== UserRole.CUSTOMER ||
+      !user.customer ||
+      user.status !== UserStatus.ACTIVE ||
+      user.deletedAt ||
+      !user.emailVerifiedAt ||
+      !user.passwordHash
+    )
+      return null;
+    return { ...user, adminProfile: null };
   }
 
   async authenticateSession(rawToken: string): Promise<AuthRequestContext> {

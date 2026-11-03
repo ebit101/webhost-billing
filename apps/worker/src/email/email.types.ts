@@ -15,6 +15,11 @@ interface BaseTemplateModel {
 
 export type EmailTemplateModel =
   | (BaseTemplateModel & {
+      key: 'customer-email-code';
+      code: string;
+      expiresAt: Date;
+    })
+  | (BaseTemplateModel & {
       key: 'email-verification' | 'password-reset';
       actionUrl: string;
       expiresAt: Date;

@@ -7,6 +7,8 @@ export interface AuthRateLimitDefinition {
     | 'email-verification'
     | 'customer-verification-resend'
     | 'two-factor-login'
+    | 'customer-email-login'
+    | 'customer-security-preferences'
     | 'password-reset-request'
     | 'password-reset-confirmation'
     | 'payment-webhook'

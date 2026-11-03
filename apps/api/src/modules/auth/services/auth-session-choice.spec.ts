@@ -117,6 +117,157 @@ function fixture() {
   return { service, prisma, user, session, passwords, factor };
 }
 
+function customerFixture(emailTwoStep: boolean) {
+  const base = fixture();
+  const user = {
+    ...base.user,
+    email: 'customer@example.test',
+    role: UserRole.CUSTOMER,
+    customer: { id: base.session.id },
+    adminProfile: null,
+    adminTotpCredential: null,
+    customerSecurityPreference: emailTwoStep
+      ? { emailTwoStep, marketingConsent: false }
+      : null,
+  };
+  const cipher = new TokenCipherService(environment);
+  const prisma = {
+    ...base.prisma,
+    user: {
+      ...base.prisma.user,
+      findUnique: jest.fn().mockResolvedValue(user),
+    },
+    authSession: {
+      ...base.prisma.authSession,
+      findFirst: jest.fn().mockResolvedValue({ id: base.session.id }),
+    },
+    $queryRaw: jest.fn(),
+    customerSecurityPreference: {
+      findUnique: jest.fn().mockResolvedValue(user.customerSecurityPreference),
+      upsert: jest
+        .fn()
+        .mockResolvedValue({ emailTwoStep, marketingConsent: true }),
+    },
+    customerEmailChallenge: {
+      updateMany: jest.fn(),
+      create: jest.fn(async ({ data }) => ({
+        ...data,
+        id: base.session.id,
+        usedAt: null,
+        failedAttempts: 0,
+      })),
+      findUnique: jest.fn(),
+      update: jest.fn(),
+    },
+    outboxEvent: { create: jest.fn() },
+    $transaction: async (work: (tx: unknown) => Promise<unknown>) =>
+      work(prisma),
+  };
+  const service = new AuthService(
+    prisma as unknown as PrismaClient,
+    { generate: () => 'fictional-random-token-that-is-long-enough' },
+    environment,
+    base.passwords as unknown as PasswordHasherService,
+    cipher,
+    {} as TotpService,
+    { record: jest.fn() } as unknown as AuthAuditService,
+  );
+  return {
+    prisma,
+    service,
+    cipher,
+    user,
+    login: { email: user.email, password: 'fictional-password' },
+  };
+}
+
+describe('customer sign-in and consent preferences', () => {
+  it('defaults to password sign-in and requires a separate explicit marketing opt-in', async () => {
+    const { service, prisma, login } = customerFixture(false);
+    const result = await service.login(login, context);
+    if (!('identity' in result))
+      throw new Error('Expected a password-only session');
+    const auth = { identity: result.identity, sessionId: result.session.id };
+    await expect(service.getCustomerSecurityPreferences(auth)).resolves.toEqual(
+      {
+        emailTwoStep: false,
+        marketingConsent: false,
+      },
+    );
+    await expect(
+      service.updateCustomerSecurityPreferences(auth, {
+        marketingConsent: true,
+      }),
+    ).resolves.toEqual({
+      emailTwoStep: false,
+      marketingConsent: true,
+    });
+    expect(prisma.customerSecurityPreference.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        update: { marketingConsent: true },
+      }),
+    );
+    expect(prisma.customerEmailChallenge.create).not.toHaveBeenCalled();
+  });
+
+  it('issues a session only after a valid code and rejects a wrong code and replay', async () => {
+    const { service, prisma, login, cipher } = customerFixture(true);
+    const result = await service.login(login, context);
+    if (!('challengeToken' in result))
+      throw new Error('Expected an email code challenge');
+    expect(result.method).toBe('email');
+    expect(prisma.authSession.create).not.toHaveBeenCalled();
+    const challenge =
+      await prisma.customerEmailChallenge.create.mock.results[0].value;
+    const code = cipher.decrypt(challenge.deliveryCiphertext);
+    expect(code).toMatch(/^\d{6}$/);
+    expect(prisma.outboxEvent.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          payload: {
+            schemaVersion: 1,
+            challengeId: challenge.id,
+            recipientEmail: login.email,
+          },
+        }),
+      }),
+    );
+    prisma.customerEmailChallenge.findUnique.mockResolvedValue(challenge);
+    await expect(
+      service.completeCustomerEmailLogin(
+        {
+          challengeToken: result.challengeToken,
+          code: code === '000000' ? '000001' : '000000',
+        },
+        context,
+      ),
+    ).rejects.toThrow();
+    expect(prisma.customerEmailChallenge.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: { failedAttempts: { increment: 1 } },
+      }),
+    );
+    expect(prisma.authSession.create).not.toHaveBeenCalled();
+    await expect(
+      service.completeCustomerEmailLogin(
+        { challengeToken: result.challengeToken, code },
+        context,
+      ),
+    ).resolves.toHaveProperty('session');
+    prisma.customerEmailChallenge.findUnique.mockResolvedValue({
+      ...challenge,
+      usedAt: new Date(),
+    });
+    await expect(
+      service.completeCustomerEmailLogin(
+        { challengeToken: result.challengeToken, code },
+        context,
+      ),
+    ).rejects.toThrow();
+    expect(prisma.authSession.create).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('administrator session persistence', () => {
   it.each([false, true])(
     'still requires MFA on a new sign-in with remember device = %s',

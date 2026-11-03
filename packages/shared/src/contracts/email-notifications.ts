@@ -4,6 +4,7 @@ import { paginationQuerySchema } from './pagination';
 export const emailTemplateKeys = [
   'email-verification',
   'password-reset',
+  'customer-email-code',
   'order-received',
   'order-approved',
   'payment-received',
@@ -22,6 +23,7 @@ export type EmailTemplateKey = z.infer<typeof emailTemplateKeySchema>;
 export const emailOutboxEventTypes = [
   'AUTH_EMAIL_VERIFICATION_REQUESTED',
   'AUTH_PASSWORD_RESET_REQUESTED',
+  'AUTH_CUSTOMER_EMAIL_CODE_REQUESTED',
   'EMAIL_ORDER_RECEIVED',
   'EMAIL_ORDER_APPROVED',
   'EMAIL_PAYMENT_RECEIVED',
@@ -53,6 +55,13 @@ const authEmailPayloadSchema = z
 const emailEventPayloadSchemas = {
   AUTH_EMAIL_VERIFICATION_REQUESTED: authEmailPayloadSchema,
   AUTH_PASSWORD_RESET_REQUESTED: authEmailPayloadSchema,
+  AUTH_CUSTOMER_EMAIL_CODE_REQUESTED: z
+    .object({
+      ...basePayloadShape,
+      challengeId: z.uuid(),
+      recipientEmail: z.email().max(320),
+    })
+    .strict(),
   EMAIL_ORDER_RECEIVED: uuidPayload('orderId'),
   EMAIL_ORDER_APPROVED: uuidPayload('orderId'),
   EMAIL_PAYMENT_RECEIVED: z

@@ -14,6 +14,12 @@ const common = { recipientName: 'Amina Rahman' };
 const models: EmailTemplateModel[] = [
   {
     ...common,
+    key: 'customer-email-code',
+    code: '012345',
+    expiresAt: new Date('2026-08-26T12:00:00.000Z'),
+  },
+  {
+    ...common,
     key: 'email-verification',
     actionUrl: 'https://billing.example.test/verify-email?token=test',
     expiresAt: new Date('2026-08-26T12:00:00.000Z'),

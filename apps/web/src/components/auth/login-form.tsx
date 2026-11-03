@@ -98,14 +98,16 @@ export function LoginForm({
     setError(undefined);
     const form = new FormData(event.currentTarget);
     try {
+      const input = {
+        challengeToken: challenge.challengeToken,
+        code: String(form.get('code') ?? '').trim(),
+      };
       const result = await authMutation<AuthenticatedSessionResponse>(
-        '/auth/login/two-factor',
+        challenge.method === 'email'
+          ? '/auth/login/email-code'
+          : '/auth/login/two-factor',
         'POST',
-        {
-          challengeToken: challenge.challengeToken,
-          code: String(form.get('code') ?? '').trim(),
-          rememberDevice,
-        },
+        challenge.method === 'email' ? input : { ...input, rememberDevice },
       );
       router.push(
         result.identity.role === 'ADMIN'
@@ -130,8 +132,9 @@ export function LoginForm({
       <AuthForm key="two-factor" onSubmit={submitTwoFactor}>
         <FormNotice error={error} />
         <p className="text-sm leading-6 text-slate-600">
-          Enter the code from your authenticator app, or one unused recovery
-          code.
+          {challenge.method === 'email'
+            ? 'Enter the six-digit code sent to your verified email address.'
+            : 'Enter the code from your authenticator app, or one unused recovery code.'}
         </p>
         <Field
           label="Authentication code"
@@ -140,7 +143,7 @@ export function LoginForm({
           placeholder="123456"
           required
         />
-        {rememberDeviceOption}
+        {challenge.method !== 'email' && rememberDeviceOption}
         <SubmitButton busy={busy}>Verify and sign in</SubmitButton>
         <button
           type="button"

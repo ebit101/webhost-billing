@@ -335,6 +335,8 @@ model User {
   currencyAuthorizationEvidence CurrencyAuthorizationEvidence[]
   adminTotpCredential           AdminTotpCredential?
   adminLoginChallenges          AdminLoginChallenge[]
+  customerSecurityPreference    CustomerSecurityPreference?
+  customerEmailChallenges       CustomerEmailChallenge[]
   passwordResetTokens           PasswordResetToken[]
   emailVerificationTokens       EmailVerificationToken[]
   notificationPreference        NotificationPreference?
@@ -503,6 +505,31 @@ model AdminLoginChallenge {
   @@index([userId, usedAt, expiresAt], map: "admin_login_challenges_user_active_idx")
   @@index([expiresAt], map: "admin_login_challenges_expires_at_idx")
   @@map("admin_login_challenges")
+}
+
+model CustomerSecurityPreference {
+  userId          String   @id @map("user_id") @db.Uuid
+  emailTwoStep    Boolean  @default(false) @map("email_two_step")
+  marketingConsent Boolean @default(false) @map("marketing_consent")
+  user            User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@map("customer_security_preferences")
+}
+
+model CustomerEmailChallenge {
+  id                 String    @id @default(uuid()) @db.Uuid
+  userId             String    @map("user_id") @db.Uuid
+  tokenHash          String    @unique @map("token_hash") @db.Char(64)
+  credentialBinding  String    @map("credential_binding") @db.Char(64)
+  deliveryCiphertext String    @map("delivery_ciphertext") @db.Text
+  ipAddressHash      String    @map("ip_address_hash") @db.Char(64)
+  expiresAt          DateTime  @map("expires_at") @db.Timestamptz(3)
+  usedAt             DateTime? @map("used_at") @db.Timestamptz(3)
+  failedAttempts     Int       @default(0) @map("failed_attempts")
+  user               User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([userId, usedAt, expiresAt])
+  @@map("customer_email_challenges")
 }
 
 model PasswordResetToken {

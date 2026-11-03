@@ -9,6 +9,7 @@ import {
   Inject,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Req,
   Res,
@@ -16,6 +17,8 @@ import {
 import type { ApiEnvironment } from '@webhost-billing/config';
 import {
   createApiSuccessResponse,
+  customerEmailLoginRequestSchema,
+  customerSecurityPreferenceUpdateSchema,
   emailVerificationRequestSchema,
   loginRequestSchema,
   passwordResetConfirmationSchema,
@@ -29,6 +32,8 @@ import {
   type AuthenticatedIdentity,
   type AuthenticationSession,
   type CustomerProfileSummary,
+  type CustomerEmailLoginRequest,
+  type CustomerSecurityPreferenceUpdate,
   type EmailVerificationRequest,
   type LoginRequest,
   type PasswordResetConfirmation,
@@ -192,6 +197,63 @@ export class AuthController {
   async twoFactorStatus(@CurrentAuth() auth: AuthRequestContext) {
     return createApiSuccessResponse(
       await this.authService.getTwoFactorStatus(auth),
+    );
+  }
+
+  @Public()
+  @Post('login/email-code')
+  @HttpCode(HttpStatus.OK)
+  @AuthRateLimit({
+    scope: 'customer-email-login',
+    limit: 5,
+    windowMs: 15 * 60 * 1_000,
+    includeEmail: false,
+  })
+  async completeCustomerEmailLogin(
+    @Body(new ZodValidationPipe(customerEmailLoginRequestSchema))
+    input: CustomerEmailLoginRequest,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const result = await this.authService.completeCustomerEmailLogin(
+      input,
+      this.securityContext(request),
+    );
+    this.cookies.setSessionCookie(
+      response,
+      result.token,
+      false,
+      result.session.expiresAt,
+    );
+    return createApiSuccessResponse({
+      identity: result.identity,
+      session: result.session,
+    });
+  }
+
+  @Get('customer-security-preferences')
+  @Roles('CUSTOMER')
+  async customerSecurityPreferences(@CurrentAuth() auth: AuthRequestContext) {
+    return createApiSuccessResponse(
+      await this.authService.getCustomerSecurityPreferences(auth),
+    );
+  }
+
+  @Patch('customer-security-preferences')
+  @Roles('CUSTOMER')
+  @AuthRateLimit({
+    scope: 'customer-security-preferences',
+    limit: 12,
+    windowMs: 15 * 60 * 1_000,
+    includeEmail: false,
+  })
+  async updateCustomerSecurityPreferences(
+    @CurrentAuth() auth: AuthRequestContext,
+    @Body(new ZodValidationPipe(customerSecurityPreferenceUpdateSchema))
+    input: CustomerSecurityPreferenceUpdate,
+  ) {
+    return createApiSuccessResponse(
+      await this.authService.updateCustomerSecurityPreferences(auth, input),
     );
   }
 

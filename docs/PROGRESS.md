@@ -2,14 +2,22 @@
 
 ## Status Summary
 
-- **Current command:** Command 180 — Use lightweight checks for documentation changes
-- **Current status:** Command 180 is implemented locally. Version `0.1.0-alpha.2` from Command 177 is live on staging.
+- **Current command:** Command 186 — Add customer email verification and marketing consent
+- **Current status:** Command 186 is implemented locally. Database and mail delivery integration still need verification.
 - **Last updated:** 2026-11-03
 - **Last recorded staging release:** Command 177, `887862020de1e472f303f359b793dccbedfb9b07`, deployed on 2026-11-03 (Asia/Dhaka).
-- **Next action:** Await the next owner-authorized development command.
-- **Next command authorized:** None after Command 180.
+- **Next action:** Await authorization to verify customer email sign-in with fictional data and a local mail provider.
+- **Next command authorized:** None after Command 186.
 
 ## Command Reports
+
+### Command 186 — Add customer email verification and marketing consent
+
+- **Status and date:** Implemented locally on 2026-11-03 (Asia/Dhaka). Integration verification is pending.
+- **Scope and files:** Added two controls to Profile & security and an email-code step to the login form. Updated API authentication, shared email and job contracts, the worker email resolver and template, and the Prisma migration, database verifier, and backup inventory.
+- **Validation:** Passed 35 API authentication tests, 9 web sign-in tests, 16 worker template tests, 8 recovery inventory tests, API, web and worker typechecks, Prisma schema validation, and the Git diff check. Docker was unavailable, so applying the migration and verifying queued mail delivery end to end remain pending.
+- **Decisions and remaining risks:** Both preferences default to off. Changing email verification requires the current password and signs out other sessions. Sign-in codes expire in five minutes and can be used once. Marketing consent records an opt-in or withdrawal independently of transactional email. Email sign-in depends on working transactional mail delivery.
+- **Exact recommended next command:** Verify the customer email sign-in and consent flow with fictional data and a local mail provider, including migration, delivery, consent withdrawal, and code expiration.
 
 ### Command 185 — Refine the customer portal navigation
 

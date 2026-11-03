@@ -20,6 +20,12 @@ export class EmailTemplateCatalog {
 
   private content(model: EmailTemplateModel): TemplateContent {
     switch (model.key) {
+      case 'customer-email-code':
+        return {
+          subject: 'Your sign-in code',
+          lead: `Your Webhost Billing sign-in code is ${model.code}.`,
+          secondary: `This code expires ${formatDateTime(model.expiresAt)}. If you did not try to sign in, you can ignore this email.`,
+        };
       case 'email-verification':
         return actionContent(
           'Verify your email address',
