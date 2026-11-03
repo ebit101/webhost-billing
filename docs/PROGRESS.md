@@ -2,14 +2,21 @@
 
 ## Status Summary
 
-- **Current command:** Command 179 — Refresh the README dashboard screenshot
-- **Current status:** Command 179 completed locally. Version `0.1.0-alpha.2` from Command 177 is live on staging.
+- **Current command:** Command 180 — Use lightweight checks for documentation changes
+- **Current status:** Command 180 is implemented locally. Version `0.1.0-alpha.2` from Command 177 is live on staging.
 - **Last updated:** 2026-11-03
 - **Last recorded staging release:** Command 177, `887862020de1e472f303f359b793dccbedfb9b07`, deployed on 2026-11-03 (Asia/Dhaka).
 - **Next action:** Await the next owner-authorized development command.
-- **Next command authorized:** None after Command 179.
+- **Next command authorized:** None after Command 180.
 
 ## Command Reports
+
+### Command 180 — Use lightweight checks for documentation changes
+
+- **Status and date:** Implemented locally on 2026-11-03 (Asia/Dhaka). Hosted verification awaits publication.
+- **Scope and files:** CI and CodeQL classify the complete changed path set via `scripts/docs/ci-change-scope.sh`. Changes limited to the README, documentation Markdown, or supported documentation images run offline documentation and image checks. Both required GitHub job names remain present. Mixed changes, missing baselines, manual runs, and scheduled CodeQL runs retain full checks. The staging script and runbook require explicit owner authorization and evidence that full CI and CodeQL ran for the exact release commit.
+- **Validation:** All four offline documentation validators passed. Verified YAML and shell/PowerShell syntax, the isolated README and JPEG change, rejection of an invalid JPEG, mixed-batch and manual full-check selection, and the Git diff.
+- **Exact recommended next command:** Authorize publication and hosted verification of the lightweight checks.
 
 ### Command 179 — Refresh the README dashboard screenshot
 

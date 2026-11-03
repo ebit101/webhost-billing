@@ -21,12 +21,23 @@ $sha = (git rev-parse HEAD).Trim()
 $remoteSha = (git rev-parse origin/main).Trim()
 if ($sha -ne $remoteSha) { throw 'Local main must match origin/main exactly.' }
 
-$checks = gh api "repos/ebit101/webhost-billing/commits/$sha/check-runs" --jq '.check_runs[] | [.name,.status,.conclusion] | @tsv'
+function Test-FullCheck([string] $Name, [string] $RequiredStep) {
+  foreach ($check in $checks) {
+    if ($check.name -ne $Name -or $check.status -ne 'completed' -or $check.conclusion -ne 'success') { continue }
+    if ($check.details_url -notmatch '^https://github\.com/ebit101/webhost-billing/actions/runs/\d+/job/(\d+)$') { continue }
+    $job = gh api "repos/ebit101/webhost-billing/actions/jobs/$($Matches[1])" | ConvertFrom-Json
+    if ($LASTEXITCODE -ne 0) { throw "Could not read GitHub job for $Name." }
+    if ($job.head_sha -eq $sha -and @($job.steps | Where-Object { $_.name -eq $RequiredStep -and $_.conclusion -eq 'success' }).Count -eq 1) {
+      return $true
+    }
+  }
+  return $false
+}
+
+$checks = gh api "repos/ebit101/webhost-billing/commits/$sha/check-runs" | ConvertFrom-Json | Select-Object -ExpandProperty check_runs
 if ($LASTEXITCODE -ne 0) { throw 'Could not read GitHub checks.' }
-$validate = @($checks | Where-Object { $_ -match '^Validate\s+completed\s+success$' })
-$codeql = @($checks | Where-Object { $_ -match '^Analyze JavaScript and TypeScript\s+completed\s+success$' })
-if ($validate.Count -ne 1 -or $codeql.Count -ne 1) {
-  throw "Validate and CodeQL must pass for $sha. Current checks: $($checks -join '; ')"
+if (!(Test-FullCheck 'Validate' 'Run package tests') -or !(Test-FullCheck 'Analyze JavaScript and TypeScript' 'Analyze')) {
+  throw "Full Validate and CodeQL must pass for $sha. Run both workflows manually on main if this commit only ran documentation checks."
 }
 
 $identity = (Resolve-Path -LiteralPath $IdentityFile).Path

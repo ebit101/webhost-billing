@@ -6661,3 +6661,10 @@ Validate and commit locally.
 Owner-authorized on 2026-11-03. Capture the current staging administrator
 dashboard for the README and exclude account details from the image.
 Validate and commit locally.
+
+## Command 180 — Use lightweight checks for documentation changes
+
+Owner-authorized on 2026-11-03. Run documentation and image checks for
+README and documentation-only changes while retaining full checks for
+application and infrastructure changes. Preserve the required check names
+and keep staging deployment explicitly owner-authorized.

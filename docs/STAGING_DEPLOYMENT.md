@@ -1006,6 +1006,10 @@ From a clean, synchronized `main` checkout in Windows PowerShell:
 .\scripts\deploy-staging.ps1 -IdentityFile C:\path\to\staging_ssh_key -Apply
 ```
 
+Run the deployment only after the owner requests it. If the exact `main`
+commit received documentation-only checks, manually dispatch both CI and
+CodeQL on `main` and wait for full validation before running the script.
+
 The first command checks the exact remote commit and GitHub `Validate` and
 CodeQL results without changing the server. `-Apply` archives that commit,
 uploads it over pinned-key SSH, verifies its SHA-256, copies the installation
