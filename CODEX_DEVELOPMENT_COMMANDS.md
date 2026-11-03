@@ -6638,3 +6638,14 @@ as tabs for Domains, Domain pricing and TLDs, and Domain registrars. Use the
 existing URLs and authorization checks. Retain the DNS defaults shortcut and
 highlight Domains in the sidebar across all three views. Validate and commit
 locally.
+
+## Command 177 — Publish and deploy the accumulated batch
+
+Owner-authorized on 2026-11-03. Reconcile the validated Commands 172–176
+with the canonical remote and deploy the accepted release to the existing
+staging installation. Preserve branch protections. If protected delivery
+requires a pull request, obtain the owner's explicit approval for that path.
+Require Validate and CodeQL for the release commit, verify an encrypted cutover
+backup, apply the pending checkout terms migration and verify staging health,
+environment, branding and provider gates. Keep checkout terms at the existing
+installation default until explicitly configured.

@@ -2,14 +2,24 @@
 
 ## Status Summary
 
-- **Current command:** Command 176 — Combine domain administration navigation
-- **Current status:** Completed and validated locally. Retained in the pending local batch.
+- **Current command:** Command 177 — Publish and deploy the accumulated batch
+- **Current status:** Local release preflight passed. Awaiting explicit approval for protected pull request delivery.
 - **Last updated:** 2026-11-03
 - **Last recorded staging release:** Command 171, `0e69add43cc1df8351a9c2485cb27afc6e7a22f3`, deployed on 2026-11-02 (Asia/Dhaka).
-- **Next action:** Review the domain workspace before authorizing publication of the accumulated batch.
-- **Next command authorized:** None after Command 176.
+- **Next action:** Approve the protected pull request path for this release batch.
+- **Next command authorized:** None after Command 177.
 
 ## Command Reports
+
+### Command 177 — Publish and deploy the accumulated batch
+
+- **Status and date:** Local release preflight passed on 2026-11-03 (Asia/Dhaka). Publication and staging deployment await the protected pull request path.
+- **Scope:** The owner requested publication and staging deployment of the accumulated batch. The application candidate is `805c39cbe7d2a3bdc3b6857551e38f399dc07eb8`, containing Commands 172–176. Fetched canonical main `7e7a234e7d65baddb4b2d314ef0c93a26d9140dc`. The application candidate is five commits ahead with zero remote-only commits.
+- **Files changed:** Command registry and this progress report. The five existing commits contain the release application and migration changes.
+- **Validation:** Node 24.20.0 and pinned pnpm 11.22.0. Shared, configuration, database and queue builds passed. The batch secret scan passed over all five application commits. The 41-migration inventory, including the nullable checkout terms acceptance column, applied in a fresh local fictional schema. All 799 frontend tests across 83 files passed with one worker and a local 15-second test deadline. All 139 isolated API tests across 20 suites passed and the guarded harness completed cleanup. The final fetch still shows zero remote-only application commits. Hosted validation is pending publication of the candidate.
+- **Staging preflight:** Read-only access verified the existing release `0e69add43cc1df8351a9c2485cb27afc6e7a22f3`, seven healthy services, HTTP 200 health and readiness, and 75 GB of free disk. Checked disabled payment, registrar, WhatsApp, new notifications and Virtualizor network gates. The cutover backup and installed verification belong to the authorized release after protected GitHub checks.
+- **Repository restriction:** Authenticated GitHub branch protection reports a required pull request, one approving review, an up-to-date branch, and required Validate and Analyze JavaScript and TypeScript checks. Administrator enforcement is off, and the previous owner push reported bypassing those same rules. Avoid using the owner exemption. The repository workflow requires the owner's explicit approval before opening a pull request.
+- **Exact next action:** Approve the protected pull request path for Command 177. Publish the candidate, wait for the required review and checks, merge normally, verify the exact main release, then deploy to staging with a verified backup.
 
 ### Command 176 — Combine domain administration navigation
 
