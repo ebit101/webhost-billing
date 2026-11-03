@@ -4,22 +4,40 @@
 [![CodeQL](https://github.com/ebit101/webhost-billing/actions/workflows/codeql.yml/badge.svg)](https://github.com/ebit101/webhost-billing/actions/workflows/codeql.yml)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
-Webhost Billing is an AI-assisted, open-source technical foundation for billing and
-hosting-service management at a single web-hosting business. It focuses on customer
-accounts, products, orders, invoices, payments, hosting provisioning, renewals, and
-support without reproducing the worldwide feature set of WHMCS.
+Webhost Billing is an open-source, self-hosted app for running billing and service
+operations at one web hosting business. Manage customers, hosting plans, domains,
+orders, invoices, payments, renewals, and support from one workspace.
 
-> [!WARNING]
-> **Technical preview — not fit for live use.** There is no stable `1.0` release.
-> Do not use real customer data, credentials, payments, email delivery, or hosting
-> provisioning. Evaluate only with fictional data and disabled/fake external
-> providers. Production remains `NO-GO` until every acceptance gate documented under
-> `docs/` has passed.
+**Current evaluation release:** [v0.1.0-alpha.2](https://github.com/ebit101/webhost-billing/tree/v0.1.0-alpha.2).
+Start with fictional data and disabled external providers. Live operation depends on
+completing the [production launch requirements](docs/PRODUCTION_LAUNCH_RUNBOOK.md).
+
+[Install the demo](#safe-local-evaluation) ·
+[Request a quote](#installation-help-and-managed-hosting) ·
+[See what changed](#latest-development-status)
 
 ## Latest development status
 
-Updated 2026-11-01, through Command 161. These capabilities describe current `main`;
-the immutable `v0.1.0-alpha.1` evaluation release is an older source snapshot.
+Updated 2026-11-03. The alpha.2 release adds:
+
+- **Servers workspace.** View server types and configure cPanel, Virtualizor VPS
+  nodes, Vultr Cloud, or ShoutCast. Virtualizor connection testing requires an
+  explicit environment flag. VPS provisioning is outside this release's scope.
+- **Tabbed General settings.** General opens by default. Editable tabs have
+  their own Save changes and Discard changes controls. New preferences cover the
+  public website URL, default customer country, and billing date displays.
+- **Versioned checkout terms.** When enabled, checkout records the accepted
+  terms revision with the order. The setting starts disabled.
+- **One Domains menu.** Open domain inventory, pricing and TLDs, and registrar
+  configuration from the same workspace.
+
+On GitHub, the README and installation guide now link directly to quote requests
+for installation help and managed evaluation hosting. Documentation and image
+changes run lightweight validation. App changes run the full suite.
+
+[Alpha.2 release notes](docs/releases/v0.1.0-alpha.2.md)
+
+## What you can evaluate
 
 - **Client workspace:** Summary, Profile, Products/services, Domains, Orders,
   Invoices, Payments, Support and Email history retain the selected client.
@@ -47,18 +65,6 @@ the immutable `v0.1.0-alpha.1` evaluation release is an older source snapshot.
   and provisioning states, idempotent account creation, at most five safe attempts
   and held uncertain results prevent blind creation retries. A new submission key
   cannot reset creation history or bypass reconciliation.
-
-Command 156 passed 62 fictional API/database lifecycle cases using fake providers,
-including combined billing, sample-payment review, successful hosting, temporary
-retry and a response lost after account creation. Command 157 deployed the validated
-retry fix `6e5856facabdfa336fff697dae622b63f6610cdd` to operator-controlled staging
-after backup verification, with installed-guard smoke tests and read-only acceptance.
-Command 161 deployed validated recovery/toolchain repairs and the complete domain
-inventory at `e2c207a72511b13578dba84e63979ea794449455`, with fresh verified backups,
-installed read-model checks and signed-in pagination/search/client-link acceptance.
-Staging SMTP remains active; payment, real hosting, registrar and WhatsApp providers
-remain disabled. This evidence does not establish production readiness or actual
-bank settlement, and staging is not a public evaluation target.
 
 See the [capability matrix](docs/CAPABILITY_MATRIX.md),
 [latest command reports](docs/PROGRESS.md),
@@ -96,17 +102,28 @@ The workspace uses Node.js 24 LTS, pnpm, TypeScript, PostgreSQL, Prisma, Redis, 
 
 ## Requirements
 
-- Node.js 24 LTS and pinned pnpm 11.22.0, or Docker
+- Node.js 24 LTS with Corepack and pinned pnpm 11.22.0
+- Docker with Compose v2 for the local demo and database services
 - Git
 
 ## Safe local evaluation
 
-New users can start with the [installation guide](docs/INSTALLATION_GUIDE.md)
-for a step-by-step setup and options for installation help or managed evaluation.
+See the [installation guide](docs/INSTALLATION_GUIDE.md) for step-by-step local
+setup.
 
-With Node.js 24/Corepack and Docker running, start the complete fictional-data demo:
+### Installation help and managed hosting
+
+Installation help and managed hosting for evaluation are available on request,
+with pricing by quote. Request a quote by emailing
+[speedhost09@gmail.com](mailto:speedhost09@gmail.com) or messaging
+[+8801782391434 on WhatsApp](https://wa.me/8801782391434).
+
+With Node.js 24/Corepack and Docker running, clone the tagged release and start
+the fictional-data demo:
 
 ```bash
+git clone --branch v0.1.0-alpha.2 --depth 1 https://github.com/ebit101/webhost-billing.git
+cd webhost-billing
 corepack pnpm demo:doctor
 corepack pnpm demo:up
 ```

@@ -6673,3 +6673,8 @@ and keep staging deployment explicitly owner-authorized.
 
 Owner-authorized on 2026-11-03. Document local alpha setup, installation help,
 and managed evaluation options. Link the guide from the README.
+
+## Command 182 — Refresh the README for alpha.2
+
+Owner-authorized on 2026-11-03. Refresh the README with the current release,
+evaluation setup, quote links, and latest repository changes.

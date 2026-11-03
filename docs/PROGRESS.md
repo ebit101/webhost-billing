@@ -11,6 +11,13 @@
 
 ## Command Reports
 
+### Command 182 — Refresh the README for alpha.2
+
+- **Status and date:** Completed locally on 2026-11-03 (Asia/Dhaka).
+- **Scope and files:** Rewrote the README introduction, documented the alpha.2 features and documentation checks, and added clone instructions for the tagged evaluation release. Kept the public quote links and the production launch requirements.
+- **Validation:** Checked local Markdown paths and section anchors, the release notes, and the Git diff.
+- **Exact recommended next command:** Authorize publication of the rewritten README on GitHub.
+
 ### Command 181 — Write the user installation guide
 
 - **Status and date:** Drafted locally on 2026-11-03 (Asia/Dhaka).
