@@ -58,8 +58,3 @@ Email [speedhost09@gmail.com](mailto:speedhost09@gmail.com?subject=Webhost%20Bil
 or message [+8801782391434 on WhatsApp](https://wa.me/8801782391434) for a quote. Include how long you want to evaluate the app and what help
 you need. Confirm the hosting scope, upgrades, backups, and support before
 booking.
-
-The current alpha is for evaluation with fictional data. Keep real customer
-records, provider credentials, and live transactions out of both local and
-hosted evaluations. Production hosting depends on the
-[production launch requirements](PRODUCTION_LAUNCH_RUNBOOK.md).
