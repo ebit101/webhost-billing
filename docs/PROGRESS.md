@@ -2,14 +2,22 @@
 
 ## Status Summary
 
-- **Current command:** Command 192 — Add customer hosting cancellation requests
-- **Current status:** Customer hosting cancellation requests and the suspension workflow are implemented locally.
+- **Current command:** Command 193 — Verify hosting cancellation and rehearse suspension recovery
+- **Current status:** Hosting cancellation and temporary suspension recovery are verified locally with a fake hosting provider.
 - **Last updated:** 2026-11-03
 - **Last recorded staging release:** Command 177, `887862020de1e472f303f359b793dccbedfb9b07`, deployed on 2026-11-03 (Asia/Dhaka).
-- **Next action:** Await authorization to verify cancellation through Chromium, the local mail preview and the fake hosting provider.
-- **Next command authorized:** None after Command 192.
+- **Next action:** Await authorization to rehearse pilot setup and manual payment with fictional data.
+- **Next command authorized:** None after Command 193.
 
 ## Command Reports
+
+### Command 193 — Verify hosting cancellation and rehearse suspension recovery
+
+- Verified locally on 2026-11-03 (Asia/Dhaka). Added `apps/web/e2e/specs/hosting-cancellation.spec.ts` and registered the command. All 44 migrations applied in isolated PostgreSQL. Chromium, the local Redis queue, and the real worker exercised customer withdrawal, scheduled suspension, immediate approval, and three confirmation messages delivered to the local `.eml` preview.
+- Rehearsed a temporary failure before any provider call. A competing fictional hosting operation blocked the approved immediate suspension and the service stayed active. After resolving the fixture operation, **Automation → Retry temporary job** completed exactly one fake suspension, recorded one administrator retry audit entry, and returned the completed status to the customer portal.
+- Used fixture timestamps to make the scheduled request due and reproduce the expired deferral window. The first run exposed an ambiguous withdrawal selector. A later attempt navigated from the admin login before the dashboard loaded. The regression uses an exact withdrawal match and waits for the signed-in dashboard.
+- The browser regression type check and the Automation UI test for reconciliation-required failures passed. The recovery rehearsal covered a temporary pre-provider failure using the fake hosting panel. No deployment ran.
+- The recommended next command is to rehearse one-plan pilot setup and manual payment with fictional data, including duplicate submission and settlement checks.
 
 ### Command 192 — Add customer hosting cancellation requests
 

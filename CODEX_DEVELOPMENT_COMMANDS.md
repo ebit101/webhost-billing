@@ -6745,3 +6745,11 @@ email, withdrawal before processing, and an administrator queue. Schedule
 hosting suspension through the verified worker and stop future hosting
 renewals while the request is open or completed. Keep existing invoices,
 domain renewal, refunds and permanent deletion separate. Validate locally.
+
+## Command 193 — Verify hosting cancellation and rehearse suspension recovery
+
+Owner-authorized on 2026-11-03. Exercise customer requests, withdrawal,
+administrator approval, delayed suspension and confirmation mail through
+Chromium and the local worker with fictional accounts. Rehearse a safe
+administrator retry of a temporarily failed suspension. Record the results
+locally.
