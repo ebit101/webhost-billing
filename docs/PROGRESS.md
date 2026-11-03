@@ -11,6 +11,12 @@
 
 ## Command Reports
 
+### Direct SSH deployment handoff
+
+- Added the dedicated PowerShell launcher and handoff guide for future owner-authorized updates to my.speedhost.bd. The launcher requires a full commit SHA, defaults to read-only SSH preflight, and uses the existing server procedure for archive verification, backup, migration and health checks when applied.
+- Verified preflight against the live host with an existing authorized identity. The dedicated host-specific key name is configured, and that key still needs enrollment if the default path will be used. The launcher has yet to perform an applied release.
+- The next authorized release can use the handoff steps after the candidate is validated. PR #102 has separate validation for the pending release.
+
 ### Command 193 — Verify hosting cancellation and rehearse suspension recovery
 
 - Verified locally on 2026-11-03 (Asia/Dhaka). Added `apps/web/e2e/specs/hosting-cancellation.spec.ts` and registered the command. All 44 migrations applied in isolated PostgreSQL. Chromium, the local Redis queue, and the real worker exercised customer withdrawal, scheduled suspension, immediate approval, and three confirmation messages delivered to the local `.eml` preview.
