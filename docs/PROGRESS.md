@@ -3,15 +3,18 @@
 ## Status Summary
 
 - **Current command:** Command 177 — Publish and deploy the accumulated batch
-- **Current status:** The historical database fixture repair passed locally. Protected release PR #91 awaits fresh hosted validation and eligible approval.
+- **Current status:** Command 177 complete. Version `0.1.0-alpha.2` is live on staging.
 - **Last updated:** 2026-11-03
-- **Last recorded staging release:** Command 171, `0e69add43cc1df8351a9c2485cb27afc6e7a22f3`, deployed on 2026-11-02 (Asia/Dhaka).
-- **Next action:** Verify the required checks on the repaired PR #91 head and obtain an eligible approval before merging and deploying.
+- **Last recorded staging release:** Command 177, `887862020de1e472f303f359b793dccbedfb9b07`, deployed on 2026-11-03 (Asia/Dhaka).
+- **Next action:** Verify the Servers, Domains, and General settings changes during staging acceptance.
 - **Next command authorized:** None after Command 177.
 
 ## Command Reports
 
 ### Command 177 — Publish and deploy the accumulated batch
+
+- **Completed on 2026-11-03 (Asia/Dhaka):** Merged PR #91 normally after the owner updated the review requirements and GitHub reported a clean merge gate. Validate and CodeQL passed on the exact merge commit `887862020de1e472f303f359b793dccbedfb9b07`. Deployed that commit to staging and pushed the annotated `v0.1.0-alpha.2` tag.
+- **Cutover evidence:** Verified encrypted backup `webhost-billing-webhost_billing_staging-20261103T072630Z.dump.gpg` and recorded rollback inventory under `/srv/webhost-billing-staging/rollback/release-20261103T072625Z-887862020de1e472f303f359b793dccbedfb9b07`. The checkout terms migration applied successfully, all seven services were healthy, and the public storefront, shared hosting, health, and readiness endpoints returned HTTP 200. Verified the installed version and browser API origin. Administrator acceptance remains pending. The next recommended command is read-only staging acceptance of Servers, Domains, and General settings.
 
 - **PR #91 database repair (2026-11-03, Asia/Dhaka):** The release candidate is version `0.1.0-alpha.2`. The first hosted Validate run failed because Prisma requested `orders.terms_acceptance` when creating an order in the intentionally historical currency-control schema. The fixture in `packages/database/test/currency-control.integration.spec.ts` now selects the order ID needed by the invoice fixture. The migration history and preservation assertions remain intact. CodeQL passed on the original candidate. Required checks and eligible approval gate the repaired candidate, and staging still runs the prior release.
 - **Repair validation:** The broader run identified the same Prisma selection issue in the currency-identity fixture. Applied the same ID-only selection there and in the currency-intent-storage and currency-authorization-storage historical fixtures under `packages/database/test`. All 41 migrations applied in an isolated local schema, all 91 tests in the guarded database acceptance run passed, and fictional seed and schema verification passed. `git diff --check` passed.
