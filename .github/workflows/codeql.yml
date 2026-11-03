@@ -27,15 +27,24 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
+          fetch-depth: 0
           persist-credentials: false
 
+      - name: Classify changed files
+        id: scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: bash scripts/docs/ci-change-scope.sh "$BASE_SHA" >> "$GITHUB_OUTPUT"
+
       - name: Initialize CodeQL
+        if: steps.scope.outputs.docs_only != 'true'
         uses: github/codeql-action/init@7999b86c43a865dc79d8923397f35af22de63401 # v4
         with:
           languages: javascript-typescript
           build-mode: none
 
       - name: Analyze
+        if: steps.scope.outputs.docs_only != 'true'
         uses: github/codeql-action/analyze@7999b86c43a865dc79d8923397f35af22de63401 # v4
         with:
           category: /language:javascript-typescript
