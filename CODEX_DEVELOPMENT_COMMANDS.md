@@ -6655,3 +6655,9 @@ installation default until explicitly configured.
 Owner-authorized on 2026-11-03. Show the installed web package version and a
 link to the repository changelog at the right of the administrator header.
 Validate and commit locally.
+
+## Command 179 — Refresh the README dashboard screenshot
+
+Owner-authorized on 2026-11-03. Capture the current staging administrator
+dashboard for the README and exclude account details from the image.
+Validate and commit locally.

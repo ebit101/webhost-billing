@@ -121,7 +121,7 @@ changing business or Docker state. For a destructive return to first-run fiction
 state, follow the exact confirmation-gated reset procedure in the walkthrough; never
 use a generic Docker prune.
 
-![Webhost Billing safe-demo administrator view](docs/assets/demo/admin-dashboard.png)
+![Webhost Billing staging dashboard showing the administrator navigation and business overview](docs/assets/demo/staging-admin-dashboard.jpg)
 
 Follow the five-minute [`safe evaluation walkthrough`](docs/SAFE_EVALUATION_DEMO.md),
 check the [`capability and limitation matrix`](docs/CAPABILITY_MATRIX.md), or review

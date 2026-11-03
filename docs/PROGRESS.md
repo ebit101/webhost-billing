@@ -2,14 +2,21 @@
 
 ## Status Summary
 
-- **Current command:** Command 178 — Show the version and changelog in the admin header
-- **Current status:** Command 178 validated locally. Version `0.1.0-alpha.2` from Command 177 is live on staging.
+- **Current command:** Command 179 — Refresh the README dashboard screenshot
+- **Current status:** Command 179 completed locally. Version `0.1.0-alpha.2` from Command 177 is live on staging.
 - **Last updated:** 2026-11-03
 - **Last recorded staging release:** Command 177, `887862020de1e472f303f359b793dccbedfb9b07`, deployed on 2026-11-03 (Asia/Dhaka).
 - **Next action:** Await the next owner-authorized development command.
-- **Next command authorized:** None after Command 178.
+- **Next command authorized:** None after Command 179.
 
 ## Command Reports
+
+### Command 179 — Refresh the README dashboard screenshot
+
+- **Status and date:** Completed locally on 2026-11-03 (Asia/Dhaka).
+- **Scope and files:** Captured the current signed-in staging dashboard and cropped out the administrator account footer and audit activity. Updated the README image reference to `docs/assets/demo/staging-admin-dashboard.jpg`. The local evaluation guide keeps its existing screenshot.
+- **Validation:** Visually checked the staging capture and verified the README image path and Git diff. Publication is pending.
+- **Exact recommended next command:** Authorize publication of the accumulated local batch.
 
 ### Command 178 — Show the version and changelog in the admin header
 
