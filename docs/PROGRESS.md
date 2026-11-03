@@ -3,15 +3,18 @@
 ## Status Summary
 
 - **Current command:** Command 177 — Publish and deploy the accumulated batch
-- **Current status:** Local release preflight passed. Awaiting explicit approval for protected pull request delivery.
+- **Current status:** The historical database fixture repair passed locally. Protected release PR #91 awaits fresh hosted validation and eligible approval.
 - **Last updated:** 2026-11-03
 - **Last recorded staging release:** Command 171, `0e69add43cc1df8351a9c2485cb27afc6e7a22f3`, deployed on 2026-11-02 (Asia/Dhaka).
-- **Next action:** Approve the protected pull request path for this release batch.
+- **Next action:** Verify the required checks on the repaired PR #91 head and obtain an eligible approval before merging and deploying.
 - **Next command authorized:** None after Command 177.
 
 ## Command Reports
 
 ### Command 177 — Publish and deploy the accumulated batch
+
+- **PR #91 database repair (2026-11-03, Asia/Dhaka):** The release candidate is version `0.1.0-alpha.2`. The first hosted Validate run failed because Prisma requested `orders.terms_acceptance` when creating an order in the intentionally historical currency-control schema. The fixture in `packages/database/test/currency-control.integration.spec.ts` now selects the order ID needed by the invoice fixture. The migration history and preservation assertions remain intact. CodeQL passed on the original candidate. Required checks and eligible approval gate the repaired candidate, and staging still runs the prior release.
+- **Repair validation:** All 41 migrations applied locally in an isolated test schema. The currency-control integration suite passed all 14 tests, including the historical preservation case. `git diff --check` passed.
 
 - **Status and date:** Local release preflight passed on 2026-11-03 (Asia/Dhaka). Publication and staging deployment await the protected pull request path.
 - **Scope:** The owner requested publication and staging deployment of the accumulated batch. The application candidate is `805c39cbe7d2a3bdc3b6857551e38f399dc07eb8`, containing Commands 172–176. Fetched canonical main `7e7a234e7d65baddb4b2d314ef0c93a26d9140dc`. The application candidate is five commits ahead with zero remote-only commits.
