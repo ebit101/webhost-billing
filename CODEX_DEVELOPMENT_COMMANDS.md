@@ -6683,3 +6683,9 @@ evaluation setup, quote links, and latest repository changes.
 
 Owner-authorized on 2026-11-03. Verify one fictional signup-to-renewal
 journey and record the evidence, gaps, and Phase 2 backlog. No deployment.
+
+## Command 184 — Review open GitHub security alerts
+
+Owner-authorized on 2026-11-03. Review the seven CodeQL and two Dependabot
+alerts, fix confirmed issues, document false positives and mitigations, and
+run focused checks. No deployment.

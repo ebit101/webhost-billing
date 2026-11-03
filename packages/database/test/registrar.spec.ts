@@ -967,6 +967,12 @@ test('exact decimal tokens never round financial values', () => {
     losslessRegistrarJson('['.repeat(18) + '0' + ']'.repeat(18)),
   );
   assert.throws(() => losslessRegistrarJson('{"__proto__":{}}'));
+  assert.deepEqual(
+    losslessRegistrarJson(
+      String.raw`{"key42":"\"99","values":[-0,1.250e+03,true,null,2]}`,
+    ),
+    { key42: '"99', values: ['-0', '1.250e+03', true, null, '2'] },
+  );
 });
 test('encrypted data is bound to account, mode, purpose and version', () => {
   const cipher = new RegistrarCipher(

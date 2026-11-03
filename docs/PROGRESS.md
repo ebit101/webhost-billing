@@ -11,13 +11,21 @@
 
 ## Command Reports
 
+### Command 184 — Review open GitHub security alerts
+
+- **Status and date:** Completed locally on 2026-11-03 (Asia/Dhaka).
+- **Scope and files:** Updated API Helmet configuration, the registrar parser and its unit test, and the staging origin verifier. Recorded the disposition of all nine alerts in `docs/SECURITY_ALERT_REVIEW.md`.
+- **Validation:** Passed 25 registrar tests, 18 currency request tests, 28 tooling mitigation tests, API typechecking, focused loopback checks for the CSP and staging verifier, and the Git diff check.
+- **Decisions and remaining risks:** Three alerts are fixture-only false positives. Both dependency mitigations passed installed regression checks. GitHub alert status requires a hosted rescan or maintainer review. No deployment ran.
+- **Exact recommended next command:** Authorize publication and hosted verification of Command 184.
+
 ### Command 183 — Verify the fictional pilot customer journey
 
 - **Status and date:** Hosted evidence reviewed on 2026-11-03 (Asia/Dhaka). A fresh local replay was blocked by the unavailable Docker engine.
 - **Scope and files:** Documented signup, checkout, fake payment and provisioning, renewal, overdue suspension, paid reactivation, and support in `docs/PHASE_2_PILOT.md`. Updated the command registry and progress report.
 - **Validation:** GitHub run 41640001884 passed all 36 browser tests, including the complete hosting customer and administrator lifecycle. The job also passed API integration, critical invariants, and isolated backup and recovery. Verified the tested tree matched `origin/main` at review time.
 - **Gaps and decisions:** The journey uses fake providers, a test database verification token, and fixed-clock automation helpers. Prioritized manual-payment replay, scheduled renewal and message delivery, operator setup, recovery, and staff follow-up. No deployment ran.
-- **Exact recommended next command:** Authorize Command 184 — Rehearse pilot setup and manual payment.
+- **Exact recommended next command:** Rehearse pilot setup and manual payment after the security review.
 
 ### Command 182 — Refresh the README for alpha.2
 

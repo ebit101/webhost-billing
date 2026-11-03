@@ -40,6 +40,10 @@ export function losslessRegistrarJson(
     // Validate shape before JSON.parse can silently overwrite duplicated fields.
     let position = 0;
     let nodes = 0;
+    let copiedThrough = 0;
+    const segments: string[] = [];
+    const primitive =
+      /(?:true|false|null|(-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?))/y;
     const whitespace = () => {
       while (/^[\t\n\r ]$/.test(body[position] ?? '')) position++;
     };
@@ -92,22 +96,23 @@ export function losslessRegistrarJson(
           whitespace();
         }
       }
-      const token =
-        /^(?:true|false|null|-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?)/.exec(
-          body.slice(position),
-        );
+      primitive.lastIndex = position;
+      const token = primitive.exec(body);
       if (!token) throw new Error();
-      position += token[0].length;
+      if (token[1] !== undefined) {
+        segments.push(
+          body.slice(copiedThrough, position),
+          JSON.stringify(token[1]),
+        );
+        copiedThrough = primitive.lastIndex;
+      }
+      position = primitive.lastIndex;
     };
     value(0);
     whitespace();
     if (position !== body.length) throw new Error();
-    return JSON.parse(
-      body.replace(
-        /"(?:[^"\\]|\\.)*"|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?/g,
-        (token) => (token.startsWith('"') ? token : JSON.stringify(token)),
-      ),
-    ) as unknown;
+    segments.push(body.slice(copiedThrough));
+    return JSON.parse(segments.join('')) as unknown;
   } catch {
     throw new Error('Invalid registrar response.');
   }

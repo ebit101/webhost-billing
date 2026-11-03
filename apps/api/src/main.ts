@@ -24,7 +24,6 @@ async function bootstrap() {
   app.enableShutdownHooks(['SIGINT', 'SIGTERM']);
   app.use(
     helmet({
-      contentSecurityPolicy: false,
       crossOriginResourcePolicy: { policy: 'same-site' },
       hsts:
         environment.NODE_ENV === 'production'
