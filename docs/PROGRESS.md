@@ -2,14 +2,22 @@
 
 ## Status Summary
 
-- **Current command:** Command 188 — Verify read-only customer support sessions end to end
-- **Current status:** Customer support sessions passed local database-backed API and Chromium verification. Command 186 mail delivery verification is pending.
+- **Current command:** Command 189 — Verify customer email two-step sign-in and marketing consent
+- **Current status:** Customer email sign-in and marketing consent passed isolated browser and mail-preview verification.
 - **Last updated:** 2026-11-03
 - **Last recorded staging release:** Command 177, `887862020de1e472f303f359b793dccbedfb9b07`, deployed on 2026-11-03 (Asia/Dhaka).
-- **Next action:** Await authorization to verify customer email two-step sign-in and marketing consent with fictional data and a local mail provider.
-- **Next command authorized:** None after Command 188.
+- **Next action:** Await authorization to rehearse pilot setup and manual payment with fictional data.
+- **Next command authorized:** None after Command 189.
 
 ## Command Reports
+
+### Command 189 — Verify customer email two-step sign-in and marketing consent
+
+- Verified locally on 2026-11-03 (Asia/Dhaka). No deployment ran.
+- Added `apps/web/e2e/specs/customer-email-sign-in.spec.ts` and registered the command. The browser test covers the default off settings, opt-in and withdrawal after reload, enrollment with the current password, and sign-in with a code from the worker's local mail preview.
+- Applied all 43 migrations in an isolated PostgreSQL schema and used an isolated Redis instance. The Chromium test and browser test type check passed. The real worker published and delivered two code messages through the preview provider. The browser rejected the expired code without setting a session cookie, accepted the fresh code, and still showed consent as withdrawn after sign-in.
+- Checked the five-minute deadline at creation, then advanced expiry by moving the fictional challenge deadline into the past. The first browser attempt stalled on a Next.js development overlay that intercepted logout. The regression starts a clean browser session for the sign-in check. Delivery was verified through local `.eml` files.
+- The recommended next command is to rehearse one-plan pilot setup and manual payment with fictional data, including duplicate submission and settlement checks.
 
 ### Command 188 — Verify read-only customer support sessions end to end
 

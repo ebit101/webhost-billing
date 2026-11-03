@@ -6716,3 +6716,10 @@ isolated local database. Verify the full-administrator restriction, required
 and audited support reason, customer ownership, blocked writes, expiry, and
 return to the original administrator session with fictional accounts. Record
 the results locally. No deployment.
+
+## Command 189 — Verify customer email two-step sign-in and marketing consent
+
+Owner-authorized on 2026-11-03. Verify the customer profile settings and
+email sign-in end to end with fictional accounts and a local mail provider.
+Check code delivery, expiry, and consent withdrawal. Record the results
+locally. No deployment.
