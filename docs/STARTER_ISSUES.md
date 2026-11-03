@@ -286,8 +286,7 @@ English guide while keeping the English guide canonical.
 
 Acceptance:
 
-- preserves “technical preview,” “not fit for live use,” fictional-data-only, and
-  production `NO-GO` meanings;
+- preserves the fictional-data and credential-handling instructions;
 - does not translate commands, routes, email addresses, or filenames;
 - contains no generated credential value or live-system instruction; and
 - passes Markdown formatting and link checks.

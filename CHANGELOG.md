@@ -218,8 +218,7 @@ and will be called out in release notes.
   ownership-bound authenticated summary, bounded recent records, and explicit
   loading, empty, and error states.
 - Positioned the project explicitly as an AI-assisted technical preview, documented
-  its human-directed and human-reviewed Codex work path, and strengthened the warning
-  that it is not fit for live use.
+  its human-directed and human-reviewed Codex work path, and clarified the scope of evaluation.
 - Made production-built web images support a separate container-internal API origin
   while retaining the public origin for browser traffic and HTTPS-only production
   headers.
