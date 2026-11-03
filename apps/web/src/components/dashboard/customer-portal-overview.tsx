@@ -1,16 +1,12 @@
 'use client';
+import { InvoiceDateText } from '../invoices/invoice-date-text';
 import { sentenceCaseLabel } from '@webhost-billing/shared';
 
 import type { CustomerPortalSummary } from '@webhost-billing/shared';
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { authenticatedGet } from '../../lib/auth-api';
-import {
-  formatMinor,
-  invoiceDate,
-  invoiceDueDate,
-  invoiceTone,
-} from '../invoices/invoice-ui';
+import { formatMinor, invoiceTone } from '../invoices/invoice-ui';
 import { serviceTone } from '../services/service-ui';
 import { ticketTone } from '../support/support-ui';
 import { Button, buttonStyles } from '../ui/button';
@@ -102,7 +98,9 @@ export function CustomerPortalOverview({ customerId }: { customerId: string }) {
         key: 'renewal',
         header: 'Next due',
         align: 'right',
-        render: (service) => invoiceDate(service.nextDueAt),
+        render: (service) => (
+          <InvoiceDateText value={service.nextDueAt} audience="client" />
+        ),
       },
     ],
     [],
@@ -184,7 +182,14 @@ export function CustomerPortalOverview({ customerId }: { customerId: string }) {
                     ? 'invoice'
                     : 'invoices'}
                   . Next: {billing.nextInvoice.invoiceNumber}, due{' '}
-                  {invoiceDueDate(billing.nextInvoice.dueAt)}.
+                  {
+                    <InvoiceDateText
+                      value={billing.nextInvoice.dueAt}
+                      audience="client"
+                      calendar
+                    />
+                  }
+                  .
                 </p>
                 <Link
                   href={`/portal/invoices/${billing.nextInvoice.id}`}
@@ -279,7 +284,13 @@ export function CustomerPortalOverview({ customerId }: { customerId: string }) {
                   activeRenewal.recurringAmount.amount,
                   activeRenewal.recurringAmount.currency,
                 )}{' '}
-                due {invoiceDate(activeRenewal.nextDueAt)}
+                due{' '}
+                {
+                  <InvoiceDateText
+                    value={activeRenewal.nextDueAt}
+                    audience="client"
+                  />
+                }
               </p>
               <Link
                 href={`/portal/services/${activeRenewal.id}`}

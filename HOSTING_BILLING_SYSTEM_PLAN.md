@@ -8,6 +8,11 @@
 
 **Technical identifier:** `webhost-billing`
 
+**Display preferences direction — 2026-11-03:** Command 174 adds a public
+website URL, a default country for new customer forms, and separate admin and
+client date formats with previews for web billing views. The saved settings
+affect presentation and initial form values.
+
 **General settings direction — 2026-11-03:** Command 173 organises existing
 administrator settings into task tabs. Open General by default and let each
 editable tab save or discard its own draft. Keep protected SMTP and integration

@@ -151,7 +151,10 @@ export function InvoiceDetail({
       {mode === 'admin' && invoice.status === 'DRAFT' ? (
         <InvoiceDraftEditor invoice={invoice} onSaved={setInvoice} />
       ) : null}
-      <InvoiceDocument invoice={invoice} />
+      <InvoiceDocument
+        invoice={invoice}
+        audience={mode === 'admin' ? 'admin' : 'client'}
+      />
       {mode === 'customer' ? (
         <CustomerGatewayPayment invoice={invoice} />
       ) : null}

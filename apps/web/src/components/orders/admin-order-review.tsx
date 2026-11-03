@@ -1,4 +1,5 @@
 'use client';
+import { InvoiceDateText } from '../invoices/invoice-date-text';
 import { sentenceCaseLabel } from '@webhost-billing/shared';
 
 import {
@@ -13,7 +14,6 @@ import { authenticatedGet } from '../../lib/auth-api';
 import { Button, buttonStyles } from '../ui/button';
 import { EmptyState, ErrorState, LoadingState } from '../ui/feedback-state';
 import { formatMinor } from './order-ui';
-import { invoiceDueDate } from '../invoices/invoice-ui';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 const responseSchema = apiSuccessResponseSchema(orderSchema);
@@ -232,7 +232,13 @@ function ReviewDetails({
               {sentenceCaseLabel(order.invoice.status)}
             </Fact>
             <Fact label="Invoice due">
-              {invoiceDueDate(order.invoice.dueAt)}
+              {
+                <InvoiceDateText
+                  value={order.invoice.dueAt}
+                  audience="admin"
+                  calendar
+                />
+              }
             </Fact>
             <Fact label="Invoice total">
               {formatMinor(

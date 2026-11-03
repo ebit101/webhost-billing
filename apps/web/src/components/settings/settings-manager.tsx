@@ -2,6 +2,10 @@
 
 import {
   DEFAULT_BUSINESS_SETTINGS,
+  DEFAULT_PUBLIC_PREFERENCES,
+  formatCalendarDate,
+  dateDisplayFormatSchema,
+  type PublicPreferences,
   PARTIAL_PAYMENT_POLICY_CONFIRMATION,
   type BusinessSettings,
   type PatchBusinessSettingsRequest,
@@ -11,6 +15,7 @@ import {
 } from '@webhost-billing/shared';
 import Link from 'next/link';
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
+import { refreshPublicPreferences } from '../../lib/public-preferences';
 import { authenticatedGet, authMutation } from '../../lib/auth-api';
 import { SmtpSettingsPanel } from './smtp-settings-panel';
 import { Button } from '../ui/button';
@@ -51,12 +56,17 @@ function changed<T>(draft: T, saved: T): T | undefined {
 
 function tabChanges(
   tab: Tab,
-  draft: BusinessSettings,
-  saved: BusinessSettings,
+  draft: SettingsOverview,
+  saved: SettingsOverview,
 ): PatchBusinessSettingsRequest {
+  const { website, ...display } =
+    draft.preferences ?? DEFAULT_PUBLIC_PREFERENCES;
+  const { website: savedWebsite, ...savedDisplay } =
+    saved.preferences ?? DEFAULT_PUBLIC_PREFERENCES;
   switch (tab) {
     case 'general':
       return {
+        website: changed(website, savedWebsite),
         businessIdentity: changed(
           draft.businessIdentity,
           saved.businessIdentity,
@@ -64,6 +74,7 @@ function tabChanges(
       };
     case 'localisation':
       return {
+        displayPreferences: changed(display, savedDisplay),
         localization: changed(
           { currency: draft.currency, timeZone: draft.timeZone },
           { currency: saved.currency, timeZone: saved.timeZone },
@@ -141,6 +152,7 @@ const tabFields: Record<Tab, readonly (keyof BusinessSettings)[]> = {
 
 export function SettingsManager() {
   const [overview, setOverview] = useState(initialOverview);
+  const preferences = overview.preferences ?? DEFAULT_PUBLIC_PREFERENCES;
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState('');
   const [error, setError] = useState('');
@@ -265,6 +277,16 @@ export function SettingsManager() {
     setOverview((current) => ({ ...current, [key]: value }));
   }
 
+  function updatePreferences(values: Partial<PublicPreferences>) {
+    setOverview((current) => ({
+      ...current,
+      preferences: {
+        ...(current.preferences ?? DEFAULT_PUBLIC_PREFERENCES),
+        ...values,
+      },
+    }));
+  }
+
   function requestSave() {
     if (!savedOverview || saving) return;
     clearMessages();
@@ -286,6 +308,11 @@ export function SettingsManager() {
       const restored = { ...current };
       for (const key of tabFields[tab])
         Object.assign(restored, { [key]: savedOverview[key] });
+      const saved = savedOverview.preferences ?? DEFAULT_PUBLIC_PREFERENCES;
+      const { website, ...display } = saved;
+      if (tab === 'general') restored.preferences = { ...preferences, website };
+      if (tab === 'localisation')
+        restored.preferences = { ...preferences, ...display };
       return restored;
     });
     clearMessages();
@@ -359,6 +386,24 @@ export function SettingsManager() {
               Object.assign(next, { [key]: current[key] });
           }
         }
+        const savedPreferences =
+          saved.preferences ?? DEFAULT_PUBLIC_PREFERENCES;
+        const generalDraft = tabChanges('general', current, savedOverview);
+        const localisationDraft = tabChanges(
+          'localisation',
+          current,
+          savedOverview,
+        );
+        next.preferences = {
+          ...savedPreferences,
+          ...(savedTab !== 'localisation'
+            ? localisationDraft.displayPreferences
+            : {}),
+          website:
+            savedTab !== 'general' && generalDraft.website !== undefined
+              ? generalDraft.website
+              : savedPreferences.website,
+        };
         // The business time zone is the source for the saved renewal policy.
         next.renewalAutomation = {
           ...next.renewalAutomation,
@@ -367,6 +412,8 @@ export function SettingsManager() {
         return next;
       });
       setSavedOverview(saved);
+      if (changes.website !== undefined || changes.displayPreferences)
+        refreshPublicPreferences();
       setPolicyReview(undefined);
       setNotice('Changes saved.');
     } catch (caught) {
@@ -614,6 +661,23 @@ export function SettingsManager() {
               </Field>
             </div>
           </SettingsCard>
+          <SettingsCard
+            title="Public website"
+            description="Shown in the public footer. Leave blank to use the deployment website, if configured."
+          >
+            <Field label="Public website URL">
+              <input
+                className={inputStyles}
+                type="url"
+                value={preferences.website ?? ''}
+                maxLength={2048}
+                onChange={(event) =>
+                  updatePreferences({ website: event.target.value || null })
+                }
+                placeholder="https://example.com"
+              />
+            </Field>
+          </SettingsCard>
         </TabPanel>
         <TabPanel id="localisation" active={tab}>
           <SettingsCard
@@ -638,6 +702,57 @@ export function SettingsManager() {
                   onChange={(event) => update('timeZone', event.target.value)}
                 />
               </Field>
+            </div>
+          </SettingsCard>
+          <SettingsCard
+            title="Display preferences"
+            description="Set the starting country for new customer forms and preview dates as shown in billing screens."
+          >
+            <div className="grid gap-4 md:grid-cols-3">
+              <Field label="Default country code">
+                <input
+                  className={inputStyles}
+                  value={preferences.defaultCountry ?? ''}
+                  maxLength={2}
+                  placeholder="BD"
+                  onChange={(event) =>
+                    updatePreferences({
+                      defaultCountry: event.target.value.toUpperCase() || null,
+                    })
+                  }
+                />
+              </Field>
+              {(['adminDateFormat', 'clientDateFormat'] as const).map((key) => (
+                <div key={key}>
+                  <Field
+                    label={
+                      key === 'adminDateFormat'
+                        ? 'Admin date format'
+                        : 'Client date format'
+                    }
+                  >
+                    <select
+                      className={inputStyles}
+                      value={preferences[key]}
+                      onChange={(event) =>
+                        updatePreferences({
+                          [key]: dateDisplayFormatSchema.parse(
+                            event.target.value,
+                          ),
+                        })
+                      }
+                    >
+                      <option value="day-first">Day / month / year</option>
+                      <option value="month-first">Month / day / year</option>
+                      <option value="iso">Year-month-day</option>
+                      <option value="long">Day, month name and year</option>
+                    </select>
+                  </Field>
+                  <p className="mt-1 text-sm text-slate-600">
+                    Preview {formatCalendarDate('2026-11-23', preferences[key])}
+                  </p>
+                </div>
+              ))}
             </div>
           </SettingsCard>
         </TabPanel>

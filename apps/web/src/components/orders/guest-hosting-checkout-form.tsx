@@ -1,5 +1,6 @@
 'use client';
 
+import { usePublicPreferences } from '../../lib/public-preferences';
 import type { OrderCreationResult } from '@webhost-billing/shared';
 import Link from 'next/link';
 import { useRef, useState, type FormEvent } from 'react';
@@ -24,6 +25,7 @@ export function GuestHostingCheckoutForm({
   requestedDomain: string;
   onChooseSignIn: () => void;
 }) {
+  const { defaultCountry } = usePublicPreferences();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
   const [result, setResult] = useState<OrderCreationResult>();
@@ -180,7 +182,7 @@ export function GuestHostingCheckoutForm({
           label="Country code"
           name="countryCode"
           autoComplete="country"
-          defaultValue="BD"
+          defaultValue={defaultCountry ?? 'BD'}
           minLength={2}
           maxLength={2}
           required

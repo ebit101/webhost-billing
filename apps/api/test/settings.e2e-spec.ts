@@ -31,6 +31,8 @@ const PASSWORD = 'command twenty one secure password';
 const SECRET_VALUE = 'fictional-command21-secret-value';
 const SETTING_KEYS = [
   'business.identity',
+  'business.public-website',
+  'business.display-preferences',
   'business.localization',
   'billing.invoice-numbering',
   'automation.renewal-policy',
@@ -206,6 +208,46 @@ describe('Settings and encrypted credentials (e2e)', () => {
     const before = resultSchema.parse(
       (await admin.get('/settings').expect(200)).body,
     ).data;
+    const publicClient = request(app.getHttpServer());
+    await publicClient.get('/settings/public-preferences').expect(200);
+    await admin
+      .patch('/settings')
+      .set('X-CSRF-Token', csrf)
+      .send({ website: 'javascript:alert(1)' })
+      .expect(400);
+    await admin
+      .patch('/settings')
+      .set('X-CSRF-Token', csrf)
+      .send({ website: 'https://user:pass@example.test' })
+      .expect(400);
+    await admin
+      .patch('/settings')
+      .set('X-CSRF-Token', csrf)
+      .send({ website: 'https://example.test/' })
+      .expect(200);
+    await admin
+      .patch('/settings')
+      .set('X-CSRF-Token', csrf)
+      .send({
+        displayPreferences: {
+          defaultCountry: 'gb',
+          adminDateFormat: 'iso',
+          clientDateFormat: 'long',
+        },
+      })
+      .expect(200);
+    await publicClient
+      .get('/settings/public-preferences')
+      .expect(200)
+      .expect({
+        success: true,
+        data: {
+          website: 'https://example.test/',
+          defaultCountry: 'GB',
+          adminDateFormat: 'iso',
+          clientDateFormat: 'long',
+        },
+      });
     const invoiceKey = 'billing.invoice-numbering';
     const numbering = { ...before.invoiceNumbering, nextNumber: 5342 };
     await prisma.setting.upsert({

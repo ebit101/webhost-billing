@@ -3294,6 +3294,21 @@ authorize new provider operations or existing-domain adoption.
   endpoints, with separate reset actions. Existing provider activation remains
   an explicit separate action where required.
 
+## ADR-163 — Publish narrow business display preferences
+
+- **Date:** 2026-11-03. Command 174.
+- **Persistence:** Store website and localisation display preferences under
+  separate settings keys. General and Localisation use scoped saves, and the
+  legacy settings PUT continues to handle its existing fields.
+- **Public read:** Return only website, default country and format identifiers.
+  Accept credential-free HTTPS URLs. Use deployment branding when no website
+  override is set and existing form defaults when the country is blank.
+- **Presentation:** Apply country to new registration, guest checkout and
+  administrator customer forms. Use the selected formats for admin and client
+  invoice dates, with UTC calendar handling for due dates and the original
+  local-date convention for timestamps. Keep date entry formats, PDF documents
+  and other operational timestamps outside this presentation scope.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

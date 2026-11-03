@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import type { ApiEnvironment } from '@webhost-billing/config';
 import {
@@ -7,6 +8,10 @@ import {
 } from '@webhost-billing/database';
 import {
   DEFAULT_BUSINESS_SETTINGS,
+  DEFAULT_PUBLIC_PREFERENCES,
+  displayPreferencesSchema,
+  publicWebsiteSchema,
+  type PublicPreferences,
   activeProviderSettingsSchema,
   businessIdentitySchema,
   businessLocalizationSettingsSchema,
@@ -36,6 +41,8 @@ import {
 
 const KEYS = {
   businessIdentity: 'business.identity',
+  website: 'business.public-website',
+  displayPreferences: 'business.display-preferences',
   localization: 'business.localization',
   invoiceNumbering: 'billing.invoice-numbering',
   renewal: 'automation.renewal-policy',
@@ -159,6 +166,7 @@ export class SettingsService {
         DEFAULT_BUSINESS_SETTINGS.emailBranding,
       ),
       ...activeProviders,
+      preferences: this.readPreferences(values),
       credentialStatuses: [
         this.paymentCredentialStatus('bkash', credentialByProvider),
         this.paymentCredentialStatus('sslcommerz', credentialByProvider),
@@ -180,6 +188,34 @@ export class SettingsService {
         },
       ],
     });
+  }
+
+  private readPreferences(
+    values: ReadonlyMap<string, unknown>,
+  ): PublicPreferences {
+    const { website, ...defaults } = DEFAULT_PUBLIC_PREFERENCES;
+    return {
+      ...this.parse(
+        displayPreferencesSchema,
+        values.get(KEYS.displayPreferences),
+        defaults,
+      ),
+      website: this.parse(
+        z.object({ url: publicWebsiteSchema }),
+        values.get(KEYS.website),
+        { url: website },
+      ).url,
+    };
+  }
+
+  async publicPreferences(): Promise<PublicPreferences> {
+    const records = await this.prisma.setting.findMany({
+      where: { key: { in: [KEYS.website, KEYS.displayPreferences] } },
+      select: { key: true, value: true },
+    });
+    return this.readPreferences(
+      new Map(records.map(({ key, value }) => [key, value])),
+    );
   }
 
   async presentation(): Promise<{ timeZone: string }> {
@@ -226,6 +262,8 @@ export class SettingsService {
       await this.validateActiveGateway(input.activeProviders.activeGateway);
     const keys = new Set<string>();
     if (input.businessIdentity) keys.add(KEYS.businessIdentity);
+    if (input.website !== undefined) keys.add(KEYS.website);
+    if (input.displayPreferences) keys.add(KEYS.displayPreferences);
     if (input.localization) keys.add(KEYS.localization);
     if (input.localization || input.renewalAutomation) keys.add(KEYS.renewal);
     if (input.invoiceNumbering && Object.keys(input.invoiceNumbering).length)
@@ -255,9 +293,10 @@ export class SettingsService {
           DEFAULT_BUSINESS_SETTINGS.invoiceNumbering,
         );
       }
-      const { credentialStatuses, ...current } =
+      const { credentialStatuses, preferences, ...current } =
         await this.overview(transaction);
       void credentialStatuses;
+      void preferences;
       const localization = input.localization ?? {
         currency: current.currency,
         timeZone: current.timeZone,
@@ -285,7 +324,7 @@ export class SettingsService {
           result.error.issues[0]?.message ??
             'Review the settings and try again.',
         );
-      await this.persist(transaction, result.data, keys, actor, context);
+      await this.persist(transaction, result.data, keys, actor, context, input);
     });
     return this.overview();
   }
@@ -312,6 +351,10 @@ export class SettingsService {
     keys: ReadonlySet<string>,
     actor: AuthRequestContext,
     context: SecurityRequestContext,
+    preferences?: Pick<
+      PatchBusinessSettingsRequest,
+      'website' | 'displayPreferences'
+    >,
   ) {
     if (keys.has(KEYS.manualPaymentInstructions))
       await updatePartialPaymentPolicy(
@@ -374,6 +417,24 @@ export class SettingsService {
         'Active payment and hosting integration adapters.',
       ),
     ].filter((write) => keys.has(write.key));
+    if (preferences?.website !== undefined)
+      writes.push(
+        this.setting(
+          KEYS.website,
+          SettingCategory.BUSINESS,
+          { url: preferences.website },
+          'Public business website.',
+        ),
+      );
+    if (preferences?.displayPreferences)
+      writes.push(
+        this.setting(
+          KEYS.displayPreferences,
+          SettingCategory.BUSINESS,
+          preferences.displayPreferences,
+          'Default country and date display formats.',
+        ),
+      );
     for (const write of writes) {
       await transaction.setting.upsert({
         where: { key: write.key },

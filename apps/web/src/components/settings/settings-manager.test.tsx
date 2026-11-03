@@ -1,5 +1,6 @@
 import {
   DEFAULT_BUSINESS_SETTINGS,
+  DEFAULT_PUBLIC_PREFERENCES,
   PARTIAL_PAYMENT_POLICY_CONFIRMATION,
   type SettingsOverview,
 } from '@webhost-billing/shared';
@@ -105,6 +106,44 @@ describe('settings manager', () => {
     await screen.findByRole('status');
     expect(JSON.parse(String(writes(mock)[1]?.[1]?.body))).toEqual({
       invoiceNumbering: { prefix: 'NEW' },
+    });
+  });
+
+  it('previews date formats and saves the website separately from localisation', async () => {
+    const user = userEvent.setup();
+    const mock = settingsFetch();
+    render(<SettingsManager />);
+    await user.type(
+      await screen.findByLabelText('Public website URL'),
+      'https://example.test/',
+    );
+    await user.click(screen.getByRole('tab', { name: 'Localisation' }));
+    await user.type(screen.getByLabelText('Default country code'), 'gb');
+    await user.selectOptions(screen.getByLabelText('Admin date format'), 'iso');
+    await user.selectOptions(
+      screen.getByLabelText('Client date format'),
+      'long',
+    );
+    expect(screen.getByText('Preview 2026-11-23')).toBeTruthy();
+    expect(screen.getByText('Preview 23 November 2026')).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    await screen.findByRole('status');
+    expect(JSON.parse(String(writes(mock)[0]?.[1]?.body))).toEqual({
+      displayPreferences: {
+        defaultCountry: 'GB',
+        adminDateFormat: 'iso',
+        clientDateFormat: 'long',
+      },
+    });
+    await user.click(screen.getByRole('tab', { name: 'General' }));
+    expect(screen.getByLabelText('Public website URL')).toHaveProperty(
+      'value',
+      'https://example.test/',
+    );
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    await screen.findByRole('status');
+    expect(JSON.parse(String(writes(mock)[1]?.[1]?.body))).toEqual({
+      website: 'https://example.test/',
     });
   });
 
@@ -365,6 +404,11 @@ function settingsFetch(
       ) as import('@webhost-billing/shared').PatchBusinessSettingsRequest;
       saved = {
         ...saved,
+        preferences: {
+          ...(saved.preferences ?? DEFAULT_PUBLIC_PREFERENCES),
+          ...body.displayPreferences,
+          ...(body.website !== undefined ? { website: body.website } : {}),
+        },
         ...(body.businessIdentity
           ? { businessIdentity: body.businessIdentity }
           : {}),

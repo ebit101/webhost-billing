@@ -1,3 +1,4 @@
+import { Public } from '../auth/decorators/public.decorator';
 import {
   Body,
   Controller,
@@ -53,6 +54,14 @@ export class SettingsController {
   @Get()
   async overview() {
     return createApiSuccessResponse(await this.settings.overview());
+  }
+
+  @Get('public-preferences')
+  @Public()
+  @Roles()
+  @Header('Cache-Control', 'no-store')
+  async publicPreferences() {
+    return createApiSuccessResponse(await this.settings.publicPreferences());
   }
 
   @Get('presentation')

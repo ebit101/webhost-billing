@@ -1,3 +1,4 @@
+import { usePublicPreferences } from '../../lib/public-preferences';
 import type { CustomerDetail } from '@webhost-billing/shared';
 import type { ChangeEventHandler, ReactNode } from 'react';
 
@@ -62,6 +63,7 @@ export function ProfileFields({
   customer?: CustomerDetail;
   registrantReady?: boolean;
 }) {
+  const { defaultCountry } = usePublicPreferences();
   return (
     <>
       <Field
@@ -141,7 +143,7 @@ export function ProfileFields({
         label="Country code"
         name="countryCode"
         required
-        defaultValue={customer?.countryCode ?? 'BD'}
+        defaultValue={customer?.countryCode ?? defaultCountry ?? 'BD'}
         autoComplete="country"
       />
     </>

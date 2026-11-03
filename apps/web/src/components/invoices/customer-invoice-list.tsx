@@ -1,4 +1,5 @@
 'use client';
+import { InvoiceDateText } from './invoice-date-text';
 import { sentenceCaseLabel } from '@webhost-billing/shared';
 
 import {
@@ -30,13 +31,7 @@ import { DataTable, type DataColumn } from '../ui/data-table';
 import { EmptyState, ErrorState, LoadingState } from '../ui/feedback-state';
 import { PageHeader } from '../ui/page-header';
 import { StatusBadge } from '../ui/status-badge';
-import {
-  formatMinor,
-  invoiceDate,
-  invoiceDueDate,
-  invoiceError,
-  invoiceTone,
-} from './invoice-ui';
+import { formatMinor, invoiceError, invoiceTone } from './invoice-ui';
 
 const responseSchema = paginatedApiSuccessResponseSchema(invoiceSchema);
 
@@ -151,12 +146,16 @@ function Ledger({
       {
         key: 'issued',
         header: 'Issued',
-        render: (invoice) => invoiceDate(invoice.issuedAt),
+        render: (invoice) => (
+          <InvoiceDateText value={invoice.issuedAt} audience="client" />
+        ),
       },
       {
         key: 'due',
         header: 'Due',
-        render: (invoice) => invoiceDueDate(invoice.dueAt),
+        render: (invoice) => (
+          <InvoiceDateText value={invoice.dueAt} audience="client" calendar />
+        ),
       },
       {
         key: 'total',

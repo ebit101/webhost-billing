@@ -6609,3 +6609,12 @@ to existing domain and support pages. Preserve the billing policy link, policy
 review and existing settings clients. Scope writes to the selected tab and
 protect the current invoice sequence and renewal time zone when merging drafts.
 Record focused local checks and commit locally.
+
+## Command 174 — Add public website, default country and date display preferences
+
+Owner-authorized on 2026-11-03. Add a public HTTPS website URL in General and
+default country and admin/client date choices with live previews in Localisation.
+Apply the website to the public footer, the country to new customer forms, and
+the date choices to existing web invoice and billing views. Use the existing
+protected per-tab saves and a limited public read. Preserve deployment fallbacks,
+stored dates, invoice snapshots and country values on existing accounts.

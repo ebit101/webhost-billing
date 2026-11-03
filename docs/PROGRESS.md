@@ -2,14 +2,24 @@
 
 ## Status Summary
 
-- **Current command:** Command 173 — Organise existing general settings into tabs
-- **Current status:** Completed and validated locally. General opens by default and each editable tab saves and discards its own draft. Retained in the pending local batch.
+- **Current command:** Command 174 — Add public website, default country and date display preferences
+- **Current status:** Completed and validated locally. Retained in the pending local batch.
 - **Last updated:** 2026-11-03
 - **Last recorded staging release:** Command 171, `0e69add43cc1df8351a9c2485cb27afc6e7a22f3`, deployed on 2026-11-02 (Asia/Dhaka).
-- **Next action:** Review Command 173 locally before authorising the next settings phase or publication.
-- **Next command authorized:** None after Command 173.
+- **Next action:** Review the completed display preferences before authorizing the next command.
+- **Next command authorized:** None after Command 174.
 
 ## Command Reports
+
+### Command 174 — Add public website, default country and date display preferences
+
+- **Status and date:** Completed and validated locally on 2026-11-03 (Asia/Dhaka).
+- **Scope:** General can override the public footer website with an HTTPS URL. Localisation can set an initial country for new registration, guest checkout and administrator customer forms, and preview separate admin and client date formats. Web invoice ledgers, details, printable HTML and related billing summaries apply those choices. Blank values use the existing deployment website or form defaults. Existing saved customer addresses and invoice date values retain their original storage semantics.
+- **Files changed:** Shared settings and calendar contracts, settings controller/service and acceptance suite, web root preferences provider and UI check, public footer and website link, customer forms, invoice views and related summaries, settings manager and UI checks, and the plan, decisions, command registry and progress report.
+- **Decisions:** Store website and display preferences separately and expose only public display values through a read-only endpoint. Keep General and Localisation drafts independent and preserve legacy settings PUT. Date choices cover billing screens and HTML print, with date-entry parsers, generated PDF files and operational timestamps outside this scope.
+- **Validation:** Shared build, API and web strict types and four isolated settings API tests passed. The API suite covers public read shape, validation and scoped persistence. The initial UI sweep passed 64 cases and exposed an empty footer contact block with no branding. The footer condition was restored and all five branding tests passed on rerun. Affected API and web lint passed, and a further 40 focused UI tests passed across customer forms, orders, the dashboard and public display preferences. The isolated PostgreSQL harness used a fresh marked schema and completed cleanup. Formatting and Git whitespace checks passed. Live or deployed verification remains pending.
+- **Constraints:** Country and date preferences affect new forms and supported web billing views. Checkout terms require a separate command. Work remains in the local batch.
+- **Exact recommended next command:** Authorize Command 175 — Add checkout terms URL and required acceptance with the accepted terms recorded on each applicable order.
 
 ### Command 173 — Organise existing general settings into tabs
 

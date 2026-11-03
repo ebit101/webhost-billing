@@ -142,12 +142,54 @@ export const businessSettingsSchema = z
     }
   });
 
+export const publicWebsiteSchema = z
+  .url({ protocol: /^https$/ })
+  .max(2048)
+  .refine((value) => {
+    const url = new URL(value);
+    return !url.username && !url.password;
+  }, 'Enter an HTTPS website URL without credentials')
+  .nullable();
+export const dateDisplayFormatSchema = z.enum([
+  'day-first',
+  'month-first',
+  'iso',
+  'long',
+]);
+export type DateDisplayFormat = z.infer<typeof dateDisplayFormatSchema>;
+export const displayPreferencesSchema = z
+  .object({
+    defaultCountry: z
+      .string()
+      .trim()
+      .toUpperCase()
+      .regex(/^[A-Z]{2}$/)
+      .nullable(),
+    adminDateFormat: dateDisplayFormatSchema,
+    clientDateFormat: dateDisplayFormatSchema,
+  })
+  .strict();
+export const publicPreferencesSchema = displayPreferencesSchema
+  .extend({ website: publicWebsiteSchema })
+  .strict();
+export type PublicPreferences = z.infer<typeof publicPreferencesSchema>;
+export const DEFAULT_PUBLIC_PREFERENCES: PublicPreferences = {
+  website: null,
+  defaultCountry: null,
+  adminDateFormat: 'day-first',
+  clientDateFormat: 'day-first',
+};
+
 export const settingsOverviewSchema = businessSettingsSchema
-  .safeExtend({ credentialStatuses: z.array(credentialStatusSchema) })
+  .safeExtend({
+    credentialStatuses: z.array(credentialStatusSchema),
+    preferences: publicPreferencesSchema.optional(),
+  })
   .strict();
 
 export const updateBusinessSettingsRequestSchema = businessSettingsSchema
   .safeExtend({
+    preferences: publicPreferencesSchema.optional(),
     partialPaymentPolicyConfirmation: partialPaymentPolicyConfirmationSchema,
   })
   .strict();
@@ -159,6 +201,8 @@ export type UpdateBusinessSettingsRequest = z.infer<
 export const patchBusinessSettingsRequestSchema = z
   .object({
     businessIdentity: businessIdentitySchema.optional(),
+    website: publicWebsiteSchema.optional(),
+    displayPreferences: displayPreferencesSchema.optional(),
     localization: businessLocalizationSettingsSchema.optional(),
     invoiceNumbering: z
       .object(invoiceNumberingSettingsSchema.shape)
@@ -175,8 +219,8 @@ export const patchBusinessSettingsRequestSchema = z
   .refine(
     (value) =>
       [
-        value.businessIdentity,
-        value.localization,
+        value.businessIdentity || value.website !== undefined,
+        value.localization || value.displayPreferences,
         value.renewalAutomation,
         value.invoiceNumbering || value.manualPayments,
         value.emailBranding,
