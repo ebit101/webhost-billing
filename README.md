@@ -101,6 +101,10 @@ The workspace uses Node.js 24 LTS, pnpm, TypeScript, PostgreSQL, Prisma, Redis, 
 
 ## Safe local evaluation
 
+See the [installation guide](docs/INSTALLATION_GUIDE.md) for local setup,
+installation help, and managed hosting for evaluation. Both services are
+available on request, with pricing by quote.
+
 With Node.js 24/Corepack and Docker running, start the complete fictional-data demo:
 
 ```bash
