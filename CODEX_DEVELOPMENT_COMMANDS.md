@@ -6678,3 +6678,8 @@ and managed evaluation options. Link the guide from the README.
 
 Owner-authorized on 2026-11-03. Refresh the README with the current release,
 evaluation setup, quote links, and latest repository changes.
+
+## Command 183 — Verify the fictional pilot customer journey
+
+Owner-authorized on 2026-11-03. Verify one fictional signup-to-renewal
+journey and record the evidence, gaps, and Phase 2 backlog. No deployment.
