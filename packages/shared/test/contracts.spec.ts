@@ -603,7 +603,9 @@ describe('boundary contracts', () => {
   });
 
   it('routes every email event and strictly validates durable event references', () => {
-    assert.equal(emailTemplateKeys.length, 12);
+    assert.equal(emailTemplateKeys.length, 14);
+    assert.ok(emailTemplateKeys.includes('customer-email-code'));
+    assert.ok(emailTemplateKeys.includes('hosting-cancellation-requested'));
     assert.deepEqual(routeOutboxEvent('EMAIL_PAYMENT_RECEIVED'), {
       queueName: 'emails',
       jobName: 'send-payment-email',
