@@ -113,8 +113,8 @@ jobs:
         run: docker pull --platform linux/amd64 postgres@sha256:3725f4e2499eef5134592b3b4ab79a543ed7f8e533b05b5b637af926630f6650
 
       - name: Run package tests
-        if: steps.scope.outputs.docs_only != 'true'
         run: pnpm test
+        if: steps.scope.outputs.docs_only != 'true'
 
       - name: Run API integration tests
         if: steps.scope.outputs.docs_only != 'true'
