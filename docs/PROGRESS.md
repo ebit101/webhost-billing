@@ -11,6 +11,14 @@
 
 ## Command Reports
 
+### Command 181 — Write the user installation guide
+
+- **Status and date:** Drafted locally on 2026-11-03 (Asia/Dhaka).
+- **Scope and files:** Added `docs/INSTALLATION_GUIDE.md` and linked it from the README. The guide pins the local evaluation release and describes installation help and managed evaluation.
+- **Validation:** Confirmed the release tag contains the demo setup scripts. Checked the Git diff.
+- **Open decisions:** The service contact, pricing, and support terms are pending. Managed hosting is described as an evaluation option while production launch remains gated.
+- **Exact recommended next command:** Confirm the service contact and terms for the public installation guide.
+
 ### Command 180 — Use lightweight checks for documentation changes
 
 - **Status and date:** Implemented locally on 2026-11-03 (Asia/Dhaka). Hosted verification awaits publication.

@@ -6668,3 +6668,8 @@ Owner-authorized on 2026-11-03. Run documentation and image checks for
 README and documentation-only changes while retaining full checks for
 application and infrastructure changes. Preserve the required check names
 and keep staging deployment explicitly owner-authorized.
+
+## Command 181 — Write the user installation guide
+
+Owner-authorized on 2026-11-03. Document local alpha setup, installation help,
+and managed evaluation options. Link the guide from the README.
