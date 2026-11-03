@@ -14,6 +14,7 @@ export const emailTemplateKeys = [
   'service-provisioned',
   'service-suspended',
   'service-reactivated',
+  'hosting-cancellation-requested',
   'ticket-reply',
 ] as const;
 
@@ -33,6 +34,7 @@ export const emailOutboxEventTypes = [
   'EMAIL_SERVICE_PROVISIONED',
   'EMAIL_SERVICE_SUSPENDED',
   'EMAIL_SERVICE_REACTIVATED',
+  'EMAIL_HOSTING_CANCELLATION_REQUESTED',
   'EMAIL_TICKET_REPLY',
 ] as const;
 
@@ -83,6 +85,7 @@ const emailEventPayloadSchemas = {
   EMAIL_SERVICE_PROVISIONED: uuidPayload('serviceId'),
   EMAIL_SERVICE_SUSPENDED: uuidPayload('serviceId'),
   EMAIL_SERVICE_REACTIVATED: uuidPayload('serviceId'),
+  EMAIL_HOSTING_CANCELLATION_REQUESTED: uuidPayload('cancellationId'),
   EMAIL_TICKET_REPLY: z
     .object({
       ...basePayloadShape,

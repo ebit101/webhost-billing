@@ -58,6 +58,7 @@ const expectedTables = [
   'email_logs',
   'email_verification_tokens',
   'hosting_panel_operations',
+  'hosting_cancellation_requests',
   'integration_credentials',
   'invoice_items',
   'invoices',

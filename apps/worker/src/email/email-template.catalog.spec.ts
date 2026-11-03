@@ -14,6 +14,13 @@ const common = { recipientName: 'Amina Rahman' };
 const models: EmailTemplateModel[] = [
   {
     ...common,
+    key: 'hosting-cancellation-requested',
+    productName: 'Starter Hosting',
+    effectiveAt: new Date('2026-08-26T12:00:00.000Z'),
+    serviceUrl: 'https://billing.example.test/portal/services/test',
+  },
+  {
+    ...common,
     key: 'customer-email-code',
     code: '012345',
     expiresAt: new Date('2026-08-26T12:00:00.000Z'),

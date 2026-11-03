@@ -13,6 +13,7 @@ import { ErrorState, LoadingState } from '../ui/feedback-state';
 import { StatusBadge } from '../ui/status-badge';
 import { formatMinor } from '../invoices/invoice-ui';
 import { serviceDate, serviceError, serviceTone } from './service-ui';
+import { CustomerHostingCancellation } from './customer-hosting-cancellation';
 
 export function CustomerServiceDetail({ serviceId }: { serviceId: string }) {
   const [service, setService] = useState<Service>();
@@ -156,6 +157,7 @@ export function CustomerServiceDetail({ serviceId }: { serviceId: string }) {
           </div>
         ) : null}
       </article>
+      <CustomerHostingCancellation key={service.id} service={service} />
     </div>
   );
 }

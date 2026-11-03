@@ -19,6 +19,10 @@ import {
   createServiceRequestSchema,
   serviceListQuerySchema,
   transitionServiceRequestSchema,
+  hostingCancellationInputSchema,
+  paginationQuerySchema,
+  type HostingCancellationInput,
+  type PaginationQuery,
   type CreateServiceRequest,
   type ServiceListQuery,
   type TransitionServiceRequest,
@@ -32,6 +36,7 @@ import { CurrentAuth } from '../auth/decorators/current-auth.decorator';
 import { CustomerSupportAccess } from '../auth/decorators/customer-support-session.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { ServiceService } from './service.service';
+import { HostingCancellationService } from './hosting-cancellation.service';
 
 @Controller('services')
 export class ServiceController {
@@ -39,6 +44,7 @@ export class ServiceController {
 
   constructor(
     private readonly services: ServiceService,
+    private readonly cancellations: HostingCancellationService,
     @Inject(API_ENVIRONMENT) environment: ApiEnvironment,
   ) {
     this.auditSecret = environment.SESSION_SECRET;
@@ -78,6 +84,82 @@ export class ServiceController {
   ) {
     const result = await this.services.list(query);
     return createPaginatedApiSuccessResponse(result.data, result.pagination);
+  }
+
+  @Get('cancellation-requests')
+  @Roles('ADMIN')
+  async listCancellations(
+    @Query(new ZodValidationPipe(paginationQuerySchema)) query: PaginationQuery,
+  ) {
+    const result = await this.cancellations.list(query);
+    return createPaginatedApiSuccessResponse(result.data, result.pagination);
+  }
+
+  @Get(':serviceId/cancellation-request')
+  @Roles('CUSTOMER')
+  @CustomerSupportAccess()
+  async cancellation(
+    @Param('serviceId', new ParseUUIDPipe()) serviceId: string,
+    @CurrentAuth() auth: AuthRequestContext,
+  ) {
+    return createApiSuccessResponse(
+      await this.cancellations.detail(serviceId, auth),
+    );
+  }
+
+  @Post(':serviceId/cancellation-request')
+  @Roles('CUSTOMER')
+  async requestCancellation(
+    @Param('serviceId', new ParseUUIDPipe()) serviceId: string,
+    @Body(new ZodValidationPipe(hostingCancellationInputSchema))
+    input: HostingCancellationInput,
+    @CurrentAuth() auth: AuthRequestContext,
+    @Req() request: Request,
+  ) {
+    return createApiSuccessResponse(
+      await this.cancellations.request(
+        serviceId,
+        input,
+        auth,
+        this.context(request),
+      ),
+    );
+  }
+
+  @Post(':serviceId/cancellation-request/:cancellationId/withdraw')
+  @Roles('CUSTOMER')
+  async withdrawCancellation(
+    @Param('serviceId', new ParseUUIDPipe()) serviceId: string,
+    @Param('cancellationId', new ParseUUIDPipe()) cancellationId: string,
+    @CurrentAuth() auth: AuthRequestContext,
+    @Req() request: Request,
+  ) {
+    return createApiSuccessResponse(
+      await this.cancellations.withdraw(
+        serviceId,
+        cancellationId,
+        auth,
+        this.context(request),
+      ),
+    );
+  }
+
+  @Post(':serviceId/cancellation-request/:cancellationId/approve')
+  @Roles('ADMIN')
+  async approveCancellation(
+    @Param('serviceId', new ParseUUIDPipe()) serviceId: string,
+    @Param('cancellationId', new ParseUUIDPipe()) cancellationId: string,
+    @CurrentAuth() auth: AuthRequestContext,
+    @Req() request: Request,
+  ) {
+    return createApiSuccessResponse(
+      await this.cancellations.approve(
+        serviceId,
+        cancellationId,
+        auth,
+        this.context(request),
+      ),
+    );
   }
 
   @Get(':serviceId')

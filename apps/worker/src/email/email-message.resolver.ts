@@ -160,6 +160,30 @@ export class EmailMessageResolver {
     ) {
       return this.resolveService(eventType, requiredUuid(payload, 'serviceId'));
     }
+    if (eventType === 'EMAIL_HOSTING_CANCELLATION_REQUESTED') {
+      const request = await this.prisma.hostingCancellationRequest.findFirst({
+        where: {
+          id: requiredUuid(payload, 'cancellationId'),
+          serviceId: aggregateId,
+        },
+        include: {
+          service: { include: { customer: { include: { user: true } } } },
+        },
+      });
+      if (!request) throw permanent('EMAIL_SERVICE_UNAVAILABLE');
+      const { service } = request;
+      return this.render(
+        service.customer.user.email,
+        {
+          key: 'hosting-cancellation-requested',
+          recipientName: customerName(service.customer),
+          productName: service.productNameSnapshot,
+          serviceUrl: this.url(`/portal/services/${service.id}`),
+          effectiveAt: request.effectiveAt,
+        },
+        service.customerId,
+      );
+    }
     return this.resolveTicket(
       requiredUuid(payload, 'ticketId'),
       requiredUuid(payload, 'messageId'),

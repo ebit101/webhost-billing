@@ -111,6 +111,9 @@ export class RenewalProcessorService {
         status: { in: [ServiceStatus.ACTIVE, ServiceStatus.SUSPENDED] },
         billingPeriod: { in: ['MONTHLY', 'QUARTERLY', 'ANNUAL'] },
         nextDueAt: { lte: broadCutoff },
+        cancellationRequests: {
+          none: { status: { in: ['OPEN', 'COMPLETED'] } },
+        },
       },
       select: { id: true, nextDueAt: true },
       orderBy: [{ nextDueAt: 'asc' }, { id: 'asc' }],
@@ -148,6 +151,11 @@ export class RenewalProcessorService {
           where: { id: serviceId },
           include: {
             customer: { include: { user: true } },
+            cancellationRequests: {
+              where: { status: { in: ['OPEN', 'COMPLETED'] } },
+              take: 1,
+              select: { id: true },
+            },
           },
         });
         if (
@@ -155,7 +163,8 @@ export class RenewalProcessorService {
           (service.status !== ServiceStatus.ACTIVE &&
             service.status !== ServiceStatus.SUSPENDED) ||
           service.customer.deletedAt ||
-          service.customer.user.deletedAt
+          service.customer.user.deletedAt ||
+          service.cancellationRequests.length > 0
         ) {
           return false;
         }

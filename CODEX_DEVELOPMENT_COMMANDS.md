@@ -6736,3 +6736,12 @@ Owner-authorized on 2026-11-03. Add currency, business time zone and country
 dropdowns with BDT, Asia/Dhaka and Bangladesh as defaults. Allow one initial
 base currency selection and prevent later changes. Keep time zone and country
 editable. Validate locally without deployment.
+
+## Command 192 — Add customer hosting cancellation requests
+
+Owner-authorized on 2026-11-03. Add a service-level cancellation form with
+end-of-period and immediate timing, an optional reason, a confirmation
+email, withdrawal before processing, and an administrator queue. Schedule
+hosting suspension through the verified worker and stop future hosting
+renewals while the request is open or completed. Keep existing invoices,
+domain renewal, refunds and permanent deletion separate. Validate locally.

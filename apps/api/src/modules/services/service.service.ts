@@ -343,6 +343,15 @@ export class ServiceService {
         include: { server: true, orderItem: true },
       });
       if (!current) throw this.notFound();
+      if (
+        input.status === 'ACTIVE' &&
+        current.status === 'SUSPENDED' &&
+        (await transaction.hostingCancellationRequest.findFirst({
+          where: { serviceId, status: 'COMPLETED' },
+          select: { id: true },
+        }))
+      )
+        throw this.invalid('This service has a completed cancellation.');
       if (!isServiceTransitionAllowed(current.status, input.status)) {
         throw this.invalid(
           `Service cannot move from ${current.status} to ${input.status}.`,

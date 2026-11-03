@@ -187,6 +187,9 @@ describe('renewal lifecycle integration', () => {
       data: { suspensionInvoiceId: null },
     });
     await prisma.invoice.deleteMany({ where: { id: { in: invoiceIds } } });
+    await prisma.hostingCancellationRequest.deleteMany({
+      where: { serviceId: ids.service },
+    });
     await prisma.service.deleteMany({ where: { id: ids.service } });
     await prisma.automationRun.deleteMany({
       where: { id: { in: allRunIds } },
@@ -335,6 +338,102 @@ describe('renewal lifecycle integration', () => {
       status: ServiceStatus.ACTIVE,
       suspensionInvoiceId: null,
     });
+  });
+
+  it('blocks a future renewal, skips a withdrawn request, and suspends a due cancellation once', async () => {
+    const service = await prisma.service.findUniqueOrThrow({
+      where: { id: ids.service },
+    });
+    const previousCount = await prisma.invoiceItem.count({
+      where: { serviceId: ids.service },
+    });
+    const withdrawn = await prisma.hostingCancellationRequest.create({
+      data: {
+        serviceId: ids.service,
+        timing: 'END_OF_PERIOD',
+        status: 'WITHDRAWN',
+        effectiveAt: service.nextDueAt,
+        resolvedAt: new Date(),
+      },
+    });
+    const scheduled = await prisma.hostingCancellationRequest.create({
+      data: {
+        serviceId: ids.service,
+        timing: 'END_OF_PERIOD',
+        effectiveAt: service.nextDueAt,
+      },
+    });
+    const event = async (cancellationId: string) => {
+      const row = await prisma.outboxEvent.create({
+        data: {
+          aggregateType: 'SERVICE',
+          aggregateId: ids.service,
+          eventType: 'HOSTING_CANCELLATION_SUSPENSION_REQUESTED',
+          idempotencyKey: `hosting-cancellation:${cancellationId}`,
+          status: 'PUBLISHED',
+          publishedAt: clock.now(),
+          payload: { schemaVersion: 1, serviceId: ids.service, cancellationId },
+        },
+      });
+      return job(row.id, row.aggregateType, row.aggregateId, row.eventType);
+    };
+    const withdrawnEvent = await event(withdrawn.id);
+    const scheduledEvent = await event(scheduled.id);
+    await processor.process(await cycle('2026-09-01T06:00:00.000Z'));
+    expect(
+      await prisma.invoiceItem.count({ where: { serviceId: ids.service } }),
+    ).toBe(previousCount);
+    await hosting.process(scheduledEvent);
+    clock.set('2026-09-10T01:00:00.000Z');
+    await hosting.process(withdrawnEvent);
+    expect(
+      await prisma.service.findUniqueOrThrow({ where: { id: ids.service } }),
+    ).toMatchObject({ status: 'ACTIVE' });
+    const extendedDue = new Date('2026-10-10T00:00:00.000Z');
+    await prisma.service.update({
+      where: { id: ids.service },
+      data: { nextDueAt: extendedDue },
+    });
+    await hosting.process(scheduledEvent);
+    expect(
+      await prisma.hostingCancellationRequest.findUniqueOrThrow({
+        where: { id: scheduled.id },
+      }),
+    ).toMatchObject({ status: 'OPEN', effectiveAt: extendedDue });
+    const deferred = await prisma.outboxEvent.findUniqueOrThrow({
+      where: {
+        idempotencyKey: `hosting-cancellation-deferred:${scheduledEvent.outboxEventId}`,
+      },
+    });
+    expect(deferred.availableAt).toEqual(extendedDue);
+    clock.set('2026-10-10T01:00:00.000Z');
+    await prisma.outboxEvent.update({
+      where: { id: deferred.id },
+      data: { status: 'PUBLISHED', publishedAt: clock.now() },
+    });
+    const deferredEvent = job(
+      deferred.id,
+      deferred.aggregateType,
+      deferred.aggregateId,
+      deferred.eventType,
+    );
+    await hosting.process(deferredEvent);
+    await hosting.process(deferredEvent);
+    expect(
+      await prisma.service.findUniqueOrThrow({ where: { id: ids.service } }),
+    ).toMatchObject({ status: 'SUSPENDED', suspensionInvoiceId: null });
+    expect(
+      await prisma.hostingCancellationRequest.findUniqueOrThrow({
+        where: { id: scheduled.id },
+      }),
+    ).toMatchObject({ status: 'COMPLETED', resolvedAt: clock.now() });
+    expect(
+      await prisma.hostingPanelOperation.count({
+        where: {
+          idempotencyKey: `automation:suspend:${ids.service}:${scheduled.id}`,
+        },
+      }),
+    ).toBe(1);
   });
 
   async function cycle(instant: string): Promise<BackgroundJobData> {

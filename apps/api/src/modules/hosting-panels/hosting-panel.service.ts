@@ -706,6 +706,14 @@ export class HostingPanelService {
           include: serviceInclude,
         });
         if (!service) throw this.notFound('Service was not found.');
+        if (
+          input.type === 'UNSUSPEND_ACCOUNT' &&
+          (await transaction.hostingCancellationRequest.findFirst({
+            where: { serviceId, status: 'COMPLETED' },
+            select: { id: true },
+          }))
+        )
+          throw this.invalid('This service has a completed cancellation.');
         this.validateAction(service, input);
         const running = await transaction.hostingPanelOperation.findFirst({
           where: { serviceId, status: HostingPanelOperationStatus.RUNNING },

@@ -20,6 +20,16 @@ export class EmailTemplateCatalog {
 
   private content(model: EmailTemplateModel): TemplateContent {
     switch (model.key) {
+      case 'hosting-cancellation-requested':
+        return actionContent(
+          'Hosting cancellation request received',
+          model.effectiveAt
+            ? `We received your request to cancel ${model.productName} at the end of the billing period (${formatDateTime(model.effectiveAt)}).`
+            : `We received your request to cancel ${model.productName} immediately. An administrator will review it.`,
+          'View service',
+          model.serviceUrl,
+          'Existing invoices and domain renewals are handled separately.',
+        );
       case 'customer-email-code':
         return {
           subject: 'Your sign-in code',

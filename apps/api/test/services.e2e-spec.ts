@@ -51,6 +51,7 @@ describe('Hosting services (e2e)', () => {
   let serverId = '';
   let primaryOrderItemId = '';
   let serviceId = '';
+  let immediateCancellation: { serviceId: string; id: string };
   let inventoryAdmin: ReturnType<typeof request.agent> | undefined;
 
   beforeAll(async () => {
@@ -412,6 +413,96 @@ describe('Hosting services (e2e)', () => {
       ).data,
     ).toHaveLength(0);
 
+    const due = new Date(Date.now() + 7 * 86_400_000);
+    const cancellable = await prisma.service.create({
+      data: {
+        customerId,
+        productId,
+        productPriceId,
+        serverId,
+        status: 'ACTIVE',
+        domain: 'command192-cancellation.example.test',
+        productNameSnapshot: 'Fictional hosting',
+        controlPanelUsername: 'command192',
+        externalAccountId: 'command192-fictional',
+        activatedAt: new Date(),
+        billingPeriod: 'MONTHLY',
+        recurringAmount: 100n,
+        currency: 'BDT',
+        startedAt: new Date(),
+        nextDueAt: due,
+      },
+    });
+    const path = `/services/${cancellable.id}/cancellation-request`;
+    const scheduled = {
+      timing: 'END_OF_PERIOD',
+      expectedEffectiveAt: due.toISOString(),
+    };
+    await other
+      .post(path)
+      .set('X-CSRF-Token', otherCsrf)
+      .send(scheduled)
+      .expect(403);
+    await customer
+      .post(path)
+      .set('X-CSRF-Token', csrf)
+      .send({ ...scheduled, expectedEffectiveAt: new Date().toISOString() })
+      .expect(422);
+    await customer
+      .post(path)
+      .set('X-CSRF-Token', csrf)
+      .send(scheduled)
+      .expect(201);
+    await customer
+      .post(path)
+      .set('X-CSRF-Token', csrf)
+      .send(scheduled)
+      .expect(201);
+    const cancellation =
+      await prisma.hostingCancellationRequest.findFirstOrThrow({
+        where: { serviceId: cancellable.id },
+      });
+    expect(
+      await prisma.hostingCancellationRequest.count({
+        where: { serviceId: cancellable.id },
+      }),
+    ).toBe(1);
+    expect(
+      await prisma.outboxEvent.findUniqueOrThrow({
+        where: { idempotencyKey: `hosting-cancellation:${cancellation.id}` },
+      }),
+    ).toMatchObject({ availableAt: due });
+    expect(
+      await prisma.outboxEvent.count({
+        where: {
+          aggregateId: cancellable.id,
+          eventType: 'EMAIL_HOSTING_CANCELLATION_REQUESTED',
+        },
+      }),
+    ).toBe(1);
+    await customer
+      .post(`${path}/${cancellation.id}/withdraw`)
+      .set('X-CSRF-Token', csrf)
+      .expect(201);
+    await customer
+      .post(path)
+      .set('X-CSRF-Token', csrf)
+      .send({ timing: 'IMMEDIATE' })
+      .expect(201);
+    const immediate = await prisma.hostingCancellationRequest.findFirstOrThrow({
+      where: { serviceId: cancellable.id, status: 'OPEN' },
+    });
+    expect(
+      await prisma.outboxEvent.findUnique({
+        where: { idempotencyKey: `hosting-cancellation:${immediate.id}` },
+      }),
+    ).toBeNull();
+    await customer
+      .post(`${path}/${immediate.id}/approve`)
+      .set('X-CSRF-Token', csrf)
+      .expect(403);
+    immediateCancellation = { serviceId: cancellable.id, id: immediate.id };
+
     const paidWithoutService = await createPaidOrder(
       'paid-without-service.example.test',
     );
@@ -426,6 +517,29 @@ describe('Hosting services (e2e)', () => {
     const admin = request.agent(app.getHttpServer());
     const csrf = await csrfToken(admin);
     await login(admin, csrf, ADMIN_EMAIL);
+    const { id, serviceId: cancellableId } = immediateCancellation;
+    const approval = `/services/${cancellableId}/cancellation-request/${id}/approve`;
+    await admin.get('/services/cancellation-requests').expect(200);
+    await admin.post(approval).set('X-CSRF-Token', csrf).expect(201);
+    await admin.post(approval).set('X-CSRF-Token', csrf).expect(201);
+    expect(
+      await prisma.outboxEvent.count({
+        where: { idempotencyKey: `hosting-cancellation:${id}` },
+      }),
+    ).toBe(1);
+    expect(
+      await prisma.hostingCancellationRequest.findUniqueOrThrow({
+        where: { id },
+      }),
+    ).toMatchObject({ approvedAt: expect.any(Date), status: 'OPEN' });
+    await prisma.outboxEvent.deleteMany({
+      where: { aggregateId: cancellableId },
+    });
+    await prisma.activityLog.deleteMany({ where: { entityId: cancellableId } });
+    await prisma.hostingCancellationRequest.deleteMany({
+      where: { serviceId: cancellableId },
+    });
+    await prisma.service.delete({ where: { id: cancellableId } });
 
     const response = await admin
       .get(`/services?pageSize=100&customerId=${customerId}`)
@@ -870,6 +984,9 @@ describe('Hosting services (e2e)', () => {
       : [];
     const serviceIds = services.map((service) => service.id);
     if (serviceIds.length) {
+      await prisma.hostingCancellationRequest.deleteMany({
+        where: { serviceId: { in: serviceIds } },
+      });
       await prisma.outboxEvent.deleteMany({
         where: { aggregateType: 'SERVICE', aggregateId: { in: serviceIds } },
       });

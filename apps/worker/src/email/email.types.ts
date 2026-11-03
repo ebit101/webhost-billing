@@ -15,6 +15,12 @@ interface BaseTemplateModel {
 
 export type EmailTemplateModel =
   | (BaseTemplateModel & {
+      key: 'hosting-cancellation-requested';
+      productName: string;
+      serviceUrl: string;
+      effectiveAt: Date | null;
+    })
+  | (BaseTemplateModel & {
       key: 'customer-email-code';
       code: string;
       expiresAt: Date;

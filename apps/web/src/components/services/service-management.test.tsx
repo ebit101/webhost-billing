@@ -3,7 +3,7 @@ import type {
   Service,
   ServiceSetupOptions,
 } from '@webhost-billing/shared';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AdminServiceManager } from './admin-service-manager';
@@ -312,6 +312,67 @@ describe('service management interfaces', () => {
         await screen.findByRole('link', { name: /Open control panel/i })
       ).getAttribute('href'),
     ).toBe('https://server.example.test/fake-login/session');
+  });
+
+  it('defaults to the end of the billing period and allows a scheduled request to be withdrawn', async () => {
+    const user = userEvent.setup();
+    const effectiveAt = new Date(Date.now() + 7 * 86_400_000).toISOString();
+    const cancellation = {
+      id: '30000000-0000-4000-8000-000000000012',
+      serviceId,
+      status: 'OPEN',
+      timing: 'END_OF_PERIOD',
+      effectiveAt,
+      approvedAt: null,
+    };
+    const fetchMock = vi.fn(
+      (request: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(request);
+        if (url.endsWith('/auth/csrf'))
+          return Promise.resolve(success({ csrfToken: 'x'.repeat(32) }));
+        if (url.endsWith('/withdraw'))
+          return Promise.resolve(
+            success({ ...cancellation, status: 'WITHDRAWN' }),
+          );
+        if (url.endsWith('/cancellation-request'))
+          return Promise.resolve(
+            success(init?.method === 'POST' ? cancellation : null),
+          );
+        return Promise.resolve(
+          success({ ...activeService, nextDueAt: effectiveAt }),
+        );
+      },
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    render(<CustomerServiceDetail serviceId={serviceId} />);
+    await user.click(
+      await screen.findByRole('button', { name: 'Request cancellation' }),
+    );
+    const dialog = screen.getByRole('dialog', { name: 'Request cancellation' });
+    expect(within(dialog).getByLabelText('Cancellation timing')).toHaveProperty(
+      'value',
+      'END_OF_PERIOD',
+    );
+    expect(within(dialog).getByText(/Scheduled end date/)).toBeTruthy();
+    await user.click(
+      within(dialog).getByRole('button', {
+        name: 'Submit cancellation request',
+      }),
+    );
+    expect(await screen.findByText(/Cancellation scheduled for/)).toBeTruthy();
+    const submission = fetchMock.mock.calls.find(
+      ([url, init]) =>
+        String(url).endsWith('/cancellation-request') &&
+        init?.method === 'POST',
+    );
+    expect(JSON.parse(String(submission?.[1]?.body))).toMatchObject({
+      timing: 'END_OF_PERIOD',
+      expectedEffectiveAt: effectiveAt,
+    });
+    await user.click(screen.getByRole('button', { name: 'Withdraw request' }));
+    expect(
+      await screen.findByText('Cancellation request withdrawn.'),
+    ).toBeTruthy();
   });
 });
 

@@ -2,14 +2,22 @@
 
 ## Status Summary
 
-- **Current command:** Command 191 — Add localisation dropdowns and lock the base currency
-- **Current status:** Localisation dropdowns and the permanent base currency lock are implemented locally.
+- **Current command:** Command 192 — Add customer hosting cancellation requests
+- **Current status:** Customer hosting cancellation requests and the suspension workflow are implemented locally.
 - **Last updated:** 2026-11-03
 - **Last recorded staging release:** Command 177, `887862020de1e472f303f359b793dccbedfb9b07`, deployed on 2026-11-03 (Asia/Dhaka).
-- **Next action:** Await authorization to verify and extend the selected base currency through the billing workflow for a non-BDT installation.
-- **Next command authorized:** None after Command 191.
+- **Next action:** Await authorization to verify cancellation through Chromium, the local mail preview and the fake hosting provider.
+- **Next command authorized:** None after Command 192.
 
 ## Command Reports
+
+### Command 192 — Add customer hosting cancellation requests
+
+- Implemented locally on 2026-11-03 (Asia/Dhaka). Added customer service cancellation controls and an administrator Services queue. Updated the shared contracts, Services API, hosting and renewal worker, cancellation email template and resolver, Prisma migration and recovery inventory.
+- Customers can request end-of-period cancellation or immediate review, provide an optional reason, and withdraw before the end date or immediate approval. Submission queues a confirmation email. End-of-period requests queue suspension at the billing deadline. Immediate requests queue suspension after full administrator approval. Repeated submissions and approvals reuse the original request and outbox event.
+- Open and completed requests suppress new hosting renewal invoices. Existing invoices, domain renewal, refunds and permanent deletion stay separate. The worker moves the scheduled end date if an existing renewal payment has already extended the paid period. It verifies provider suspension before completing a request on an active service. Failed or uncertain provider operations remain visible for administrator review.
+- Applied all 44 migrations in isolated PostgreSQL. Passed seven database-backed Services API tests, 19 worker and email-template tests, seven service UI tests, eight recovery inventory checks, and API, web and worker type checks. The first worker run exposed the hosting-operation requester constraint. The cancellation operation now records the requesting customer and the administrator approval is audited separately.
+- Validation used a fictional hosting provider and the email template renderer. No live hosting action or deployment ran. The recommended next command is to verify the full browser, queue and local mail-preview flow with fictional data and rehearse recovery of a failed suspension.
 
 ### Command 191 — Add localisation dropdowns and lock the base currency
 

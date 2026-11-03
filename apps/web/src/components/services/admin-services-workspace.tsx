@@ -5,6 +5,7 @@ import type { AdminCustomerFilter } from '../../lib/admin-customer-filter';
 import type { AdminServiceSelection } from '../../lib/admin-service-ledger-query';
 import { AdminHostingOperationManager } from './admin-hosting-operation-manager';
 import { AdminServiceManager } from './admin-service-manager';
+import { AdminHostingCancellations } from './admin-hosting-cancellations';
 
 export function AdminServicesWorkspace({
   customerFilter,
@@ -24,6 +25,7 @@ export function AdminServicesWorkspace({
 
   return (
     <div className="grid gap-8">
+      {!customerFilter && <AdminHostingCancellations />}
       <AdminServiceManager
         customerFilter={customerFilter}
         selection={selection}

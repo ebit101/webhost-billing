@@ -7,6 +7,50 @@ import { hostingBillingPeriodSchema, serviceStatusSchema } from './states';
 
 export const serverStatusSchema = z.enum(['ACTIVE', 'MAINTENANCE', 'DISABLED']);
 
+const cancellationReason = z.string().trim().max(1000).optional();
+export const hostingCancellationInputSchema = z.discriminatedUnion('timing', [
+  z
+    .object({ timing: z.literal('IMMEDIATE'), reason: cancellationReason })
+    .strict(),
+  z
+    .object({
+      timing: z.literal('END_OF_PERIOD'),
+      reason: cancellationReason,
+      expectedEffectiveAt: z.iso.datetime(),
+    })
+    .strict(),
+]);
+
+export const hostingCancellationJobSchema = z
+  .object({
+    schemaVersion: z.literal(1),
+    serviceId: z.uuid(),
+    cancellationId: z.uuid(),
+  })
+  .strict();
+
+export type HostingCancellationInput = z.infer<
+  typeof hostingCancellationInputSchema
+>;
+export type HostingCancellationJob = z.infer<
+  typeof hostingCancellationJobSchema
+>;
+export type HostingCancellation = {
+  id: string;
+  serviceId: string;
+  timing: HostingCancellationInput['timing'];
+  status: 'OPEN' | 'WITHDRAWN' | 'COMPLETED';
+  reason: string | null;
+  effectiveAt: string | null;
+  approvedAt: string | null;
+  createdAt: string;
+  resolvedAt: string | null;
+};
+export type HostingCancellationReview = HostingCancellation & {
+  productName: string;
+  domain: string | null;
+};
+
 export const serviceServerSchema = z
   .object({
     id: z.uuid(),

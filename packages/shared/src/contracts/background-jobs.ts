@@ -135,6 +135,10 @@ const exactOutboxRoutes: Readonly<Record<string, OutboxQueueRoute>> = {
     queueName: 'emails',
     jobName: 'send-service-email',
   },
+  EMAIL_HOSTING_CANCELLATION_REQUESTED: {
+    queueName: 'emails',
+    jobName: 'send-service-email',
+  },
   EMAIL_TICKET_REPLY: {
     queueName: 'emails',
     jobName: 'send-ticket-email',
@@ -152,6 +156,10 @@ const exactOutboxRoutes: Readonly<Record<string, OutboxQueueRoute>> = {
     jobName: 'provision-hosting',
   },
   HOSTING_SUSPENSION_REQUESTED: {
+    queueName: 'hosting-suspension',
+    jobName: 'suspend-hosting',
+  },
+  HOSTING_CANCELLATION_SUSPENSION_REQUESTED: {
     queueName: 'hosting-suspension',
     jobName: 'suspend-hosting',
   },

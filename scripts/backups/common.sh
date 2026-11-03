@@ -37,6 +37,7 @@ BACKUP_REQUIRED_TABLES=(
   existing_domain_orders
   fake_registrar_registrations
   hosting_panel_operations
+  hosting_cancellation_requests
   integration_credentials
   invoice_items
   invoices

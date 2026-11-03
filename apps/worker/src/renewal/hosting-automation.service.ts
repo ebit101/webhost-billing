@@ -8,13 +8,16 @@ import {
   InvoiceStatus,
   OutboxStatus,
   ServiceStatus,
+  type Prisma,
   type PrismaClient,
 } from '@webhost-billing/database';
 import { BackgroundJobError } from '@webhost-billing/queue';
 import {
   hostingAutomationPayloadSchema,
+  hostingCancellationJobSchema,
   type BackgroundJobData,
   type HostingAutomationPayload,
+  type HostingCancellationJob,
 } from '@webhost-billing/shared';
 import { WORKER_PRISMA } from '../infrastructure/database.module';
 import { WORKER_ENVIRONMENT } from '../infrastructure/environment.module';
@@ -22,6 +25,7 @@ import { CLOCK, type Clock } from './clock';
 
 type PanelState = 'ACTIVE' | 'SUSPENDED';
 type AutomationAction = 'SUSPEND' | 'UNSUSPEND';
+type AutomationPayload = HostingAutomationPayload | HostingCancellationJob;
 const MAX_AUTOMATION_ATTEMPTS = 3;
 
 class PanelAutomationError extends Error {
@@ -44,7 +48,7 @@ export class HostingAutomationService {
   async process(data: BackgroundJobData): Promise<void> {
     const action = this.action(data.eventType);
     const payload = await this.payload(data);
-    const prepared = await this.prepare(action, payload);
+    const prepared = await this.prepare(action, payload, data.outboxEventId);
     if (!prepared) return;
     const { operation } = prepared;
     if (operation.status === HostingPanelOperationStatus.SUCCEEDED) {
@@ -83,7 +87,11 @@ export class HostingAutomationService {
         await this.completeSkipped(operation.id, action, payload);
         return;
       }
-      const account = await this.mutatePanel(action, payload.serviceId);
+      const account = await this.mutatePanel(
+        action,
+        payload.serviceId,
+        'cancellationId' in payload,
+      );
       if (account.state !== (action === 'SUSPEND' ? 'SUSPENDED' : 'ACTIVE')) {
         throw new PanelAutomationError(
           'INCONSISTENT',
@@ -110,13 +118,15 @@ export class HostingAutomationService {
     }
   }
 
-  private async payload(
-    data: BackgroundJobData,
-  ): Promise<HostingAutomationPayload> {
+  private async payload(data: BackgroundJobData): Promise<AutomationPayload> {
     const event = await this.prisma.outboxEvent.findUnique({
       where: { id: data.outboxEventId },
     });
-    const parsed = hostingAutomationPayloadSchema.safeParse(event?.payload);
+    const schema =
+      data.eventType === 'HOSTING_CANCELLATION_SUSPENSION_REQUESTED'
+        ? hostingCancellationJobSchema
+        : hostingAutomationPayloadSchema;
+    const parsed = schema.safeParse(event?.payload);
     if (
       !event ||
       event.status !== OutboxStatus.PUBLISHED ||
@@ -137,62 +147,146 @@ export class HostingAutomationService {
 
   private async prepare(
     action: AutomationAction,
-    payload: HostingAutomationPayload,
+    payload: AutomationPayload,
+    outboxEventId: string,
   ) {
-    const idempotencyKey = `automation:${action.toLowerCase()}:${payload.serviceId}:${payload.invoiceId}`;
-    const existing = await this.prisma.hostingPanelOperation.findFirst({
-      where: { idempotencyKey: { startsWith: idempotencyKey } },
-      orderBy: { attemptNumber: 'desc' },
-    });
-    if (
-      existing?.status === HostingPanelOperationStatus.FAILED &&
-      existing.errorKind === HostingPanelErrorKind.TEMPORARY &&
-      existing.retryable &&
-      existing.attemptNumber < MAX_AUTOMATION_ATTEMPTS
-    ) {
-      const retryKey = `${idempotencyKey}:retry:${existing.attemptNumber + 1}`;
-      try {
-        const operation = await this.prisma.hostingPanelOperation.create({
+    const cancellation = 'cancellationId' in payload ? payload : undefined;
+    const sourceId =
+      'invoiceId' in payload ? payload.invoiceId : payload.cancellationId;
+    const metadata = this.sourceMetadata(payload);
+    const automationRunId =
+      'automationRunId' in payload ? payload.automationRunId : undefined;
+    const idempotencyKey = `automation:${action.toLowerCase()}:${payload.serviceId}:${sourceId}`;
+    return this.prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM services WHERE id = ${payload.serviceId}::uuid FOR UPDATE`;
+      const existing = await tx.hostingPanelOperation.findFirst({
+        where: { idempotencyKey: { startsWith: idempotencyKey } },
+        orderBy: { attemptNumber: 'desc' },
+      });
+      if (
+        !cancellation &&
+        existing?.status === HostingPanelOperationStatus.SUCCEEDED
+      ) {
+        return { operation: existing, fresh: false };
+      }
+      const running = await tx.hostingPanelOperation.findFirst({
+        where: {
+          serviceId: payload.serviceId,
+          status: 'RUNNING',
+          ...(existing ? { id: { not: existing.id } } : {}),
+        },
+        select: { id: true },
+      });
+      if (running && !cancellation)
+        throw this.jobError('TEMPORARY', 'HOSTING_OPERATION_IN_PROGRESS');
+      const service = await tx.service.findUnique({
+        where: { id: payload.serviceId },
+        include: { server: true, customer: { select: { userId: true } } },
+      });
+      if (!service)
+        throw this.jobError(
+          'PERMANENT',
+          'HOSTING_AUTOMATION_SERVICE_UNAVAILABLE',
+        );
+      if (cancellation) {
+        const request = await tx.hostingCancellationRequest.findFirst({
+          where: {
+            id: cancellation.cancellationId,
+            serviceId: service.id,
+            status: 'OPEN',
+          },
+        });
+        const now = this.clock.now();
+        const due = request?.effectiveAt ?? request?.approvedAt;
+        if (!request || !due || due > now) return null;
+        if (running) {
+          if (now.getTime() - due.getTime() >= 5 * 60_000)
+            throw this.jobError('TEMPORARY', 'HOSTING_OPERATION_IN_PROGRESS');
+          await this.deferCancellation(
+            tx,
+            cancellation,
+            outboxEventId,
+            new Date(now.getTime() + 60_000),
+          );
+          return null;
+        }
+        if (request.effectiveAt && service.nextDueAt > request.effectiveAt) {
+          await tx.hostingCancellationRequest.update({
+            where: { id: request.id },
+            data: { effectiveAt: service.nextDueAt },
+          });
+          await this.deferCancellation(
+            tx,
+            cancellation,
+            outboxEventId,
+            service.nextDueAt,
+          );
+          await tx.activityLog.create({
+            data: {
+              action: 'HOSTING_CANCELLATION_RESCHEDULED',
+              entityType: 'SERVICE',
+              entityId: service.id,
+              metadata: {
+                cancellationId: request.id,
+                effectiveAt: service.nextDueAt.toISOString(),
+              },
+            },
+          });
+          return null;
+        }
+        if (service.status === 'SUSPENDED' || service.status === 'TERMINATED') {
+          if (service.suspensionInvoiceId)
+            await tx.service.update({
+              where: { id: service.id },
+              data: { suspensionInvoiceId: null },
+            });
+          await this.finishCancellation(
+            tx,
+            service.id,
+            cancellation.cancellationId,
+            now,
+          );
+          return null;
+        }
+        if (service.status !== 'ACTIVE')
+          throw this.jobError(
+            'PERMANENT',
+            'HOSTING_CANCELLATION_SERVICE_STATE_INVALID',
+          );
+      }
+      if (
+        existing?.status === HostingPanelOperationStatus.FAILED &&
+        existing.errorKind === HostingPanelErrorKind.TEMPORARY &&
+        existing.retryable &&
+        existing.attemptNumber < MAX_AUTOMATION_ATTEMPTS
+      ) {
+        const retryKey = `${idempotencyKey}:retry:${existing.attemptNumber + 1}`;
+        const operation = await tx.hostingPanelOperation.create({
           data: {
             serviceId: existing.serviceId,
             serverId: existing.serverId,
-            automationRunId: payload.automationRunId,
+            automationRunId,
+            requestedByUserId: existing.requestedByUserId,
             retryOfOperationId: existing.id,
             type: existing.type,
             adapterKey: existing.adapterKey,
             idempotencyKey: retryKey,
             requestFingerprint: existing.requestFingerprint,
             attemptNumber: existing.attemptNumber + 1,
-            requestMetadata: { invoiceId: payload.invoiceId },
+            requestMetadata: metadata,
           },
         });
         return { operation, fresh: true };
-      } catch (error) {
-        if (!isUniqueConstraint(error)) throw error;
-        const operation = await this.prisma.hostingPanelOperation.findUnique({
-          where: { idempotencyKey: retryKey },
-        });
-        return operation ? { operation, fresh: false } : null;
       }
-    }
-    if (existing) return { operation: existing, fresh: false };
-    const service = await this.prisma.service.findUnique({
-      where: { id: payload.serviceId },
-      include: { server: true },
-    });
-    if (!service) {
-      throw new BackgroundJobError(
-        'PERMANENT',
-        'HOSTING_AUTOMATION_SERVICE_UNAVAILABLE',
-        'Hosting automation cannot be processed.',
-      );
-    }
-    try {
-      const operation = await this.prisma.hostingPanelOperation.create({
+      if (existing) return { operation: existing, fresh: false };
+      const operation = await tx.hostingPanelOperation.create({
         data: {
           serviceId: service.id,
           serverId: service.serverId,
-          automationRunId: payload.automationRunId,
+          automationRunId,
+          ...(cancellation
+            ? { requestedByUserId: service.customer.userId }
+            : {}),
           type:
             action === 'SUSPEND'
               ? HostingPanelOperationType.SUSPEND_ACCOUNT
@@ -202,26 +296,22 @@ export class HostingAutomationService {
           requestFingerprint: createHash('sha256')
             .update(JSON.stringify(payload))
             .digest('hex'),
-          requestMetadata: { invoiceId: payload.invoiceId },
+          requestMetadata: metadata,
         },
       });
       return { operation, fresh: true };
-    } catch (error) {
-      if (!isUniqueConstraint(error)) throw error;
-      const operation = await this.prisma.hostingPanelOperation.findUnique({
-        where: { idempotencyKey },
-      });
-      return operation ? { operation, fresh: false } : null;
-    }
+    });
   }
 
   private async eligible(
     action: AutomationAction,
-    payload: HostingAutomationPayload,
+    payload: AutomationPayload,
   ): Promise<boolean> {
     const service = await this.prisma.service.findUnique({
       where: { id: payload.serviceId },
     });
+    if ('cancellationId' in payload)
+      return service?.status === ServiceStatus.ACTIVE;
     const invoice = await this.prisma.invoice.findUnique({
       where: { id: payload.invoiceId },
       include: {
@@ -232,6 +322,21 @@ export class HostingAutomationService {
       },
     });
     if (!service || !invoice || invoice.items.length === 0) return false;
+    if (
+      action === 'UNSUSPEND' &&
+      (await this.prisma.hostingCancellationRequest.findFirst({
+        where: {
+          serviceId: service.id,
+          OR: [
+            { status: 'COMPLETED' },
+            { status: 'OPEN', approvedAt: { not: null } },
+            { status: 'OPEN', effectiveAt: { lte: this.clock.now() } },
+          ],
+        },
+        select: { id: true },
+      }))
+    )
+      return false;
     return action === 'SUSPEND'
       ? service.status === ServiceStatus.ACTIVE &&
           invoice.status === InvoiceStatus.OVERDUE &&
@@ -245,6 +350,7 @@ export class HostingAutomationService {
   private async mutatePanel(
     action: AutomationAction,
     serviceId: string,
+    cancellation: boolean,
   ): Promise<{
     externalAccountId: string;
     username: string;
@@ -288,7 +394,9 @@ export class HostingAutomationService {
       action === 'SUSPEND'
         ? {
             user: service.controlPanelUsername,
-            reason: 'Renewal invoice overdue after grace period.',
+            reason: cancellation
+              ? 'Customer requested hosting cancellation.'
+              : 'Renewal invoice overdue after grace period.',
             disallowun: '0',
           }
         : { user: service.controlPanelUsername },
@@ -464,7 +572,7 @@ export class HostingAutomationService {
   private async complete(
     operationId: string,
     action: AutomationAction,
-    payload: HostingAutomationPayload,
+    payload: AutomationPayload,
     account: {
       username: string;
       domain: string;
@@ -473,6 +581,9 @@ export class HostingAutomationService {
     },
   ): Promise<void> {
     const now = this.clock.now();
+    const invoiceId = 'invoiceId' in payload ? payload.invoiceId : null;
+    const cancellationId =
+      'cancellationId' in payload ? payload.cancellationId : undefined;
     await this.prisma.$transaction(async (transaction) => {
       const changed = await transaction.service.updateMany({
         where:
@@ -481,15 +592,17 @@ export class HostingAutomationService {
             : {
                 id: payload.serviceId,
                 status: ServiceStatus.SUSPENDED,
-                suspensionInvoiceId: payload.invoiceId,
+                suspensionInvoiceId: invoiceId,
               },
         data:
           action === 'SUSPEND'
             ? {
                 status: ServiceStatus.SUSPENDED,
                 suspendedAt: now,
-                suspensionReason: 'Renewal invoice overdue after grace period.',
-                suspensionInvoiceId: payload.invoiceId,
+                suspensionReason: cancellationId
+                  ? 'Customer requested hosting cancellation.'
+                  : 'Renewal invoice overdue after grace period.',
+                suspensionInvoiceId: invoiceId,
               }
             : {
                 status: ServiceStatus.ACTIVE,
@@ -497,6 +610,13 @@ export class HostingAutomationService {
               },
       });
       if (changed.count !== 1) throw new Error('SERVICE_STATE_CHANGED');
+      if (cancellationId)
+        await this.finishCancellation(
+          transaction,
+          payload.serviceId,
+          cancellationId,
+          now,
+        );
       await transaction.hostingPanelOperation.update({
         where: { id: operationId },
         data: {
@@ -517,25 +637,29 @@ export class HostingAutomationService {
           payload: { schemaVersion: 1, serviceId: payload.serviceId },
         },
       });
-      await transaction.activityLog.create({
-        data: {
-          action:
-            action === 'SUSPEND'
-              ? 'SERVICE_SUSPENDED_BY_RENEWAL_AUTOMATION'
-              : 'SERVICE_UNSUSPENDED_AFTER_VERIFIED_PAYMENT',
-          entityType: 'SERVICE',
-          entityId: payload.serviceId,
-          correlationId: payload.automationRunId,
-          metadata: { invoiceId: payload.invoiceId, operationId },
-        },
-      });
+      if (!cancellationId)
+        await transaction.activityLog.create({
+          data: {
+            action:
+              action === 'SUSPEND'
+                ? 'SERVICE_SUSPENDED_BY_RENEWAL_AUTOMATION'
+                : 'SERVICE_UNSUSPENDED_AFTER_VERIFIED_PAYMENT',
+            entityType: 'SERVICE',
+            entityId: payload.serviceId,
+            correlationId:
+              'automationRunId' in payload
+                ? payload.automationRunId
+                : undefined,
+            metadata: { invoiceId, operationId },
+          },
+        });
     });
   }
 
   private async completeSkipped(
     operationId: string,
     action: AutomationAction,
-    payload: HostingAutomationPayload,
+    payload: AutomationPayload,
   ): Promise<void> {
     await this.prisma.hostingPanelOperation.updateMany({
       where: { id: operationId, status: HostingPanelOperationStatus.RUNNING },
@@ -545,8 +669,56 @@ export class HostingAutomationService {
         resultMetadata: {
           skipped: 'NO_LONGER_ELIGIBLE',
           action,
-          invoiceId: payload.invoiceId,
+          ...this.sourceMetadata(payload),
         },
+      },
+    });
+  }
+
+  private sourceMetadata(payload: AutomationPayload) {
+    return 'invoiceId' in payload
+      ? { invoiceId: payload.invoiceId }
+      : { cancellationId: payload.cancellationId };
+  }
+
+  private async deferCancellation(
+    tx: Prisma.TransactionClient,
+    payload: HostingCancellationJob,
+    outboxEventId: string,
+    availableAt: Date,
+  ) {
+    await tx.outboxEvent.createMany({
+      data: [
+        {
+          aggregateType: 'SERVICE',
+          aggregateId: payload.serviceId,
+          eventType: 'HOSTING_CANCELLATION_SUSPENSION_REQUESTED',
+          availableAt,
+          idempotencyKey: `hosting-cancellation-deferred:${outboxEventId}`,
+          payload,
+        },
+      ],
+      skipDuplicates: true,
+    });
+  }
+
+  private async finishCancellation(
+    tx: Prisma.TransactionClient,
+    serviceId: string,
+    cancellationId: string,
+    now: Date,
+  ) {
+    const changed = await tx.hostingCancellationRequest.updateMany({
+      where: { id: cancellationId, serviceId, status: 'OPEN' },
+      data: { status: 'COMPLETED', resolvedAt: now },
+    });
+    if (changed.count !== 1) throw new Error('CANCELLATION_STATE_CHANGED');
+    await tx.activityLog.create({
+      data: {
+        action: 'HOSTING_CANCELLATION_COMPLETED',
+        entityType: 'SERVICE',
+        entityId: serviceId,
+        metadata: { cancellationId },
       },
     });
   }
@@ -574,7 +746,11 @@ export class HostingAutomationService {
   }
 
   private action(eventType: string): AutomationAction {
-    if (eventType === 'HOSTING_SUSPENSION_REQUESTED') return 'SUSPEND';
+    if (
+      eventType === 'HOSTING_SUSPENSION_REQUESTED' ||
+      eventType === 'HOSTING_CANCELLATION_SUSPENSION_REQUESTED'
+    )
+      return 'SUSPEND';
     if (eventType === 'HOSTING_UNSUSPENSION_REQUESTED') return 'UNSUSPEND';
     throw new BackgroundJobError(
       'PERMANENT',
@@ -643,8 +819,4 @@ function hasControlCharacters(value: string): boolean {
     const code = character.charCodeAt(0);
     return code <= 31 || code === 127;
   });
-}
-
-function isUniqueConstraint(error: unknown): boolean {
-  return isObject(error) && error.code === 'P2002';
 }

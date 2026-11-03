@@ -742,6 +742,7 @@ model Service {
   invoiceItems               InvoiceItem[]
   tickets                    Ticket[]
   hostingPanelOperations     HostingPanelOperation[]
+  cancellationRequests       HostingCancellationRequest[]
 
   @@unique([serverId, externalAccountId], map: "services_server_external_account_key")
   @@index([customerId, status], map: "services_customer_status_idx")
@@ -751,6 +752,34 @@ model Service {
   @@index([terminatedByUserId], map: "services_terminated_by_user_id_idx")
   @@index([suspensionInvoiceId], map: "services_suspension_invoice_id_idx")
   @@map("services")
+}
+
+enum HostingCancellationTiming {
+  IMMEDIATE
+  END_OF_PERIOD
+}
+
+enum HostingCancellationStatus {
+  OPEN
+  WITHDRAWN
+  COMPLETED
+}
+
+model HostingCancellationRequest {
+  id          String                    @id @default(uuid()) @db.Uuid
+  serviceId   String                    @map("service_id") @db.Uuid
+  timing      HostingCancellationTiming
+  status      HostingCancellationStatus @default(OPEN)
+  reason      String?                   @db.VarChar(1000)
+  effectiveAt DateTime?                 @map("effective_at") @db.Timestamptz(3)
+  approvedAt  DateTime?                 @map("approved_at") @db.Timestamptz(3)
+  createdAt   DateTime                  @default(now()) @map("created_at") @db.Timestamptz(3)
+  resolvedAt  DateTime?                 @map("resolved_at") @db.Timestamptz(3)
+  service     Service                   @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+
+  @@index([status, createdAt])
+  @@index([serviceId, createdAt])
+  @@map("hosting_cancellation_requests")
 }
 
 model Server {
