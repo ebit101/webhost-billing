@@ -21,12 +21,14 @@ export function WorkspaceShell({
   navigation,
   userName,
   userDetail,
+  supportSession = false,
   children,
 }: {
   mode: 'portal' | 'admin';
   navigation: readonly WorkspaceNavigationItem[];
   userName: string;
   userDetail: string;
+  supportSession?: boolean;
   children: ReactNode;
 }) {
   const pathname = usePathname();
@@ -88,7 +90,10 @@ export function WorkspaceShell({
   }, [menuOpen]);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-950">
+    <div
+      className="min-h-screen bg-slate-50 text-slate-950"
+      data-read-only-support={supportSession || undefined}
+    >
       {menuOpen ? (
         <button
           type="button"
@@ -188,7 +193,7 @@ export function WorkspaceShell({
               </span>
             </span>
           </Link>
-          {mode === 'portal' && (
+          {mode === 'portal' && !supportSession && (
             <>
               <button
                 type="button"
@@ -279,14 +284,16 @@ export function WorkspaceShell({
                 >
                   Profile &amp; security
                 </Link>
-                <button
-                  type="button"
-                  onClick={logout}
-                  disabled={loggingOut}
-                  className="min-h-11 rounded-lg px-3 text-left hover:bg-slate-100 disabled:opacity-60"
-                >
-                  Log out
-                </button>
+                {!supportSession && (
+                  <button
+                    type="button"
+                    onClick={logout}
+                    disabled={loggingOut}
+                    className="min-h-11 rounded-lg px-3 text-left hover:bg-slate-100 disabled:opacity-60"
+                  >
+                    Log out
+                  </button>
+                )}
                 {logoutError && (
                   <p className="px-3 py-1 text-red-700">{logoutError}</p>
                 )}

@@ -31,6 +31,7 @@ import { ZodValidationPipe } from '../../common/validation/zod-validation.pipe';
 import { API_ENVIRONMENT } from '../../infrastructure/environment/environment.module';
 import type { AuthRequestContext } from '../auth/auth.types';
 import { CurrentAuth } from '../auth/decorators/current-auth.decorator';
+import { CustomerSupportAccess } from '../auth/decorators/customer-support-session.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { StaffPermissionRequired } from '../auth/decorators/staff-permission.decorator';
 import { IntegrationCredentialService } from './integration-credential.service';
@@ -57,6 +58,7 @@ export class SettingsController {
   }
 
   @Get('public-preferences')
+  @CustomerSupportAccess()
   @Public()
   @Roles()
   @Header('Cache-Control', 'no-store')

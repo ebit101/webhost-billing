@@ -5,6 +5,7 @@ export interface AuthRequestContext {
   identity: AuthenticatedIdentity;
   sessionId: string;
   sessionExpiresAt?: string;
+  supportAdministratorId?: string;
 }
 
 export interface AuthenticatedRequest extends Request {

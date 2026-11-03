@@ -417,6 +417,7 @@ model Customer {
   invoices       Invoice[]
   tickets        Ticket[]
   emailLogs      EmailLog[]
+  supportSessions CustomerSupportSession[]
 
   @@index([status, deletedAt], map: "customers_status_deleted_at_idx")
   @@index([lastName, firstName], map: "customers_name_idx")
@@ -455,11 +456,27 @@ model AuthSession {
 
   currencySelectionIntents      CurrencySelectionIntent[]
   currencyAuthorizationEvidence CurrencyAuthorizationEvidence[]
+  customerSupportSessions       CustomerSupportSession[]
 
   @@unique([id, userId], map: "auth_sessions_id_user_id_key")
   @@index([userId, revokedAt, expiresAt], map: "auth_sessions_user_active_idx")
   @@index([expiresAt], map: "auth_sessions_expires_at_idx")
   @@map("auth_sessions")
+}
+
+model CustomerSupportSession {
+  id             String      @id @default(uuid()) @db.Uuid
+  tokenHash      String      @unique @map("token_hash") @db.Char(64)
+  adminSessionId String      @map("admin_session_id") @db.Uuid
+  customerId     String      @map("customer_id") @db.Uuid
+  expiresAt      DateTime    @map("expires_at") @db.Timestamptz(3)
+  endedAt        DateTime?   @map("ended_at") @db.Timestamptz(3)
+  adminSession   AuthSession @relation(fields: [adminSessionId], references: [id], onDelete: Cascade)
+  customer       Customer    @relation(fields: [customerId], references: [id], onDelete: Restrict)
+
+  @@index([adminSessionId])
+  @@index([customerId])
+  @@map("customer_support_sessions")
 }
 
 model AdminTotpCredential {

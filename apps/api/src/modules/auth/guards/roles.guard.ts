@@ -64,13 +64,16 @@ export class RolesGuard implements CanActivate {
     if (auth) {
       await this.audit.record(
         {
-          actorUserId: auth.identity.userId,
+          actorUserId: auth.supportAdministratorId ?? auth.identity.userId,
           action: 'AUTH_ROLE_ACCESS_DENIED',
           entityType: 'USER',
           entityId: auth.identity.userId,
           metadata: {
             requiredRoles: [...(roles ?? [])],
             permission: permission ?? 'full-administrator',
+            ...(auth.supportAdministratorId
+              ? { supportSessionId: auth.sessionId }
+              : {}),
           },
         },
         createSecurityRequestContext(request, this.auditSecret),

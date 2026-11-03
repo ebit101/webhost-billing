@@ -26,6 +26,7 @@ import { DataTable } from '../ui/data-table';
 import { PageHeader } from '../ui/page-header';
 import { StatusBadge } from '../ui/status-badge';
 import { CustomerVerificationAction } from './customer-verification-action';
+import { StartCustomerSupportSession } from './customer-support-session';
 import {
   Card,
   Field,
@@ -203,7 +204,15 @@ function CustomerDetailRequest({
       <PageHeader
         eyebrow={customer.customerNumber}
         title={`${customer.firstName} ${customer.lastName}`}
-        description={`${customer.email}${customer.companyName ? ` · ${customer.companyName}` : ''}`}
+        description={
+          <>
+            {customer.email}
+            {customer.companyName ? ` · ${customer.companyName}` : ''}
+            {active && customer.emailVerified && (
+              <StartCustomerSupportSession customerId={customer.id} />
+            )}
+          </>
+        }
         actions={
           <>
             <Link className={buttonStyles('secondary')} href="/admin/customers">

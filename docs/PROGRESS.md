@@ -2,14 +2,22 @@
 
 ## Status Summary
 
-- **Current command:** Command 186 — Add customer email verification and marketing consent
-- **Current status:** Command 186 is implemented locally. Database and mail delivery integration still need verification.
+- **Current command:** Command 187 — Add read-only customer support sessions
+- **Current status:** Command 187 is implemented locally. The database-backed support session check and Command 186 mail delivery verification are pending.
 - **Last updated:** 2026-11-03
 - **Last recorded staging release:** Command 177, `887862020de1e472f303f359b793dccbedfb9b07`, deployed on 2026-11-03 (Asia/Dhaka).
-- **Next action:** Await authorization to verify customer email sign-in with fictional data and a local mail provider.
-- **Next command authorized:** None after Command 186.
+- **Next action:** Await authorization to verify the support session end to end with fictional data.
+- **Next command authorized:** None after Command 187.
 
 ## Command Reports
+
+### Command 187 — Add read-only customer support sessions
+
+- **Status and date:** Implemented locally on 2026-11-03 (Asia/Dhaka). Integration verification is pending.
+- **Scope and files:** Added Sign in as customer to the full administrator customer record and a required-reason dialog. Added a portal banner, End session action and expired-session exit page. Updated the API session guard, approved customer reads, authentication service, audit attribution, shared identity and request contracts, Prisma migration, and recovery inventory.
+- **Validation:** Passed 50 API authentication tests, 32 web tests, 8 recovery inventory tests, API and web typechecks, Prisma schema validation, and the Git diff check. Added a database-backed auth regression covering start, customer ownership, blocked writes, CSRF, end, and auditing. Docker was unavailable and loopback PostgreSQL and Redis refused connections, so the regression and migration execution remain pending.
+- **Decisions and risks:** Eligible targets are active, verified customer accounts. The support cookie is separate from the administrator session, applies across tabs in that browser and requires the original administrator session to remain valid. Support access expires after 15 minutes. Start and explicit end are audited. Only approved customer reads are available, and administrator operations resume after ending the session.
+- **Exact recommended next command:** Verify the migration and customer support session end to end with fictional accounts, including cross-customer denial, expiry, and return to the original administrator session.
 
 ### Command 186 — Add customer email verification and marketing consent
 

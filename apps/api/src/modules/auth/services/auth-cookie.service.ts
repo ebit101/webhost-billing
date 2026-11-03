@@ -16,6 +16,7 @@ import {
 export class AuthCookieService {
   readonly csrfCookieName: string;
   readonly sessionCookieName: string;
+  readonly supportCookieName: string;
   private readonly secure: boolean;
   private readonly sessionTtlMilliseconds: number;
 
@@ -27,6 +28,7 @@ export class AuthCookieService {
     this.sessionCookieName = this.secure
       ? `__Host-${SESSION_COOKIE_BASE_NAME}`
       : SESSION_COOKIE_BASE_NAME;
+    this.supportCookieName = `${this.secure ? '__Host-' : ''}webhost_support_session`;
     this.sessionTtlMilliseconds = environment.SESSION_TTL_SECONDS * 1_000;
   }
 
@@ -78,6 +80,20 @@ export class AuthCookieService {
 
   clearSessionCookie(response: Response): void {
     response.clearCookie(this.sessionCookieName, {
+      ...this.baseOptions(),
+      httpOnly: true,
+    });
+  }
+
+  setSupportCookie(response: Response, token: string): void {
+    response.cookie(this.supportCookieName, token, {
+      ...this.baseOptions(),
+      httpOnly: true,
+    });
+  }
+
+  clearSupportCookie(response: Response): void {
+    response.clearCookie(this.supportCookieName, {
       ...this.baseOptions(),
       httpOnly: true,
     });

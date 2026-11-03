@@ -51,6 +51,32 @@ describe('server workspace authorization', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it('forwards both cookies and routes an expired support session to the exit screen', async () => {
+    nextServer.cookies.mockResolvedValue({
+      get: (name: string) =>
+        name.startsWith('__Host-')
+          ? undefined
+          : { name, value: 'opaque-token' },
+    });
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(new Response(null, { status: 401 }));
+    vi.stubGlobal('fetch', fetchMock);
+    await expect(getAuthenticatedIdentity()).rejects.toThrow(
+      'NEXT_REDIRECT:/support-session',
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringMatching(/\/auth\/me$/),
+      {
+        cache: 'no-store',
+        headers: {
+          cookie:
+            'webhost_session=opaque-token; webhost_support_session=opaque-token',
+        },
+      },
+    );
+  });
+
   it('redirects an expired or invalid session to login', async () => {
     vi.stubGlobal(
       'fetch',

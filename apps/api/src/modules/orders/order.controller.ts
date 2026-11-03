@@ -33,6 +33,7 @@ import { ZodValidationPipe } from '../../common/validation/zod-validation.pipe';
 import { API_ENVIRONMENT } from '../../infrastructure/environment/environment.module';
 import type { AuthRequestContext } from '../auth/auth.types';
 import { CurrentAuth } from '../auth/decorators/current-auth.decorator';
+import { CustomerSupportAccess } from '../auth/decorators/customer-support-session.decorator';
 import { Public } from '../auth/decorators/public.decorator';
 import { AuthRateLimit } from '../auth/decorators/rate-limit.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -107,6 +108,7 @@ export class OrderController {
   }
 
   @Get('my')
+  @CustomerSupportAccess()
   @Roles('CUSTOMER')
   async myOrders(
     @Query(
@@ -148,6 +150,7 @@ export class OrderController {
   }
 
   @Get(':orderId')
+  @CustomerSupportAccess()
   @Roles('ADMIN', 'CUSTOMER')
   async detail(
     @Param('orderId', new ParseUUIDPipe()) orderId: string,

@@ -800,6 +800,145 @@ export class AuthService {
     return { ...user, adminProfile: null };
   }
 
+  async startCustomerSupportSession(
+    admin: AuthRequestContext,
+    customerId: string,
+    reason: string,
+    context: SecurityRequestContext,
+  ) {
+    this.requireFullAdministrator(admin);
+    const token = this.tokens.generate();
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1_000);
+    await this.prisma.$transaction(async (tx) => {
+      const customer = await tx.customer.findFirst({
+        where: this.eligibleSupportCustomer(customerId),
+        select: { id: true },
+      });
+      if (!customer) {
+        throw new ApplicationException({
+          status: HttpStatus.NOT_FOUND,
+          code: 'RESOURCE_NOT_FOUND',
+          message: 'An active, verified customer account is required.',
+        });
+      }
+      const session = await tx.customerSupportSession.create({
+        data: {
+          tokenHash: hashOpaqueToken(token),
+          adminSessionId: admin.sessionId,
+          customerId,
+          expiresAt,
+        },
+      });
+      await tx.activityLog.create({
+        data: {
+          actorUserId: admin.identity.userId,
+          action: 'CUSTOMER_SUPPORT_SESSION_STARTED',
+          entityType: 'CUSTOMER',
+          entityId: customerId,
+          ipAddressHash: context.ipAddressHash,
+          metadata: {
+            supportSessionId: session.id,
+            reason,
+            expiresAt: expiresAt.toISOString(),
+          },
+        },
+      });
+    });
+    return token;
+  }
+
+  async authenticateCustomerSupportSession(
+    adminToken: string,
+    supportToken: string,
+  ): Promise<AuthRequestContext> {
+    const admin = await this.authenticateSession(adminToken);
+    this.requireFullAdministrator(admin);
+    const session = await this.prisma.customerSupportSession.findFirst({
+      where: {
+        tokenHash: hashOpaqueToken(supportToken),
+        adminSessionId: admin.sessionId,
+        endedAt: null,
+        expiresAt: { gt: new Date() },
+        customer: this.eligibleSupportCustomer(),
+      },
+      include: { customer: { include: { user: true } } },
+    });
+    if (!session) throw this.invalidCredentialsException();
+    return {
+      identity: {
+        role: 'CUSTOMER',
+        userId: session.customer.userId,
+        customerId: session.customerId,
+        email: session.customer.user.email,
+        supportSession: { expiresAt: session.expiresAt.toISOString() },
+      },
+      sessionId: session.id,
+      supportAdministratorId: admin.identity.userId,
+    };
+  }
+
+  async endCustomerSupportSession(
+    adminToken: string | undefined,
+    supportToken: string | undefined,
+    context: SecurityRequestContext,
+  ): Promise<string | null> {
+    if (!adminToken || !supportToken) return null;
+    return this.prisma.$transaction(async (tx) => {
+      const session = await tx.customerSupportSession.findFirst({
+        where: {
+          tokenHash: hashOpaqueToken(supportToken),
+          adminSession: { tokenHash: hashOpaqueToken(adminToken) },
+        },
+        include: { adminSession: { select: { userId: true } } },
+      });
+      if (!session) return null;
+      const ended = await tx.customerSupportSession.updateMany({
+        where: { id: session.id, endedAt: null },
+        data: { endedAt: new Date() },
+      });
+      if (ended.count === 1) {
+        await tx.activityLog.create({
+          data: {
+            actorUserId: session.adminSession.userId,
+            action: 'CUSTOMER_SUPPORT_SESSION_ENDED',
+            entityType: 'CUSTOMER',
+            entityId: session.customerId,
+            ipAddressHash: context.ipAddressHash,
+            metadata: { supportSessionId: session.id },
+          },
+        });
+      }
+      return session.customerId;
+    });
+  }
+
+  private eligibleSupportCustomer(id?: string): Prisma.CustomerWhereInput {
+    return {
+      ...(id ? { id } : {}),
+      status: 'ACTIVE',
+      deletedAt: null,
+      user: {
+        role: 'CUSTOMER',
+        status: 'ACTIVE',
+        deletedAt: null,
+        emailVerifiedAt: { not: null },
+      },
+    };
+  }
+
+  private requireFullAdministrator(auth: AuthRequestContext) {
+    if (
+      auth.identity.role !== 'ADMIN' ||
+      auth.identity.staffRole !== 'FULL_ADMINISTRATOR'
+    ) {
+      throw new ApplicationException({
+        status: HttpStatus.FORBIDDEN,
+        code: 'FORBIDDEN',
+        message: 'Full administrator access is required.',
+      });
+    }
+  }
+
   async authenticateSession(rawToken: string): Promise<AuthRequestContext> {
     const now = new Date();
     const session = await this.prisma.authSession.findUnique({

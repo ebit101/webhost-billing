@@ -24,6 +24,7 @@ BACKUP_REQUIRED_TABLES=(
   currency_unit_definitions
   customer_email_challenges
   customer_security_preferences
+  customer_support_sessions
   customers
   domain_actions
   domain_catalogue_tlds

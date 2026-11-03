@@ -6701,3 +6701,10 @@ display the installed portal version.
 Owner-authorized on 2026-11-03. Add optional email two-step verification
 and marketing consent to Profile & security. Keep marketing consent off
 until the customer explicitly opts in. Validate and commit locally.
+
+## Command 187 — Add read-only customer support sessions
+
+Owner-authorized on 2026-11-03. Let full administrators open an active,
+verified customer's portal in read-only mode with a required support reason,
+audited start and end, and an explicit End session action. Validate and commit
+locally. No deployment.

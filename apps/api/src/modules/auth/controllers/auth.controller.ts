@@ -19,6 +19,7 @@ import {
   createApiSuccessResponse,
   customerEmailLoginRequestSchema,
   customerSecurityPreferenceUpdateSchema,
+  customerSupportSessionRequestSchema,
   emailVerificationRequestSchema,
   loginRequestSchema,
   passwordResetConfirmationSchema,
@@ -34,6 +35,7 @@ import {
   type CustomerProfileSummary,
   type CustomerEmailLoginRequest,
   type CustomerSecurityPreferenceUpdate,
+  type CustomerSupportSessionRequest,
   type EmailVerificationRequest,
   type LoginRequest,
   type PasswordResetConfirmation,
@@ -51,6 +53,7 @@ import { API_ENVIRONMENT } from '../../../infrastructure/environment/environment
 import type { AuthRequestContext } from '../auth.types';
 import { CurrentAuth } from '../decorators/current-auth.decorator';
 import { RequireCustomerOwnership } from '../decorators/customer-ownership.decorator';
+import { CustomerSupportAccess } from '../decorators/customer-support-session.decorator';
 import { Public } from '../decorators/public.decorator';
 import { AuthRateLimit } from '../decorators/rate-limit.decorator';
 import { Roles } from '../decorators/roles.decorator';
@@ -79,6 +82,7 @@ export class AuthController {
 
   @Public()
   @Get('csrf')
+  @CustomerSupportAccess()
   @Header('Cache-Control', 'no-store')
   csrfToken(@Res({ passthrough: true }) response: Response) {
     const csrfToken = this.csrf.generate();
@@ -232,6 +236,7 @@ export class AuthController {
   }
 
   @Get('customer-security-preferences')
+  @CustomerSupportAccess()
   @Roles('CUSTOMER')
   async customerSecurityPreferences(@CurrentAuth() auth: AuthRequestContext) {
     return createApiSuccessResponse(
@@ -399,7 +404,48 @@ export class AuthController {
     });
   }
 
+  @Post('customer-support-sessions/:customerId')
+  @Roles('ADMIN')
+  @HttpCode(HttpStatus.OK)
+  @Header('Cache-Control', 'no-store')
+  async startCustomerSupportSession(
+    @CurrentAuth() auth: AuthRequestContext,
+    @Param('customerId', new ParseUUIDPipe()) customerId: string,
+    @Body(new ZodValidationPipe(customerSupportSessionRequestSchema))
+    input: CustomerSupportSessionRequest,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const token = await this.authService.startCustomerSupportSession(
+      auth,
+      customerId,
+      input.reason,
+      this.securityContext(request),
+    );
+    this.cookies.setSupportCookie(response, token);
+    return createApiSuccessResponse({ message: 'Support session started.' });
+  }
+
+  @Public()
+  @CustomerSupportAccess('end')
+  @Post('customer-support-session/end')
+  @HttpCode(HttpStatus.OK)
+  @Header('Cache-Control', 'no-store')
+  async endCustomerSupportSession(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const customerId = await this.authService.endCustomerSupportSession(
+      this.cookies.read(request, this.cookies.sessionCookieName),
+      this.cookies.read(request, this.cookies.supportCookieName),
+      this.securityContext(request),
+    );
+    this.cookies.clearSupportCookie(response);
+    return createApiSuccessResponse({ customerId });
+  }
+
   @Get('me')
+  @CustomerSupportAccess()
   @Header('Cache-Control', 'no-store')
   me(
     @CurrentAuth() auth: AuthRequestContext,

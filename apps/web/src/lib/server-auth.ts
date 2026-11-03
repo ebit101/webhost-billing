@@ -34,9 +34,14 @@ async function sessionCookieHeader(): Promise<string | undefined> {
     cookieStore.get('__Host-webhost_session') ??
     cookieStore.get('webhost_session');
 
-  return sessionCookie
-    ? `${sessionCookie.name}=${encodeURIComponent(sessionCookie.value)}`
-    : undefined;
+  const supportCookie =
+    cookieStore.get('__Host-webhost_support_session') ??
+    cookieStore.get('webhost_support_session');
+  if (!sessionCookie && supportCookie) redirect('/support-session');
+  if (!sessionCookie) return undefined;
+  return [sessionCookie, ...(supportCookie ? [supportCookie] : [])]
+    .map(({ name, value }) => `${name}=${encodeURIComponent(value)}`)
+    .join('; ');
 }
 
 export async function getCustomerDisplayName(
@@ -83,6 +88,8 @@ export async function getAuthenticatedIdentity(): Promise<AuthenticatedIdentity 
   }
 
   if (response.status === 401 || response.status === 403) {
+    if (cookie.includes('webhost_support_session='))
+      redirect('/support-session');
     return null;
   }
 

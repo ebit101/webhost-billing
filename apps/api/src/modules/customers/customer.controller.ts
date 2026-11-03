@@ -37,6 +37,7 @@ import { ZodValidationPipe } from '../../common/validation/zod-validation.pipe';
 import { API_ENVIRONMENT } from '../../infrastructure/environment/environment.module';
 import type { AuthRequestContext } from '../auth/auth.types';
 import { CurrentAuth } from '../auth/decorators/current-auth.decorator';
+import { CustomerSupportAccess } from '../auth/decorators/customer-support-session.decorator';
 import { RequireCustomerOwnership } from '../auth/decorators/customer-ownership.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { StaffPermissionRequired } from '../auth/decorators/staff-permission.decorator';
@@ -84,6 +85,7 @@ export class CustomerController {
   }
 
   @Get(':customerId')
+  @CustomerSupportAccess()
   @StaffPermissionRequired('customers.read')
   @Roles('ADMIN', 'CUSTOMER')
   @RequireCustomerOwnership('customerId')
@@ -92,6 +94,7 @@ export class CustomerController {
   }
 
   @Get(':customerId/portal-summary')
+  @CustomerSupportAccess()
   @Roles('CUSTOMER')
   @RequireCustomerOwnership('customerId')
   async portalSummary(

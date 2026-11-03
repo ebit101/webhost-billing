@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
+import { CustomerSupportSessionBanner } from '../../../components/customers/customer-support-session';
 import {
   WorkspaceShell,
   type WorkspaceNavigationItem,
@@ -35,6 +36,8 @@ export default async function PortalLayout({
   children: ReactNode;
 }) {
   const identity = await requireWorkspaceRole('CUSTOMER');
+  const supportSession =
+    identity.role === 'CUSTOMER' ? identity.supportSession : undefined;
   const userName =
     identity.role === 'CUSTOMER'
       ? await getCustomerDisplayName(identity.customerId)
@@ -45,8 +48,19 @@ export default async function PortalLayout({
       mode="portal"
       navigation={navigation}
       userName={userName}
-      userDetail="Customer account"
+      userDetail={
+        supportSession ? 'Read-only support access' : 'Customer account'
+      }
+      supportSession={Boolean(supportSession)}
     >
+      {supportSession && (
+        <div className="mb-5">
+          <CustomerSupportSessionBanner
+            expiresAt={supportSession.expiresAt}
+            customerName={userName}
+          />
+        </div>
+      )}
       {children}
     </WorkspaceShell>
   );

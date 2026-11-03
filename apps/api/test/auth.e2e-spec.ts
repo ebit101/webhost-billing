@@ -332,6 +332,62 @@ describe('Authentication (e2e)', () => {
     await adminAgent
       .get(`/auth/customer-profile/${SEEDED_OTHER_CUSTOMER_ID}`)
       .expect(200);
+    const supportPath = `/auth/customer-support-sessions/${customerId}`;
+    await adminAgent
+      .post(supportPath)
+      .set('X-CSRF-Token', csrfToken)
+      .send({ reason: ' ' })
+      .expect(400);
+    await adminAgent
+      .post(supportPath)
+      .set('X-CSRF-Token', csrfToken)
+      .send({ reason: 'Check the fictional customer portal' })
+      .expect(200);
+    const supportIdentity = await adminAgent.get('/auth/me').expect(200);
+    expect(
+      identityResponseSchema.parse(supportIdentity.body).data,
+    ).toMatchObject({
+      role: 'CUSTOMER',
+      customerId,
+      supportSession: { expiresAt: expect.any(String) },
+    });
+    await adminAgent.get(`/customers/${customerId}/portal-summary`).expect(200);
+    await adminAgent.get(`/customers/${SEEDED_OTHER_CUSTOMER_ID}`).expect(403);
+    await adminAgent.get('/auth/admin-check').expect(403);
+    await adminAgent
+      .patch('/auth/customer-security-preferences')
+      .set('X-CSRF-Token', csrfToken)
+      .send({ marketingConsent: true })
+      .expect(403);
+    await adminAgent.post('/auth/customer-support-session/end').expect(403);
+    await adminAgent
+      .post('/auth/customer-support-session/end')
+      .set('X-CSRF-Token', csrfToken)
+      .expect(200);
+    await adminAgent.get('/auth/admin-check').expect(200);
+    const supportAudit = await prisma.activityLog.findMany({
+      where: {
+        entityId: customerId,
+        actorUserId: login.identity.userId,
+        action: {
+          in: [
+            'CUSTOMER_SUPPORT_SESSION_STARTED',
+            'CUSTOMER_SUPPORT_SESSION_ENDED',
+          ],
+        },
+      },
+    });
+    expect(supportAudit).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          action: 'CUSTOMER_SUPPORT_SESSION_STARTED',
+          metadata: expect.objectContaining({
+            reason: 'Check the fictional customer portal',
+          }),
+        }),
+        expect.objectContaining({ action: 'CUSTOMER_SUPPORT_SESSION_ENDED' }),
+      ]),
+    );
     const session = login.session;
     const cookie = (
       loginResponse.headers['set-cookie'] as unknown as string[]

@@ -11,6 +11,7 @@ import {
 import { ZodValidationPipe } from '../../common/validation/zod-validation.pipe';
 import type { AuthRequestContext } from '../auth/auth.types';
 import { CurrentAuth } from '../auth/decorators/current-auth.decorator';
+import { CustomerSupportAccess } from '../auth/decorators/customer-support-session.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { StaffPermissionRequired } from '../auth/decorators/staff-permission.decorator';
 import { NotificationService } from './notification.service';
@@ -21,6 +22,7 @@ import { NotificationService } from './notification.service';
 export class NotificationController {
   constructor(private readonly notifications: NotificationService) {}
   @Get('catalog')
+  @CustomerSupportAccess()
   catalog(@CurrentAuth() auth: AuthRequestContext) {
     return createApiSuccessResponse(
       notificationCatalog.filter(
@@ -33,6 +35,7 @@ export class NotificationController {
     );
   }
   @Get('preferences')
+  @CustomerSupportAccess()
   async preferences(@CurrentAuth() auth: AuthRequestContext) {
     return createApiSuccessResponse(
       await this.notifications.preferences(auth.identity.userId),
@@ -49,6 +52,7 @@ export class NotificationController {
     );
   }
   @Get('email-history')
+  @CustomerSupportAccess()
   async emailHistory(
     @CurrentAuth() auth: AuthRequestContext,
     @Query(new ZodValidationPipe(notificationListQuerySchema))
@@ -61,6 +65,7 @@ export class NotificationController {
     return createPaginatedApiSuccessResponse(result.data, result.pagination);
   }
   @Get()
+  @CustomerSupportAccess()
   async list(
     @CurrentAuth() auth: AuthRequestContext,
     @Query(new ZodValidationPipe(notificationListQuerySchema))

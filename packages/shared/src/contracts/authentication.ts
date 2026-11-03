@@ -87,6 +87,14 @@ export const customerSecurityPreferenceUpdateSchema = z.union([
   z.object({ marketingConsent: z.boolean() }).strict(),
 ]);
 
+export const customerSupportSessionRequestSchema = z
+  .object({ reason: z.string().trim().min(1).max(500) })
+  .strict();
+
+export type CustomerSupportSessionRequest = z.infer<
+  typeof customerSupportSessionRequestSchema
+>;
+
 export const customerEmailLoginRequestSchema = z
   .object({
     challengeToken: z.string().min(32).max(256),

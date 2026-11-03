@@ -1,4 +1,5 @@
 import { apiEnvironmentSchema } from '@webhost-billing/config';
+import { customerSupportSessionRequestSchema } from '@webhost-billing/shared';
 import {
   UserRole,
   UserStatus,
@@ -87,6 +88,12 @@ function fixture() {
       updateMany: jest.fn().mockResolvedValue({ count: 1 }),
     },
     activityLog: { create: jest.fn() },
+    customer: { findFirst: jest.fn() },
+    customerSupportSession: {
+      create: jest.fn().mockResolvedValue({ id: 'support-session-id' }),
+      findFirst: jest.fn(),
+      updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+    },
     $transaction: jest.fn(async (work: unknown): Promise<unknown> => {
       if (typeof work === 'function')
         return (work as (tx: Prisma.TransactionClient) => Promise<unknown>)(
@@ -265,6 +272,157 @@ describe('customer sign-in and consent preferences', () => {
       ),
     ).rejects.toThrow();
     expect(prisma.authSession.create).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('customer support sessions', () => {
+  const customerId = '10000000-0000-4000-8000-000000000009';
+  const customerUserId = '10000000-0000-4000-8000-000000000010';
+
+  it('validates the reason and limits starts to full administrators and eligible customers', async () => {
+    expect(
+      customerSupportSessionRequestSchema.safeParse({ reason: '   ' }).success,
+    ).toBe(false);
+    expect(
+      customerSupportSessionRequestSchema.parse({
+        reason: ' Review a ticket ',
+      }),
+    ).toEqual({ reason: 'Review a ticket' });
+    const { service, prisma, session } = fixture();
+    const admin = await service.authenticateSession('admin-token');
+    if (admin.identity.role !== 'ADMIN')
+      throw new Error('Expected administrator');
+    const restricted = {
+      ...admin,
+      identity: { ...admin.identity, staffRole: 'SUPPORT_OPERATOR' as const },
+    };
+    await expect(
+      service.startCustomerSupportSession(
+        restricted,
+        customerId,
+        'Review a ticket',
+        context,
+      ),
+    ).rejects.toMatchObject({ code: 'FORBIDDEN' });
+    expect(prisma.customer.findFirst).not.toHaveBeenCalled();
+    prisma.customer.findFirst.mockResolvedValue(null);
+    await expect(
+      service.startCustomerSupportSession(
+        admin,
+        customerId,
+        'Review a ticket',
+        context,
+      ),
+    ).rejects.toMatchObject({ code: 'RESOURCE_NOT_FOUND' });
+    prisma.customer.findFirst.mockResolvedValue({ id: customerId });
+    const token = await service.startCustomerSupportSession(
+      admin,
+      customerId,
+      'Review a ticket',
+      context,
+    );
+    expect(prisma.customerSupportSession.create).toHaveBeenCalledWith({
+      data: {
+        customerId,
+        adminSessionId: session.id,
+        tokenHash: hashOpaqueToken(token),
+        expiresAt: expect.any(Date),
+      },
+    });
+    expect(prisma.activityLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        actorUserId: admin.identity.userId,
+        action: 'CUSTOMER_SUPPORT_SESSION_STARTED',
+        entityId: customerId,
+        metadata: expect.objectContaining({
+          reason: 'Review a ticket',
+          supportSessionId: 'support-session-id',
+        }),
+      }),
+    });
+  });
+
+  it('scopes the customer identity to an unexpired record tied to the live parent session', async () => {
+    const { service, prisma, session, user } = fixture();
+    const expiresAt = new Date(Date.now() + 60_000);
+    prisma.customerSupportSession.findFirst.mockResolvedValue({
+      id: 'support-session-id',
+      customerId,
+      expiresAt,
+      customer: {
+        userId: customerUserId,
+        user: { email: 'customer@example.test' },
+      },
+    });
+    await expect(
+      service.authenticateCustomerSupportSession(
+        'admin-token',
+        'support-token',
+      ),
+    ).resolves.toEqual({
+      sessionId: 'support-session-id',
+      supportAdministratorId: user.id,
+      identity: {
+        role: 'CUSTOMER',
+        userId: customerUserId,
+        customerId,
+        email: 'customer@example.test',
+        supportSession: { expiresAt: expiresAt.toISOString() },
+      },
+    });
+    expect(prisma.customerSupportSession.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          tokenHash: hashOpaqueToken('support-token'),
+          adminSessionId: session.id,
+          endedAt: null,
+          expiresAt: { gt: expect.any(Date) },
+        }),
+      }),
+    );
+    session.revokedAt = new Date();
+    await expect(
+      service.authenticateCustomerSupportSession(
+        'admin-token',
+        'support-token',
+      ),
+    ).rejects.toMatchObject({ code: 'AUTHENTICATION_REQUIRED' });
+    expect(prisma.customerSupportSession.findFirst).toHaveBeenCalledTimes(1);
+  });
+
+  it('ends and audits the support session once without revoking the administrator', async () => {
+    const { service, prisma, user } = fixture();
+    prisma.customerSupportSession.findFirst.mockResolvedValue({
+      id: 'support-session-id',
+      customerId,
+      adminSession: { userId: user.id },
+    });
+    prisma.customerSupportSession.updateMany
+      .mockResolvedValueOnce({ count: 1 })
+      .mockResolvedValueOnce({ count: 0 });
+    await expect(
+      service.endCustomerSupportSession(
+        'admin-token',
+        'support-token',
+        context,
+      ),
+    ).resolves.toBe(customerId);
+    await expect(
+      service.endCustomerSupportSession(
+        'admin-token',
+        'support-token',
+        context,
+      ),
+    ).resolves.toBe(customerId);
+    expect(prisma.activityLog.create).toHaveBeenCalledTimes(1);
+    expect(prisma.activityLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        actorUserId: user.id,
+        action: 'CUSTOMER_SUPPORT_SESSION_ENDED',
+        entityId: customerId,
+      }),
+    });
+    expect(prisma.authSession.updateMany).not.toHaveBeenCalled();
   });
 });
 

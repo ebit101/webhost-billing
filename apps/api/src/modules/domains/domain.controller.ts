@@ -37,6 +37,7 @@ import {
 } from '@webhost-billing/shared';
 import { ZodValidationPipe } from '../../common/validation/zod-validation.pipe';
 import { CurrentAuth } from '../auth/decorators/current-auth.decorator';
+import { CustomerSupportAccess } from '../auth/decorators/customer-support-session.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import type { AuthRequestContext } from '../auth/auth.types';
 import { DomainService } from './domain.service';
@@ -185,6 +186,7 @@ export class DomainController {
     );
   }
   @Get('offers')
+  @CustomerSupportAccess()
   @Roles('ADMIN', 'CUSTOMER')
   async offers() {
     return createApiSuccessResponse(await this.domains.offers());
@@ -228,6 +230,7 @@ export class DomainController {
     return createApiSuccessResponse(await this.domains.purchase(input, auth));
   }
   @Get()
+  @CustomerSupportAccess()
   @Roles('ADMIN', 'CUSTOMER')
   async list(
     @CurrentAuth() auth: AuthRequestContext,
@@ -237,6 +240,7 @@ export class DomainController {
     return createApiSuccessResponse(await this.domains.list(auth, customerId));
   }
   @Get(':id')
+  @CustomerSupportAccess()
   @Roles('ADMIN', 'CUSTOMER')
   async detail(
     @Param('id', new ParseUUIDPipe()) id: string,
@@ -249,6 +253,7 @@ export class DomainController {
     );
   }
   @Get(':id/management')
+  @CustomerSupportAccess()
   @Header('Cache-Control', 'private, no-store, max-age=0')
   @Roles('ADMIN', 'CUSTOMER')
   async management(
@@ -266,6 +271,7 @@ export class DomainController {
     return createApiSuccessResponse(await this.lifecycle.refresh(id, auth));
   }
   @Get(':id/actions')
+  @CustomerSupportAccess()
   @Roles('ADMIN', 'CUSTOMER')
   async actions(
     @Param('id', new ParseUUIDPipe()) id: string,

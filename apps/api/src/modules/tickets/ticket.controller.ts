@@ -33,6 +33,7 @@ import { ZodValidationPipe } from '../../common/validation/zod-validation.pipe';
 import { API_ENVIRONMENT } from '../../infrastructure/environment/environment.module';
 import type { AuthRequestContext } from '../auth/auth.types';
 import { CurrentAuth } from '../auth/decorators/current-auth.decorator';
+import { CustomerSupportAccess } from '../auth/decorators/customer-support-session.decorator';
 import { AuthRateLimit } from '../auth/decorators/rate-limit.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { StaffPermissionRequired } from '../auth/decorators/staff-permission.decorator';
@@ -57,6 +58,7 @@ export class TicketController {
   }
 
   @Get('my')
+  @CustomerSupportAccess()
   @Roles('CUSTOMER')
   async myTickets(
     @Query(new ZodValidationPipe(myTicketListQuerySchema))
@@ -104,6 +106,7 @@ export class TicketController {
   }
 
   @Get(':ticketId')
+  @CustomerSupportAccess()
   @StaffPermissionRequired('tickets.manage')
   @Roles('ADMIN', 'CUSTOMER')
   async detail(

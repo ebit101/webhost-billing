@@ -20,6 +20,10 @@ export const customerIdentitySchema = authenticatedIdentityBaseSchema
   .extend({
     role: z.literal('CUSTOMER'),
     customerId: z.uuid(),
+    supportSession: z
+      .object({ expiresAt: z.iso.datetime() })
+      .strict()
+      .optional(),
   })
   .strict();
 

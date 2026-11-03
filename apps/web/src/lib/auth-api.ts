@@ -69,6 +69,14 @@ export async function authMutation<T>(
   method: 'POST' | 'PUT' | 'PATCH' | 'DELETE',
   body?: Record<string, unknown>,
 ): Promise<T> {
+  if (
+    path !== '/auth/customer-support-session/end' &&
+    document.querySelector('[data-read-only-support]')
+  ) {
+    throw new Error(
+      'Account changes are disabled in the read-only support session.',
+    );
+  }
   const csrf = await csrfToken();
   const response = await fetch(`${API_URL}${path}`, {
     method,

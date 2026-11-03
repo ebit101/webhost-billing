@@ -37,6 +37,12 @@ export function proxy(request: NextRequest) {
     request.cookies.get('webhost_session');
 
   if (!sessionCookie) {
+    if (
+      request.cookies.get('__Host-webhost_support_session') ||
+      request.cookies.get('webhost_support_session')
+    ) {
+      return NextResponse.redirect(new URL('/support-session', request.url));
+    }
     if (request.nextUrl.pathname === '/admin') {
       return NextResponse.next({ request: { headers: requestHeaders } });
     }

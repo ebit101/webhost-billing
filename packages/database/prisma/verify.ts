@@ -52,6 +52,7 @@ const expectedTables = [
   'currency_unit_definitions',
   'customer_email_challenges',
   'customer_security_preferences',
+  'customer_support_sessions',
   'customers',
   'email_attempts',
   'email_logs',

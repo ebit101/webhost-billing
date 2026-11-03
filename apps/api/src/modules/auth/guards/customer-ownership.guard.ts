@@ -53,10 +53,13 @@ export class CustomerOwnershipGuard implements CanActivate {
     if (auth) {
       await this.audit.record(
         {
-          actorUserId: auth.identity.userId,
+          actorUserId: auth.supportAdministratorId ?? auth.identity.userId,
           action: 'AUTH_CUSTOMER_OWNERSHIP_DENIED',
           entityType: 'CUSTOMER',
           ...(requestedCustomerId ? { entityId: requestedCustomerId } : {}),
+          ...(auth.supportAdministratorId
+            ? { metadata: { supportSessionId: auth.sessionId } }
+            : {}),
         },
         createSecurityRequestContext(request, this.auditSecret),
       );
