@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { version } from '../../../package.json';
 import { authenticatedGet } from '../../lib/auth-api';
 import { Icon, type IconName } from '../ui/icon';
 import { Brand } from './brand';
@@ -219,6 +220,17 @@ export function WorkspaceShell({
           >
             {initials(userName)}
           </Link>
+          {mode === 'admin' && (
+            <a
+              href="https://github.com/ebit101/webhost-billing/blob/main/CHANGELOG.md"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ml-auto shrink-0 rounded-lg px-2 py-1 text-right text-xs text-slate-600 hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-600"
+            >
+              <span className="block font-semibold">v{version}</span>
+              <span className="block underline">Changelog</span>
+            </a>
+          )}
         </header>
         <main id="main-content" className="px-4 py-7 sm:px-6 sm:py-8 xl:px-10">
           <div className="mx-auto max-w-[95rem]">{children}</div>

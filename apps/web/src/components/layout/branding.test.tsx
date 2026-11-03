@@ -113,6 +113,11 @@ describe('installation web branding', () => {
     }
     expect(screen.queryByText('Webhost')).toBeNull();
     expect(screen.getAllByText('Fictional workspace')).toHaveLength(2);
+    expect(
+      screen
+        .getByRole('link', { name: /^v\S+ Changelog$/ })
+        .getAttribute('href'),
+    ).toBe('https://github.com/ebit101/webhost-billing/blob/main/CHANGELOG.md');
     expect(getBrandTitle()).toEqual({
       default: 'Speed Host',
       template: '%s · Speed Host',

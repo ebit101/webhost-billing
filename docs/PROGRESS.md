@@ -2,14 +2,21 @@
 
 ## Status Summary
 
-- **Current command:** Command 177 — Publish and deploy the accumulated batch
-- **Current status:** Command 177 complete. Version `0.1.0-alpha.2` is live on staging and the requested administrator acceptance passed.
+- **Current command:** Command 178 — Show the version and changelog in the admin header
+- **Current status:** Command 178 validated locally. Version `0.1.0-alpha.2` from Command 177 is live on staging.
 - **Last updated:** 2026-11-03
 - **Last recorded staging release:** Command 177, `887862020de1e472f303f359b793dccbedfb9b07`, deployed on 2026-11-03 (Asia/Dhaka).
 - **Next action:** Await the next owner-authorized development command.
-- **Next command authorized:** None after Command 177.
+- **Next command authorized:** None after Command 178.
 
 ## Command Reports
+
+### Command 178 — Show the version and changelog in the admin header
+
+- **Status and date:** Completed locally on 2026-11-03 (Asia/Dhaka). Staging delivery is pending authorization.
+- **Scope and files:** The shared workspace shell displays the web package version and a link to the repository changelog in the administrator header. Updated `workspace-shell.tsx`, its branding coverage, the command registry, and this report.
+- **Validation:** Web typecheck, five branding tests, five workspace-shell tests, and the Git diff check passed. The notification bell links to notification history without a count. Notification history shows delivery status and has no read/unread state.
+- **Exact recommended next command:** Authorize publication and staging deployment of Command 178.
 
 ### Command 177 — Publish and deploy the accumulated batch
 

@@ -6649,3 +6649,9 @@ Require Validate and CodeQL for the release commit, verify an encrypted cutover
 backup, apply the pending checkout terms migration and verify staging health,
 environment, branding and provider gates. Keep checkout terms at the existing
 installation default until explicitly configured.
+
+## Command 178 — Show the version and changelog in the admin header
+
+Owner-authorized on 2026-11-03. Show the installed web package version and a
+link to the repository changelog at the right of the administrator header.
+Validate and commit locally.
