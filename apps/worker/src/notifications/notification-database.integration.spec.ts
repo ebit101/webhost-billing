@@ -200,7 +200,7 @@ databaseDescribe(
           customerEmailSnapshot: 'fictional@example.test',
           customerAddressSnapshot: { countryCode: 'BD' },
           businessIdentitySnapshot: { name: 'Fictional hosting' },
-          issuedAt: new Date(Date.now() - 86400000),
+          issuedAt: new Date('2026-11-01T00:00:00Z'),
           dueAt: new Date('2026-11-02T00:00:00Z'),
         },
       });
