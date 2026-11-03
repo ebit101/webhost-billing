@@ -2,14 +2,22 @@
 
 ## Status Summary
 
-- **Current command:** Command 190 — Display customer manual payment amounts in invoice currency
-- **Current status:** The customer portal manual payment amount now displays in the invoice currency locally.
+- **Current command:** Command 191 — Add localisation dropdowns and lock the base currency
+- **Current status:** Localisation dropdowns and the permanent base currency lock are implemented locally.
 - **Last updated:** 2026-11-03
 - **Last recorded staging release:** Command 177, `887862020de1e472f303f359b793dccbedfb9b07`, deployed on 2026-11-03 (Asia/Dhaka).
-- **Next action:** Await authorization to rehearse pilot setup and manual payment with fictional data.
-- **Next command authorized:** None after Command 190.
+- **Next action:** Await authorization to verify and extend the selected base currency through the billing workflow for a non-BDT installation.
+- **Next command authorized:** None after Command 191.
 
 ## Command Reports
+
+### Command 191 — Add localisation dropdowns and lock the base currency
+
+- Implemented locally on 2026-11-03 (Asia/Dhaka). Updated the Settings manager, localisation options, shared settings contracts, and registration country fallback. The dropdowns default to BDT, Asia/Dhaka and Bangladesh.
+- The Settings API records an explicit, one-time base currency selection and rejects later changes through either update endpoint. Existing invoices and earlier non-BDT settings lock the current currency. Renewal policy and Localisation writes serialize on the same settings row. Time zone and country remain editable.
+- Passed five database-backed Settings API tests in isolated PostgreSQL and Redis, 11 settings and registration UI tests, and API and web type checks. The regression covers first selection, rejection of a later currency change, and a subsequent time zone change.
+- A non-BDT selection currently sets the business configuration. Storefront pricing, domain checkout and the local payment gateways retain BDT-specific behavior. No deployment ran.
+- The recommended next command is to verify and extend the selected base currency through a fictional non-BDT installation's pricing, invoice and manual payment workflow.
 
 ### Command 190 — Display customer manual payment amounts in invoice currency
 

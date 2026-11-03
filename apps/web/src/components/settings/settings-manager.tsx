@@ -21,6 +21,7 @@ import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { refreshPublicPreferences } from '../../lib/public-preferences';
 import { authenticatedGet, authMutation } from '../../lib/auth-api';
 import { SmtpSettingsPanel } from './smtp-settings-panel';
+import { localisationOptions } from './localisation-options';
 import { Button } from '../ui/button';
 import { ConfirmationDialog } from '../ui/confirmation-dialog';
 import { LoadingState } from '../ui/feedback-state';
@@ -183,6 +184,7 @@ export function SettingsManager() {
   const [savedOverview, setSavedOverview] = useState<SettingsOverview>();
   const [tab, setTab] = useState<Tab>('general');
   const [mailVisited, setMailVisited] = useState(false);
+  const [confirmCurrency, setConfirmCurrency] = useState(false);
   const [policyReview, setPolicyReview] =
     useState<PatchBusinessSettingsRequest>();
   const persistedPartialPayments =
@@ -197,7 +199,10 @@ export function SettingsManager() {
       savedOverview &&
       (id === 'ordering'
         ? termsDirty
-        : Object.values(tabChanges(id, overview, savedOverview)).some(
+        : (id === 'localisation' &&
+            confirmCurrency &&
+            !overview.currencyLocked) ||
+          Object.values(tabChanges(id, overview, savedOverview)).some(
             (value) => value !== undefined,
           )),
   );
@@ -333,6 +338,19 @@ export function SettingsManager() {
       return;
     }
     const changes = tabChanges(tab, overview, savedOverview);
+    if (tab === 'localisation' && !overview.currencyLocked) {
+      if (overview.currency !== savedOverview.currency && !confirmCurrency) {
+        setError('Confirm the business currency before saving it.');
+        return;
+      }
+      if (confirmCurrency) {
+        changes.confirmCurrency = true;
+        changes.localization = {
+          currency: overview.currency,
+          timeZone: overview.timeZone,
+        };
+      }
+    }
     if (!Object.values(changes).some((value) => value !== undefined)) return;
     if (
       changes.manualPayments?.partialPaymentsEnabled !== undefined &&
@@ -346,6 +364,7 @@ export function SettingsManager() {
 
   function discardChanges() {
     if (!savedOverview) return;
+    if (tab === 'localisation') setConfirmCurrency(false);
     if (tab === 'ordering')
       setTermsDraft(termsFields(savedOverview.preferences?.checkoutTerms));
     setOverview((current) => {
@@ -432,6 +451,7 @@ export function SettingsManager() {
         }
         const savedPreferences =
           saved.preferences ?? DEFAULT_PUBLIC_PREFERENCES;
+        if (saved.currencyLocked) next.currency = saved.currency;
         const generalDraft = tabChanges('general', current, savedOverview);
         const localisationDraft = tabChanges(
           'localisation',
@@ -456,6 +476,8 @@ export function SettingsManager() {
         return next;
       });
       setSavedOverview(saved);
+      if (savedTab === 'localisation' || saved.currencyLocked)
+        setConfirmCurrency(false);
       if (savedTab === 'ordering' || !termsDirty)
         setTermsDraft(termsFields(saved.preferences?.checkoutTerms));
       if (
@@ -730,81 +752,107 @@ export function SettingsManager() {
           </SettingsCard>
         </TabPanel>
         <TabPanel id="localisation" active={tab}>
-          <SettingsCard
-            title="Business localisation"
-            description="The business time zone is also used for scheduled renewals."
-          >
-            <div className="grid gap-4 md:grid-cols-2">
-              <Field label="Currency">
-                <input
-                  className={inputStyles}
-                  maxLength={3}
-                  value={overview.currency}
-                  onChange={(event) =>
-                    update('currency', event.target.value.toUpperCase())
-                  }
-                />
-              </Field>
-              <Field label="Business time zone">
-                <input
-                  className={inputStyles}
-                  value={overview.timeZone}
-                  onChange={(event) => update('timeZone', event.target.value)}
-                />
-              </Field>
-            </div>
-          </SettingsCard>
-          <SettingsCard
-            title="Display preferences"
-            description="Set the starting country for new customer forms and preview dates as shown in billing screens."
-          >
-            <div className="grid gap-4 md:grid-cols-3">
-              <Field label="Default country code">
-                <input
-                  className={inputStyles}
-                  value={preferences.defaultCountry ?? ''}
-                  maxLength={2}
-                  placeholder="BD"
-                  onChange={(event) =>
-                    updatePreferences({
-                      defaultCountry: event.target.value.toUpperCase() || null,
-                    })
-                  }
-                />
-              </Field>
-              {(['adminDateFormat', 'clientDateFormat'] as const).map((key) => (
-                <div key={key}>
-                  <Field
-                    label={
-                      key === 'adminDateFormat'
-                        ? 'Admin date format'
-                        : 'Client date format'
-                    }
-                  >
-                    <select
-                      className={inputStyles}
-                      value={preferences[key]}
-                      onChange={(event) =>
-                        updatePreferences({
-                          [key]: dateDisplayFormatSchema.parse(
-                            event.target.value,
-                          ),
-                        })
-                      }
-                    >
-                      <option value="day-first">Day / month / year</option>
-                      <option value="month-first">Month / day / year</option>
-                      <option value="iso">Year-month-day</option>
-                      <option value="long">Day, month name and year</option>
-                    </select>
+          {tab === 'localisation' && (
+            <>
+              <SettingsCard
+                title="Business localisation"
+                description="Choose one business currency for this installation. Storefront pricing, domain checkout and local payment gateways currently use BDT. The business time zone is also used for scheduled renewals."
+              >
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Field label="Base currency">
+                    <LocalisationSelect
+                      options={localisationOptions.currency}
+                      value={overview.currency}
+                      disabled={overview.currencyLocked}
+                      onChange={(currency) => {
+                        setConfirmCurrency(false);
+                        update('currency', currency);
+                      }}
+                    />
                   </Field>
-                  <p className="mt-1 text-sm text-slate-600">
-                    Preview {formatCalendarDate('2026-11-23', preferences[key])}
-                  </p>
+                  <Field label="Business time zone">
+                    <LocalisationSelect
+                      options={localisationOptions.timeZone}
+                      value={overview.timeZone}
+                      onChange={(timeZone) => update('timeZone', timeZone)}
+                    />
+                  </Field>
                 </div>
-              ))}
-            </div>
-          </SettingsCard>
+                {overview.currencyLocked ? (
+                  <p className="text-sm text-slate-600">
+                    Business currency is locked.
+                  </p>
+                ) : (
+                  <label className="flex items-center gap-2 text-sm text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={confirmCurrency}
+                      onChange={(event) =>
+                        setConfirmCurrency(event.target.checked)
+                      }
+                    />
+                    Confirm this currency. It cannot be changed after saving.
+                  </label>
+                )}
+              </SettingsCard>
+              <SettingsCard
+                title="Display preferences"
+                description="Set the starting country for new customer forms and preview dates as shown in billing screens."
+              >
+                <div className="grid gap-4 md:grid-cols-3">
+                  <Field label="Default country">
+                    <LocalisationSelect
+                      options={localisationOptions.country}
+                      value={preferences.defaultCountry ?? 'BD'}
+                      onChange={(defaultCountry) =>
+                        updatePreferences({ defaultCountry })
+                      }
+                    />
+                  </Field>
+                  {(['adminDateFormat', 'clientDateFormat'] as const).map(
+                    (key) => (
+                      <div key={key}>
+                        <Field
+                          label={
+                            key === 'adminDateFormat'
+                              ? 'Admin date format'
+                              : 'Client date format'
+                          }
+                        >
+                          <select
+                            className={inputStyles}
+                            value={preferences[key]}
+                            onChange={(event) =>
+                              updatePreferences({
+                                [key]: dateDisplayFormatSchema.parse(
+                                  event.target.value,
+                                ),
+                              })
+                            }
+                          >
+                            <option value="day-first">
+                              Day / month / year
+                            </option>
+                            <option value="month-first">
+                              Month / day / year
+                            </option>
+                            <option value="iso">Year-month-day</option>
+                            <option value="long">
+                              Day, month name and year
+                            </option>
+                          </select>
+                        </Field>
+                        <p className="mt-1 text-sm text-slate-600">
+                          Preview{' '}
+                          {formatCalendarDate('2026-11-23', preferences[key])}
+                        </p>
+                      </div>
+                    ),
+                  )}
+                </div>
+              </SettingsCard>
+            </>
+          )}
         </TabPanel>
         <TabPanel id="ordering" active={tab}>
           <SettingsCard
@@ -1300,6 +1348,36 @@ function SettingsCard(props: {
       </p>
       <div className="mt-5">{props.children}</div>
     </section>
+  );
+}
+
+function LocalisationSelect({
+  value,
+  options,
+  onChange,
+  disabled,
+}: {
+  value: string;
+  options: ReadonlyArray<{ code: string; label: string }>;
+  onChange: (value: string) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <select
+      className={inputStyles}
+      value={value}
+      disabled={disabled}
+      onChange={(event) => onChange(event.target.value)}
+    >
+      {!options.some(({ code }) => code === value) && (
+        <option value={value}>{value}</option>
+      )}
+      {options.map(({ code, label }) => (
+        <option key={code} value={code}>
+          {label}
+        </option>
+      ))}
+    </select>
   );
 }
 

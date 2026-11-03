@@ -130,7 +130,7 @@ export function RegisterForm({
           minLength={2}
           maxLength={2}
           placeholder="BD"
-          defaultValue={defaultCountry ?? ''}
+          defaultValue={defaultCountry ?? 'BD'}
           required
         />
       </div>

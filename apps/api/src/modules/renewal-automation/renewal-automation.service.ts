@@ -34,21 +34,8 @@ export class RenewalAutomationService {
     context: SecurityRequestContext,
   ): Promise<RenewalAutomationPolicy> {
     const policy = renewalAutomationPolicySchema.parse(input);
-    const localizationSetting = await this.prisma.setting.findUnique({
-      where: { key: 'business.localization' },
-      select: { value: true },
-    });
-    const parsedLocalization = businessLocalizationSettingsSchema.safeParse(
-      localizationSetting?.value,
-    );
-    const localization = {
-      currency: parsedLocalization.success
-        ? parsedLocalization.data.currency
-        : DEFAULT_BUSINESS_SETTINGS.currency,
-      timeZone: policy.timeZone,
-    };
-    await this.prisma.$transaction([
-      this.prisma.setting.upsert({
+    await this.prisma.$transaction(async (transaction) => {
+      await transaction.setting.upsert({
         where: { key: POLICY_KEY },
         update: {
           category: SettingCategory.AUTOMATION,
@@ -62,8 +49,22 @@ export class RenewalAutomationService {
           description: 'Renewal invoice, reminder, overdue, and grace policy.',
           updatedByUserId: actor.identity.userId,
         },
-      }),
-      this.prisma.setting.upsert({
+      });
+      // Settings updates acquire the same renewal row before changing localisation.
+      const localizationSetting = await transaction.setting.findUnique({
+        where: { key: 'business.localization' },
+        select: { value: true },
+      });
+      const parsedLocalization = businessLocalizationSettingsSchema.safeParse(
+        localizationSetting?.value,
+      );
+      const localization = {
+        currency: parsedLocalization.success
+          ? parsedLocalization.data.currency
+          : DEFAULT_BUSINESS_SETTINGS.currency,
+        timeZone: policy.timeZone,
+      };
+      await transaction.setting.upsert({
         where: { key: 'business.localization' },
         update: {
           category: SettingCategory.BUSINESS,
@@ -77,8 +78,8 @@ export class RenewalAutomationService {
           description: 'Operating currency and IANA business time zone.',
           updatedByUserId: actor.identity.userId,
         },
-      }),
-      this.prisma.activityLog.create({
+      });
+      await transaction.activityLog.create({
         data: {
           actorUserId: actor.identity.userId,
           action: 'RENEWAL_AUTOMATION_POLICY_UPDATED',
@@ -86,8 +87,8 @@ export class RenewalAutomationService {
           ipAddressHash: context.ipAddressHash,
           metadata: policy,
         },
-      }),
-    ]);
+      });
+    });
     return policy;
   }
 

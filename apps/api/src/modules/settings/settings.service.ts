@@ -19,6 +19,7 @@ import {
   activeProviderSettingsSchema,
   businessIdentitySchema,
   businessLocalizationSettingsSchema,
+  currencyCodeSchema,
   updateBusinessSettingsRequestSchema,
   emailBrandingSettingsSchema,
   invoiceNumberingSettingsSchema,
@@ -51,6 +52,7 @@ const KEYS = {
   website: 'business.public-website',
   displayPreferences: 'business.display-preferences',
   localization: 'business.localization',
+  currencySelection: 'business.currency-selection',
   invoiceNumbering: 'billing.invoice-numbering',
   renewal: 'automation.renewal-policy',
   termination: 'business.termination-policy',
@@ -71,7 +73,7 @@ export class SettingsService {
   async overview(
     database: Pick<
       PrismaClient,
-      'setting' | 'integrationCredential' | 'server'
+      'setting' | 'integrationCredential' | 'server' | 'invoice'
     > = this.prisma,
   ): Promise<SettingsOverview> {
     const [settings, credentialRecords, cpanelServers] = await Promise.all([
@@ -105,6 +107,15 @@ export class SettingsService {
         currency: DEFAULT_BUSINESS_SETTINGS.currency,
         timeZone: DEFAULT_BUSINESS_SETTINGS.timeZone,
       },
+    );
+    const confirmedCurrency = this.confirmedCurrency(
+      values.get(KEYS.currencySelection),
+    );
+    const currency = confirmedCurrency ?? localization.currency;
+    const currencyLocked = await this.currencyIsLocked(
+      database,
+      currency,
+      confirmedCurrency,
     );
     const paymentPolicy = this.parse(
       paymentSettingsSchema,
@@ -148,6 +159,8 @@ export class SettingsService {
         DEFAULT_BUSINESS_SETTINGS.businessIdentity,
       ),
       ...localization,
+      currency,
+      currencyLocked,
       invoiceNumbering: this.parse(
         invoiceNumberingSettingsSchema,
         values.get(KEYS.invoiceNumbering),
@@ -259,15 +272,21 @@ export class SettingsService {
   ): Promise<SettingsOverview> {
     const settings = updateBusinessSettingsRequestSchema.parse(input);
     await this.validateActiveGateway(settings.activeGateway);
-    await this.prisma.$transaction((transaction) =>
-      this.persist(
+    await this.prisma.$transaction(async (transaction) => {
+      await this.lockSetting(
+        transaction,
+        KEYS.renewal,
+        SettingCategory.AUTOMATION,
+        DEFAULT_BUSINESS_SETTINGS.renewalAutomation,
+      );
+      await this.persist(
         transaction,
         settings,
         new Set(Object.values(KEYS)),
         actor,
         context,
-      ),
-    );
+      );
+    });
     return this.overview();
   }
 
@@ -313,10 +332,11 @@ export class SettingsService {
           DEFAULT_BUSINESS_SETTINGS.invoiceNumbering,
         );
       }
-      const { credentialStatuses, preferences, ...current } =
+      const { credentialStatuses, preferences, currencyLocked, ...current } =
         await this.overview(transaction);
       void credentialStatuses;
       void preferences;
+      void currencyLocked;
       const localization = input.localization ?? {
         currency: current.currency,
         timeZone: current.timeZone,
@@ -427,9 +447,43 @@ export class SettingsService {
     context: SecurityRequestContext,
     preferences?: Pick<
       PatchBusinessSettingsRequest,
-      'website' | 'displayPreferences'
+      'website' | 'displayPreferences' | 'confirmCurrency'
     >,
   ) {
+    let confirmedCurrency: string | undefined;
+    if (keys.has(KEYS.localization)) {
+      await transaction.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${KEYS.currencySelection}, 0))::text`;
+      const rows = await transaction.setting.findMany({
+        where: { key: { in: [KEYS.localization, KEYS.currencySelection] } },
+        select: { key: true, value: true },
+      });
+      const values = new Map(rows.map(({ key, value }) => [key, value]));
+      const selection = this.confirmedCurrency(
+        values.get(KEYS.currencySelection),
+      );
+      const localization = businessLocalizationSettingsSchema.safeParse(
+        values.get(KEYS.localization),
+      );
+      const current =
+        selection ??
+        (localization.success
+          ? localization.data.currency
+          : DEFAULT_BUSINESS_SETTINGS.currency);
+      const locked = await this.currencyIsLocked(
+        transaction,
+        current,
+        selection,
+      );
+      if (settings.currency !== current) {
+        if (locked) throw this.invalid('The business currency is locked.');
+        if (!preferences?.confirmCurrency)
+          throw this.invalid('Confirm the business currency before saving it.');
+        if (!Intl.supportedValuesOf('currency').includes(settings.currency))
+          throw this.invalid('Select a supported business currency.');
+      }
+      if (!locked && preferences?.confirmCurrency)
+        confirmedCurrency = settings.currency;
+    }
     if (keys.has(KEYS.manualPaymentInstructions))
       await updatePartialPaymentPolicy(
         transaction,
@@ -491,6 +545,16 @@ export class SettingsService {
         'Active payment and hosting integration adapters.',
       ),
     ].filter((write) => keys.has(write.key));
+    if (confirmedCurrency) {
+      writes.push(
+        this.setting(
+          KEYS.currencySelection,
+          SettingCategory.BUSINESS,
+          { currency: confirmedCurrency },
+          'One-time business currency selection.',
+        ),
+      );
+    }
     if (preferences?.website !== undefined)
       writes.push(
         this.setting(
@@ -661,6 +725,25 @@ export class SettingsService {
     description: string,
   ) {
     return { key, category, value, description };
+  }
+
+  private confirmedCurrency(value: unknown): string | undefined {
+    const selection = z
+      .object({ currency: currencyCodeSchema })
+      .safeParse(value);
+    return selection.success ? selection.data.currency : undefined;
+  }
+
+  private async currencyIsLocked(
+    database: Pick<PrismaClient, 'invoice'>,
+    currency: string,
+    selection?: string,
+  ) {
+    return (
+      selection !== undefined ||
+      currency !== DEFAULT_BUSINESS_SETTINGS.currency ||
+      Boolean(await database.invoice.findFirst({ select: { id: true } }))
+    );
   }
 
   private parse<T>(

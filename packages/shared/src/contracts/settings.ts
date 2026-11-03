@@ -182,7 +182,7 @@ export const publicPreferencesSchema = displayPreferencesSchema
 export type PublicPreferences = z.infer<typeof publicPreferencesSchema>;
 export const DEFAULT_PUBLIC_PREFERENCES: PublicPreferences = {
   website: null,
-  defaultCountry: null,
+  defaultCountry: 'BD',
   adminDateFormat: 'day-first',
   clientDateFormat: 'day-first',
 };
@@ -191,12 +191,14 @@ export const settingsOverviewSchema = businessSettingsSchema
   .safeExtend({
     credentialStatuses: z.array(credentialStatusSchema),
     preferences: publicPreferencesSchema.optional(),
+    currencyLocked: z.boolean().optional(),
   })
   .strict();
 
 export const updateBusinessSettingsRequestSchema = businessSettingsSchema
   .safeExtend({
     preferences: publicPreferencesSchema.optional(),
+    currencyLocked: z.boolean().optional(),
     partialPaymentPolicyConfirmation: partialPaymentPolicyConfirmationSchema,
   })
   .strict();
@@ -212,6 +214,7 @@ export const patchBusinessSettingsRequestSchema = z
     displayPreferences: displayPreferencesSchema.optional(),
     checkoutTerms: checkoutTermsInputSchema.optional(),
     localization: businessLocalizationSettingsSchema.optional(),
+    confirmCurrency: z.literal(true).optional(),
     invoiceNumbering: z
       .object(invoiceNumberingSettingsSchema.shape)
       .strict()
@@ -224,6 +227,10 @@ export const patchBusinessSettingsRequestSchema = z
     partialPaymentPolicyConfirmation: partialPaymentPolicyConfirmationSchema,
   })
   .strict()
+  .refine(
+    (value) => !value.confirmCurrency || value.localization !== undefined,
+    'Provide the business currency to confirm it',
+  )
   .refine(
     (value) =>
       [

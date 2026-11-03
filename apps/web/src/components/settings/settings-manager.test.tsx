@@ -118,7 +118,30 @@ describe('settings manager', () => {
       'https://example.test/',
     );
     await user.click(screen.getByRole('tab', { name: 'Localisation' }));
-    await user.type(screen.getByLabelText('Default country code'), 'gb');
+    expect(screen.getByLabelText('Base currency')).toHaveProperty(
+      'value',
+      'BDT',
+    );
+    expect(screen.getByLabelText('Business time zone')).toHaveProperty(
+      'value',
+      'Asia/Dhaka',
+    );
+    expect(screen.getByLabelText('Default country')).toHaveProperty(
+      'value',
+      'BD',
+    );
+    expect(
+      screen.getByRole('option', { name: 'BD - Bangladesh' }),
+    ).toBeTruthy();
+    await user.selectOptions(screen.getByLabelText('Base currency'), 'USD');
+    await user.selectOptions(
+      screen.getByLabelText('Business time zone'),
+      'UTC',
+    );
+    await user.selectOptions(screen.getByLabelText('Default country'), 'GB');
+    await user.click(
+      screen.getByRole('checkbox', { name: /Confirm this currency/ }),
+    );
     await user.selectOptions(screen.getByLabelText('Admin date format'), 'iso');
     await user.selectOptions(
       screen.getByLabelText('Client date format'),
@@ -129,12 +152,22 @@ describe('settings manager', () => {
     await user.click(screen.getByRole('button', { name: 'Save changes' }));
     await screen.findByRole('status');
     expect(JSON.parse(String(writes(mock)[0]?.[1]?.body))).toEqual({
+      localization: { currency: 'USD', timeZone: 'UTC' },
+      confirmCurrency: true,
       displayPreferences: {
         defaultCountry: 'GB',
         adminDateFormat: 'iso',
         clientDateFormat: 'long',
       },
     });
+    expect(screen.getByLabelText('Base currency')).toHaveProperty(
+      'disabled',
+      true,
+    );
+    expect(screen.getByLabelText('Business time zone')).toHaveProperty(
+      'disabled',
+      false,
+    );
     await user.click(screen.getByRole('tab', { name: 'General' }));
     expect(screen.getByLabelText('Public website URL')).toHaveProperty(
       'value',
@@ -441,6 +474,12 @@ function settingsFetch(
       ) as import('@webhost-billing/shared').PatchBusinessSettingsRequest;
       saved = {
         ...saved,
+        ...body.localization,
+        ...(body.confirmCurrency ? { currencyLocked: true } : {}),
+        renewalAutomation: {
+          ...saved.renewalAutomation,
+          timeZone: body.localization?.timeZone ?? saved.timeZone,
+        },
         preferences: {
           ...(saved.preferences ?? DEFAULT_PUBLIC_PREFERENCES),
           ...body.displayPreferences,

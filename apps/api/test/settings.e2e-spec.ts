@@ -35,6 +35,7 @@ const SETTING_KEYS = [
   'business.public-website',
   'business.display-preferences',
   'business.localization',
+  'business.currency-selection',
   'billing.invoice-numbering',
   'automation.renewal-policy',
   'business.termination-policy',
@@ -200,6 +201,43 @@ describe('Settings and encrypted credentials (e2e)', () => {
         },
       })
       .expect(400);
+  });
+
+  it('locks the selected business currency while allowing time zone edits', async () => {
+    const admin = request.agent(app.getHttpServer());
+    const csrf = await authenticate(admin, ADMIN_EMAIL);
+    const result = apiSuccessResponseSchema(settingsOverviewSchema);
+    const before = result.parse(
+      (await admin.get('/settings').expect(200)).body,
+    ).data;
+    const otherCurrency = before.currency === 'USD' ? 'EUR' : 'USD';
+    const update = (currency: string, timeZone: string, confirm = false) =>
+      admin
+        .patch('/settings')
+        .set('X-CSRF-Token', csrf)
+        .send({
+          localization: { currency, timeZone },
+          ...(confirm ? { confirmCurrency: true } : {}),
+        });
+    await update(otherCurrency, before.timeZone).expect(422);
+    const selected = before.currencyLocked ? before.currency : otherCurrency;
+    const saved = result.parse(
+      (await update(selected, 'UTC', true).expect(200)).body,
+    ).data;
+    expect(saved).toMatchObject({
+      currency: selected,
+      currencyLocked: true,
+      timeZone: 'UTC',
+    });
+    await update(selected === 'EUR' ? 'USD' : 'EUR', 'UTC', true).expect(422);
+    const changedTimeZone = result.parse(
+      (await update(selected, before.timeZone).expect(200)).body,
+    ).data;
+    expect(changedTimeZone).toMatchObject({
+      currency: selected,
+      currencyLocked: true,
+      timeZone: before.timeZone,
+    });
   });
 
   it('saves one settings tab and merges invoice numbering with the current stored sequence', async () => {

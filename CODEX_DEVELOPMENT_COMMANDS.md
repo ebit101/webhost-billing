@@ -6729,3 +6729,10 @@ locally. No deployment.
 Owner-authorized on 2026-11-03. Show the balance in the invoice currency on
 the customer portal manual payment form. Convert decimal entries to exact
 integer minor units when submitting the payment reference.
+
+## Command 191 — Add localisation dropdowns and lock the base currency
+
+Owner-authorized on 2026-11-03. Add currency, business time zone and country
+dropdowns with BDT, Asia/Dhaka and Bangladesh as defaults. Allow one initial
+base currency selection and prevent later changes. Keep time zone and country
+editable. Validate locally without deployment.

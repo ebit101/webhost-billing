@@ -46,7 +46,7 @@ describe('customer registration', () => {
       '26 Browser Road',
     );
     await user.type(screen.getByLabelText('City'), 'Dhaka');
-    await user.type(screen.getByLabelText('Country code'), 'BD');
+    expect(screen.getByLabelText('Country code')).toHaveProperty('value', 'BD');
     await user.click(
       screen.getByRole('button', { name: 'Create customer account' }),
     );
