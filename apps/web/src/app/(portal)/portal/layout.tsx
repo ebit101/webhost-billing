@@ -4,7 +4,10 @@ import {
   WorkspaceShell,
   type WorkspaceNavigationItem,
 } from '../../../components/layout/workspace-shell';
-import { requireWorkspaceRole } from '../../../lib/server-auth';
+import {
+  getCustomerDisplayName,
+  requireWorkspaceRole,
+} from '../../../lib/server-auth';
 import { getBrandTitle } from '../../../lib/web-branding';
 
 export const metadata: Metadata = {
@@ -32,12 +35,16 @@ export default async function PortalLayout({
   children: ReactNode;
 }) {
   const identity = await requireWorkspaceRole('CUSTOMER');
+  const userName =
+    identity.role === 'CUSTOMER'
+      ? await getCustomerDisplayName(identity.customerId)
+      : 'Customer';
 
   return (
     <WorkspaceShell
       mode="portal"
       navigation={navigation}
-      userName={identity.email}
+      userName={userName}
       userDetail="Customer account"
     >
       {children}

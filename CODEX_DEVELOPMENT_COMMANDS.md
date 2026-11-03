@@ -6689,3 +6689,9 @@ journey and record the evidence, gaps, and Phase 2 backlog. No deployment.
 Owner-authorized on 2026-11-03. Review the seven CodeQL and two Dependabot
 alerts, fix confirmed issues, document false positives and mitigations, and
 run focused checks. No deployment.
+
+## Command 185 — Refine the customer portal navigation
+
+Owner-authorized on 2026-11-03. Tighten desktop sidebar spacing, show the
+customer's profile name and logout action, add a header account menu, and
+display the installed portal version.

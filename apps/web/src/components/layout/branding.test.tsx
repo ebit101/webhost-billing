@@ -9,7 +9,10 @@ import { WorkspaceShell } from './workspace-shell';
 import { getBrandTitle, getWebBranding } from '../../lib/web-branding';
 import HomePage from '../../app/(store)/page';
 
-vi.mock('next/navigation', () => ({ usePathname: () => '/' }));
+vi.mock('next/navigation', () => ({
+  usePathname: () => '/',
+  useRouter: () => ({ replace: vi.fn(), refresh: vi.fn() }),
+}));
 vi.mock('next/link', () => ({
   default: ({ href, children, ...props }: ComponentProps<'a'>) => (
     <a href={href} {...props}>

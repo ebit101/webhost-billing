@@ -1,10 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { version } from '../../../package.json';
-import { authenticatedGet } from '../../lib/auth-api';
+import { authenticatedGet, authMutation } from '../../lib/auth-api';
 import { Icon, type IconName } from '../ui/icon';
 import { Brand } from './brand';
 
@@ -30,12 +30,29 @@ export function WorkspaceShell({
   children: ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const matchingAlias = navigation.find((item) =>
     item.activePaths?.includes(pathname),
   );
   const [menuOpen, setMenuOpen] = useState(false);
   const openMenuRef = useRef<HTMLButtonElement>(null);
   const closeMenuRef = useRef<HTMLButtonElement>(null);
+  const accountMenuRef = useRef<HTMLDetailsElement>(null);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [logoutError, setLogoutError] = useState('');
+
+  async function logout() {
+    setLoggingOut(true);
+    setLogoutError('');
+    try {
+      await authMutation('/auth/logout', 'POST');
+      router.replace('/login');
+      router.refresh();
+    } catch {
+      setLogoutError('Could not log out. Please try again.');
+      setLoggingOut(false);
+    }
+  }
 
   useEffect(() => {
     if (mode !== 'admin') return;
@@ -115,7 +132,7 @@ export function WorkspaceShell({
           }
           className="mt-3 flex-1 overflow-y-auto px-3 pb-6"
         >
-          <ul className={mode === 'admin' ? 'grid gap-0' : 'grid gap-1'}>
+          <ul className="grid">
             {navigation.map((item) => {
               const active = matchingAlias
                 ? item === matchingAlias
@@ -128,7 +145,7 @@ export function WorkspaceShell({
                     href={item.href}
                     onClick={() => setMenuOpen(false)}
                     aria-current={active ? 'page' : undefined}
-                    className={`flex ${mode === 'admin' ? 'min-h-11 lg:min-h-8' : 'min-h-11'} items-center gap-3 rounded-xl px-3 py-1.5 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+                    className={`flex min-h-11 items-center gap-3 rounded-xl px-3 py-1.5 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white lg:min-h-8 ${
                       active
                         ? 'bg-brand-700 text-white shadow-lg shadow-brand-950/25'
                         : 'text-slate-300 hover:bg-white/8 hover:text-white'
@@ -155,7 +172,8 @@ export function WorkspaceShell({
         </nav>
         <div className="border-t border-white/10 p-4">
           <Link
-            href="/account"
+            href={mode === 'portal' ? '/portal/profile' : '/account'}
+            onClick={() => setMenuOpen(false)}
             className="flex items-center gap-3 rounded-xl p-2 text-left hover:bg-white/8 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
           >
             <span className="grid size-10 place-items-center rounded-xl bg-brand-500 text-sm font-bold text-white">
@@ -170,6 +188,23 @@ export function WorkspaceShell({
               </span>
             </span>
           </Link>
+          {mode === 'portal' && (
+            <>
+              <button
+                type="button"
+                onClick={logout}
+                disabled={loggingOut}
+                className="min-h-11 rounded-lg px-2 text-sm font-semibold text-slate-300 hover:bg-white/8 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-white disabled:opacity-60"
+              >
+                Log out
+              </button>
+              {logoutError && (
+                <p role="alert" className="text-sm text-red-300">
+                  {logoutError}
+                </p>
+              )}
+            </>
+          )}
         </div>
       </aside>
 
@@ -213,13 +248,65 @@ export function WorkspaceShell({
             <span className="sr-only">View notifications</span>
             <Icon name="bell" className="size-5" />
           </Link>
-          <Link
-            href="/account"
-            className="grid size-10 place-items-center rounded-xl bg-slate-950 text-xs font-bold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
-            aria-label="Open account settings"
-          >
-            {initials(userName)}
-          </Link>
+          {mode === 'portal' ? (
+            <details
+              ref={accountMenuRef}
+              className="relative shrink-0"
+              onBlur={(event) => {
+                if (!event.currentTarget.contains(event.relatedTarget)) {
+                  event.currentTarget.open = false;
+                }
+              }}
+              onKeyDown={(event) => {
+                if (event.key === 'Escape' && event.currentTarget.open) {
+                  event.currentTarget.open = false;
+                  event.currentTarget.querySelector('summary')?.focus();
+                }
+              }}
+            >
+              <summary className="grid size-10 cursor-pointer list-none place-items-center rounded-xl bg-slate-950 text-xs font-bold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 [&::-webkit-details-marker]:hidden">
+                <span className="sr-only">Customer account menu</span>
+                <span aria-hidden="true">{initials(userName)}</span>
+              </summary>
+              <div className="absolute right-0 top-full mt-2 grid w-44 rounded-xl border border-slate-200 bg-white p-1 text-sm font-semibold shadow-lg">
+                <Link
+                  href="/portal/profile"
+                  onClick={() => {
+                    if (accountMenuRef.current)
+                      accountMenuRef.current.open = false;
+                  }}
+                  className="flex min-h-11 items-center rounded-lg px-3 hover:bg-slate-100"
+                >
+                  Profile &amp; security
+                </Link>
+                <button
+                  type="button"
+                  onClick={logout}
+                  disabled={loggingOut}
+                  className="min-h-11 rounded-lg px-3 text-left hover:bg-slate-100 disabled:opacity-60"
+                >
+                  Log out
+                </button>
+                {logoutError && (
+                  <p className="px-3 py-1 text-red-700">{logoutError}</p>
+                )}
+              </div>
+            </details>
+          ) : (
+            <Link
+              href="/account"
+              className="grid size-10 place-items-center rounded-xl bg-slate-950 text-xs font-bold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+              aria-label="Open account settings"
+            >
+              {initials(userName)}
+            </Link>
+          )}
+          {mode === 'portal' && (
+            <span className="ml-auto shrink-0 text-right text-xs text-slate-600">
+              <span className="block">Portal version</span>
+              <span className="font-semibold">v{version}</span>
+            </span>
+          )}
           {mode === 'admin' && (
             <a
               href="https://github.com/ebit101/webhost-billing/blob/main/CHANGELOG.md"

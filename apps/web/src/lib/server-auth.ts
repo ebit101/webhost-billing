@@ -1,6 +1,7 @@
 import {
   apiSuccessResponseSchema,
   authenticatedIdentitySchema,
+  customerDetailSchema,
   type AuthenticatedIdentity,
 } from '@webhost-billing/shared';
 import { cookies, headers } from 'next/headers';
@@ -27,22 +28,54 @@ const authenticatedIdentityResponseSchema = apiSuccessResponseSchema(
 
 export type WorkspaceRole = AuthenticatedIdentity['role'];
 
-export async function getAuthenticatedIdentity(): Promise<AuthenticatedIdentity | null> {
+async function sessionCookieHeader(): Promise<string | undefined> {
   const cookieStore = await cookies();
   const sessionCookie =
     cookieStore.get('__Host-webhost_session') ??
     cookieStore.get('webhost_session');
 
-  if (!sessionCookie) {
-    return null;
+  return sessionCookie
+    ? `${sessionCookie.name}=${encodeURIComponent(sessionCookie.value)}`
+    : undefined;
+}
+
+export async function getCustomerDisplayName(
+  customerId: string,
+): Promise<string> {
+  const cookie = await sessionCookieHeader();
+  if (!cookie) return 'Customer';
+  try {
+    const response = await fetch(
+      `${API_URL}/customers/${encodeURIComponent(customerId)}`,
+      { cache: 'no-store', headers: { cookie } },
+    );
+    if (response.ok) {
+      const profile = apiSuccessResponseSchema(customerDetailSchema).safeParse(
+        await readResponseBody(response),
+      );
+      if (profile.success) {
+        return (
+          `${profile.data.data.firstName} ${profile.data.data.lastName}`.trim() ||
+          'Customer'
+        );
+      }
+    }
+  } catch {
+    // Keep the portal usable when the optional display name cannot load.
   }
+  return 'Customer';
+}
+
+export async function getAuthenticatedIdentity(): Promise<AuthenticatedIdentity | null> {
+  const cookie = await sessionCookieHeader();
+  if (!cookie) return null;
 
   let response: Response;
   try {
     response = await fetch(`${API_URL}/auth/me`, {
       cache: 'no-store',
       headers: {
-        cookie: `${sessionCookie.name}=${encodeURIComponent(sessionCookie.value)}`,
+        cookie,
       },
     });
   } catch {

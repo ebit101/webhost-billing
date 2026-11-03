@@ -1,18 +1,23 @@
 import type { ComponentProps } from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+import { authMutation } from '../../lib/auth-api';
 import {
   WorkspaceShell,
   type WorkspaceNavigationItem,
 } from './workspace-shell';
 
+const router = vi.hoisted(() => ({ replace: vi.fn(), refresh: vi.fn() }));
+
 vi.mock('next/navigation', () => ({
   usePathname: () => '/portal',
+  useRouter: () => router,
 }));
 
 vi.mock('../../lib/auth-api', () => ({
   authenticatedGet: vi.fn().mockResolvedValue({}),
+  authMutation: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('next/link', () => ({
@@ -36,6 +41,38 @@ const navigation: WorkspaceNavigationItem[] = [
 ];
 
 describe('WorkspaceShell', () => {
+  it('shows the customer name and version and logs out from the account menu', async () => {
+    const user = userEvent.setup();
+    render(
+      <WorkspaceShell
+        mode="portal"
+        navigation={navigation}
+        userName="Fictional User"
+        userDetail="Customer account"
+      >
+        <p>Account</p>
+      </WorkspaceShell>,
+    );
+    expect(screen.getByText('Fictional User')).toBeTruthy();
+    expect(screen.getByText('Portal version')).toBeTruthy();
+    const trigger = screen
+      .getByText('Customer account menu')
+      .closest('summary')!;
+    const menu = trigger.closest('details')!;
+    await user.click(trigger);
+    expect(menu.open).toBe(true);
+    expect(
+      within(menu)
+        .getByRole('link', { name: 'Profile & security' })
+        .getAttribute('href'),
+    ).toBe('/portal/profile');
+    await user.keyboard('{Escape}');
+    expect(menu.open).toBe(false);
+    await user.click(trigger);
+    await user.click(within(menu).getByRole('button', { name: 'Log out' }));
+    expect(authMutation).toHaveBeenCalledWith('/auth/logout', 'POST');
+    expect(router.replace).toHaveBeenCalledWith('/login');
+  });
   it.each(['portal', 'admin'] as const)(
     'opens the real %s notification list without a fictional unread badge',
     (mode) => {

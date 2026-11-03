@@ -11,6 +11,14 @@
 
 ## Command Reports
 
+### Command 185 — Refine the customer portal navigation
+
+- **Status and date:** Completed locally on 2026-11-03 (Asia/Dhaka).
+- **Scope and files:** Updated the portal layout, shared workspace shell, server authentication helper, and customer profile save flow. The portal shows the customer's profile name, logout in the sidebar and account menu, and the installed package version. Desktop rows are more compact and mobile navigation retains larger touch targets.
+- **Validation:** Passed 27 focused workspace shell, branding, and server authentication tests, web typechecking, and the Git diff check.
+- **Decisions and remaining scope:** The portal reads the name through the existing authenticated profile endpoint and refreshes it after profile edits. Email two-step verification and marketing consent are separate work.
+- **Exact recommended next command:** Authorize the customer email verification and marketing consent design.
+
 ### Command 184 — Review open GitHub security alerts
 
 - **Status and date:** Completed locally on 2026-11-03 (Asia/Dhaka).

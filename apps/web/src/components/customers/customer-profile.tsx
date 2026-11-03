@@ -95,6 +95,7 @@ export function CustomerProfile() {
         ),
       );
       setNotice('Profile saved.');
+      router.refresh();
     } catch (caught) {
       setError(
         caught instanceof Error
