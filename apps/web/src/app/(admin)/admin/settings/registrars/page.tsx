@@ -1,7 +1,13 @@
+import { DomainWorkspaceTabs } from '../../../../../components/domains/domain-workspace-tabs';
 import { RegistrarConnections } from '../../../../../components/domains/registrar-connections';
 import { authorizeAdminPage } from '../../../../../lib/server-admin-access';
 export const metadata = { title: 'Domain registrars' };
 export default async function Page() {
   const identity = await authorizeAdminPage('/admin/settings/registrars');
-  return identity ? <RegistrarConnections /> : null;
+  return identity ? (
+    <div className="space-y-6">
+      <DomainWorkspaceTabs active="/admin/settings/registrars" />
+      <RegistrarConnections />
+    </div>
+  ) : null;
 }

@@ -2,14 +2,24 @@
 
 ## Status Summary
 
-- **Current command:** Command 175 — Checkout terms
+- **Current command:** Command 176 — Combine domain administration navigation
 - **Current status:** Completed and validated locally. Retained in the pending local batch.
 - **Last updated:** 2026-11-03
 - **Last recorded staging release:** Command 171, `0e69add43cc1df8351a9c2485cb27afc6e7a22f3`, deployed on 2026-11-02 (Asia/Dhaka).
-- **Next action:** Review checkout terms locally before authorizing publication of the accumulated batch.
-- **Next command authorized:** None after Command 175.
+- **Next action:** Review the domain workspace before authorizing publication of the accumulated batch.
+- **Next command authorized:** None after Command 176.
 
 ## Command Reports
+
+### Command 176 — Combine domain administration navigation
+
+- **Status and date:** Completed and validated locally on 2026-11-03 (Asia/Dhaka).
+- **Scope:** A single Domains sidebar entry opens the domain inventory. Domains, Domain pricing and TLDs, and Domain registrars appear as route-backed tabs across the three existing pages. The sidebar highlights Domains across all three. The inventory keeps the DNS defaults shortcut.
+- **Files changed:** Administrator sidebar layout and regression tests, workspace navigation matching, three domain route pages, shared domain tab navigation, command registry and this report.
+- **Decisions:** Keep the existing URLs and route permissions so direct links and browser history keep working. Highlight only Domains when visiting the registrar route under Settings.
+- **Validation:** Ten focused administrator and workspace navigation tests passed, including tab URLs and active sidebar state. Affected ESLint, web types, formatting and Git whitespace checks passed.
+- **Constraints:** This is a local navigation change. Publication and deployment are separate commands.
+- **Exact recommended next command:** Authorize Command 177 — Validate and publish the accumulated local batch through the normal delivery process.
 
 ### Command 175 — Checkout terms
 

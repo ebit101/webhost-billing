@@ -1,14 +1,15 @@
 import type { AdministratorIdentity } from '@webhost-billing/shared';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import AdminLayout from './layout';
+import { DomainWorkspaceTabs } from '../../../components/domains/domain-workspace-tabs';
 
-const auth = vi.hoisted(() => ({ identity: vi.fn() }));
+const auth = vi.hoisted(() => ({ identity: vi.fn(), pathname: '/admin' }));
 vi.mock('../../../lib/server-auth', () => ({
   getAuthenticatedIdentity: auth.identity,
 }));
 vi.mock('next/navigation', () => ({
-  usePathname: () => '/admin',
+  usePathname: () => auth.pathname,
   redirect: vi.fn(),
 }));
 vi.mock('../../../lib/auth-api', () => ({
@@ -23,7 +24,10 @@ const identity: AdministratorIdentity = {
   email: 'admin@example.test',
   displayName: 'Fictional Administrator',
 };
-afterEach(() => vi.clearAllMocks());
+afterEach(() => {
+  vi.clearAllMocks();
+  auth.pathname = '/admin';
+});
 
 describe('administrator sidebar identity', () => {
   it.each(['Fictional Administrator', undefined])(
@@ -41,3 +45,52 @@ describe('administrator sidebar identity', () => {
     },
   );
 });
+
+it.each([
+  '/admin/domains',
+  '/admin/domain-pricing',
+  '/admin/settings/registrars',
+] as const)(
+  'keeps one Domains menu and highlights it for %s',
+  async (pathname) => {
+    auth.pathname = pathname;
+    auth.identity.mockResolvedValue(identity);
+    render(
+      await AdminLayout({
+        children: <DomainWorkspaceTabs active={pathname} />,
+      }),
+    );
+    const sidebar = within(
+      screen.getByRole('navigation', { name: 'Administrator navigation' }),
+    );
+    expect(
+      sidebar
+        .getByRole('link', { name: 'Domains' })
+        .getAttribute('aria-current'),
+    ).toBe('page');
+    expect(
+      sidebar
+        .getByRole('link', { name: 'Settings' })
+        .getAttribute('aria-current'),
+    ).toBeNull();
+    expect(
+      sidebar.queryByRole('link', { name: 'Domain registrars' }),
+    ).toBeNull();
+    expect(
+      sidebar.queryByRole('link', { name: 'Domain pricing and TLDs' }),
+    ).toBeNull();
+    const workspace = within(
+      screen.getByRole('navigation', { name: 'Domain workspace' }),
+    );
+    expect(
+      workspace.getAllByRole('link').map((link) => link.getAttribute('href')),
+    ).toEqual([
+      '/admin/domains',
+      '/admin/domain-pricing',
+      '/admin/settings/registrars',
+    ]);
+    expect(
+      workspace.getByRole('link', { current: 'page' }).getAttribute('href'),
+    ).toBe(pathname);
+  },
+);

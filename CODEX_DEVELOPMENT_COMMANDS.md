@@ -6629,3 +6629,12 @@ policy, record the accepted version, label, URL and server timestamp with the
 order, and preserve the record on replay. Administrator-assisted ordering
 retains its existing authorization and consent flows. Validate locally and
 retain the commit for the pending batch.
+
+## Command 176 — Combine domain administration navigation
+
+Owner-authorized on 2026-11-03. Replace the three domain sidebar entries with
+one Domains entry. Open the domain inventory by default and provide links styled
+as tabs for Domains, Domain pricing and TLDs, and Domain registrars. Use the
+existing URLs and authorization checks. Retain the DNS defaults shortcut and
+highlight Domains in the sidebar across all three views. Validate and commit
+locally.
