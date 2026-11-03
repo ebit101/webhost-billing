@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { authMutation } from '../../lib/auth-api';
 import { Button } from '../ui/button';
+import { useClientReady } from '../auth/form-controls';
 import { RecordDialog } from '../ui/record-dialog';
 
 export function StartCustomerSupportSession({
@@ -99,6 +100,7 @@ export function CustomerSupportSessionBanner({
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const ready = useClientReady();
   useEffect(() => {
     if (!expiresAt) return;
     const timer = window.setTimeout(
@@ -153,7 +155,11 @@ export function CustomerSupportSessionBanner({
           </p>
         )}
       </div>
-      <Button variant="secondary" disabled={busy} onClick={() => void end()}>
+      <Button
+        variant="secondary"
+        disabled={!ready || busy}
+        onClick={() => void end()}
+      >
         End session
       </Button>
     </aside>

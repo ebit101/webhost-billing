@@ -234,7 +234,8 @@ async function verify(): Promise<void> {
       name !== 'notification_epochs' &&
       name !== 'notification_preferences' &&
       name !== 'notification_sources' &&
-      name !== 'currency_selection_intents',
+      name !== 'currency_selection_intents' &&
+      name !== 'customer_security_preferences',
   );
   assert.equal(idColumnTypes.length, uuidTables.length);
   const notificationEpoch = await prisma.notificationEpoch.findUniqueOrThrow({
@@ -516,6 +517,7 @@ async function verify(): Promise<void> {
   `;
   assert.deepEqual(cascadingForeignKeys, [
     { constraint_name: 'admin_recovery_codes_credential_id_fkey' },
+    { constraint_name: 'customer_support_sessions_admin_session_id_fkey' },
   ]);
 
   const seededInvoice = await prisma.invoice.findUnique({

@@ -18,6 +18,7 @@ export function RegisterForm({
   onChooseSignIn?: () => void;
 }) {
   const { defaultCountry } = usePublicPreferences();
+  const [countryCode, setCountryCode] = useState<string>();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
   const [message, setMessage] = useState<string>();
@@ -41,6 +42,7 @@ export function RegisterForm({
       );
       setMessage(result.message);
       formElement.reset();
+      setCountryCode(undefined);
     } catch (caught) {
       setError(
         caught instanceof Error ? caught.message : 'Registration failed.',
@@ -130,7 +132,8 @@ export function RegisterForm({
           minLength={2}
           maxLength={2}
           placeholder="BD"
-          defaultValue={defaultCountry ?? 'BD'}
+          value={countryCode ?? defaultCountry ?? 'BD'}
+          onChange={(event) => setCountryCode(event.target.value)}
           required
         />
       </div>

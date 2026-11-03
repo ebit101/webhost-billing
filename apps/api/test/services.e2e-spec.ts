@@ -531,7 +531,10 @@ describe('Hosting services (e2e)', () => {
       await prisma.hostingCancellationRequest.findUniqueOrThrow({
         where: { id },
       }),
-    ).toMatchObject({ approvedAt: expect.any(Date), status: 'OPEN' });
+    ).toMatchObject({
+      approvedAt: expect.any(Date) as unknown,
+      status: 'OPEN',
+    });
     await prisma.outboxEvent.deleteMany({
       where: { aggregateId: cancellableId },
     });

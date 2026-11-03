@@ -20,7 +20,8 @@ export function CustomerHostingCancellation({ service }: { service: Service }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
-  const hasFuturePeriod = Date.parse(service.nextDueAt) > Date.now();
+  const [now, setNow] = useState(() => Date.now());
+  const hasFuturePeriod = Date.parse(service.nextDueAt) > now;
   const [timing, setTiming] = useState<HostingCancellationInput['timing']>(
     hasFuturePeriod ? 'END_OF_PERIOD' : 'IMMEDIATE',
   );
@@ -28,7 +29,10 @@ export function CustomerHostingCancellation({ service }: { service: Service }) {
     let active = true;
     void authenticatedGet<HostingCancellation | null>(path)
       .then((result) => {
-        if (active) setRequest(result);
+        if (active) {
+          setNow(Date.now());
+          setRequest(result);
+        }
       })
       .catch((caught: unknown) => {
         if (active) setError(serviceError(caught));
@@ -48,6 +52,7 @@ export function CustomerHostingCancellation({ service }: { service: Service }) {
         'POST',
         input,
       );
+      setNow(Date.now());
       setRequest(result);
       setOpen(false);
       setNotice(
@@ -80,7 +85,7 @@ export function CustomerHostingCancellation({ service }: { service: Service }) {
   const canWithdraw =
     request?.status === 'OPEN' &&
     !request.approvedAt &&
-    (!request.effectiveAt || Date.parse(request.effectiveAt) > Date.now());
+    (!request.effectiveAt || Date.parse(request.effectiveAt) > now);
   if (!eligible && !request && !error) return null;
   return (
     <section className="grid gap-3 rounded-2xl border border-slate-200 bg-white p-6">
@@ -117,6 +122,13 @@ export function CustomerHostingCancellation({ service }: { service: Service }) {
           <Button
             variant="secondary"
             onClick={() => {
+              const openedAt = Date.now();
+              setNow(openedAt);
+              setTiming(
+                Date.parse(service.nextDueAt) > openedAt
+                  ? 'END_OF_PERIOD'
+                  : 'IMMEDIATE',
+              );
               setError('');
               setOpen(true);
             }}
