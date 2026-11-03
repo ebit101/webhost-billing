@@ -7,10 +7,8 @@ Redis, and same-origin gateway. Every record is fictional.
 বাংলা দ্রুত শুরুর সহায়িকা: [`SAFE_EVALUATION_DEMO_BN.md`](SAFE_EVALUATION_DEMO_BN.md)।
 This English guide remains canonical.
 
-> [!WARNING]
-> This remains an alpha technical preview and is not fit for live use. Do not enter
-> real customer data, credentials, payment evidence, email addresses, domains, or
-> provider secrets. The demo is not a staging or production deployment.
+Use fictional data in the local demo. Keep customer data, credentials, and
+provider secrets out of the demo environment.
 
 ## Start with one command
 

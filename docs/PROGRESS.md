@@ -286,7 +286,7 @@
 - **Status and date:** Public metadata updated and documentation refreshed on 2026-10-31 (Asia/Dhaka). The owner explicitly requested the GitHub project information reflect the latest work. This is a documentation/metadata follow-up, not authorization to start the suggested bank-reconciliation Command 158. Normal protected delivery is required for the source documentation.
 - **Scope and files:** Updated `README.md`, `docs/CAPABILITY_MATRIX.md` and `CHANGELOG.md` to cover grouped products, compact record collections, nine client workspace tabs, remembered sessions without new-sign-in MFA bypass, authenticated login redirects, customer verification resend, saved staff names, invoice contact/payment instructions and due dates, Admin/Client notifications, important WhatsApp alerts, verified existing-domain linking, combined hosting/domain billing, website/email preservation and bounded account-creation retry. Updated this report and `CODEX_DEVELOPMENT_COMMANDS.md` to record the separately authorized follow-up. No source, test, dependency, schema, migration, deployment, branding or environment file changes.
 - **Evidence and positioning:** Distinguish current `main`, the older immutable `v0.1.0-alpha.1` source snapshot, the fictional one-command demo and operator-controlled staging. Link the Command 156 report's 62 passing API/database cases and Command 157's deployed guard/smoke/preservation evidence without presenting fictional payment as actual bank settlement or staging as production approval. Keep the prominent not-for-live-use warning, production `NO-GO`, AI-assisted human-directed development attribution and no-runtime-AI/independent-project disclosure. No new release or tag is created. Production/provider/recovery acceptance remains separately gated.
-- **GitHub metadata:** Read back the public description: “AI-assisted, human-directed open-source web-hosting billing: client workspaces, combined hosting/domain orders, invoices, manual payments and guarded cPanel/WHM provisioning. Technical preview; not fit for live use.” Preserved all ten original topics and added `domain-management`, `hosting-provisioning` and `invoicing`. The connector cannot edit repository About metadata and the browser was signed out; used the checkout's existing GitHub authentication for the normal description/topics endpoints, without printing or persisting credentials. Canonical repository identity, homepage, default branch, visibility, archive state and feature settings match before/after. Protected local metadata evidence remains ignored under `release-artifacts/`.
+- **GitHub metadata:** Read back the public description: “AI-assisted, human-directed open-source web-hosting billing: client workspaces, combined hosting/domain orders, invoices, manual payments and guarded cPanel/WHM provisioning. Technical preview; limited to evaluation.” Preserved all ten original topics and added `domain-management`, `hosting-provisioning` and `invoicing`. The connector cannot edit repository About metadata and the browser was signed out; used the checkout's existing GitHub authentication for the normal description/topics endpoints, without printing or persisting credentials. Canonical repository identity, homepage, default branch, visibility, archive state and feature settings match before/after. Protected local metadata evidence remains ignored under `release-artifacts/`.
 - **Validation and delivery:** Reviewed the wording against current source reports. Changed-document formatting, all four offline documentation validators, Git whitespace and pinned staged secret scanning passed. Public About description/topics were confirmed in the browser as well as the authenticated API read-back. Required hosted CI, dependency review and CodeQL must pass before normal merge. No application tests are invented for this prose-only change; protected CI supplies the repository's required regression gate.
 - **Preservation and exact recommended next command:** No staging connection, deployment, provider activation, customer message, financial/service/domain operation or security setting change was made. SMTP and the disabled payment/hosting/registrar/WhatsApp posture are not modified. Local `.env` and existing work are preserved. Command 158 — After separate owner authorization, reconcile actual bank receipt for the pending combined invoice, verifying amount, receipt date in DD-MM-YYYY, reference and duplicates and obtaining receipt-email authorization before recording payment. No fulfillment, provider activation or deployment is included. Stop after this follow-up; do not start the next command automatically.
 
@@ -3521,7 +3521,7 @@ that command requires separate user authorization.
 
 - Repositioned Webhost Billing publicly as an AI-assisted, human-reviewed,
   open-source technical foundation rather than an AI-powered application.
-- Added a prominent warning that the technical preview is not fit for live use and
+- Added a prominent warning that the technical preview is limited to evaluation and
   must not receive real customer data, credentials, payments, email delivery, or
   hosting provisioning while production remains `NO-GO`.
 - Documented the human-directed Codex work path from planning and authorization
@@ -3673,7 +3673,7 @@ providers or changing the production `NO-GO` decision.
 
 #### Open questions and risks
 
-- This remains an alpha technical preview and is not fit for live use. Production is
+- This remains an alpha technical preview and is limited to evaluation. Production is
   still `NO-GO`; real providers, credentials, data, payments, email, hosting changes,
   deployment, backup, monitoring, TLS/DNS, operator, and provider acceptance remain
   outside this command.
@@ -3978,7 +3978,7 @@ it automatically.
 
 - Added a concise Bengali quick-start companion for the safe evaluation demo while
   retaining the existing English guide as the canonical source.
-- Preserved the exact meanings of alpha technical preview, not fit for live use,
+- Preserved the exact meanings of alpha technical preview, limited to evaluation,
   fictional-data-only evaluation, and production `NO-GO`; the critical English
   phrases remain parenthetically visible in the Bengali warning.
 - Covered prerequisites, the read-only doctor, startup, generated fictional logins,
