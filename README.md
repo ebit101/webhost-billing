@@ -9,8 +9,6 @@ operations at one web hosting business. Manage customers, hosting plans, domains
 orders, invoices, payments, renewals, and support from one workspace.
 
 **Current evaluation release:** [v0.1.0-alpha.2](https://github.com/ebit101/webhost-billing/tree/v0.1.0-alpha.2).
-Start with fictional data and disabled external providers. Live operation depends on
-completing the [production launch requirements](docs/PRODUCTION_LAUNCH_RUNBOOK.md).
 
 [Install the demo](#safe-local-evaluation) ·
 [Request a quote](#installation-help-and-managed-hosting) ·
