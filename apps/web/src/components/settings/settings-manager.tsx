@@ -2,6 +2,9 @@
 
 import {
   DEFAULT_BUSINESS_SETTINGS,
+  DEFAULT_CHECKOUT_TERMS,
+  checkoutTermsInputSchema,
+  type CheckoutTermsPolicy,
   DEFAULT_PUBLIC_PREFERENCES,
   formatCalendarDate,
   dateDisplayFormatSchema,
@@ -36,6 +39,7 @@ const initialOverview: SettingsOverview = {
 const tabs = [
   ['general', 'General'],
   ['localisation', 'Localisation'],
+  ['ordering', 'Ordering'],
   ['domains', 'Domains'],
   ['mail', 'Mail'],
   ['support', 'Support'],
@@ -54,19 +58,25 @@ function changed<T>(draft: T, saved: T): T | undefined {
   return JSON.stringify(draft) === JSON.stringify(saved) ? undefined : draft;
 }
 
+function displayFields({
+  defaultCountry,
+  adminDateFormat,
+  clientDateFormat,
+}: PublicPreferences) {
+  return { defaultCountry, adminDateFormat, clientDateFormat };
+}
+
 function tabChanges(
   tab: Tab,
   draft: SettingsOverview,
   saved: SettingsOverview,
 ): PatchBusinessSettingsRequest {
-  const { website, ...display } =
-    draft.preferences ?? DEFAULT_PUBLIC_PREFERENCES;
-  const { website: savedWebsite, ...savedDisplay } =
-    saved.preferences ?? DEFAULT_PUBLIC_PREFERENCES;
+  const preferences = draft.preferences ?? DEFAULT_PUBLIC_PREFERENCES;
+  const baseline = saved.preferences ?? DEFAULT_PUBLIC_PREFERENCES;
   switch (tab) {
     case 'general':
       return {
-        website: changed(website, savedWebsite),
+        website: changed(preferences.website, baseline.website),
         businessIdentity: changed(
           draft.businessIdentity,
           saved.businessIdentity,
@@ -74,7 +84,10 @@ function tabChanges(
       };
     case 'localisation':
       return {
-        displayPreferences: changed(display, savedDisplay),
+        displayPreferences: changed(
+          displayFields(preferences),
+          displayFields(baseline),
+        ),
         localization: changed(
           { currency: draft.currency, timeZone: draft.timeZone },
           { currency: saved.currency, timeZone: saved.timeZone },
@@ -142,6 +155,7 @@ function tabChanges(
 const tabFields: Record<Tab, readonly (keyof BusinessSettings)[]> = {
   general: ['businessIdentity'],
   localisation: ['currency', 'timeZone'],
+  ordering: [],
   domains: [],
   mail: ['emailBranding'],
   support: [],
@@ -150,8 +164,17 @@ const tabFields: Record<Tab, readonly (keyof BusinessSettings)[]> = {
   integrations: ['activeGateway', 'activeHostingPanelAdapter'],
 };
 
+function termsFields(policy: CheckoutTermsPolicy = DEFAULT_CHECKOUT_TERMS) {
+  return {
+    required: Boolean(policy.required),
+    url: policy.url,
+    revision: policy.revision,
+  };
+}
+
 export function SettingsManager() {
   const [overview, setOverview] = useState(initialOverview);
+  const [termsDraft, setTermsDraft] = useState(() => termsFields());
   const preferences = overview.preferences ?? DEFAULT_PUBLIC_PREFERENCES;
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState('');
@@ -164,12 +187,19 @@ export function SettingsManager() {
     useState<PatchBusinessSettingsRequest>();
   const persistedPartialPayments =
     savedOverview?.manualPayments.partialPaymentsEnabled;
+  const termsDirty =
+    changed(
+      termsDraft,
+      termsFields(savedOverview?.preferences?.checkoutTerms),
+    ) !== undefined;
   const dirtyTabs = tabs.filter(
     ([id]) =>
       savedOverview &&
-      Object.values(tabChanges(id, overview, savedOverview)).some(
-        (value) => value !== undefined,
-      ),
+      (id === 'ordering'
+        ? termsDirty
+        : Object.values(tabChanges(id, overview, savedOverview)).some(
+            (value) => value !== undefined,
+          )),
   );
   const hasDrafts = dirtyTabs.length > 0;
 
@@ -257,6 +287,7 @@ export function SettingsManager() {
         if (active) {
           setOverview(settings);
           setSavedOverview(settings);
+          setTermsDraft(termsFields(settings.preferences?.checkoutTerms));
         }
       })
       .catch((caught: unknown) => {
@@ -290,6 +321,17 @@ export function SettingsManager() {
   function requestSave() {
     if (!savedOverview || saving) return;
     clearMessages();
+    if (tab === 'ordering') {
+      const parsed = checkoutTermsInputSchema.safeParse(termsDraft);
+      if (!parsed.success) {
+        setError(
+          'Enter a valid HTTPS terms URL and a version label when acceptance is required.',
+        );
+        return;
+      }
+      if (termsDirty) void saveSettings({ checkoutTerms: parsed.data }, tab);
+      return;
+    }
     const changes = tabChanges(tab, overview, savedOverview);
     if (!Object.values(changes).some((value) => value !== undefined)) return;
     if (
@@ -304,15 +346,17 @@ export function SettingsManager() {
 
   function discardChanges() {
     if (!savedOverview) return;
+    if (tab === 'ordering')
+      setTermsDraft(termsFields(savedOverview.preferences?.checkoutTerms));
     setOverview((current) => {
       const restored = { ...current };
       for (const key of tabFields[tab])
         Object.assign(restored, { [key]: savedOverview[key] });
       const saved = savedOverview.preferences ?? DEFAULT_PUBLIC_PREFERENCES;
-      const { website, ...display } = saved;
+      const { website } = saved;
       if (tab === 'general') restored.preferences = { ...preferences, website };
       if (tab === 'localisation')
-        restored.preferences = { ...preferences, ...display };
+        restored.preferences = { ...preferences, ...displayFields(saved) };
       return restored;
     });
     clearMessages();
@@ -412,7 +456,13 @@ export function SettingsManager() {
         return next;
       });
       setSavedOverview(saved);
-      if (changes.website !== undefined || changes.displayPreferences)
+      if (savedTab === 'ordering' || !termsDirty)
+        setTermsDraft(termsFields(saved.preferences?.checkoutTerms));
+      if (
+        changes.website !== undefined ||
+        changes.displayPreferences ||
+        changes.checkoutTerms
+      )
         refreshPublicPreferences();
       setPolicyReview(undefined);
       setNotice('Changes saved.');
@@ -754,6 +804,57 @@ export function SettingsManager() {
                 </div>
               ))}
             </div>
+          </SettingsCard>
+        </TabPanel>
+        <TabPanel id="ordering" active={tab}>
+          <SettingsCard
+            title="Checkout terms"
+            description="Require customers to accept your terms before placing an order. Update the version label whenever the terms change, even if the URL stays the same."
+          >
+            <div className="grid gap-4 md:grid-cols-2">
+              <Field label="Terms of service URL">
+                <input
+                  type="url"
+                  className={inputStyles}
+                  maxLength={2048}
+                  placeholder="https://example.com/terms"
+                  value={termsDraft.url ?? ''}
+                  onChange={(event) =>
+                    setTermsDraft({
+                      ...termsDraft,
+                      url: event.target.value.trim() || null,
+                    })
+                  }
+                />
+              </Field>
+              <Field label="Terms version label">
+                <input
+                  className={inputStyles}
+                  maxLength={80}
+                  placeholder="2026-11-03"
+                  value={termsDraft.revision ?? ''}
+                  onChange={(event) =>
+                    setTermsDraft({
+                      ...termsDraft,
+                      revision: event.target.value || null,
+                    })
+                  }
+                />
+              </Field>
+            </div>
+            <label className="mt-4 flex items-center gap-2 text-sm font-semibold text-slate-700">
+              <input
+                type="checkbox"
+                checked={termsDraft.required}
+                onChange={(event) =>
+                  setTermsDraft({
+                    ...termsDraft,
+                    required: event.target.checked,
+                  })
+                }
+              />
+              Require acceptance at checkout
+            </label>
           </SettingsCard>
         </TabPanel>
         <TabPanel id="domains" active={tab}>
@@ -1140,7 +1241,7 @@ export function SettingsManager() {
             </div>
           </SettingsCard>
         </TabPanel>
-        {tabFields[tab].length ? (
+        {tabFields[tab].length || tab === 'ordering' ? (
           <div className="flex flex-wrap justify-end gap-3">
             <Button
               type="button"

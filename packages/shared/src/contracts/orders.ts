@@ -1,3 +1,4 @@
+import { checkoutTermsAcceptanceSchema } from './checkout-terms';
 import { z } from 'zod';
 import { registrationRequestSchema } from './authentication';
 import { moneySchema } from './money';
@@ -73,7 +74,10 @@ const orderSelectionSchema = z
   .strict();
 
 export const createCustomerOrderRequestSchema = orderSelectionSchema
-  .extend({ domainQuoteId: z.uuid().optional() })
+  .extend({
+    domainQuoteId: z.uuid().optional(),
+    acceptedTermsVersion: z.uuid().optional(),
+  })
   .strict();
 
 export const guestHostingCheckoutRequestSchema = registrationRequestSchema
@@ -83,6 +87,7 @@ export const guestHostingCheckoutRequestSchema = registrationRequestSchema
     requestedDomain: requestedDomainSchema,
     submissionKey: z.uuid(),
     domainChoice: z.literal('EXISTING'),
+    acceptedTermsVersion: z.uuid().optional(),
   })
   .strict();
 
@@ -167,6 +172,7 @@ export const orderSchema = z
     total: moneySchema,
     notes: z.string().max(2_000).nullable(),
     placedAt: z.iso.datetime({ offset: true }),
+    termsAcceptance: checkoutTermsAcceptanceSchema.optional(),
     completedAt: z.iso.datetime({ offset: true }).nullable(),
     cancelledAt: z.iso.datetime({ offset: true }).nullable(),
     items: z.array(orderItemSchema).min(1),

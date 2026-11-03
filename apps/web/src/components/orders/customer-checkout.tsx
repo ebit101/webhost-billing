@@ -5,6 +5,11 @@ import type {
   OrderCreationResult,
   PublicProduct,
 } from '@webhost-billing/shared';
+import {
+  CheckoutTermsControl,
+  useCheckoutTerms,
+} from './checkout-terms-control';
+import { refreshPublicPreferences } from '../../lib/public-preferences';
 import Link from 'next/link';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { authMutation, publicGet } from '../../lib/auth-api';
@@ -29,6 +34,7 @@ export function CustomerCheckout({
   initialProductId?: string;
   initialPriceId?: string;
 }) {
+  const terms = useCheckoutTerms();
   const [products, setProducts] = useState<PublicProduct[]>([]);
   const [productId, setProductId] = useState('');
   const [priceId, setPriceId] = useState('');
@@ -89,7 +95,7 @@ export function CustomerCheckout({
   const price = product?.prices.find((item) => item.id === priceId);
 
   async function submitOrder(requestedDomain: string, domainQuoteId?: string) {
-    if (loading || unavailable || !price || saving) return;
+    if (loading || unavailable || !price || saving || terms.blocked) return;
     if (!submissionKey.current) submissionKey.current = crypto.randomUUID();
     setSaving(true);
     setError('');
@@ -103,12 +109,14 @@ export function CustomerCheckout({
           requestedDomain,
           ...(domainQuoteId ? { domainQuoteId } : {}),
           submissionKey: submissionKey.current,
+          acceptedTermsVersion: terms.acceptedTermsVersion,
         },
       );
       setResult(created);
       clearOrderDraft();
       submissionKey.current = '';
     } catch (caught) {
+      refreshPublicPreferences();
       setError(errorMessage(caught));
     } finally {
       setSaving(false);
@@ -321,7 +329,11 @@ export function CustomerCheckout({
                     required
                   />
                 </label>
-                <Button type="submit" disabled={saving || !price}>
+                <CheckoutTermsControl terms={terms} busy={saving} />
+                <Button
+                  type="submit"
+                  disabled={saving || !price || terms.blocked}
+                >
                   {saving ? 'Placing order…' : 'Place order'}
                   <Icon name="arrow-right" className="size-4" />
                 </Button>
@@ -339,10 +351,12 @@ export function CustomerCheckout({
                     Choose a BDT hosting price to combine it with a domain.
                   </p>
                 ) : null}
+                <CheckoutTermsControl terms={terms} busy={saving} />
                 <Button
                   type="button"
                   disabled={
                     saving ||
+                    terms.blocked ||
                     !price ||
                     price.amount.currency !== 'BDT' ||
                     !domainQuote ||

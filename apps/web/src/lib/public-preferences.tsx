@@ -14,6 +14,10 @@ import {
 } from '@webhost-billing/shared';
 
 const Context = createContext(DEFAULT_PUBLIC_PREFERENCES);
+const LoadContext = createContext<'loading' | 'ready' | 'unavailable'>('ready');
+export function usePublicPreferencesStatus() {
+  return useContext(LoadContext);
+}
 const changeEvent = 'webhost-public-preferences-changed';
 export function refreshPublicPreferences() {
   window.dispatchEvent(new Event(changeEvent));
@@ -25,10 +29,14 @@ export function PublicPreferencesProvider({
   children: ReactNode;
 }) {
   const [preferences, setPreferences] = useState(DEFAULT_PUBLIC_PREFERENCES);
+  const [status, setStatus] = useState<'loading' | 'ready' | 'unavailable'>(
+    'loading',
+  );
   useEffect(() => {
     let pending: AbortController | undefined;
     function load() {
       pending?.abort();
+      setStatus('loading');
       const request = new AbortController();
       pending = request;
       void fetch(
@@ -36,16 +44,18 @@ export function PublicPreferencesProvider({
         { signal: request.signal, cache: 'no-store' },
       )
         .then(async (response) => {
-          if (!response.ok) return;
+          if (!response.ok) throw new Error();
           const body: unknown = await response.json();
           const parsed = apiSuccessResponseSchema(
             publicPreferencesSchema,
           ).safeParse(body);
-          if (parsed.success && !request.signal.aborted)
-            setPreferences(parsed.data.data);
+          if (request.signal.aborted) return;
+          if (!parsed.success) throw new Error();
+          setPreferences(parsed.data.data);
+          setStatus('ready');
         })
         .catch(() => {
-          /* Keep the last valid preferences when unavailable. */
+          if (!request.signal.aborted) setStatus('unavailable');
         });
     }
     load();
@@ -55,7 +65,11 @@ export function PublicPreferencesProvider({
       window.removeEventListener(changeEvent, load);
     };
   }, []);
-  return <Context.Provider value={preferences}>{children}</Context.Provider>;
+  return (
+    <Context.Provider value={preferences}>
+      <LoadContext.Provider value={status}>{children}</LoadContext.Provider>
+    </Context.Provider>
+  );
 }
 
 export function usePublicPreferences() {

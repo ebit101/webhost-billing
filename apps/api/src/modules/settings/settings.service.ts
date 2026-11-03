@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import type { ApiEnvironment } from '@webhost-billing/config';
@@ -9,6 +10,9 @@ import {
 import {
   DEFAULT_BUSINESS_SETTINGS,
   DEFAULT_PUBLIC_PREFERENCES,
+  DEFAULT_CHECKOUT_TERMS,
+  checkoutTermsPolicySchema,
+  type CheckoutTermsInput,
   displayPreferencesSchema,
   publicWebsiteSchema,
   type PublicPreferences,
@@ -39,8 +43,11 @@ import {
   updatePartialPaymentPolicy,
 } from '../payments/partial-payment-policy';
 
+import { CHECKOUT_TERMS_KEY, readCheckoutTerms } from './checkout-terms';
+
 const KEYS = {
   businessIdentity: 'business.identity',
+  checkoutTerms: CHECKOUT_TERMS_KEY,
   website: 'business.public-website',
   displayPreferences: 'business.display-preferences',
   localization: 'business.localization',
@@ -205,17 +212,28 @@ export class SettingsService {
         values.get(KEYS.website),
         { url: website },
       ).url,
+      checkoutTerms: this.parse(
+        checkoutTermsPolicySchema,
+        values.get(KEYS.checkoutTerms),
+        DEFAULT_CHECKOUT_TERMS,
+      ),
     };
   }
 
   async publicPreferences(): Promise<PublicPreferences> {
     const records = await this.prisma.setting.findMany({
-      where: { key: { in: [KEYS.website, KEYS.displayPreferences] } },
+      where: {
+        key: {
+          in: [KEYS.website, KEYS.displayPreferences, KEYS.checkoutTerms],
+        },
+      },
       select: { key: true, value: true },
     });
-    return this.readPreferences(
-      new Map(records.map(({ key, value }) => [key, value])),
-    );
+    const values = new Map(records.map(({ key, value }) => [key, value]));
+    return {
+      ...this.readPreferences(values),
+      checkoutTerms: readCheckoutTerms(values.get(KEYS.checkoutTerms)),
+    };
   }
 
   async presentation(): Promise<{ timeZone: string }> {
@@ -258,6 +276,8 @@ export class SettingsService {
     actor: AuthRequestContext,
     context: SecurityRequestContext,
   ): Promise<SettingsOverview> {
+    if (input.checkoutTerms)
+      return this.saveCheckoutTerms(input.checkoutTerms, actor, context);
     if (input.activeProviders)
       await this.validateActiveGateway(input.activeProviders.activeGateway);
     const keys = new Set<string>();
@@ -325,6 +345,60 @@ export class SettingsService {
             'Review the settings and try again.',
         );
       await this.persist(transaction, result.data, keys, actor, context, input);
+    });
+    return this.overview();
+  }
+
+  private async saveCheckoutTerms(
+    input: CheckoutTermsInput,
+    actor: AuthRequestContext,
+    context: SecurityRequestContext,
+  ) {
+    await this.prisma.$transaction(async (transaction) => {
+      await transaction.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${CHECKOUT_TERMS_KEY}, 0))::text`;
+      const row = await transaction.setting.findUnique({
+        where: { key: CHECKOUT_TERMS_KEY },
+        select: { value: true },
+      });
+      const previous = checkoutTermsPolicySchema.safeParse(row?.value);
+      if (
+        previous.success &&
+        previous.data.required === input.required &&
+        previous.data.url === input.url &&
+        previous.data.revision === input.revision
+      )
+        return;
+      const policy = checkoutTermsPolicySchema.parse({
+        ...input,
+        version: randomUUID(),
+      });
+      const setting = this.setting(
+        CHECKOUT_TERMS_KEY,
+        SettingCategory.BUSINESS,
+        policy,
+        'Customer checkout terms policy.',
+      );
+      await transaction.setting.upsert({
+        where: { key: setting.key },
+        create: { ...setting, updatedByUserId: actor.identity.userId },
+        update: {
+          value: setting.value,
+          updatedByUserId: actor.identity.userId,
+        },
+      });
+      await transaction.activityLog.create({
+        data: {
+          actorUserId: actor.identity.userId,
+          action: 'CHECKOUT_TERMS_UPDATED_BY_ADMIN',
+          entityType: 'SETTING',
+          ipAddressHash: context.ipAddressHash,
+          metadata: {
+            required: policy.required,
+            version: policy.version,
+            revision: policy.revision,
+          },
+        },
+      });
     });
     return this.overview();
   }

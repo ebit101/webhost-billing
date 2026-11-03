@@ -147,6 +147,43 @@ describe('settings manager', () => {
     });
   });
 
+  it('validates and saves checkout terms as a separate Ordering draft', async () => {
+    const user = userEvent.setup();
+    const mock = settingsFetch();
+    render(<SettingsManager />);
+    await user.click(await screen.findByRole('tab', { name: 'Ordering' }));
+    await user.click(
+      screen.getByRole('checkbox', { name: 'Require acceptance at checkout' }),
+    );
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    expect(screen.getByRole('alert').textContent).toContain('HTTPS');
+    expect(writes(mock)).toHaveLength(0);
+    await user.type(
+      screen.getByLabelText('Terms of service URL'),
+      'https://example.test/terms',
+    );
+    await user.type(
+      screen.getByLabelText('Terms version label'),
+      'November 2026',
+    );
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    await screen.findByRole('status');
+    expect(JSON.parse(String(writes(mock)[0]?.[1]?.body))).toEqual({
+      checkoutTerms: {
+        required: true,
+        url: 'https://example.test/terms',
+        revision: 'November 2026',
+      },
+    });
+    await user.click(
+      screen.getByRole('checkbox', { name: 'Require acceptance at checkout' }),
+    );
+    await user.click(screen.getByRole('button', { name: 'Discard changes' }));
+    expect(
+      screen.getByRole('checkbox', { name: 'Require acceptance at checkout' }),
+    ).toHaveProperty('checked', true);
+  });
+
   it.each([false, true])(
     'reviews and confirms a change from saved %s before updating the baseline',
     async (previous) => {
@@ -407,6 +444,14 @@ function settingsFetch(
         preferences: {
           ...(saved.preferences ?? DEFAULT_PUBLIC_PREFERENCES),
           ...body.displayPreferences,
+          ...(body.checkoutTerms
+            ? {
+                checkoutTerms: {
+                  ...body.checkoutTerms,
+                  version: '90000000-0000-4000-8000-000000000095',
+                },
+              }
+            : {}),
           ...(body.website !== undefined ? { website: body.website } : {}),
         },
         ...(body.businessIdentity

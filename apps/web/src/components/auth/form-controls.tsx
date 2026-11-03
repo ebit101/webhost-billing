@@ -72,15 +72,17 @@ export function Field({
 
 export function SubmitButton({
   busy,
+  disabled,
   children,
 }: {
   busy: boolean;
+  disabled?: boolean;
   children: ReactNode;
 }) {
   return (
     <button
       type="submit"
-      disabled={busy}
+      disabled={busy || disabled}
       className="h-11 rounded-xl bg-brand-600 px-5 font-semibold text-white shadow-sm transition hover:bg-brand-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 disabled:cursor-wait disabled:opacity-60"
     >
       {busy ? 'Please wait…' : children}

@@ -16,6 +16,7 @@ import {
   PROJECT_NAME,
   createPaginationMeta,
   orderCreationResultSchema,
+  checkoutTermsAcceptanceSchema,
   orderSchema,
   serializeMoney,
   type CreateAdminOrderRequest,
@@ -36,6 +37,8 @@ import { PRISMA_CLIENT } from '../../infrastructure/database/database.module';
 import type { AuthRequestContext } from '../auth/auth.types';
 import { DomainService } from '../domains/domain.service';
 import { AdminOrderDomainService } from './admin-order-domain.service';
+
+import { requireCheckoutTerms } from '../settings/checkout-terms';
 
 type CreateOrderInput = (
   CreateAdminOrderRequest | CreateCustomerOrderRequest
@@ -256,6 +259,16 @@ export class OrderService {
           });
         }
         const total = hostingTotal + domainAmount;
+        const termsAcceptance =
+          source === 'CUSTOMER'
+            ? await requireCheckoutTerms(
+                transaction,
+                'acceptedTermsVersion' in input
+                  ? input.acceptedTermsVersion
+                  : undefined,
+                now,
+              )
+            : undefined;
         const order = await transaction.order.create({
           data: {
             orderNumber: createHumanReadableNumber('ORD', now),
@@ -269,6 +282,7 @@ export class OrderService {
             customerEmailSnapshot: customer.user.email,
             notes: 'notes' in input ? (input.notes ?? null) : null,
             placedAt: now,
+            termsAcceptance,
             items: {
               create: [
                 {
@@ -831,6 +845,10 @@ export class OrderService {
       total: serializeMoney(order.total, order.currency),
       notes: order.notes,
       placedAt: order.placedAt.toISOString(),
+      termsAcceptance:
+        order.termsAcceptance == null
+          ? undefined
+          : checkoutTermsAcceptanceSchema.parse(order.termsAcceptance),
       completedAt: order.completedAt?.toISOString() ?? null,
       cancelledAt: order.cancelledAt?.toISOString() ?? null,
       items: order.items.map((item) => ({

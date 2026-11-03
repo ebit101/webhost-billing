@@ -2,14 +2,24 @@
 
 ## Status Summary
 
-- **Current command:** Command 174 — Add public website, default country and date display preferences
+- **Current command:** Command 175 — Checkout terms
 - **Current status:** Completed and validated locally. Retained in the pending local batch.
 - **Last updated:** 2026-11-03
 - **Last recorded staging release:** Command 171, `0e69add43cc1df8351a9c2485cb27afc6e7a22f3`, deployed on 2026-11-02 (Asia/Dhaka).
-- **Next action:** Review the completed display preferences before authorizing the next command.
-- **Next command authorized:** None after Command 174.
+- **Next action:** Review checkout terms locally before authorizing publication of the accumulated batch.
+- **Next command authorized:** None after Command 175.
 
 ## Command Reports
+
+### Command 175 — Checkout terms
+
+- **Status and date:** Completed and validated locally on 2026-11-03 (Asia/Dhaka).
+- **Scope:** Ordering settings provide an HTTPS terms URL, a version label and a requirement toggle with per-tab save and discard. Guest hosting, signed-in hosting with or without a domain, and standalone customer domain purchases use the current version. Missing or stale acceptance is rejected before an order commits. Administrator order review shows accepted terms and the timestamp.
+- **Files changed:** Shared terms/settings/order/domain contracts, Prisma order model and nullable migration, settings and checkout services, public preferences provider, Ordering and checkout controls, admin order review, affected UI/API and migration inventory tests, and project documentation.
+- **Decisions:** Start disabled. A changed policy publishes a new server-generated version. Store the version, revision label, HTTPS URL and server timestamp atomically with the order. Preserve the snapshot on replay. Administrator-assisted workflows retain their existing authorization and consent. Change the revision label when the hosted text changes.
+- **Validation:** Shared and database builds passed. Four isolated settings API tests passed against the 41 migrations, covering validation and publication version behavior. Nine isolated order and 34 domain API cases passed, including missing and stale acceptance, guest rollback, standalone domain enforcement, recorded snapshots and replay. The guarded harnesses used separate fresh fictional schemas and completed cleanup. All 37 focused UI cases passed in a serial run, including reacceptance after a policy revision and Ordering save/discard. Initial concurrent runs hit local test deadlines. Serial reruns passed with unchanged committed test deadlines. Prisma validation, affected strict types, lint, formatting and Git whitespace checks passed.
+- **Constraints:** The record references the hosted terms by URL and revision. The policy remains disabled until an administrator saves a required policy. The migration is additive and leaves historical orders without an acceptance record. The work stays in the pending local batch.
+- **Exact recommended next command:** Authorize Command 176 — Validate and publish the accumulated local batch through the normal delivery process. Deployment and enabling checkout terms are separate decisions.
 
 ### Command 174 — Add public website, default country and date display preferences
 

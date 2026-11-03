@@ -1,3 +1,8 @@
+import {
+  PublicPreferencesProvider,
+  refreshPublicPreferences,
+} from '../../lib/public-preferences';
+import { DEFAULT_PUBLIC_PREFERENCES } from '@webhost-billing/shared';
 import type {
   CustomerDetail,
   CustomerSummary,
@@ -367,6 +372,79 @@ describe('order interfaces', () => {
     expect(submittedBody?.submissionKey).toMatch(/^[0-9a-f-]{36}$/);
     expect(submittedBody).not.toHaveProperty('total');
     expect(submittedBody).not.toHaveProperty('amount');
+  });
+
+  it('requires acceptance of the currently displayed terms version', async () => {
+    const user = userEvent.setup();
+    let version = '90000000-0000-4000-8000-000000000095';
+    const request = vi.fn(
+      async (input: RequestInfo | URL, init?: RequestInit) => {
+        void init;
+        const path = String(input);
+        if (path.endsWith('/products/public'))
+          return jsonResponse({ success: true, data: [publicProduct] });
+        if (path.endsWith('/auth/csrf'))
+          return jsonResponse({
+            success: true,
+            data: { csrfToken: 'a'.repeat(32) },
+          });
+        if (path.endsWith('/settings/public-preferences'))
+          return jsonResponse({
+            success: true,
+            data: {
+              ...DEFAULT_PUBLIC_PREFERENCES,
+              checkoutTerms: {
+                required: true,
+                url: 'https://example.test/terms',
+                version,
+                revision: version.slice(-3),
+              },
+            },
+          });
+        return jsonResponse({
+          success: true,
+          data: { order, duplicate: false },
+        });
+      },
+    );
+    vi.stubGlobal('fetch', request);
+    render(
+      <PublicPreferencesProvider>
+        <CustomerCheckout
+          initialProductId={productId}
+          initialPriceId={priceId}
+        />
+      </PublicPreferencesProvider>,
+    );
+    await user.type(
+      await screen.findByLabelText('Domain'),
+      'customer.example.test',
+    );
+    const checkbox = await screen.findByRole('checkbox', {
+      name: 'I accept the terms of service',
+    });
+    const button = screen.getByRole('button', { name: 'Place order' });
+    expect(button).toHaveProperty('disabled', true);
+    await user.click(checkbox);
+    expect(button).toHaveProperty('disabled', false);
+    version = '90000000-0000-4000-8000-000000000096';
+    refreshPublicPreferences();
+    await screen.findByText('Version 096');
+    expect(
+      screen.getByRole('checkbox', { name: 'I accept the terms of service' }),
+    ).toHaveProperty('checked', false);
+    expect(button).toHaveProperty('disabled', true);
+    await user.click(
+      screen.getByRole('checkbox', { name: 'I accept the terms of service' }),
+    );
+    await user.click(button);
+    await screen.findByText(order.orderNumber);
+    const submitted = request.mock.calls.find(([url]) =>
+      String(url).endsWith('/orders/checkout'),
+    );
+    expect(JSON.parse(String(submitted?.[1]?.body))).toMatchObject({
+      acceptedTermsVersion: version,
+    });
   });
 
   it('quotes a simulated new domain and adds it to the hosting order on one invoice', async () => {

@@ -7,6 +7,7 @@ import {
 } from '@webhost-billing/config';
 import {
   BillingPeriod,
+  Prisma,
   CustomerStatus,
   ProductStatus,
   UserRole,
@@ -156,16 +157,40 @@ describe('Order creation (e2e)', () => {
     const customer = request.agent(app.getHttpServer());
     const csrf = await csrfToken(customer);
     await login(customer, csrf, CUSTOMER_EMAIL);
-    const response = await customer
-      .post('/orders/checkout')
-      .set('X-CSRF-Token', csrf)
-      .send({
-        productId,
-        priceId: activePriceId,
-        requestedDomain: 'Customer-Site.Example.Test',
-        submissionKey: randomUUID(),
-      })
-      .expect(201);
+    const selection = {
+      productId,
+      priceId: activePriceId,
+      requestedDomain: 'Customer-Site.Example.Test',
+      submissionKey: randomUUID(),
+    };
+    const response = await withRequiredTerms(async (policy) => {
+      for (const acceptedTermsVersion of [undefined, randomUUID()]) {
+        await customer
+          .post('/orders/checkout')
+          .set('X-CSRF-Token', csrf)
+          .send({ ...selection, acceptedTermsVersion })
+          .expect(422);
+      }
+      expect(
+        await prisma.order.count({
+          where: { submissionKey: selection.submissionKey },
+        }),
+      ).toBe(0);
+      const accepted = await customer
+        .post('/orders/checkout')
+        .set('X-CSRF-Token', csrf)
+        .send({ ...selection, acceptedTermsVersion: policy.version })
+        .expect(201);
+      expect(
+        apiSuccessResponseSchema(orderCreationResultSchema).parse(accepted.body)
+          .data.order.termsAcceptance,
+      ).toMatchObject({
+        url: policy.url,
+        revision: policy.revision,
+        version: policy.version,
+      });
+      return accepted;
+    });
     const result = apiSuccessResponseSchema(orderCreationResultSchema).parse(
       response.body,
     ).data;
@@ -190,6 +215,22 @@ describe('Order creation (e2e)', () => {
       include: { items: true, invoices: { include: { items: true } } },
     });
     expect(stored.total).toBe(12_500n);
+    expect(stored.termsAcceptance).toEqual(result.order.termsAcceptance);
+    expect(result.order.termsAcceptance?.acceptedAt).toBe(
+      result.order.placedAt,
+    );
+    const replay = await customer
+      .post('/orders/checkout')
+      .set('X-CSRF-Token', csrf)
+      .send(selection)
+      .expect(201);
+    expect(
+      apiSuccessResponseSchema(orderCreationResultSchema).parse(replay.body)
+        .data,
+    ).toMatchObject({
+      duplicate: true,
+      order: { id: orderId, termsAcceptance: result.order.termsAcceptance },
+    });
     expect(stored.invoices).toHaveLength(1);
     expect(stored.invoices[0]?.items).toHaveLength(2);
     expect(
@@ -945,14 +986,26 @@ describe('Order creation (e2e)', () => {
       .expect(400);
     expect(await prisma.user.count({ where: { email: GUEST_EMAIL } })).toBe(0);
 
-    const first = await guest
-      .post('/orders/guest-checkout')
-      .set('X-CSRF-Token', csrf)
-      .send(body)
-      .expect((response) => {
-        if (response.status !== 201)
-          throw new Error(`Guest checkout: ${JSON.stringify(response.body)}`);
-      });
+    const first = await withRequiredTerms(async (policy) => {
+      await guest
+        .post('/orders/guest-checkout')
+        .set('X-CSRF-Token', csrf)
+        .send({ ...body, email: FAILED_GUEST_EMAIL })
+        .expect(422);
+      expect(
+        await prisma.user.count({ where: { email: FAILED_GUEST_EMAIL } }),
+      ).toBe(0);
+      const accepted = await guest
+        .post('/orders/guest-checkout')
+        .set('X-CSRF-Token', csrf)
+        .send({ ...body, acceptedTermsVersion: policy.version })
+        .expect(201);
+      expect(
+        apiSuccessResponseSchema(orderCreationResultSchema).parse(accepted.body)
+          .data.order.termsAcceptance?.version,
+      ).toBe(policy.version);
+      return accepted;
+    });
     const created = apiSuccessResponseSchema(orderCreationResultSchema).parse(
       first.body,
     ).data;
@@ -1020,6 +1073,39 @@ describe('Order creation (e2e)', () => {
       .send({ ...body, requestedDomain: 'changed.example.test' })
       .expect(409);
   });
+
+  async function withRequiredTerms<T>(
+    action: (policy: {
+      required: true;
+      url: string;
+      revision: string;
+      version: string;
+    }) => Promise<T>,
+  ) {
+    const key = 'business.checkout-terms';
+    const previous = await prisma.setting.findUnique({ where: { key } });
+    const policy = {
+      required: true as const,
+      url: 'https://example.test/terms',
+      revision: 'Test revision',
+      version: randomUUID(),
+    };
+    await prisma.setting.upsert({
+      where: { key },
+      update: { value: policy },
+      create: { key, category: 'BUSINESS', value: policy },
+    });
+    try {
+      return await action(policy);
+    } finally {
+      if (previous)
+        await prisma.setting.update({
+          where: { key },
+          data: { value: previous.value ?? Prisma.JsonNull },
+        });
+      else await prisma.setting.delete({ where: { key } });
+    }
+  }
 
   async function ledgerSnapshot() {
     return {

@@ -1,4 +1,9 @@
 'use client';
+import {
+  CheckoutTermsControl,
+  useCheckoutTerms,
+} from '../orders/checkout-terms-control';
+import { refreshPublicPreferences } from '../../lib/public-preferences';
 import { formatUtcTimestamp } from '@webhost-billing/shared';
 
 import Link from 'next/link';
@@ -63,6 +68,7 @@ export function DomainManager({
   const [domains, setDomains] = useState<Domain[]>([]);
   const [offers, setOffers] = useState<Offer[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const terms = useCheckoutTerms();
   const [quote, setQuote] = useState<Quote>();
   const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
@@ -416,6 +422,7 @@ export function DomainManager({
                         ...previous,
                         [key]: event.target.value,
                       }));
+                      terms.setAccepted(false);
                       setQuote(undefined);
                     }}
                     maxLength={key === 'email' ? 320 : 160}
@@ -530,14 +537,23 @@ export function DomainManager({
                   )}
                   Quote expires {formatUtcTimestamp(quote.expiresAt)}.
                 </p>
+                <CheckoutTermsControl terms={terms} busy={busy} />
                 <Button
-                  disabled={busy}
+                  disabled={busy || terms.blocked}
                   onClick={() =>
                     void perform(async () => {
-                      await authMutation('/domains/orders', 'POST', {
-                        quoteId: quote.id,
-                        submissionKey,
-                      });
+                      if (terms.blocked) return;
+                      try {
+                        await authMutation('/domains/orders', 'POST', {
+                          quoteId: quote.id,
+                          submissionKey,
+                          acceptedTermsVersion: terms.acceptedTermsVersion,
+                        });
+                      } catch (error) {
+                        refreshPublicPreferences();
+                        throw error;
+                      }
+                      terms.setAccepted(false);
                       setQuote(undefined);
                     })
                   }

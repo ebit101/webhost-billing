@@ -66,6 +66,7 @@ export const domainPurchaseRequestSchema = z
   .object({
     quoteId: z.uuid(),
     submissionKey: z.uuid(),
+    acceptedTermsVersion: z.uuid().optional(),
   })
   .strict();
 export const adminDomainQuoteRequestSchema = domainQuoteRequestSchema
@@ -83,6 +84,7 @@ export const adminDomainQuoteRequestSchema = domainQuoteRequestSchema
   })
   .strict();
 export const adminDomainPurchaseRequestSchema = domainPurchaseRequestSchema
+  .omit({ acceptedTermsVersion: true })
   .extend({ customerId: z.uuid() })
   .strict();
 export type AdminDomainQuoteRequest = z.infer<

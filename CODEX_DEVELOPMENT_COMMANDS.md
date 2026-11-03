@@ -6618,3 +6618,14 @@ Apply the website to the public footer, the country to new customer forms, and
 the date choices to existing web invoice and billing views. Use the existing
 protected per-tab saves and a limited public read. Preserve deployment fallbacks,
 stored dates, invoice snapshots and country values on existing accounts.
+
+## Command 175 — Checkout terms
+
+Owner-authorized on 2026-11-03. Add the Ordering tab with an HTTPS terms of
+service URL, a revision label and an optional acceptance requirement. Apply
+server-side enforcement to guest and signed-in hosting checkout and standalone
+customer domain purchases. Bind the submitted version to the current published
+policy, record the accepted version, label, URL and server timestamp with the
+order, and preserve the record on replay. Administrator-assisted ordering
+retains its existing authorization and consent flows. Validate locally and
+retain the commit for the pending batch.

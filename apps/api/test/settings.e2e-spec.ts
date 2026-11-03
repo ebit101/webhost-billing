@@ -31,6 +31,7 @@ const PASSWORD = 'command twenty one secure password';
 const SECRET_VALUE = 'fictional-command21-secret-value';
 const SETTING_KEYS = [
   'business.identity',
+  'business.checkout-terms',
   'business.public-website',
   'business.display-preferences',
   'business.localization',
@@ -243,11 +244,42 @@ describe('Settings and encrypted credentials (e2e)', () => {
         success: true,
         data: {
           website: 'https://example.test/',
+          checkoutTerms: {
+            required: false,
+            url: null,
+            revision: null,
+            version: null,
+          },
           defaultCountry: 'GB',
           adminDateFormat: 'iso',
           clientDateFormat: 'long',
         },
       });
+    const terms = {
+      required: true,
+      url: 'https://example.test/terms',
+      revision: '2026-11-03',
+    };
+    await admin
+      .patch('/settings')
+      .set('X-CSRF-Token', csrf)
+      .send({ checkoutTerms: { ...terms, url: null } })
+      .expect(400);
+    async function saveTerms(revision: string) {
+      const response = await admin
+        .patch('/settings')
+        .set('X-CSRF-Token', csrf)
+        .send({
+          checkoutTerms: { ...terms, revision },
+        })
+        .expect(200);
+      return resultSchema.parse(response.body).data.preferences?.checkoutTerms;
+    }
+    const published = await saveTerms(terms.revision);
+    expect(published).toMatchObject(terms);
+    expect(await saveTerms(terms.revision)).toEqual(published);
+    const updated = await saveTerms('2026-11-04');
+    expect(updated?.version).not.toBe(published?.version);
     const invoiceKey = 'billing.invoice-numbering';
     const numbering = { ...before.invoiceNumbering, nextNumber: 5342 };
     await prisma.setting.upsert({

@@ -3309,6 +3309,23 @@ authorize new provider operations or existing-domain adoption.
   local-date convention for timestamps. Keep date entry formats, PDF documents
   and other operational timestamps outside this presentation scope.
 
+## ADR-164 — Bind customer orders to accepted checkout terms
+
+- **Date:** 2026-11-03. Command 175.
+- **Publication:** Store an optional policy in existing settings. Publishing a
+  changed URL, revision label or acceptance requirement generates a new version.
+  Administrators update the label when editing the hosted terms at the same URL.
+- **Checkout:** Verify the submitted version during the order transaction. Use
+  a shared advisory lock for checkout and an exclusive lock for publishing so a
+  policy change cannot cross the acceptance and order write boundary. Apply the
+  rule to guest hosting, signed-in hosting with or without a domain, and
+  standalone customer domain purchases. Guest rejection rolls back registration.
+- **History:** Store the URL, label, version and server timestamp in a nullable
+  order snapshot. Replays return the original order and its recorded acceptance.
+  Existing orders have no acceptance snapshot and administrator-assisted orders
+  retain their established consent flows. The hosted terms text remains at the
+  configured URL.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

@@ -1,6 +1,6 @@
 'use client';
 import { InvoiceDateText } from '../invoices/invoice-date-text';
-import { sentenceCaseLabel } from '@webhost-billing/shared';
+import { formatUtcTimestamp, sentenceCaseLabel } from '@webhost-billing/shared';
 
 import {
   apiSuccessResponseSchema,
@@ -202,6 +202,21 @@ function ReviewDetails({
           <dl className="grid gap-3 text-sm">
             <Fact label="Order status">{sentenceCaseLabel(order.status)}</Fact>
             <Fact label="Placed">{date(order.placedAt)}</Fact>
+            {order.termsAcceptance ? (
+              <Fact label="Terms accepted">
+                <a
+                  href={order.termsAcceptance.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline"
+                >
+                  Version {order.termsAcceptance.revision}
+                </a>
+                <span className="block">
+                  {formatUtcTimestamp(order.termsAcceptance.acceptedAt)}
+                </span>
+              </Fact>
+            ) : null}
             <Fact label="Completed">{date(order.completedAt)}</Fact>
             <Fact label="Cancelled">{date(order.cancelledAt)}</Fact>
             <Fact label="Order subtotal">

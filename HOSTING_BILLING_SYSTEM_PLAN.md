@@ -8,6 +8,12 @@
 
 **Technical identifier:** `webhost-billing`
 
+**Checkout terms direction — 2026-11-03:** Command 175 lets administrators
+publish a versioned HTTPS terms link and require customers to accept it at
+checkout. Record the accepted version with each applicable order. The policy
+starts disabled, and the administrator updates the revision label when the
+hosted terms change.
+
 **Display preferences direction — 2026-11-03:** Command 174 adds a public
 website URL, a default country for new customer forms, and separate admin and
 client date formats with previews for web billing views. The saved settings

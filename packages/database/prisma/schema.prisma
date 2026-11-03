@@ -613,6 +613,7 @@ model Order {
   taxTotal              BigInt      @default(0) @map("tax_total") @db.BigInt
   total                 BigInt      @db.BigInt
   customerEmailSnapshot String      @map("customer_email_snapshot") @db.VarChar(320)
+  termsAcceptance       Json?       @map("terms_acceptance")
   notes                 String?     @db.Text
   placedAt              DateTime    @default(now()) @map("placed_at") @db.Timestamptz(3)
   completedAt           DateTime?   @map("completed_at") @db.Timestamptz(3)

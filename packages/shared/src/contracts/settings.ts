@@ -1,3 +1,7 @@
+import {
+  checkoutTermsInputSchema,
+  checkoutTermsPolicySchema,
+} from './checkout-terms';
 import { z } from 'zod';
 import { businessIdentitySchema } from './invoices';
 import { currencyCodeSchema } from './money';
@@ -170,7 +174,10 @@ export const displayPreferencesSchema = z
   })
   .strict();
 export const publicPreferencesSchema = displayPreferencesSchema
-  .extend({ website: publicWebsiteSchema })
+  .extend({
+    website: publicWebsiteSchema,
+    checkoutTerms: checkoutTermsPolicySchema.optional(),
+  })
   .strict();
 export type PublicPreferences = z.infer<typeof publicPreferencesSchema>;
 export const DEFAULT_PUBLIC_PREFERENCES: PublicPreferences = {
@@ -203,6 +210,7 @@ export const patchBusinessSettingsRequestSchema = z
     businessIdentity: businessIdentitySchema.optional(),
     website: publicWebsiteSchema.optional(),
     displayPreferences: displayPreferencesSchema.optional(),
+    checkoutTerms: checkoutTermsInputSchema.optional(),
     localization: businessLocalizationSettingsSchema.optional(),
     invoiceNumbering: z
       .object(invoiceNumberingSettingsSchema.shape)
@@ -225,6 +233,7 @@ export const patchBusinessSettingsRequestSchema = z
         value.invoiceNumbering || value.manualPayments,
         value.emailBranding,
         value.activeProviders,
+        value.checkoutTerms,
       ].filter(Boolean).length === 1,
     'Save changes from one settings tab at a time',
   );
