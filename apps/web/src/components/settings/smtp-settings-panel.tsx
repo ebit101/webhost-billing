@@ -230,6 +230,9 @@ export function SmtpSettingsPanel() {
               <Button type="submit" disabled={busy}>
                 {busy ? 'Working…' : 'Save SMTP configuration'}
               </Button>
+              <Button type="reset" variant="secondary" disabled={busy}>
+                Discard SMTP edits
+              </Button>
               {status.configured && (
                 <Button
                   type="button"

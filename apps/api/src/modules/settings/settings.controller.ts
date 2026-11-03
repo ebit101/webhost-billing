@@ -6,12 +6,15 @@ import {
   HttpCode,
   Inject,
   Post,
+  Patch,
   Put,
   Req,
 } from '@nestjs/common';
 import type { ApiEnvironment } from '@webhost-billing/config';
 import {
   updateBusinessSettingsRequestSchema,
+  patchBusinessSettingsRequestSchema,
+  type PatchBusinessSettingsRequest,
   createApiSuccessResponse,
   integrationCredentialUpdateSchema,
   type UpdateBusinessSettingsRequest,
@@ -67,6 +70,18 @@ export class SettingsController {
   ) {
     return createApiSuccessResponse(
       await this.settings.update(input, auth, this.context(request)),
+    );
+  }
+
+  @Patch()
+  async patch(
+    @Body(new ZodValidationPipe(patchBusinessSettingsRequestSchema))
+    input: PatchBusinessSettingsRequest,
+    @CurrentAuth() auth: AuthRequestContext,
+    @Req() request: Request,
+  ) {
+    return createApiSuccessResponse(
+      await this.settings.patch(input, auth, this.context(request)),
     );
   }
 

@@ -2,14 +2,24 @@
 
 ## Status Summary
 
-- **Current command:** Command 172 — Add typed server administration and Virtualizor configuration
-- **Current status:** Command 172 completed and validated locally; retained for owner-requested publication. Servers now have type-specific configuration and a Server type list column. Live Virtualizor testing is deferred, all new providers remain disabled, and VPS provisioning is outside this configuration command.
+- **Current command:** Command 173 — Organise existing general settings into tabs
+- **Current status:** Completed and validated locally. General opens by default and each editable tab saves and discards its own draft. Retained in the pending local batch.
 - **Last updated:** 2026-11-03
 - **Last recorded staging release:** Command 171, `0e69add43cc1df8351a9c2485cb27afc6e7a22f3`, deployed on 2026-11-02 (Asia/Dhaka).
-- **Next action:** Review the completed Command 172 configuration changes. Publication/deployment and further VPS lifecycle work require separate authorization.
-- **Next command authorized:** None after Command 172. No live testing, provider activation, push or deployment is authorized.
+- **Next action:** Review Command 173 locally before authorising the next settings phase or publication.
+- **Next command authorized:** None after Command 173.
 
 ## Command Reports
+
+### Command 173 — Organise existing general settings into tabs
+
+- **Status and date:** Completed and validated locally on 2026-11-03 (Asia/Dhaka).
+- **Implemented scope:** General opens by default. Localisation, Mail, Invoices, Automation, and Security and integrations organise the other editable settings. Domains and Support link to their existing workspaces. Editable tabs have Save changes and Discard changes, preserve drafts when switching tabs, and mark drafts on the tab labels. Tab fragments support direct links and browser history, including the existing billing policy link. Ordinary drafts trigger a warning on reload or when following a link out of the page. SMTP and payment credentials use their protected forms and separate reset controls.
+- **Files changed:** Settings page and manager, SMTP form, component and browser checks, scoped shared settings contract, API controller/service, payment policy lock helper, isolated API suite and runner, and project plan, command, decision and progress records.
+- **Decisions:** Keep the existing PUT contract for callers and use a protected PATCH for one tab at a time. Apply only submitted groups, merge numbering edits against the locked current sequence, and synchronise the business time zone with renewal automation. Preserve the partial-payment confirmation and audit flow. Rebase unsaved invoice drafts on refreshed values so a saved setting elsewhere cannot make a stale sequence look like an intentional edit.
+- **Validation:** Shared build, 14 focused UI cases and four isolated PostgreSQL settings API cases passed. The API suite verifies access, CSRF, one-tab scope, stored sequence preservation, payment policy review and timezone consistency. The guarded harness applied the 40 existing migrations and cleaned up the fictional schema. API build, API and web type checks (including browser tests), affected lint and formatting checks, Git whitespace checks, and all four offline documentation validators passed. Two guarded Chromium cases passed at 390px and 1280px, covering General as the default, Mail navigation and direct linking, SMTP save and activation review, and responsive layout. The browser harness used a fresh fictional schema and completed guarded cleanup. The existing branding image produced a development performance advisory. No live delivery or deployed verification was performed.
+- **Constraints:** This phase covers existing settings. Additional display controls, checkout terms and maintenance mode require separate scope. Work is local to the pending batch.
+- **Exact recommended next command:** Authorize Command 174 — Add public website, default rows per page and date display previews to General settings. Deployment and maintenance mode are separate commands.
 
 ### Command 172 — Add typed server administration and Virtualizor configuration
 

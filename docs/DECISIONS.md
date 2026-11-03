@@ -3278,6 +3278,22 @@ authorize new provider operations or existing-domain adoption.
   and [server-list contract](https://www.virtualizor.com/docs/admin-api/list-servers/).
   Documentation research is not provider acceptance.
 
+## ADR-162 — Save and discard settings by tab
+
+- **Date:** 2026-11-03. Command 173.
+- **Navigation:** General opens by default. URL fragments support direct links
+  and browser history, including the existing billing policy link. Keep ordinary
+  drafts across tab switches and mark their tabs. Domains and Support link to
+  the existing workspaces.
+- **Persistence:** Protect a scoped settings PATCH with the existing settings
+  access rules and CSRF checks. Keep PUT for existing callers. Save changed
+  groups and merge invoice numbering fields against the locked current row.
+  Synchronise localisation with the renewal policy and preserve the current
+  partial-payment confirmation and audit flow.
+- **Credentials:** Keep SMTP and payment credential forms on their protected
+  endpoints, with separate reset actions. Existing provider activation remains
+  an explicit separate action where required.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

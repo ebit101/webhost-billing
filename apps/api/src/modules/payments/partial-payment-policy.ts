@@ -10,6 +10,14 @@ import type { AuthRequestContext } from '../auth/auth.types';
 
 export const PARTIAL_PAYMENT_POLICY_KEY = 'billing.manual-payments';
 
+export async function lockPartialPaymentPolicy(
+  transaction: Prisma.TransactionClient,
+): Promise<void> {
+  await transaction.$executeRaw`
+    SELECT pg_advisory_xact_lock(hashtextextended(${PARTIAL_PAYMENT_POLICY_KEY}, 0))
+  `;
+}
+
 // Both settings routes take the same lock, including when no setting exists yet.
 export async function updatePartialPaymentPolicy(
   transaction: Prisma.TransactionClient,
@@ -18,9 +26,7 @@ export async function updatePartialPaymentPolicy(
   actor: AuthRequestContext,
   context: SecurityRequestContext,
 ): Promise<void> {
-  await transaction.$executeRaw`
-    SELECT pg_advisory_xact_lock(hashtextextended(${PARTIAL_PAYMENT_POLICY_KEY}, 0))
-  `;
+  await lockPartialPaymentPolicy(transaction);
   const stored = await transaction.setting.findUnique({
     where: { key: PARTIAL_PAYMENT_POLICY_KEY },
     select: { value: true },

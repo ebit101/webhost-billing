@@ -4,12 +4,15 @@ import {
   DEFAULT_BUSINESS_SETTINGS,
   PARTIAL_PAYMENT_POLICY_CONFIRMATION,
   type BusinessSettings,
+  type PatchBusinessSettingsRequest,
+  settingsOverviewSchema,
   type CredentialStatus,
   type SettingsOverview,
 } from '@webhost-billing/shared';
 import Link from 'next/link';
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { authenticatedGet, authMutation } from '../../lib/auth-api';
+import { SmtpSettingsPanel } from './smtp-settings-panel';
 import { Button } from '../ui/button';
 import { ConfirmationDialog } from '../ui/confirmation-dialog';
 import { LoadingState } from '../ui/feedback-state';
@@ -25,25 +28,223 @@ const initialOverview: SettingsOverview = {
   ],
 };
 
+const tabs = [
+  ['general', 'General'],
+  ['localisation', 'Localisation'],
+  ['domains', 'Domains'],
+  ['mail', 'Mail'],
+  ['support', 'Support'],
+  ['billing-policy', 'Invoices'],
+  ['automation', 'Automation'],
+  ['integrations', 'Security and integrations'],
+] as const;
+type Tab = (typeof tabs)[number][0];
+
+function readTab(): Tab {
+  const hash = window.location.hash.slice(1);
+  return tabs.find(([id]) => id === hash)?.[0] ?? 'general';
+}
+
+function changed<T>(draft: T, saved: T): T | undefined {
+  return JSON.stringify(draft) === JSON.stringify(saved) ? undefined : draft;
+}
+
+function tabChanges(
+  tab: Tab,
+  draft: BusinessSettings,
+  saved: BusinessSettings,
+): PatchBusinessSettingsRequest {
+  switch (tab) {
+    case 'general':
+      return {
+        businessIdentity: changed(
+          draft.businessIdentity,
+          saved.businessIdentity,
+        ),
+      };
+    case 'localisation':
+      return {
+        localization: changed(
+          { currency: draft.currency, timeZone: draft.timeZone },
+          { currency: saved.currency, timeZone: saved.timeZone },
+        ),
+      };
+    case 'billing-policy': {
+      const { prefix, nextNumber, padding } = draft.invoiceNumbering;
+      const numbering = {
+        prefix: changed(prefix, saved.invoiceNumbering.prefix),
+        nextNumber: changed(nextNumber, saved.invoiceNumbering.nextNumber),
+        padding: changed(padding, saved.invoiceNumbering.padding),
+      };
+      const payments = {
+        instructions: changed(
+          draft.manualPayments.instructions,
+          saved.manualPayments.instructions,
+        ),
+        partialPaymentsEnabled: changed(
+          draft.manualPayments.partialPaymentsEnabled,
+          saved.manualPayments.partialPaymentsEnabled,
+        ),
+      };
+      return {
+        invoiceNumbering: Object.values(numbering).some(
+          (value) => value !== undefined,
+        )
+          ? numbering
+          : undefined,
+        manualPayments: Object.values(payments).some(
+          (value) => value !== undefined,
+        )
+          ? payments
+          : undefined,
+      };
+    }
+    case 'automation':
+      return {
+        renewalAutomation: changed(
+          draft.renewalAutomation,
+          saved.renewalAutomation,
+        ),
+      };
+    case 'mail':
+      return {
+        emailBranding: changed(draft.emailBranding, saved.emailBranding),
+      };
+    case 'integrations':
+      return {
+        activeProviders: changed(
+          {
+            activeGateway: draft.activeGateway,
+            activeHostingPanelAdapter: draft.activeHostingPanelAdapter,
+          },
+          {
+            activeGateway: saved.activeGateway,
+            activeHostingPanelAdapter: saved.activeHostingPanelAdapter,
+          },
+        ),
+      };
+    default:
+      return {};
+  }
+}
+
+const tabFields: Record<Tab, readonly (keyof BusinessSettings)[]> = {
+  general: ['businessIdentity'],
+  localisation: ['currency', 'timeZone'],
+  domains: [],
+  mail: ['emailBranding'],
+  support: [],
+  'billing-policy': ['invoiceNumbering', 'manualPayments'],
+  automation: ['renewalAutomation'],
+  integrations: ['activeGateway', 'activeHostingPanelAdapter'],
+};
+
 export function SettingsManager() {
   const [overview, setOverview] = useState(initialOverview);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState('');
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
-  const [persistedPartialPayments, setPersistedPartialPayments] =
-    useState<boolean>();
-  const [policyReview, setPolicyReview] = useState<BusinessSettings>();
+  const [savedOverview, setSavedOverview] = useState<SettingsOverview>();
+  const [tab, setTab] = useState<Tab>('general');
+  const [mailVisited, setMailVisited] = useState(false);
+  const [policyReview, setPolicyReview] =
+    useState<PatchBusinessSettingsRequest>();
+  const persistedPartialPayments =
+    savedOverview?.manualPayments.partialPaymentsEnabled;
+  const dirtyTabs = tabs.filter(
+    ([id]) =>
+      savedOverview &&
+      Object.values(tabChanges(id, overview, savedOverview)).some(
+        (value) => value !== undefined,
+      ),
+  );
+  const hasDrafts = dirtyTabs.length > 0;
+
+  useEffect(() => {
+    const syncTab = () => {
+      const next = readTab();
+      setTab(next);
+      if (next === 'mail') setMailVisited(true);
+    };
+    syncTab();
+    window.addEventListener('hashchange', syncTab);
+    window.addEventListener('popstate', syncTab);
+    return () => {
+      window.removeEventListener('hashchange', syncTab);
+      window.removeEventListener('popstate', syncTab);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!hasDrafts) return;
+    const warn = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+    };
+    const guardLink = (event: MouseEvent) => {
+      if (
+        event.defaultPrevented ||
+        event.button !== 0 ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey
+      )
+        return;
+      const target = event.target;
+      const link =
+        target instanceof Element
+          ? target.closest<HTMLAnchorElement>('a[href]')
+          : null;
+      if (
+        !link ||
+        (link.target && link.target !== '_self') ||
+        link.hasAttribute('download')
+      )
+        return;
+      const destination = new URL(link.href);
+      if (
+        destination.origin !== window.location.origin ||
+        destination.pathname === window.location.pathname
+      )
+        return;
+      if (
+        !window.confirm(
+          'Leave General settings and discard your unsaved changes?',
+        )
+      )
+        event.preventDefault();
+    };
+    window.addEventListener('beforeunload', warn);
+    document.addEventListener('click', guardLink, true);
+    return () => {
+      window.removeEventListener('beforeunload', warn);
+      document.removeEventListener('click', guardLink, true);
+    };
+  }, [hasDrafts]);
+
+  function selectTab(next: Tab) {
+    if (next === tab || saving) return;
+    window.history.pushState(
+      null,
+      '',
+      next === 'general'
+        ? window.location.pathname + window.location.search
+        : `#${next}`,
+    );
+    clearMessages();
+    setTab(next);
+    if (next === 'mail') setMailVisited(true);
+  }
 
   useEffect(() => {
     let active = true;
     void authenticatedGet<SettingsOverview>('/settings')
-      .then((settings) => {
+      .then((value) => {
+        const settings = settingsOverviewSchema.parse(value);
         if (active) {
           setOverview(settings);
-          setPersistedPartialPayments(
-            settings.manualPayments.partialPaymentsEnabled,
-          );
+          setSavedOverview(settings);
         }
       })
       .catch((caught: unknown) => {
@@ -65,18 +266,29 @@ export function SettingsManager() {
   }
 
   function requestSave() {
-    if (persistedPartialPayments === undefined) return;
+    if (!savedOverview || saving) return;
     clearMessages();
-    const { credentialStatuses, ...settings } = overview;
-    void credentialStatuses;
+    const changes = tabChanges(tab, overview, savedOverview);
+    if (!Object.values(changes).some((value) => value !== undefined)) return;
     if (
-      settings.manualPayments.partialPaymentsEnabled !==
-      persistedPartialPayments
+      changes.manualPayments?.partialPaymentsEnabled !== undefined &&
+      changes.manualPayments.partialPaymentsEnabled !== persistedPartialPayments
     ) {
-      setPolicyReview(settings);
+      setPolicyReview(changes);
     } else {
-      void saveSettings(settings);
+      void saveSettings(changes, tab);
     }
+  }
+
+  function discardChanges() {
+    if (!savedOverview) return;
+    setOverview((current) => {
+      const restored = { ...current };
+      for (const key of tabFields[tab])
+        Object.assign(restored, { [key]: savedOverview[key] });
+      return restored;
+    });
+    clearMessages();
   }
 
   function cancelPolicyReview() {
@@ -91,23 +303,72 @@ export function SettingsManager() {
     clearMessages();
   }
 
-  async function saveSettings(settings: BusinessSettings, confirmed = false) {
+  async function saveSettings(
+    changes: PatchBusinessSettingsRequest,
+    savedTab: Tab,
+    confirmed = false,
+  ) {
+    if (!savedOverview || saving) return;
     setSaving('settings');
     clearMessages();
     try {
-      const saved = await authMutation<SettingsOverview>('/settings', 'PUT', {
-        ...settings,
-        ...(confirmed
-          ? {
-              partialPaymentPolicyConfirmation:
-                PARTIAL_PAYMENT_POLICY_CONFIRMATION,
+      const saved = settingsOverviewSchema.parse(
+        await authMutation('/settings', 'PATCH', {
+          ...changes,
+          ...(confirmed
+            ? {
+                partialPaymentPolicyConfirmation:
+                  PARTIAL_PAYMENT_POLICY_CONFIRMATION,
+              }
+            : {}),
+        }),
+      );
+      setOverview((current) => {
+        const next = { ...saved };
+        for (const [id] of tabs) {
+          if (id === savedTab) continue;
+          if (id === 'billing-policy') {
+            const draft = tabChanges(id, current, savedOverview);
+            if (draft.invoiceNumbering) {
+              next.invoiceNumbering = {
+                prefix:
+                  draft.invoiceNumbering.prefix ??
+                  saved.invoiceNumbering.prefix,
+                nextNumber:
+                  draft.invoiceNumbering.nextNumber ??
+                  saved.invoiceNumbering.nextNumber,
+                padding:
+                  draft.invoiceNumbering.padding ??
+                  saved.invoiceNumbering.padding,
+              };
             }
-          : {}),
+            if (draft.manualPayments) {
+              next.manualPayments = {
+                instructions:
+                  draft.manualPayments.instructions ??
+                  saved.manualPayments.instructions,
+                partialPaymentsEnabled:
+                  draft.manualPayments.partialPaymentsEnabled ??
+                  saved.manualPayments.partialPaymentsEnabled,
+              };
+            }
+            continue;
+          }
+          for (const key of tabFields[id]) {
+            if (changed(current[key], savedOverview[key]) !== undefined)
+              Object.assign(next, { [key]: current[key] });
+          }
+        }
+        // The business time zone is the source for the saved renewal policy.
+        next.renewalAutomation = {
+          ...next.renewalAutomation,
+          timeZone: saved.timeZone,
+        };
+        return next;
       });
-      setOverview(saved);
-      setPersistedPartialPayments(saved.manualPayments.partialPaymentsEnabled);
+      setSavedOverview(saved);
       setPolicyReview(undefined);
-      setNotice('Business settings were saved and audited.');
+      setNotice('Changes saved.');
     } catch (caught) {
       setError(message(caught));
     } finally {
@@ -176,16 +437,8 @@ export function SettingsManager() {
     <div className="space-y-6">
       <PageHeader
         eyebrow="Administration"
-        title="Business settings and secrets"
-        description="Control billing policy and active adapters. Credentials are encrypted at rest and are never returned to this page."
-        actions={
-          <Button
-            disabled={saving !== '' || persistedPartialPayments === undefined}
-            onClick={requestSave}
-          >
-            {saving === 'settings' ? 'Saving…' : 'Save settings'}
-          </Button>
-        }
+        title="General settings"
+        description="Manage your business, billing, and service settings."
       />
 
       {error ? (
@@ -204,449 +457,617 @@ export function SettingsManager() {
         title="Review partial-payment policy change"
         description={
           policyReview
-            ? `Current policy: ${persistedPartialPayments ? 'Enabled' : 'Disabled'}. Proposed policy: ${policyReview.manualPayments.partialPaymentsEnabled ? 'Enabled' : 'Disabled'}. ${
-                policyReview.manualPayments.partialPaymentsEnabled
+            ? `Current policy: ${persistedPartialPayments ? 'Enabled' : 'Disabled'}. Proposed policy: ${policyReview.manualPayments?.partialPaymentsEnabled ? 'Enabled' : 'Disabled'}. ${
+                policyReview.manualPayments?.partialPaymentsEnabled
                   ? 'Future manual-payment submissions, administrator recordings, and pending-reference verifications may accept a positive amount up to the invoice’s current balance.'
                   : 'Future manual-payment submissions, administrator recordings, and pending-reference verifications must equal the invoice’s full current balance. Pending references for a smaller amount cannot be verified while this policy is disabled.'
-              } Existing invoices, payments, balances, and pending references are unchanged by this save. This saves all other draft settings too.${error ? ` Save failed: ${error} Your draft is retained; retry or cancel.` : ''}`
+              } Existing invoices, payments, balances, and pending references are unchanged by this save. This saves changes on the Invoices tab.${error ? ` Save failed: ${error} Your draft is retained; retry or cancel.` : ''}`
             : ''
         }
         confirmLabel="Confirm policy change and save settings"
         busy={saving === 'settings'}
         onConfirm={() => {
-          if (policyReview) void saveSettings(policyReview, true);
+          if (policyReview)
+            void saveSettings(policyReview, 'billing-policy', true);
         }}
         onClose={cancelPolicyReview}
       />
 
-      <SettingsCard
-        title="Business and invoice identity"
-        description="These values are snapshotted onto future invoices; existing issued invoices remain unchanged."
+      <div
+        role="tablist"
+        aria-label="Settings categories"
+        className="flex flex-wrap gap-2 border-b border-slate-200 pb-2"
       >
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <Field label="Business name">
-            <input
-              className={inputStyles}
-              value={overview.businessIdentity.name}
-              onChange={(event) =>
-                update('businessIdentity', {
-                  ...overview.businessIdentity,
-                  name: event.target.value,
-                })
-              }
-            />
-          </Field>
-          <Field label="Billing email">
-            <input
-              className={inputStyles}
-              type="email"
-              value={overview.businessIdentity.email ?? ''}
-              onChange={(event) =>
-                update('businessIdentity', {
-                  ...overview.businessIdentity,
-                  email: event.target.value || undefined,
-                })
-              }
-            />
-          </Field>
-          <Field label="Phone">
-            <input
-              className={inputStyles}
-              value={overview.businessIdentity.phone ?? ''}
-              onChange={(event) =>
-                update('businessIdentity', {
-                  ...overview.businessIdentity,
-                  phone: event.target.value || undefined,
-                })
-              }
-            />
-          </Field>
-          <Field label="Address line 1">
-            <input
-              className={inputStyles}
-              value={overview.businessIdentity.addressLine1 ?? ''}
-              onChange={(event) =>
-                update('businessIdentity', {
-                  ...overview.businessIdentity,
-                  addressLine1: event.target.value || undefined,
-                })
-              }
-            />
-          </Field>
-          <Field label="City">
-            <input
-              className={inputStyles}
-              value={overview.businessIdentity.city ?? ''}
-              onChange={(event) =>
-                update('businessIdentity', {
-                  ...overview.businessIdentity,
-                  city: event.target.value || undefined,
-                })
-              }
-            />
-          </Field>
-          <Field label="Country code">
-            <input
-              className={inputStyles}
-              maxLength={2}
-              value={overview.businessIdentity.countryCode ?? ''}
-              onChange={(event) =>
-                update('businessIdentity', {
-                  ...overview.businessIdentity,
-                  countryCode: event.target.value.toUpperCase() || undefined,
-                })
-              }
-            />
-          </Field>
-        </div>
-        <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-          <Field label="Currency">
-            <input
-              className={inputStyles}
-              maxLength={3}
-              value={overview.currency}
-              onChange={(event) =>
-                update('currency', event.target.value.toUpperCase())
-              }
-            />
-          </Field>
-          <Field label="Business time zone">
-            <input
-              className={inputStyles}
-              value={overview.timeZone}
-              onChange={(event) => {
-                update('timeZone', event.target.value);
-                update('renewalAutomation', {
-                  ...overview.renewalAutomation,
-                  timeZone: event.target.value,
-                });
-              }}
-            />
-          </Field>
-          <Field label="Invoice prefix">
-            <input
-              className={inputStyles}
-              value={overview.invoiceNumbering.prefix}
-              onChange={(event) =>
-                update('invoiceNumbering', {
-                  ...overview.invoiceNumbering,
-                  prefix: event.target.value.toUpperCase(),
-                })
-              }
-            />
-          </Field>
-          <Field label="Next number">
-            <input
-              className={inputStyles}
-              type="number"
-              min={1}
-              value={overview.invoiceNumbering.nextNumber}
-              onChange={(event) =>
-                update('invoiceNumbering', {
-                  ...overview.invoiceNumbering,
-                  nextNumber: Number(event.target.value),
-                })
-              }
-            />
-          </Field>
-          <Field label="Number padding">
-            <input
-              className={inputStyles}
-              type="number"
-              min={4}
-              max={12}
-              value={overview.invoiceNumbering.padding}
-              onChange={(event) =>
-                update('invoiceNumbering', {
-                  ...overview.invoiceNumbering,
-                  padding: Number(event.target.value),
-                })
-              }
-            />
-          </Field>
-        </div>
-      </SettingsCard>
-
-      <SettingsCard
-        title="Renewals and service safety"
-        description="Permanent termination remains a deliberate administrator-only action and is never scheduled automatically."
-      >
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <Field label="Renewal lead days">
-            <input
-              className={inputStyles}
-              type="number"
-              min={1}
-              max={90}
-              value={overview.renewalAutomation.invoiceLeadDays}
-              onChange={(event) =>
-                update('renewalAutomation', {
-                  ...overview.renewalAutomation,
-                  invoiceLeadDays: Number(event.target.value),
-                })
-              }
-            />
-          </Field>
-          <Field label="Reminder days before due">
-            <input
-              className={inputStyles}
-              value={overview.renewalAutomation.reminderDaysBeforeDue.join(
-                ', ',
-              )}
-              onChange={(event) =>
-                update('renewalAutomation', {
-                  ...overview.renewalAutomation,
-                  reminderDaysBeforeDue: event.target.value
-                    .split(',')
-                    .map((value) => Number(value.trim()))
-                    .filter(Number.isFinite),
-                })
-              }
-            />
-          </Field>
-          <Field label="Suspension grace days">
-            <input
-              className={inputStyles}
-              type="number"
-              min={0}
-              max={60}
-              value={overview.renewalAutomation.gracePeriodDays}
-              onChange={(event) =>
-                update('renewalAutomation', {
-                  ...overview.renewalAutomation,
-                  gracePeriodDays: Number(event.target.value),
-                })
-              }
-            />
-          </Field>
-          <Field label="Termination policy">
-            <input
-              className={`${inputStyles} bg-slate-50`}
-              readOnly
-              value="Admin confirmation required"
-            />
-          </Field>
-        </div>
-        <label className="mt-5 flex items-center gap-2 text-sm font-semibold text-slate-700">
-          <input
-            type="checkbox"
-            checked={overview.renewalAutomation.enabled}
-            onChange={(event) =>
-              update('renewalAutomation', {
-                ...overview.renewalAutomation,
-                enabled: event.target.checked,
-              })
+        {tabs.map(([id, label], index) => (
+          <button
+            key={id}
+            type="button"
+            role="tab"
+            id={`settings-tab-${id}`}
+            aria-selected={tab === id}
+            aria-controls={id}
+            aria-describedby={
+              dirtyTabs.some(([dirty]) => dirty === id)
+                ? `settings-draft-${id}`
+                : undefined
             }
-          />
-          Renewal automation enabled
-        </label>
-      </SettingsCard>
-
-      <div id="billing-policy" className="scroll-mt-6">
-        <SettingsCard
-          title="Payments and hosting adapters"
-          description="Only the active online gateway is offered for new checkouts. Manual payment remains available for private operations."
-        >
-          <div className="grid gap-4 md:grid-cols-2">
-            <Field label="Active payment gateway">
-              <select
-                className={inputStyles}
-                value={overview.activeGateway}
-                onChange={(event) =>
-                  update(
-                    'activeGateway',
-                    event.target.value as BusinessSettings['activeGateway'],
-                  )
-                }
-              >
-                <option value="manual">Manual payments</option>
-                <option value="bkash">bKash sandbox</option>
-                <option value="sslcommerz">SSLCOMMERZ sandbox</option>
-                <option value="fake">Fake gateway (development only)</option>
-              </select>
-            </Field>
-            <Field label="Active hosting-panel adapter">
-              <select
-                className={inputStyles}
-                value={overview.activeHostingPanelAdapter}
-                onChange={(event) =>
-                  update(
-                    'activeHostingPanelAdapter',
-                    event.target
-                      .value as BusinessSettings['activeHostingPanelAdapter'],
-                  )
-                }
-              >
-                <option value="cpanel-whm">cPanel / WHM</option>
-                <option value="fake-panel">
-                  Fake panel (development only)
-                </option>
-              </select>
-            </Field>
-          </div>
-          <Field label="Customer manual-payment instructions" className="mt-4">
-            <textarea
-              className={`${inputStyles} min-h-28`}
-              value={overview.manualPayments.instructions}
-              onChange={(event) =>
-                update('manualPayments', {
-                  ...overview.manualPayments,
-                  instructions: event.target.value,
-                })
-              }
-            />
-          </Field>
-          <label className="mt-4 flex items-center gap-2 text-sm font-semibold text-slate-700">
-            <input
-              type="checkbox"
-              checked={overview.manualPayments.partialPaymentsEnabled}
-              onChange={(event) =>
-                update('manualPayments', {
-                  ...overview.manualPayments,
-                  partialPaymentsEnabled: event.target.checked,
-                })
-              }
-            />
-            Allow partial manual payments
-          </label>
-          <p className="mt-3 text-sm text-slate-600">
-            Current saved partial-payment policy:{' '}
-            {persistedPartialPayments === undefined
-              ? 'Unavailable'
-              : persistedPartialPayments
-                ? 'Enabled'
-                : 'Disabled'}
-            . Changing the checkbox edits a draft. Save settings to review the
-            consequence before confirming a change.
-          </p>
-        </SettingsCard>
+            tabIndex={tab === id ? 0 : -1}
+            disabled={saving !== ''}
+            onClick={() => selectTab(id)}
+            onKeyDown={(event) => {
+              const nextIndex =
+                event.key === 'Home'
+                  ? 0
+                  : event.key === 'End'
+                    ? tabs.length - 1
+                    : event.key === 'ArrowRight'
+                      ? (index + 1) % tabs.length
+                      : event.key === 'ArrowLeft'
+                        ? (index + tabs.length - 1) % tabs.length
+                        : undefined;
+              const next =
+                nextIndex === undefined ? undefined : tabs[nextIndex]?.[0];
+              if (!next) return;
+              event.preventDefault();
+              selectTab(next);
+              document.getElementById(`settings-tab-${next}`)?.focus();
+            }}
+            className={`rounded-lg px-3 py-2 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-600 ${tab === id ? 'bg-brand-600 text-white' : 'text-slate-700 hover:bg-slate-100'}`}
+          >
+            {label}
+            {dirtyTabs.some(([dirty]) => dirty === id) ? (
+              <>
+                <span aria-hidden="true"> •</span>
+                <span id={`settings-draft-${id}`} hidden>
+                  Unsaved changes
+                </span>
+              </>
+            ) : null}
+          </button>
+        ))}
       </div>
 
-      <SettingsCard
-        title="Email branding"
-        description="The worker validates and reloads these non-secret values when rendering each queued email."
+      <fieldset
+        disabled={saving !== '' || !savedOverview}
+        className="min-w-0 space-y-4"
       >
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <Field label="Brand name">
-            <input
-              className={inputStyles}
-              value={overview.emailBranding.brandName}
-              onChange={(event) =>
-                update('emailBranding', {
-                  ...overview.emailBranding,
-                  brandName: event.target.value,
-                })
-              }
-            />
-          </Field>
-          <Field label="Brand color">
-            <input
-              className={inputStyles}
-              value={overview.emailBranding.brandColor}
-              onChange={(event) =>
-                update('emailBranding', {
-                  ...overview.emailBranding,
-                  brandColor: event.target.value,
-                })
-              }
-            />
-          </Field>
-          <Field label="Sender name">
-            <input
-              className={inputStyles}
-              value={overview.emailBranding.fromName}
-              onChange={(event) =>
-                update('emailBranding', {
-                  ...overview.emailBranding,
-                  fromName: event.target.value,
-                })
-              }
-            />
-          </Field>
-          <Field label="Sender address">
-            <input
-              className={inputStyles}
-              type="email"
-              value={overview.emailBranding.fromAddress}
-              onChange={(event) =>
-                update('emailBranding', {
-                  ...overview.emailBranding,
-                  fromAddress: event.target.value,
-                })
-              }
-            />
-          </Field>
-          <Field label="Reply-to address">
-            <input
-              className={inputStyles}
-              type="email"
-              value={overview.emailBranding.replyToAddress ?? ''}
-              onChange={(event) =>
-                update('emailBranding', {
-                  ...overview.emailBranding,
-                  replyToAddress: event.target.value || null,
-                })
-              }
-            />
-          </Field>
-        </div>
-      </SettingsCard>
-
-      <SettingsCard
-        title="Encrypted integration credentials"
-        description="Saving a form replaces the complete provider bundle. Secret fields are write-only; only a masked identifier and encryption-key version come back."
-      >
-        <div className="grid gap-5 xl:grid-cols-3">
-          <CredentialForm
-            provider="bkash"
-            title="bKash sandbox"
-            status={statusFor(overview, 'bkash')}
-            saving={saving === 'bkash'}
-            onSubmit={replaceCredentials}
+        <TabPanel id="general" active={tab}>
+          <SettingsCard
+            title="Business identity"
+            description="These values are snapshotted onto future invoices; existing issued invoices remain unchanged."
           >
-            <SecretInput name="appKey" label="App key" />
-            <SecretInput name="appSecret" label="App secret" />
-            <SecretInput name="username" label="Username" />
-            <SecretInput name="password" label="Password" />
-          </CredentialForm>
-          <CredentialForm
-            provider="sslcommerz"
-            title="SSLCOMMERZ sandbox"
-            status={statusFor(overview, 'sslcommerz')}
-            saving={saving === 'sslcommerz'}
-            onSubmit={replaceCredentials}
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <Field label="Business name">
+                <input
+                  className={inputStyles}
+                  value={overview.businessIdentity.name}
+                  onChange={(event) =>
+                    update('businessIdentity', {
+                      ...overview.businessIdentity,
+                      name: event.target.value,
+                    })
+                  }
+                />
+              </Field>
+              <Field label="Billing email">
+                <input
+                  className={inputStyles}
+                  type="email"
+                  value={overview.businessIdentity.email ?? ''}
+                  onChange={(event) =>
+                    update('businessIdentity', {
+                      ...overview.businessIdentity,
+                      email: event.target.value || undefined,
+                    })
+                  }
+                />
+              </Field>
+              <Field label="Phone">
+                <input
+                  className={inputStyles}
+                  value={overview.businessIdentity.phone ?? ''}
+                  onChange={(event) =>
+                    update('businessIdentity', {
+                      ...overview.businessIdentity,
+                      phone: event.target.value || undefined,
+                    })
+                  }
+                />
+              </Field>
+              <Field label="Address line 1">
+                <input
+                  className={inputStyles}
+                  value={overview.businessIdentity.addressLine1 ?? ''}
+                  onChange={(event) =>
+                    update('businessIdentity', {
+                      ...overview.businessIdentity,
+                      addressLine1: event.target.value || undefined,
+                    })
+                  }
+                />
+              </Field>
+              <Field label="City">
+                <input
+                  className={inputStyles}
+                  value={overview.businessIdentity.city ?? ''}
+                  onChange={(event) =>
+                    update('businessIdentity', {
+                      ...overview.businessIdentity,
+                      city: event.target.value || undefined,
+                    })
+                  }
+                />
+              </Field>
+              <Field label="Country code">
+                <input
+                  className={inputStyles}
+                  maxLength={2}
+                  value={overview.businessIdentity.countryCode ?? ''}
+                  onChange={(event) =>
+                    update('businessIdentity', {
+                      ...overview.businessIdentity,
+                      countryCode:
+                        event.target.value.toUpperCase() || undefined,
+                    })
+                  }
+                />
+              </Field>
+            </div>
+          </SettingsCard>
+        </TabPanel>
+        <TabPanel id="localisation" active={tab}>
+          <SettingsCard
+            title="Business localisation"
+            description="The business time zone is also used for scheduled renewals."
           >
-            <SecretInput name="storeId" label="Store ID" />
-            <SecretInput name="storePassword" label="Store password" />
-          </CredentialForm>
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
-            <CredentialHeader
-              title="cPanel / WHM"
-              status={statusFor(overview, 'cpanel-whm')}
-            />
-            <p className="mt-4 text-sm leading-6 text-slate-600">
-              WHM tokens stay encrypted per hosting server because each server
-              can use a different account and token.
-            </p>
+            <div className="grid gap-4 md:grid-cols-2">
+              <Field label="Currency">
+                <input
+                  className={inputStyles}
+                  maxLength={3}
+                  value={overview.currency}
+                  onChange={(event) =>
+                    update('currency', event.target.value.toUpperCase())
+                  }
+                />
+              </Field>
+              <Field label="Business time zone">
+                <input
+                  className={inputStyles}
+                  value={overview.timeZone}
+                  onChange={(event) => update('timeZone', event.target.value)}
+                />
+              </Field>
+            </div>
+          </SettingsCard>
+        </TabPanel>
+        <TabPanel id="domains" active={tab}>
+          <SettingsCard
+            title="Domain settings"
+            description="Manage domain policies, registrar connections, and catalogue prices."
+          >
+            <ul className="space-y-3">
+              <li>
+                <Link
+                  className="font-semibold text-brand-700 hover:underline"
+                  href="/admin/settings/domain-defaults"
+                >
+                  Domain defaults
+                </Link>
+              </li>
+              <li>
+                <Link
+                  className="font-semibold text-brand-700 hover:underline"
+                  href="/admin/settings/registrars"
+                >
+                  Domain registrars
+                </Link>
+              </li>
+              <li>
+                <Link
+                  className="font-semibold text-brand-700 hover:underline"
+                  href="/admin/domain-pricing"
+                >
+                  Domain pricing and TLDs
+                </Link>
+              </li>
+            </ul>
+          </SettingsCard>
+        </TabPanel>
+        <TabPanel id="mail" active={tab}>
+          <SettingsCard
+            title="Email branding"
+            description="The worker validates and reloads these non-secret values when rendering each queued email."
+          >
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <Field label="Brand name">
+                <input
+                  className={inputStyles}
+                  value={overview.emailBranding.brandName}
+                  onChange={(event) =>
+                    update('emailBranding', {
+                      ...overview.emailBranding,
+                      brandName: event.target.value,
+                    })
+                  }
+                />
+              </Field>
+              <Field label="Brand color">
+                <input
+                  className={inputStyles}
+                  value={overview.emailBranding.brandColor}
+                  onChange={(event) =>
+                    update('emailBranding', {
+                      ...overview.emailBranding,
+                      brandColor: event.target.value,
+                    })
+                  }
+                />
+              </Field>
+              <Field label="Sender name">
+                <input
+                  className={inputStyles}
+                  value={overview.emailBranding.fromName}
+                  onChange={(event) =>
+                    update('emailBranding', {
+                      ...overview.emailBranding,
+                      fromName: event.target.value,
+                    })
+                  }
+                />
+              </Field>
+              <Field label="Sender address">
+                <input
+                  className={inputStyles}
+                  type="email"
+                  value={overview.emailBranding.fromAddress}
+                  onChange={(event) =>
+                    update('emailBranding', {
+                      ...overview.emailBranding,
+                      fromAddress: event.target.value,
+                    })
+                  }
+                />
+              </Field>
+              <Field label="Reply-to address">
+                <input
+                  className={inputStyles}
+                  type="email"
+                  value={overview.emailBranding.replyToAddress ?? ''}
+                  onChange={(event) =>
+                    update('emailBranding', {
+                      ...overview.emailBranding,
+                      replyToAddress: event.target.value || null,
+                    })
+                  }
+                />
+              </Field>
+            </div>
+          </SettingsCard>
+          <p>
             <Link
-              className="mt-5 inline-flex text-sm font-bold text-cyan-700 hover:text-cyan-900"
-              href="/admin/services"
+              className="font-semibold text-brand-700 hover:underline"
+              href="/admin/email"
             >
-              Manage servers →
+              View email delivery
             </Link>
+          </p>
+          {mailVisited ? <SmtpSettingsPanel /> : null}
+        </TabPanel>
+        <TabPanel id="support" active={tab}>
+          <SettingsCard
+            title="Support workspace"
+            description="View and manage customer support tickets."
+          >
+            <Link
+              className="font-semibold text-brand-700 hover:underline"
+              href="/admin/support"
+            >
+              Open support
+            </Link>
+          </SettingsCard>
+        </TabPanel>
+        <TabPanel id="billing-policy" active={tab}>
+          <SettingsCard
+            title="Invoice numbering"
+            description="Choose the format and next number for future invoices."
+          >
+            <div className="grid gap-4 md:grid-cols-3">
+              <Field label="Invoice prefix">
+                <input
+                  className={inputStyles}
+                  value={overview.invoiceNumbering.prefix}
+                  onChange={(event) =>
+                    update('invoiceNumbering', {
+                      ...overview.invoiceNumbering,
+                      prefix: event.target.value.toUpperCase(),
+                    })
+                  }
+                />
+              </Field>
+              <Field label="Next number">
+                <input
+                  className={inputStyles}
+                  type="number"
+                  min={1}
+                  value={overview.invoiceNumbering.nextNumber}
+                  onChange={(event) =>
+                    update('invoiceNumbering', {
+                      ...overview.invoiceNumbering,
+                      nextNumber: Number(event.target.value),
+                    })
+                  }
+                />
+              </Field>
+              <Field label="Number padding">
+                <input
+                  className={inputStyles}
+                  type="number"
+                  min={4}
+                  max={12}
+                  value={overview.invoiceNumbering.padding}
+                  onChange={(event) =>
+                    update('invoiceNumbering', {
+                      ...overview.invoiceNumbering,
+                      padding: Number(event.target.value),
+                    })
+                  }
+                />
+              </Field>
+            </div>
+          </SettingsCard>
+          <SettingsCard
+            title="Manual payments"
+            description="Set payment instructions and review changes to the partial-payment policy."
+          >
+            <Field
+              label="Customer manual-payment instructions"
+              className="mt-4"
+            >
+              <textarea
+                className={`${inputStyles} min-h-28`}
+                value={overview.manualPayments.instructions}
+                onChange={(event) =>
+                  update('manualPayments', {
+                    ...overview.manualPayments,
+                    instructions: event.target.value,
+                  })
+                }
+              />
+            </Field>
+            <label className="mt-4 flex items-center gap-2 text-sm font-semibold text-slate-700">
+              <input
+                type="checkbox"
+                checked={overview.manualPayments.partialPaymentsEnabled}
+                onChange={(event) =>
+                  update('manualPayments', {
+                    ...overview.manualPayments,
+                    partialPaymentsEnabled: event.target.checked,
+                  })
+                }
+              />
+              Allow partial manual payments
+            </label>
+            <p className="mt-3 text-sm text-slate-600">
+              Current saved partial-payment policy:{' '}
+              {persistedPartialPayments === undefined
+                ? 'Unavailable'
+                : persistedPartialPayments
+                  ? 'Enabled'
+                  : 'Disabled'}
+              . Changing the checkbox edits a draft. Save changes to review the
+              consequence before confirming a change.
+            </p>
+          </SettingsCard>
+        </TabPanel>
+        <TabPanel id="automation" active={tab}>
+          <SettingsCard
+            title="Renewals and service safety"
+            description="Permanent termination remains a deliberate administrator-only action and is never scheduled automatically."
+          >
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <Field label="Renewal lead days">
+                <input
+                  className={inputStyles}
+                  type="number"
+                  min={1}
+                  max={90}
+                  value={overview.renewalAutomation.invoiceLeadDays}
+                  onChange={(event) =>
+                    update('renewalAutomation', {
+                      ...overview.renewalAutomation,
+                      invoiceLeadDays: Number(event.target.value),
+                    })
+                  }
+                />
+              </Field>
+              <Field label="Reminder days before due">
+                <input
+                  className={inputStyles}
+                  value={overview.renewalAutomation.reminderDaysBeforeDue.join(
+                    ', ',
+                  )}
+                  onChange={(event) =>
+                    update('renewalAutomation', {
+                      ...overview.renewalAutomation,
+                      reminderDaysBeforeDue: event.target.value
+                        .split(',')
+                        .map((value) => Number(value.trim()))
+                        .filter(Number.isFinite),
+                    })
+                  }
+                />
+              </Field>
+              <Field label="Suspension grace days">
+                <input
+                  className={inputStyles}
+                  type="number"
+                  min={0}
+                  max={60}
+                  value={overview.renewalAutomation.gracePeriodDays}
+                  onChange={(event) =>
+                    update('renewalAutomation', {
+                      ...overview.renewalAutomation,
+                      gracePeriodDays: Number(event.target.value),
+                    })
+                  }
+                />
+              </Field>
+              <Field label="Termination policy">
+                <input
+                  className={`${inputStyles} bg-slate-50`}
+                  readOnly
+                  value="Admin confirmation required"
+                />
+              </Field>
+            </div>
+            <label className="mt-5 flex items-center gap-2 text-sm font-semibold text-slate-700">
+              <input
+                type="checkbox"
+                checked={overview.renewalAutomation.enabled}
+                onChange={(event) =>
+                  update('renewalAutomation', {
+                    ...overview.renewalAutomation,
+                    enabled: event.target.checked,
+                  })
+                }
+              />
+              Renewal automation enabled
+            </label>
+          </SettingsCard>
+        </TabPanel>
+        <TabPanel id="integrations" active={tab}>
+          <SettingsCard
+            title="Active adapters"
+            description="Choose the payment gateway and hosting adapter used by the business."
+          >
+            <div className="grid gap-4 md:grid-cols-2">
+              <Field label="Active payment gateway">
+                <select
+                  className={inputStyles}
+                  value={overview.activeGateway}
+                  onChange={(event) =>
+                    update(
+                      'activeGateway',
+                      event.target.value as BusinessSettings['activeGateway'],
+                    )
+                  }
+                >
+                  <option value="manual">Manual payments</option>
+                  <option value="bkash">bKash sandbox</option>
+                  <option value="sslcommerz">SSLCOMMERZ sandbox</option>
+                  <option value="fake">Fake gateway (development only)</option>
+                </select>
+              </Field>
+              <Field label="Active hosting-panel adapter">
+                <select
+                  className={inputStyles}
+                  value={overview.activeHostingPanelAdapter}
+                  onChange={(event) =>
+                    update(
+                      'activeHostingPanelAdapter',
+                      event.target
+                        .value as BusinessSettings['activeHostingPanelAdapter'],
+                    )
+                  }
+                >
+                  <option value="cpanel-whm">cPanel / WHM</option>
+                  <option value="fake-panel">
+                    Fake panel (development only)
+                  </option>
+                </select>
+              </Field>
+            </div>
+          </SettingsCard>{' '}
+          <SettingsCard
+            title="Encrypted integration credentials"
+            description="Saving a form replaces the complete provider bundle. Secret fields are write-only; only a masked identifier and encryption-key version come back."
+          >
+            <div className="grid gap-5 xl:grid-cols-3">
+              <CredentialForm
+                provider="bkash"
+                title="bKash sandbox"
+                status={statusFor(overview, 'bkash')}
+                saving={saving !== ''}
+                onSubmit={replaceCredentials}
+              >
+                <SecretInput name="appKey" label="App key" />
+                <SecretInput name="appSecret" label="App secret" />
+                <SecretInput name="username" label="Username" />
+                <SecretInput name="password" label="Password" />
+              </CredentialForm>
+              <CredentialForm
+                provider="sslcommerz"
+                title="SSLCOMMERZ sandbox"
+                status={statusFor(overview, 'sslcommerz')}
+                saving={saving !== ''}
+                onSubmit={replaceCredentials}
+              >
+                <SecretInput name="storeId" label="Store ID" />
+                <SecretInput name="storePassword" label="Store password" />
+              </CredentialForm>
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
+                <CredentialHeader
+                  title="cPanel / WHM"
+                  status={statusFor(overview, 'cpanel-whm')}
+                />
+                <p className="mt-4 text-sm leading-6 text-slate-600">
+                  WHM tokens stay encrypted per hosting server because each
+                  server can use a different account and token.
+                </p>
+                <Link
+                  className="mt-5 inline-flex text-sm font-bold text-cyan-700 hover:text-cyan-900"
+                  href="/admin/servers"
+                >
+                  Manage servers →
+                </Link>
+              </div>
+            </div>
+          </SettingsCard>
+        </TabPanel>
+        {tabFields[tab].length ? (
+          <div className="flex flex-wrap justify-end gap-3">
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={!dirtyTabs.some(([id]) => id === tab)}
+              onClick={discardChanges}
+            >
+              Discard changes
+            </Button>
+            <Button
+              type="button"
+              disabled={!dirtyTabs.some(([id]) => id === tab)}
+              onClick={requestSave}
+            >
+              {saving === 'settings' ? 'Saving…' : 'Save changes'}
+            </Button>
           </div>
-        </div>
-      </SettingsCard>
-
-      <div className="flex justify-end">
-        <Button
-          disabled={saving !== '' || persistedPartialPayments === undefined}
-          onClick={requestSave}
-        >
-          {saving === 'settings' ? 'Saving…' : 'Save all settings'}
-        </Button>
-      </div>
+        ) : null}
+      </fieldset>
     </div>
+  );
+}
+
+function TabPanel({
+  id,
+  active,
+  children,
+}: {
+  id: Tab;
+  active: Tab;
+  children: ReactNode;
+}) {
+  return (
+    <section
+      role="tabpanel"
+      id={id}
+      aria-labelledby={`settings-tab-${id}`}
+      hidden={id !== active}
+      className="space-y-4"
+    >
+      {children}
+    </section>
   );
 }
 
@@ -711,12 +1132,15 @@ function CredentialForm(props: {
       <input name="provider" type="hidden" value={props.provider} />
       <CredentialHeader title={props.title} status={props.status} />
       <div className="mt-4 space-y-3">{props.children}</div>
-      <Button className="mt-5 w-full" disabled={props.saving} type="submit">
+      <Button className="mt-5 mr-2" disabled={props.saving} type="submit">
         {props.saving
           ? 'Encrypting…'
           : props.status.configured
             ? 'Rotate credentials'
             : 'Configure credentials'}
+      </Button>
+      <Button type="reset" variant="secondary" disabled={props.saving}>
+        Discard credential edits
       </Button>
     </form>
   );

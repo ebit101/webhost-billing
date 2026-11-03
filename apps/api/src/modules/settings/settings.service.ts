@@ -1,6 +1,10 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import type { ApiEnvironment } from '@webhost-billing/config';
-import { SettingCategory, type PrismaClient } from '@webhost-billing/database';
+import {
+  SettingCategory,
+  type Prisma,
+  type PrismaClient,
+} from '@webhost-billing/database';
 import {
   DEFAULT_BUSINESS_SETTINGS,
   activeProviderSettingsSchema,
@@ -15,6 +19,7 @@ import {
   settingsOverviewSchema,
   terminationPolicySchema,
   type BusinessSettings,
+  type PatchBusinessSettingsRequest,
   type UpdateBusinessSettingsRequest,
   type SettingsOverview,
 } from '@webhost-billing/shared';
@@ -24,7 +29,10 @@ import { PRISMA_CLIENT } from '../../infrastructure/database/database.module';
 import { API_ENVIRONMENT } from '../../infrastructure/environment/environment.module';
 import type { AuthRequestContext } from '../auth/auth.types';
 import { IntegrationCredentialService } from './integration-credential.service';
-import { updatePartialPaymentPolicy } from '../payments/partial-payment-policy';
+import {
+  lockPartialPaymentPolicy,
+  updatePartialPaymentPolicy,
+} from '../payments/partial-payment-policy';
 
 const KEYS = {
   businessIdentity: 'business.identity',
@@ -46,13 +54,18 @@ export class SettingsService {
     private readonly credentials: IntegrationCredentialService,
   ) {}
 
-  async overview(): Promise<SettingsOverview> {
+  async overview(
+    database: Pick<
+      PrismaClient,
+      'setting' | 'integrationCredential' | 'server'
+    > = this.prisma,
+  ): Promise<SettingsOverview> {
     const [settings, credentialRecords, cpanelServers] = await Promise.all([
-      this.prisma.setting.findMany({
+      database.setting.findMany({
         where: { key: { in: Object.values(KEYS) } },
         select: { key: true, value: true },
       }),
-      this.prisma.integrationCredential.findMany({
+      database.integrationCredential.findMany({
         where: { providerKey: { in: ['bkash', 'sslcommerz'] } },
         select: {
           providerKey: true,
@@ -61,7 +74,7 @@ export class SettingsService {
           updatedAt: true,
         },
       }),
-      this.prisma.server.findMany({
+      database.server.findMany({
         where: {
           adapterKey: 'cpanel-whm',
           credentialsCiphertext: { not: null },
@@ -192,7 +205,115 @@ export class SettingsService {
   ): Promise<SettingsOverview> {
     const settings = updateBusinessSettingsRequestSchema.parse(input);
     await this.validateActiveGateway(settings.activeGateway);
+    await this.prisma.$transaction((transaction) =>
+      this.persist(
+        transaction,
+        settings,
+        new Set(Object.values(KEYS)),
+        actor,
+        context,
+      ),
+    );
+    return this.overview();
+  }
+
+  async patch(
+    input: PatchBusinessSettingsRequest,
+    actor: AuthRequestContext,
+    context: SecurityRequestContext,
+  ): Promise<SettingsOverview> {
+    if (input.activeProviders)
+      await this.validateActiveGateway(input.activeProviders.activeGateway);
+    const keys = new Set<string>();
+    if (input.businessIdentity) keys.add(KEYS.businessIdentity);
+    if (input.localization) keys.add(KEYS.localization);
+    if (input.localization || input.renewalAutomation) keys.add(KEYS.renewal);
+    if (input.invoiceNumbering && Object.keys(input.invoiceNumbering).length)
+      keys.add(KEYS.invoiceNumbering);
+    if (input.manualPayments) keys.add(KEYS.manualPaymentInstructions);
+    if (input.emailBranding) keys.add(KEYS.emailBranding);
+    if (input.activeProviders) keys.add(KEYS.activeProviders);
+    if (!keys.size) return this.overview();
+
     await this.prisma.$transaction(async (transaction) => {
+      if (input.manualPayments) await lockPartialPaymentPolicy(transaction);
+      // Lock the same settings rows used by automation and invoice allocation
+      // before merging fields whose persisted values can change independently.
+      if (keys.has(KEYS.renewal)) {
+        await this.lockSetting(
+          transaction,
+          KEYS.renewal,
+          SettingCategory.AUTOMATION,
+          DEFAULT_BUSINESS_SETTINGS.renewalAutomation,
+        );
+      }
+      if (keys.has(KEYS.invoiceNumbering)) {
+        await this.lockSetting(
+          transaction,
+          KEYS.invoiceNumbering,
+          SettingCategory.BILLING,
+          DEFAULT_BUSINESS_SETTINGS.invoiceNumbering,
+        );
+      }
+      const { credentialStatuses, ...current } =
+        await this.overview(transaction);
+      void credentialStatuses;
+      const localization = input.localization ?? {
+        currency: current.currency,
+        timeZone: current.timeZone,
+      };
+      const result = updateBusinessSettingsRequestSchema.safeParse({
+        ...current,
+        ...localization,
+        ...(input.activeProviders ?? {}),
+        businessIdentity: input.businessIdentity ?? current.businessIdentity,
+        invoiceNumbering: {
+          ...current.invoiceNumbering,
+          ...input.invoiceNumbering,
+        },
+        renewalAutomation: {
+          ...(input.renewalAutomation ?? current.renewalAutomation),
+          timeZone: localization.timeZone,
+        },
+        manualPayments: { ...current.manualPayments, ...input.manualPayments },
+        emailBranding: input.emailBranding ?? current.emailBranding,
+        partialPaymentPolicyConfirmation:
+          input.partialPaymentPolicyConfirmation,
+      });
+      if (!result.success)
+        throw this.invalid(
+          result.error.issues[0]?.message ??
+            'Review the settings and try again.',
+        );
+      await this.persist(transaction, result.data, keys, actor, context);
+    });
+    return this.overview();
+  }
+
+  private async lockSetting(
+    transaction: Prisma.TransactionClient,
+    key: string,
+    category: SettingCategory,
+    value: Prisma.InputJsonValue,
+  ) {
+    await transaction.setting.upsert({
+      where: { key },
+      update: {},
+      create: { key, category, value },
+    });
+    await transaction.$queryRaw`
+      SELECT "id" FROM "settings" WHERE "key" = ${key} FOR UPDATE
+    `;
+  }
+
+  private async persist(
+    transaction: Prisma.TransactionClient,
+    settings: UpdateBusinessSettingsRequest,
+    keys: ReadonlySet<string>,
+    actor: AuthRequestContext,
+    context: SecurityRequestContext,
+  ) {
+    if (keys.has(KEYS.manualPaymentInstructions))
       await updatePartialPaymentPolicy(
         transaction,
         settings.manualPayments.partialPaymentsEnabled,
@@ -200,89 +321,91 @@ export class SettingsService {
         actor,
         context,
       );
-      const writes = [
-        this.setting(
-          KEYS.businessIdentity,
-          SettingCategory.BUSINESS,
-          settings.businessIdentity,
-          'Legal identity snapshot source for future invoices.',
-        ),
-        this.setting(
-          KEYS.localization,
-          SettingCategory.BUSINESS,
-          { currency: settings.currency, timeZone: settings.timeZone },
-          'Operating currency and IANA business time zone.',
-        ),
-        this.setting(
-          KEYS.invoiceNumbering,
-          SettingCategory.BILLING,
-          settings.invoiceNumbering,
-          'Sequential numbering policy for future invoices.',
-        ),
-        this.setting(
-          KEYS.renewal,
-          SettingCategory.AUTOMATION,
-          settings.renewalAutomation,
-          'Renewal invoice, reminder, overdue, and grace policy.',
-        ),
-        this.setting(
-          KEYS.termination,
-          SettingCategory.AUTOMATION,
-          settings.terminationPolicy,
-          'Permanent hosting termination policy.',
-        ),
-        this.setting(
-          KEYS.manualPaymentInstructions,
-          SettingCategory.BILLING,
-          { instructions: settings.manualPayments.instructions },
-          'Customer-visible manual-payment instructions.',
-        ),
-        this.setting(
-          KEYS.emailBranding,
-          SettingCategory.EMAIL,
-          settings.emailBranding,
-          'Branding and sender identity for future email messages.',
-        ),
-        this.setting(
-          KEYS.activeProviders,
-          SettingCategory.INTEGRATION,
-          {
-            activeGateway: settings.activeGateway,
-            activeHostingPanelAdapter: settings.activeHostingPanelAdapter,
-          },
-          'Active payment and hosting integration adapters.',
-        ),
-      ];
-      for (const write of writes) {
-        await transaction.setting.upsert({
-          where: { key: write.key },
-          update: {
-            category: write.category,
-            value: write.value,
-            description: write.description,
-            updatedByUserId: actor.identity.userId,
-          },
-          create: {
-            ...write,
-            updatedByUserId: actor.identity.userId,
-          },
-        });
-      }
-      await transaction.activityLog.create({
-        data: {
-          actorUserId: actor.identity.userId,
-          action: 'BUSINESS_SETTINGS_UPDATED_BY_ADMIN',
-          entityType: 'SETTING',
-          ipAddressHash: context.ipAddressHash,
-          metadata: {
-            keys: writes.map((write) => write.key),
-            activeGateway: settings.activeGateway,
-            activeHostingPanelAdapter: settings.activeHostingPanelAdapter,
-          },
+    const writes = [
+      this.setting(
+        KEYS.businessIdentity,
+        SettingCategory.BUSINESS,
+        settings.businessIdentity,
+        'Legal identity snapshot source for future invoices.',
+      ),
+      this.setting(
+        KEYS.renewal,
+        SettingCategory.AUTOMATION,
+        settings.renewalAutomation,
+        'Renewal invoice, reminder, overdue, and grace policy.',
+      ),
+      this.setting(
+        KEYS.localization,
+        SettingCategory.BUSINESS,
+        { currency: settings.currency, timeZone: settings.timeZone },
+        'Operating currency and IANA business time zone.',
+      ),
+      this.setting(
+        KEYS.invoiceNumbering,
+        SettingCategory.BILLING,
+        settings.invoiceNumbering,
+        'Sequential numbering policy for future invoices.',
+      ),
+      this.setting(
+        KEYS.termination,
+        SettingCategory.AUTOMATION,
+        settings.terminationPolicy,
+        'Permanent hosting termination policy.',
+      ),
+      this.setting(
+        KEYS.manualPaymentInstructions,
+        SettingCategory.BILLING,
+        { instructions: settings.manualPayments.instructions },
+        'Customer-visible manual-payment instructions.',
+      ),
+      this.setting(
+        KEYS.emailBranding,
+        SettingCategory.EMAIL,
+        settings.emailBranding,
+        'Branding and sender identity for future email messages.',
+      ),
+      this.setting(
+        KEYS.activeProviders,
+        SettingCategory.INTEGRATION,
+        {
+          activeGateway: settings.activeGateway,
+          activeHostingPanelAdapter: settings.activeHostingPanelAdapter,
+        },
+        'Active payment and hosting integration adapters.',
+      ),
+    ].filter((write) => keys.has(write.key));
+    for (const write of writes) {
+      await transaction.setting.upsert({
+        where: { key: write.key },
+        update: {
+          category: write.category,
+          value: write.value,
+          description: write.description,
+          updatedByUserId: actor.identity.userId,
+        },
+        create: {
+          ...write,
+          updatedByUserId: actor.identity.userId,
         },
       });
+    }
+    await transaction.activityLog.create({
+      data: {
+        actorUserId: actor.identity.userId,
+        action: 'BUSINESS_SETTINGS_UPDATED_BY_ADMIN',
+        entityType: 'SETTING',
+        ipAddressHash: context.ipAddressHash,
+        metadata: {
+          keys: writes.map((write) => write.key),
+          ...(keys.has(KEYS.activeProviders)
+            ? {
+                activeGateway: settings.activeGateway,
+                activeHostingPanelAdapter: settings.activeHostingPanelAdapter,
+              }
+            : {}),
+        },
+      },
     });
-    return this.overview();
   }
 
   async activeGateway(): Promise<BusinessSettings['activeGateway']> {

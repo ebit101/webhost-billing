@@ -8,6 +8,13 @@
 
 **Technical identifier:** `webhost-billing`
 
+**General settings direction — 2026-11-03:** Command 173 organises existing
+administrator settings into task tabs. Open General by default and let each
+editable tab save or discard its own draft. Keep protected SMTP and integration
+credential forms separate from ordinary settings, with links to existing domain
+and support workspaces. Additional settings and maintenance mode are separate
+implementation phases.
+
 **TLD catalogue direction — 2026-11-02:** Command 166 removes the historical
 `.com`-only catalogue restriction. Allow priced ordinary ASCII extensions,
 including `.net`, `.org` and multi-part suffixes, with exact extension matching

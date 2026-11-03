@@ -156,6 +156,39 @@ export type UpdateBusinessSettingsRequest = z.infer<
   typeof updateBusinessSettingsRequestSchema
 >;
 
+export const patchBusinessSettingsRequestSchema = z
+  .object({
+    businessIdentity: businessIdentitySchema.optional(),
+    localization: businessLocalizationSettingsSchema.optional(),
+    invoiceNumbering: z
+      .object(invoiceNumberingSettingsSchema.shape)
+      .strict()
+      .partial()
+      .optional(),
+    renewalAutomation: renewalAutomationPolicySchema.optional(),
+    manualPayments: manualPaymentInstructionsSchema.partial().optional(),
+    emailBranding: emailBrandingSettingsSchema.optional(),
+    activeProviders: activeProviderSettingsSchema.optional(),
+    partialPaymentPolicyConfirmation: partialPaymentPolicyConfirmationSchema,
+  })
+  .strict()
+  .refine(
+    (value) =>
+      [
+        value.businessIdentity,
+        value.localization,
+        value.renewalAutomation,
+        value.invoiceNumbering || value.manualPayments,
+        value.emailBranding,
+        value.activeProviders,
+      ].filter(Boolean).length === 1,
+    'Save changes from one settings tab at a time',
+  );
+
+export type PatchBusinessSettingsRequest = z.infer<
+  typeof patchBusinessSettingsRequestSchema
+>;
+
 const bkashCredentialsSchema = z
   .object({
     appKey: z.string().trim().min(1).max(512),

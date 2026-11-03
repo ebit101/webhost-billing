@@ -6598,3 +6598,14 @@ live connection test or request credentials; use only local fictional/mock check
 Vultr/ShoutCast are configuration-only, and VPS creation/lifecycle acceptance is
 separate. Update the report and make a focused local commit. No push, deployment,
 provider activation, infrastructure change or external mutation is authorized.
+
+## Command 173 — Organise existing general settings into tabs
+
+The owner authorised phase one on 2026-11-03. Open General by default and
+provide Save changes and Discard changes for each tab with editable business
+settings. Group existing fields by task. Keep separate protected forms for
+credentials and SMTP, with their own save and reset actions. Keep direct links
+to existing domain and support pages. Preserve the billing policy link, policy
+review and existing settings clients. Scope writes to the selected tab and
+protect the current invoice sequence and renewal time zone when merging drafts.
+Record focused local checks and commit locally.
