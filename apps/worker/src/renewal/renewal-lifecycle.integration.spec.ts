@@ -436,6 +436,27 @@ describe('renewal lifecycle integration', () => {
     ).toBe(1);
   });
 
+  it('issues a late renewal with a valid invoice due date and the original service period', async () => {
+    const periodStart = new Date('2026-11-10T00:00:00.000Z');
+    await prisma.hostingCancellationRequest.deleteMany({
+      where: { serviceId: ids.service },
+    });
+    await prisma.service.update({
+      where: { id: ids.service },
+      data: { status: ServiceStatus.ACTIVE, nextDueAt: periodStart },
+    });
+
+    await processor.process(await cycle('2026-11-11T06:00:00.000Z'));
+
+    const line = await prisma.invoiceItem.findFirstOrThrow({
+      where: { serviceId: ids.service, servicePeriodStart: periodStart },
+      include: { invoice: true },
+    });
+    expect(line.invoice.issuedAt).toEqual(clock.now());
+    expect(line.invoice.dueAt).toEqual(clock.now());
+    expect(line.servicePeriodStart).toEqual(periodStart);
+  });
+
   async function cycle(instant: string): Promise<BackgroundJobData> {
     clock.set(instant);
     const run = await prisma.automationRun.create({

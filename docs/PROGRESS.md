@@ -21,6 +21,8 @@
 
 - GitHub CI on PR #102 passed the shared package and found three database acceptance fixtures still expecting 41 migrations. Updated them to 44. The three affected suites passed locally on isolated PostgreSQL 18.
 
+- On 2026-11-04, PR #102 passed database acceptance and exposed an existing late-renewal issue with the seeded CI data. The worker now clamps an overdue period's invoice due date to the issue time while preserving the service period. All three renewal lifecycle tests passed locally on seeded PostgreSQL 18. The release awaits the rerun.
+
 ### Command 193 — Verify hosting cancellation and rehearse suspension recovery
 
 - Verified locally on 2026-11-03 (Asia/Dhaka). Added `apps/web/e2e/specs/hosting-cancellation.spec.ts` and registered the command. All 44 migrations applied in isolated PostgreSQL. Chromium, the local Redis queue, and the real worker exercised customer withdrawal, scheduled suspension, immediate approval, and three confirmation messages delivered to the local `.eml` preview.

@@ -220,7 +220,7 @@ export class RenewalProcessorService {
                 }
               : {}),
             issuedAt: now,
-            dueAt: periodStart,
+            dueAt: periodStart < now ? now : periodStart,
             ...(paid ? { paidAt: now } : {}),
             items: {
               create: {
