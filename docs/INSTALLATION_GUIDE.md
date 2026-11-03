@@ -45,8 +45,8 @@ Installation help is available on request, with pricing by quote. Ask for
 a guided local setup, help with Docker or startup errors, or a walkthrough
 of the administrator and customer views.
 
-Email [Speed Host](mailto:info@speedhost.com.bd?subject=Webhost%20Billing%20installation%20help)
-for a quote. Include your operating system, the step you reached, and any
+Email [speedhost09@gmail.com](mailto:speedhost09@gmail.com?subject=Webhost%20Billing%20installation%20help)
+or message [+8801782391434 on WhatsApp](https://wa.me/8801782391434) for a quote. Include your operating system, the step you reached, and any
 error message with credentials and customer information removed.
 
 ## Ask about managed hosting
@@ -54,8 +54,8 @@ error message with credentials and customer information removed.
 Managed hosting for evaluation is available on request, with pricing by
 quote. Try an isolated instance without running Docker on your computer.
 
-Email [Speed Host](mailto:info@speedhost.com.bd?subject=Webhost%20Billing%20managed%20hosting)
-for a quote. Include how long you want to evaluate the app and what help
+Email [speedhost09@gmail.com](mailto:speedhost09@gmail.com?subject=Webhost%20Billing%20managed%20hosting)
+or message [+8801782391434 on WhatsApp](https://wa.me/8801782391434) for a quote. Include how long you want to evaluate the app and what help
 you need. Confirm the hosting scope, upgrades, backups, and support before
 booking.
 
