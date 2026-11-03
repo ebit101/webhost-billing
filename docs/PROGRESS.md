@@ -19,6 +19,8 @@
 
 - GitHub CI for b64b0bc failed because the shared contract test expected 12 email templates. Updated the test to expect 14 and explicitly check the customer sign-in code and hosting cancellation templates. All 143 shared tests passed locally. The same-server update awaits a passing Validate check on the exact release commit.
 
+- GitHub CI on PR #102 passed the shared package and found three database acceptance fixtures still expecting 41 migrations. Updated them to 44. The three affected suites passed locally on isolated PostgreSQL 18.
+
 ### Command 193 — Verify hosting cancellation and rehearse suspension recovery
 
 - Verified locally on 2026-11-03 (Asia/Dhaka). Added `apps/web/e2e/specs/hosting-cancellation.spec.ts` and registered the command. All 44 migrations applied in isolated PostgreSQL. Chromium, the local Redis queue, and the real worker exercised customer withdrawal, scheduled suspension, immediate approval, and three confirmation messages delivered to the local `.eml` preview.
