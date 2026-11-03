@@ -19,6 +19,8 @@ jobs:
     name: Validate
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    outputs:
+      docs_only: ${{ steps.scope.outputs.docs_only }}
     env:
       CI: true
 
@@ -29,7 +31,14 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      - name: Classify changed files
+        id: scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: bash scripts/docs/ci-change-scope.sh "$BASE_SHA" >> "$GITHUB_OUTPUT"
+
       - name: Scan complete Git history for secrets
+        if: steps.scope.outputs.docs_only != 'true'
         run: |
           docker run --rm \
             -v "$PWD:/repo:ro" \
@@ -43,23 +52,29 @@ jobs:
           node-version: '24'
 
       - name: Activate pinned pnpm
+        if: steps.scope.outputs.docs_only != 'true'
         run: |
           corepack enable
           corepack prepare pnpm@11.22.0 --activate
 
       - name: Install dependencies
+        if: steps.scope.outputs.docs_only != 'true'
         run: pnpm install --frozen-lockfile
 
       - name: Verify installed development-tooling mitigations
+        if: steps.scope.outputs.docs_only != 'true'
         run: pnpm test:tooling-security
 
       - name: Create isolated CI environment
+        if: steps.scope.outputs.docs_only != 'true'
         run: cp .env.example .env
 
       - name: Start PostgreSQL and Redis
+        if: steps.scope.outputs.docs_only != 'true'
         run: docker compose up --detach --wait postgres redis
 
       - name: Prepare and verify database
+        if: steps.scope.outputs.docs_only != 'true'
         run: |
           pnpm db:generate
           pnpm db:migrate:deploy
@@ -67,75 +82,99 @@ jobs:
           pnpm db:verify
 
       - name: Check formatting
+        if: steps.scope.outputs.docs_only != 'true'
         run: pnpm format:check
 
       - name: Check offline documentation
-        run: pnpm docs:check
+        run: node scripts/docs/check-documentation.mjs
+
+      - name: Check changed documentation images
+        if: steps.scope.outputs.docs_only == 'true'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: bash scripts/docs/ci-change-scope.sh "$BASE_SHA" images
 
       - name: Lint
+        if: steps.scope.outputs.docs_only != 'true'
         run: pnpm lint
 
       - name: Prepare backend artifacts for E2E type imports
+        if: steps.scope.outputs.docs_only != 'true'
         run: |
           pnpm --filter @webhost-billing/api build
           pnpm --filter @webhost-billing/worker build
 
       - name: Type check
+        if: steps.scope.outputs.docs_only != 'true'
         run: pnpm typecheck
 
       - name: Cache approved image for isolated privilege acceptance
+        if: steps.scope.outputs.docs_only != 'true'
         run: docker pull --platform linux/amd64 postgres@sha256:3725f4e2499eef5134592b3b4ab79a543ed7f8e533b05b5b637af926630f6650
 
       - name: Run package tests
         run: pnpm test
+        if: steps.scope.outputs.docs_only != 'true'
 
       - name: Run API integration tests
+        if: steps.scope.outputs.docs_only != 'true'
         run: pnpm --filter @webhost-billing/web exec tsx e2e/run-api-tests.ts
 
       - name: Run isolated WhatsApp database acceptance with blocked external delivery
+        if: steps.scope.outputs.docs_only != 'true'
         run: pnpm test:whatsapp:database
 
       - name: Run critical invariant tests
+        if: steps.scope.outputs.docs_only != 'true'
         run: pnpm test:invariants
 
       - name: Run isolated backup and recovery acceptance
+        if: steps.scope.outputs.docs_only != 'true'
         env:
           COMMAND28_RECOVERY_DRILL_CONFIRMATION: RESET_COMMAND28_FICTIONAL_DATABASES
         run: pnpm backup:test-recovery
 
       - name: Install Chromium for browser tests
+        if: steps.scope.outputs.docs_only != 'true'
         run: pnpm --filter @webhost-billing/web exec playwright install --with-deps chromium
 
       - name: Run browser lifecycle test
+        if: steps.scope.outputs.docs_only != 'true'
         run: pnpm test:e2e
 
       - name: Run administrator role browser checks
+        if: steps.scope.outputs.docs_only != 'true'
         run: pnpm --filter @webhost-billing/web exec playwright test --config playwright.staff.config.ts
 
       - name: Audit production dependencies
+        if: steps.scope.outputs.docs_only != 'true'
         run: pnpm audit --prod --audit-level high
 
       - name: Verify production license inventory
+        if: steps.scope.outputs.docs_only != 'true'
         run: pnpm licenses list --prod > /dev/null
 
       - name: Build production artifacts
+        if: steps.scope.outputs.docs_only != 'true'
         env:
           NODE_ENV: production
         run: pnpm build
 
       - name: Build production web container
+        if: steps.scope.outputs.docs_only != 'true'
         run: >-
           docker build --file apps/web/Dockerfile --target web
           --build-arg NEXT_PUBLIC_API_URL=http://localhost:3001
           --tag webhost-billing-web:ci .
 
       - name: Stop CI infrastructure
-        if: always()
+        if: always() && steps.scope.outputs.docs_only != 'true'
         run: docker compose down
 
   dependency-review:
     name: Dependency review
-    if: github.event_name == 'pull_request'
+    needs: validate
+    if: "!cancelled() && github.event_name == 'pull_request' && needs.validate.outputs.docs_only != 'true'"
     runs-on: ubuntu-latest
     permissions:
       contents: read

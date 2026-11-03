@@ -11,6 +11,13 @@
 
 ## Command Reports
 
+### Command 180 — Use lightweight checks for documentation changes
+
+- **Status and date:** Implemented locally on 2026-11-03 (Asia/Dhaka). Hosted verification awaits publication.
+- **Scope and files:** CI and CodeQL classify the complete changed path set via `scripts/docs/ci-change-scope.sh`. Changes limited to the README, documentation Markdown, or supported documentation images run offline documentation and image checks. Both required GitHub job names remain present. Mixed changes, missing baselines, manual runs, and scheduled CodeQL runs retain full checks. The staging script and runbook require explicit owner authorization and evidence that full CI and CodeQL ran for the exact release commit.
+- **Validation:** All four offline documentation validators passed. Verified YAML and shell/PowerShell syntax, the isolated README and JPEG change, rejection of an invalid JPEG, mixed-batch and manual full-check selection, and the Git diff.
+- **Exact recommended next command:** Verify the lightweight checks on the next documentation-only pull request.
+
 ### Command 177 — Publish and deploy the accumulated batch
 
 - **PR #91 database repair (2026-11-03, Asia/Dhaka):** The release candidate is version `0.1.0-alpha.2`. The first hosted Validate run failed because Prisma requested `orders.terms_acceptance` when creating an order in the intentionally historical currency-control schema. The fixture in `packages/database/test/currency-control.integration.spec.ts` now selects the order ID needed by the invoice fixture. The migration history and preservation assertions remain intact. CodeQL passed on the original candidate. Required checks and eligible approval gate the repaired candidate, and staging still runs the prior release.

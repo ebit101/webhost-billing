@@ -6649,3 +6649,10 @@ Require Validate and CodeQL for the release commit, verify an encrypted cutover
 backup, apply the pending checkout terms migration and verify staging health,
 environment, branding and provider gates. Keep checkout terms at the existing
 installation default until explicitly configured.
+
+## Command 180 — Use lightweight checks for documentation changes
+
+Owner-authorized on 2026-11-03. Run documentation and image checks for
+README and documentation-only changes while retaining full checks for
+application and infrastructure changes. Preserve the required check names
+and keep staging deployment explicitly owner-authorized.
