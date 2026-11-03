@@ -857,6 +857,8 @@ test('the additive 26th migration preserves every prior-25 row, currency/auth/se
       },
     });
     const order = await models.order.create({
+      // The historical schema predates checkout terms acceptance.
+      select: { id: true },
       data: {
         orderNumber: 'FICTIONAL-ORDER-110',
         submissionKey: randomUUID(),

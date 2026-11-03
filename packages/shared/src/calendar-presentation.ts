@@ -1,9 +1,23 @@
+import type { DateDisplayFormat } from './contracts/settings';
+
 /** Presentation only: API values and calendar arithmetic keep ISO dates. */
-export function formatCalendarDate(value: string | null | undefined): string {
+export function formatCalendarDate(
+  value: string | null | undefined,
+  format: DateDisplayFormat = 'day-first',
+): string {
   if (!value) return '—';
   const iso = value.slice(0, 10);
   if (!validIsoDate(iso)) return '—';
   const [year, month, day] = iso.split('-');
+  if (format === 'iso') return iso;
+  if (format === 'month-first') return `${month}/${day}/${year}`;
+  if (format === 'long')
+    return new Intl.DateTimeFormat('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      timeZone: 'UTC',
+    }).format(new Date(`${iso}T00:00:00Z`));
   return `${day}/${month}/${year}`;
 }
 

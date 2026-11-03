@@ -1,3 +1,4 @@
+import { DomainWorkspaceTabs } from '../../../../components/domains/domain-workspace-tabs';
 import { DomainManager } from '../../../../components/domains/domain-manager';
 import { authorizeAdminPage } from '../../../../lib/server-admin-access';
 import Link from 'next/link';
@@ -9,16 +10,13 @@ export default async function Page({
   if (!identity) return null;
   return (
     <div className="space-y-6">
-      <nav
-        className="flex flex-wrap gap-4 text-sm underline"
-        aria-label="Domain configuration"
+      <DomainWorkspaceTabs active="/admin/domains" />
+      <Link
+        className="inline-block text-sm font-semibold text-brand-700 hover:underline"
+        href="/admin/settings/domain-defaults"
       >
-        <Link href="/admin/domain-pricing">Domain pricing and TLDs</Link>
-        <Link href="/admin/settings/registrars">Registrar connections</Link>
-        <Link href="/admin/settings/domain-defaults">
-          DNS defaults and policies
-        </Link>
-      </nav>
+        DNS defaults and policies
+      </Link>
       <DomainManager
         administrator
         inventorySelection={readAdminDomainQuery(await searchParams)}

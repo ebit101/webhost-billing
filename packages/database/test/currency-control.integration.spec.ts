@@ -753,6 +753,8 @@ test('the one additive migration preserves every prior-24 row, immutable policy/
       },
     });
     const order = await old.models.order.create({
+      // The historical schema predates checkout terms acceptance.
+      select: { id: true },
       data: {
         orderNumber: 'FICTIONAL-ORDER-104',
         submissionKey: randomUUID(),

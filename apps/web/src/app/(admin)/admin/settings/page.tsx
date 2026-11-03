@@ -1,14 +1,8 @@
 import type { Metadata } from 'next';
 import { SettingsManager } from '../../../../components/settings/settings-manager';
-import { SmtpSettingsPanel } from '../../../../components/settings/smtp-settings-panel';
-export const metadata: Metadata = { title: 'Settings' };
+
+export const metadata: Metadata = { title: 'General settings' };
+
 export default function Page() {
-  return (
-    <>
-      <SettingsManager />
-      <div className="mt-6">
-        <SmtpSettingsPanel />
-      </div>
-    </>
-  );
+  return <SettingsManager />;
 }

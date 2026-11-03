@@ -393,7 +393,7 @@ describe('complete simulated registrar in isolated PostgreSQL (e2e)', () => {
           );
       });
   }
-  async function purchase(prefix = 'success') {
+  async function purchase(prefix = 'success', termsVersion?: string) {
     const quote = await mutation(
       customer,
       '/domains/quotes',
@@ -421,7 +421,13 @@ describe('complete simulated registrar in isolated PostgreSQL (e2e)', () => {
       quoteId: (quote.body as Success<{ id: string }>).data.id,
       submissionKey: randomUUID(),
     };
-    const order = await mutation(customer, '/domains/orders', input, 201);
+    if (termsVersion) await mutation(customer, '/domains/orders', input, 422);
+    const order = await mutation(
+      customer,
+      '/domains/orders',
+      { ...input, acceptedTermsVersion: termsVersion },
+      201,
+    );
     const duplicate = await mutation(customer, '/domains/orders', input, 201);
     expect((duplicate.body as Success<DomainResult>).data.id).toBe(
       (order.body as Success<DomainResult>).data.id,
@@ -479,6 +485,40 @@ describe('complete simulated registrar in isolated PostgreSQL (e2e)', () => {
       403,
     );
   });
+  it('requires terms acceptance for a standalone customer domain order', async () => {
+    const key = 'business.checkout-terms';
+    const policy = {
+      required: true,
+      url: 'https://example.test/terms',
+      revision: 'Domain terms',
+      version: randomUUID(),
+    };
+    const previous = await prisma.setting.findUnique({ where: { key } });
+    await prisma.setting.upsert({
+      where: { key },
+      create: { key, category: 'BUSINESS', value: policy },
+      update: { value: policy },
+    });
+    try {
+      const domain = await purchase('terms', policy.version);
+      const order = await prisma.order.findUniqueOrThrow({
+        where: { id: domain.orderId },
+      });
+      expect(order.termsAcceptance).toMatchObject({
+        version: policy.version,
+        revision: policy.revision,
+        url: policy.url,
+      });
+    } finally {
+      if (previous)
+        await prisma.setting.update({
+          where: { key },
+          data: { value: previous.value ?? Prisma.JsonNull },
+        });
+      else await prisma.setting.delete({ where: { key } });
+    }
+  });
+
   it('filters inventory by effective payment state without changing registration or dispatching a provider', async () => {
     const domain = await purchase('inventory160');
     const path = '/domains/inventory?search=' + domain.domainName;

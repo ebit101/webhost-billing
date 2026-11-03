@@ -745,11 +745,13 @@ test('complete hosting customer and administrator lifecycle', async ({
     const checkbox = page.getByRole('checkbox', {
       name: 'Allow partial manual payments',
     });
+    const saveChanges = page.getByRole('button', {
+      name: 'Save changes',
+      exact: true,
+    });
     const original = await checkbox.isChecked();
     await checkbox.click();
-    await page
-      .getByRole('button', { name: 'Save settings', exact: true })
-      .click();
+    await saveChanges.click();
     const review = page.getByRole('alertdialog');
     await expect(review).toContainText(
       `Current policy: ${original ? 'Enabled' : 'Disabled'}. Proposed policy: ${original ? 'Disabled' : 'Enabled'}.`,
@@ -761,9 +763,7 @@ test('complete hosting customer and administrator lifecycle', async ({
     const viewport = page.viewportSize();
     await page.setViewportSize({ width: 375, height: 740 });
     await checkbox.click();
-    await page
-      .getByRole('button', { name: 'Save all settings', exact: true })
-      .click();
+    await saveChanges.click();
     await expect(review).toContainText('pending-reference verifications');
     await review.getByRole('button', { name: 'Cancel', exact: true }).click();
     await expect(review).toHaveCount(0);

@@ -1,5 +1,6 @@
 import {
   DEFAULT_BUSINESS_SETTINGS,
+  DEFAULT_PUBLIC_PREFERENCES,
   PARTIAL_PAYMENT_POLICY_CONFIRMATION,
   type SettingsOverview,
 } from '@webhost-billing/shared';
@@ -39,22 +40,148 @@ const overview: SettingsOverview = {
 };
 
 describe('settings manager', () => {
-  afterEach(() => vi.unstubAllGlobals());
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    window.history.replaceState(null, '', '/');
+  });
 
-  it('saves an unchanged policy without requiring a review or confirmation', async () => {
+  it('opens General by default and saves or discards only the active tab', async () => {
     const user = userEvent.setup();
     const mock = settingsFetch();
     render(<SettingsManager />);
-    await screen.findByRole('checkbox', {
-      name: 'Allow partial manual payments',
-    });
-    await user.click(screen.getByRole('button', { name: 'Save settings' }));
+    const name = await screen.findByRole('textbox', { name: 'Business name' });
+    expect(
+      screen
+        .getByRole('tab', { name: 'General' })
+        .getAttribute('aria-selected'),
+    ).toBe('true');
+    expect(
+      screen.queryByRole('checkbox', { name: 'Allow partial manual payments' }),
+    ).toBeNull();
+    await user.clear(name);
+    await user.type(name, 'Fictional draft business');
+    await openInvoices(user);
+    const prefix = screen.getByRole('textbox', { name: 'Invoice prefix' });
+    await user.clear(prefix);
+    await user.type(prefix, 'NEW');
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
     await screen.findByRole('status');
-    expect(screen.queryByRole('alertdialog')).toBeNull();
-    expect(writes(mock)).toHaveLength(1);
-    expect(JSON.parse(String(writes(mock)[0]?.[1]?.body))).not.toHaveProperty(
-      'partialPaymentPolicyConfirmation',
+    expect(JSON.parse(String(writes(mock)[0]?.[1]?.body))).toEqual({
+      invoiceNumbering: { prefix: 'NEW' },
+    });
+    await user.click(screen.getByRole('tab', { name: /General/ }));
+    expect((name as HTMLInputElement).value).toBe('Fictional draft business');
+    await user.click(screen.getByRole('button', { name: 'Discard changes' }));
+    expect((name as HTMLInputElement).value).toBe(
+      overview.businessIdentity.name,
     );
+    expect(writes(mock)).toHaveLength(1);
+  });
+
+  it('opens the existing billing link and rebases invoice drafts on a newer sequence', async () => {
+    const user = userEvent.setup();
+    window.history.replaceState(null, '', '/admin/settings#billing-policy');
+    const mock = settingsFetch(overview, false, 1020);
+    render(<SettingsManager />);
+    const prefix = await screen.findByRole('textbox', {
+      name: 'Invoice prefix',
+    });
+    await user.clear(prefix);
+    await user.type(prefix, 'NEW');
+    await user.click(screen.getByRole('tab', { name: /General/ }));
+    const name = screen.getByRole('textbox', { name: 'Business name' });
+    await user.clear(name);
+    await user.type(name, 'Fictional business');
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    await screen.findByRole('status');
+    await openInvoices(user);
+    expect(
+      (
+        screen.getByRole('spinbutton', {
+          name: 'Next number',
+        }) as HTMLInputElement
+      ).value,
+    ).toBe('1020');
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    await screen.findByRole('status');
+    expect(JSON.parse(String(writes(mock)[1]?.[1]?.body))).toEqual({
+      invoiceNumbering: { prefix: 'NEW' },
+    });
+  });
+
+  it('previews date formats and saves the website separately from localisation', async () => {
+    const user = userEvent.setup();
+    const mock = settingsFetch();
+    render(<SettingsManager />);
+    await user.type(
+      await screen.findByLabelText('Public website URL'),
+      'https://example.test/',
+    );
+    await user.click(screen.getByRole('tab', { name: 'Localisation' }));
+    await user.type(screen.getByLabelText('Default country code'), 'gb');
+    await user.selectOptions(screen.getByLabelText('Admin date format'), 'iso');
+    await user.selectOptions(
+      screen.getByLabelText('Client date format'),
+      'long',
+    );
+    expect(screen.getByText('Preview 2026-11-23')).toBeTruthy();
+    expect(screen.getByText('Preview 23 November 2026')).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    await screen.findByRole('status');
+    expect(JSON.parse(String(writes(mock)[0]?.[1]?.body))).toEqual({
+      displayPreferences: {
+        defaultCountry: 'GB',
+        adminDateFormat: 'iso',
+        clientDateFormat: 'long',
+      },
+    });
+    await user.click(screen.getByRole('tab', { name: 'General' }));
+    expect(screen.getByLabelText('Public website URL')).toHaveProperty(
+      'value',
+      'https://example.test/',
+    );
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    await screen.findByRole('status');
+    expect(JSON.parse(String(writes(mock)[1]?.[1]?.body))).toEqual({
+      website: 'https://example.test/',
+    });
+  });
+
+  it('validates and saves checkout terms as a separate Ordering draft', async () => {
+    const user = userEvent.setup();
+    const mock = settingsFetch();
+    render(<SettingsManager />);
+    await user.click(await screen.findByRole('tab', { name: 'Ordering' }));
+    await user.click(
+      screen.getByRole('checkbox', { name: 'Require acceptance at checkout' }),
+    );
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    expect(screen.getByRole('alert').textContent).toContain('HTTPS');
+    expect(writes(mock)).toHaveLength(0);
+    await user.type(
+      screen.getByLabelText('Terms of service URL'),
+      'https://example.test/terms',
+    );
+    await user.type(
+      screen.getByLabelText('Terms version label'),
+      'November 2026',
+    );
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    await screen.findByRole('status');
+    expect(JSON.parse(String(writes(mock)[0]?.[1]?.body))).toEqual({
+      checkoutTerms: {
+        required: true,
+        url: 'https://example.test/terms',
+        revision: 'November 2026',
+      },
+    });
+    await user.click(
+      screen.getByRole('checkbox', { name: 'Require acceptance at checkout' }),
+    );
+    await user.click(screen.getByRole('button', { name: 'Discard changes' }));
+    expect(
+      screen.getByRole('checkbox', { name: 'Require acceptance at checkout' }),
+    ).toHaveProperty('checked', true);
   });
 
   it.each([false, true])(
@@ -70,6 +197,7 @@ describe('settings manager', () => {
       };
       const mock = settingsFetch(initial);
       render(<SettingsManager />);
+      await openInvoices(user);
       await user.click(
         await screen.findByRole('checkbox', {
           name: 'Allow partial manual payments',
@@ -83,7 +211,7 @@ describe('settings manager', () => {
       ).toBeTruthy();
       await user.click(
         screen.getByRole('button', {
-          name: previous ? 'Save all settings' : 'Save settings',
+          name: 'Save changes',
         }),
       );
       const review = screen.getByRole('alertdialog');
@@ -115,11 +243,13 @@ describe('settings manager', () => {
           { exact: false },
         ),
       ).toBeTruthy();
-      await user.click(screen.getByRole('button', { name: 'Save settings' }));
-      await waitFor(() => expect(writes(mock)).toHaveLength(2));
-      expect(JSON.parse(String(writes(mock)[1]?.[1]?.body))).not.toHaveProperty(
-        'partialPaymentPolicyConfirmation',
-      );
+      expect(
+        (
+          screen.getByRole('button', {
+            name: 'Save changes',
+          }) as HTMLButtonElement
+        ).disabled,
+      ).toBe(true);
     },
   );
 
@@ -130,10 +260,11 @@ describe('settings manager', () => {
     const name = await screen.findByRole('textbox', { name: 'Business name' });
     await user.clear(name);
     await user.type(name, 'Fictional draft business');
+    await openInvoices(user);
     await user.click(
       screen.getByRole('checkbox', { name: 'Allow partial manual payments' }),
     );
-    await user.click(screen.getByRole('button', { name: 'Save settings' }));
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
     await user.click(
       within(screen.getByRole('alertdialog')).getByRole('button', {
         name: 'Cancel',
@@ -148,11 +279,11 @@ describe('settings manager', () => {
       ).checked,
     ).toBe(false);
     expect((name as HTMLInputElement).value).toBe('Fictional draft business');
-    await user.click(screen.getByRole('button', { name: 'Save settings' }));
+    await user.click(screen.getByRole('tab', { name: /General/ }));
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
     await screen.findByRole('status');
     expect(JSON.parse(String(writes(mock)[0]?.[1]?.body))).toMatchObject({
       businessIdentity: { name: 'Fictional draft business' },
-      manualPayments: { partialPaymentsEnabled: false },
     });
   });
 
@@ -160,12 +291,13 @@ describe('settings manager', () => {
     const user = userEvent.setup();
     const mock = settingsFetch(overview, true);
     render(<SettingsManager />);
+    await openInvoices(user);
     await user.click(
       await screen.findByRole('checkbox', {
         name: 'Allow partial manual payments',
       }),
     );
-    await user.click(screen.getByRole('button', { name: 'Save settings' }));
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
     await user.click(
       within(screen.getByRole('alertdialog')).getByRole('button', {
         name: 'Confirm policy change and save settings',
@@ -202,13 +334,10 @@ describe('settings manager', () => {
     expect(
       (
         screen.getByRole('button', {
-          name: 'Save settings',
+          name: 'Save changes',
         }) as HTMLButtonElement
       ).disabled,
     ).toBe(true);
-    expect(
-      screen.getByText(/Current saved partial-payment policy: Unavailable/),
-    ).toBeTruthy();
   });
 
   it('edits ordinary settings and treats provider secrets as write-only', async () => {
@@ -243,9 +372,12 @@ describe('settings manager', () => {
 
     expect(
       await screen.findByRole('heading', {
-        name: 'Business settings and secrets',
+        name: 'General settings',
       }),
     ).toBeTruthy();
+    await user.click(
+      screen.getByRole('tab', { name: 'Security and integrations' }),
+    );
     expect(screen.getByText('1 WHM server')).toBeTruthy();
 
     const bKashCard = screen
@@ -281,13 +413,17 @@ function success(data: unknown) {
   });
 }
 
-function settingsFetch(initial = overview, failFirst = false) {
+function settingsFetch(
+  initial = overview,
+  failFirst = false,
+  advancedNextNumber?: number,
+) {
   let saved = initial;
   let failed = false;
   const mock = vi.fn((request: RequestInfo | URL, init?: RequestInit) => {
     if (String(request).endsWith('/auth/csrf'))
       return Promise.resolve(success({ csrfToken: 'x'.repeat(32) }));
-    if (init?.method === 'PUT') {
+    if (init?.method === 'PATCH') {
       if (failFirst && !failed) {
         failed = true;
         return Promise.resolve(
@@ -300,13 +436,34 @@ function settingsFetch(initial = overview, failFirst = false) {
           ),
         );
       }
-      const body = JSON.parse(String(init.body)) as Record<string, unknown>;
-      const { partialPaymentPolicyConfirmation, ...ordinary } = body;
-      void partialPaymentPolicyConfirmation;
+      const body = JSON.parse(
+        String(init.body),
+      ) as import('@webhost-billing/shared').PatchBusinessSettingsRequest;
       saved = {
-        ...ordinary,
-        credentialStatuses: initial.credentialStatuses,
-      } as SettingsOverview;
+        ...saved,
+        preferences: {
+          ...(saved.preferences ?? DEFAULT_PUBLIC_PREFERENCES),
+          ...body.displayPreferences,
+          ...(body.checkoutTerms
+            ? {
+                checkoutTerms: {
+                  ...body.checkoutTerms,
+                  version: '90000000-0000-4000-8000-000000000095',
+                },
+              }
+            : {}),
+          ...(body.website !== undefined ? { website: body.website } : {}),
+        },
+        ...(body.businessIdentity
+          ? { businessIdentity: body.businessIdentity }
+          : {}),
+        invoiceNumbering: {
+          ...saved.invoiceNumbering,
+          ...(advancedNextNumber ? { nextNumber: advancedNextNumber } : {}),
+          ...body.invoiceNumbering,
+        },
+        manualPayments: { ...saved.manualPayments, ...body.manualPayments },
+      };
     }
     return Promise.resolve(success(saved));
   });
@@ -315,5 +472,9 @@ function settingsFetch(initial = overview, failFirst = false) {
 }
 
 function writes(mock: ReturnType<typeof settingsFetch>) {
-  return mock.mock.calls.filter(([, init]) => init?.method === 'PUT');
+  return mock.mock.calls.filter(([, init]) => init?.method === 'PATCH');
+}
+
+async function openInvoices(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(await screen.findByRole('tab', { name: /Invoices/ }));
 }

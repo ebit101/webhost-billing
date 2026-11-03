@@ -1,5 +1,6 @@
 'use client';
 
+import { usePublicPreferences } from '../../lib/public-preferences';
 import Link from 'next/link';
 import { useState, type FormEvent } from 'react';
 import { authMutation } from '../../lib/auth-api';
@@ -16,6 +17,7 @@ export function RegisterForm({
   checkoutIntent?: CheckoutIntent;
   onChooseSignIn?: () => void;
 }) {
+  const { defaultCountry } = usePublicPreferences();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
   const [message, setMessage] = useState<string>();
@@ -128,6 +130,7 @@ export function RegisterForm({
           minLength={2}
           maxLength={2}
           placeholder="BD"
+          defaultValue={defaultCountry ?? ''}
           required
         />
       </div>

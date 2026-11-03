@@ -12,6 +12,7 @@ export interface WorkspaceNavigationItem {
   label: string;
   icon: IconName;
   badge?: string;
+  activePaths?: readonly string[];
 }
 
 export function WorkspaceShell({
@@ -28,6 +29,9 @@ export function WorkspaceShell({
   children: ReactNode;
 }) {
   const pathname = usePathname();
+  const matchingAlias = navigation.find((item) =>
+    item.activePaths?.includes(pathname),
+  );
   const [menuOpen, setMenuOpen] = useState(false);
   const openMenuRef = useRef<HTMLButtonElement>(null);
   const closeMenuRef = useRef<HTMLButtonElement>(null);
@@ -112,10 +116,11 @@ export function WorkspaceShell({
         >
           <ul className={mode === 'admin' ? 'grid gap-0' : 'grid gap-1'}>
             {navigation.map((item) => {
-              const active =
-                pathname === item.href ||
-                (item.href !== `/${mode}` &&
-                  pathname.startsWith(`${item.href}/`));
+              const active = matchingAlias
+                ? item === matchingAlias
+                : pathname === item.href ||
+                  (item.href !== `/${mode}` &&
+                    pathname.startsWith(`${item.href}/`));
               return (
                 <li key={item.href}>
                   <Link

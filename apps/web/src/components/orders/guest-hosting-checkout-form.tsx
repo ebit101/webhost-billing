@@ -1,5 +1,13 @@
 'use client';
 
+import {
+  CheckoutTermsControl,
+  useCheckoutTerms,
+} from './checkout-terms-control';
+import {
+  refreshPublicPreferences,
+  usePublicPreferences,
+} from '../../lib/public-preferences';
 import type { OrderCreationResult } from '@webhost-billing/shared';
 import Link from 'next/link';
 import { useRef, useState, type FormEvent } from 'react';
@@ -24,6 +32,8 @@ export function GuestHostingCheckoutForm({
   requestedDomain: string;
   onChooseSignIn: () => void;
 }) {
+  const terms = useCheckoutTerms();
+  const { defaultCountry } = usePublicPreferences();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
   const [result, setResult] = useState<OrderCreationResult>();
@@ -31,7 +41,7 @@ export function GuestHostingCheckoutForm({
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (busy) return;
+    if (busy || terms.blocked) return;
     const form = new FormData(event.currentTarget);
     const password = String(form.get('password') ?? '');
     if (password !== form.get('confirmPassword')) {
@@ -57,11 +67,13 @@ export function GuestHostingCheckoutForm({
           requestedDomain,
           submissionKey: submissionKey.current,
           domainChoice: 'EXISTING',
+          acceptedTermsVersion: terms.acceptedTermsVersion,
         },
       );
       clearOrderDraft();
       setResult(created);
     } catch (caught) {
+      refreshPublicPreferences();
       setError(
         caught instanceof Error
           ? caught.message
@@ -180,7 +192,7 @@ export function GuestHostingCheckoutForm({
           label="Country code"
           name="countryCode"
           autoComplete="country"
-          defaultValue="BD"
+          defaultValue={defaultCountry ?? 'BD'}
           minLength={2}
           maxLength={2}
           required
@@ -209,7 +221,10 @@ export function GuestHostingCheckoutForm({
           required
         />
       </div>
-      <SubmitButton busy={busy}>Place order and create account</SubmitButton>
+      <CheckoutTermsControl terms={terms} busy={busy} />
+      <SubmitButton busy={busy} disabled={terms.blocked}>
+        Place order and create account
+      </SubmitButton>
       <p className="text-xs leading-5 text-slate-600">
         This creates an unpaid invoice. No payment is collected now. Verify your
         email before signing in and paying.

@@ -246,7 +246,7 @@ test('record lists use tables, retain drafts and isolate nested dialogs on deskt
     ['/admin/products', 'Ungrouped products'],
     ['/admin/invoices', 'Administrator invoice ledger'],
     ['/admin/services', 'Hosting service inventory'],
-    ['/admin/servers', 'WHM servers'],
+    ['/admin/servers', 'Servers'],
     ['/admin/domains', 'Domain inventory'],
     ['/admin/support', 'Filtered support tickets'],
     ['/admin/staff', 'Administrator accounts'],

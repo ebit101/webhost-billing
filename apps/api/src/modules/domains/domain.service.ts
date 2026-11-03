@@ -1,3 +1,4 @@
+import { requireCheckoutTerms } from '../settings/checkout-terms';
 import { createHash, randomUUID } from 'node:crypto';
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import type { ApiEnvironment } from '@webhost-billing/config';
@@ -1097,6 +1098,9 @@ export class DomainService {
         )
           this.deny('The offer or customer changed. Request a new quote.');
         const now = new Date();
+        const termsAcceptance = adminAssisted
+          ? undefined
+          : await requireCheckoutTerms(tx, input.acceptedTermsVersion, now);
         const order = await tx.order.create({
           data: {
             orderNumber: createHumanReadableNumber('ORD', now),
@@ -1107,6 +1111,8 @@ export class DomainService {
             subtotal: quote.sellingAmount,
             total: quote.sellingAmount,
             customerEmailSnapshot: customer.user.email,
+            placedAt: now,
+            termsAcceptance,
             items: {
               create: {
                 kind: 'DOMAIN',

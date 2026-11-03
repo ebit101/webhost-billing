@@ -31,6 +31,9 @@ const PASSWORD = 'command twenty one secure password';
 const SECRET_VALUE = 'fictional-command21-secret-value';
 const SETTING_KEYS = [
   'business.identity',
+  'business.checkout-terms',
+  'business.public-website',
+  'business.display-preferences',
   'business.localization',
   'billing.invoice-numbering',
   'automation.renewal-policy',
@@ -197,6 +200,177 @@ describe('Settings and encrypted credentials (e2e)', () => {
         },
       })
       .expect(400);
+  });
+
+  it('saves one settings tab and merges invoice numbering with the current stored sequence', async () => {
+    const admin = request.agent(app.getHttpServer());
+    const csrf = await authenticate(admin, ADMIN_EMAIL);
+    const resultSchema = apiSuccessResponseSchema(settingsOverviewSchema);
+    const before = resultSchema.parse(
+      (await admin.get('/settings').expect(200)).body,
+    ).data;
+    const publicClient = request(app.getHttpServer());
+    await publicClient.get('/settings/public-preferences').expect(200);
+    await admin
+      .patch('/settings')
+      .set('X-CSRF-Token', csrf)
+      .send({ website: 'javascript:alert(1)' })
+      .expect(400);
+    await admin
+      .patch('/settings')
+      .set('X-CSRF-Token', csrf)
+      .send({ website: 'https://user:pass@example.test' })
+      .expect(400);
+    await admin
+      .patch('/settings')
+      .set('X-CSRF-Token', csrf)
+      .send({ website: 'https://example.test/' })
+      .expect(200);
+    await admin
+      .patch('/settings')
+      .set('X-CSRF-Token', csrf)
+      .send({
+        displayPreferences: {
+          defaultCountry: 'gb',
+          adminDateFormat: 'iso',
+          clientDateFormat: 'long',
+        },
+      })
+      .expect(200);
+    await publicClient
+      .get('/settings/public-preferences')
+      .expect(200)
+      .expect({
+        success: true,
+        data: {
+          website: 'https://example.test/',
+          checkoutTerms: {
+            required: false,
+            url: null,
+            revision: null,
+            version: null,
+          },
+          defaultCountry: 'GB',
+          adminDateFormat: 'iso',
+          clientDateFormat: 'long',
+        },
+      });
+    const terms = {
+      required: true,
+      url: 'https://example.test/terms',
+      revision: '2026-11-03',
+    };
+    await admin
+      .patch('/settings')
+      .set('X-CSRF-Token', csrf)
+      .send({ checkoutTerms: { ...terms, url: null } })
+      .expect(400);
+    async function saveTerms(revision: string) {
+      const response = await admin
+        .patch('/settings')
+        .set('X-CSRF-Token', csrf)
+        .send({
+          checkoutTerms: { ...terms, revision },
+        })
+        .expect(200);
+      return resultSchema.parse(response.body).data.preferences?.checkoutTerms;
+    }
+    const published = await saveTerms(terms.revision);
+    expect(published).toMatchObject(terms);
+    expect(await saveTerms(terms.revision)).toEqual(published);
+    const updated = await saveTerms('2026-11-04');
+    expect(updated?.version).not.toBe(published?.version);
+    const invoiceKey = 'billing.invoice-numbering';
+    const numbering = { ...before.invoiceNumbering, nextNumber: 5342 };
+    await prisma.setting.upsert({
+      where: { key: invoiceKey },
+      update: { value: numbering },
+      create: { key: invoiceKey, category: 'BILLING', value: numbering },
+    });
+    const businessIdentity = {
+      ...before.businessIdentity,
+      name: 'Fictional settings tab',
+    };
+    await admin.patch('/settings').send({ businessIdentity }).expect(403);
+    await admin
+      .patch('/settings')
+      .set('X-CSRF-Token', csrf)
+      .send({ businessIdentity, emailBranding: before.emailBranding })
+      .expect(400);
+    const general = resultSchema.parse(
+      (
+        await admin
+          .patch('/settings')
+          .set('X-CSRF-Token', csrf)
+          .send({ businessIdentity })
+          .expect(200)
+      ).body,
+    ).data;
+    expect(general.businessIdentity).toEqual(businessIdentity);
+    expect(general.invoiceNumbering).toEqual(numbering);
+    expect(general.manualPayments).toEqual(before.manualPayments);
+    const invoices = resultSchema.parse(
+      (
+        await admin
+          .patch('/settings')
+          .set('X-CSRF-Token', csrf)
+          .send({
+            invoiceNumbering: { prefix: 'TAB' },
+            manualPayments: { instructions: 'Fictional tab instructions' },
+          })
+          .expect(200)
+      ).body,
+    ).data;
+    expect(invoices.invoiceNumbering).toEqual({ ...numbering, prefix: 'TAB' });
+    expect(invoices.manualPayments.partialPaymentsEnabled).toBe(
+      before.manualPayments.partialPaymentsEnabled,
+    );
+    await admin
+      .patch('/settings')
+      .set('X-CSRF-Token', csrf)
+      .send({
+        manualPayments: {
+          partialPaymentsEnabled: !before.manualPayments.partialPaymentsEnabled,
+        },
+      })
+      .expect(422);
+    const localised = resultSchema.parse(
+      (
+        await admin
+          .patch('/settings')
+          .set('X-CSRF-Token', csrf)
+          .send({
+            localization: { currency: before.currency, timeZone: 'UTC' },
+          })
+          .expect(200)
+      ).body,
+    ).data;
+    expect(localised.renewalAutomation).toEqual({
+      ...before.renewalAutomation,
+      timeZone: 'UTC',
+    });
+    const renewal = await prisma.setting.findUniqueOrThrow({
+      where: { key: 'automation.renewal-policy' },
+    });
+    expect(renewal.value).toEqual(localised.renewalAutomation);
+    const automation = resultSchema.parse(
+      (
+        await admin
+          .patch('/settings')
+          .set('X-CSRF-Token', csrf)
+          .send({
+            renewalAutomation: {
+              ...before.renewalAutomation,
+              enabled: !before.renewalAutomation.enabled,
+            },
+          })
+          .expect(200)
+      ).body,
+    ).data;
+    expect(automation.renewalAutomation.timeZone).toBe('UTC');
+    expect(automation.renewalAutomation.enabled).toBe(
+      !before.renewalAutomation.enabled,
+    );
   });
 
   it('guards both policy write routes, keeps unchanged saves idempotent, and audits only real transitions', async () => {

@@ -404,6 +404,8 @@ async function priorFacts(s: Scope) {
     },
   });
   const order = await m.order.create({
+    // The historical schema predates checkout terms acceptance.
+    select: { id: true },
     data: {
       orderNumber: 'FICTIONAL-ORDER-115',
       submissionKey: randomUUID(),

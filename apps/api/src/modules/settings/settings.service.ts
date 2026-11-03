@@ -1,8 +1,21 @@
+import { randomUUID } from 'node:crypto';
+import { z } from 'zod';
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import type { ApiEnvironment } from '@webhost-billing/config';
-import { SettingCategory, type PrismaClient } from '@webhost-billing/database';
+import {
+  SettingCategory,
+  type Prisma,
+  type PrismaClient,
+} from '@webhost-billing/database';
 import {
   DEFAULT_BUSINESS_SETTINGS,
+  DEFAULT_PUBLIC_PREFERENCES,
+  DEFAULT_CHECKOUT_TERMS,
+  checkoutTermsPolicySchema,
+  type CheckoutTermsInput,
+  displayPreferencesSchema,
+  publicWebsiteSchema,
+  type PublicPreferences,
   activeProviderSettingsSchema,
   businessIdentitySchema,
   businessLocalizationSettingsSchema,
@@ -15,6 +28,7 @@ import {
   settingsOverviewSchema,
   terminationPolicySchema,
   type BusinessSettings,
+  type PatchBusinessSettingsRequest,
   type UpdateBusinessSettingsRequest,
   type SettingsOverview,
 } from '@webhost-billing/shared';
@@ -24,10 +38,18 @@ import { PRISMA_CLIENT } from '../../infrastructure/database/database.module';
 import { API_ENVIRONMENT } from '../../infrastructure/environment/environment.module';
 import type { AuthRequestContext } from '../auth/auth.types';
 import { IntegrationCredentialService } from './integration-credential.service';
-import { updatePartialPaymentPolicy } from '../payments/partial-payment-policy';
+import {
+  lockPartialPaymentPolicy,
+  updatePartialPaymentPolicy,
+} from '../payments/partial-payment-policy';
+
+import { CHECKOUT_TERMS_KEY, readCheckoutTerms } from './checkout-terms';
 
 const KEYS = {
   businessIdentity: 'business.identity',
+  checkoutTerms: CHECKOUT_TERMS_KEY,
+  website: 'business.public-website',
+  displayPreferences: 'business.display-preferences',
   localization: 'business.localization',
   invoiceNumbering: 'billing.invoice-numbering',
   renewal: 'automation.renewal-policy',
@@ -46,13 +68,18 @@ export class SettingsService {
     private readonly credentials: IntegrationCredentialService,
   ) {}
 
-  async overview(): Promise<SettingsOverview> {
+  async overview(
+    database: Pick<
+      PrismaClient,
+      'setting' | 'integrationCredential' | 'server'
+    > = this.prisma,
+  ): Promise<SettingsOverview> {
     const [settings, credentialRecords, cpanelServers] = await Promise.all([
-      this.prisma.setting.findMany({
+      database.setting.findMany({
         where: { key: { in: Object.values(KEYS) } },
         select: { key: true, value: true },
       }),
-      this.prisma.integrationCredential.findMany({
+      database.integrationCredential.findMany({
         where: { providerKey: { in: ['bkash', 'sslcommerz'] } },
         select: {
           providerKey: true,
@@ -61,7 +88,7 @@ export class SettingsService {
           updatedAt: true,
         },
       }),
-      this.prisma.server.findMany({
+      database.server.findMany({
         where: {
           adapterKey: 'cpanel-whm',
           credentialsCiphertext: { not: null },
@@ -146,6 +173,7 @@ export class SettingsService {
         DEFAULT_BUSINESS_SETTINGS.emailBranding,
       ),
       ...activeProviders,
+      preferences: this.readPreferences(values),
       credentialStatuses: [
         this.paymentCredentialStatus('bkash', credentialByProvider),
         this.paymentCredentialStatus('sslcommerz', credentialByProvider),
@@ -167,6 +195,45 @@ export class SettingsService {
         },
       ],
     });
+  }
+
+  private readPreferences(
+    values: ReadonlyMap<string, unknown>,
+  ): PublicPreferences {
+    const { website, ...defaults } = DEFAULT_PUBLIC_PREFERENCES;
+    return {
+      ...this.parse(
+        displayPreferencesSchema,
+        values.get(KEYS.displayPreferences),
+        defaults,
+      ),
+      website: this.parse(
+        z.object({ url: publicWebsiteSchema }),
+        values.get(KEYS.website),
+        { url: website },
+      ).url,
+      checkoutTerms: this.parse(
+        checkoutTermsPolicySchema,
+        values.get(KEYS.checkoutTerms),
+        DEFAULT_CHECKOUT_TERMS,
+      ),
+    };
+  }
+
+  async publicPreferences(): Promise<PublicPreferences> {
+    const records = await this.prisma.setting.findMany({
+      where: {
+        key: {
+          in: [KEYS.website, KEYS.displayPreferences, KEYS.checkoutTerms],
+        },
+      },
+      select: { key: true, value: true },
+    });
+    const values = new Map(records.map(({ key, value }) => [key, value]));
+    return {
+      ...this.readPreferences(values),
+      checkoutTerms: readCheckoutTerms(values.get(KEYS.checkoutTerms)),
+    };
   }
 
   async presentation(): Promise<{ timeZone: string }> {
@@ -192,7 +259,178 @@ export class SettingsService {
   ): Promise<SettingsOverview> {
     const settings = updateBusinessSettingsRequestSchema.parse(input);
     await this.validateActiveGateway(settings.activeGateway);
+    await this.prisma.$transaction((transaction) =>
+      this.persist(
+        transaction,
+        settings,
+        new Set(Object.values(KEYS)),
+        actor,
+        context,
+      ),
+    );
+    return this.overview();
+  }
+
+  async patch(
+    input: PatchBusinessSettingsRequest,
+    actor: AuthRequestContext,
+    context: SecurityRequestContext,
+  ): Promise<SettingsOverview> {
+    if (input.checkoutTerms)
+      return this.saveCheckoutTerms(input.checkoutTerms, actor, context);
+    if (input.activeProviders)
+      await this.validateActiveGateway(input.activeProviders.activeGateway);
+    const keys = new Set<string>();
+    if (input.businessIdentity) keys.add(KEYS.businessIdentity);
+    if (input.website !== undefined) keys.add(KEYS.website);
+    if (input.displayPreferences) keys.add(KEYS.displayPreferences);
+    if (input.localization) keys.add(KEYS.localization);
+    if (input.localization || input.renewalAutomation) keys.add(KEYS.renewal);
+    if (input.invoiceNumbering && Object.keys(input.invoiceNumbering).length)
+      keys.add(KEYS.invoiceNumbering);
+    if (input.manualPayments) keys.add(KEYS.manualPaymentInstructions);
+    if (input.emailBranding) keys.add(KEYS.emailBranding);
+    if (input.activeProviders) keys.add(KEYS.activeProviders);
+    if (!keys.size) return this.overview();
+
     await this.prisma.$transaction(async (transaction) => {
+      if (input.manualPayments) await lockPartialPaymentPolicy(transaction);
+      // Lock the same settings rows used by automation and invoice allocation
+      // before merging fields whose persisted values can change independently.
+      if (keys.has(KEYS.renewal)) {
+        await this.lockSetting(
+          transaction,
+          KEYS.renewal,
+          SettingCategory.AUTOMATION,
+          DEFAULT_BUSINESS_SETTINGS.renewalAutomation,
+        );
+      }
+      if (keys.has(KEYS.invoiceNumbering)) {
+        await this.lockSetting(
+          transaction,
+          KEYS.invoiceNumbering,
+          SettingCategory.BILLING,
+          DEFAULT_BUSINESS_SETTINGS.invoiceNumbering,
+        );
+      }
+      const { credentialStatuses, preferences, ...current } =
+        await this.overview(transaction);
+      void credentialStatuses;
+      void preferences;
+      const localization = input.localization ?? {
+        currency: current.currency,
+        timeZone: current.timeZone,
+      };
+      const result = updateBusinessSettingsRequestSchema.safeParse({
+        ...current,
+        ...localization,
+        ...(input.activeProviders ?? {}),
+        businessIdentity: input.businessIdentity ?? current.businessIdentity,
+        invoiceNumbering: {
+          ...current.invoiceNumbering,
+          ...input.invoiceNumbering,
+        },
+        renewalAutomation: {
+          ...(input.renewalAutomation ?? current.renewalAutomation),
+          timeZone: localization.timeZone,
+        },
+        manualPayments: { ...current.manualPayments, ...input.manualPayments },
+        emailBranding: input.emailBranding ?? current.emailBranding,
+        partialPaymentPolicyConfirmation:
+          input.partialPaymentPolicyConfirmation,
+      });
+      if (!result.success)
+        throw this.invalid(
+          result.error.issues[0]?.message ??
+            'Review the settings and try again.',
+        );
+      await this.persist(transaction, result.data, keys, actor, context, input);
+    });
+    return this.overview();
+  }
+
+  private async saveCheckoutTerms(
+    input: CheckoutTermsInput,
+    actor: AuthRequestContext,
+    context: SecurityRequestContext,
+  ) {
+    await this.prisma.$transaction(async (transaction) => {
+      await transaction.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${CHECKOUT_TERMS_KEY}, 0))::text`;
+      const row = await transaction.setting.findUnique({
+        where: { key: CHECKOUT_TERMS_KEY },
+        select: { value: true },
+      });
+      const previous = checkoutTermsPolicySchema.safeParse(row?.value);
+      if (
+        previous.success &&
+        previous.data.required === input.required &&
+        previous.data.url === input.url &&
+        previous.data.revision === input.revision
+      )
+        return;
+      const policy = checkoutTermsPolicySchema.parse({
+        ...input,
+        version: randomUUID(),
+      });
+      const setting = this.setting(
+        CHECKOUT_TERMS_KEY,
+        SettingCategory.BUSINESS,
+        policy,
+        'Customer checkout terms policy.',
+      );
+      await transaction.setting.upsert({
+        where: { key: setting.key },
+        create: { ...setting, updatedByUserId: actor.identity.userId },
+        update: {
+          value: setting.value,
+          updatedByUserId: actor.identity.userId,
+        },
+      });
+      await transaction.activityLog.create({
+        data: {
+          actorUserId: actor.identity.userId,
+          action: 'CHECKOUT_TERMS_UPDATED_BY_ADMIN',
+          entityType: 'SETTING',
+          ipAddressHash: context.ipAddressHash,
+          metadata: {
+            required: policy.required,
+            version: policy.version,
+            revision: policy.revision,
+          },
+        },
+      });
+    });
+    return this.overview();
+  }
+
+  private async lockSetting(
+    transaction: Prisma.TransactionClient,
+    key: string,
+    category: SettingCategory,
+    value: Prisma.InputJsonValue,
+  ) {
+    await transaction.setting.upsert({
+      where: { key },
+      update: {},
+      create: { key, category, value },
+    });
+    await transaction.$queryRaw`
+      SELECT "id" FROM "settings" WHERE "key" = ${key} FOR UPDATE
+    `;
+  }
+
+  private async persist(
+    transaction: Prisma.TransactionClient,
+    settings: UpdateBusinessSettingsRequest,
+    keys: ReadonlySet<string>,
+    actor: AuthRequestContext,
+    context: SecurityRequestContext,
+    preferences?: Pick<
+      PatchBusinessSettingsRequest,
+      'website' | 'displayPreferences'
+    >,
+  ) {
+    if (keys.has(KEYS.manualPaymentInstructions))
       await updatePartialPaymentPolicy(
         transaction,
         settings.manualPayments.partialPaymentsEnabled,
@@ -200,89 +438,109 @@ export class SettingsService {
         actor,
         context,
       );
-      const writes = [
+    const writes = [
+      this.setting(
+        KEYS.businessIdentity,
+        SettingCategory.BUSINESS,
+        settings.businessIdentity,
+        'Legal identity snapshot source for future invoices.',
+      ),
+      this.setting(
+        KEYS.renewal,
+        SettingCategory.AUTOMATION,
+        settings.renewalAutomation,
+        'Renewal invoice, reminder, overdue, and grace policy.',
+      ),
+      this.setting(
+        KEYS.localization,
+        SettingCategory.BUSINESS,
+        { currency: settings.currency, timeZone: settings.timeZone },
+        'Operating currency and IANA business time zone.',
+      ),
+      this.setting(
+        KEYS.invoiceNumbering,
+        SettingCategory.BILLING,
+        settings.invoiceNumbering,
+        'Sequential numbering policy for future invoices.',
+      ),
+      this.setting(
+        KEYS.termination,
+        SettingCategory.AUTOMATION,
+        settings.terminationPolicy,
+        'Permanent hosting termination policy.',
+      ),
+      this.setting(
+        KEYS.manualPaymentInstructions,
+        SettingCategory.BILLING,
+        { instructions: settings.manualPayments.instructions },
+        'Customer-visible manual-payment instructions.',
+      ),
+      this.setting(
+        KEYS.emailBranding,
+        SettingCategory.EMAIL,
+        settings.emailBranding,
+        'Branding and sender identity for future email messages.',
+      ),
+      this.setting(
+        KEYS.activeProviders,
+        SettingCategory.INTEGRATION,
+        {
+          activeGateway: settings.activeGateway,
+          activeHostingPanelAdapter: settings.activeHostingPanelAdapter,
+        },
+        'Active payment and hosting integration adapters.',
+      ),
+    ].filter((write) => keys.has(write.key));
+    if (preferences?.website !== undefined)
+      writes.push(
         this.setting(
-          KEYS.businessIdentity,
+          KEYS.website,
           SettingCategory.BUSINESS,
-          settings.businessIdentity,
-          'Legal identity snapshot source for future invoices.',
+          { url: preferences.website },
+          'Public business website.',
         ),
+      );
+    if (preferences?.displayPreferences)
+      writes.push(
         this.setting(
-          KEYS.localization,
+          KEYS.displayPreferences,
           SettingCategory.BUSINESS,
-          { currency: settings.currency, timeZone: settings.timeZone },
-          'Operating currency and IANA business time zone.',
+          preferences.displayPreferences,
+          'Default country and date display formats.',
         ),
-        this.setting(
-          KEYS.invoiceNumbering,
-          SettingCategory.BILLING,
-          settings.invoiceNumbering,
-          'Sequential numbering policy for future invoices.',
-        ),
-        this.setting(
-          KEYS.renewal,
-          SettingCategory.AUTOMATION,
-          settings.renewalAutomation,
-          'Renewal invoice, reminder, overdue, and grace policy.',
-        ),
-        this.setting(
-          KEYS.termination,
-          SettingCategory.AUTOMATION,
-          settings.terminationPolicy,
-          'Permanent hosting termination policy.',
-        ),
-        this.setting(
-          KEYS.manualPaymentInstructions,
-          SettingCategory.BILLING,
-          { instructions: settings.manualPayments.instructions },
-          'Customer-visible manual-payment instructions.',
-        ),
-        this.setting(
-          KEYS.emailBranding,
-          SettingCategory.EMAIL,
-          settings.emailBranding,
-          'Branding and sender identity for future email messages.',
-        ),
-        this.setting(
-          KEYS.activeProviders,
-          SettingCategory.INTEGRATION,
-          {
-            activeGateway: settings.activeGateway,
-            activeHostingPanelAdapter: settings.activeHostingPanelAdapter,
-          },
-          'Active payment and hosting integration adapters.',
-        ),
-      ];
-      for (const write of writes) {
-        await transaction.setting.upsert({
-          where: { key: write.key },
-          update: {
-            category: write.category,
-            value: write.value,
-            description: write.description,
-            updatedByUserId: actor.identity.userId,
-          },
-          create: {
-            ...write,
-            updatedByUserId: actor.identity.userId,
-          },
-        });
-      }
-      await transaction.activityLog.create({
-        data: {
-          actorUserId: actor.identity.userId,
-          action: 'BUSINESS_SETTINGS_UPDATED_BY_ADMIN',
-          entityType: 'SETTING',
-          ipAddressHash: context.ipAddressHash,
-          metadata: {
-            keys: writes.map((write) => write.key),
-            activeGateway: settings.activeGateway,
-            activeHostingPanelAdapter: settings.activeHostingPanelAdapter,
-          },
+      );
+    for (const write of writes) {
+      await transaction.setting.upsert({
+        where: { key: write.key },
+        update: {
+          category: write.category,
+          value: write.value,
+          description: write.description,
+          updatedByUserId: actor.identity.userId,
+        },
+        create: {
+          ...write,
+          updatedByUserId: actor.identity.userId,
         },
       });
+    }
+    await transaction.activityLog.create({
+      data: {
+        actorUserId: actor.identity.userId,
+        action: 'BUSINESS_SETTINGS_UPDATED_BY_ADMIN',
+        entityType: 'SETTING',
+        ipAddressHash: context.ipAddressHash,
+        metadata: {
+          keys: writes.map((write) => write.key),
+          ...(keys.has(KEYS.activeProviders)
+            ? {
+                activeGateway: settings.activeGateway,
+                activeHostingPanelAdapter: settings.activeHostingPanelAdapter,
+              }
+            : {}),
+        },
+      },
     });
-    return this.overview();
   }
 
   async activeGateway(): Promise<BusinessSettings['activeGateway']> {

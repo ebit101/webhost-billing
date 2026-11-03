@@ -3249,6 +3249,83 @@ authorize new provider operations or existing-domain adoption.
   and [execute proof](https://developer.bka.sh/v1.2.0-beta/docs/execute-payment-1).
   Unit/mocked service tests are source validation, not a genuine sandbox payment.
 
+## ADR-161 — Typed server configuration with isolated provider credentials
+
+- **Date:** 2026-11-03. Command 172, owner-authorized server administration change.
+- **Decision:** Use the existing server adapter key as the persisted server type.
+  Present cPanel, Virtualizor VPS node, Vultr Cloud and ShoutCast labels in the
+  selector and list. Existing cPanel rows need no migration or credential rewrite.
+  Keep provider identity immutable; a different provider needs a separate record.
+- **Credentials:** Preserve cPanel API and activation rules. Encrypt complete new
+  provider credential objects with the existing authenticated server-bound cipher.
+  Virtualizor requires API key/password, Vultr an API key and ShoutCast an
+  administrator password. Responses/audits expose presence and safe metadata.
+  Retain credentials on ordinary edits, require complete replacement pairs for
+  Virtualizor rotation and replacement credentials on endpoint changes.
+- **Integration boundary:** Use the fixed HTTPS Virtualizor Admin API server-list
+  read, documented adminapikey/adminapipass authentication and 4085/443 ports.
+  Pin public DNS addresses at the socket, verify TLS, reject redirects, bound
+  response size/time and normalize failures without provider URLs or raw text.
+  VIRTUALIZOR_API_ENABLED defaults false and blocks DNS/networking. Reuse existing
+  idempotent test history. The owner deferred live testing.
+- **Scope:** New provider records stay disabled. Existing provider-neutral hosting
+  lifecycle remains cPanel/fake-only; a connection read is not VPS provisioning
+  acceptance. Vultr/ShoutCast are configuration-only. The existing unique hostname
+  rule permits one Vultr API endpoint record. VPS product mappings, fulfillment,
+  lifecycle actions and live acceptance need separate bounded work. No dependency,
+  migration, billing-state, secret-file or deployed-installation change.
+- **Sources:** [Virtualizor Admin API authentication](https://www.virtualizor.com/api-automation)
+  and [server-list contract](https://www.virtualizor.com/docs/admin-api/list-servers/).
+  Documentation research is not provider acceptance.
+
+## ADR-162 — Save and discard settings by tab
+
+- **Date:** 2026-11-03. Command 173.
+- **Navigation:** General opens by default. URL fragments support direct links
+  and browser history, including the existing billing policy link. Keep ordinary
+  drafts across tab switches and mark their tabs. Domains and Support link to
+  the existing workspaces.
+- **Persistence:** Protect a scoped settings PATCH with the existing settings
+  access rules and CSRF checks. Keep PUT for existing callers. Save changed
+  groups and merge invoice numbering fields against the locked current row.
+  Synchronise localisation with the renewal policy and preserve the current
+  partial-payment confirmation and audit flow.
+- **Credentials:** Keep SMTP and payment credential forms on their protected
+  endpoints, with separate reset actions. Existing provider activation remains
+  an explicit separate action where required.
+
+## ADR-163 — Publish narrow business display preferences
+
+- **Date:** 2026-11-03. Command 174.
+- **Persistence:** Store website and localisation display preferences under
+  separate settings keys. General and Localisation use scoped saves, and the
+  legacy settings PUT continues to handle its existing fields.
+- **Public read:** Return only website, default country and format identifiers.
+  Accept credential-free HTTPS URLs. Use deployment branding when no website
+  override is set and existing form defaults when the country is blank.
+- **Presentation:** Apply country to new registration, guest checkout and
+  administrator customer forms. Use the selected formats for admin and client
+  invoice dates, with UTC calendar handling for due dates and the original
+  local-date convention for timestamps. Keep date entry formats, PDF documents
+  and other operational timestamps outside this presentation scope.
+
+## ADR-164 — Bind customer orders to accepted checkout terms
+
+- **Date:** 2026-11-03. Command 175.
+- **Publication:** Store an optional policy in existing settings. Publishing a
+  changed URL, revision label or acceptance requirement generates a new version.
+  Administrators update the label when editing the hosted terms at the same URL.
+- **Checkout:** Verify the submitted version during the order transaction. Use
+  a shared advisory lock for checkout and an exclusive lock for publishing so a
+  policy change cannot cross the acceptance and order write boundary. Apply the
+  rule to guest hosting, signed-in hosting with or without a domain, and
+  standalone customer domain purchases. Guest rejection rolls back registration.
+- **History:** Store the URL, label, version and server timestamp in a nullable
+  order snapshot. Replays return the original order and its recorded acceptance.
+  Existing orders have no acceptance snapshot and administrator-assisted orders
+  retain their established consent flows. The hosted terms text remains at the
+  configured URL.
+
 ## Open Decisions
 
 The following decisions are intentionally unresolved and must be selected before their related implementation commands:

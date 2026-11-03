@@ -68,7 +68,22 @@ for (const width of [390, 1280]) {
       },
     ]);
     await page.setViewportSize({ width, height: 844 });
-    await page.goto('/admin/settings');
+    await page.goto(width === 390 ? '/admin/settings#mail' : '/admin/settings');
+    if (width !== 390) {
+      await expect(
+        page.getByRole('tab', { name: 'General', selected: true }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole('button', { name: 'Save changes', exact: true }),
+      ).toBeDisabled();
+      await expect(
+        page.getByRole('button', { name: 'Discard changes', exact: true }),
+      ).toBeDisabled();
+      await page.getByRole('tab', { name: 'Mail', exact: true }).click();
+    }
+    await expect(
+      page.getByRole('tab', { name: 'Mail', selected: true }),
+    ).toBeVisible();
     const panel = page.getByRole('region', { name: 'SMTP email delivery' });
     await expect(panel.getByLabel('SMTP hostname')).toBeVisible();
     await panel.getByLabel('SMTP hostname').fill('smtp.provider.com');

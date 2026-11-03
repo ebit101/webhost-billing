@@ -1,8 +1,12 @@
 'use client';
 
-import type {
-  ManagedCpanelServer,
-  HostingPanelOperationResult,
+import {
+  serverTypes,
+  serverTypeLabels,
+  serverTypeForAdapter,
+  type ServerType,
+  type ManagedServer,
+  type HostingPanelOperationResult,
 } from '@webhost-billing/shared';
 import {
   useEffect,
@@ -20,10 +24,11 @@ import { EmptyState, LoadingState } from '../ui/feedback-state';
 import { serviceError } from './service-ui';
 
 export function AdminWhmServerManager() {
-  const [servers, setServers] = useState<ManagedCpanelServer[]>([]);
+  const [servers, setServers] = useState<ManagedServer[]>([]);
   const [editor, setEditor] = useState<
     { type: 'add' } | { type: 'edit'; serverId: string } | null
   >(null);
+  const [serverType, setServerType] = useState<ServerType>('CPANEL');
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -31,13 +36,13 @@ export function AdminWhmServerManager() {
 
   async function refresh() {
     setServers(
-      await authenticatedGet<ManagedCpanelServer[]>('/hosting-panel/servers'),
+      await authenticatedGet<ManagedServer[]>('/hosting-panel/servers'),
     );
   }
 
   useEffect(() => {
     let active = true;
-    void authenticatedGet<ManagedCpanelServer[]>('/hosting-panel/servers')
+    void authenticatedGet<ManagedServer[]>('/hosting-panel/servers')
       .then((items) => {
         if (active) setServers(items);
       })
@@ -74,43 +79,34 @@ export function AdminWhmServerManager() {
     const values = new FormData(form);
     void run(
       async () => {
-        await authMutation<ManagedCpanelServer>(
-          '/hosting-panel/servers',
-          'POST',
-          {
-            name: String(values.get('name')),
-            hostname: String(values.get('hostname')),
-            port: Number(values.get('port')),
-            apiUsername: String(values.get('apiUsername')),
-            apiToken: String(values.get('apiToken')),
-            maxAccounts: capacity(values.get('maxAccounts')),
-          },
-        );
+        await authMutation<ManagedServer>('/hosting-panel/servers', 'POST', {
+          name: String(values.get('name')),
+          ...connectionPayload(values, serverType, false),
+          maxAccounts: capacity(values.get('maxAccounts')),
+        });
         form.reset();
-        return 'Server saved as disabled. Test its connection before activating it.';
+        return serverType === 'CPANEL'
+          ? 'Server saved as disabled. Test its connection before activating it.'
+          : 'Server saved as disabled. Automated provisioning is not enabled for this server type.';
       },
       () => setEditor(null),
     );
   }
 
-  function edit(
-    event: FormEvent<HTMLFormElement>,
-    server: ManagedCpanelServer,
-  ) {
+  function edit(event: FormEvent<HTMLFormElement>, server: ManagedServer) {
     event.preventDefault();
     const form = event.currentTarget;
     const values = new FormData(form);
+    const type = serverTypeForAdapter(server.server.adapterKey);
     const token = String(values.get('apiToken') ?? '');
     void run(
       async () => {
-        const updated = await authMutation<ManagedCpanelServer>(
+        const updated = await authMutation<ManagedServer>(
           `/hosting-panel/servers/${server.server.id}`,
           'PATCH',
           {
             name: String(values.get('name')),
-            hostname: String(values.get('hostname')),
-            port: Number(values.get('port')),
-            apiUsername: String(values.get('apiUsername')),
+            ...connectionPayload(values, type, true),
             maxAccounts: capacity(values.get('maxAccounts')),
             status:
               token &&
@@ -131,7 +127,7 @@ export function AdminWhmServerManager() {
     );
   }
 
-  function test(server: ManagedCpanelServer) {
+  function test(server: ManagedServer) {
     void run(async () => {
       const result = await authMutation<HostingPanelOperationResult>(
         `/hosting-panel/servers/${server.server.id}/test`,
@@ -143,11 +139,13 @@ export function AdminWhmServerManager() {
           result.operation.errorMessage ?? 'The connection test failed.',
         );
       }
-      return 'Connection test passed. You can activate the server.';
+      return server.server.adapterKey === 'cpanel-whm'
+        ? 'Connection test passed. You can activate the server.'
+        : 'Connection test passed. VPS provisioning is not enabled.';
     });
   }
 
-  function remove(server: ManagedCpanelServer) {
+  function remove(server: ManagedServer) {
     const confirmation = window.prompt(
       `Remove ${server.server.name}? Type REMOVE_SERVER to confirm. Active or unresolved accounts block removal.`,
     );
@@ -165,7 +163,7 @@ export function AdminWhmServerManager() {
     );
   }
 
-  if (loading) return <LoadingState label="Loading WHM servers" />;
+  if (loading) return <LoadingState label="Loading servers" />;
 
   const selectedServer =
     editor?.type === 'edit'
@@ -175,13 +173,21 @@ export function AdminWhmServerManager() {
   function openEditor(next: typeof editor) {
     setError('');
     setNotice('');
+    setServerType(
+      next?.type === 'edit'
+        ? serverTypeForAdapter(
+            servers.find((item) => item.server.id === next.serverId)?.server
+              .adapterKey ?? 'cpanel-whm',
+          )
+        : 'CPANEL',
+    );
     setEditor(next);
   }
 
   return (
     <div className="grid gap-6">
       <PageHeader
-        title="cPanel and WHM servers"
+        title="Servers"
         description="View server status, capacity and connection settings."
         actions={
           <Button
@@ -233,8 +239,8 @@ export function AdminWhmServerManager() {
                 </h2>
                 <p className="mt-1 text-sm text-slate-600">
                   {editor.type === 'add'
-                    ? 'Save it as disabled, then test the connection before activation.'
-                    : 'Update connection settings and account capacity. The saved API token is never displayed.'}
+                    ? 'Save the server as disabled. Connection tests are separate actions.'
+                    : 'Update connection settings and capacity. Saved credentials are never displayed.'}
                 </p>
               </div>
               <Button
@@ -253,28 +259,24 @@ export function AdminWhmServerManager() {
                 className="grid gap-4 p-5 md:grid-cols-2 xl:grid-cols-3 sm:p-6"
               >
                 <Field label="Server name" name="name" required />
-                <Field
-                  label="WHM hostname"
-                  name="hostname"
-                  required
-                  placeholder="whm.example.com"
-                />
-                <PortField />
-                <Field
-                  label="WHM username"
-                  name="apiUsername"
-                  required
-                  autoComplete="username"
-                />
-                <Field
-                  label="WHM API token"
-                  name="apiToken"
-                  required
-                  type="password"
-                  minLength={20}
-                  maxLength={512}
-                  autoComplete="new-password"
-                />
+                <label className="text-sm font-semibold text-slate-700">
+                  Server type
+                  <select
+                    name="serverType"
+                    value={serverType}
+                    onChange={(event) =>
+                      setServerType(event.target.value as ServerType)
+                    }
+                    className={fieldClass}
+                  >
+                    {serverTypes.map((type) => (
+                      <option key={type} value={type}>
+                        {serverTypeLabels[type]}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <ConnectionFields key={serverType} type={serverType} />
                 <Field
                   label="Maximum accounts (optional)"
                   name="maxAccounts"
@@ -300,25 +302,19 @@ export function AdminWhmServerManager() {
                   required
                 />
                 <Field
-                  label="WHM hostname"
-                  name="hostname"
-                  defaultValue={selectedServer.server.hostname}
-                  required
+                  label="Server type"
+                  name="serverTypeLabel"
+                  value={
+                    serverTypeLabels[
+                      serverTypeForAdapter(selectedServer.server.adapterKey)
+                    ]
+                  }
+                  readOnly
                 />
-                <PortField defaultValue={selectedServer.port} />
-                <Field
-                  label="WHM username"
-                  name="apiUsername"
-                  defaultValue={selectedServer.apiUsername ?? ''}
-                  required
-                />
-                <Field
-                  label="New API token (optional)"
-                  name="apiToken"
-                  type="password"
-                  minLength={20}
-                  maxLength={512}
-                  autoComplete="new-password"
+                <ConnectionFields
+                  key={selectedServer.server.id}
+                  type={serverTypeForAdapter(selectedServer.server.adapterKey)}
+                  server={selectedServer}
                 />
                 <Field
                   label="Maximum accounts (optional)"
@@ -335,22 +331,30 @@ export function AdminWhmServerManager() {
                     className={fieldClass}
                   >
                     <option value="DISABLED">Disabled</option>
-                    <option value="MAINTENANCE">Maintenance</option>
-                    <option value="ACTIVE">Active</option>
+                    {selectedServer.server.adapterKey === 'cpanel-whm' ? (
+                      <>
+                        <option value="MAINTENANCE">Maintenance</option>
+                        <option value="ACTIVE">Active</option>
+                      </>
+                    ) : null}
                   </select>
                 </label>
                 <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 pt-5 md:col-span-2 xl:col-span-3">
                   <Button type="submit" disabled={busy}>
                     Save changes
                   </Button>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    disabled={busy}
-                    onClick={() => test(selectedServer)}
-                  >
-                    Test connection
-                  </Button>
+                  {['cpanel-whm', 'virtualizor'].includes(
+                    selectedServer.server.adapterKey,
+                  ) ? (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      disabled={busy}
+                      onClick={() => test(selectedServer)}
+                    >
+                      Test connection
+                    </Button>
+                  ) : null}
                   <Button
                     type="button"
                     variant="ghost"
@@ -388,7 +392,7 @@ export function AdminWhmServerManager() {
         </div>
         {servers.length ? (
           <DataTable
-            caption="WHM servers"
+            caption="Servers"
             rows={servers}
             rowKey={(entry) => entry.server.id}
             columns={[
@@ -396,6 +400,14 @@ export function AdminWhmServerManager() {
                 key: 'name',
                 header: 'Server',
                 render: (entry) => entry.server.name,
+              },
+              {
+                key: 'type',
+                header: 'Server type',
+                render: (entry) =>
+                  serverTypeLabels[
+                    serverTypeForAdapter(entry.server.adapterKey)
+                  ],
               },
               {
                 key: 'hostname',
@@ -428,11 +440,9 @@ export function AdminWhmServerManager() {
               },
               {
                 key: 'token',
-                header: 'API token',
+                header: 'Credentials',
                 render: (entry) =>
-                  entry.credentialConfigured
-                    ? 'Token configured'
-                    : 'Token missing',
+                  entry.credentialConfigured ? 'Configured' : 'Missing',
               },
               {
                 key: 'edit',
@@ -455,7 +465,7 @@ export function AdminWhmServerManager() {
         ) : (
           <div className="p-5 sm:p-6">
             <EmptyState
-              title="No WHM servers"
+              title="No servers"
               description="Add a server to prepare hosting account management."
             />
           </div>
@@ -470,7 +480,7 @@ function capacity(value: FormDataEntryValue | null): number | null {
   return raw ? Number(raw) : null;
 }
 
-function statusLabel(status: ManagedCpanelServer['server']['status']) {
+function statusLabel(status: ManagedServer['server']['status']) {
   return status === 'ACTIVE'
     ? 'Active'
     : status === 'MAINTENANCE'
@@ -478,7 +488,7 @@ function statusLabel(status: ManagedCpanelServer['server']['status']) {
       : 'Disabled';
 }
 
-function statusClass(status: ManagedCpanelServer['server']['status']) {
+function statusClass(status: ManagedServer['server']['status']) {
   return status === 'ACTIVE'
     ? 'bg-emerald-50 text-emerald-700'
     : status === 'MAINTENANCE'
@@ -499,14 +509,170 @@ function Field({
   );
 }
 
-function PortField({ defaultValue = 2087 }: { defaultValue?: number }) {
+function PortField({
+  defaultValue = 2087,
+  type = 'CPANEL',
+}: {
+  defaultValue?: number;
+  type?: ServerType;
+}) {
   return (
     <label className="text-sm font-semibold text-slate-700">
       HTTPS port
       <select name="port" defaultValue={defaultValue} className={fieldClass}>
-        <option value="2087">2087</option>
+        <option value={type === 'VIRTUALIZOR' ? 4085 : 2087}>
+          {type === 'VIRTUALIZOR' ? 4085 : 2087}
+        </option>
         <option value="443">443</option>
       </select>
     </label>
   );
+}
+
+function ConnectionFields({
+  type,
+  server,
+}: {
+  type: ServerType;
+  server?: ManagedServer;
+}) {
+  const editing = Boolean(server);
+  return (
+    <>
+      <Field
+        label={
+          type === 'CPANEL'
+            ? 'WHM hostname'
+            : type === 'VIRTUALIZOR'
+              ? 'Virtualizor master hostname'
+              : type === 'VULTR'
+                ? 'API hostname'
+                : 'ShoutCast hostname'
+        }
+        name="hostname"
+        key={`${type}-hostname`}
+        required
+        defaultValue={
+          server?.server.hostname ?? (type === 'VULTR' ? 'api.vultr.com' : '')
+        }
+        readOnly={type === 'VULTR'}
+        placeholder={type === 'CPANEL' ? 'whm.example.com' : 'node.example.com'}
+      />
+      {type === 'CPANEL' || type === 'VIRTUALIZOR' ? (
+        <PortField
+          type={type}
+          defaultValue={server?.port ?? (type === 'CPANEL' ? 2087 : 4085)}
+        />
+      ) : (
+        <Field
+          label="HTTPS port"
+          name="port"
+          type="number"
+          min={1}
+          max={65535}
+          defaultValue={server?.port ?? 443}
+          readOnly={type === 'VULTR'}
+          required
+        />
+      )}
+      {type === 'CPANEL' ? (
+        <>
+          <Field
+            label="WHM username"
+            name="apiUsername"
+            required
+            defaultValue={server?.apiUsername ?? ''}
+            autoComplete="username"
+          />
+          <Field
+            label={editing ? 'New API token (optional)' : 'WHM API token'}
+            name="apiToken"
+            required={!editing}
+            type="password"
+            minLength={20}
+            maxLength={512}
+            autoComplete="new-password"
+          />
+        </>
+      ) : (
+        <>
+          {type !== 'SHOUTCAST' ? (
+            <Field
+              label={
+                editing
+                  ? 'New API key (optional)'
+                  : type === 'VIRTUALIZOR'
+                    ? 'Virtualizor API key'
+                    : 'Vultr API key'
+              }
+              name="apiKey"
+              type="password"
+              required={!editing}
+              maxLength={512}
+              autoComplete="new-password"
+            />
+          ) : null}
+          {type !== 'VULTR' ? (
+            <Field
+              label={
+                type === 'VIRTUALIZOR'
+                  ? editing
+                    ? 'New API password (optional)'
+                    : 'Virtualizor API password'
+                  : editing
+                    ? 'New administrator password (optional)'
+                    : 'ShoutCast administrator password'
+              }
+              name={type === 'VIRTUALIZOR' ? 'apiPassword' : 'adminPassword'}
+              type="password"
+              required={!editing}
+              maxLength={512}
+              autoComplete="new-password"
+            />
+          ) : null}
+          <p className="text-sm text-slate-600 md:col-span-2 xl:col-span-3">
+            {type === 'VIRTUALIZOR'
+              ? 'Uses the Virtualizor Admin API over HTTPS. Networking is disabled until separately enabled. VPS provisioning is not enabled.'
+              : 'Configuration only. Automated provisioning and connection tests are not available for this server type.'}{' '}
+            {editing
+              ? 'Leave credentials empty to retain them. Supply all credentials again when changing the connection.'
+              : ''}
+          </p>
+        </>
+      )}
+    </>
+  );
+}
+
+function connectionPayload(
+  values: FormData,
+  type: ServerType,
+  editing: boolean,
+) {
+  const common = {
+    hostname: String(values.get('hostname')),
+    port: Number(values.get('port')),
+  };
+  if (type === 'CPANEL')
+    return {
+      ...common,
+      apiUsername: String(values.get('apiUsername')),
+      ...(!editing ? { apiToken: String(values.get('apiToken')) } : {}),
+    };
+  const credentials =
+    type === 'VIRTUALIZOR'
+      ? {
+          apiKey: String(values.get('apiKey') ?? ''),
+          apiPassword: String(values.get('apiPassword') ?? ''),
+        }
+      : type === 'VULTR'
+        ? { apiKey: String(values.get('apiKey') ?? '') }
+        : { adminPassword: String(values.get('adminPassword') ?? '') };
+  return {
+    ...common,
+    serverType: type,
+    ...(!editing || Object.values(credentials).some(Boolean)
+      ? { credentials }
+      : {}),
+  };
 }

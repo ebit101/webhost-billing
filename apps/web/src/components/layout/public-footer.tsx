@@ -1,9 +1,16 @@
+import { BusinessWebsiteLink } from './business-website-link';
 import Link from 'next/link';
 import { Brand } from './brand';
 import { getWebBranding } from '../../lib/web-branding';
 
 export function PublicFooter() {
   const branding = getWebBranding();
+  const hasContact = Boolean(
+    branding.contactEmail ||
+    branding.contactPhone ||
+    branding.contactAddress ||
+    branding.website,
+  );
   return (
     <footer className="border-t border-slate-200 bg-white">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-[1fr_auto] lg:px-8">
@@ -13,10 +20,7 @@ export function PublicFooter() {
             {branding.tagline ??
               'Straightforward hosting and billing for one focused local hosting team.'}
           </p>
-          {branding.contactEmail ||
-          branding.contactPhone ||
-          branding.contactAddress ||
-          branding.website ? (
+          {hasContact ? (
             <address
               className="mt-4 grid max-w-sm gap-2 text-sm not-italic leading-6 text-slate-600"
               aria-label="Business contact information"
@@ -40,13 +44,11 @@ export function PublicFooter() {
               {branding.contactAddress ? (
                 <span>{branding.contactAddress}</span>
               ) : null}
-              {branding.website ? (
-                <a className="footer-link break-all" href={branding.website}>
-                  Business website
-                </a>
-              ) : null}
+              <BusinessWebsiteLink fallback={branding.website} />
             </address>
-          ) : null}
+          ) : (
+            <BusinessWebsiteLink />
+          )}
         </div>
         <nav
           aria-label="Footer navigation"

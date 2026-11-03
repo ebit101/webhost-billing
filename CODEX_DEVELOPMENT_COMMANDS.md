@@ -6583,3 +6583,69 @@ Command 170's private Meta access/approval and genuine bKash acceptance remain o
 deployment does not activate them or approve production. Record resource/validation
 constraints and actual release evidence. Clean up only explicitly authorized,
 verified regenerable cache paths; preserve Docker data, backups and unrelated work.
+
+## Command 172 — Add typed server administration and Virtualizor configuration
+
+Owner-authorized on 2026-11-03: rename WHM servers to Servers, add a server-type
+dropdown and type-specific fields for cPanel, VPS nodes (Virtualizor), Vultr Cloud
+and ShoutCast, and show a Server type column in the server list. Preserve existing
+cPanel service bindings, activation policy and operation history. Encrypt all new
+provider credentials, never return their values, and use strict provider-specific
+request schemas. Keep new provider records disabled and outside cPanel provisioning.
+Prepare a bounded Virtualizor Admin API connection adapter with an independent
+network gate disabled by default. The owner said no testing now: do not perform a
+live connection test or request credentials; use only local fictional/mock checks.
+Vultr/ShoutCast are configuration-only, and VPS creation/lifecycle acceptance is
+separate. Update the report and make a focused local commit. No push, deployment,
+provider activation, infrastructure change or external mutation is authorized.
+
+## Command 173 — Organise existing general settings into tabs
+
+The owner authorised phase one on 2026-11-03. Open General by default and
+provide Save changes and Discard changes for each tab with editable business
+settings. Group existing fields by task. Keep separate protected forms for
+credentials and SMTP, with their own save and reset actions. Keep direct links
+to existing domain and support pages. Preserve the billing policy link, policy
+review and existing settings clients. Scope writes to the selected tab and
+protect the current invoice sequence and renewal time zone when merging drafts.
+Record focused local checks and commit locally.
+
+## Command 174 — Add public website, default country and date display preferences
+
+Owner-authorized on 2026-11-03. Add a public HTTPS website URL in General and
+default country and admin/client date choices with live previews in Localisation.
+Apply the website to the public footer, the country to new customer forms, and
+the date choices to existing web invoice and billing views. Use the existing
+protected per-tab saves and a limited public read. Preserve deployment fallbacks,
+stored dates, invoice snapshots and country values on existing accounts.
+
+## Command 175 — Checkout terms
+
+Owner-authorized on 2026-11-03. Add the Ordering tab with an HTTPS terms of
+service URL, a revision label and an optional acceptance requirement. Apply
+server-side enforcement to guest and signed-in hosting checkout and standalone
+customer domain purchases. Bind the submitted version to the current published
+policy, record the accepted version, label, URL and server timestamp with the
+order, and preserve the record on replay. Administrator-assisted ordering
+retains its existing authorization and consent flows. Validate locally and
+retain the commit for the pending batch.
+
+## Command 176 — Combine domain administration navigation
+
+Owner-authorized on 2026-11-03. Replace the three domain sidebar entries with
+one Domains entry. Open the domain inventory by default and provide links styled
+as tabs for Domains, Domain pricing and TLDs, and Domain registrars. Use the
+existing URLs and authorization checks. Retain the DNS defaults shortcut and
+highlight Domains in the sidebar across all three views. Validate and commit
+locally.
+
+## Command 177 — Publish and deploy the accumulated batch
+
+Owner-authorized on 2026-11-03. Reconcile the validated Commands 172–176
+with the canonical remote and deploy the accepted release to the existing
+staging installation. Preserve branch protections. If protected delivery
+requires a pull request, obtain the owner's explicit approval for that path.
+Require Validate and CodeQL for the release commit, verify an encrypted cutover
+backup, apply the pending checkout terms migration and verify staging health,
+environment, branding and provider gates. Keep checkout terms at the existing
+installation default until explicitly configured.

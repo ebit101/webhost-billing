@@ -551,7 +551,7 @@ function RecordDetail({
     );
   if (!detail) return <LoadingState label="Loading record details" />;
   return 'invoiceNumber' in detail ? (
-    <InvoiceDocument invoice={detail} />
+    <InvoiceDocument invoice={detail} audience="admin" />
   ) : (
     <TicketConversation
       ticket={detail}

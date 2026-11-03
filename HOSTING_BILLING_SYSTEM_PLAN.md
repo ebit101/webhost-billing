@@ -8,6 +8,24 @@
 
 **Technical identifier:** `webhost-billing`
 
+**Checkout terms direction — 2026-11-03:** Command 175 lets administrators
+publish a versioned HTTPS terms link and require customers to accept it at
+checkout. Record the accepted version with each applicable order. The policy
+starts disabled, and the administrator updates the revision label when the
+hosted terms change.
+
+**Display preferences direction — 2026-11-03:** Command 174 adds a public
+website URL, a default country for new customer forms, and separate admin and
+client date formats with previews for web billing views. The saved settings
+affect presentation and initial form values.
+
+**General settings direction — 2026-11-03:** Command 173 organises existing
+administrator settings into task tabs. Open General by default and let each
+editable tab save or discard its own draft. Keep protected SMTP and integration
+credential forms separate from ordinary settings, with links to existing domain
+and support workspaces. Additional settings and maintenance mode are separate
+implementation phases.
+
 **TLD catalogue direction — 2026-11-02:** Command 166 removes the historical
 `.com`-only catalogue restriction. Allow priced ordinary ASCII extensions,
 including `.net`, `.org` and multi-part suffixes, with exact extension matching
@@ -62,6 +80,16 @@ offline consent, then create an unpaid order and invoice. The customer views
 both in the portal and may pay later. Verified payment and separate administrator
 approval remain prerequisites for registration. Keep online customer ordering
 available as a secondary path.
+
+**Typed server administration — 2026-11-03:** Command 172 renames the menu and
+page to Servers and adds a server-type selector plus a Server type list column.
+Support cPanel, VPS nodes using Virtualizor, Vultr Cloud and ShoutCast with separate
+validated credential fields. Preserve existing cPanel lifecycle operations. New
+provider records remain disabled and cannot enter cPanel provisioning. Virtualizor
+has a bounded Admin API connection adapter behind an independent disabled network
+gate; the owner deferred live testing. VPS provisioning/lifecycle work and genuine
+provider acceptance remain separate. Vultr and ShoutCast are configuration-only.
+No deployment, provider activation or live call is authorized.
 
 **WHM server administration — 2026-10-17:** Administrators can add, edit, test,
 activate, pause and retire cPanel/WHM servers in the billing interface. New

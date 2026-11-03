@@ -1,3 +1,4 @@
+import { PublicPreferencesProvider } from '../lib/public-preferences';
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { ToastProvider } from '../components/ui/toast';
@@ -33,7 +34,9 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
         >
           Skip to main content
         </a>
-        <ToastProvider>{children}</ToastProvider>
+        <PublicPreferencesProvider>
+          <ToastProvider>{children}</ToastProvider>
+        </PublicPreferencesProvider>
       </body>
     </html>
   );

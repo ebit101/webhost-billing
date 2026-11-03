@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { redirect } from 'next/navigation';
+import { domainWorkspaceTabs } from '../../../components/domains/domain-workspace-tabs';
 import { AuthShell } from '../../../components/auth/auth-shell';
 import { LoginForm } from '../../../components/auth/login-form';
 import {
@@ -23,17 +24,11 @@ const navigation: WorkspaceNavigationItem[] = [
   { href: '/admin/products', label: 'Products', icon: 'product' },
   { href: '/admin/orders', label: 'Orders', icon: 'order', badge: '4' },
   { href: '/admin/services', label: 'Services', icon: 'server' },
-  { href: '/admin/servers', label: 'WHM servers', icon: 'server' },
-  { href: '/admin/domains', label: 'Domains', icon: 'server' },
+  { href: '/admin/servers', label: 'Servers', icon: 'server' },
   {
-    href: '/admin/domain-pricing',
-    label: 'Domain pricing and TLDs',
-    icon: 'product',
-  },
-  {
-    href: '/admin/settings/registrars',
-    label: 'Domain registrars',
-    icon: 'settings',
+    ...domainWorkspaceTabs[0],
+    icon: 'server',
+    activePaths: domainWorkspaceTabs.slice(1).map(({ href }) => href),
   },
   { href: '/admin/invoices', label: 'Invoices', icon: 'invoice', badge: '7' },
   { href: '/admin/payments', label: 'Payments', icon: 'payment' },

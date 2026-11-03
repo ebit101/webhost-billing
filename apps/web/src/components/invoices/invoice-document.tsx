@@ -1,14 +1,17 @@
+import { InvoiceDateText } from './invoice-date-text';
+import type { ReactNode } from 'react';
 import { sentenceCaseLabel } from '@webhost-billing/shared';
 import type { Invoice } from '@webhost-billing/shared';
 import { StatusBadge } from '../ui/status-badge';
-import {
-  formatMinor,
-  invoiceDate,
-  invoiceDueDate,
-  invoiceTone,
-} from './invoice-ui';
+import { formatMinor, invoiceTone } from './invoice-ui';
 
-export function InvoiceDocument({ invoice }: { invoice: Invoice }) {
+export function InvoiceDocument({
+  invoice,
+  audience = 'client',
+}: {
+  invoice: Invoice;
+  audience?: 'client' | 'admin';
+}) {
   return (
     <article className="invoice-document min-w-0 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-9">
       <header className="flex flex-col gap-6 border-b border-slate-200 pb-7 sm:flex-row sm:items-start sm:justify-between">
@@ -47,10 +50,26 @@ export function InvoiceDocument({ invoice }: { invoice: Invoice }) {
         <dl className="grid content-start gap-3 text-sm sm:justify-self-end sm:text-right">
           <DocumentMeta
             label="Created"
-            value={invoiceDate(invoice.createdAt)}
+            value={
+              <InvoiceDateText value={invoice.createdAt} audience={audience} />
+            }
           />
-          <DocumentMeta label="Issued" value={invoiceDate(invoice.issuedAt)} />
-          <DocumentMeta label="Due" value={invoiceDueDate(invoice.dueAt)} />
+          <DocumentMeta
+            label="Issued"
+            value={
+              <InvoiceDateText value={invoice.issuedAt} audience={audience} />
+            }
+          />
+          <DocumentMeta
+            label="Due"
+            value={
+              <InvoiceDateText
+                value={invoice.dueAt}
+                audience={audience}
+                calendar
+              />
+            }
+          />
           {invoice.orderNumber ? (
             <DocumentMeta label="Order" value={invoice.orderNumber} />
           ) : null}
@@ -76,8 +95,20 @@ export function InvoiceDocument({ invoice }: { invoice: Invoice }) {
                   <p className="font-semibold">{item.description}</p>
                   {item.servicePeriodStart || item.servicePeriodEnd ? (
                     <p className="mt-1 text-xs text-slate-500">
-                      Service period {invoiceDate(item.servicePeriodStart)} –{' '}
-                      {invoiceDate(item.servicePeriodEnd)}
+                      Service period{' '}
+                      {
+                        <InvoiceDateText
+                          value={item.servicePeriodStart}
+                          audience={audience}
+                        />
+                      }{' '}
+                      –{' '}
+                      {
+                        <InvoiceDateText
+                          value={item.servicePeriodEnd}
+                          audience={audience}
+                        />
+                      }
                     </p>
                   ) : null}
                 </td>
@@ -176,7 +207,7 @@ function Address({ address }: { address: Invoice['customerAddress'] }) {
   );
 }
 
-function DocumentMeta({ label, value }: { label: string; value: string }) {
+function DocumentMeta({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div className="flex justify-between gap-8 sm:justify-end">
       <dt className="font-semibold text-slate-500">{label}</dt>

@@ -1,5 +1,6 @@
 'use client';
-import { sentenceCaseLabel } from '@webhost-billing/shared';
+import { InvoiceDateText } from '../invoices/invoice-date-text';
+import { formatUtcTimestamp, sentenceCaseLabel } from '@webhost-billing/shared';
 
 import {
   apiSuccessResponseSchema,
@@ -13,7 +14,6 @@ import { authenticatedGet } from '../../lib/auth-api';
 import { Button, buttonStyles } from '../ui/button';
 import { EmptyState, ErrorState, LoadingState } from '../ui/feedback-state';
 import { formatMinor } from './order-ui';
-import { invoiceDueDate } from '../invoices/invoice-ui';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 const responseSchema = apiSuccessResponseSchema(orderSchema);
@@ -202,6 +202,21 @@ function ReviewDetails({
           <dl className="grid gap-3 text-sm">
             <Fact label="Order status">{sentenceCaseLabel(order.status)}</Fact>
             <Fact label="Placed">{date(order.placedAt)}</Fact>
+            {order.termsAcceptance ? (
+              <Fact label="Terms accepted">
+                <a
+                  href={order.termsAcceptance.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline"
+                >
+                  Version {order.termsAcceptance.revision}
+                </a>
+                <span className="block">
+                  {formatUtcTimestamp(order.termsAcceptance.acceptedAt)}
+                </span>
+              </Fact>
+            ) : null}
             <Fact label="Completed">{date(order.completedAt)}</Fact>
             <Fact label="Cancelled">{date(order.cancelledAt)}</Fact>
             <Fact label="Order subtotal">
@@ -232,7 +247,13 @@ function ReviewDetails({
               {sentenceCaseLabel(order.invoice.status)}
             </Fact>
             <Fact label="Invoice due">
-              {invoiceDueDate(order.invoice.dueAt)}
+              {
+                <InvoiceDateText
+                  value={order.invoice.dueAt}
+                  audience="admin"
+                  calendar
+                />
+              }
             </Fact>
             <Fact label="Invoice total">
               {formatMinor(

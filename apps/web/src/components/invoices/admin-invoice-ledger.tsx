@@ -1,4 +1,5 @@
 'use client';
+import { InvoiceDateText } from './invoice-date-text';
 import { sentenceCaseLabel } from '@webhost-billing/shared';
 
 import {
@@ -22,12 +23,7 @@ import { Button } from '../ui/button';
 import { DataTable, type DataColumn } from '../ui/data-table';
 import { EmptyState, ErrorState, LoadingState } from '../ui/feedback-state';
 import { StatusBadge } from '../ui/status-badge';
-import {
-  formatMinor,
-  invoiceDueDate,
-  invoiceError,
-  invoiceTone,
-} from './invoice-ui';
+import { formatMinor, invoiceError, invoiceTone } from './invoice-ui';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 const columns: DataColumn<Invoice>[] = [
@@ -71,7 +67,9 @@ const columns: DataColumn<Invoice>[] = [
   {
     key: 'due',
     header: 'Due',
-    render: (invoice) => invoiceDueDate(invoice.dueAt),
+    render: (invoice) => (
+      <InvoiceDateText value={invoice.dueAt} audience="admin" calendar />
+    ),
   },
   {
     key: 'total',

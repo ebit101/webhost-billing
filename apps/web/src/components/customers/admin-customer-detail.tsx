@@ -16,6 +16,7 @@ import {
   type ClientRecordSection,
 } from '../../lib/client-record-href';
 import { authMutation, authenticatedGet } from '../../lib/auth-api';
+import { usePublicPreferences } from '../../lib/public-preferences';
 import { formatMinor, invoiceDueDate } from '../invoices/invoice-ui';
 import { Button, buttonStyles } from '../ui/button';
 import { ConfirmationDialog } from '../ui/confirmation-dialog';
@@ -45,6 +46,7 @@ function CustomerDetailRequest({
   section = 'summary',
   children,
 }: Props) {
+  const { adminDateFormat } = usePublicPreferences();
   const [customer, setCustomer] = useState<CustomerDetail>();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -333,7 +335,7 @@ function CustomerDetailRequest({
               rows={customer.linked.invoices.map((item) => ({
                 id: item.id,
                 primary: `${item.invoiceNumber} · ${sentenceCaseLabel(item.status)}`,
-                secondary: `${formatMinor(item.total.amount, item.total.currency)} · due ${invoiceDueDate(item.dueAt)}`,
+                secondary: `${formatMinor(item.total.amount, item.total.currency)} · due ${invoiceDueDate(item.dueAt, adminDateFormat)}`,
                 href: clientRecordHref(customer.id, 'invoices'),
               }))}
             />
