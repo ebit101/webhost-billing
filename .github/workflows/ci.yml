@@ -86,7 +86,15 @@ jobs:
         run: pnpm format:check
 
       - name: Check offline documentation
+        if: steps.scope.outputs.docs_only != 'true'
         run: node scripts/docs/check-documentation.mjs
+
+      - name: Check documentation without workspace dependencies
+        if: steps.scope.outputs.docs_only == 'true'
+        run: |
+          node scripts/docs/check-markdown-links.mjs
+          node scripts/docs/check-contributor-paths.mjs
+          node scripts/docs/check-demo-screenshot-assets.mjs
 
       - name: Check changed documentation images
         if: steps.scope.outputs.docs_only == 'true'
@@ -113,8 +121,8 @@ jobs:
         run: docker pull --platform linux/amd64 postgres@sha256:3725f4e2499eef5134592b3b4ab79a543ed7f8e533b05b5b637af926630f6650
 
       - name: Run package tests
-        if: steps.scope.outputs.docs_only != 'true'
         run: pnpm test
+        if: steps.scope.outputs.docs_only != 'true'
 
       - name: Run API integration tests
         if: steps.scope.outputs.docs_only != 'true'

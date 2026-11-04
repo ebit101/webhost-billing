@@ -349,7 +349,7 @@ describe('Authentication (e2e)', () => {
     ).toMatchObject({
       role: 'CUSTOMER',
       customerId,
-      supportSession: { expiresAt: expect.any(String) },
+      supportSession: { expiresAt: expect.any(String) as unknown },
     });
     await adminAgent.get(`/customers/${customerId}/portal-summary`).expect(200);
     await adminAgent.get(`/customers/${SEEDED_OTHER_CUSTOMER_ID}`).expect(403);
@@ -383,7 +383,7 @@ describe('Authentication (e2e)', () => {
           action: 'CUSTOMER_SUPPORT_SESSION_STARTED',
           metadata: expect.objectContaining({
             reason: 'Check the fictional customer portal',
-          }),
+          }) as unknown,
         }),
         expect.objectContaining({ action: 'CUSTOMER_SUPPORT_SESSION_ENDED' }),
       ]),

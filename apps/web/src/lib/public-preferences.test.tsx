@@ -43,7 +43,10 @@ it.each(['', 'CA'])(
       </PublicPreferencesProvider>,
     );
     const country = screen.getByLabelText('Country code');
-    if (entered) await user.type(country, entered);
+    if (entered) {
+      await user.clear(country);
+      await user.type(country, entered);
+    }
     release?.(
       Response.json({
         success: true,

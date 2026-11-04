@@ -157,12 +157,19 @@ function customerFixture(emailTwoStep: boolean) {
     },
     customerEmailChallenge: {
       updateMany: jest.fn(),
-      create: jest.fn(async ({ data }) => ({
-        ...data,
-        id: base.session.id,
-        usedAt: null,
-        failedAttempts: 0,
-      })),
+      create: jest.fn(
+        ({
+          data,
+        }: {
+          data: Prisma.CustomerEmailChallengeUncheckedCreateInput;
+        }) =>
+          Promise.resolve({
+            ...data,
+            id: base.session.id,
+            usedAt: null,
+            failedAttempts: 0,
+          }),
+      ),
       findUnique: jest.fn(),
       update: jest.fn(),
     },
@@ -224,9 +231,12 @@ describe('customer sign-in and consent preferences', () => {
       throw new Error('Expected an email code challenge');
     expect(result.method).toBe('email');
     expect(prisma.authSession.create).not.toHaveBeenCalled();
-    const challenge =
-      await prisma.customerEmailChallenge.create.mock.results[0].value;
-    const code = cipher.decrypt(challenge.deliveryCiphertext);
+    const challenge = await (prisma.customerEmailChallenge.create.mock
+      .results[0].value as Promise<{
+      id: string;
+      deliveryCiphertext: string | null;
+    }>);
+    const code = cipher.decrypt(challenge.deliveryCiphertext ?? '');
     expect(code).toMatch(/^\d{6}$/);
     expect(prisma.outboxEvent.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -236,7 +246,7 @@ describe('customer sign-in and consent preferences', () => {
             challengeId: challenge.id,
             recipientEmail: login.email,
           },
-        }),
+        }) as unknown,
       }),
     );
     prisma.customerEmailChallenge.findUnique.mockResolvedValue(challenge);
@@ -326,7 +336,7 @@ describe('customer support sessions', () => {
         customerId,
         adminSessionId: session.id,
         tokenHash: hashOpaqueToken(token),
-        expiresAt: expect.any(Date),
+        expiresAt: expect.any(Date) as unknown,
       },
     });
     expect(prisma.activityLog.create).toHaveBeenCalledWith({
@@ -337,8 +347,8 @@ describe('customer support sessions', () => {
         metadata: expect.objectContaining({
           reason: 'Review a ticket',
           supportSessionId: 'support-session-id',
-        }),
-      }),
+        }) as unknown,
+      }) as unknown,
     });
   });
 
@@ -376,8 +386,8 @@ describe('customer support sessions', () => {
           tokenHash: hashOpaqueToken('support-token'),
           adminSessionId: session.id,
           endedAt: null,
-          expiresAt: { gt: expect.any(Date) },
-        }),
+          expiresAt: { gt: expect.any(Date) as unknown },
+        }) as unknown,
       }),
     );
     session.revokedAt = new Date();
@@ -420,7 +430,7 @@ describe('customer support sessions', () => {
         actorUserId: user.id,
         action: 'CUSTOMER_SUPPORT_SESSION_ENDED',
         entityId: customerId,
-      }),
+      }) as unknown,
     });
     expect(prisma.authSession.updateMany).not.toHaveBeenCalled();
   });

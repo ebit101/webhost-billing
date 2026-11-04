@@ -51,6 +51,7 @@ BACKUP_REQUIRED_TABLES=(
   password_reset_tokens
   payment_events
   payments
+  product_add_on_eligibility
   product_groups
   product_prices
   products

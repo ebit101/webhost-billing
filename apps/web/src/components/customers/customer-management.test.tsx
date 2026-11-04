@@ -388,7 +388,13 @@ describe('customer management interfaces', () => {
           },
         }),
       )
-      .mockResolvedValueOnce(jsonResponse({ success: true, data: detail }));
+      .mockResolvedValueOnce(jsonResponse({ success: true, data: detail }))
+      .mockResolvedValueOnce(
+        jsonResponse({
+          success: true,
+          data: { emailTwoStep: false, marketingConsent: false },
+        }),
+      );
     vi.stubGlobal('fetch', fetchMock);
     render(<CustomerProfile />);
     expect(
@@ -403,7 +409,7 @@ describe('customer management interfaces', () => {
     expect(
       screen.getByRole('button', { name: 'Change password' }),
     ).toBeTruthy();
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3));
   });
 
   it('puts safe operational context before edit forms and links to protected workspaces', async () => {

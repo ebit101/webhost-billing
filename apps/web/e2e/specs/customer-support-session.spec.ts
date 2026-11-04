@@ -88,7 +88,9 @@ test('support mode scopes portal access, expires and restores the original admin
       .getByRole('button', { name: 'Start read-only session' })
       .click();
     await expect(
-      page.getByText('Read-only support session', { exact: true }),
+      page
+        .getByRole('complementary', { name: 'Customer support session' })
+        .getByText('Read-only support session', { exact: true }),
     ).toBeVisible();
     await expect(
       page.getByRole('heading', { name: /Welcome, Healthy/ }),

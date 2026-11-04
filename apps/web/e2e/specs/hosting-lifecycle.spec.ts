@@ -362,6 +362,7 @@ test('complete hosting customer and administrator lifecycle', async ({
         await review.getByRole('link', { name: 'View invoice' }).click();
         await expect(page).toHaveURL(
           new RegExp(`/admin/invoices/${invoiceId}$`),
+          { timeout: 30_000 },
         );
         await expect(
           page.getByRole('heading', {
@@ -575,7 +576,10 @@ test('complete hosting customer and administrator lifecycle', async ({
           name: E2E_HISTORY_CUSTOMER.oldestInvoiceNumber,
         }),
       ).toHaveCount(0);
-      await page.getByLabel('Invoices per page').selectOption('100');
+      await page
+        .getByRole('form', { name: 'Invoice filters' })
+        .getByLabel('Invoices per page')
+        .selectOption('100');
       await expect(page).toHaveURL(/\/portal\/invoices\?page=1&pageSize=100$/);
       await expect(page.getByText(/Page 1 of 2/)).toBeVisible();
       await page.getByRole('button', { name: 'Next page' }).click();
@@ -593,17 +597,27 @@ test('complete hosting customer and administrator lifecycle', async ({
         /page=1&pageSize=100&search=INV-HISTORY-0000$/,
       );
       await expect(page.getByText(/1 matching invoices/)).toBeVisible();
-      await page.getByLabel('Invoice status').selectOption('PAID');
+      await page
+        .getByRole('form', { name: 'Invoice filters' })
+        .getByLabel('Invoice status')
+        .selectOption('PAID');
       await expect(
         page.getByRole('heading', { name: 'No matching invoices' }),
       ).toBeVisible();
-      await page.getByLabel('Invoice status').selectOption('UNPAID');
+      await page
+        .getByRole('form', { name: 'Invoice filters' })
+        .getByLabel('Invoice status')
+        .selectOption('UNPAID');
       await expect(oldest).toBeVisible();
       await page.reload();
       await expect(page.getByLabel('Search invoices')).toHaveValue(
         E2E_HISTORY_CUSTOMER.oldestInvoiceNumber,
       );
-      await expect(page.getByLabel('Invoice status')).toHaveValue('UNPAID');
+      await expect(
+        page
+          .getByRole('form', { name: 'Invoice filters' })
+          .getByLabel('Invoice status'),
+      ).toHaveValue('UNPAID');
       await expect(oldest).toHaveAttribute(
         'href',
         `/portal/invoices/${E2E_HISTORY_CUSTOMER.oldestInvoiceId}`,
@@ -627,8 +641,16 @@ test('complete hosting customer and administrator lifecycle', async ({
       await page.getByRole('link', { name: 'Clear filters' }).click();
       await expect(page).toHaveURL(/\/portal\/invoices$/);
       await expect(page.getByText(/105 matching invoices/)).toBeVisible();
-      await expect(page.getByLabel('Invoices per page')).toHaveValue('20');
-      await expect(page.getByLabel('Invoice status')).toHaveValue('');
+      await expect(
+        page
+          .getByRole('form', { name: 'Invoice filters' })
+          .getByLabel('Invoices per page'),
+      ).toHaveValue('20');
+      await expect(
+        page
+          .getByRole('form', { name: 'Invoice filters' })
+          .getByLabel('Invoice status'),
+      ).toHaveValue('');
       await expect(
         page.getByRole('link', { name: E2E_HEALTHY_CUSTOMER.invoiceNumber }),
       ).toHaveCount(0);

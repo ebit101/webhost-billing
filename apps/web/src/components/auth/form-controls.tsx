@@ -9,6 +9,14 @@ const subscribeToReadiness = () => () => {};
 const clientReady = () => true;
 const serverNotReady = () => false;
 
+export function useClientReady() {
+  return useSyncExternalStore(
+    subscribeToReadiness,
+    clientReady,
+    serverNotReady,
+  );
+}
+
 // The server snapshot also runs during initial hydration. Controls become
 // successful only after React has committed the form's submission handler.
 export function AuthForm({
@@ -18,11 +26,7 @@ export function AuthForm({
   children: ReactNode;
   onSubmit: FormEventHandler<HTMLFormElement>;
 }) {
-  const ready = useSyncExternalStore(
-    subscribeToReadiness,
-    clientReady,
-    serverNotReady,
-  );
+  const ready = useClientReady();
 
   return (
     <form
