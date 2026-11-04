@@ -18,6 +18,7 @@ import {
   createPaginatedApiSuccessResponse,
   createServiceRequestSchema,
   serviceListQuerySchema,
+  serviceSslQuerySchema,
   transitionServiceRequestSchema,
   hostingCancellationInputSchema,
   paginationQuerySchema,
@@ -27,6 +28,7 @@ import {
   type ServiceListQuery,
   type TransitionServiceRequest,
 } from '@webhost-billing/shared';
+import type { z } from 'zod';
 import type { Request } from 'express';
 import { createSecurityRequestContext } from '../../common/http/request-context';
 import { ZodValidationPipe } from '../../common/validation/zod-validation.pipe';
@@ -35,8 +37,10 @@ import type { AuthRequestContext } from '../auth/auth.types';
 import { CurrentAuth } from '../auth/decorators/current-auth.decorator';
 import { CustomerSupportAccess } from '../auth/decorators/customer-support-session.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { AuthRateLimit } from '../auth/decorators/rate-limit.decorator';
 import { ServiceService } from './service.service';
 import { HostingCancellationService } from './hosting-cancellation.service';
+import { ServiceSslStatusService } from './service-ssl-status.service';
 
 @Controller('services')
 export class ServiceController {
@@ -45,9 +49,30 @@ export class ServiceController {
   constructor(
     private readonly services: ServiceService,
     private readonly cancellations: HostingCancellationService,
+    private readonly ssl: ServiceSslStatusService,
     @Inject(API_ENVIRONMENT) environment: ApiEnvironment,
   ) {
     this.auditSecret = environment.SESSION_SECRET;
+  }
+
+  @Get('my/ssl-status')
+  @Roles('CUSTOMER')
+  @CustomerSupportAccess()
+  @AuthRateLimit({
+    scope: 'service-ssl-status',
+    limit: 60,
+    windowMs: 60_000,
+    includeEmail: false,
+  })
+  async mySslStatus(
+    @Query(new ZodValidationPipe(serviceSslQuerySchema))
+    query: z.output<typeof serviceSslQuerySchema>,
+    @CurrentAuth() auth: AuthRequestContext,
+  ) {
+    if (auth.identity.role !== 'CUSTOMER') throw new Error('Unreachable role');
+    return createApiSuccessResponse(
+      await this.ssl.list(auth.identity.customerId, query.ids),
+    );
   }
 
   @Get('setup-options')

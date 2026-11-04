@@ -6800,3 +6800,10 @@ Owner-authorized on 2026-11-04. Let staff offer recurring add-ons for matching
 hosting billing periods. Renew a fictional managed backup on its hosting
 invoice at the purchased price, and verify that rerunning renewal leaves one
 charge per period. Validate locally. No deployment.
+
+## Command 201 — Show SSL status in the customer hosting list
+
+Owner-authorized on 2026-11-04. Add a lock indicator to My services for the
+trusted HTTPS certificate of each active hosting domain. Keep unavailable
+checks separate from inactive SSL, and scope requests to the customer's
+services. Validate locally.

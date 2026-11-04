@@ -23,6 +23,7 @@ import {
   paginatedApiSuccessResponseSchema,
   serviceCreationResultSchema,
   serviceSchema,
+  serviceSslResultsSchema,
   serviceSetupOptionsSchema,
 } from '@webhost-billing/shared';
 import request from 'supertest';
@@ -433,6 +434,28 @@ describe('Hosting services (e2e)', () => {
         nextDueAt: due,
       },
     });
+    const sslPath = '/services/my/ssl-status';
+    await request(app.getHttpServer())
+      .get(sslPath)
+      .query({ ids: cancellable.id })
+      .expect(401);
+    await customer.get(sslPath).query({ ids: 'example.com' }).expect(400);
+    const sslResult = await customer
+      .get(sslPath)
+      .query({ ids: cancellable.id })
+      .expect(200);
+    expect(
+      apiSuccessResponseSchema(serviceSslResultsSchema).parse(sslResult.body)
+        .data,
+    ).toEqual([{ serviceId: cancellable.id, status: 'UNKNOWN' }]);
+    const otherSsl = await other
+      .get(sslPath)
+      .query({ ids: cancellable.id })
+      .expect(200);
+    expect(
+      apiSuccessResponseSchema(serviceSslResultsSchema).parse(otherSsl.body)
+        .data,
+    ).toEqual([]);
     const path = `/services/${cancellable.id}/cancellation-request`;
     const scheduled = {
       timing: 'END_OF_PERIOD',
@@ -531,7 +554,10 @@ describe('Hosting services (e2e)', () => {
       await prisma.hostingCancellationRequest.findUniqueOrThrow({
         where: { id },
       }),
-    ).toMatchObject({ approvedAt: expect.any(Date), status: 'OPEN' });
+    ).toMatchObject({
+      approvedAt: expect.any(Date) as unknown,
+      status: 'OPEN',
+    });
     await prisma.outboxEvent.deleteMany({
       where: { aggregateId: cancellableId },
     });

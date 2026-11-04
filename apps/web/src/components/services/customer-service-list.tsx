@@ -1,8 +1,11 @@
 'use client';
 import { sentenceCaseLabel } from '@webhost-billing/shared';
 import {
+  apiSuccessResponseSchema,
   serviceStatusSchema,
+  serviceSslResultsSchema,
   type Service,
+  type ServiceSslStatus,
   type PaginatedApiSuccessResponse,
 } from '@webhost-billing/shared';
 import Link from 'next/link';
@@ -29,9 +32,36 @@ import { EmptyState, ErrorState } from '../ui/feedback-state';
 import { DataTable } from '../ui/data-table';
 import { PageHeader } from '../ui/page-header';
 import { StatusBadge } from '../ui/status-badge';
+import { Icon } from '../ui/icon';
 import { formatMinor } from '../invoices/invoice-ui';
 import { serviceDate, serviceError, serviceTone } from './service-ui';
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+const sslResponseSchema = apiSuccessResponseSchema(serviceSslResultsSchema);
+
+function SslIndicator({ status }: { status: ServiceSslStatus | 'CHECKING' }) {
+  const label =
+    status === 'ACTIVE'
+      ? 'SSL active'
+      : status === 'INACTIVE'
+        ? 'SSL inactive'
+        : status === 'CHECKING'
+          ? 'Checking SSL'
+          : 'SSL unknown';
+  return (
+    <StatusBadge
+      tone={
+        status === 'ACTIVE'
+          ? 'success'
+          : status === 'INACTIVE'
+            ? 'danger'
+            : 'neutral'
+      }
+    >
+      <Icon name="lock" className="size-4 shrink-0" />
+      {label}
+    </StatusBadge>
+  );
+}
 class LedgerReadError extends Error {}
 export function CustomerServiceList({
   selection = readCustomerServiceQuery({}),
@@ -82,6 +112,42 @@ function Ledger({
   const result = loading || invalid ? undefined : outcome?.result;
   const meta = result?.pagination;
   const rows = result?.data ?? [];
+  const [ssl, setSsl] = useState<{
+    key: string;
+    statuses: Map<string, ServiceSslStatus>;
+  }>();
+  const sslIds = rows
+    .filter((row) => row.status === 'ACTIVE' && row.domain)
+    .map((row) => row.id)
+    .join(',');
+  useEffect(() => {
+    if (!sslIds) return;
+    const controller = new AbortController();
+    void fetch(
+      `${API_URL}/services/my/ssl-status?${new URLSearchParams({ ids: sslIds })}`,
+      {
+        credentials: 'include',
+        cache: 'no-store',
+        signal: controller.signal,
+      },
+    )
+      .then(async (response) => {
+        if (!response.ok) throw new Error('SSL status unavailable');
+        const parsed = sslResponseSchema.parse(await response.json());
+        if (!controller.signal.aborted)
+          setSsl({
+            key: sslIds,
+            statuses: new Map(
+              parsed.data.map(({ serviceId, status }) => [serviceId, status]),
+            ),
+          });
+      })
+      .catch(() => {
+        if (!controller.signal.aborted)
+          setSsl({ key: sslIds, statuses: new Map() });
+      });
+    return () => controller.abort();
+  }, [sslIds]);
   const nextAllowed = !readCustomerServiceQuery({
     page: String(query.page + 1),
     pageSize: String(query.pageSize),
@@ -163,9 +229,8 @@ function Ledger({
           Service inventory
         </h2>
         <p className="text-sm text-slate-600">
-          Your matching service records, not active-hosting totals, balances or
-          settled cash. Stored application state does not verify live remote
-          hosting.
+          SSL shows whether the public domain has a trusted HTTPS certificate.
+          Service status reflects your hosting account record.
         </p>
       </div>
       <form
@@ -321,6 +386,21 @@ function Ledger({
                 rows={rows}
                 rowKey={(service) => service.id}
                 columns={[
+                  {
+                    key: 'ssl',
+                    header: 'SSL',
+                    render: (service) => (
+                      <SslIndicator
+                        status={
+                          service.status !== 'ACTIVE' || !service.domain
+                            ? 'UNKNOWN'
+                            : ssl?.key === sslIds
+                              ? (ssl.statuses.get(service.id) ?? 'UNKNOWN')
+                              : 'CHECKING'
+                        }
+                      />
+                    ),
+                  },
                   {
                     key: 'domain',
                     header: 'Domain',

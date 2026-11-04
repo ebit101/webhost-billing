@@ -3413,3 +3413,9 @@ The following decisions are intentionally unresolved and must be selected before
 - **Date:** 2026-11-04. Command 200.
 - **Decision:** Offer monthly, quarterly and annual add-ons only with hosting in the same currency and billing period. The order item records the purchased period and price. A fulfilled recurring item on the hosting order joins subsequent renewal invoices at its purchased price, including after a catalog price change or withdrawal.
 - **Renewal:** The hosting invoice and add-on lines are created in one transaction under the existing service-period guard. The add-on line carries the hosting period dates and references its purchased order item. The hosting line continues to drive service extension and suspension. Pending and one-time purchases do not renew.
+
+## ADR-166 — Website SSL indicators for customer hosting
+
+- **Date:** 2026-11-04. Command 201.
+- **Decision:** Check public website TLS separately from the hosting list and its service status. The customer endpoint resolves domains from owned active services, rejects non-public IPv4 results and pins the TLS connection to the checked address on port 443. Certificate validation uses the original domain. Fake providers and test runs stay offline.
+- **Display:** A trusted certificate is active. A recognized certificate failure or refused HTTPS connection is inactive. Missing domains, DNS failures, IPv6-only sites, timeouts and other inconclusive results are unknown. The check samples one public IPv4 address. Cache results briefly and bound simultaneous probes so the service list can render independently.

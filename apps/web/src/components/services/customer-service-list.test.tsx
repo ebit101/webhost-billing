@@ -90,6 +90,50 @@ afterEach(() => {
 });
 
 describe('customer service inventory', () => {
+  it('shows certificate status separately from hosting status after the list is visible', async () => {
+    const rows: Service[] = ['valid', 'invalid', 'unknown'].map(
+      (label, index) => ({
+        ...service,
+        id: `90000000-0000-4000-8002-${String(index).padStart(12, '0')}`,
+        domain: `${label}.example.test`,
+        status: 'ACTIVE',
+      }),
+    );
+    const ssl = deferred<Response>();
+    const mock = vi.fn(async (input: RequestInfo | URL) =>
+      new URL(String(input)).pathname.endsWith('/ssl-status')
+        ? ssl.promise
+        : json(page(rows)),
+    );
+    vi.stubGlobal('fetch', mock);
+    render(history());
+    await screen.findByText('valid.example.test');
+    expect(screen.getAllByText('Checking SSL')).toHaveLength(3);
+    await waitFor(() => {
+      const sslUrl = mock.mock.calls
+        .map(([input]) => new URL(String(input)))
+        .find((url) => url.pathname.endsWith('/ssl-status'));
+      expect(sslUrl?.searchParams.get('ids')).toBe(
+        rows.map(({ id }) => id).join(','),
+      );
+    });
+    await act(async () => {
+      ssl.resolve(
+        json({
+          success: true,
+          data: [
+            { serviceId: rows[0]!.id, status: 'ACTIVE' },
+            { serviceId: rows[1]!.id, status: 'INACTIVE' },
+          ],
+        }),
+      );
+    });
+    expect(screen.getByText('SSL active')).toBeDefined();
+    expect(screen.getByText('SSL inactive')).toBeDefined();
+    expect(screen.getByText('SSL unknown')).toBeDefined();
+    expect(screen.getAllByRole('cell', { name: /^Active$/ })).toHaveLength(3);
+  });
+
   it('reads an older page beyond 100 with combined filters, authoritative counts and original display/routes', async () => {
     const query: CustomerServiceQuery = {
       page: 6,
@@ -140,7 +184,7 @@ describe('customer service inventory', () => {
       );
     expect(mock).toHaveBeenCalledTimes(1);
     expect(
-      screen.getByText(/Stored application state does not verify/),
+      screen.getByText(/Service status reflects your hosting account record/),
     ).toBeDefined();
   });
   it.each(['search', 'status', 'size', 'next', 'previous', 'clear'] as const)(

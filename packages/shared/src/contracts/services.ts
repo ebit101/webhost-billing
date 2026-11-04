@@ -5,6 +5,30 @@ import { requestedDomainSchema } from './orders';
 import { paginationQuerySchema } from './pagination';
 import { hostingBillingPeriodSchema, serviceStatusSchema } from './states';
 
+export const serviceSslStatusSchema = z.enum(['ACTIVE', 'INACTIVE', 'UNKNOWN']);
+export type ServiceSslStatus = z.infer<typeof serviceSslStatusSchema>;
+
+export const serviceSslQuerySchema = z
+  .object({
+    ids: z
+      .string()
+      .max(3699)
+      .transform((ids) => ids.split(','))
+      .pipe(z.array(z.uuid()).min(1).max(100)),
+  })
+  .strict();
+
+export const serviceSslResultsSchema = z
+  .array(
+    z
+      .object({
+        serviceId: z.uuid(),
+        status: serviceSslStatusSchema,
+      })
+      .strict(),
+  )
+  .max(100);
+
 export const serverStatusSchema = z.enum(['ACTIVE', 'MAINTENANCE', 'DISABLED']);
 
 const cancellationReason = z.string().trim().max(1000).optional();

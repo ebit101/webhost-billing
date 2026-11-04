@@ -16,6 +16,7 @@ export interface AuthRateLimitDefinition {
     | 'sslcommerz-return'
     | 'ticket-create'
     | 'ticket-reply'
+    | 'service-ssl-status'
     | 'staff-invite';
   limit: number;
   windowMs: number;

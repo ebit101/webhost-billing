@@ -57,4 +57,4 @@ Command 200 adds a managed backup that follows the hosting renewal cycle. The
 pilot checks the purchased price, one add-on line per period, and payment of
 the combined invoice. See the [progress log](PROGRESS.md) for verification.
 
-Next proposed command is **Command 201 — Let customers cancel recurring hosting add-ons at period end**.
+Next proposed command is **Command 202 — Let customers cancel recurring hosting add-ons at period end**.
