@@ -2,12 +2,12 @@
 
 ## Status Summary
 
-- **Current command:** Command 196 — Show missing requirements when a hosting plan cannot be activated
-- **Current status:** The product editor displays the missing activation requirements and the tab for each fix.
+- **Current command:** Command 197 — Rehearse scheduled renewal and customer messages locally
+- **Current status:** Scheduled renewal, customer messages, and service reactivation verified locally with fictional data.
 - **Last updated:** 2026-11-04
 - **Last recorded staging release:** Command 177, `887862020de1e472f303f359b793dccbedfb9b07`, deployed on 2026-11-03 (Asia/Dhaka).
-- **Next action:** Await authorization for Command 197 — Rehearse scheduled renewal and customer messages locally.
-- **Next command authorized:** None after Command 196.
+- **Next action:** Await authorization for Command 198 — Handle renewal invoices when the scheduler misses the due date.
+- **Next command authorized:** None after Command 197.
 
 ## Command Reports
 
@@ -16,6 +16,17 @@
 - Added the dedicated PowerShell launcher and handoff guide for future owner-authorized updates to my.speedhost.bd. The launcher requires a full commit SHA, defaults to read-only SSH preflight, and uses the existing server procedure for archive verification, backup, migration and health checks when applied.
 - Verified preflight against the live host with an existing authorized identity. Enrolled the dedicated Ed25519 identity on 2026-11-04 with forwarding and PTY disabled. The launcher passed read-only preflight using its default key path, and the server still reported the same active release. On 2026-11-04, the launcher deployed `fe21c19719a0c7cef461179048052756f1e52f04` via SSH in 13 minutes 47 seconds. The merged source matched PR #102 after all its checks passed. The server verified the backup, applied migrations, and reported seven healthy services. Independent requests to the storefront, shared hosting, health, and readiness returned HTTP 200.
 - The next authorized release can use the handoff steps after the candidate is validated. For the next release, use the documented SSH preflight on the intended commit before applying it.
+
+### Command 197 — Rehearse scheduled renewal and customer messages locally
+
+- Completed the local rehearsal on 2026-11-04 (Asia/Dhaka). The Playwright scenario used isolated PostgreSQL and Redis, the normal scheduler and worker processes, a fake hosting panel, and local email previews. Only the test processes' renewal clock advanced. Signup verification used the link from the preview email.
+- Verified one renewal invoice, an overdue invoice with hosting still active during grace, one suspension after grace, and reactivation after administrator-verified fictional payment. The balance reached zero and the service moved to its next billing date. Verified local previews for verification, welcome, service readiness, renewal reminder, overdue notice, suspension, the payment receipt, and reactivation.
+- Fixed a race in the renewal processor and email resolver: a matching job picked up before its outbox event is marked published now uses its existing bounded retry policy. Missing, mismatched, or failed references still stop. Added database-backed coverage for both consumers and the end-to-end scenario at `apps/web/e2e/specs/scheduled-renewal.spec.ts`. Updated the command index, Phase 2 pilot notes, and critical invariants evidence.
+- The isolated Playwright rehearsal and the focused database-backed renewal and email cases passed. The worker build, worker and browser-test type checks, and focused lint passed.
+- Formatting and the Git diff check passed. The repository-wide offline documentation check was stopped after its link scan stalled.
+- The broader renewal worker suite exposed a separate issue on the pre-command code: when a run first tries to invoice an already overdue service, it supplies a due date before the issue date. PostgreSQL rejects the invoice with `invoices_due_date_check`. The existing cancellation test surfaced this on a seeded service during its later cycle. Command 197 leaves catch-up billing policy unchanged.
+- The rehearsal did not exercise external mail or a live hosting panel. The hosting queue succeeded in this run and its retry behavior was not changed. No deployment ran.
+- Recommended next command is **Command 198 — Handle renewal invoices when the scheduler misses the due date**. Rehearse downtime across a due date, define the catch-up invoice and grace policy, and verify that resuming the scheduler creates one invoice without premature suspension.
 
 ### Command 196 — Show missing requirements when a hosting plan cannot be activated
 

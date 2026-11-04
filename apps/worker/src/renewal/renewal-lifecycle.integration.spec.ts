@@ -204,6 +204,21 @@ describe('renewal lifecycle integration', () => {
 
   it('is idempotent through invoice, delayed notices, suspension, payment, and unsuspension', async () => {
     const first = await cycle('2026-07-27T06:00:00.000Z');
+    await prisma.outboxEvent.update({
+      where: { id: first.outboxEventId },
+      data: { status: OutboxStatus.PENDING, publishedAt: null },
+    });
+    await expect(processor.process(first)).rejects.toMatchObject({
+      kind: 'TEMPORARY',
+      code: 'RENEWAL_OUTBOX_PUBLICATION_PENDING',
+    });
+    expect(
+      await prisma.invoiceItem.count({ where: { serviceId: ids.service } }),
+    ).toBe(0);
+    await prisma.outboxEvent.update({
+      where: { id: first.outboxEventId },
+      data: { status: OutboxStatus.PUBLISHED, publishedAt: clock.now() },
+    });
     await processor.process(first);
     await processor.process(first);
 

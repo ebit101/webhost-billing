@@ -148,6 +148,19 @@ describe('EmailDeliveryService integration', () => {
       correlationId: ids.outbox,
     };
 
+    await prisma.outboxEvent.update({
+      where: { id: ids.outbox },
+      data: { status: OutboxStatus.PENDING, publishedAt: null },
+    });
+    await expect(delivery.deliver(data, undefined)).rejects.toMatchObject({
+      kind: 'TEMPORARY',
+      code: 'EMAIL_OUTBOX_PUBLICATION_PENDING',
+    });
+    expect(adapter.messages).toHaveLength(0);
+    await prisma.outboxEvent.update({
+      where: { id: ids.outbox },
+      data: { status: OutboxStatus.PUBLISHED, publishedAt: new Date() },
+    });
     await expect(delivery.deliver(data, undefined)).rejects.toMatchObject({
       kind: 'TEMPORARY',
       code: 'SMTP_CONNECTION_UNAVAILABLE',

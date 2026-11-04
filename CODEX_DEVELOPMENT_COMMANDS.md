@@ -6772,3 +6772,10 @@ only one payment settles. Record the results in the progress log. No deployment.
 Owner-authorized on 2026-11-04. Show each missing activation requirement in
 the administrator product editor, including which tab to use. Verify that
 correcting the missing requirements allows activation. Record the results locally.
+
+## Command 197 — Rehearse scheduled renewal and customer messages locally
+
+Owner-authorized on 2026-11-04. Follow a fictional hosting customer through
+signup, verification, provisioning, scheduled renewal, and payment with the
+local scheduler, worker, and preview mail. Check grace, suspension, and
+reactivation and record the results in the progress log. No deployment.

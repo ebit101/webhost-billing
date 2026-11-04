@@ -575,12 +575,16 @@ export class RenewalProcessorService {
     });
     if (
       !event ||
-      event.status !== OutboxStatus.PUBLISHED ||
+      event.status === OutboxStatus.FAILED ||
       event.eventType !== data.eventType ||
       event.aggregateType !== data.aggregateType ||
       event.aggregateId !== data.aggregateId
     ) {
       throw permanent('RENEWAL_OUTBOX_REFERENCE_INVALID');
+    }
+    // The queue can start the job before the dispatcher commits publication.
+    if (event.status !== OutboxStatus.PUBLISHED) {
+      throw temporary('RENEWAL_OUTBOX_PUBLICATION_PENDING');
     }
     return event;
   }

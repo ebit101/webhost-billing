@@ -56,12 +56,19 @@ export class EmailMessageResolver {
     if (
       !event ||
       !eventType.success ||
-      event.status !== OutboxStatus.PUBLISHED ||
+      event.status === OutboxStatus.FAILED ||
       event.eventType !== data.eventType ||
       event.aggregateId !== data.aggregateId ||
       event.aggregateType !== data.aggregateType
     ) {
       throw permanent('EMAIL_OUTBOX_REFERENCE_INVALID');
+    }
+    if (event.status !== OutboxStatus.PUBLISHED) {
+      throw new BackgroundJobError(
+        'TEMPORARY',
+        'EMAIL_OUTBOX_PUBLICATION_PENDING',
+        'Email publication has not completed.',
+      );
     }
     let payload: Record<string, unknown>;
     try {
