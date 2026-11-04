@@ -228,9 +228,14 @@ test('customer searches and pages older owned services without business mutation
   await expect(
     page.getByRole('link', { name: '← Back to services' }),
   ).toHaveAttribute('href', '/portal/services');
-  // The unchanged detail effect runs twice under the existing dev Strict Mode.
-  // Neither read occurs until the deliberate click, and both target that service.
-  expect(details).toEqual(['/services/' + serviceId, '/services/' + serviceId]);
+  // Both detail effects run twice under dev Strict Mode.
+  // The service and cancellation reads both target the selected service.
+  expect([...details].sort()).toEqual([
+    '/services/' + serviceId,
+    '/services/' + serviceId,
+    '/services/' + serviceId + '/cancellation-request',
+    '/services/' + serviceId + '/cancellation-request',
+  ]);
   expect(panelRequests).toEqual([]);
   await page.getByRole('link', { name: '← Back to services' }).click();
   await expect(ledger).toContainText('140 matching services');
