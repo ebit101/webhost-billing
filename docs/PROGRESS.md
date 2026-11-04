@@ -23,6 +23,8 @@
 
 - On 2026-11-04, PR #102 passed database acceptance and exposed an existing late-renewal issue with the seeded CI data. The worker now clamps an overdue period's invoice due date to the issue time while preserving the service period. All three renewal lifecycle tests passed locally on seeded PostgreSQL 18. The release awaits the rerun.
 
+- On 2026-11-04, PR #102 passed package and database checks and exposed three browser test assumptions. Scoped the support banner and invoice filters, accounted for the selected service cancellation reads, and allowed the cold invoice navigation more time. All four affected browser tests passed across focused local reruns. The server release awaits GitHub validation.
+
 ### Command 193 — Verify hosting cancellation and rehearse suspension recovery
 
 - Verified locally on 2026-11-03 (Asia/Dhaka). Added `apps/web/e2e/specs/hosting-cancellation.spec.ts` and registered the command. All 44 migrations applied in isolated PostgreSQL. Chromium, the local Redis queue, and the real worker exercised customer withdrawal, scheduled suspension, immediate approval, and three confirmation messages delivered to the local `.eml` preview.
