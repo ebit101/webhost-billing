@@ -3,8 +3,8 @@ import { expect as playwrightExpect, test, type Page } from '@playwright/test';
 import { createCustomerOrderRequestSchema } from '@webhost-billing/shared';
 import { e2ePrisma } from '../database';
 import { E2E_API_ORIGIN, E2E_WEB_ORIGIN } from '../environment';
-import { E2E_ADMIN, E2E_PRODUCT, E2E_SERVER } from '../fixtures';
-import { createPurchaseTestCustomer } from '../purchase-test-customer';
+import { E2E_PRODUCT, E2E_SERVER } from '../fixtures';
+import { createPurchaseTestActors } from '../purchase-test-actors';
 
 const expect = playwrightExpect.configure({ timeout: 40_000 });
 
@@ -32,7 +32,7 @@ test('a one-time website migration is billed and fulfilled once after a checkout
   page: admin,
 }) => {
   test.setTimeout(300_000);
-  const buyer = await createPurchaseTestCustomer();
+  const { buyer, staff } = await createPurchaseTestActors();
   const name = 'Fictional website migration';
   const domain = 'command199-migration.example.test';
   const reference = 'FICTIONAL-MIGRATION-199';
@@ -41,8 +41,8 @@ test('a one-time website migration is billed and fulfilled once after a checkout
   try {
     await expect(
       await apiMutation(admin, 'POST', '/auth/login', {
-        email: E2E_ADMIN.email,
-        password: E2E_ADMIN.password,
+        email: staff.email,
+        password: staff.password,
       }),
     ).toBeOK();
     await admin.goto('/admin/products');

@@ -1,7 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { e2ePrisma } from '../database';
-import { E2E_ADMIN } from '../fixtures';
-import { createPurchaseTestCustomer } from '../purchase-test-customer';
+import { createPurchaseTestActors } from '../purchase-test-actors';
 
 test.afterAll(async () => e2ePrisma.$disconnect());
 
@@ -10,7 +9,7 @@ test('one fictional plan settles one manual payment despite repeated submissions
   page: admin,
 }) => {
   test.setTimeout(240_000);
-  const buyer = await createPurchaseTestCustomer();
+  const { buyer, staff } = await createPurchaseTestActors();
   const slug = 'command194-pilot';
   const name = 'Fictional pilot hosting';
   const domain = 'command194-pilot.example.test';
@@ -18,8 +17,8 @@ test('one fictional plan settles one manual payment despite repeated submissions
   const amount = 123_456n;
 
   await admin.goto('/admin');
-  await admin.getByLabel('Email address').fill(E2E_ADMIN.email);
-  await admin.getByLabel('Password', { exact: true }).fill(E2E_ADMIN.password);
+  await admin.getByLabel('Email address').fill(staff.email);
+  await admin.getByLabel('Password', { exact: true }).fill(staff.password);
   await admin.getByRole('button', { name: 'Sign in', exact: true }).click();
   await expect(
     admin.getByRole('heading', { name: 'Business overview' }),
@@ -82,7 +81,7 @@ test('one fictional plan settles one manual payment despite repeated submissions
       .getByRole('button', { name: 'Sign in', exact: true })
       .click();
     await expect(
-      customer.getByRole('heading', { name: 'Welcome, Healthy', exact: true }),
+      customer.getByRole('heading', { name: 'Welcome, Purchase', exact: true }),
     ).toBeVisible();
     await customer.goto('/hosting');
     await expect(
@@ -200,7 +199,7 @@ test('one fictional plan settles one manual payment despite repeated submissions
     });
     expect(settled).toMatchObject({
       amount,
-      reviewedByUserId: E2E_ADMIN.userId,
+      reviewedByUserId: staff.userId,
     });
     for (const payment of pending) {
       const rejected = await admin.request.patch(
@@ -250,7 +249,7 @@ test('one fictional plan settles one manual payment despite repeated submissions
       ),
     ).toMatchObject([
       {
-        actorUserId: E2E_ADMIN.userId,
+        actorUserId: staff.userId,
         entityId: settled.id,
         metadata: {
           invoiceId: invoice.id,
