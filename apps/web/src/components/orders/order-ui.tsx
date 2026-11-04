@@ -5,6 +5,21 @@ import type {
   PublicProduct,
 } from '@webhost-billing/shared';
 
+export function addOnPeriodLabel(period: PublicHostingAddOn['billingPeriod']) {
+  return period === 'ONE_TIME' ? 'one time' : period.toLowerCase();
+}
+
+export function matchesHostingAddOn(
+  offer: PublicHostingAddOn,
+  price: PublicProduct['prices'][number] | undefined,
+) {
+  return (
+    price?.amount.currency === offer.amount.currency &&
+    (offer.billingPeriod === 'ONE_TIME' ||
+      offer.billingPeriod === price.billingPeriod)
+  );
+}
+
 export function formatHostingSubtotal(
   price: PublicProduct['prices'][number],
   addOns: PublicHostingAddOn[] = [],

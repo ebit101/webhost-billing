@@ -61,7 +61,7 @@ test('a one-time website migration is billed and fulfilled once after a checkout
     await admin
       .getByLabel('Description (optional)')
       .fill('Staff copy a fictional site to the new hosting account.');
-    await admin.getByLabel('One-time price').fill('800.00');
+    await admin.getByLabel('Price', { exact: true }).fill('800.00');
     await admin
       .getByRole('checkbox', { name: E2E_PRODUCT.name, exact: true })
       .check();

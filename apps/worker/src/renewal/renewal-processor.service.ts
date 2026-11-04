@@ -8,6 +8,7 @@ import {
 } from '@webhost-billing/database';
 import { BackgroundJobError } from '@webhost-billing/queue';
 import {
+  POSTGRES_BIGINT_MAX,
   PROJECT_NAME,
   businessIdentitySchema,
   hostingBillingPeriodSchema,
@@ -150,6 +151,7 @@ export class RenewalProcessorService {
         const service = await transaction.service.findUnique({
           where: { id: serviceId },
           include: {
+            orderItem: { select: { orderId: true } },
             customer: { include: { user: true } },
             cancellationRequests: {
               where: { status: { in: ['OPEN', 'COMPLETED'] } },
@@ -184,12 +186,30 @@ export class RenewalProcessorService {
           select: { id: true },
         });
         if (existing) return false;
+        const addOns = service.orderItem
+          ? await transaction.orderItem.findMany({
+              where: {
+                orderId: service.orderItem.orderId,
+                kind: 'ADD_ON',
+                billingPeriod,
+                currency: service.currency,
+                fulfilledAt: { not: null },
+              },
+              orderBy: { id: 'asc' },
+            })
+          : [];
         const setting = await transaction.setting.findUnique({
           where: { key: 'business.identity' },
           select: { value: true },
         });
         const amount = service.recurringAmount;
-        const paid = amount === 0n;
+        const total = addOns.reduce(
+          (sum, item) => sum + item.lineTotal,
+          amount,
+        );
+        if (total > POSTGRES_BIGINT_MAX)
+          throw new Error('Renewal invoice total exceeds the supported range.');
+        const paid = total === 0n;
         const invoice = await transaction.invoice.create({
           data: {
             invoiceNumber: await allocateInvoiceNumber(transaction),
@@ -197,10 +217,10 @@ export class RenewalProcessorService {
             customerId: service.customerId,
             status: paid ? InvoiceStatus.PAID : InvoiceStatus.UNPAID,
             currency: service.currency,
-            subtotal: amount,
-            total: amount,
+            subtotal: total,
+            total,
             amountPaid: 0n,
-            balanceDue: amount,
+            balanceDue: total,
             customerNameSnapshot:
               service.customer.companyName ??
               `${service.customer.firstName} ${service.customer.lastName}`,
@@ -225,17 +245,31 @@ export class RenewalProcessorService {
             dueAt,
             ...(paid ? { paidAt: now } : {}),
             items: {
-              create: {
-                linePosition: 1,
-                serviceId: service.id,
-                descriptionSnapshot: `Renewal: ${service.productNameSnapshot}${service.domain ? ` (${service.domain})` : ''}`,
-                currency: service.currency,
-                quantity: 1,
-                unitAmount: amount,
-                lineTotal: amount,
-                servicePeriodStart: periodStart,
-                servicePeriodEnd: periodEnd,
-              },
+              create: [
+                {
+                  linePosition: 1,
+                  serviceId: service.id,
+                  descriptionSnapshot: `Renewal: ${service.productNameSnapshot}${service.domain ? ` (${service.domain})` : ''}`,
+                  currency: service.currency,
+                  quantity: 1,
+                  unitAmount: amount,
+                  lineTotal: amount,
+                  servicePeriodStart: periodStart,
+                  servicePeriodEnd: periodEnd,
+                },
+                // The hosting line anchors service renewal. Add-ons reference their purchase.
+                ...addOns.map((item, index) => ({
+                  linePosition: index + 2,
+                  orderItemId: item.id,
+                  descriptionSnapshot: `Renewal: ${item.productNameSnapshot}`,
+                  currency: item.currency,
+                  quantity: item.quantity,
+                  unitAmount: item.unitAmount,
+                  lineTotal: item.lineTotal,
+                  servicePeriodStart: periodStart,
+                  servicePeriodEnd: periodEnd,
+                })),
+              ],
             },
           },
         });

@@ -122,11 +122,17 @@ const eligibleProductIdsSchema = z
     'Select each hosting plan once',
   );
 
+export const hostingAddOnBillingPeriodSchema = z.union([
+  z.literal('ONE_TIME'),
+  hostingBillingPeriodSchema,
+]);
+
 export const hostingAddOnInputSchema = z
   .object({
     name: z.string().trim().min(2).max(160),
     description: z.string().trim().max(2_000).nullable(),
     currency: currencyCodeSchema,
+    billingPeriod: hostingAddOnBillingPeriodSchema.default('ONE_TIME'),
     amount: positiveMinorUnitAmountSchema,
     hostingProductIds: eligibleProductIdsSchema,
     enabled: z.boolean(),
@@ -140,6 +146,7 @@ export const publicHostingAddOnSchema = z
     name: z.string().min(2).max(160),
     description: z.string().max(2_000).nullable(),
     amount: moneySchema,
+    billingPeriod: hostingAddOnBillingPeriodSchema,
   })
   .strict();
 

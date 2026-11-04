@@ -233,6 +233,7 @@ export class OrderService {
             : await transaction.productPrice.findMany({
                 where: {
                   ...availableAddOnPrice(now, price.currency),
+                  billingPeriod: { in: ['ONE_TIME', price.billingPeriod] },
                   id: { in: addOnPriceIds },
                   product: {
                     kind: 'ADD_ON',
@@ -393,7 +394,7 @@ export class OrderService {
                   productPriceId: addOn.id,
                   productNameSnapshot: addOn.product.name,
                   descriptionSnapshot: addOn.product.description,
-                  billingPeriod: 'ONE_TIME' as const,
+                  billingPeriod: addOn.billingPeriod,
                   currency: price.currency,
                   unitAmount: addOn.amount,
                   lineTotal: addOn.amount,
@@ -492,7 +493,7 @@ export class OrderService {
                   .map((item, index) => ({
                     orderItemId: item.id,
                     linePosition: firstAddOnPosition + index,
-                    descriptionSnapshot: `${item.productNameSnapshot} — one-time add-on for ${input.requestedDomain}`,
+                    descriptionSnapshot: `${item.productNameSnapshot} — ${item.billingPeriod === 'ONE_TIME' ? 'one-time' : item.billingPeriod.toLowerCase()} add-on for ${input.requestedDomain}`,
                     currency: item.currency,
                     quantity: 1,
                     unitAmount: item.unitAmount,

@@ -10,7 +10,11 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { authMutation, authenticatedGet } from '../../lib/auth-api';
 import { moneyForInput, moneyToMinor } from '../../lib/money-input';
 import { Card, Field, fieldClass } from '../customers/customer-fields';
-import { errorMessage, formatMinor } from '../orders/order-ui';
+import {
+  addOnPeriodLabel,
+  errorMessage,
+  formatMinor,
+} from '../orders/order-ui';
 import { Button, buttonStyles } from '../ui/button';
 import { LoadingState } from '../ui/feedback-state';
 import { PageHeader } from '../ui/page-header';
@@ -63,6 +67,7 @@ export function AdminHostingAddOns() {
         name: form.get('name'),
         description: String(form.get('description')).trim() || null,
         currency,
+        billingPeriod: form.get('billingPeriod'),
         amount: moneyToMinor(String(form.get('amount')), currency, 'Price'),
         hostingProductIds: form.getAll('hostingProductIds'),
         enabled: form.has('enabled'),
@@ -102,7 +107,7 @@ export function AdminHostingAddOns() {
       <PageHeader
         eyebrow="Administrator"
         title="Product add-ons"
-        description="Offer one-time extras for selected hosting plans. Complete purchased add-ons from the order after payment is verified."
+        description="Offer one-time or recurring extras for selected hosting plans. Recurring extras use the matching hosting billing cycle after fulfillment."
         actions={
           <Link href="/admin/products" className={buttonStyles('secondary')}>
             Back to products
@@ -137,7 +142,8 @@ export function AdminHostingAddOns() {
                       <strong>{item.name}</strong>
                       <p className="text-sm text-slate-600">
                         {formatMinor(item.amount.amount, item.amount.currency)}{' '}
-                        one time · {item.enabled ? 'Available' : 'Disabled'}
+                        {addOnPeriodLabel(item.billingPeriod)} ·{' '}
+                        {item.enabled ? 'Available' : 'Disabled'}
                       </p>
                     </div>
                     <Button
@@ -183,7 +189,7 @@ export function AdminHostingAddOns() {
                     required
                   />
                   <Field
-                    label="One-time price"
+                    label="Price"
                     name="amount"
                     defaultValue={
                       editing
@@ -196,6 +202,19 @@ export function AdminHostingAddOns() {
                     required
                   />
                 </div>
+                <label className="block text-sm font-semibold">
+                  Billing period
+                  <select
+                    className={fieldClass}
+                    name="billingPeriod"
+                    defaultValue={editing?.billingPeriod ?? 'ONE_TIME'}
+                  >
+                    <option value="ONE_TIME">One time</option>
+                    <option value="MONTHLY">Monthly</option>
+                    <option value="QUARTERLY">Quarterly</option>
+                    <option value="ANNUAL">Annual</option>
+                  </select>
+                </label>
                 <fieldset className="grid gap-2">
                   <legend className="mb-2 text-sm font-semibold">
                     Eligible hosting plans

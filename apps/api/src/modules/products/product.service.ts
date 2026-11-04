@@ -36,7 +36,7 @@ const PUBLIC_BILLING_PERIODS = [
 
 export function availableAddOnPrice(now: Date, currency?: string) {
   return {
-    billingPeriod: BillingPeriod.ONE_TIME,
+    billingPeriod: { in: [BillingPeriod.ONE_TIME, ...PUBLIC_BILLING_PERIODS] },
     ...(currency ? { currency } : {}),
     isActive: true,
     deletedAt: null,
@@ -52,7 +52,6 @@ const addOnInclude = {
     where: {
       isActive: true,
       deletedAt: null,
-      billingPeriod: BillingPeriod.ONE_TIME,
     },
   },
   eligibleHostingPlans: { select: { hostingProductId: true } },
@@ -69,6 +68,7 @@ function toAddOn(
     name: product.name,
     description: product.description,
     amount: serializeMoney(price.amount, price.currency),
+    billingPeriod: price.billingPeriod,
     hostingProductIds: product.eligibleHostingPlans.map(
       (plan) => plan.hostingProductId,
     ),
@@ -190,7 +190,8 @@ export class ProductService {
       if (
         !activePrice ||
         activePrice.amount !== amount ||
-        activePrice.currency !== input.currency
+        activePrice.currency !== input.currency ||
+        activePrice.billingPeriod !== input.billingPeriod
       ) {
         if (activePrice)
           await transaction.productPrice.update({
@@ -200,7 +201,7 @@ export class ProductService {
         await transaction.productPrice.create({
           data: {
             productId: product.id,
-            billingPeriod: BillingPeriod.ONE_TIME,
+            billingPeriod: input.billingPeriod,
             amount,
             currency: input.currency,
           },
@@ -372,6 +373,7 @@ export class ProductService {
               name: addOnProduct.name,
               description: addOnProduct.description,
               amount: serializeMoney(price.amount, price.currency),
+              billingPeriod: price.billingPeriod,
             })),
           ),
           prices: product.prices.map((price) => ({

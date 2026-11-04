@@ -13,7 +13,12 @@ import {
 } from '../../lib/checkout-intent';
 import { readOrderDraft, type OrderDraft } from '../../lib/order-draft';
 import { buttonStyles } from '../ui/button';
-import { formatHostingSubtotal, formatMinor } from './order-ui';
+import {
+  addOnPeriodLabel,
+  formatHostingSubtotal,
+  formatMinor,
+  matchesHostingAddOn,
+} from './order-ui';
 import { GuestHostingCheckoutForm } from './guest-hosting-checkout-form';
 
 export function CheckoutPreview({
@@ -65,8 +70,8 @@ export function CheckoutPreview({
     (item) => item.id === selection?.priceId && item.amount.currency === 'BDT',
   );
   const ready = !loading && !error && draft && product && price;
-  const addOnOffers = (product?.addOns ?? []).filter(
-    (item) => item.amount.currency === price?.amount.currency,
+  const addOnOffers = (product?.addOns ?? []).filter((item) =>
+    matchesHostingAddOn(item, price),
   );
   const selectedAddOns =
     audience === 'guest' &&
@@ -288,7 +293,9 @@ export function CheckoutPreview({
                   key={item.id}
                   className="mt-3 flex justify-between text-sm"
                 >
-                  <span>{item.name} (one time)</span>
+                  <span>
+                    {item.name} ({addOnPeriodLabel(item.billingPeriod)})
+                  </span>
                   <strong>
                     {formatMinor(item.amount.amount, item.amount.currency)}
                   </strong>

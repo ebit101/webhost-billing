@@ -109,6 +109,7 @@ test('the scheduled renewal and customer messages run through local workers', as
     method: 'POST' | 'PATCH',
     path: string,
     data: Record<string, unknown>,
+    expectedStatus?: number,
   ) {
     const csrf = await client.get('/auth/csrf');
     expect(csrf.ok()).toBe(true);
@@ -119,9 +120,10 @@ test('the scheduled renewal and customer messages run through local workers', as
       data,
     });
     expect(
-      response.ok(),
+      expectedStatus ? response.status() === expectedStatus : response.ok(),
       `${method} ${path} returned HTTP ${response.status()}`,
     ).toBe(true);
+    return response;
   }
 
   const clientOptions = {
@@ -178,16 +180,79 @@ test('the scheduled renewal and customer messages run through local workers', as
       email: E2E_ADMIN.email,
       password: E2E_ADMIN.password,
     });
-    await mutation(customer, 'POST', '/orders/checkout', {
+    async function createAddOn(
+      name: string,
+      billingPeriod: string,
+      amount: string,
+    ) {
+      const input = {
+        name,
+        billingPeriod,
+        amount,
+        currency: 'BDT',
+        description: null,
+        hostingProductIds: [E2E_PRODUCT.id],
+        enabled: true,
+      };
+      const response = await mutation(
+        admin,
+        'POST',
+        '/products/add-ons',
+        input,
+      );
+      const { data } = (await response.json()) as {
+        data: { id: string; priceId: string };
+      };
+      return { ...data, input };
+    }
+    const backup = await createAddOn(
+      'Fictional managed backup',
+      'MONTHLY',
+      '30000',
+    );
+    const migration = await createAddOn(
+      'Fictional migration',
+      'ONE_TIME',
+      '12000',
+    );
+    const pending = await createAddOn(
+      'Pending monthly add-on',
+      'MONTHLY',
+      '10000',
+    );
+    const annual = await createAddOn('Annual add-on', 'ANNUAL', '25000');
+    const checkout = {
       productId: E2E_PRODUCT.id,
       priceId: E2E_PRODUCT.priceId,
       requestedDomain: 'command197-pilot.example.test',
       submissionKey: randomUUID(),
+    };
+    await mutation(
+      customer,
+      'POST',
+      '/orders/checkout',
+      {
+        ...checkout,
+        addOnPriceIds: [annual.priceId],
+      },
+      422,
+    );
+    await mutation(customer, 'POST', '/orders/checkout', {
+      ...checkout,
+      addOnPriceIds: [backup.priceId, migration.priceId, pending.priceId],
     });
     const order = await e2ePrisma.order.findFirstOrThrow({
       where: { customerId },
       include: { items: true, invoices: true },
     });
+    const backupItem = order.items.find(
+      (item) => item.productPriceId === backup.priceId,
+    )!;
+    const migrationItem = order.items.find(
+      (item) => item.productPriceId === migration.priceId,
+    )!;
+    expect(backupItem.billingPeriod).toBe('MONTHLY');
+    expect(order.invoices[0]?.total).toBe(182_000n);
     async function pay(
       invoice: { id: string; balanceDue: bigint },
       reference: string,
@@ -204,7 +269,7 @@ test('the scheduled renewal and customer messages run through local workers', as
       status: 'PROCESSING',
     });
     await mutation(admin, 'POST', '/services', {
-      orderItemId: order.items[0]!.id,
+      orderItemId: order.items.find((item) => item.kind === 'HOSTING')!.id,
       serverId: E2E_SERVER.id,
     });
     const service = await e2ePrisma.service.findFirstOrThrow({
@@ -224,6 +289,20 @@ test('the scheduled renewal and customer messages run through local workers', as
     ).toMatchObject({ status: 'ACTIVE' });
     await delivered('service-provisioned');
     await preview(`${E2E_PRODUCT.name} is ready`);
+    for (const item of [backupItem, migrationItem]) {
+      await mutation(
+        admin,
+        'PATCH',
+        `/orders/${order.id}/add-ons/${item.id}/fulfill`,
+        {},
+      );
+    }
+    await mutation(admin, 'PATCH', `/products/add-ons/${backup.id}`, {
+      ...backup.input,
+      name: 'Repriced backup',
+      amount: '35000',
+      enabled: false,
+    });
 
     // Backdate only this fictional service so the scheduler can run on controlled business dates.
     const startedAt = new Date('2024-12-11T12:00:00.000Z');
@@ -283,7 +362,7 @@ test('the scheduled renewal and customer messages run through local workers', as
             some: { serviceId: service.id, servicePeriodStart: periodStart },
           },
         },
-        include: { items: true },
+        include: { items: { orderBy: { linePosition: 'asc' } } },
       });
     const invoices = await renewals();
     expect(invoices).toHaveLength(1);
@@ -291,8 +370,19 @@ test('the scheduled renewal and customer messages run through local workers', as
     expect(renewal).toMatchObject({
       status: 'UNPAID',
       dueAt,
-      balanceDue: service.recurringAmount,
+      balanceDue: service.recurringAmount + 30_000n,
     });
+    const backupLine = (periodStart: Date, periodEnd: Date) => ({
+      orderItemId: backupItem.id,
+      descriptionSnapshot: 'Renewal: Fictional managed backup',
+      lineTotal: 30_000n,
+      servicePeriodStart: periodStart,
+      servicePeriodEnd: periodEnd,
+    });
+    expect(renewal.items).toMatchObject([
+      { serviceId: service.id, lineTotal: service.recurringAmount },
+      backupLine(dueAt, new Date('2025-02-11T12:00:00.000Z')),
+    ]);
     await delivered('renewal-reminder', renewal.id);
     expect(
       await preview(`Renewal reminder for invoice ${renewal.invoiceNumber}`),
@@ -332,6 +422,16 @@ test('the scheduled renewal and customer messages run through local workers', as
     await delivered('service-reactivated');
     await preview(`${E2E_PRODUCT.name} has been reactivated`);
     expect(await renewals()).toHaveLength(1);
+    expect(
+      await e2ePrisma.invoiceItem.count({
+        where: { orderItemId: backupItem.id, servicePeriodStart: dueAt },
+      }),
+    ).toBe(1);
+    expect(
+      await e2ePrisma.payment.count({
+        where: { invoiceId: renewal.id, kind: 'CHARGE', status: 'SUCCEEDED' },
+      }),
+    ).toBe(1);
     const operations = await e2ePrisma.hostingPanelOperation.findMany({
       where: {
         serviceId: service.id,
@@ -358,12 +458,13 @@ test('the scheduled renewal and customer messages run through local workers', as
       status: 'UNPAID',
       issuedAt: resumedAt,
       dueAt: resumedAt,
-      balanceDue: service.recurringAmount,
+      balanceDue: service.recurringAmount + 30_000n,
       items: [
         {
           servicePeriodStart: missedDueAt,
           servicePeriodEnd: new Date('2025-03-11T12:00:00.000Z'),
         },
+        backupLine(missedDueAt, new Date('2025-03-11T12:00:00.000Z')),
       ],
     });
     const suspensionRequests = () =>
@@ -390,6 +491,11 @@ test('the scheduled renewal and customer messages run through local workers', as
     await setClock('2025-02-22');
     await cycle('2025-02-22');
     expect(await renewals(missedDueAt)).toMatchObject([{ id: catchUp.id }]);
+    expect(
+      await e2ePrisma.invoiceItem.count({
+        where: { orderItemId: backupItem.id, servicePeriodStart: missedDueAt },
+      }),
+    ).toBe(1);
     expect(await suspensionRequests()).toBe(1);
   } catch (error) {
     await info.attach('scheduler-and-worker', {

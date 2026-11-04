@@ -6793,3 +6793,10 @@ Owner-authorized on 2026-11-04. Add administrator-managed one-time extras for
 eligible hosting plans. Let customers select them at checkout and invoice them
 as separate lines. Verify a fictional website migration through checkout retry,
 payment and manual fulfillment. Validate locally. No deployment.
+
+## Command 200 — Add recurring hosting add-ons to renewal invoices
+
+Owner-authorized on 2026-11-04. Let staff offer recurring add-ons for matching
+hosting billing periods. Renew a fictional managed backup on its hosting
+invoice at the purchased price, and verify that rerunning renewal leaves one
+charge per period. Validate locally. No deployment.

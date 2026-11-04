@@ -4,7 +4,7 @@ import {
   MAX_CHECKOUT_ADD_ONS,
   type PublicHostingAddOn,
 } from '@webhost-billing/shared';
-import { formatMinor } from './order-ui';
+import { addOnPeriodLabel, formatMinor } from './order-ui';
 
 export function HostingAddOnOptions({
   offers,
@@ -47,7 +47,8 @@ export function HostingAddOnOptions({
             />
             <span>
               <strong>{offer.name}</strong> ·{' '}
-              {formatMinor(offer.amount.amount, offer.amount.currency)} one time
+              {formatMinor(offer.amount.amount, offer.amount.currency)}{' '}
+              {addOnPeriodLabel(offer.billingPeriod)}
               {offer.description && (
                 <span className="block text-slate-600">
                   {offer.description}

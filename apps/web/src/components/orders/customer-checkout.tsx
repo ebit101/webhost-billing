@@ -26,7 +26,12 @@ import { PageHeader } from '../ui/page-header';
 import { StatusBadge } from '../ui/status-badge';
 import { HostingDomainQuote } from './hosting-domain-quote';
 import { HostingAddOnOptions } from './hosting-add-on-options';
-import { errorMessage, formatMinor } from './order-ui';
+import {
+  addOnPeriodLabel,
+  errorMessage,
+  formatMinor,
+  matchesHostingAddOn,
+} from './order-ui';
 
 export function CustomerCheckout({
   initialProductId,
@@ -95,8 +100,8 @@ export function CustomerCheckout({
 
   const product = products.find((item) => item.id === productId);
   const price = product?.prices.find((item) => item.id === priceId);
-  const addOnOffers = (product?.addOns ?? []).filter(
-    (item) => item.amount.currency === price?.amount.currency,
+  const addOnOffers = (product?.addOns ?? []).filter((item) =>
+    matchesHostingAddOn(item, price),
   );
   const selectedAddOns = addOnOffers.filter((item) =>
     addOnPriceIds.includes(item.priceId),
@@ -162,7 +167,7 @@ export function CustomerCheckout({
                 <Summary
                   key={item.id}
                   label={item.productName}
-                  value={`${formatMinor(item.lineTotal.amount, item.lineTotal.currency)} one time`}
+                  value={`${formatMinor(item.lineTotal.amount, item.lineTotal.currency)} ${addOnPeriodLabel(item.billingPeriod)}`}
                 />
               ))}
             <Summary
@@ -423,7 +428,7 @@ export function CustomerCheckout({
               {selectedAddOns.map((item) => (
                 <PriceRow
                   key={item.id}
-                  label={`${item.name} (one time)`}
+                  label={`${item.name} (${addOnPeriodLabel(item.billingPeriod)})`}
                   amount={item.amount.amount}
                   currency={item.amount.currency}
                 />

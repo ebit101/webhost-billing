@@ -3406,4 +3406,10 @@ The following decisions are intentionally unresolved and must be selected before
 
 - **Date:** 2026-11-04. Command 199.
 - **Decision:** Store each add-on in the product catalog with a versioned one-time price and explicit eligibility for hosting plans. Checkout resolves selected price IDs against the chosen plan and currency and snapshots each purchase as a separate order item and invoice line. An exact checkout replay returns the existing order and invoice. Changing the selection requires a different submission key.
-- **Fulfillment:** Track staff completion on the purchased order item. Full verified payment is required. Hosting can activate while the add-on is pending, and the order completes after all required items are fulfilled. Add-on invoice lines carry no service period, so hosting renewal uses only the hosting price.
+- **Fulfillment:** Track staff completion on the purchased order item. Full verified payment is required. Hosting can activate while the add-on is pending, and the order completes after all required items are fulfilled. One-time add-on lines carry no service period and are excluded from hosting renewal.
+
+## ADR-165 — Recurring hosting add-ons share the hosting renewal invoice
+
+- **Date:** 2026-11-04. Command 200.
+- **Decision:** Offer monthly, quarterly and annual add-ons only with hosting in the same currency and billing period. The order item records the purchased period and price. A fulfilled recurring item on the hosting order joins subsequent renewal invoices at its purchased price, including after a catalog price change or withdrawal.
+- **Renewal:** The hosting invoice and add-on lines are created in one transaction under the existing service-period guard. The add-on line carries the hosting period dates and references its purchased order item. The hosting line continues to drive service extension and suspension. Pending and one-time purchases do not renew.

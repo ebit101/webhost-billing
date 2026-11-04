@@ -45,6 +45,10 @@ catch-up invoice.
 with one add-on line. It also checks that full payment precedes manual
 fulfillment and that the hosting renewal amount excludes the one-time charge.
 
+The scheduled renewal rehearsal verifies that a fulfilled managed backup joins
+the hosting invoice at its purchased price and that renewal reruns leave one
+backup line per period.
+
 ## Failure interpretation
 
 Command 79 adds a bounded manual-payment policy safeguard. The shared settings
