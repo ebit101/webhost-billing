@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { invoiceAgingFilterSchema } from './dashboard-reports';
 import {
   currencyCodeSchema,
   minorUnitAmountSchema,
@@ -90,6 +91,22 @@ export const invoiceListQuerySchema = paginationQuerySchema.extend({
   status: invoiceStatusSchema.optional(),
   customerId: z.uuid().optional(),
 });
+
+export const adminInvoiceListQuerySchema = invoiceListQuerySchema
+  .extend(invoiceAgingFilterSchema.partial().shape)
+  .refine(
+    ({ agingBucket, agingAsOf, agingCurrency, status }) =>
+      (!agingBucket && !agingAsOf && !agingCurrency) ||
+      Boolean(
+        agingBucket && agingAsOf && agingCurrency && status === 'OVERDUE',
+      ),
+    {
+      message:
+        'Invoice aging requires a bucket, date, currency and overdue status.',
+    },
+  );
+
+export type AdminInvoiceListQuery = z.infer<typeof adminInvoiceListQuerySchema>;
 
 export const invoiceItemSchema = z
   .object({

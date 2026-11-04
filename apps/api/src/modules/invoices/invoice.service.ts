@@ -23,7 +23,7 @@ import {
   type InvoiceActionRequest,
   type InvoiceCreationResult,
   type InvoiceItemInput,
-  type InvoiceListQuery,
+  type AdminInvoiceListQuery,
   type PaginationMeta,
   type UpdateDraftInvoiceRequest,
 } from '@webhost-billing/shared';
@@ -33,6 +33,7 @@ import type { SecurityRequestContext } from '../../common/http/request-context';
 import { PRISMA_CLIENT } from '../../infrastructure/database/database.module';
 import type { AuthRequestContext } from '../auth/auth.types';
 import { readManualPaymentInstructions } from '../payments/manual-payment-instructions';
+import { invoiceAgingWhere } from './invoice-aging';
 
 interface CalculableItem {
   quantity: number;
@@ -547,13 +548,20 @@ export class InvoiceService {
     return this.getUnchecked(invoiceId);
   }
 
-  async list(query: InvoiceListQuery): Promise<{
+  async list(query: AdminInvoiceListQuery): Promise<{
     data: Invoice[];
     pagination: PaginationMeta;
   }> {
     const where: Prisma.InvoiceWhereInput = {
       ...(query.customerId ? { customerId: query.customerId } : {}),
       ...(query.status ? { status: query.status } : {}),
+      ...(query.agingBucket && query.agingAsOf && query.agingCurrency
+        ? invoiceAgingWhere({
+            agingBucket: query.agingBucket,
+            agingAsOf: query.agingAsOf,
+            agingCurrency: query.agingCurrency,
+          })
+        : {}),
       ...(query.search
         ? {
             OR: [

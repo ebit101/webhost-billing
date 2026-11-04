@@ -6807,3 +6807,9 @@ Owner-authorized on 2026-11-04. Add a lock indicator to My services for the
 trusted HTTPS certificate of each active hosting domain. Keep unavailable
 checks separate from inactive SSL, and scope requests to the customer's
 services. Validate locally.
+
+## Command 203 — Add the administrator Reports workspace
+
+Owner-authorized on 2026-11-04. Place Reports below Payments and add Overview,
+Billing and Exports tabs. Reuse the revenue chart and audited CSV downloads.
+Show overdue invoice aging with links to matching invoices and validate locally.

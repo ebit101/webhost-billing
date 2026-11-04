@@ -11,9 +11,11 @@ import {
 } from '@webhost-billing/database';
 import {
   dashboardResponseSchema,
+  invoiceAgingBuckets,
   serializeMoney,
   type DashboardQuery,
   type DashboardResponse,
+  type InvoiceAgingResponse,
   type ReportExportRequest,
   type ReportResource,
 } from '@webhost-billing/shared';
@@ -21,6 +23,7 @@ import { ApplicationException } from '../../common/errors/application.exception'
 import type { SecurityRequestContext } from '../../common/http/request-context';
 import { PRISMA_CLIENT } from '../../infrastructure/database/database.module';
 import type { AuthRequestContext } from '../auth/auth.types';
+import { invoiceAgingWhere } from '../invoices/invoice-aging';
 import { SettingsService } from '../settings/settings.service';
 import { csvDocument } from './csv';
 import {
@@ -175,6 +178,34 @@ export class DashboardReportService {
         createdAt: entry.createdAt.toISOString(),
       })),
     });
+  }
+
+  async invoiceAging(): Promise<InvoiceAgingResponse> {
+    const { currency, timeZone } = await this.settings.overview();
+    const asOf = businessDate(new Date(), timeZone);
+    const totals = await this.prisma.$transaction(
+      invoiceAgingBuckets.map(({ id }) =>
+        this.prisma.invoice.aggregate({
+          where: invoiceAgingWhere({
+            agingBucket: id,
+            agingAsOf: asOf,
+            agingCurrency: currency,
+          }),
+          _count: true,
+          _sum: { balanceDue: true },
+        }),
+      ),
+      { isolationLevel: 'RepeatableRead' },
+    );
+    return {
+      asOf,
+      currency,
+      buckets: totals.map((total, index) => ({
+        id: invoiceAgingBuckets[index].id,
+        count: total._count,
+        balance: (total._sum.balanceDue ?? 0n).toString(),
+      })),
+    };
   }
 
   async exportCsv(

@@ -3,9 +3,11 @@ import { InvoiceDateText } from './invoice-date-text';
 import { sentenceCaseLabel } from '@webhost-billing/shared';
 
 import {
+  formatCalendarDate,
+  invoiceAgingBuckets,
   invoiceStatusSchema,
+  type AdminInvoiceListQuery,
   type Invoice,
-  type InvoiceListQuery,
   type PaginatedApiSuccessResponse,
 } from '@webhost-billing/shared';
 import Link from 'next/link';
@@ -129,7 +131,7 @@ function Ledger({
     pageSize: String(query.pageSize),
   }).invalid;
 
-  function navigate(next: InvoiceListQuery) {
+  function navigate(next: AdminInvoiceListQuery) {
     startTransition(() =>
       router.push(adminInvoiceHref(next), { scroll: false }),
     );
@@ -222,6 +224,7 @@ function Ledger({
           <select
             className={fieldClass}
             value={query.status ?? ''}
+            disabled={Boolean(query.agingBucket)}
             onChange={(event) =>
               navigate({
                 ...query,
@@ -277,6 +280,9 @@ function Ledger({
       <p className="text-sm text-slate-600">
         Applied search: {query.search || 'none'} · Applied status:{' '}
         {sentenceCaseLabel(query.status ?? '') || 'all'}
+        {query.agingAsOf && query.agingBucket
+          ? ` · ${query.agingCurrency} overdue by ${invoiceAgingBuckets.find(({ id }) => id === query.agingBucket)?.label} as of ${formatCalendarDate(query.agingAsOf)}`
+          : ''}
         {invalid ? ' (invalid URL filters; no ledger request made)' : ''}
       </p>
       {invalid ? (

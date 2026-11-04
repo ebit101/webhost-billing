@@ -1,8 +1,8 @@
 import {
-  invoiceListQuerySchema,
+  adminInvoiceListQuerySchema,
   invoiceSchema,
   paginatedApiSuccessResponseSchema,
-  type InvoiceListQuery,
+  type AdminInvoiceListQuery,
 } from '@webhost-billing/shared';
 import {
   parseAdminCustomerFilter,
@@ -12,7 +12,7 @@ import { readInvoiceLedgerQuery } from './invoice-ledger-query';
 
 type Input = URLSearchParams | Record<string, string | string[] | undefined>;
 export interface AdminInvoiceSelection {
-  query: InvoiceListQuery;
+  query: AdminInvoiceListQuery;
   invalid: boolean;
   customerFilter: AdminCustomerFilter;
 }
@@ -32,15 +32,29 @@ export function readAdminInvoiceQuery(input: Input): AdminInvoiceSelection {
       : values,
   );
   const ledger = readInvoiceLedgerQuery(input);
-  const query = invoiceListQuerySchema.parse({
-    ...ledger.query,
-    customerId: customerFilter.customerId,
+  const aging = Object.fromEntries(
+    agingFields.map((field) => {
+      if (!(input instanceof URLSearchParams)) return [field, input[field]];
+      const values = input.getAll(field);
+      return [field, values.length > 1 ? values : values[0]];
+    }),
+  );
+  const base = { ...ledger.query, customerId: customerFilter.customerId };
+  const parsed = adminInvoiceListQuerySchema.safeParse({
+    ...base,
+    ...aging,
   });
-  return { query, invalid: ledger.invalid, customerFilter };
+  return {
+    query: parsed.success ? parsed.data : base,
+    invalid: ledger.invalid || !parsed.success,
+    customerFilter,
+  };
 }
 
-export function adminInvoiceQueryString(query: InvoiceListQuery): string {
-  const validated = invoiceListQuerySchema.parse(query);
+const agingFields = ['agingBucket', 'agingAsOf', 'agingCurrency'] as const;
+
+export function adminInvoiceQueryString(query: AdminInvoiceListQuery): string {
+  const validated = adminInvoiceListQuerySchema.parse(query);
   const params = new URLSearchParams({
     page: String(validated.page),
     pageSize: String(validated.pageSize),
@@ -48,19 +62,23 @@ export function adminInvoiceQueryString(query: InvoiceListQuery): string {
   if (validated.search) params.set('search', validated.search);
   if (validated.status) params.set('status', validated.status);
   if (validated.customerId) params.set('customerId', validated.customerId);
+  for (const field of agingFields) {
+    const value = validated[field];
+    if (value) params.set(field, value);
+  }
   if (readAdminInvoiceQuery(params).invalid)
     throw new Error('Invalid invoice query.');
   return params.toString();
 }
 
-export function adminInvoiceHref(query: InvoiceListQuery): string {
+export function adminInvoiceHref(query: AdminInvoiceListQuery): string {
   return `/admin/invoices?${adminInvoiceQueryString(query)}`;
 }
 
 const responseSchema = paginatedApiSuccessResponseSchema(invoiceSchema);
 export function parseAdminInvoicePage(
   response: unknown,
-  query: InvoiceListQuery,
+  query: AdminInvoiceListQuery,
 ) {
   const parsed = responseSchema.safeParse(response);
   if (!parsed.success)

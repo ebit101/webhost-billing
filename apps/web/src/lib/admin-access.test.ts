@@ -39,6 +39,7 @@ describe('staff navigation and route boundaries', () => {
       'orders',
       'email',
       'automation',
+      'reports',
       '',
     ]) {
       const path = `/admin/${area}`;

@@ -47,6 +47,11 @@ export class DashboardReportController {
     return createApiSuccessResponse(await this.reports.dashboard(query));
   }
 
+  @Get('reports/invoice-aging')
+  async invoiceAging() {
+    return createApiSuccessResponse(await this.reports.invoiceAging());
+  }
+
   @Post('reports/exports/:resource')
   async export(
     @Param('resource', new ZodValidationPipe(reportResourceSchema))

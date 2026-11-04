@@ -49,6 +49,19 @@ CSV values are UTF-8 with a BOM, consistently quoted, lossless for `BIGINT`, and
 
 ## Interface and operations
 
+Full administrators can open **Reports** below **Payments**. **Overview** uses
+the selected period for collected revenue and links the current overdue balance
+to **Billing**. **Exports** uses the same audited CSV routes as the dashboard and
+shows the applied invoice and payment export dates.
+
+**Billing** uses `GET /reports/invoice-aging` for the current aging snapshot.
+It groups positive balances on overdue invoices in the operating currency into
+1–30, 31–60, 61–90, and 91+ days. Age is the difference between the business
+date and the persisted UTC invoice due date shown in the ledger. Invoices due
+today are zero days overdue for this report. Each bucket links to the ledger
+with the same as-of date, currency, and bucket. The ledger reads live invoice
+balances, so payments made after the snapshot can change its results.
+
 The administrator dashboard provides period controls, eight actionable metric cards, a daily net-revenue chart, audited export buttons, and recent activity. Invoice/payment exports follow the selected period; customer/service exports remain current snapshots. Negative daily or total net revenue is displayed explicitly and never converted through floating-point arithmetic.
 
 For reconciliation, compare exported payment kinds and successful states with the dashboard period. If the operating currency changes, review historical currency records separately because the dashboard intentionally does not perform exchange-rate conversion.

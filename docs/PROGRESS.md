@@ -2,12 +2,12 @@
 
 ## Status Summary
 
-- **Current command:** Command 201 — Show SSL status in the customer hosting list
-- **Current status:** Customer hosting SSL indicators and service ownership verified locally.
+- **Current command:** Command 203 — Add the administrator Reports workspace
+- **Current status:** Reports workspace and invoice aging drill-down verified locally.
 - **Last updated:** 2026-11-04
 - **Last recorded staging release:** Command 177, `887862020de1e472f303f359b793dccbedfb9b07`, deployed on 2026-11-03 (Asia/Dhaka).
 - **Next action:** Await authorization for Command 202 — Let customers cancel recurring hosting add-ons at period end.
-- **Next command authorized:** None after Command 201.
+- **Next command authorized:** None after Command 203.
 
 ## Command Reports
 
@@ -16,6 +16,15 @@
 - Added the dedicated PowerShell launcher and handoff guide for future owner-authorized updates to my.speedhost.bd. The launcher requires a full commit SHA, defaults to read-only SSH preflight, and uses the existing server procedure for archive verification, backup, migration and health checks when applied.
 - Verified preflight against the live host with an existing authorized identity. Enrolled the dedicated Ed25519 identity on 2026-11-04 with forwarding and PTY disabled. The launcher passed read-only preflight using its default key path, and the server still reported the same active release. On 2026-11-04, the launcher deployed `fe21c19719a0c7cef461179048052756f1e52f04` via SSH in 13 minutes 47 seconds. The merged source matched PR #102 after all its checks passed. The server verified the backup, applied migrations, and reported seven healthy services. Independent requests to the storefront, shared hosting, health, and readiness returned HTTP 200.
 - The next authorized release can use the handoff steps after the candidate is validated. For the next release, use the documented SSH preflight on the intended commit before applying it.
+
+### Command 203 — Add the administrator Reports workspace
+
+- Implemented locally on 2026-11-04 (Asia/Dhaka). Reports appears below Payments for full administrators and opens Overview by default. Overview uses the existing revenue chart and period filter. Billing shows overdue invoice aging, and Exports uses the existing audited customer, invoice, payment and service downloads.
+- Added the Reports page and shared dashboard components in the web app, a report API and shared aging contract, and matching filters for the administrator invoice ledger. The dashboard also uses the shared chart and CSV controls. No schema migration is required.
+- The aging report uses the configured business date and operating currency. It groups positive overdue invoice balances by the persisted UTC due date into 1–30, 31–60, 61–90 and 91+ days. The ledger uses the same scope and reads current balances, which can change after the report loads.
+- All 37 focused web tests and three isolated PostgreSQL API tests passed. They covered sidebar navigation, dashboard periods, audited exports, authorization, aging boundaries, partial balances and exact ledger matches. The first web run hit local timeouts and a missing router mock. The first database run exposed incomplete fictional invoice fixtures, which were corrected for the ledger test.
+- Shared and API builds, web type checks, focused lint, formatting and Git diff checks passed. Validation was local.
+- Recommended next command remains **Command 202 — Let customers cancel recurring hosting add-ons at period end**.
 
 ### Command 201 — Show SSL status in the customer hosting list
 

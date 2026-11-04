@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { moneySchema } from './money';
+import { currencyCodeSchema, moneySchema } from './money';
 
 const signedMoneySchema = z
   .object({
@@ -36,6 +36,42 @@ export const reportResourceSchema = z.enum([
 ]);
 
 export const reportExportRequestSchema = dashboardQuerySchema;
+
+export const invoiceAgingBuckets = [
+  { id: '1-30', minimumDays: 1, maximumDays: 30, label: '1–30 days' },
+  { id: '31-60', minimumDays: 31, maximumDays: 60, label: '31–60 days' },
+  { id: '61-90', minimumDays: 61, maximumDays: 90, label: '61–90 days' },
+  { id: '91-plus', minimumDays: 91, maximumDays: null, label: '91+ days' },
+] as const;
+
+const invoiceAgingBucketSchema = z.enum(
+  invoiceAgingBuckets.map(({ id }) => id),
+);
+
+export const invoiceAgingFilterSchema = z.object({
+  agingBucket: invoiceAgingBucketSchema,
+  agingAsOf: businessDateSchema.refine((value) => value >= '1900-01-01'),
+  agingCurrency: currencyCodeSchema,
+});
+
+export const invoiceAgingResponseSchema = z
+  .object({
+    asOf: businessDateSchema,
+    currency: invoiceAgingFilterSchema.shape.agingCurrency,
+    buckets: z.array(
+      z
+        .object({
+          id: invoiceAgingBucketSchema,
+          count: z.number().int().nonnegative(),
+          balance: z.string().regex(/^(0|[1-9]\d*)$/),
+        })
+        .strict(),
+    ),
+  })
+  .strict();
+
+export type InvoiceAgingFilter = z.infer<typeof invoiceAgingFilterSchema>;
+export type InvoiceAgingResponse = z.infer<typeof invoiceAgingResponseSchema>;
 
 export const dashboardResponseSchema = z
   .object({

@@ -15,6 +15,7 @@ import {
 } from '@nestjs/common';
 import type { ApiEnvironment } from '@webhost-billing/config';
 import {
+  adminInvoiceListQuerySchema,
   businessIdentitySchema,
   createApiSuccessResponse,
   createInvoiceRequestSchema,
@@ -22,6 +23,7 @@ import {
   invoiceActionRequestSchema,
   invoiceListQuerySchema,
   updateDraftInvoiceRequestSchema,
+  type AdminInvoiceListQuery,
   type BusinessIdentity,
   type CreateInvoiceRequest,
   type InvoiceActionRequest,
@@ -113,8 +115,8 @@ export class InvoiceController {
   @StaffPermissionRequired('invoices.read')
   @Roles('ADMIN')
   async list(
-    @Query(new ZodValidationPipe(invoiceListQuerySchema))
-    query: InvoiceListQuery,
+    @Query(new ZodValidationPipe(adminInvoiceListQuerySchema))
+    query: AdminInvoiceListQuery,
   ) {
     const result = await this.invoices.list(query);
     return createPaginatedApiSuccessResponse(result.data, result.pagination);

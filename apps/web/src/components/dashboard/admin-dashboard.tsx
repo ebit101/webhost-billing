@@ -1,104 +1,25 @@
 'use client';
-import { formatCalendarDate, parseCalendarDate } from '@webhost-billing/shared';
+import { formatCalendarDate } from '@webhost-billing/shared';
 import { sentenceCaseLabel } from '@webhost-billing/shared';
 
-import type {
-  DashboardResponse,
-  ReportResource,
-} from '@webhost-billing/shared';
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
-import { authenticatedDownload, authenticatedGet } from '../../lib/auth-api';
+import type { DashboardResponse } from '@webhost-billing/shared';
+import { useMemo } from 'react';
 import { formatMinor } from '../orders/order-ui';
 import { DataTable, type DataColumn } from '../ui/data-table';
 import { PageHeader } from '../ui/page-header';
 import { StatusBadge } from '../ui/status-badge';
+import {
+  ReportPeriodForm,
+  useDashboardReport,
+} from './dashboard-report-period';
 import { MetricCard } from './metric-card';
+import { ReportCsvDownloads } from './report-csv-downloads';
+import { RevenueReportChart } from './revenue-report-chart';
 
 type Activity = DashboardResponse['recentActivity'][number];
-const exportLabels: Record<ReportResource, string> = {
-  customers: 'Customers CSV',
-  invoices: 'Invoices CSV',
-  payments: 'Payments CSV',
-  services: 'Services CSV',
-};
-
 export function AdminDashboard() {
-  const [dashboard, setDashboard] = useState<DashboardResponse | null>(null);
-  const [from, setFrom] = useState('');
-  const [to, setTo] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [exporting, setExporting] = useState<ReportResource | null>(null);
-
-  async function load(path = '/dashboard') {
-    setLoading(true);
-    setError('');
-    try {
-      const result = await authenticatedGet<DashboardResponse>(path);
-      setDashboard(result);
-      setFrom(formatCalendarDate(result.period.from));
-      setTo(formatCalendarDate(result.period.to));
-    } catch (requestError) {
-      setError(message(requestError));
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    let active = true;
-    void authenticatedGet<DashboardResponse>('/dashboard')
-      .then((result) => {
-        if (!active) return;
-        setDashboard(result);
-        setFrom(formatCalendarDate(result.period.from));
-        setTo(formatCalendarDate(result.period.to));
-      })
-      .catch((requestError: unknown) => {
-        if (active) setError(message(requestError));
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  async function applyPeriod(event: FormEvent) {
-    event.preventDefault();
-    const fromDate = parseCalendarDate(from);
-    const toDate = parseCalendarDate(to);
-    if (!fromDate || !toDate || fromDate > toDate) {
-      setError('Enter valid dates as dd/mm/yyyy, with From no later than To.');
-      return;
-    }
-    await load(
-      `/dashboard?${new URLSearchParams({ from: fromDate, to: toDate })}`,
-    );
-  }
-
-  async function exportReport(resource: ReportResource) {
-    if (!dashboard) return;
-    setExporting(resource);
-    setError('');
-    try {
-      const download = await authenticatedDownload(
-        `/reports/exports/${resource}`,
-        { from: dashboard.period.from, to: dashboard.period.to },
-      );
-      const url = URL.createObjectURL(download.blob);
-      const anchor = document.createElement('a');
-      anchor.href = url;
-      anchor.download = download.filename;
-      anchor.click();
-      URL.revokeObjectURL(url);
-    } catch (requestError) {
-      setError(message(requestError));
-    } finally {
-      setExporting(null);
-    }
-  }
+  const report = useDashboardReport();
+  const { dashboard, error, loading, load } = report;
 
   const activityColumns = useMemo<DataColumn<Activity>[]>(
     () => [
@@ -157,11 +78,6 @@ export function AdminDashboard() {
   }
 
   const metrics = dashboard.metrics;
-  const maxRevenue = dashboard.revenueSeries.reduce((maximum, point) => {
-    const value = BigInt(point.amount);
-    return value > maximum ? value : maximum;
-  }, 0n);
-
   return (
     <div className="grid gap-8">
       <PageHeader
@@ -169,22 +85,7 @@ export function AdminDashboard() {
         title="Business overview"
         description={`Live operational and financial data in ${dashboard.currency}, using ${dashboard.timeZone} business dates.`}
       />
-      <form
-        onSubmit={(event) => void applyPeriod(event)}
-        className="flex flex-wrap items-end gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
-      >
-        <DateField label="From" value={from} onChange={setFrom} />
-        <DateField label="To" value={to} onChange={setTo} />
-        <button
-          disabled={loading}
-          className="rounded-xl bg-slate-950 px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50"
-        >
-          {loading ? 'Refreshing…' : 'Apply period'}
-        </button>
-        <p className="ml-auto text-xs text-slate-500">
-          Inclusive business dates · maximum 366 days
-        </p>
-      </form>
+      <ReportPeriodForm {...report} />
       {error ? (
         <p
           role="alert"
@@ -269,65 +170,8 @@ export function AdminDashboard() {
         />
       </section>
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(19rem,0.7fr)]">
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="font-bold text-slate-950">Daily collected revenue</h2>
-          <p className="mt-1 text-xs text-slate-500">
-            Net successful transactions by {dashboard.timeZone} business date
-          </p>
-          <div
-            className="mt-7 flex h-52 items-end gap-1 overflow-x-auto"
-            aria-label="Daily collected revenue chart"
-          >
-            {dashboard.revenueSeries.map((point) => {
-              const value = BigInt(point.amount);
-              const height =
-                maxRevenue === 0n
-                  ? 3
-                  : Number(((value > 0n ? value : 0n) * 100n) / maxRevenue);
-              return (
-                <div
-                  key={point.date}
-                  className="group flex min-w-3 flex-1 flex-col items-center justify-end gap-2"
-                  title={`${formatCalendarDate(point.date)}: ${formatMinor(point.amount, dashboard.currency)}`}
-                >
-                  <span className="sr-only">
-                    {formatCalendarDate(point.date)}:{' '}
-                    {formatMinor(point.amount, dashboard.currency)}
-                  </span>
-                  <div
-                    className={`w-full rounded-t transition-colors ${value < 0n ? 'bg-red-400 group-hover:bg-red-600' : 'bg-brand-500 group-hover:bg-brand-700'}`}
-                    style={{ height: `${Math.max(height, 3)}%` }}
-                  />
-                </div>
-              );
-            })}
-          </div>
-          <div className="mt-2 flex justify-between text-xs text-slate-600">
-            <span>{formatCalendarDate(dashboard.period.from)}</span>
-            <span>{formatCalendarDate(dashboard.period.to)}</span>
-          </div>
-        </section>
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="font-bold text-slate-950">CSV reports</h2>
-          <p className="mt-2 text-sm leading-6 text-slate-600">
-            Invoice and payment exports use the selected period. Customer and
-            service exports are current snapshots. Every export is audited.
-          </p>
-          <div className="mt-5 grid gap-3">
-            {(Object.keys(exportLabels) as ReportResource[]).map((resource) => (
-              <button
-                key={resource}
-                type="button"
-                disabled={exporting !== null}
-                onClick={() => void exportReport(resource)}
-                className="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3 text-left text-sm font-bold text-slate-800 hover:border-brand-300 hover:bg-brand-50 disabled:opacity-50"
-              >
-                {exportLabels[resource]}
-                <span aria-hidden="true">↓</span>
-              </button>
-            ))}
-          </div>
-        </section>
+        <RevenueReportChart dashboard={dashboard} />
+        <ReportCsvDownloads period={dashboard.period} />
       </div>
       <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div className="border-b border-slate-200 px-5 py-5 sm:px-6">
@@ -354,36 +198,4 @@ export function AdminDashboard() {
       </section>
     </div>
   );
-}
-
-function DateField({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-}) {
-  return (
-    <label className="grid gap-1 text-xs font-bold tracking-wide text-slate-500">
-      {label}
-      <input
-        required
-        type="text"
-        placeholder="dd/mm/yyyy"
-        pattern="[0-9]{2}/[0-9]{2}/[0-9]{4}"
-        title="Use dd/mm/yyyy"
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium normal-case tracking-normal text-slate-900"
-      />
-    </label>
-  );
-}
-
-function message(error: unknown): string {
-  return error instanceof Error
-    ? error.message
-    : 'The dashboard could not be loaded.';
 }

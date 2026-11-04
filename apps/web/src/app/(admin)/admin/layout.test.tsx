@@ -10,6 +10,7 @@ vi.mock('../../../lib/server-auth', () => ({
 }));
 vi.mock('next/navigation', () => ({
   usePathname: () => auth.pathname,
+  useRouter: () => ({ replace: vi.fn(), refresh: vi.fn() }),
   redirect: vi.fn(),
 }));
 vi.mock('../../../lib/auth-api', () => ({
@@ -43,6 +44,24 @@ describe('administrator sidebar identity', () => {
       ).toBe('/account');
       expect(screen.queryByText(identity.email)).toBeNull();
     },
+  );
+});
+
+it('highlights Reports below Payments in the full administrator sidebar', async () => {
+  auth.pathname = '/admin/reports';
+  auth.identity.mockResolvedValue(identity);
+  render(await AdminLayout({ children: <p>Reports content</p> }));
+  const sidebar = within(
+    screen.getByRole('navigation', { name: 'Administrator navigation' }),
+  );
+  const reports = sidebar.getByRole('link', {
+    name: 'Reports',
+    current: 'page',
+  });
+  expect(reports.getAttribute('href')).toBe('/admin/reports');
+  const links = sidebar.getAllByRole('link');
+  expect(links[links.indexOf(reports) - 1]).toBe(
+    sidebar.getByRole('link', { name: 'Payments' }),
   );
 });
 
