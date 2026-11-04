@@ -25,6 +25,7 @@ import { Icon } from '../ui/icon';
 import { PageHeader } from '../ui/page-header';
 import { StatusBadge } from '../ui/status-badge';
 import { HostingDomainQuote } from './hosting-domain-quote';
+import { HostingAddOnOptions } from './hosting-add-on-options';
 import { errorMessage, formatMinor } from './order-ui';
 
 export function CustomerCheckout({
@@ -38,6 +39,7 @@ export function CustomerCheckout({
   const [products, setProducts] = useState<PublicProduct[]>([]);
   const [productId, setProductId] = useState('');
   const [priceId, setPriceId] = useState('');
+  const [addOnPriceIds, setAddOnPriceIds] = useState<string[]>([]);
   const [domainChoice, setDomainChoice] = useState<'EXISTING' | 'REGISTER'>(
     'EXISTING',
   );
@@ -93,6 +95,12 @@ export function CustomerCheckout({
 
   const product = products.find((item) => item.id === productId);
   const price = product?.prices.find((item) => item.id === priceId);
+  const addOnOffers = (product?.addOns ?? []).filter(
+    (item) => item.amount.currency === price?.amount.currency,
+  );
+  const selectedAddOns = addOnOffers.filter((item) =>
+    addOnPriceIds.includes(item.priceId),
+  );
 
   async function submitOrder(requestedDomain: string, domainQuoteId?: string) {
     if (loading || unavailable || !price || saving || terms.blocked) return;
@@ -107,6 +115,9 @@ export function CustomerCheckout({
           productId,
           priceId,
           requestedDomain,
+          ...(selectedAddOns.length
+            ? { addOnPriceIds: selectedAddOns.map((item) => item.priceId) }
+            : {}),
           ...(domainQuoteId ? { domainQuoteId } : {}),
           submissionKey: submissionKey.current,
           acceptedTermsVersion: terms.acceptedTermsVersion,
@@ -145,6 +156,15 @@ export function CustomerCheckout({
         <Card title="Order summary">
           <dl className="grid gap-4 sm:grid-cols-2">
             <Summary label="Plan" value={hostingItem?.productName ?? ''} />
+            {result.order.items
+              .filter((item) => item.kind === 'ADD_ON')
+              .map((item) => (
+                <Summary
+                  key={item.id}
+                  label={item.productName}
+                  value={`${formatMinor(item.lineTotal.amount, item.lineTotal.currency)} one time`}
+                />
+              ))}
             <Summary
               label="Domain"
               value={hostingItem?.requestedDomain ?? ''}
@@ -234,6 +254,7 @@ export function CustomerCheckout({
                   );
                   setProductId(event.target.value);
                   setPriceId(next?.prices[0]?.id ?? '');
+                  setAddOnPriceIds([]);
                   setUnavailable(false);
                 }}
                 className={fieldClass}
@@ -253,7 +274,10 @@ export function CustomerCheckout({
               Billing period
               <select
                 value={priceId}
-                onChange={(event) => setPriceId(event.target.value)}
+                onChange={(event) => {
+                  setPriceId(event.target.value);
+                  setAddOnPriceIds([]);
+                }}
                 className={fieldClass}
                 required
               >
@@ -268,6 +292,12 @@ export function CustomerCheckout({
                 ))}
               </select>
             </label>
+            <HostingAddOnOptions
+              offers={addOnOffers}
+              selected={addOnPriceIds}
+              onChange={setAddOnPriceIds}
+              busy={saving}
+            />
             <fieldset className="grid gap-3 border-t border-slate-200 pt-5">
               <legend className="text-sm font-bold text-slate-950">
                 Choose a domain
@@ -390,6 +420,14 @@ export function CustomerCheckout({
                 amount={price.setupFee.amount}
                 currency={price.setupFee.currency}
               />
+              {selectedAddOns.map((item) => (
+                <PriceRow
+                  key={item.id}
+                  label={`${item.name} (one time)`}
+                  amount={item.amount.amount}
+                  currency={item.amount.currency}
+                />
+              ))}
               {domainChoice === 'REGISTER' && domainQuote ? (
                 <PriceRow
                   label="Domain registration"
@@ -397,6 +435,24 @@ export function CustomerCheckout({
                   currency="BDT"
                 />
               ) : null}
+              {selectedAddOns.length > 0 && (
+                <PriceRow
+                  label="Estimated total"
+                  currency={price.amount.currency}
+                  amount={selectedAddOns
+                    .reduce(
+                      (total, item) => total + BigInt(item.amount.amount),
+                      BigInt(price.amount.amount) +
+                        BigInt(price.setupFee.amount) +
+                        BigInt(
+                          domainChoice === 'REGISTER'
+                            ? (domainQuote?.sellingAmount ?? '0')
+                            : '0',
+                        ),
+                    )
+                    .toString()}
+                />
+              )}
               <p className="mt-2 border-t border-slate-200 pt-4 text-xs font-semibold leading-5 text-slate-500">
                 Your confirmed total will appear after the server creates the
                 order and unpaid invoice.

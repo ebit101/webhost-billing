@@ -3401,3 +3401,9 @@ The following decisions are intentionally unresolved and must be selected before
   epoch milliseconds. Existing invoice/failure projection assertions, concurrency,
   recipient locking and replay checks then pass against real PostgreSQL. Browser
   and genuine Meta delivery acceptance remain separate.
+
+## ADR-161 — One-time hosting add-ons on the checkout invoice
+
+- **Date:** 2026-11-04. Command 199.
+- **Decision:** Store each add-on in the product catalog with a versioned one-time price and explicit eligibility for hosting plans. Checkout resolves selected price IDs against the chosen plan and currency and snapshots each purchase as a separate order item and invoice line. An exact checkout replay returns the existing order and invoice. Changing the selection requires a different submission key.
+- **Fulfillment:** Track staff completion on the purchased order item. Full verified payment is required. Hosting can activate while the add-on is pending, and the order completes after all required items are fulfilled. Add-on invoice lines carry no service period, so hosting renewal uses only the hosting price.

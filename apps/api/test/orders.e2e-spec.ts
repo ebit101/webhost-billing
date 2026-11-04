@@ -37,6 +37,7 @@ const GUEST_EMAIL = 'command127-guest@example.test';
 const FAILED_GUEST_EMAIL = 'command127-failed@example.test';
 const PASSWORD = 'command nine secure password';
 const PRODUCT_SLUG = 'command-nine-hosting';
+const ADD_ON_SLUG = 'command-199-guest-migration';
 
 describe('Order creation (e2e)', () => {
   let app: INestApplication<App>;
@@ -955,6 +956,22 @@ describe('Order creation (e2e)', () => {
         isActive: true,
       },
     });
+    const migrationPrice = await prisma.productPrice.create({
+      data: {
+        product: {
+          create: {
+            slug: ADD_ON_SLUG,
+            name: 'Fictional guest migration',
+            kind: 'ADD_ON',
+            status: 'ACTIVE',
+            eligibleHostingPlans: { create: { hostingProductId: productId } },
+          },
+        },
+        billingPeriod: BillingPeriod.ONE_TIME,
+        currency: currentPrice.currency,
+        amount: 80_000n,
+      },
+    });
     const body = {
       email: GUEST_EMAIL,
       password: 'guest checkout secure password',
@@ -969,6 +986,7 @@ describe('Order creation (e2e)', () => {
       requestedDomain: 'guest-host.example.test',
       submissionKey: randomUUID(),
       domainChoice: 'EXISTING' as const,
+      addOnPriceIds: [migrationPrice.id],
     };
 
     await guest
@@ -1013,8 +1031,21 @@ describe('Order creation (e2e)', () => {
     expect(created.order.status).toBe('AWAITING_PAYMENT');
     expect(created.order.invoice.status).toBe('UNPAID');
     expect(created.order.invoice.balanceDue.amount).toBe(
-      (currentPrice.amount + currentPrice.setupFee).toString(),
+      (
+        currentPrice.amount +
+        currentPrice.setupFee +
+        migrationPrice.amount
+      ).toString(),
     );
+    expect(
+      created.order.items.filter((item) => item.kind === 'ADD_ON'),
+    ).toMatchObject([
+      {
+        productPriceId: migrationPrice.id,
+        billingPeriod: 'ONE_TIME',
+        fulfilledAt: null,
+      },
+    ]);
     const user = await prisma.user.findUniqueOrThrow({
       where: { email: GUEST_EMAIL },
       include: { customer: true },
@@ -1043,6 +1074,11 @@ describe('Order creation (e2e)', () => {
       ]),
     );
     await guest.get('/orders/my').expect(401);
+
+    await prisma.product.update({
+      where: { id: migrationPrice.productId },
+      data: { status: 'ARCHIVED' },
+    });
 
     const retry = await guest
       .post('/orders/guest-checkout')
@@ -1219,15 +1255,19 @@ describe('Order creation (e2e)', () => {
       });
       await prisma.order.deleteMany({ where: { id: { in: orderIds } } });
     }
-    const product = await prisma.product.findUnique({
-      where: { slug: PRODUCT_SLUG },
+    const fixtureProducts = await prisma.product.findMany({
+      where: { slug: { in: [PRODUCT_SLUG, ADD_ON_SLUG] } },
       select: { id: true },
     });
-    if (product) {
-      await prisma.productPrice.deleteMany({
-        where: { productId: product.id },
+    const productIds = fixtureProducts.map((product) => product.id);
+    if (productIds.length) {
+      await prisma.productAddOnEligibility.deleteMany({
+        where: { addOnProductId: { in: productIds } },
       });
-      await prisma.product.delete({ where: { id: product.id } });
+      await prisma.productPrice.deleteMany({
+        where: { productId: { in: productIds } },
+      });
+      await prisma.product.deleteMany({ where: { id: { in: productIds } } });
     }
     if (userIds.length) {
       await prisma.emailVerificationToken.deleteMany({

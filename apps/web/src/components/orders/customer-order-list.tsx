@@ -30,7 +30,7 @@ import { EmptyState, ErrorState } from '../ui/feedback-state';
 import { Icon } from '../ui/icon';
 import { PageHeader } from '../ui/page-header';
 import { StatusBadge } from '../ui/status-badge';
-import { errorMessage, formatMinor, orderTone } from './order-ui';
+import { addOnStatus, errorMessage, formatMinor, orderTone } from './order-ui';
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 class LedgerReadError extends Error {}
 const columns: DataColumn<Order>[] = [
@@ -49,19 +49,31 @@ const columns: DataColumn<Order>[] = [
   {
     key: 'plan',
     header: 'Hosting',
-    render: (order) => (
-      <div>
-        <p>{order.items[0]?.productName}</p>
-        <p className="text-xs text-slate-500">
-          {order.items[0]?.requestedDomain}
-        </p>
-        {order.items.length > 1 ? (
+    render: (order) => {
+      const additionalItems = order.items
+        .slice(1)
+        .filter((item) => item.kind !== 'ADD_ON').length;
+      return (
+        <div>
+          <p>{order.items[0]?.productName}</p>
           <p className="text-xs text-slate-500">
-            First item shown · {order.items.length - 1} additional items
+            {order.items[0]?.requestedDomain}
           </p>
-        ) : null}
-      </div>
-    ),
+          {additionalItems > 0 ? (
+            <p className="text-xs text-slate-500">
+              First item shown · {additionalItems} additional items
+            </p>
+          ) : null}
+          {order.items
+            .filter((item) => item.kind === 'ADD_ON')
+            .map((item) => (
+              <p key={item.id} className="mt-1 text-xs text-slate-600">
+                {item.productName} · {addOnStatus(order, item)}
+              </p>
+            ))}
+        </div>
+      );
+    },
   },
   {
     key: 'invoice',

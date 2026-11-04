@@ -2,12 +2,12 @@
 
 ## Status Summary
 
-- **Current command:** Command 198 — Handle renewal invoices when the scheduler misses the due date
-- **Current status:** One catch-up invoice and the full grace period verified locally.
+- **Current command:** Command 199 — Add one-time hosting add-ons at checkout
+- **Current status:** One-time add-on checkout, payment, replay and fulfillment verified locally.
 - **Last updated:** 2026-11-04
 - **Last recorded staging release:** Command 177, `887862020de1e472f303f359b793dccbedfb9b07`, deployed on 2026-11-03 (Asia/Dhaka).
-- **Next action:** Await authorization for Command 199 — Add one-time hosting add-ons at checkout.
-- **Next command authorized:** None after Command 198.
+- **Next action:** Await authorization for Command 200 — Add recurring hosting add-ons to renewal invoices.
+- **Next command authorized:** None after Command 199.
 
 ## Command Reports
 
@@ -16,6 +16,17 @@
 - Added the dedicated PowerShell launcher and handoff guide for future owner-authorized updates to my.speedhost.bd. The launcher requires a full commit SHA, defaults to read-only SSH preflight, and uses the existing server procedure for archive verification, backup, migration and health checks when applied.
 - Verified preflight against the live host with an existing authorized identity. Enrolled the dedicated Ed25519 identity on 2026-11-04 with forwarding and PTY disabled. The launcher passed read-only preflight using its default key path, and the server still reported the same active release. On 2026-11-04, the launcher deployed `fe21c19719a0c7cef461179048052756f1e52f04` via SSH in 13 minutes 47 seconds. The merged source matched PR #102 after all its checks passed. The server verified the backup, applied migrations, and reported seven healthy services. Independent requests to the storefront, shared hosting, health, and readiness returned HTTP 200.
 - The next authorized release can use the handoff steps after the candidate is validated. For the next release, use the documented SSH preflight on the intended commit before applying it.
+
+### Command 199 — Add one-time hosting add-ons at checkout
+
+- Implemented locally on 2026-11-04 (Asia/Dhaka). Administrators configure one-time prices and eligible hosting plans under Products → Product add-ons. Guest and signed-in customers can select offers for the chosen plan and currency, with a separate line on the same invoice. Staff complete the add-on from the order after verified payment.
+- Updated the product and order API, shared contracts, catalog and checkout screens, administrator order review and customer order list. Added the `20261104000100_one_time_hosting_add_ons` migration, order completion checks, and guest and Playwright regression coverage.
+- Reuse of the checkout submission key requires the same add-on price selection and returns the original order and invoice. Price changes create a new version, and disabling a catalog add-on preserves existing purchases. The hosting service can activate while the order awaits add-on fulfillment. Hosting renewal excludes the one-time line.
+- All nine PostgreSQL-backed order API tests passed, including a guest replay after the offer was disabled. The isolated Chromium rehearsal passed with a BDT 800 migration on one BDT 2,100 invoice. An exact retry returned the original invoice, a changed selection with the same key was rejected, and staff verified one payment and completed the add-on once. The customer saw the fulfilled status in My orders.
+- The shared, database and API builds, web and browser test type checks, 78 focused web tests, focused API and web lint, formatting, and Git diff checks passed.
+- The migration applied in isolated PostgreSQL. The browser rehearsal signed in through the test API to avoid depending on the unrelated dashboard summary, which returned HTTP 500 during one attempt. Local migration lock contention, memory pressure and an invoice page wait interrupted earlier attempts.
+- The release covers purchases with new hosting and manual fulfillment. Recurring add-ons and purchases for existing hosting are future commands. No deployment ran.
+- Recommended next command is **Command 200 — Add recurring hosting add-ons to renewal invoices**. Bill a fictional managed backup alongside the hosting plan on its cycle and verify one renewal charge per period.
 
 ### Command 198 — Handle renewal invoices when the scheduler misses the due date
 

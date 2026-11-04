@@ -27,6 +27,7 @@ export function CheckoutPreview({
   const [draft, setDraft] = useState<OrderDraft>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [addOnPriceIds, setAddOnPriceIds] = useState<string[]>([]);
   const [accountMode, setAccountMode] = useState<'register' | 'login'>(
     'register',
   );
@@ -64,6 +65,15 @@ export function CheckoutPreview({
     (item) => item.id === selection?.priceId && item.amount.currency === 'BDT',
   );
   const ready = !loading && !error && draft && product && price;
+  const addOnOffers = (product?.addOns ?? []).filter(
+    (item) => item.amount.currency === price?.amount.currency,
+  );
+  const selectedAddOns =
+    audience === 'guest' &&
+    accountMode === 'register' &&
+    draft?.domainChoice === 'EXISTING'
+      ? addOnOffers.filter((item) => addOnPriceIds.includes(item.priceId))
+      : [];
 
   return (
     <main
@@ -228,6 +238,11 @@ export function CheckoutPreview({
                             productId={product.id}
                             priceId={price.id}
                             requestedDomain={draft.requestedDomain}
+                            addOnOffers={addOnOffers}
+                            addOnPriceIds={selectedAddOns.map(
+                              (item) => item.priceId,
+                            )}
+                            onAddOnChange={setAddOnPriceIds}
                             onChooseSignIn={() => setAccountMode('login')}
                           />
                         ) : (
@@ -268,14 +283,27 @@ export function CheckoutPreview({
                   </strong>
                 </div>
               ) : null}
-              {formatHostingSubtotal(price) ? (
+              {selectedAddOns.map((item) => (
+                <div
+                  key={item.id}
+                  className="mt-3 flex justify-between text-sm"
+                >
+                  <span>{item.name} (one time)</span>
+                  <strong>
+                    {formatMinor(item.amount.amount, item.amount.currency)}
+                  </strong>
+                </div>
+              ))}
+              {formatHostingSubtotal(price, selectedAddOns) ? (
                 <div className="mt-5 flex justify-between border-t border-slate-200 pt-4 font-bold text-slate-950">
                   <span>
                     {draft.domainChoice === 'REGISTER'
                       ? 'Hosting subtotal'
                       : 'Estimated total'}
                   </span>
-                  <strong>{formatHostingSubtotal(price)}</strong>
+                  <strong>
+                    {formatHostingSubtotal(price, selectedAddOns)}
+                  </strong>
                 </div>
               ) : null}
               <p className="mt-5 text-xs leading-5 text-slate-600">

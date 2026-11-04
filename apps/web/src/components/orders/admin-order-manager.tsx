@@ -658,6 +658,7 @@ export function AdminOrderManager({
             key={`${review.id}:${review.sequence}`}
             orderId={review.id}
             customerId={filteredCustomerId}
+            onAddOnFulfilled={() => setReadRevision((current) => current + 1)}
             onClose={() => {
               setReview(undefined);
               if (reviewTrigger.current?.isConnected)

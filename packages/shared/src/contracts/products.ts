@@ -113,6 +113,47 @@ export const productSchema = productFieldsSchema
   })
   .strict();
 
+const eligibleProductIdsSchema = z
+  .array(z.uuid())
+  .min(1)
+  .max(100)
+  .refine(
+    (ids) => new Set(ids).size === ids.length,
+    'Select each hosting plan once',
+  );
+
+export const hostingAddOnInputSchema = z
+  .object({
+    name: z.string().trim().min(2).max(160),
+    description: z.string().trim().max(2_000).nullable(),
+    currency: currencyCodeSchema,
+    amount: positiveMinorUnitAmountSchema,
+    hostingProductIds: eligibleProductIdsSchema,
+    enabled: z.boolean(),
+  })
+  .strict();
+
+export const publicHostingAddOnSchema = z
+  .object({
+    id: z.uuid(),
+    priceId: z.uuid(),
+    name: z.string().min(2).max(160),
+    description: z.string().max(2_000).nullable(),
+    amount: moneySchema,
+  })
+  .strict();
+
+export const hostingAddOnSchema = publicHostingAddOnSchema
+  .extend({
+    hostingProductIds: z.array(z.uuid()),
+    enabled: z.boolean(),
+  })
+  .strict();
+
+export type HostingAddOnInput = z.infer<typeof hostingAddOnInputSchema>;
+export type HostingAddOn = z.infer<typeof hostingAddOnSchema>;
+export type PublicHostingAddOn = z.infer<typeof publicHostingAddOnSchema>;
+
 export const publicProductSchema = z
   .object({
     id: z.uuid(),
@@ -129,6 +170,7 @@ export const publicProductSchema = z
       })
       .strict(),
     prices: z.array(productPriceSchema.omit({ isActive: true })),
+    addOns: z.array(publicHostingAddOnSchema).optional(),
   })
   .strict();
 

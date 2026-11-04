@@ -73,8 +73,15 @@ const orderSelectionSchema = z
   })
   .strict();
 
+export const MAX_CHECKOUT_ADD_ONS = 10;
+const addOnPriceIdsSchema = z
+  .array(z.uuid())
+  .max(MAX_CHECKOUT_ADD_ONS)
+  .refine((ids) => new Set(ids).size === ids.length, 'Select each add-on once');
+
 export const createCustomerOrderRequestSchema = orderSelectionSchema
   .extend({
+    addOnPriceIds: addOnPriceIdsSchema.optional(),
     domainQuoteId: z.uuid().optional(),
     acceptedTermsVersion: z.uuid().optional(),
   })
@@ -87,6 +94,7 @@ export const guestHostingCheckoutRequestSchema = registrationRequestSchema
     requestedDomain: requestedDomainSchema,
     submissionKey: z.uuid(),
     domainChoice: z.literal('EXISTING'),
+    addOnPriceIds: addOnPriceIdsSchema.optional(),
     acceptedTermsVersion: z.uuid().optional(),
   })
   .strict();
@@ -131,7 +139,7 @@ export const orderListQuerySchema = paginationQuerySchema.extend({
 export const orderItemSchema = z
   .object({
     id: z.uuid(),
-    kind: z.enum(['HOSTING', 'DOMAIN']).optional(),
+    kind: z.enum(['HOSTING', 'DOMAIN', 'ADD_ON']).optional(),
     productId: z.uuid(),
     productPriceId: z.uuid(),
     productName: z.string().min(1).max(160),
@@ -139,7 +147,8 @@ export const orderItemSchema = z
     domainAction: z.enum(['EXISTING', 'REGISTRATION']).optional(),
     domainId: z.uuid().optional(),
     description: z.string().max(2_000).nullable(),
-    billingPeriod: hostingBillingPeriodSchema,
+    billingPeriod: z.union([hostingBillingPeriodSchema, z.literal('ONE_TIME')]),
+    fulfilledAt: z.iso.datetime({ offset: true }).nullable().optional(),
     unitAmount: moneySchema,
     setupFee: moneySchema,
     lineTotal: moneySchema,

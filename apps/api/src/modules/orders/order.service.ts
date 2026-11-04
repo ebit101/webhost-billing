@@ -4,6 +4,7 @@ import {
   CustomerStatus,
   InvoiceStatus,
   OrderStatus,
+  orderFulfillmentComplete,
   Prisma,
   ProductStatus,
   UserStatus,
@@ -36,6 +37,7 @@ import { allocateInvoiceNumber } from '../../common/identifiers/invoice-number';
 import { PRISMA_CLIENT } from '../../infrastructure/database/database.module';
 import type { AuthRequestContext } from '../auth/auth.types';
 import { DomainService } from '../domains/domain.service';
+import { availableAddOnPrice } from '../products/product.service';
 import { AdminOrderDomainService } from './admin-order-domain.service';
 
 import { requireCheckoutTerms } from '../settings/checkout-terms';
@@ -48,11 +50,25 @@ const orderInclude = {
   customer: {
     include: { user: { select: { email: true } } },
   },
-  items: { orderBy: { createdAt: 'asc' as const } },
+  items: {
+    orderBy: [
+      { kind: 'asc' as const },
+      { createdAt: 'asc' as const },
+      { id: 'asc' as const },
+    ],
+  },
   invoices: { orderBy: { createdAt: 'asc' as const }, take: 1 },
 } satisfies Prisma.OrderInclude;
 
 type OrderRecord = Prisma.OrderGetPayload<{ include: typeof orderInclude }>;
+
+function matchesAddOns(items: OrderRecord['items'], priceIds: string[] = []) {
+  const purchased = items.filter((item) => item.kind === 'ADD_ON');
+  return (
+    purchased.length === priceIds.length &&
+    purchased.every((item) => priceIds.includes(item.productPriceId))
+  );
+}
 
 const allowedTransitions: Record<SharedOrderStatus, SharedOrderStatus[]> = {
   PENDING: ['AWAITING_PAYMENT', 'REJECTED', 'CANCELLED', 'FAILED'],
@@ -209,6 +225,40 @@ export class OrderService {
           });
         }
 
+        const addOnPriceIds =
+          'addOnPriceIds' in input ? (input.addOnPriceIds ?? []) : [];
+        const addOnPrices =
+          addOnPriceIds.length === 0
+            ? []
+            : await transaction.productPrice.findMany({
+                where: {
+                  ...availableAddOnPrice(now, price.currency),
+                  id: { in: addOnPriceIds },
+                  product: {
+                    kind: 'ADD_ON',
+                    status: ProductStatus.ACTIVE,
+                    deletedAt: null,
+                    eligibleHostingPlans: {
+                      some: { hostingProductId: input.productId },
+                    },
+                  },
+                },
+                include: { product: true },
+                orderBy: { productId: 'asc' },
+              });
+        if (
+          addOnPrices.length !== addOnPriceIds.length ||
+          new Set(addOnPrices.map((addOn) => addOn.productId)).size !==
+            addOnPrices.length
+        ) {
+          throw new ApplicationException({
+            status: HttpStatus.UNPROCESSABLE_ENTITY,
+            code: 'UNPROCESSABLE_ENTITY',
+            message:
+              'A selected add-on is no longer available for this plan or price.',
+          });
+        }
+
         const domainQuoteId =
           adminDomain?.mode === 'REGISTRATION'
             ? adminDomain.quoteId
@@ -251,14 +301,18 @@ export class OrderService {
           });
         }
         const hostingTotal = price.amount + price.setupFee;
-        if (domainAmount > POSTGRES_BIGINT_MAX - hostingTotal) {
+        const addOnTotal = addOnPrices.reduce(
+          (sum, addOn) => sum + addOn.amount,
+          0n,
+        );
+        const total = hostingTotal + domainAmount + addOnTotal;
+        if (total > POSTGRES_BIGINT_MAX) {
           throw new ApplicationException({
             status: HttpStatus.UNPROCESSABLE_ENTITY,
             code: 'UNPROCESSABLE_ENTITY',
             message: 'The combined order total exceeds the supported range.',
           });
         }
-        const total = hostingTotal + domainAmount;
         const termsAcceptance =
           source === 'CUSTOMER'
             ? await requireCheckoutTerms(
@@ -276,7 +330,7 @@ export class OrderService {
             customerId: customer.id,
             status: OrderStatus.AWAITING_PAYMENT,
             currency: price.currency,
-            subtotal: price.amount + domainAmount,
+            subtotal: price.amount + domainAmount + addOnTotal,
             setupTotal: price.setupFee,
             total,
             customerEmailSnapshot: customer.user.email,
@@ -333,6 +387,18 @@ export class OrderService {
                       },
                     ]
                   : []),
+                ...addOnPrices.map((addOn) => ({
+                  kind: 'ADD_ON' as const,
+                  productId: addOn.productId,
+                  productPriceId: addOn.id,
+                  productNameSnapshot: addOn.product.name,
+                  descriptionSnapshot: addOn.product.description,
+                  billingPeriod: 'ONE_TIME' as const,
+                  currency: price.currency,
+                  unitAmount: addOn.amount,
+                  lineTotal: addOn.amount,
+                  requestedDomain: input.requestedDomain,
+                })),
               ],
             },
           },
@@ -341,6 +407,8 @@ export class OrderService {
         const orderItem = order.items.find((item) => item.kind === 'HOSTING');
         if (!orderItem) throw new Error('Order item creation failed');
         const domainItem = order.items.find((item) => item.kind === 'DOMAIN');
+        const firstAddOnPosition =
+          2 + Number(price.setupFee > 0n) + Number(Boolean(domainItem));
 
         const businessSetting = await transaction.setting.findUnique({
           where: { key: 'business.identity' },
@@ -419,6 +487,17 @@ export class OrderService {
                       },
                     ]
                   : []),
+                ...order.items
+                  .filter((item) => item.kind === 'ADD_ON')
+                  .map((item, index) => ({
+                    orderItemId: item.id,
+                    linePosition: firstAddOnPosition + index,
+                    descriptionSnapshot: `${item.productNameSnapshot} — one-time add-on for ${input.requestedDomain}`,
+                    currency: item.currency,
+                    quantity: 1,
+                    unitAmount: item.unitAmount,
+                    lineTotal: item.lineTotal,
+                  })),
               ],
             },
           },
@@ -670,6 +749,20 @@ export class OrderService {
           });
         }
       }
+      if (
+        input.status === OrderStatus.COMPLETED &&
+        (await transaction.orderItem.count({
+          where: { orderId, kind: 'ADD_ON' },
+        })) &&
+        !(await orderFulfillmentComplete(transaction, orderId))
+      ) {
+        throw new ApplicationException({
+          status: HttpStatus.CONFLICT,
+          code: 'CONFLICT',
+          message:
+            'Finish hosting and add-on fulfillment before completing this order.',
+        });
+      }
       await transaction.order.update({
         where: { id: orderId },
         data: {
@@ -720,6 +813,63 @@ export class OrderService {
     return this.getUnchecked(orderId);
   }
 
+  async fulfillAddOn(
+    orderId: string,
+    itemId: string,
+    actor: AuthRequestContext,
+    context: SecurityRequestContext,
+  ): Promise<Order> {
+    return this.prisma.$transaction(async (transaction) => {
+      // Follow payment settlement's invoice-to-order lock order.
+      await transaction.$queryRaw`SELECT id FROM invoices WHERE order_id=${orderId}::uuid FOR UPDATE`;
+      await transaction.$queryRaw`SELECT id FROM orders WHERE id=${orderId}::uuid FOR UPDATE`;
+      const order = await this.getRecord(orderId, transaction);
+      const item = order.items.find(
+        (entry) => entry.id === itemId && entry.kind === 'ADD_ON',
+      );
+      if (!item) throw this.notFound();
+      if (item.fulfilledAt) return this.toOrder(order);
+      const invoice = order.invoices[0];
+      if (
+        invoice?.status !== InvoiceStatus.PAID ||
+        invoice.balanceDue !== 0n ||
+        (order.status !== OrderStatus.PAID &&
+          order.status !== OrderStatus.PROCESSING)
+      ) {
+        throw new ApplicationException({
+          status: HttpStatus.CONFLICT,
+          code: 'CONFLICT',
+          message: 'Verify full payment before completing this add-on.',
+        });
+      }
+      const now = new Date();
+      await transaction.orderItem.update({
+        where: { id: itemId },
+        data: { fulfilledAt: now },
+      });
+      await transaction.activityLog.create({
+        data: {
+          actorUserId: actor.identity.userId,
+          action: 'HOSTING_ADD_ON_FULFILLED',
+          entityType: 'ORDER',
+          entityId: orderId,
+          ipAddressHash: context.ipAddressHash,
+          metadata: { orderItemId: itemId },
+        },
+      });
+      if (
+        order.status === OrderStatus.PROCESSING &&
+        (await orderFulfillmentComplete(transaction, orderId))
+      ) {
+        await transaction.order.update({
+          where: { id: orderId },
+          data: { status: OrderStatus.COMPLETED, completedAt: now },
+        });
+      }
+      return this.getUnchecked(orderId, transaction);
+    });
+  }
+
   private async findBySubmissionKey(
     submissionKey: string,
   ): Promise<OrderRecord | null> {
@@ -742,7 +892,8 @@ export class OrderService {
       item.productPriceId !== input.priceId ||
       item.requestedDomain !== input.requestedDomain ||
       readHostingProvisioningMode(item.provisioningSnapshot) !== 'STANDARD' ||
-      existing.items.some((entry) => entry.kind === 'DOMAIN')
+      existing.items.some((entry) => entry.kind === 'DOMAIN') ||
+      !matchesAddOns(existing.items, input.addOnPriceIds)
     ) {
       throw new ApplicationException({
         status: HttpStatus.CONFLICT,
@@ -791,6 +942,10 @@ export class OrderService {
           : 'STANDARD') ||
       (registration?.quoteId ?? undefined) !== requestedQuoteId ||
       domainMode !== selection?.mode ||
+      !matchesAddOns(
+        existing.items,
+        'addOnPriceIds' in input ? input.addOnPriceIds : undefined,
+      ) ||
       (selection?.mode === 'EXISTING' &&
         (!snapshot.success ||
           snapshot.data.domainRecordId !== selection.domainId ||
@@ -876,6 +1031,9 @@ export class OrderService {
           : {}),
         description: item.descriptionSnapshot,
         billingPeriod: item.billingPeriod,
+        ...(item.kind === 'ADD_ON'
+          ? { fulfilledAt: item.fulfilledAt?.toISOString() ?? null }
+          : {}),
         unitAmount: serializeMoney(item.unitAmount, item.currency),
         setupFee: serializeMoney(item.setupFee, item.currency),
         lineTotal: serializeMoney(item.lineTotal, item.currency),

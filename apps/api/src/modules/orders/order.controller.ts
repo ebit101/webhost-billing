@@ -185,6 +185,24 @@ export class OrderController {
     );
   }
 
+  @Patch(':orderId/add-ons/:itemId/fulfill')
+  @Roles('ADMIN')
+  async fulfillAddOn(
+    @Param('orderId', new ParseUUIDPipe()) orderId: string,
+    @Param('itemId', new ParseUUIDPipe()) itemId: string,
+    @CurrentAuth() auth: AuthRequestContext,
+    @Req() request: Request,
+  ) {
+    return createApiSuccessResponse(
+      await this.orders.fulfillAddOn(
+        orderId,
+        itemId,
+        auth,
+        this.context(request),
+      ),
+    );
+  }
+
   private context(request: Request) {
     return createSecurityRequestContext(request, this.auditSecret);
   }

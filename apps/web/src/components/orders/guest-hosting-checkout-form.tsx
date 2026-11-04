@@ -8,7 +8,10 @@ import {
   refreshPublicPreferences,
   usePublicPreferences,
 } from '../../lib/public-preferences';
-import type { OrderCreationResult } from '@webhost-billing/shared';
+import type {
+  OrderCreationResult,
+  PublicHostingAddOn,
+} from '@webhost-billing/shared';
 import Link from 'next/link';
 import { useRef, useState, type FormEvent } from 'react';
 import { authMutation } from '../../lib/auth-api';
@@ -20,16 +23,23 @@ import {
   SubmitButton,
 } from '../auth/form-controls';
 import { formatMinor } from './order-ui';
+import { HostingAddOnOptions } from './hosting-add-on-options';
 
 export function GuestHostingCheckoutForm({
   productId,
   priceId,
   requestedDomain,
+  addOnOffers = [],
+  addOnPriceIds = [],
+  onAddOnChange,
   onChooseSignIn,
 }: {
   productId: string;
   priceId: string;
   requestedDomain: string;
+  addOnOffers?: PublicHostingAddOn[];
+  addOnPriceIds?: string[];
+  onAddOnChange?: (ids: string[]) => void;
   onChooseSignIn: () => void;
 }) {
   const terms = useCheckoutTerms();
@@ -65,6 +75,7 @@ export function GuestHostingCheckoutForm({
           productId,
           priceId,
           requestedDomain,
+          ...(addOnPriceIds.length ? { addOnPriceIds } : {}),
           submissionKey: submissionKey.current,
           domainChoice: 'EXISTING',
           acceptedTermsVersion: terms.acceptedTermsVersion,
@@ -118,6 +129,14 @@ export function GuestHostingCheckoutForm({
   return (
     <AuthForm onSubmit={submit}>
       <FormNotice error={error} />
+      {onAddOnChange && (
+        <HostingAddOnOptions
+          offers={addOnOffers}
+          selected={addOnPriceIds}
+          onChange={onAddOnChange}
+          busy={busy}
+        />
+      )}
       <h3 className="text-base font-bold text-slate-950">
         Personal information
       </h3>

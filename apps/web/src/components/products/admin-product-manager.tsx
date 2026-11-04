@@ -2,6 +2,7 @@
 import { sentenceCaseLabel } from '@webhost-billing/shared';
 
 import type { Product, ProductGroup } from '@webhost-billing/shared';
+import Link from 'next/link';
 import { useEffect, useState, type FormEvent } from 'react';
 import {
   ApiMutationError,
@@ -14,7 +15,7 @@ import {
   fieldClass,
   valuesFromForm,
 } from '../customers/customer-fields';
-import { Button } from '../ui/button';
+import { Button, buttonStyles } from '../ui/button';
 import { ConfirmationDialog } from '../ui/confirmation-dialog';
 import { EmptyState, LoadingState } from '../ui/feedback-state';
 import { Icon } from '../ui/icon';
@@ -349,6 +350,12 @@ export function AdminProductManager() {
         description="Maintain the focused hosting catalogue, public ordering, cPanel package mapping, features, and versioned prices."
         actions={
           <div className="flex flex-wrap gap-3">
+            <Link
+              href="/admin/products/add-ons"
+              className={buttonStyles('secondary')}
+            >
+              Product add-ons
+            </Link>
             <Button
               variant="secondary"
               onClick={() => setGroupsOpen(!groupsOpen)}

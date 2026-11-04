@@ -1,11 +1,16 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import {
   BillingPeriod,
   ProductStatus,
+  type Prisma,
   type PrismaClient,
 } from '@webhost-billing/database';
 import {
   productSchema,
+  hostingAddOnSchema,
+  type HostingAddOn,
+  type HostingAddOnInput,
   productGroupSchema,
   type ProductGroupInput,
   publicProductSchema,
@@ -28,6 +33,48 @@ const PUBLIC_BILLING_PERIODS = [
   BillingPeriod.QUARTERLY,
   BillingPeriod.ANNUAL,
 ] as const;
+
+export function availableAddOnPrice(now: Date, currency?: string) {
+  return {
+    billingPeriod: BillingPeriod.ONE_TIME,
+    ...(currency ? { currency } : {}),
+    isActive: true,
+    deletedAt: null,
+    AND: [
+      { OR: [{ validFrom: null }, { validFrom: { lte: now } }] },
+      { OR: [{ validUntil: null }, { validUntil: { gt: now } }] },
+    ],
+  } satisfies Prisma.ProductPriceWhereInput;
+}
+
+const addOnInclude = {
+  prices: {
+    where: {
+      isActive: true,
+      deletedAt: null,
+      billingPeriod: BillingPeriod.ONE_TIME,
+    },
+  },
+  eligibleHostingPlans: { select: { hostingProductId: true } },
+} satisfies Prisma.ProductInclude;
+
+function toAddOn(
+  product: Prisma.ProductGetPayload<{ include: typeof addOnInclude }>,
+): HostingAddOn {
+  const price = product.prices[0];
+  if (!price) throw new Error('Hosting add-on is missing an active price');
+  return hostingAddOnSchema.parse({
+    id: product.id,
+    priceId: price.id,
+    name: product.name,
+    description: product.description,
+    amount: serializeMoney(price.amount, price.currency),
+    hostingProductIds: product.eligibleHostingPlans.map(
+      (plan) => plan.hostingProductId,
+    ),
+    enabled: product.status === ProductStatus.ACTIVE,
+  });
+}
 
 interface ActivatableProduct {
   hostingPackageIdentifier: string | null;
@@ -80,6 +127,119 @@ function isUniqueConstraintError(error: unknown): boolean {
 @Injectable()
 export class ProductService {
   constructor(@Inject(PRISMA_CLIENT) private readonly prisma: PrismaClient) {}
+
+  async listAddOns(): Promise<HostingAddOn[]> {
+    const products = await this.prisma.product.findMany({
+      where: { kind: 'ADD_ON', deletedAt: null },
+      include: addOnInclude,
+      orderBy: [{ name: 'asc' }, { id: 'asc' }],
+    });
+    return products.map(toAddOn);
+  }
+
+  async saveAddOn(
+    id: string | undefined,
+    input: HostingAddOnInput,
+    actor: AuthRequestContext,
+    context: SecurityRequestContext,
+  ): Promise<HostingAddOn> {
+    return this.prisma.$transaction(async (transaction) => {
+      if (id)
+        await transaction.$queryRaw`SELECT id FROM products WHERE id=${id}::uuid FOR UPDATE`;
+      const current = id
+        ? await transaction.product.findFirst({
+            where: { id, kind: 'ADD_ON', deletedAt: null },
+            include: addOnInclude,
+          })
+        : null;
+      if (id && !current)
+        throw new ApplicationException({
+          status: HttpStatus.NOT_FOUND,
+          code: 'RESOURCE_NOT_FOUND',
+          message: 'Hosting add-on was not found.',
+        });
+      const eligibleCount = await transaction.product.count({
+        where: {
+          id: { in: input.hostingProductIds },
+          kind: 'HOSTING',
+          deletedAt: null,
+        },
+      });
+      if (eligibleCount !== input.hostingProductIds.length)
+        throw new ApplicationException({
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          code: 'UNPROCESSABLE_ENTITY',
+          message: 'Choose available hosting plans for this add-on.',
+        });
+      const fields = {
+        name: input.name,
+        description: input.description,
+        status: input.enabled ? ProductStatus.ACTIVE : ProductStatus.ARCHIVED,
+      };
+      const product = id
+        ? await transaction.product.update({ where: { id }, data: fields })
+        : await transaction.product.create({
+            data: {
+              ...fields,
+              kind: 'ADD_ON',
+              slug: `hosting-add-on-${randomUUID()}`,
+            },
+          });
+      const activePrice = current?.prices[0];
+      const amount = BigInt(input.amount);
+      if (
+        !activePrice ||
+        activePrice.amount !== amount ||
+        activePrice.currency !== input.currency
+      ) {
+        if (activePrice)
+          await transaction.productPrice.update({
+            where: { id: activePrice.id },
+            data: { isActive: false, validUntil: new Date() },
+          });
+        await transaction.productPrice.create({
+          data: {
+            productId: product.id,
+            billingPeriod: BillingPeriod.ONE_TIME,
+            amount,
+            currency: input.currency,
+          },
+        });
+      }
+      await transaction.productAddOnEligibility.deleteMany({
+        where: {
+          addOnProductId: product.id,
+          hostingProductId: { notIn: input.hostingProductIds },
+        },
+      });
+      await transaction.productAddOnEligibility.createMany({
+        data: input.hostingProductIds.map((hostingProductId) => ({
+          addOnProductId: product.id,
+          hostingProductId,
+        })),
+        skipDuplicates: true,
+      });
+      await transaction.activityLog.create({
+        data: {
+          actorUserId: actor.identity.userId,
+          action: id ? 'HOSTING_ADD_ON_UPDATED' : 'HOSTING_ADD_ON_CREATED',
+          entityType: 'PRODUCT',
+          entityId: product.id,
+          ipAddressHash: context.ipAddressHash,
+          metadata: {
+            enabled: input.enabled,
+            hostingProductIds: input.hostingProductIds,
+          },
+        },
+      });
+      return toAddOn(
+        await transaction.product.findUniqueOrThrow({
+          where: { id: product.id },
+          include: addOnInclude,
+        }),
+      );
+    });
+  }
 
   async create(
     input: CreateProductRequest,
@@ -155,6 +315,26 @@ export class ProductService {
       },
       orderBy: [{ displayOrder: 'asc' }, { name: 'asc' }],
       include: {
+        eligibleAddOns: {
+          where: {
+            addOnProduct: {
+              kind: 'ADD_ON',
+              deletedAt: null,
+              status: ProductStatus.ACTIVE,
+            },
+          },
+          include: {
+            addOnProduct: {
+              include: {
+                prices: { where: availableAddOnPrice(now, query.currency) },
+              },
+            },
+          },
+          orderBy: [
+            { addOnProduct: { name: 'asc' } },
+            { addOnProductId: 'asc' },
+          ],
+        },
         prices: {
           where: {
             deletedAt: null,
@@ -185,6 +365,15 @@ export class ProductService {
             email: product.emailFeature,
             bandwidth: product.bandwidthFeature,
           },
+          addOns: product.eligibleAddOns.flatMap(({ addOnProduct }) =>
+            addOnProduct.prices.map((price) => ({
+              id: addOnProduct.id,
+              priceId: price.id,
+              name: addOnProduct.name,
+              description: addOnProduct.description,
+              amount: serializeMoney(price.amount, price.currency),
+            })),
+          ),
           prices: product.prices.map((price) => ({
             id: price.id,
             billingPeriod: price.billingPeriod,

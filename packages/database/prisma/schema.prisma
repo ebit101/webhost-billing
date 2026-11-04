@@ -615,11 +615,24 @@ model Product {
   prices                   ProductPrice[]
   orderItems               OrderItem[]
   services                 Service[]
+  eligibleAddOns           ProductAddOnEligibility[] @relation("EligibleHostingPlan")
+  eligibleHostingPlans     ProductAddOnEligibility[] @relation("EligibleAddOn")
 
   @@index([status, deletedAt], map: "products_status_deleted_at_idx")
   @@index([publicVisible, status, displayOrder], map: "products_public_catalog_idx")
   @@index([groupId, displayOrder], map: "products_group_order_idx")
   @@map("products")
+}
+
+model ProductAddOnEligibility {
+  hostingProductId String  @map("hosting_product_id") @db.Uuid
+  addOnProductId   String  @map("add_on_product_id") @db.Uuid
+  hostingProduct   Product @relation("EligibleHostingPlan", fields: [hostingProductId], references: [id], onDelete: Restrict)
+  addOnProduct     Product @relation("EligibleAddOn", fields: [addOnProductId], references: [id], onDelete: Restrict)
+
+  @@id([hostingProductId, addOnProductId])
+  @@index([addOnProductId])
+  @@map("product_add_on_eligibility")
 }
 
 model ProductPrice {
@@ -689,6 +702,7 @@ model OrderItem {
   lineTotal            BigInt        @map("line_total") @db.BigInt
   requestedDomain      String?       @map("requested_domain") @db.VarChar(253)
   provisioningSnapshot Json?         @map("provisioning_snapshot")
+  fulfilledAt          DateTime?     @map("fulfilled_at") @db.Timestamptz(3)
   createdAt            DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
   order                Order         @relation(fields: [orderId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   product              Product       @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)
@@ -1149,6 +1163,7 @@ model OutboxEvent {
 enum ProductKind {
   HOSTING
   DOMAIN
+  ADD_ON
 }
 
 model RegistrarAccount {

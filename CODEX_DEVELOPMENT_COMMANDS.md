@@ -6786,3 +6786,10 @@ Owner-authorized on 2026-11-04. Issue one catch-up renewal invoice for the
 original service period when the scheduler resumes after the due date. Give the
 customer the full configured grace period and verify that later runs do not
 duplicate the invoice or suspend hosting early. Validate locally. No deployment.
+
+## Command 199 — Add one-time hosting add-ons at checkout
+
+Owner-authorized on 2026-11-04. Add administrator-managed one-time extras for
+eligible hosting plans. Let customers select them at checkout and invoice them
+as separate lines. Verify a fictional website migration through checkout retry,
+payment and manual fulfillment. Validate locally. No deployment.

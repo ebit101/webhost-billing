@@ -49,4 +49,8 @@ from defects in the states the browser test verified.
 | P1       | Consolidate staff follow-up                                               | Staff can find pending payment reviews, failed deliveries, and uncertain provisioning in one queue, open each source record, and track unread alerts per administrator. |
 | P1       | Standardize assisted setup and managed evaluation handover                | A quote defines setup, scope, support, backups, and upgrades. A second fictional tester can follow the same handover checklist.                                         |
 
-Next proposed command is **Command 199 — Add one-time hosting add-ons at checkout**.
+Command 199 adds a one-time website migration to the fictional hosting checkout.
+The purchase uses the hosting invoice, with separate fulfillment in the order
+review. See the [progress log](PROGRESS.md) for the replay and settlement results.
+
+Next proposed command is **Command 200 — Add recurring hosting add-ons to renewal invoices**.

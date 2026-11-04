@@ -16,6 +16,8 @@ import type { ApiEnvironment } from '@webhost-billing/config';
 import {
   createApiSuccessResponse,
   createProductRequestSchema,
+  hostingAddOnInputSchema,
+  type HostingAddOnInput,
   productGroupInputSchema,
   type ProductGroupInput,
   productPriceInputSchema,
@@ -68,6 +70,49 @@ export class ProductController {
   @Roles('ADMIN')
   async groups() {
     return createApiSuccessResponse(await this.products.listGroups());
+  }
+
+  @Get('add-ons')
+  @Roles('ADMIN')
+  async addOns() {
+    return createApiSuccessResponse(await this.products.listAddOns());
+  }
+
+  @Post('add-ons')
+  @Roles('ADMIN')
+  async createAddOn(
+    @Body(new ZodValidationPipe(hostingAddOnInputSchema))
+    input: HostingAddOnInput,
+    @CurrentAuth() auth: AuthRequestContext,
+    @Req() request: Request,
+  ) {
+    return createApiSuccessResponse(
+      await this.products.saveAddOn(
+        undefined,
+        input,
+        auth,
+        this.context(request),
+      ),
+    );
+  }
+
+  @Patch('add-ons/:addOnId')
+  @Roles('ADMIN')
+  async updateAddOn(
+    @Param('addOnId', new ParseUUIDPipe()) addOnId: string,
+    @Body(new ZodValidationPipe(hostingAddOnInputSchema))
+    input: HostingAddOnInput,
+    @CurrentAuth() auth: AuthRequestContext,
+    @Req() request: Request,
+  ) {
+    return createApiSuccessResponse(
+      await this.products.saveAddOn(
+        addOnId,
+        input,
+        auth,
+        this.context(request),
+      ),
+    );
   }
 
   @Post('groups')

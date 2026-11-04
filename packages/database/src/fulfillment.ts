@@ -11,6 +11,7 @@ export async function orderFulfillmentComplete(
     select: {
       id: true,
       kind: true,
+      fulfilledAt: true,
       provisioningSnapshot: true,
       service: { select: { status: true } },
     },
@@ -18,7 +19,9 @@ export async function orderFulfillmentComplete(
   if (items.length === 0) return false;
   if (
     items.some(
-      (item) => item.kind === 'HOSTING' && item.service?.status !== 'ACTIVE',
+      (item) =>
+        (item.kind === 'HOSTING' && item.service?.status !== 'ACTIVE') ||
+        (item.kind === 'ADD_ON' && item.fulfilledAt === null),
     )
   )
     return false;

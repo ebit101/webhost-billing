@@ -10,10 +10,10 @@ import {
 } from '@webhost-billing/shared';
 import Link from 'next/link';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { authenticatedGet } from '../../lib/auth-api';
+import { authMutation, authenticatedGet } from '../../lib/auth-api';
 import { Button, buttonStyles } from '../ui/button';
 import { EmptyState, ErrorState, LoadingState } from '../ui/feedback-state';
-import { formatMinor } from './order-ui';
+import { addOnStatus, errorMessage, formatMinor } from './order-ui';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 const responseSchema = apiSuccessResponseSchema(orderSchema);
@@ -26,6 +26,7 @@ export function AdminOrderReview(props: {
   orderId: string;
   customerId?: string;
   onClose: () => void;
+  onAddOnFulfilled?: () => void;
 }) {
   return (
     <ReviewRequest
@@ -39,10 +40,12 @@ function ReviewRequest({
   orderId,
   customerId,
   onClose,
+  onAddOnFulfilled,
 }: {
   orderId: string;
   customerId?: string;
   onClose: () => void;
+  onAddOnFulfilled?: () => void;
 }) {
   const valid =
     orderSchema.shape.id.safeParse(orderId).success &&
@@ -52,6 +55,8 @@ function ReviewRequest({
     valid ? undefined : { kind: 'unavailable' },
   );
   const [attempt, setAttempt] = useState(0);
+  const [fulfilling, setFulfilling] = useState(false);
+  const [fulfillmentError, setFulfillmentError] = useState('');
   const heading = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
@@ -78,6 +83,24 @@ function ReviewRequest({
     setResult(undefined);
     setAttempt((value) => value + 1);
   };
+  async function fulfill(itemId: string) {
+    if (!onAddOnFulfilled || fulfilling || result?.kind !== 'ready') return;
+    setFulfilling(true);
+    setFulfillmentError('');
+    try {
+      const order = await authMutation<Order>(
+        `/orders/${orderId}/add-ons/${itemId}/fulfill`,
+        'PATCH',
+        {},
+      );
+      setResult({ ...result, order });
+      onAddOnFulfilled();
+    } catch (error) {
+      setFulfillmentError(errorMessage(error));
+    } finally {
+      setFulfilling(false);
+    }
+  }
   return (
     <section
       id="admin-order-review"
@@ -98,10 +121,17 @@ function ReviewRequest({
         </Button>
       </div>
       <p className="text-sm text-slate-600">
-        Read-only context as of this request. Order and invoice states are
-        separate. Payment is not proof of hosting provisioning. Current service
-        state is not supplied here.
+        {onAddOnFulfilled &&
+        result?.kind === 'ready' &&
+        result.order.items.some((item) => item.kind === 'ADD_ON')
+          ? 'Complete purchased add-ons here after payment is verified. Hosting provisioning is tracked separately.'
+          : 'Read-only context as of this request. Order and invoice states are separate. Payment is not proof of hosting provisioning. Current service state is not supplied here.'}
       </p>
+      {fulfillmentError && (
+        <p role="alert" className="text-sm text-red-800">
+          {fulfillmentError}
+        </p>
+      )}
       {!result ? (
         <LoadingState label="Loading order review" />
       ) : result.kind === 'unavailable' ? (
@@ -127,7 +157,12 @@ function ReviewRequest({
           }
         />
       ) : (
-        <ReviewDetails order={result.order} timeZone={result.timeZone} />
+        <ReviewDetails
+          order={result.order}
+          timeZone={result.timeZone}
+          onFulfill={onAddOnFulfilled ? fulfill : undefined}
+          fulfilling={fulfilling}
+        />
       )}
     </section>
   );
@@ -171,9 +206,13 @@ async function loadReview(
 function ReviewDetails({
   order,
   timeZone,
+  onFulfill,
+  fulfilling,
 }: {
   order: Order;
   timeZone: string;
+  onFulfill?: (itemId: string) => void;
+  fulfilling: boolean;
 }) {
   const date = (value: string | null) =>
     value
@@ -304,7 +343,7 @@ function ReviewDetails({
                   View client domain
                 </Link>
               )}
-              {item.kind !== 'DOMAIN' && (
+              {(!item.kind || item.kind === 'HOSTING') && (
                 <Fact label="Hosting setup">
                   {item.hostingProvisioningMode === 'PRESERVE_EXISTING'
                     ? 'Keep existing website and email'
@@ -314,6 +353,9 @@ function ReviewDetails({
               <Fact label="Billing period">
                 {sentenceCaseLabel(item.billingPeriod)}
               </Fact>
+              {item.kind === 'ADD_ON' && (
+                <Fact label="Add-on status">{addOnStatus(order, item)}</Fact>
+              )}
               <Fact label="Quantity">{item.quantity}</Fact>
               <Fact label="Unit price snapshot">
                 {formatMinor(item.unitAmount.amount, item.unitAmount.currency)}
@@ -325,6 +367,21 @@ function ReviewDetails({
                 {formatMinor(item.lineTotal.amount, item.lineTotal.currency)}
               </Fact>
             </dl>
+            {item.kind === 'ADD_ON' &&
+              !item.fulfilledAt &&
+              onFulfill &&
+              order.invoice.status === 'PAID' &&
+              (order.status === 'PAID' || order.status === 'PROCESSING') && (
+                <Button
+                  className="mt-4"
+                  type="button"
+                  disabled={fulfilling}
+                  onClick={() => onFulfill(item.id)}
+                >
+                  Mark as fulfilled{' '}
+                  <span className="sr-only">{item.productName}</span>
+                </Button>
+              )}
           </article>
         ))}
       </div>

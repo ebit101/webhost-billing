@@ -1,11 +1,22 @@
-import type { OrderStatus, PublicProduct } from '@webhost-billing/shared';
+import type {
+  Order,
+  OrderStatus,
+  PublicHostingAddOn,
+  PublicProduct,
+} from '@webhost-billing/shared';
 
 export function formatHostingSubtotal(
   price: PublicProduct['prices'][number],
+  addOns: PublicHostingAddOn[] = [],
 ): string | undefined {
   if (price.amount.currency !== price.setupFee.currency) return undefined;
   return formatMinor(
-    (BigInt(price.amount.amount) + BigInt(price.setupFee.amount)).toString(),
+    addOns
+      .reduce(
+        (total, item) => total + BigInt(item.amount.amount),
+        BigInt(price.amount.amount) + BigInt(price.setupFee.amount),
+      )
+      .toString(),
     price.amount.currency,
   );
 }
@@ -36,6 +47,15 @@ export function orderTone(status: OrderStatus) {
   if (status === 'AWAITING_PAYMENT' || status === 'PENDING')
     return 'warning' as const;
   return 'danger' as const;
+}
+
+export function addOnStatus(order: Order, item: Order['items'][number]) {
+  if (item.fulfilledAt) return 'Fulfilled';
+  if (order.status === 'CANCELLED' || order.status === 'REJECTED')
+    return 'Cancelled';
+  return order.invoice.status === 'PAID'
+    ? 'Awaiting fulfillment'
+    : 'Awaiting payment';
 }
 
 export function errorMessage(error: unknown) {

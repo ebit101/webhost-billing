@@ -41,6 +41,10 @@ The suite uses fictional `.test` identities and fake providers. It does not cont
 checks that the scheduler queues suspension only after the grace period of the
 catch-up invoice.
 
+`hosting-add-ons.spec.ts` checks that checkout replay returns the same invoice
+with one add-on line. It also checks that full payment precedes manual
+fulfillment and that the hosting renewal amount excludes the one-time charge.
+
 ## Failure interpretation
 
 Command 79 adds a bounded manual-payment policy safeguard. The shared settings

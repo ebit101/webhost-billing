@@ -34,6 +34,7 @@ export class GuestCheckoutService {
       requestedDomain,
       submissionKey,
       acceptedTermsVersion,
+      addOnPriceIds,
       ...registration
     } = input;
     void _domainChoice;
@@ -55,6 +56,7 @@ export class GuestCheckoutService {
               requestedDomain,
               submissionKey,
               acceptedTermsVersion,
+              addOnPriceIds,
             },
             { identity: { userId: account.userId } },
             context,
