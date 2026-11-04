@@ -935,68 +935,40 @@ describe('order interfaces', () => {
     ).toBe(false);
   });
 
-  it('lets an administrator approve a paid order for fulfilment', async () => {
-    const user = userEvent.setup();
+  it('links the order number and shows invoice status separately from the order', async () => {
     const paidOrder: Order = {
       ...order,
-      status: 'PAID',
+      status: 'PROCESSING',
       invoice: {
         ...order.invoice,
         status: 'PAID',
-        balanceDue: { amount: '0', currency: 'BDT' },
+        balanceDue: { ...order.invoice.balanceDue, amount: '0' },
       },
     };
-    let approved = false;
     vi.stubGlobal(
       'fetch',
       vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+        expect(init?.method).toBeUndefined();
         const url = String(input);
         if (url.includes('/orders?')) return paginatedResponse([paidOrder], 20);
         if (url.includes('/customers?')) return paginatedResponse([customer]);
-        if (url.endsWith('/products')) {
+        if (url.endsWith('/products'))
           return jsonResponse({ success: true, data: [product] });
-        }
-        if (url.endsWith(`/orders/${orderId}`))
-          return jsonResponse({ success: true, data: paidOrder });
-        if (url.endsWith('/settings'))
-          return jsonResponse({
-            success: true,
-            data: { timeZone: 'Asia/Dhaka' },
-          });
-        if (url.endsWith('/auth/csrf')) {
-          return jsonResponse({
-            success: true,
-            data: { csrfToken: 'a'.repeat(32) },
-          });
-        }
-        if (url.endsWith(`/orders/${orderId}/status`)) {
-          approved = JSON.parse(String(init?.body)).status === 'PROCESSING';
-          return jsonResponse({
-            success: true,
-            data: { ...paidOrder, status: 'PROCESSING' },
-          });
-        }
         throw new Error(`Unexpected request: ${url}`);
       }),
     );
-
     render(<AdminOrderManager />);
-    await user.click(
-      await screen.findByRole('button', {
-        name: `Review order ${order.orderNumber}`,
-      }),
-    );
-    const review = await screen.findByRole('region', { name: 'Order review' });
-    await within(review).findByText(paidOrder.orderNumber);
+    const link = await screen.findByRole('link', { name: order.orderNumber });
+    expect(link.getAttribute('href')).toBe(`/admin/orders/${orderId}`);
+    const row = screen.getByRole('row', {
+      name: new RegExp(order.orderNumber),
+    });
+    expect(within(row).getByText('Paid')).toBeTruthy();
+    expect(within(row).getByText('Processing')).toBeTruthy();
     expect(
-      within(review).queryByRole('button', { name: 'Approve' }),
-    ).toBeNull();
-    expect(approved).toBe(false);
-    await user.click(await screen.findByRole('button', { name: 'Approve' }));
-
-    expect(approved).toBe(true);
-    expect(await screen.findByText(/moved to processing/i)).toBeTruthy();
-    expect(screen.queryByRole('region', { name: 'Order review' })).toBeNull();
+      screen.getByRole('columnheader', { name: 'Payment status' }),
+    ).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /Approve/ })).toBeNull();
   });
 
   it('opens review only deliberately, re-reads on selection and restores focus on close', async () => {

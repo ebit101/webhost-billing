@@ -313,8 +313,13 @@ test('complete hosting customer and administrator lifecycle', async ({
       const before = await snapshot();
       const writes: string[] = [];
       const observe = (request: import('@playwright/test').Request) => {
-        if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method()))
-          writes.push(new URL(request.url()).pathname);
+        const url = new URL(request.url());
+        if (
+          url.origin === E2E_API_ORIGIN &&
+          !['GET', 'HEAD', 'OPTIONS'].includes(request.method())
+        ) {
+          writes.push(url.pathname);
+        }
       };
       page.on('request', observe);
       const review = page.getByRole('region', { name: 'Order review' });
@@ -396,9 +401,30 @@ test('complete hosting customer and administrator lifecycle', async ({
         await page.setViewportSize({ width: 1440, height: 1000 });
       }
     });
-    await orderRow.getByRole('button', { name: 'Approve' }).click();
+    await expect(orderRow.getByRole('button', { name: /Approve/ })).toHaveCount(
+      0,
+    );
+    const { id: orderId, orderNumber } = await e2ePrisma.order.findFirstOrThrow(
+      {
+        where: { invoices: { some: { id: invoiceId } } },
+        select: { id: true, orderNumber: true },
+      },
+    );
+    await orderRow
+      .getByRole('link', { name: orderNumber, exact: true })
+      .click();
+    await expect(page).toHaveURL(new RegExp(`/admin/orders/${orderId}$`));
+    await expect(
+      page.getByRole('heading', { name: 'Order details' }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('table', { name: 'Order items' }),
+    ).toContainText(E2E_PRODUCT.domain);
+    await page.getByRole('button', { name: 'Approve for processing' }).click();
     await expect(page.getByRole('status')).toContainText(/processing/i);
+    await page.getByRole('link', { name: 'Back to orders' }).click();
     await expect(orderRow).toContainText('Processing');
+    await expect(orderRow).toContainText('Paid');
   });
 
   await test.step('administrator provisions through the fake hosting panel', async () => {

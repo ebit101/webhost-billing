@@ -3426,3 +3426,9 @@ The following decisions are intentionally unresolved and must be selected before
 - **Decision:** Store a nullable renewal end timestamp on each fulfilled recurring add-on purchase. The customer can confirm the end date on the owned hosting service. Repeat requests return the recorded date and create one audit entry.
 - **Billing:** The first unbilled period determines the end date. If the add-on already appears on an issued renewal invoice, use the end of that invoice's service period. Cancellation and invoice generation share the service row lock. A stale confirmation is rejected if the invoice is issued first. Renewal skips the add-on from the recorded period onward.
 - **Scope:** The action leaves hosting lifecycle and billing independent. Staff continue to handle any work needed to discontinue manually fulfilled extras.
+
+## ADR-168 — Approve hosting from the order details page
+
+- **Date:** 2026-11-05. Command 206.
+- **Decision:** Open a dedicated administrator page from the order number. Preserve validated ledger filters in the return link and show invoice payment status separately from order status on the list. Keep the existing quick review for reading an order in context.
+- **Approval:** Offer the existing processing transition from the details page for eligible paid hosting orders. Direct staff to the customer's Transactions view for unpaid invoices or to Domains for a new registration. Keep the server-side order, payment and registrar checks authoritative.

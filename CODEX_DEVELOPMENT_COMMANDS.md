@@ -6826,3 +6826,11 @@ Show overdue invoice aging with links to matching invoices and validate locally.
 Owner-authorized on 2026-11-04. Replace the separate administrator sidebar links
 with Billing. Open Invoices by default and show the existing payment ledger
 under Transactions. Keep existing URLs and staff permissions. Validate locally.
+
+## Command 206 — Open administrator order details before approval
+
+Owner-authorized on 2026-11-05. Link the order number to a dedicated
+administrator details page and display payment status on the Orders list.
+Place hosting approval in the details page and keep payment verification and
+domain registration separate. Verify the flow locally and update the progress
+log.

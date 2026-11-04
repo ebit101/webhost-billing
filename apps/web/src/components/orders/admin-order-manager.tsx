@@ -27,6 +27,7 @@ import { Icon } from '../ui/icon';
 import { RecordAction, RecordDialog } from '../ui/record-dialog';
 import { PageHeader } from '../ui/page-header';
 import { StatusBadge } from '../ui/status-badge';
+import { invoiceTone } from '../invoices/invoice-ui';
 import { errorMessage, formatMinor, orderTone } from './order-ui';
 import { AdminOrderReview } from './admin-order-review';
 import { AdminOrderLedger } from './admin-order-ledger';
@@ -37,6 +38,7 @@ import {
 } from './admin-order-domain-fields';
 import Link from 'next/link';
 import {
+  adminOrderDetailHref,
   adminOrderHref,
   adminOrderQueryString,
   readAdminOrderQuery,
@@ -174,7 +176,13 @@ export function AdminOrderManager({
         header: 'Order',
         render: (order) => (
           <div>
-            <p className="font-bold text-slate-950">{order.orderNumber}</p>
+            <Link
+              prefetch={false}
+              href={adminOrderDetailHref(order.id, applied.query)}
+              className="font-bold text-brand-700 underline-offset-2 hover:underline"
+            >
+              {order.orderNumber}
+            </Link>
             <p className="mt-1 text-xs text-slate-500">
               {new Date(order.placedAt).toLocaleString('en-GB')}
             </p>
@@ -204,8 +212,17 @@ export function AdminOrderManager({
         ),
       },
       {
+        key: 'paymentStatus',
+        header: 'Payment status',
+        render: ({ invoice }) => (
+          <StatusBadge tone={invoiceTone(invoice.status)}>
+            {sentenceCaseLabel(invoice.status)}
+          </StatusBadge>
+        ),
+      },
+      {
         key: 'status',
-        header: 'Status',
+        header: 'Order status',
         render: (order) => (
           <StatusBadge tone={orderTone(order.status)}>
             {sentenceCaseLabel(order.status)}
@@ -252,14 +269,6 @@ export function AdminOrderManager({
             <Link href="/admin/domains" className="text-blue-700 underline">
               Review domain
             </Link>
-          ) : order.status === 'PAID' ? (
-            <Button
-              size="sm"
-              disabled={saving}
-              onClick={() => void changeStatus(order.id, 'PROCESSING')}
-            >
-              Approve
-            </Button>
           ) : order.status === 'AWAITING_PAYMENT' ? (
             <span className="inline-flex gap-2">
               <Button
@@ -280,11 +289,11 @@ export function AdminOrderManager({
               </Button>
             </span>
           ) : (
-            <span className="text-xs text-slate-400">No manual action</span>
+            <span className="text-xs text-slate-500">—</span>
           ),
       },
     ],
-    [saving, review?.id],
+    [applied.query, saving, review?.id],
   );
 
   async function createOrder(event: FormEvent<HTMLFormElement>) {
@@ -348,7 +357,7 @@ export function AdminOrderManager({
 
   async function changeStatus(
     orderId: string,
-    status: 'PROCESSING' | 'REJECTED' | 'CANCELLED',
+    status: 'REJECTED' | 'CANCELLED',
   ) {
     setReview(undefined);
     setSaving(true);

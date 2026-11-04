@@ -2,14 +2,22 @@
 
 ## Status Summary
 
-- **Current command:** Command 202 — Let customers cancel recurring hosting add-ons at period end
-- **Current status:** Customer add-on cancellation and hosting-only renewal verified locally.
-- **Last updated:** 2026-11-04
+- **Current command:** Command 206 — Open administrator order details before approval
+- **Current status:** Dedicated administrator order details and list payment status implemented locally.
+- **Last updated:** 2026-11-05
 - **Last recorded staging release:** Command 177, `887862020de1e472f303f359b793dccbedfb9b07`, deployed on 2026-11-03 (Asia/Dhaka).
 - **Next action:** Await authorization for Command 205 — Show scheduled add-on cancellations in the administrator service record.
-- **Next command authorized:** None after Command 202.
+- **Next command authorized:** None after Command 206.
 
 ## Command Reports
+
+### Command 206 — Open administrator order details before approval
+
+- Implemented locally on 2026-11-05 (Asia/Dhaka). The administrator Orders list links the order number to a dedicated page and displays payment status next to order status. The details page groups customer and invoice information above a compact item table and preserves the validated list filters in the return link.
+- Moved hosting approval to the details page. It offers approval for eligible paid hosting orders, directs unpaid orders to the customer's Transactions view, and directs registration orders to Domains. The existing quick review remains available for in-list context. The existing order, payment and registrar API rules govern all actions.
+- Updated the administrator order route, manager, review, ledger URL helper, web tests and hosting lifecycle rehearsal. Recorded the decision in ADR-168 and the command playbook. No database migration, push or deployment was needed.
+- All 98 focused web tests, strict web and browser types, focused lint, formatting, and all four documentation validators passed. Both guarded Chromium scenarios passed with fictional data. The lifecycle verified the full order page, hosting approval, and the separate payment and order statuses back on the list. The first run reached approval before the local timeout. A second run surfaced a development diagnostic that was incorrectly counted as a business write. The final rehearsal watched API writes and compared database snapshots.
+- Recommended next command remains **Command 205 — Show scheduled add-on cancellations in the administrator service record**.
 
 ### Command 202 — Let customers cancel recurring hosting add-ons at period end
 

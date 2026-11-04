@@ -286,3 +286,93 @@ describe('read-only administrator order review', () => {
     expect(mock).toHaveBeenCalledTimes(4);
   });
 });
+
+describe('administrator order details', () => {
+  const paidOrder: Order = { ...order, status: 'PAID' };
+
+  it('shows the full item table and explicitly approves a paid hosting order', async () => {
+    const mock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const path = new URL(String(input)).pathname;
+      if (path === '/settings') return response({ timeZone: 'Asia/Dhaka' });
+      if (path === '/auth/csrf') return response({ csrfToken: 'a'.repeat(32) });
+      if (path === `/orders/${id}/status`) {
+        expect(init?.method).toBe('PATCH');
+        expect(JSON.parse(String(init?.body))).toEqual({
+          status: 'PROCESSING',
+        });
+        return response({ ...paidOrder, status: 'PROCESSING' });
+      }
+      expect(path).toBe(`/orders/${id}`);
+      return response(paidOrder);
+    });
+    vi.stubGlobal('fetch', mock);
+    render(
+      <AdminOrderReview
+        orderId={id}
+        backHref="/admin/orders?page=2&pageSize=20"
+      />,
+    );
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Order details' }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('link', { name: 'Back to orders' }).getAttribute('href'),
+    ).toBe('/admin/orders?page=2&pageSize=20');
+    const items = await screen.findByRole('table', { name: 'Order items' });
+    expect(within(items).getByText('Historical Starter')).toBeTruthy();
+    expect(mock.mock.calls.every(([, init]) => !init?.method)).toBe(true);
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: 'Approve for processing' }));
+    await screen.findByText(/moved to processing/);
+    expect(
+      screen.queryByRole('button', { name: 'Approve for processing' }),
+    ).toBeNull();
+  });
+
+  it('routes an unpaid order to payment review', async () => {
+    mockRead(async () =>
+      response({
+        ...order,
+        status: 'AWAITING_PAYMENT',
+        invoice: { ...order.invoice, status: 'UNPAID', balanceDue: money },
+      }),
+    );
+    render(<AdminOrderReview orderId={id} backHref="/admin/orders" />);
+    const link = await screen.findByRole('link', { name: 'Review payment' });
+    expect(link.getAttribute('href')).toBe(
+      `/admin/payments?customerId=${customerId}`,
+    );
+    expect(screen.queryByRole('button', { name: /Approve/ })).toBeNull();
+  });
+
+  it.each([undefined, 'REGISTRATION'] as const)(
+    'routes combined registration %s to domain review',
+    async (domainAction) => {
+      mockRead(async () =>
+        response({
+          ...paidOrder,
+          items: [
+            order.items[0]!,
+            {
+              ...order.items[1]!,
+              kind: 'DOMAIN',
+              domainAction,
+              domainId: domainAction ? otherId : undefined,
+            },
+          ],
+        }),
+      );
+      render(<AdminOrderReview orderId={id} backHref="/admin/orders" />);
+      const link = await screen.findByRole('link', {
+        name: 'Review domain registration',
+      });
+      expect(link.getAttribute('href')).toBe(
+        domainAction
+          ? `/admin/customers/${customerId}/domains/${otherId}`
+          : `/admin/domains?customerId=${customerId}`,
+      );
+      expect(screen.queryByRole('button', { name: /Approve/ })).toBeNull();
+    },
+  );
+});

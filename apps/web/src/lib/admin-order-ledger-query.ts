@@ -91,6 +91,21 @@ export function adminOrderQueryString(query: OrderListQuery): string {
 export function adminOrderHref(query: OrderListQuery): string {
   return `/admin/orders?${adminOrderQueryString(query)}`;
 }
+export function adminOrderDetailHref(
+  id: string,
+  query: OrderListQuery,
+): string {
+  const path = `/admin/orders/${orderSchema.shape.id.parse(id)}`;
+  if (
+    query.page === 1 &&
+    query.pageSize === 20 &&
+    !query.search &&
+    !query.status &&
+    !query.customerId
+  )
+    return path;
+  return `${path}?${adminOrderQueryString(query)}`;
+}
 const responseSchema = paginatedApiSuccessResponseSchema(orderSchema);
 export function parseAdminOrderPage(response: unknown, query: OrderListQuery) {
   const parsed = responseSchema.safeParse(response);
