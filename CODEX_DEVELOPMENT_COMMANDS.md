@@ -6779,3 +6779,10 @@ Owner-authorized on 2026-11-04. Follow a fictional hosting customer through
 signup, verification, provisioning, scheduled renewal, and payment with the
 local scheduler, worker, and preview mail. Check grace, suspension, and
 reactivation and record the results in the progress log. No deployment.
+
+## Command 198 — Handle renewal invoices when the scheduler misses the due date
+
+Owner-authorized on 2026-11-04. Issue one catch-up renewal invoice for the
+original service period when the scheduler resumes after the due date. Give the
+customer the full configured grace period and verify that later runs do not
+duplicate the invoice or suspend hosting early. Validate locally. No deployment.

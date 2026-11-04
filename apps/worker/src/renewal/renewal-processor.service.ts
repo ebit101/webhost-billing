@@ -173,6 +173,8 @@ export class RenewalProcessorService {
         );
         const periodStart = service.nextDueAt;
         const periodEnd = addBillingPeriod(periodStart, billingPeriod);
+        // Give a late invoice its full grace period from the day it is issued.
+        const dueAt = periodStart < now ? now : periodStart;
         const existing = await transaction.invoiceItem.findFirst({
           where: {
             serviceId,
@@ -220,7 +222,7 @@ export class RenewalProcessorService {
                 }
               : {}),
             issuedAt: now,
-            dueAt: periodStart,
+            dueAt,
             ...(paid ? { paidAt: now } : {}),
             items: {
               create: {

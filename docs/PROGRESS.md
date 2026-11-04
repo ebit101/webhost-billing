@@ -2,12 +2,12 @@
 
 ## Status Summary
 
-- **Current command:** Command 197 — Rehearse scheduled renewal and customer messages locally
-- **Current status:** Scheduled renewal, customer messages, and service reactivation verified locally with fictional data.
+- **Current command:** Command 198 — Handle renewal invoices when the scheduler misses the due date
+- **Current status:** One catch-up invoice and the full grace period verified locally.
 - **Last updated:** 2026-11-04
 - **Last recorded staging release:** Command 177, `887862020de1e472f303f359b793dccbedfb9b07`, deployed on 2026-11-03 (Asia/Dhaka).
-- **Next action:** Await authorization for Command 198 — Handle renewal invoices when the scheduler misses the due date.
-- **Next command authorized:** None after Command 197.
+- **Next action:** Await authorization for Command 199 — Add one-time hosting add-ons at checkout.
+- **Next command authorized:** None after Command 198.
 
 ## Command Reports
 
@@ -16,6 +16,14 @@
 - Added the dedicated PowerShell launcher and handoff guide for future owner-authorized updates to my.speedhost.bd. The launcher requires a full commit SHA, defaults to read-only SSH preflight, and uses the existing server procedure for archive verification, backup, migration and health checks when applied.
 - Verified preflight against the live host with an existing authorized identity. Enrolled the dedicated Ed25519 identity on 2026-11-04 with forwarding and PTY disabled. The launcher passed read-only preflight using its default key path, and the server still reported the same active release. On 2026-11-04, the launcher deployed `fe21c19719a0c7cef461179048052756f1e52f04` via SSH in 13 minutes 47 seconds. The merged source matched PR #102 after all its checks passed. The server verified the backup, applied migrations, and reported seven healthy services. Independent requests to the storefront, shared hosting, health, and readiness returned HTTP 200.
 - The next authorized release can use the handoff steps after the candidate is validated. For the next release, use the documented SSH preflight on the intended commit before applying it.
+
+### Command 198 — Handle renewal invoices when the scheduler misses the due date
+
+- Implemented locally on 2026-11-04 (Asia/Dhaka). The renewal processor gives a late invoice a due date equal to the issue time. It keeps the original service period and lets the existing business date policy apply the full configured grace period after the new invoice due date.
+- Updated `apps/worker/src/renewal/renewal-processor.service.ts` and extended `apps/web/e2e/specs/scheduled-renewal.spec.ts`. Updated the command index, renewal decision, invariant evidence and Phase 2 pilot notes.
+- The local Playwright rehearsal with the real scheduler and worker passed. It skipped past the original due date and grace period, retained one catch-up invoice across daily runs, kept hosting active with zero suspension requests through grace, and recorded one suspension request afterward. The original on-time renewal and reactivation also passed.
+- All three PostgreSQL renewal worker integration tests passed, including the previously failing cancellation case. The worker build, browser-test type check, focused lint, formatting, and Git diff checks passed. The rehearsal used fictional data and a fake hosting panel. No migration or deployment was needed.
+- Recommended next command is **Command 199 — Add one-time hosting add-ons at checkout**. Rehearse a fictional migration add-on through checkout, verified payment and manual fulfillment.
 
 ### Command 197 — Rehearse scheduled renewal and customer messages locally
 

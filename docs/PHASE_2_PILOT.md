@@ -45,8 +45,8 @@ from defects in the states the browser test verified.
 | P0       | Rehearse manual payment and replay on the same customer journey           | Staff can review fictional evidence and verify settlement. Repeated submissions and retries leave one settlement and one provisioned account.                           |
 | P0       | Prove scheduled renewal and customer messages through the normal job flow | Completed locally in Command 197 with an isolated scheduler and worker, fictional payments, preview mail, and a fake hosting panel.                                     |
 | P0       | Rehearse recovery for the pilot installation                              | An operator restores a verified backup into isolation, confirms the order, invoice, and service history, and receives an alert when a job fails.                        |
-| P0       | Handle renewal invoices when the scheduler misses the due date            | After downtime across a due date, the scheduler creates one catch-up invoice with valid dates and applies the agreed grace policy.                                      |
+| P0       | Handle renewal invoices when the scheduler misses the due date            | Command 198 verifies one catch-up invoice and the full grace period after the invoice is issued.                                                                        |
 | P1       | Consolidate staff follow-up                                               | Staff can find pending payment reviews, failed deliveries, and uncertain provisioning in one queue, open each source record, and track unread alerts per administrator. |
 | P1       | Standardize assisted setup and managed evaluation handover                | A quote defines setup, scope, support, backups, and upgrades. A second fictional tester can follow the same handover checklist.                                         |
 
-Next proposed command is **Command 198 — Handle renewal invoices when the scheduler misses the due date**.
+Next proposed command is **Command 199 — Add one-time hosting add-ons at checkout**.

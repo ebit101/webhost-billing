@@ -218,6 +218,12 @@ This document records durable technical and product decisions. New decisions sho
 - **Reason:** UTC instants cross business dates differently, delayed/repeated jobs are normal, concurrent schedulers must not duplicate financial documents, and a later payment must never reactivate a manual or unrelated suspension. A remote WHM mutation can succeed while its acknowledgement or local commit fails.
 - **Consequence:** Renewal periods use UTC month-clamping and a partial unique service/period invoice-line index. Database-safe renewal jobs have bounded retries, while cPanel mutations have one attempt and require verified account state before local changes. Unknown hosting outcomes remain inconsistent. Full verified payment advances the due date and requests unsuspension only for the matching suspension invoice. Initial-release automation has no termination event or handler.
 
+Command 198 sets the renewal invoice due date to the later of the service's
+next due date and the invoice issue time. A catch-up invoice keeps the original
+service period and uses its new due date for overdue and suspension calculations
+in the configured business time zone. The grace period covers the configured
+number of calendar days after that due date.
+
 ## ADR-028 — Plain-Text, Ownership-Bound Support Conversations
 
 - **Status:** Accepted

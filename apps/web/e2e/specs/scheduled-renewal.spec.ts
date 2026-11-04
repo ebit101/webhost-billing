@@ -225,7 +225,7 @@ test('the scheduled renewal and customer messages run through local workers', as
     await delivered('service-provisioned');
     await preview(`${E2E_PRODUCT.name} is ready`);
 
-    // Backdate only this fictional service so the scheduler sees three business dates in seconds.
+    // Backdate only this fictional service so the scheduler can run on controlled business dates.
     const startedAt = new Date('2024-12-11T12:00:00.000Z');
     await e2ePrisma.service.update({
       where: { id: service.id },
@@ -275,11 +275,13 @@ test('the scheduled renewal and customer messages run through local workers', as
     expect(await preview('Welcome')).toContain(
       'Your email is verified and your account is ready.',
     );
-    const renewals = () =>
+    const renewals = (periodStart = dueAt) =>
       e2ePrisma.invoice.findMany({
         where: {
           customerId,
-          items: { some: { serviceId: service.id, servicePeriodStart: dueAt } },
+          items: {
+            some: { serviceId: service.id, servicePeriodStart: periodStart },
+          },
         },
         include: { items: true },
       });
@@ -342,6 +344,53 @@ test('the scheduled renewal and customer messages run through local workers', as
       { type: 'SUSPEND_ACCOUNT', status: 'SUCCEEDED' },
       { type: 'UNSUSPEND_ACCOUNT', status: 'SUCCEEDED' },
     ]);
+
+    // Skip the next renewal window and resume after the original grace period would have expired.
+    const missedDueAt = new Date('2025-02-11T12:00:00.000Z');
+    const resumedAt = new Date('2025-02-20T12:00:00.000Z');
+    expect(await renewals(missedDueAt)).toHaveLength(0);
+    await setClock('2025-02-20');
+    await cycle('2025-02-20');
+    const catchUpInvoices = await renewals(missedDueAt);
+    expect(catchUpInvoices).toHaveLength(1);
+    const catchUp = catchUpInvoices[0]!;
+    expect(catchUp).toMatchObject({
+      status: 'UNPAID',
+      issuedAt: resumedAt,
+      dueAt: resumedAt,
+      balanceDue: service.recurringAmount,
+      items: [
+        {
+          servicePeriodStart: missedDueAt,
+          servicePeriodEnd: new Date('2025-03-11T12:00:00.000Z'),
+        },
+      ],
+    });
+    const suspensionRequests = () =>
+      e2ePrisma.outboxEvent.count({
+        where: {
+          eventType: 'HOSTING_SUSPENSION_REQUESTED',
+          idempotencyKey: `automation:suspend:${service.id}:${catchUp.id}`,
+        },
+      });
+    expect(await serviceState()).toMatchObject({
+      status: 'ACTIVE',
+      nextDueAt: missedDueAt,
+    });
+    expect(await suspensionRequests()).toBe(0);
+
+    await setClock('2025-02-21');
+    await cycle('2025-02-21');
+    expect(await renewals(missedDueAt)).toMatchObject([
+      { id: catchUp.id, status: 'OVERDUE', dueAt: resumedAt },
+    ]);
+    expect(await serviceState()).toMatchObject({ status: 'ACTIVE' });
+    expect(await suspensionRequests()).toBe(0);
+
+    await setClock('2025-02-22');
+    await cycle('2025-02-22');
+    expect(await renewals(missedDueAt)).toMatchObject([{ id: catchUp.id }]);
+    expect(await suspensionRequests()).toBe(1);
   } catch (error) {
     await info.attach('scheduler-and-worker', {
       body: processLogs.join(''),

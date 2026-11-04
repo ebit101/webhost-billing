@@ -37,6 +37,10 @@ The suite uses fictional `.test` identities and fake providers. It does not cont
 | Jobs are safe to retry                                              | Reference-only payloads, deterministic idempotency keys, bounded retry classification, and persisted attempt evidence | Renewal replay covers invoicing, suspension, payment, and reactivation. Hosting retries preserve one success. The renewal and email worker suites reject early execution and retry after publication.                          |
 | Money calculations never use floating-point arithmetic              | PostgreSQL `BIGINT`, TypeScript `bigint`, canonical decimal strings, checked arithmetic, and overflow constraints     | Shared money contracts reject decimal amounts; invoice calculations cover exact `BIGINT` bounds; provider conversion uses decimal strings and `bigint` only                                                                    |
 
+`scheduled-renewal.spec.ts` verifies one invoice for a missed service period and
+checks that the scheduler queues suspension only after the grace period of the
+catch-up invoice.
+
 ## Failure interpretation
 
 Command 79 adds a bounded manual-payment policy safeguard. The shared settings
