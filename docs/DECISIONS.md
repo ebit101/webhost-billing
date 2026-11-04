@@ -3419,3 +3419,10 @@ The following decisions are intentionally unresolved and must be selected before
 - **Date:** 2026-11-04. Command 201.
 - **Decision:** Check public website TLS separately from the hosting list and its service status. The customer endpoint resolves domains from owned active services, rejects non-public IPv4 results and pins the TLS connection to the checked address on port 443. Certificate validation uses the original domain. Fake providers and test runs stay offline.
 - **Display:** A trusted certificate is active. A recognized certificate failure or refused HTTPS connection is inactive. Missing domains, DNS failures, IPv6-only sites, timeouts and other inconclusive results are unknown. The check samples one public IPv4 address. Cache results briefly and bound simultaneous probes so the service list can render independently.
+
+## ADR-167 — End recurring add-on renewal at a period boundary
+
+- **Date:** 2026-11-04. Command 202.
+- **Decision:** Store a nullable renewal end timestamp on each fulfilled recurring add-on purchase. The customer can confirm the end date on the owned hosting service. Repeat requests return the recorded date and create one audit entry.
+- **Billing:** The first unbilled period determines the end date. If the add-on already appears on an issued renewal invoice, use the end of that invoice's service period. Cancellation and invoice generation share the service row lock. A stale confirmation is rejected if the invoice is issued first. Renewal skips the add-on from the recorded period onward.
+- **Scope:** The action leaves hosting lifecycle and billing independent. Staff continue to handle any work needed to discontinue manually fulfilled extras.

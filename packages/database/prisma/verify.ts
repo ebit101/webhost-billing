@@ -138,6 +138,7 @@ const requiredCustomConstraints = [
   'email_attempts_number_check',
   'email_attempts_state_check',
   'order_items_total_check',
+  'order_items_renewal_ends_at_check',
   'orders_total_check',
   'password_reset_tokens_hash_format_check',
   'password_reset_tokens_time_order_check',

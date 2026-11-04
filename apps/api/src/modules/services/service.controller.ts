@@ -14,6 +14,7 @@ import {
 } from '@nestjs/common';
 import type { ApiEnvironment } from '@webhost-billing/config';
 import {
+  cancelServiceAddOnSchema,
   createApiSuccessResponse,
   createPaginatedApiSuccessResponse,
   createServiceRequestSchema,
@@ -41,6 +42,7 @@ import { AuthRateLimit } from '../auth/decorators/rate-limit.decorator';
 import { ServiceService } from './service.service';
 import { HostingCancellationService } from './hosting-cancellation.service';
 import { ServiceSslStatusService } from './service-ssl-status.service';
+import { ServiceAddOnsService } from './service-add-ons.service';
 
 @Controller('services')
 export class ServiceController {
@@ -50,6 +52,7 @@ export class ServiceController {
     private readonly services: ServiceService,
     private readonly cancellations: HostingCancellationService,
     private readonly ssl: ServiceSslStatusService,
+    private readonly addOns: ServiceAddOnsService,
     @Inject(API_ENVIRONMENT) environment: ApiEnvironment,
   ) {
     this.auditSecret = environment.SESSION_SECRET;
@@ -118,6 +121,38 @@ export class ServiceController {
   ) {
     const result = await this.cancellations.list(query);
     return createPaginatedApiSuccessResponse(result.data, result.pagination);
+  }
+
+  @Get(':serviceId/add-ons')
+  @Roles('CUSTOMER')
+  @CustomerSupportAccess()
+  async listAddOns(
+    @Param('serviceId', new ParseUUIDPipe()) serviceId: string,
+    @CurrentAuth() auth: AuthRequestContext,
+  ) {
+    return createApiSuccessResponse(await this.addOns.list(serviceId, auth));
+  }
+
+  @Post(':serviceId/add-ons/:addOnId/cancel')
+  @HttpCode(HttpStatus.OK)
+  @Roles('CUSTOMER')
+  async cancelAddOn(
+    @Param('serviceId', new ParseUUIDPipe()) serviceId: string,
+    @Param('addOnId', new ParseUUIDPipe()) addOnId: string,
+    @Body(new ZodValidationPipe(cancelServiceAddOnSchema))
+    input: z.output<typeof cancelServiceAddOnSchema>,
+    @CurrentAuth() auth: AuthRequestContext,
+    @Req() request: Request,
+  ) {
+    return createApiSuccessResponse(
+      await this.addOns.cancel(
+        serviceId,
+        addOnId,
+        input.expectedEndAt,
+        auth,
+        this.context(request),
+      ),
+    );
   }
 
   @Get(':serviceId/cancellation-request')

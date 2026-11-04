@@ -45,6 +45,22 @@ export const hostingCancellationInputSchema = z.discriminatedUnion('timing', [
     .strict(),
 ]);
 
+export const cancelServiceAddOnSchema = z
+  .object({ expectedEndAt: z.iso.datetime() })
+  .strict();
+
+export const serviceAddOnSchema = z
+  .object({
+    id: z.uuid(),
+    name: z.string().min(1).max(160),
+    recurringAmount: moneySchema,
+    renewalEndsAt: z.iso.datetime().nullable(),
+    availableEndAt: z.iso.datetime().nullable(),
+  })
+  .strict();
+
+export type ServiceAddOn = z.infer<typeof serviceAddOnSchema>;
+
 export const hostingCancellationJobSchema = z
   .object({
     schemaVersion: z.literal(1),

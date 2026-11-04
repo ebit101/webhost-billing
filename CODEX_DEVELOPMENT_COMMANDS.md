@@ -6808,6 +6808,13 @@ trusted HTTPS certificate of each active hosting domain. Keep unavailable
 checks separate from inactive SSL, and scope requests to the customer's
 services. Validate locally.
 
+## Command 202 — Let customers cancel recurring hosting add-ons at period end
+
+Owner-authorized on 2026-11-04. Let a customer stop renewal of a fulfilled
+recurring add-on from their hosting service. Preserve issued invoices and
+continue billing hosting. Verify the customer action and the following renewal
+with fictional data, update the progress log, and keep the change local.
+
 ## Command 203 — Add the administrator Reports workspace
 
 Owner-authorized on 2026-11-04. Place Reports below Payments and add Overview,

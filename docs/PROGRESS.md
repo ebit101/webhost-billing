@@ -2,14 +2,23 @@
 
 ## Status Summary
 
-- **Current command:** Command 204 — Group invoices and transactions under Billing
-- **Current status:** Billing navigation and staff access verified locally.
+- **Current command:** Command 202 — Let customers cancel recurring hosting add-ons at period end
+- **Current status:** Customer add-on cancellation and hosting-only renewal verified locally.
 - **Last updated:** 2026-11-04
 - **Last recorded staging release:** Command 177, `887862020de1e472f303f359b793dccbedfb9b07`, deployed on 2026-11-03 (Asia/Dhaka).
-- **Next action:** Await authorization for Command 202 — Let customers cancel recurring hosting add-ons at period end.
-- **Next command authorized:** None after Command 204.
+- **Next action:** Await authorization for Command 205 — Show scheduled add-on cancellations in the administrator service record.
+- **Next command authorized:** None after Command 202.
 
 ## Command Reports
+
+### Command 202 — Let customers cancel recurring hosting add-ons at period end
+
+- Implemented locally on 2026-11-04 (Asia/Dhaka). A customer can open My services, select their hosting service, and confirm Cancel renewal for a fulfilled recurring add-on. The portal shows the effective date before confirmation and retains the recorded date after reload.
+- Added the service add-on API and portal component, the shared request and response contracts, the renewal worker filter, and the order-item migration `20261104000200_add_on_renewal_cancellation`. Updated the database verifier and three migration-history tests, the scheduled renewal rehearsal, the command playbook, the product plan, ADR-167, and the Phase 2 pilot notes.
+- The first unbilled period determines the end date. The API locks the same service row as the renewal worker and rejects a stale date if an invoice is issued first. Repeated requests return the original date and leave one audit entry. Staff continue to handle any work needed to discontinue manually fulfilled extras.
+- The guarded Chromium rehearsal passed with local PostgreSQL, Redis, scheduler, worker, preview mail and fake hosting. It rejected a stale date, a one-time add-on and an administrator request. It preserved the issued invoice, cancelled the fictional managed backup through the portal, verified a reload and replay, generated one hosting-only invoice on repeated scheduler runs, and kept hosting active through payment and advancement to the following period.
+- The shared, database, API and worker builds, Prisma schema validation, nine focused web tests, web and browser type checks, focused lint, formatting, and four documentation validators passed. The guarded PostgreSQL suite passed with all 46 migrations and verified the schema and fictional seed. The initial browser type check ran before the API build had restored its generated output and passed when repeated after the build. No push or deployment ran.
+- Recommended next command is **Command 205 — Show scheduled add-on cancellations in the administrator service record**. Give staff an effective date and purchased add-on name so they can end manually fulfilled extras when the period closes.
 
 ### Release v0.1.0-alpha.3
 

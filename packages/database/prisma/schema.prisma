@@ -703,6 +703,7 @@ model OrderItem {
   requestedDomain      String?       @map("requested_domain") @db.VarChar(253)
   provisioningSnapshot Json?         @map("provisioning_snapshot")
   fulfilledAt          DateTime?     @map("fulfilled_at") @db.Timestamptz(3)
+  renewalEndsAt        DateTime?     @map("renewal_ends_at") @db.Timestamptz(3)
   createdAt            DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
   order                Order         @relation(fields: [orderId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   product              Product       @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)

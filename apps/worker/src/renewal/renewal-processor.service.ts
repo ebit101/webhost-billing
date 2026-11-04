@@ -194,6 +194,10 @@ export class RenewalProcessorService {
                 billingPeriod,
                 currency: service.currency,
                 fulfilledAt: { not: null },
+                OR: [
+                  { renewalEndsAt: null },
+                  { renewalEndsAt: { gt: periodStart } },
+                ],
               },
               orderBy: { id: 'asc' },
             })

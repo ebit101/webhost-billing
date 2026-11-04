@@ -13,6 +13,7 @@ import { ErrorState, LoadingState } from '../ui/feedback-state';
 import { StatusBadge } from '../ui/status-badge';
 import { formatMinor } from '../invoices/invoice-ui';
 import { serviceDate, serviceError, serviceTone } from './service-ui';
+import { CustomerServiceAddOns } from './customer-service-add-ons';
 import { CustomerHostingCancellation } from './customer-hosting-cancellation';
 
 export function CustomerServiceDetail({ serviceId }: { serviceId: string }) {
@@ -157,6 +158,10 @@ export function CustomerServiceDetail({ serviceId }: { serviceId: string }) {
           </div>
         ) : null}
       </article>
+      <CustomerServiceAddOns
+        key={`add-ons:${service.id}`}
+        serviceId={service.id}
+      />
       <CustomerHostingCancellation key={service.id} service={service} />
     </div>
   );

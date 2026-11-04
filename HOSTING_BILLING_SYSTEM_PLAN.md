@@ -8,6 +8,11 @@
 
 **Technical identifier:** `webhost-billing`
 
+**Recurring add-on cancellation direction — 2026-11-04:** Command 202 lets
+customers stop renewal of a fulfilled recurring hosting add-on at the first
+unbilled period boundary. Keep issued invoice amounts intact and continue the
+hosting plan on its existing cycle.
+
 **Checkout terms direction — 2026-11-03:** Command 175 lets administrators
 publish a versioned HTTPS terms link and require customers to accept it at
 checkout. Record the accepted version with each applicable order. The policy

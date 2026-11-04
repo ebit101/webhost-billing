@@ -21,7 +21,9 @@ test.afterAll(async () => e2ePrisma.$disconnect());
 
 test('the scheduled renewal and customer messages run through local workers', async ({
   playwright,
+  page,
 }, info) => {
+  test.setTimeout(300_000);
   await assertBrowserDatabaseScope(e2ePrisma, E2E_DATABASE_URL, E2E_SCHEMA);
   const redis = new URL(e2eApiEnvironment.REDIS_URL ?? '');
   if (!['127.0.0.1', 'localhost', '[::1]'].includes(redis.hostname)) {
@@ -324,6 +326,19 @@ test('the scheduled renewal and customer messages run through local workers', as
       create: { key: policyKey, category: 'AUTOMATION', value: policy },
       update: { value: policy },
     });
+    const addOnsPath = `/services/${service.id}/add-ons`;
+    const cancelPath = `${addOnsPath}/${backupItem.id}/cancel`;
+    const beforeIssuance = await customer.get(addOnsPath);
+    expect(beforeIssuance.ok()).toBe(true);
+    expect(await beforeIssuance.json()).toMatchObject({
+      data: [
+        {
+          id: backupItem.id,
+          availableEndAt: dueAt.toISOString(),
+          renewalEndsAt: null,
+        },
+      ],
+    });
     start('scheduler-main');
     async function cycle(day: string) {
       await expect
@@ -385,6 +400,28 @@ test('the scheduled renewal and customer messages run through local workers', as
       { serviceId: service.id, lineTotal: service.recurringAmount },
       backupLine(dueAt, new Date('2025-02-11T12:00:00.000Z')),
     ]);
+    // The scheduler can issue a renewal before the customer confirms a previously shown date.
+    await mutation(
+      customer,
+      'POST',
+      cancelPath,
+      { expectedEndAt: dueAt.toISOString() },
+      409,
+    );
+    await mutation(
+      customer,
+      'POST',
+      `${addOnsPath}/${migrationItem.id}/cancel`,
+      { expectedEndAt: dueAt.toISOString() },
+      403,
+    );
+    await mutation(
+      admin,
+      'POST',
+      cancelPath,
+      { expectedEndAt: dueAt.toISOString() },
+      403,
+    );
     await delivered('renewal-reminder', renewal.id);
     expect(
       await preview(`Renewal reminder for invoice ${renewal.invoiceNumber}`),
@@ -499,6 +536,96 @@ test('the scheduled renewal and customer messages run through local workers', as
       }),
     ).toBe(1);
     expect(await suspensionRequests()).toBe(1);
+
+    // This renewal already covers the add-on through March 11. Leave it intact.
+    const endAt = new Date('2025-03-11T12:00:00.000Z');
+    await page.context().addCookies((await customer.storageState()).cookies);
+    await page.goto(`/portal/services/${service.id}`);
+    await page
+      .getByRole('button', {
+        name: 'Cancel renewal for Fictional managed backup',
+      })
+      .click();
+    const confirmation = page.getByRole('dialog', {
+      name: 'Cancel add-on renewal',
+    });
+    await expect(confirmation).toContainText('11/03/2025');
+    await confirmation
+      .getByRole('button', { name: 'Confirm cancellation' })
+      .click();
+    await expect(
+      page.getByText('Renewal cancelled from 11/03/2025.'),
+    ).toBeVisible();
+    await page.reload();
+    await expect(
+      page.getByText('Renewal cancelled from 11/03/2025.'),
+    ).toBeVisible();
+    const replay = await mutation(customer, 'POST', cancelPath, {
+      expectedEndAt: endAt.toISOString(),
+    });
+    expect(await replay.json()).toMatchObject({
+      data: {
+        id: backupItem.id,
+        renewalEndsAt: endAt.toISOString(),
+        availableEndAt: null,
+      },
+    });
+    expect(
+      await e2ePrisma.activityLog.count({
+        where: {
+          entityId: service.id,
+          action: 'HOSTING_ADD_ON_RENEWAL_CANCELLED',
+          actorUserId: user.id,
+        },
+      }),
+    ).toBe(1);
+    expect(await renewals(missedDueAt)).toMatchObject([
+      {
+        id: catchUp.id,
+        total: service.recurringAmount + 30_000n,
+        items: catchUp.items,
+      },
+    ]);
+    expect(
+      await e2ePrisma.hostingCancellationRequest.count({
+        where: { serviceId: service.id },
+      }),
+    ).toBe(0);
+    await pay(catchUp, 'COMMAND202-PREVIOUS-RENEWAL');
+    await expect
+      .poll(serviceState, { timeout: 25_000 })
+      .toMatchObject({ status: 'ACTIVE', nextDueAt: endAt });
+
+    await setClock('2025-03-09');
+    await cycle('2025-03-09');
+    const hostingOnly = await renewals(endAt);
+    expect(hostingOnly).toHaveLength(1);
+    expect(hostingOnly[0]).toMatchObject({
+      status: 'UNPAID',
+      total: service.recurringAmount,
+      items: [
+        {
+          serviceId: service.id,
+          orderItemId: null,
+          lineTotal: service.recurringAmount,
+        },
+      ],
+    });
+    expect(await serviceState()).toMatchObject({
+      status: 'ACTIVE',
+      nextDueAt: endAt,
+    });
+
+    await setClock('2025-03-10');
+    await cycle('2025-03-10');
+    expect(await renewals(endAt)).toMatchObject([
+      { id: hostingOnly[0]!.id, items: hostingOnly[0]!.items },
+    ]);
+    await pay(hostingOnly[0]!, 'COMMAND202-HOSTING-ONLY');
+    await expect.poll(serviceState, { timeout: 25_000 }).toMatchObject({
+      status: 'ACTIVE',
+      nextDueAt: new Date('2025-04-11T12:00:00.000Z'),
+    });
   } catch (error) {
     await info.attach('scheduler-and-worker', {
       body: processLogs.join(''),
