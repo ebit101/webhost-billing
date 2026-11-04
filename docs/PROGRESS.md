@@ -16,6 +16,7 @@
 - Prepared on 2026-11-04 (Asia/Dhaka). Bumped the workspace versions and documented the changes since alpha.2. The administrator header opens the changelog at the installed version tag.
 - Added a project handoff and made the dedicated SSH launcher require a matching version, tag and changelog entry. This release changes no database schema.
 - Focused validation: All 11 workspace layout and branding tests, web and E2E type checks, four offline documentation checks, and frozen lockfile validation passed. The launcher refused the previous commit before SSH because it did not contain a matching dated changelog entry.
+- The previous GitHub browser run passed 41 cases and failed scheduled renewal when the shared administrator hit the sign-in limit. The renewal rehearsal now creates an isolated fictional administrator. The focused run passed all three cases (one-time add-on, one-plan pilot and scheduled renewal), and strict E2E types passed. Authentication behavior is unchanged.
 - Recommended next command remains **Command 202 — Let customers cancel recurring hosting add-ons at period end**.
 
 ### Direct SSH deployment handoff

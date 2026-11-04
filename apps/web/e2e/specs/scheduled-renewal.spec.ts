@@ -13,7 +13,8 @@ import {
   E2E_WEB_ORIGIN,
   e2eApiEnvironment,
 } from '../environment';
-import { E2E_ADMIN, E2E_PRODUCT, E2E_SERVER } from '../fixtures';
+import { E2E_PRODUCT, E2E_SERVER } from '../fixtures';
+import { createIsolatedTestAdministrator } from '../purchase-test-actors';
 
 test.use({ trace: 'off' });
 test.afterAll(async () => e2ePrisma.$disconnect());
@@ -176,9 +177,10 @@ test('the scheduled renewal and customer messages run through local workers', as
       throw new Error('Verification preview did not contain a usable link.');
     await mutation(customer, 'POST', '/auth/verify-email', { token });
     await mutation(customer, 'POST', '/auth/login', { email, password });
+    const staff = await createIsolatedTestAdministrator('renewal');
     await mutation(admin, 'POST', '/auth/login', {
-      email: E2E_ADMIN.email,
-      password: E2E_ADMIN.password,
+      email: staff.email,
+      password: staff.password,
     });
     async function createAddOn(
       name: string,

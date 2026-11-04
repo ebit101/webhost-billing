@@ -14,7 +14,6 @@ export async function createPurchaseTestActors() {
   });
   const suffix = randomUUID();
   const email = 'purchase-' + suffix + '@example.test';
-  const staffEmail = 'purchase-admin-' + suffix + '@example.test';
   const user = await e2ePrisma.user.create({
     data: {
       email,
@@ -37,28 +36,41 @@ export async function createPurchaseTestActors() {
   });
   if (!user.customer)
     throw new Error('Fictional purchase customer was not created.');
-  const administrator = await e2ePrisma.user.create({
-    data: {
-      email: staffEmail,
-      passwordHash,
-      role: 'ADMIN',
-      status: 'ACTIVE',
-      emailVerifiedAt: new Date(),
-      adminProfile: {
-        create: { displayName: 'Fictional Purchase Administrator' },
-      },
-    },
-  });
   return {
     buyer: {
       email,
       password: E2E_HEALTHY_CUSTOMER.password,
       customerId: user.customer.id,
     },
-    staff: {
-      email: staffEmail,
-      password: E2E_HEALTHY_CUSTOMER.password,
-      userId: administrator.id,
+    staff: await createIsolatedTestAdministrator('purchase'),
+  };
+}
+
+// Give each rehearsal a separate rate-limit bucket without changing auth policy.
+export async function createIsolatedTestAdministrator(
+  scenario: 'purchase' | 'renewal',
+) {
+  await assertBrowserDatabaseScope(e2ePrisma, E2E_DATABASE_URL, E2E_SCHEMA);
+  const { passwordHash } = await e2ePrisma.user.findUniqueOrThrow({
+    where: { id: E2E_HEALTHY_CUSTOMER.userId },
+    select: { passwordHash: true },
+  });
+  const email = scenario + '-admin-' + randomUUID() + '@example.test';
+  const administrator = await e2ePrisma.user.create({
+    data: {
+      email,
+      passwordHash,
+      role: 'ADMIN',
+      status: 'ACTIVE',
+      emailVerifiedAt: new Date(),
+      adminProfile: {
+        create: { displayName: 'Fictional Test Administrator' },
+      },
     },
+  });
+  return {
+    email,
+    password: E2E_HEALTHY_CUSTOMER.password,
+    userId: administrator.id,
   };
 }
