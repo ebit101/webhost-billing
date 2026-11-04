@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { redirect } from 'next/navigation';
 import { domainWorkspaceTabs } from '../../../components/domains/domain-workspace-tabs';
+import { billingWorkspaceTabs } from '../../../components/invoices/billing-workspace-tabs';
 import { AuthShell } from '../../../components/auth/auth-shell';
 import { LoginForm } from '../../../components/auth/login-form';
 import {
@@ -30,8 +31,13 @@ const navigation: WorkspaceNavigationItem[] = [
     icon: 'server',
     activePaths: domainWorkspaceTabs.slice(1).map(({ href }) => href),
   },
-  { href: '/admin/invoices', label: 'Invoices', icon: 'invoice', badge: '7' },
-  { href: '/admin/payments', label: 'Payments', icon: 'payment' },
+  {
+    href: billingWorkspaceTabs[0].href,
+    label: 'Billing',
+    icon: 'invoice',
+    badge: '7',
+    activePaths: [billingWorkspaceTabs[1].href],
+  },
   { href: '/admin/reports', label: 'Reports', icon: 'activity' },
   { href: '/admin/support', label: 'Support', icon: 'support', badge: '3' },
   { href: '/admin/automation', label: 'Automation', icon: 'activity' },

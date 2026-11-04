@@ -109,7 +109,7 @@ describe('manual payment interfaces', () => {
     vi.stubGlobal('fetch', fetchMock);
     render(<AdminPaymentManager />);
     expect(
-      await screen.findByRole('heading', { name: 'Payments' }),
+      await screen.findByRole('heading', { name: 'Transactions' }),
     ).toBeTruthy();
     expect(screen.getByText('Gateway attention queue')).toBeTruthy();
     expect(screen.getByText('CUSTOMER-REFERENCE-UI')).toBeTruthy();

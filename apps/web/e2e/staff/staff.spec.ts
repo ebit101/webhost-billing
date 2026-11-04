@@ -86,8 +86,8 @@ test('billing and support navigation and direct-route checks', async ({
     name: 'Administrator navigation',
   });
   await expect(
-    navigation.getByRole('link', { name: /^Invoices/ }),
-  ).toBeVisible();
+    navigation.getByRole('link', { name: /^Billing/ }),
+  ).toHaveAttribute('aria-current', 'page');
   await expect(
     navigation.getByRole('link', { name: 'Settings', exact: true }),
   ).toHaveCount(0);
@@ -97,7 +97,19 @@ test('billing and support navigation and direct-route checks', async ({
   await expect(
     page.getByRole('button', { name: 'Save business identity' }),
   ).toHaveCount(0);
-  await page.goto('/admin/payments');
+  const billing = page.getByRole('navigation', { name: 'Billing workspace' });
+  await expect(billing.getByRole('link', { name: 'Invoices' })).toHaveAttribute(
+    'aria-current',
+    'page',
+  );
+  await billing.getByRole('link', { name: 'Transactions' }).click();
+  await expect(page).toHaveURL(/\/admin\/payments$/);
+  await expect(
+    billing.getByRole('link', { name: 'Transactions' }),
+  ).toHaveAttribute('aria-current', 'page');
+  await expect(
+    page.getByRole('heading', { name: 'Transactions', exact: true }),
+  ).toBeVisible();
   await page
     .getByRole('button', { name: 'Record payment', exact: true })
     .click();
@@ -120,9 +132,10 @@ test('billing and support navigation and direct-route checks', async ({
   await expect(
     page.getByRole('heading', { name: 'Support queue', exact: true }),
   ).toBeVisible();
-  await expect(
-    navigation.getByRole('link', { name: 'Payments', exact: true }),
-  ).toHaveCount(0);
+  await expect(navigation.getByRole('link', { name: /^Billing/ })).toHaveCount(
+    0,
+  );
+  await expect(billing).toHaveCount(0);
 });
 
 test('unenrolled operator is directed to account security', async ({

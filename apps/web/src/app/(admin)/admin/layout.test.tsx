@@ -47,21 +47,27 @@ describe('administrator sidebar identity', () => {
   );
 });
 
-it('highlights Reports below Payments in the full administrator sidebar', async () => {
-  auth.pathname = '/admin/reports';
+it.each([
+  ['/admin/reports', 'Reports'],
+  ['/admin/invoices', 'Billing'],
+  ['/admin/invoices/fictional', 'Billing'],
+  ['/admin/payments', 'Billing'],
+])('keeps one Billing entry and highlights %s', async (pathname, active) => {
+  auth.pathname = pathname;
   auth.identity.mockResolvedValue(identity);
-  render(await AdminLayout({ children: <p>Reports content</p> }));
+  render(await AdminLayout({ children: <p>Workspace content</p> }));
   const sidebar = within(
     screen.getByRole('navigation', { name: 'Administrator navigation' }),
   );
-  const reports = sidebar.getByRole('link', {
-    name: 'Reports',
-    current: 'page',
-  });
+  const reports = sidebar.getByRole('link', { name: 'Reports' });
+  const billing = sidebar.getByRole('link', { name: /^Billing/ });
   expect(reports.getAttribute('href')).toBe('/admin/reports');
+  expect(billing.getAttribute('href')).toBe('/admin/invoices');
+  expect(sidebar.queryByRole('link', { name: 'Payments' })).toBeNull();
   const links = sidebar.getAllByRole('link');
-  expect(links[links.indexOf(reports) - 1]).toBe(
-    sidebar.getByRole('link', { name: 'Payments' }),
+  expect(links[links.indexOf(reports) - 1]).toBe(billing);
+  expect(sidebar.getByRole('link', { current: 'page' })).toBe(
+    active === 'Reports' ? reports : billing,
   );
 });
 

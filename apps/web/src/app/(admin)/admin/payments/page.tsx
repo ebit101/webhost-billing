@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { AdminPaymentManager } from '../../../../components/payments/admin-payment-manager';
 import { parseAdminCustomerFilter } from '../../../../lib/admin-customer-filter';
 import { authorizeAdminPage } from '../../../../lib/server-admin-access';
-export const metadata: Metadata = { title: 'Payments' };
+export const metadata: Metadata = { title: 'Transactions' };
 export default async function Page({
   searchParams,
 }: PageProps<'/admin/payments'>) {

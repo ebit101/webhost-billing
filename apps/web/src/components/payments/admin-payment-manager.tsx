@@ -402,7 +402,7 @@ function PaymentWorkspace({
     <div className="grid gap-7">
       <PageHeader
         eyebrow="Administrator"
-        title="Payments"
+        title="Transactions"
         description="Review gateway exceptions and manual references, record verified receipts, and append refunds or reversals without rewriting financial history."
       />
       <AdminCustomerFilterNotice

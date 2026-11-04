@@ -6813,3 +6813,9 @@ services. Validate locally.
 Owner-authorized on 2026-11-04. Place Reports below Payments and add Overview,
 Billing and Exports tabs. Reuse the revenue chart and audited CSV downloads.
 Show overdue invoice aging with links to matching invoices and validate locally.
+
+## Command 204 — Group invoices and transactions under Billing
+
+Owner-authorized on 2026-11-04. Replace the separate administrator sidebar links
+with Billing. Open Invoices by default and show the existing payment ledger
+under Transactions. Keep existing URLs and staff permissions. Validate locally.

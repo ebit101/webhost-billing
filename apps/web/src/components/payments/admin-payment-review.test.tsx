@@ -503,7 +503,7 @@ describe('payment workspace review boundaries and existing mutations', () => {
     expect(screen.queryByRole('region', { name: 'Payment review' })).toBeNull();
     expect(request[1]?.signal?.aborted).toBe(true);
     await act(async () => resolve(response(pending)));
-    await screen.findByRole('heading', { name: 'Payments' });
+    await screen.findByRole('heading', { name: 'Transactions' });
     expect(
       mock.mock.calls.some(([url]) =>
         String(url).endsWith(`/payments?pageSize=100&customerId=${customerId}`),
