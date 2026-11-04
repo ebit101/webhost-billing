@@ -136,21 +136,16 @@ test('one fictional plan settles one manual payment despite repeated submissions
     ).toBe(1);
 
     const repeated = await submitReference();
-    expect([201, 409, 422]).toContain(repeated.status());
+    expect(repeated.status()).toBe(409);
+    await expect(
+      customer.getByText(
+        'This payment reference is already awaiting verification for this invoice.',
+      ),
+    ).toBeVisible();
     const pending = await e2ePrisma.payment.findMany({
       where: { invoiceId: invoice.id },
     });
-    expect(pending.length).toBeGreaterThanOrEqual(1);
-    expect(pending.length).toBeLessThanOrEqual(2);
-    expect(
-      pending.every(
-        (payment) =>
-          payment.status === 'PENDING' && payment.reference === reference,
-      ),
-    ).toBe(true);
-    console.log(
-      `Pilot repeat response ${repeated.status()}, pending rows ${pending.length}`,
-    );
+    expect(pending).toMatchObject([{ id: submitted.id, status: 'PENDING' }]);
     expect(
       await e2ePrisma.invoice.findUniqueOrThrow({ where: { id: invoice.id } }),
     ).toMatchObject({

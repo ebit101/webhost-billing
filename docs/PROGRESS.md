@@ -2,12 +2,12 @@
 
 ## Status Summary
 
-- **Current command:** Command 194 — Rehearse one-plan pilot setup and manual payment
-- **Current status:** Local pilot settlement passed. Repeating a pending manual reference through the form creates an extra review item.
+- **Current command:** Command 195 — Prevent duplicate pending manual payment references
+- **Current status:** Concurrent manual submissions leave one pending payment, which settles once.
 - **Last updated:** 2026-11-04
 - **Last recorded staging release:** Command 177, `887862020de1e472f303f359b793dccbedfb9b07`, deployed on 2026-11-03 (Asia/Dhaka).
-- **Next action:** Await authorization for Command 195 — Prevent duplicate pending manual payment references.
-- **Next command authorized:** None after Command 194.
+- **Next action:** Await authorization for Command 196 — Show missing requirements when a hosting plan cannot be activated.
+- **Next command authorized:** None after Command 195.
 
 ## Command Reports
 
@@ -16,6 +16,15 @@
 - Added the dedicated PowerShell launcher and handoff guide for future owner-authorized updates to my.speedhost.bd. The launcher requires a full commit SHA, defaults to read-only SSH preflight, and uses the existing server procedure for archive verification, backup, migration and health checks when applied.
 - Verified preflight against the live host with an existing authorized identity. Enrolled the dedicated Ed25519 identity on 2026-11-04 with forwarding and PTY disabled. The launcher passed read-only preflight using its default key path, and the server still reported the same active release. On 2026-11-04, the launcher deployed `fe21c19719a0c7cef461179048052756f1e52f04` via SSH in 13 minutes 47 seconds. The merged source matched PR #102 after all its checks passed. The server verified the backup, applied migrations, and reported seven healthy services. Independent requests to the storefront, shared hosting, health, and readiness returned HTTP 200.
 - The next authorized release can use the handoff steps after the candidate is validated. For the next release, use the documented SSH preflight on the intended commit before applying it.
+
+### Command 195 — Prevent duplicate pending manual payment references
+
+- Implemented locally on 2026-11-04 (Asia/Dhaka). Customer submissions for the same invoice and manual payment method check for a matching pending reference while holding the invoice lock. The check trims and ignores case using the existing settlement normalization. An exact submission-key replay returns the original payment. A fresh key with the same pending reference returns a conflict with a message the portal displays.
+- Updated `apps/api/src/modules/payments/payment.service.ts`, the manual payments API suite, and the one-plan browser pilot. Registered the command in `CODEX_DEVELOPMENT_COMMANDS.md`.
+- All eight manual payments API tests passed in isolated PostgreSQL. Concurrent submissions with distinct keys and different reference casing returned one success and one conflict. Concurrent reviews produced one settled charge, a zero balance, one verification audit entry, and one receipt event. Submissions using different invoices or payment methods remained eligible for review.
+- The one-plan Chromium pilot passed with one pending row and the duplicate message visible in the portal. The administrator settled BDT 1,234.56 once, and the invoice balance reached zero. The API build, focused lint, and formatting checks passed.
+- The command introduces no schema migration. Existing duplicate rows may still require review. The existing verified-reference uniqueness rule still applies to settlement. No deployment ran.
+- Recommended next command is **Command 196 — Show missing requirements when a hosting plan cannot be activated**.
 
 ### Command 194 — Rehearse one-plan pilot setup and manual payment
 

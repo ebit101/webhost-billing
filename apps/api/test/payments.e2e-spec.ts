@@ -228,19 +228,36 @@ describe('Manual payments (e2e)', () => {
     await other.get(`/payments/${firstResult.payment.id}`).expect(403);
   });
 
-  it('serializes concurrent reviews so the same payment settles once', async () => {
+  it('serializes concurrent submissions and reviews of the same manual reference', async () => {
     const invoiceId = await createInvoice(12_000n);
     const customer = request.agent(app.getHttpServer());
     const customerCsrf = await csrfToken(customer);
     await login(customer, customerCsrf, CUSTOMER_EMAIL);
-    const submitted = await customer
-      .post('/payments/manual/customer')
-      .set('X-CSRF-Token', customerCsrf)
-      .send(paymentBody(invoiceId, '12000', 'CONCURRENT-VERIFY-001'))
-      .expect(201);
+    const bodies = [
+      paymentBody(invoiceId, '12000', 'CONCURRENT-VERIFY-001'),
+      paymentBody(invoiceId, '12000', ' concurrent-verify-001 '),
+    ];
+    const submit = (body: (typeof bodies)[number]) =>
+      customer
+        .post('/payments/manual/customer')
+        .set('X-CSRF-Token', customerCsrf)
+        .send(body);
+    const submissions = await Promise.all(bodies.map(submit));
+    expect(submissions.map(({ status }) => status).sort()).toEqual([201, 409]);
+    const accepted = submissions.findIndex(({ status }) => status === 201);
+    const submitted = submissions[accepted];
     const paymentId = apiSuccessResponseSchema(
       manualPaymentCreationResultSchema,
     ).parse(submitted.body).data.payment.id;
+    const replay = await submit(bodies[accepted]).expect(201);
+    expect(
+      apiSuccessResponseSchema(manualPaymentCreationResultSchema).parse(
+        replay.body,
+      ).data,
+    ).toMatchObject({ duplicate: true, payment: { id: paymentId } });
+    expect(
+      await prisma.payment.findMany({ where: { invoiceId } }),
+    ).toMatchObject([{ id: paymentId, status: 'PENDING' }]);
 
     const admin = request.agent(app.getHttpServer());
     const csrf = await csrfToken(admin);
@@ -268,9 +285,19 @@ describe('Manual payments (e2e)', () => {
     });
     expect(
       await prisma.payment.count({
-        where: { id: paymentId, status: 'SUCCEEDED' },
+        where: { invoiceId, status: 'SUCCEEDED' },
       }),
     ).toBe(1);
+    for (const action of [
+      'MANUAL_PAYMENT_SUBMITTED_BY_CUSTOMER',
+      'MANUAL_PAYMENT_VERIFIED_BY_ADMIN',
+    ]) {
+      expect(
+        await prisma.activityLog.count({
+          where: { entityId: paymentId, action },
+        }),
+      ).toBe(1);
+    }
     expect(
       await prisma.outboxEvent.count({
         where: {
@@ -279,6 +306,30 @@ describe('Manual payments (e2e)', () => {
         },
       }),
     ).toBe(1);
+  });
+
+  it('allows the same pending reference on a different invoice or payment method', async () => {
+    const firstInvoice = await createInvoice(12_000n);
+    const otherInvoice = await createInvoice(12_000n);
+    const customer = request.agent(app.getHttpServer());
+    const csrf = await csrfToken(customer);
+    await login(customer, csrf, CUSTOMER_EMAIL);
+    const reference = 'SCOPED-PENDING-001';
+    const differentMethod = paymentBody(firstInvoice, '12000', reference);
+    for (const body of [
+      paymentBody(firstInvoice, '12000', reference),
+      paymentBody(otherInvoice, '12000', reference),
+      {
+        ...differentMethod,
+        proof: { ...differentMethod.proof, method: 'CASH' },
+      },
+    ]) {
+      await customer
+        .post('/payments/manual/customer')
+        .set('X-CSRF-Token', csrf)
+        .send(body)
+        .expect(201);
+    }
   });
 
   it('rejects a pending reference without changing its invoice', async () => {

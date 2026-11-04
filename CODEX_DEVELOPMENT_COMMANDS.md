@@ -6760,3 +6760,9 @@ Owner-authorized on 2026-11-04. Configure one fictional hosting plan locally.
 Place a customer order, submit and repeat a manual payment reference, and
 verify administrator settlement, the invoice balance, and the audit trail.
 Record any pilot gaps in the progress log. No deployment.
+
+## Command 195 — Prevent duplicate pending manual payment references
+
+Owner-authorized on 2026-11-04. Prevent repeated pending references on the
+same invoice and payment method. Test concurrent submissions and verify that
+only one payment settles. Record the results in the progress log. No deployment.

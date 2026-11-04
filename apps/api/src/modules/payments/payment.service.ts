@@ -124,7 +124,7 @@ export class PaymentService {
     }
     this.validateReceivedAt(input.proof);
     try {
-      const paymentId = await this.prisma.$transaction(async (transaction) => {
+      const result = await this.prisma.$transaction(async (transaction) => {
         await this.lockInvoice(transaction, input.invoiceId);
         const invoice = await transaction.invoice.findUnique({
           where: { id: input.invoiceId },
@@ -132,8 +132,43 @@ export class PaymentService {
         if (!invoice || invoice.customerId !== customerId) {
           throw this.notFound();
         }
+        // The invoice lock serializes submissions and settlements across API instances.
+        const raced = await this.findBySubmissionKey(
+          input.submissionKey,
+          transaction,
+        );
+        if (raced) {
+          return this.duplicateChargeResult(
+            raced,
+            input,
+            'CUSTOMER',
+            customerId,
+          );
+        }
         const amount = BigInt(input.amount);
         await this.assertPayableAmount(transaction, invoice, amount);
+        const pending = await transaction.payment.findMany({
+          where: {
+            invoiceId: invoice.id,
+            provider: 'manual',
+            kind: PaymentKind.CHARGE,
+            status: PaymentStatus.PENDING,
+            manualMethod: input.proof.method,
+          },
+          select: { reference: true },
+        });
+        const reference = this.normalizeReference(input.proof.reference);
+        if (
+          pending.some(
+            (payment) =>
+              payment.reference !== null &&
+              this.normalizeReference(payment.reference) === reference,
+          )
+        ) {
+          throw this.conflict(
+            'This payment reference is already awaiting verification for this invoice.',
+          );
+        }
         const payment = await transaction.payment.create({
           data: this.chargeData(
             input,
@@ -158,8 +193,9 @@ export class PaymentService {
         });
         return payment.id;
       });
+      if (typeof result !== 'string') return result;
       return manualPaymentCreationResultSchema.parse({
-        payment: await this.getUnchecked(paymentId),
+        payment: await this.getUnchecked(result),
         duplicate: false,
       });
     } catch (error) {
@@ -719,8 +755,12 @@ export class PaymentService {
 
   private providerReference(method: string, reference: string): string {
     return createHash('sha256')
-      .update(`${method}:${reference.trim().toUpperCase()}`)
+      .update(`${method}:${this.normalizeReference(reference)}`)
       .digest('hex');
+  }
+
+  private normalizeReference(reference: string): string {
+    return reference.trim().toUpperCase();
   }
 
   private stateWhere(state: ManualPaymentState): Prisma.PaymentWhereInput {
@@ -814,8 +854,9 @@ export class PaymentService {
 
   private async findBySubmissionKey(
     key: string,
+    client: DatabaseClient = this.prisma,
   ): Promise<PaymentRecord | null> {
-    return this.prisma.payment.findUnique({
+    return client.payment.findUnique({
       where: { idempotencyKey: key },
       include: paymentInclude,
     });
