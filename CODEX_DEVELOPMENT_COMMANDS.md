@@ -6753,3 +6753,10 @@ administrator approval, delayed suspension and confirmation mail through
 Chromium and the local worker with fictional accounts. Rehearse a safe
 administrator retry of a temporarily failed suspension. Record the results
 locally.
+
+## Command 194 — Rehearse one-plan pilot setup and manual payment
+
+Owner-authorized on 2026-11-04. Configure one fictional hosting plan locally.
+Place a customer order, submit and repeat a manual payment reference, and
+verify administrator settlement, the invoice balance, and the audit trail.
+Record any pilot gaps in the progress log. No deployment.

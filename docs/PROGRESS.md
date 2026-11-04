@@ -2,12 +2,12 @@
 
 ## Status Summary
 
-- **Current command:** Command 193 — Verify hosting cancellation and rehearse suspension recovery
-- **Current status:** Hosting cancellation and temporary suspension recovery are verified locally with a fake hosting provider.
-- **Last updated:** 2026-11-03
+- **Current command:** Command 194 — Rehearse one-plan pilot setup and manual payment
+- **Current status:** Local pilot settlement passed. Repeating a pending manual reference through the form creates an extra review item.
+- **Last updated:** 2026-11-04
 - **Last recorded staging release:** Command 177, `887862020de1e472f303f359b793dccbedfb9b07`, deployed on 2026-11-03 (Asia/Dhaka).
-- **Next action:** Await authorization to rehearse pilot setup and manual payment with fictional data.
-- **Next command authorized:** None after Command 193.
+- **Next action:** Await authorization for Command 195 — Prevent duplicate pending manual payment references.
+- **Next command authorized:** None after Command 194.
 
 ## Command Reports
 
@@ -16,6 +16,16 @@
 - Added the dedicated PowerShell launcher and handoff guide for future owner-authorized updates to my.speedhost.bd. The launcher requires a full commit SHA, defaults to read-only SSH preflight, and uses the existing server procedure for archive verification, backup, migration and health checks when applied.
 - Verified preflight against the live host with an existing authorized identity. Enrolled the dedicated Ed25519 identity on 2026-11-04 with forwarding and PTY disabled. The launcher passed read-only preflight using its default key path, and the server still reported the same active release. On 2026-11-04, the launcher deployed `fe21c19719a0c7cef461179048052756f1e52f04` via SSH in 13 minutes 47 seconds. The merged source matched PR #102 after all its checks passed. The server verified the backup, applied migrations, and reported seven healthy services. Independent requests to the storefront, shared hosting, health, and readiness returned HTTP 200.
 - The next authorized release can use the handoff steps after the candidate is validated. For the next release, use the documented SSH preflight on the intended commit before applying it.
+
+### Command 194 — Rehearse one-plan pilot setup and manual payment
+
+- Completed locally on 2026-11-04 (Asia/Dhaka) in Chromium with the guarded fictional PostgreSQL schema, Redis, and local preview mail. Added `apps/web/e2e/specs/one-plan-pilot.spec.ts` and registered Command 194 in `CODEX_DEVELOPMENT_COMMANDS.md`.
+- Created and activated one public monthly hosting plan with a fictional cPanel package mapping and a BDT 1,234.56 price. An existing fictional customer ordered it and submitted a bank transfer reference. The invoice stayed unpaid at the full balance until administrator verification.
+- The exact HTTP retry with the original submission key returned the original payment with `duplicate: true`. Re-entering the same method and reference through the form generated a fresh submission key and created a second pending payment row. The second item could not be verified after settlement.
+- The administrator reviewed the proof and verified one payment. The invoice and order moved to paid, the invoice recorded BDT 1,234.56 paid with a zero balance, and subsequent verification attempts were rejected. The database held one succeeded charge, one administrator verification audit entry, one order paid audit entry, and one payment receipt outbox event. Provisioning stayed a separate step.
+- Plan activation rejected the draft when the storage, websites, email, and bandwidth display fields were empty. The editor showed a generic activation error, so an operator has to determine which fields need attention. Filling all four fields allowed activation.
+- The focused browser test passed after the setup correction. The rehearsal reused the existing fictional customer and fake server fixture. It covered payment submission through settlement and receipt queueing. No deployment ran.
+- Recommended next command is **Command 195 — Prevent duplicate pending manual payment references**. Match references on the same invoice and payment method, handle concurrent submissions, and confirm that one review item and one settlement remain.
 
 ### Command 193 — Verify hosting cancellation and rehearse suspension recovery
 
