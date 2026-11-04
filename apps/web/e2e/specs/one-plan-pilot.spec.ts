@@ -1,8 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { e2ePrisma } from '../database';
-import { assertBrowserDatabaseScope } from '../database-scope';
-import { E2E_DATABASE_URL, E2E_SCHEMA } from '../environment';
-import { E2E_ADMIN, E2E_HEALTHY_CUSTOMER } from '../fixtures';
+import { E2E_ADMIN } from '../fixtures';
+import { createPurchaseTestCustomer } from '../purchase-test-customer';
 
 test.afterAll(async () => e2ePrisma.$disconnect());
 
@@ -11,7 +10,7 @@ test('one fictional plan settles one manual payment despite repeated submissions
   page: admin,
 }) => {
   test.setTimeout(240_000);
-  await assertBrowserDatabaseScope(e2ePrisma, E2E_DATABASE_URL, E2E_SCHEMA);
+  const buyer = await createPurchaseTestCustomer();
   const slug = 'command194-pilot';
   const name = 'Fictional pilot hosting';
   const domain = 'command194-pilot.example.test';
@@ -77,10 +76,8 @@ test('one fictional plan settles one manual payment despite repeated submissions
   try {
     const customer = await context.newPage();
     await customer.goto('/login');
-    await customer.getByLabel('Email address').fill(E2E_HEALTHY_CUSTOMER.email);
-    await customer
-      .getByLabel('Password', { exact: true })
-      .fill(E2E_HEALTHY_CUSTOMER.password);
+    await customer.getByLabel('Email address').fill(buyer.email);
+    await customer.getByLabel('Password', { exact: true }).fill(buyer.password);
     await customer
       .getByRole('button', { name: 'Sign in', exact: true })
       .click();
@@ -103,7 +100,7 @@ test('one fictional plan settles one manual payment despite repeated submissions
     ).toBeVisible();
     const order = await e2ePrisma.order.findFirstOrThrow({
       where: {
-        customerId: E2E_HEALTHY_CUSTOMER.customerId,
+        customerId: buyer.customerId,
         items: { some: { productId: product.id } },
       },
       include: { invoices: true },
@@ -175,9 +172,7 @@ test('one fictional plan settles one manual payment despite repeated submissions
       balanceDue: amount,
     });
 
-    await admin.goto(
-      `/admin/payments?customerId=${E2E_HEALTHY_CUSTOMER.customerId}`,
-    );
+    await admin.goto(`/admin/payments?customerId=${buyer.customerId}`);
     const row = admin.getByRole('row').filter({ hasText: reference }).first();
     await row
       .getByRole('button', { name: `Review payment ${reference}` })

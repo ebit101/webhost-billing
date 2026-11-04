@@ -2,19 +2,9 @@ import { randomUUID } from 'node:crypto';
 import { expect as playwrightExpect, test, type Page } from '@playwright/test';
 import { createCustomerOrderRequestSchema } from '@webhost-billing/shared';
 import { e2ePrisma } from '../database';
-import { assertBrowserDatabaseScope } from '../database-scope';
-import {
-  E2E_API_ORIGIN,
-  E2E_DATABASE_URL,
-  E2E_SCHEMA,
-  E2E_WEB_ORIGIN,
-} from '../environment';
-import {
-  E2E_ADMIN,
-  E2E_HEALTHY_CUSTOMER,
-  E2E_PRODUCT,
-  E2E_SERVER,
-} from '../fixtures';
+import { E2E_API_ORIGIN, E2E_WEB_ORIGIN } from '../environment';
+import { E2E_ADMIN, E2E_PRODUCT, E2E_SERVER } from '../fixtures';
+import { createPurchaseTestCustomer } from '../purchase-test-customer';
 
 const expect = playwrightExpect.configure({ timeout: 40_000 });
 
@@ -42,7 +32,7 @@ test('a one-time website migration is billed and fulfilled once after a checkout
   page: admin,
 }) => {
   test.setTimeout(300_000);
-  await assertBrowserDatabaseScope(e2ePrisma, E2E_DATABASE_URL, E2E_SCHEMA);
+  const buyer = await createPurchaseTestCustomer();
   const name = 'Fictional website migration';
   const domain = 'command199-migration.example.test';
   const reference = 'FICTIONAL-MIGRATION-199';
@@ -70,8 +60,8 @@ test('a one-time website migration is billed and fulfilled once after a checkout
 
     await expect(
       await apiMutation(customer, 'POST', '/auth/login', {
-        email: E2E_HEALTHY_CUSTOMER.email,
-        password: E2E_HEALTHY_CUSTOMER.password,
+        email: buyer.email,
+        password: buyer.password,
       }),
     ).toBeOK();
     await customer.goto(
@@ -204,9 +194,7 @@ test('a one-time website migration is billed and fulfilled once after a checkout
         'Payment reference submitted for administrator verification.',
       ),
     ).toBeVisible();
-    await admin.goto(
-      `/admin/payments?customerId=${E2E_HEALTHY_CUSTOMER.customerId}`,
-    );
+    await admin.goto(`/admin/payments?customerId=${buyer.customerId}`);
     await admin
       .getByRole('row')
       .filter({ hasText: reference })
@@ -264,9 +252,7 @@ test('a one-time website migration is billed and fulfilled once after a checkout
       ).status(),
     ).toBe(409);
 
-    await admin.goto(
-      `/admin/orders?customerId=${E2E_HEALTHY_CUSTOMER.customerId}`,
-    );
+    await admin.goto(`/admin/orders?customerId=${buyer.customerId}`);
     await admin
       .getByRole('button', { name: `Review order ${order.orderNumber}` })
       .click();
