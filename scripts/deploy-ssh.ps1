@@ -25,10 +25,28 @@ function Invoke-Checked([string] $Command, [string[]] $Arguments) {
   }
 }
 
+$package = (Invoke-Checked git @('-C', $root, 'show', "${Commit}:package.json")) -join [Environment]::NewLine | ConvertFrom-Json
+$webPackage = (Invoke-Checked git @('-C', $root, 'show', "${Commit}:apps/web/package.json")) -join [Environment]::NewLine | ConvertFrom-Json
+$version = [string] $package.version
+if ($version -cnotmatch '^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$' -or $webPackage.version -cne $version) {
+  throw 'The selected commit must have matching root and web release versions.'
+}
+$tag = "v$version"
+$changelog = (Invoke-Checked git @('-C', $root, 'show', "${Commit}:CHANGELOG.md")) -join [Environment]::NewLine
+$heading = [regex]::Escape("## [$version]")
+$section = [regex]::Match($changelog, "(?ms)^$heading[ \t]+-[ \t]+\d{4}-\d{2}-\d{2}[ \t]*\r?\n(?<body>.*?)(?=^## |\z)")
+if (!$section.Success -or $section.Groups['body'].Value -notmatch '(?m)^-[ \t]+\S') {
+  throw "The selected commit must have a dated changelog entry for $tag."
+}
+$tagCommit = Invoke-Checked git @('-C', $root, 'rev-parse', '--verify', "refs/tags/${tag}^{commit}")
+if ($tagCommit -cne $Commit) {
+  throw "The $tag tag must point to the selected deployment commit."
+}
+
 $deployScript = Invoke-Checked git @('-C', $root, 'show', "${Commit}:deploy/staging/deploy-release.sh")
 if (!$deployScript) { throw 'The selected commit has no server deployment script.' }
 
-Write-Host "Release $Commit for my.speedhost.bd"
+Write-Host "Release $tag ($Commit) for my.speedhost.bd"
 Invoke-Checked ssh ($sshOptions + @($target, "test -w '$incoming'"))
 if (!$Apply) {
   Write-Host 'SSH preflight passed. Add -Apply to deploy this commit.'

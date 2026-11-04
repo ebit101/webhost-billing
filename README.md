@@ -8,7 +8,7 @@ Webhost Billing is an open-source, self-hosted app for running billing and servi
 operations at one web hosting business. Manage customers, hosting plans, domains,
 orders, invoices, payments, renewals, and support from one workspace.
 
-**Current evaluation release:** [v0.1.0-alpha.2](https://github.com/ebit101/webhost-billing/tree/v0.1.0-alpha.2).
+**Current evaluation release:** [v0.1.0-alpha.3](https://github.com/ebit101/webhost-billing/tree/v0.1.0-alpha.3).
 
 [Install the demo](#safe-local-evaluation) ·
 [Request a quote](#installation-help-and-managed-hosting) ·
@@ -16,24 +16,14 @@ orders, invoices, payments, renewals, and support from one workspace.
 
 ## Latest development status
 
-Updated 2026-11-03. The alpha.2 release adds:
+Updated 2026-11-04. The alpha.3 release adds the administrator Billing and Reports
+workspaces, one-time and recurring hosting add-ons, customer SSL status and
+hosting cancellation requests, and optional email two-step verification. It
+also prevents duplicate pending manual payment references and gives late renewal
+invoices the full grace period.
 
-- **Servers workspace.** View server types and configure cPanel, Virtualizor VPS
-  nodes, Vultr Cloud, or ShoutCast. Virtualizor connection testing requires an
-  explicit environment flag. VPS provisioning is outside this release's scope.
-- **Tabbed General settings.** General opens by default. Editable tabs have
-  their own Save changes and Discard changes controls. New preferences cover the
-  public website URL, default customer country, and billing date displays.
-- **Versioned checkout terms.** When enabled, checkout records the accepted
-  terms revision with the order. The setting starts disabled.
-- **One Domains menu.** Open domain inventory, pricing and TLDs, and registrar
-  configuration from the same workspace.
-
-On GitHub, the README and installation guide now link directly to quote requests
-for installation help and managed evaluation hosting. Documentation and image
-changes run lightweight validation. App changes run the full suite.
-
-[Alpha.2 release notes](docs/releases/v0.1.0-alpha.2.md)
+[Alpha.3 release notes](docs/releases/v0.1.0-alpha.3.md) ·
+[Project handoff](docs/PROJECT_HANDOFF.md)
 
 ## What you can evaluate
 
@@ -120,7 +110,7 @@ With Node.js 24/Corepack and Docker running, clone the tagged release and start
 the fictional-data demo:
 
 ```bash
-git clone --branch v0.1.0-alpha.2 --depth 1 https://github.com/ebit101/webhost-billing.git
+git clone --branch v0.1.0-alpha.3 --depth 1 https://github.com/ebit101/webhost-billing.git
 cd webhost-billing
 corepack pnpm demo:doctor
 corepack pnpm demo:up

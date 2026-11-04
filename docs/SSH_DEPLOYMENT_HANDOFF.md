@@ -4,7 +4,13 @@ The launcher updates the existing installation at my.speedhost.bd. It packages t
 
 ## Run an update
 
-From the project folder in PowerShell, replace the placeholder with the full 40-character Git commit SHA.
+For each deployment, bump the workspace version, add a matching section to the
+[changelog](../CHANGELOG.md), and publish an annotated version tag on the release
+commit. The launcher checks that the tag points to the selected commit and that
+the root and web package versions agree.
+
+From the project folder in PowerShell, replace the placeholder with the full
+40-character SHA of the tagged commit.
 
 ```powershell
 .\scripts\deploy-ssh.ps1 -Commit '<full-commit-sha>'

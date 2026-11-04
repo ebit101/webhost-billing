@@ -1,3 +1,4 @@
+import { version } from '../../../package.json';
 import type { ComponentProps } from 'react';
 import { render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -120,7 +121,9 @@ describe('installation web branding', () => {
       screen
         .getByRole('link', { name: /^v\S+ Changelog$/ })
         .getAttribute('href'),
-    ).toBe('https://github.com/ebit101/webhost-billing/blob/main/CHANGELOG.md');
+    ).toBe(
+      `https://github.com/ebit101/webhost-billing/blob/v${version}/CHANGELOG.md`,
+    );
     expect(getBrandTitle()).toEqual({
       default: 'Speed Host',
       template: '%s · Speed Host',

@@ -13,7 +13,7 @@ Run the following in a terminal.
 1. Get the tagged evaluation release.
 
    ```bash
-   git clone --branch v0.1.0-alpha.2 --depth 1 https://github.com/ebit101/webhost-billing.git
+   git clone --branch v0.1.0-alpha.3 --depth 1 https://github.com/ebit101/webhost-billing.git
    cd webhost-billing
    ```
 

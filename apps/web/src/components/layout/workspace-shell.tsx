@@ -316,7 +316,7 @@ export function WorkspaceShell({
           )}
           {mode === 'admin' && (
             <a
-              href="https://github.com/ebit101/webhost-billing/blob/main/CHANGELOG.md"
+              href={`https://github.com/ebit101/webhost-billing/blob/v${version}/CHANGELOG.md`}
               target="_blank"
               rel="noopener noreferrer"
               className="ml-auto shrink-0 rounded-lg px-2 py-1 text-right text-xs text-slate-600 hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-600"

@@ -11,6 +11,13 @@
 
 ## Command Reports
 
+### Release v0.1.0-alpha.3
+
+- Prepared on 2026-11-04 (Asia/Dhaka). Bumped the workspace versions and documented the changes since alpha.2. The administrator header opens the changelog at the installed version tag.
+- Added a project handoff and made the dedicated SSH launcher require a matching version, tag and changelog entry. This release changes no database schema.
+- Focused validation: All 11 workspace layout and branding tests, web and E2E type checks, four offline documentation checks, and frozen lockfile validation passed. The launcher refused the previous commit before SSH because it did not contain a matching dated changelog entry.
+- Recommended next command remains **Command 202 — Let customers cancel recurring hosting add-ons at period end**.
+
 ### Direct SSH deployment handoff
 
 - Added the dedicated PowerShell launcher and handoff guide for future owner-authorized updates to my.speedhost.bd. The launcher requires a full commit SHA, defaults to read-only SSH preflight, and uses the existing server procedure for archive verification, backup, migration and health checks when applied.

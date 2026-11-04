@@ -8,6 +8,43 @@ and will be called out in release notes.
 
 ## [Unreleased]
 
+## [0.1.0-alpha.3] - 2026-11-04
+
+### Added
+
+- Grouped administrator invoices and transactions under **Billing** while keeping
+  existing invoice and payment URLs. Added **Reports** with a revenue overview,
+  overdue invoice aging with links to the matching invoices, and audited CSV exports.
+- Added one-time and recurring hosting add-ons. Customers can select eligible add-ons
+  at checkout, staff can mark them fulfilled, and fulfilled recurring add-ons are
+  billed on the hosting plan's renewal invoice.
+- Added customer hosting cancellation requests and a public HTTPS certificate status
+  indicator in **My services**. Inconclusive certificate checks are shown separately
+  from inactive certificates.
+- Added optional email two-step verification and opt-in marketing consent for
+  customers. Full administrators can open audited read-only customer support
+  sessions with a recorded reason and end them from the portal.
+
+### Changed
+
+- Added country and business time zone selectors and a locked base currency.
+  The customer manual payment form now displays amounts in the invoice currency.
+- Made hosting plan activation show which required fields are missing.
+- Require a matching version tag and changelog entry before SSH deployment.
+  The administrator header links to the changelog for the installed version.
+
+### Fixed
+
+- Prevented duplicate pending manual payment references for the same invoice and
+  payment method, including concurrent submissions.
+- Late renewal runs now issue one catch-up invoice and preserve the full configured
+  grace period before suspension.
+- Updated database and backup verification for the hosting add-on table and
+  isolated browser purchase scenarios so they do not share customer balances
+  or administrator sign-in limits.
+
+## [0.1.0-alpha.2] - 2026-11-03
+
 - Deployed validated recovery/toolchain repairs and the complete global domain
   inventory to operator-controlled staging, with fresh encrypted-backup verification,
   installed and signed-in read-only acceptance and preservation of business records,
@@ -251,5 +288,7 @@ and will be called out in release notes.
 - Updated Vitest and pinned patched `brace-expansion` and `js-yaml` lines after
   release-day advisories, clearing the repository's open Dependabot alerts.
 
-[Unreleased]: https://github.com/ebit101/webhost-billing/compare/v0.1.0-alpha.1...HEAD
+[Unreleased]: https://github.com/ebit101/webhost-billing/compare/v0.1.0-alpha.3...HEAD
+[0.1.0-alpha.3]: https://github.com/ebit101/webhost-billing/compare/v0.1.0-alpha.2...v0.1.0-alpha.3
+[0.1.0-alpha.2]: https://github.com/ebit101/webhost-billing/compare/v0.1.0-alpha.1...v0.1.0-alpha.2
 [0.1.0-alpha.1]: https://github.com/ebit101/webhost-billing/releases/tag/v0.1.0-alpha.1
