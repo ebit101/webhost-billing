@@ -236,7 +236,8 @@ async function verify(): Promise<void> {
       name !== 'notification_preferences' &&
       name !== 'notification_sources' &&
       name !== 'currency_selection_intents' &&
-      name !== 'customer_security_preferences',
+      name !== 'customer_security_preferences' &&
+      name !== 'product_add_on_eligibility',
   );
   assert.equal(idColumnTypes.length, uuidTables.length);
   const notificationEpoch = await prisma.notificationEpoch.findUniqueOrThrow({
@@ -250,6 +251,17 @@ async function verify(): Promise<void> {
   assert.ok(
     idColumnTypes.every(({ data_type: dataType }) => dataType === 'uuid'),
   );
+
+  const addOnKeyColumns = await prisma.$queryRaw<{ column_name: string }[]>`
+    SELECT column_name FROM information_schema.key_column_usage
+    WHERE constraint_schema = ${schema}
+      AND constraint_name = 'product_add_on_eligibility_pkey'
+    ORDER BY ordinal_position
+  `;
+  assert.deepEqual(addOnKeyColumns, [
+    { column_name: 'hosting_product_id' },
+    { column_name: 'add_on_product_id' },
+  ]);
 
   const unitKeyColumns = await prisma.$queryRaw<{ column_name: string }[]>`
     SELECT column_name FROM information_schema.key_column_usage
