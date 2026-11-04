@@ -2,12 +2,12 @@
 
 ## Status Summary
 
-- **Current command:** Command 195 — Prevent duplicate pending manual payment references
-- **Current status:** Concurrent manual submissions leave one pending payment, which settles once.
+- **Current command:** Command 196 — Show missing requirements when a hosting plan cannot be activated
+- **Current status:** The product editor displays the missing activation requirements and the tab for each fix.
 - **Last updated:** 2026-11-04
 - **Last recorded staging release:** Command 177, `887862020de1e472f303f359b793dccbedfb9b07`, deployed on 2026-11-03 (Asia/Dhaka).
-- **Next action:** Await authorization for Command 196 — Show missing requirements when a hosting plan cannot be activated.
-- **Next command authorized:** None after Command 195.
+- **Next action:** Await authorization for Command 197 — Rehearse scheduled renewal and customer messages locally.
+- **Next command authorized:** None after Command 196.
 
 ## Command Reports
 
@@ -16,6 +16,14 @@
 - Added the dedicated PowerShell launcher and handoff guide for future owner-authorized updates to my.speedhost.bd. The launcher requires a full commit SHA, defaults to read-only SSH preflight, and uses the existing server procedure for archive verification, backup, migration and health checks when applied.
 - Verified preflight against the live host with an existing authorized identity. Enrolled the dedicated Ed25519 identity on 2026-11-04 with forwarding and PTY disabled. The launcher passed read-only preflight using its default key path, and the server still reported the same active release. On 2026-11-04, the launcher deployed `fe21c19719a0c7cef461179048052756f1e52f04` via SSH in 13 minutes 47 seconds. The merged source matched PR #102 after all its checks passed. The server verified the backup, applied migrations, and reported seven healthy services. Independent requests to the storefront, shared hosting, health, and readiness returned HTTP 200.
 - The next authorized release can use the handoff steps after the candidate is validated. For the next release, use the documented SSH preflight on the intended commit before applying it.
+
+### Command 196 — Show missing requirements when a hosting plan cannot be activated
+
+- Implemented locally on 2026-11-04 (Asia/Dhaka). The product editor shows each requirement the API reports after a failed activation. The messages identify the package and feature fields in Details or the active price in Pricing.
+- Updated the product service and its validation test, the web mutation client and product editor, and the one-plan browser pilot. Registered the command in `CODEX_DEVELOPMENT_COMMANDS.md`.
+- The API remains the source of activation rules. The editor clears the previous list when an administrator saves or retries and displays the current requirements if activation still fails. The two API unit tests and 11 product UI tests passed.
+- The isolated Chromium pilot showed both the missing bandwidth value and missing price, then showed only the price after saving the bandwidth value. Adding a price allowed activation and the customer completed checkout and manual payment. The API build, focused lint, and formatting checks passed. No deployment ran.
+- Recommended next command is **Command 197 — Rehearse scheduled renewal and customer messages locally**. Verify the normal scheduler and worker flow with fictional accounts and local mail previews.
 
 ### Command 195 — Prevent duplicate pending manual payment references
 

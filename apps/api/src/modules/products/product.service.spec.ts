@@ -10,14 +10,26 @@ describe('product activation rules', () => {
         emailFeature: null,
         bandwidthFeature: null,
         activePriceCount: 0,
-      }).map((issue) => issue.field),
+      }),
     ).toEqual([
-      'hostingPackageIdentifier',
-      'storageFeature',
-      'websiteFeature',
-      'emailFeature',
-      'bandwidthFeature',
-      'prices',
+      {
+        field: 'hostingPackageIdentifier',
+        message: 'Enter the cPanel package identifier in Details.',
+      },
+      {
+        field: 'storageFeature',
+        message: 'Fill in Storage display in Details.',
+      },
+      {
+        field: 'websiteFeature',
+        message: 'Fill in Websites display in Details.',
+      },
+      { field: 'emailFeature', message: 'Fill in Email display in Details.' },
+      {
+        field: 'bandwidthFeature',
+        message: 'Fill in Bandwidth display in Details.',
+      },
+      { field: 'prices', message: 'Add at least one active price in Pricing.' },
     ]);
   });
 

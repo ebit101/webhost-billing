@@ -43,26 +43,26 @@ export function activationValidationIssues(product: ActivatableProduct) {
   if (!product.hostingPackageIdentifier) {
     issues.push({
       field: 'hostingPackageIdentifier',
-      message: 'A hosting package identifier is required before activation.',
+      message: 'Enter the cPanel package identifier in Details.',
     });
   }
-  for (const [field, value] of [
-    ['storageFeature', product.storageFeature],
-    ['websiteFeature', product.websiteFeature],
-    ['emailFeature', product.emailFeature],
-    ['bandwidthFeature', product.bandwidthFeature],
+  for (const [field, label] of [
+    ['storageFeature', 'Storage display'],
+    ['websiteFeature', 'Websites display'],
+    ['emailFeature', 'Email display'],
+    ['bandwidthFeature', 'Bandwidth display'],
   ] as const) {
-    if (!value) {
+    if (!product[field]) {
       issues.push({
         field,
-        message: 'Every public hosting feature is required before activation.',
+        message: `Fill in ${label} in Details.`,
       });
     }
   }
   if (product.activePriceCount === 0) {
     issues.push({
       field: 'prices',
-      message: 'At least one active price is required before activation.',
+      message: 'Add at least one active price in Pricing.',
     });
   }
   return issues;

@@ -6766,3 +6766,9 @@ Record any pilot gaps in the progress log. No deployment.
 Owner-authorized on 2026-11-04. Prevent repeated pending references on the
 same invoice and payment method. Test concurrent submissions and verify that
 only one payment settles. Record the results in the progress log. No deployment.
+
+## Command 196 — Show missing requirements when a hosting plan cannot be activated
+
+Owner-authorized on 2026-11-04. Show each missing activation requirement in
+the administrator product editor, including which tab to use. Verify that
+correcting the missing requirements allows activation. Record the results locally.

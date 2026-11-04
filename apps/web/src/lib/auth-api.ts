@@ -1,6 +1,22 @@
 'use client';
 
+import {
+  apiErrorResponseSchema,
+  type ApiErrorResponse,
+} from '@webhost-billing/shared';
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+
+export class ApiMutationError extends Error {
+  readonly code: ApiErrorResponse['error']['code'];
+  readonly issues: NonNullable<ApiErrorResponse['error']['issues']>;
+
+  constructor(error: ApiErrorResponse['error']) {
+    super(error.message);
+    this.code = error.code;
+    this.issues = error.issues ?? [];
+  }
+}
 
 interface ApiSuccess<T> {
   success: true;
@@ -95,6 +111,8 @@ export async function authMutation<T>(
     responseValue.success !== true ||
     !('data' in responseValue)
   ) {
+    const failure = apiErrorResponseSchema.safeParse(responseValue);
+    if (failure.success) throw new ApiMutationError(failure.data.error);
     throw new Error(errorMessage(responseValue));
   }
 

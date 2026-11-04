@@ -34,15 +34,36 @@ test('one fictional plan settles one manual payment despite repeated submissions
   await draft.getByLabel('Storage display').fill('10 GB SSD');
   await draft.getByLabel('Websites display').fill('1 website');
   await draft.getByLabel('Email display').fill('10 email accounts');
-  await draft.getByLabel('Bandwidth display').fill('100 GB monthly');
   await draft.getByLabel('Show after activation').check();
-  await draft.getByLabel('Price', { exact: true }).fill('1234.56');
   await draft.getByRole('button', { name: 'Create draft' }).click();
   const editor = admin.getByRole('dialog', { name, exact: true });
-  await editor.getByRole('button', { name: 'Activate', exact: true }).click();
+  const activate = editor.getByRole('button', {
+    name: 'Activate',
+    exact: true,
+  });
+  await activate.click();
+  const requirements = editor.getByRole('alert');
+  await expect(requirements.getByRole('listitem')).toHaveText([
+    'Fill in Bandwidth display in Details.',
+    'Add at least one active price in Pricing.',
+  ]);
+  await editor.getByLabel('Bandwidth display').fill('100 GB monthly');
+  await editor.getByRole('button', { name: 'Save details' }).click();
+  await expect(editor.getByText('Product details saved.')).toBeVisible();
+  await activate.click();
+  await expect(requirements.getByRole('listitem')).toHaveText([
+    'Add at least one active price in Pricing.',
+  ]);
+  await editor.getByRole('button', { name: 'Pricing', exact: true }).click();
+  await editor.getByLabel('Price', { exact: true }).fill('1234.56');
+  await editor.getByRole('button', { name: 'Save price' }).click();
+  await expect(editor.getByText('Price saved as a new version.')).toBeVisible();
+  await editor.getByRole('button', { name: 'Details', exact: true }).click();
+  await activate.click();
   await expect(
     editor.getByText('Product activated.', { exact: true }),
   ).toBeVisible();
+  await expect(requirements).toHaveCount(0);
   const product = await e2ePrisma.product.findUniqueOrThrow({
     where: { slug },
     include: { prices: true },

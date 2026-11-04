@@ -3,7 +3,11 @@ import { sentenceCaseLabel } from '@webhost-billing/shared';
 
 import type { Product, ProductGroup } from '@webhost-billing/shared';
 import { useEffect, useState, type FormEvent } from 'react';
-import { authMutation, authenticatedGet } from '../../lib/auth-api';
+import {
+  ApiMutationError,
+  authMutation,
+  authenticatedGet,
+} from '../../lib/auth-api';
 import {
   Card,
   Field,
@@ -46,6 +50,8 @@ export function AdminProductManager() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [activationFailure, setActivationFailure] =
+    useState<ApiMutationError>();
   const [notice, setNotice] = useState('');
   const [createOpen, setCreateOpen] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false);
@@ -192,6 +198,7 @@ export function AdminProductManager() {
     setSaving(true);
     setError('');
     setNotice('');
+    setActivationFailure(undefined);
     try {
       const updated = await authMutation<Product>(path, method, body);
       setSelected(updated);
@@ -202,7 +209,16 @@ export function AdminProductManager() {
       );
       setNotice(success);
     } catch (caught) {
-      setError(errorMessage(caught));
+      if (
+        body.status === 'ACTIVE' &&
+        caught instanceof ApiMutationError &&
+        caught.code === 'UNPROCESSABLE_ENTITY' &&
+        caught.issues.length
+      ) {
+        setActivationFailure(caught);
+      } else {
+        setError(errorMessage(caught));
+      }
     } finally {
       setSaving(false);
     }
@@ -511,8 +527,24 @@ export function AdminProductManager() {
           title={selected.name}
           busy={saving}
           feedback={error || notice}
-          onClose={() => setEditorOpen(false)}
+          onClose={() => {
+            setEditorOpen(false);
+            setActivationFailure(undefined);
+          }}
         >
+          {activationFailure ? (
+            <div
+              role="alert"
+              className="rounded-xl bg-red-50 p-3 text-sm text-red-800"
+            >
+              <p className="font-semibold">{activationFailure.message}</p>
+              <ul className="mt-2 list-disc space-y-1 pl-5">
+                {activationFailure.issues.map(({ field, message }) => (
+                  <li key={field ?? message}>{message}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
           <div className="flex gap-2" aria-label="Product sections">
             <Button
               variant={productTab === 'details' ? 'primary' : 'secondary'}
