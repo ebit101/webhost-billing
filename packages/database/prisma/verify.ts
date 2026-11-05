@@ -23,6 +23,7 @@ const schema = testScope ?? 'public';
 
 const expectedTables = [
   'service_upgrades',
+  'domain_fact_syncs',
   'domain_offers',
   'domain_actions',
   'domain_catalogue_tlds',
@@ -87,6 +88,7 @@ const expectedTables = [
 
 const requiredCustomConstraints = [
   'service_upgrades_state_check',
+  'domain_fact_syncs_state_check',
   'services_current_package_check',
   'registrar_mode',
   'currency_authorization_evidence_uuid_check',

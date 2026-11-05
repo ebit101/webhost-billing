@@ -1,4 +1,9 @@
-import { domainNameSchema, type DomainContact } from '@webhost-billing/shared';
+import {
+  domainNameSchema,
+  domainExtensionSchema,
+  type DomainContact,
+  type RegistrarDomainFacts,
+} from '@webhost-billing/shared';
 import type { PrismaClient } from '../index';
 
 export interface RegistrarQuote {
@@ -28,15 +33,61 @@ export interface RegistrarObservation {
   verification: 'Pending' | 'Verified';
 }
 export interface DomainRegistrar {
+  supportsDomainFacts?(tld: string): boolean;
+  readDomainFacts?(
+    reference: RegistrarDomainFactsReference,
+  ): Promise<RegistrarDomainFacts | null>;
   quote(domainName: string): Promise<RegistrarQuote>;
   ensureContacts(intent: RegistrarIntent, fingerprint: string): Promise<void>;
   registerOnce(intent: RegistrarIntent): Promise<void>;
   lookup(intent: RegistrarIntent): Promise<RegistrarObservation | null>;
 }
+export interface RegistrarDomainFactsReference {
+  accountId: string;
+  customerId: string;
+  domainName: string;
+  providerOrderId: string;
+}
 
 // Deliberately fictional outcomes, not public DNS/availability or real registrations.
 export class FakeDomainRegistrar implements DomainRegistrar {
   constructor(private readonly prisma: PrismaClient) {}
+  supportsDomainFacts(tld: string): boolean {
+    return domainExtensionSchema.safeParse(tld).success;
+  }
+  async readDomainFacts(
+    reference: RegistrarDomainFactsReference,
+  ): Promise<RegistrarDomainFacts | null> {
+    const row = await this.prisma.fakeRegistrarRegistration.findUnique({
+      where: {
+        accountId_domainName: {
+          accountId: reference.accountId,
+          domainName: reference.domainName,
+        },
+      },
+    });
+    if (!row) return null;
+    const active = row.state === 'Active';
+    return {
+      accountId: row.accountId,
+      customerId: row.customerId,
+      domainName: row.domainName,
+      providerOrderId: row.id,
+      observedAt: new Date(Date.now()).toISOString(),
+      expiresAt: row.expiresAt.toISOString(),
+      status: active
+        ? 'ACTIVE'
+        : row.state === 'InActive'
+          ? 'SUSPENDED'
+          : 'UNKNOWN',
+      renewalEligibility:
+        active && row.expiresAt.getTime() > Date.now()
+          ? 'ELIGIBLE'
+          : 'INELIGIBLE',
+      registrarAutoRenew: false,
+      simulated: true,
+    };
+  }
   async quote(domainName: string): Promise<RegistrarQuote> {
     domainNameSchema.parse(domainName);
     return {

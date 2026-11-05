@@ -8,6 +8,14 @@
 
 **Technical identifier:** `webhost-billing`
 
+**Registrar synchronization direction — 2026-11-05:** Command 213 adds explicit,
+ownership-bound reads of registered domains and a saved customer view. Track
+provider expiry/status and unknown renewal capability separately from invoices,
+local renewal preferences and billing dates. Preserve trusted observations across
+failed reads; require audited administrator review for conflicting expiry dates.
+No automatic renewal or real registrar access is included. See
+[registrar fact synchronization](docs/DOMAIN_FACT_SYNCHRONIZATION.md).
+
 **Scheduled downgrade direction — 2026-11-05:** Command 212 reserves a cheaper
 eligible plan at the paid-period boundary with zero immediate charge, credit or
 refund. Customers may withdraw before that boundary. Hold conflicting renewal

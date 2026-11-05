@@ -167,6 +167,7 @@ services:
       BKASH_ENABLED: 'false'
       SSLCOMMERZ_ENABLED: 'false'
       RESELLBIZ_LIVE_ENABLED: ${RESELLBIZ_LIVE_ENABLED:-false}
+      REGISTRAR_DOMAIN_SYNC_LIVE_ENABLED: ${REGISTRAR_DOMAIN_SYNC_LIVE_ENABLED:-false}
     secrets:
       - database_url
       - redis_url

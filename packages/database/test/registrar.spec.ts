@@ -294,6 +294,41 @@ function liveFixture() {
     }),
   };
 }
+test('domain fact reads retain authenticated identity and do not infer unsupported renewal flags', async () => {
+  const fixture = liveFixture();
+  const reference = {
+    accountId: liveIntent.accountId,
+    customerId: liveIntent.customerId,
+    domainName: liveIntent.domainName,
+    providerOrderId: '45678',
+  };
+  const facts = await fixture.registrar.readDomainFacts(reference);
+  assert.deepEqual(
+    { ...facts, observedAt: null },
+    {
+      ...reference,
+      observedAt: null,
+      expiresAt: new Date(1900000000 * 1000).toISOString(),
+      status: 'ACTIVE',
+      renewalEligibility: 'UNKNOWN',
+      registrarAutoRenew: null,
+      simulated: false,
+    },
+  );
+  assert.equal(
+    fixture.calls.every(
+      (call) => !/register|renew|modify|add|signup/.test(call.path),
+    ),
+    true,
+  );
+  fixture.modify((path, value) =>
+    path.endsWith('/details.json') && path.includes('/domains/')
+      ? { ...(value as Record<string, unknown>), customerid: '99999' }
+      : value,
+  );
+  await assert.rejects(fixture.registrar.readDomainFacts(reference));
+});
+
 test('existing domain discovery proves the direct reseller, domain and contact through reads only', async () => {
   const fixture = liveFixture();
   const result = await fixture.registrar.inspectExisting({

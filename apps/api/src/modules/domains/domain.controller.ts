@@ -33,6 +33,8 @@ import {
   existingDomainLinkRequestSchema,
   type ExistingDomainLinkRequest,
   domainInventoryQuerySchema,
+  domainFactSyncRequestSchema,
+  domainFactReviewRequestSchema,
   type DomainInventoryQuery,
 } from '@webhost-billing/shared';
 import { ZodValidationPipe } from '../../common/validation/zod-validation.pipe';
@@ -45,6 +47,7 @@ import { z } from 'zod';
 import { DomainLifecycleService } from './domain-lifecycle.service';
 import { ExistingDomainLinkService } from './existing-domain-link.service';
 import { DomainInventoryService } from './domain-inventory.service';
+import { DomainFactsService } from './domain-facts.service';
 
 @Controller('domains')
 export class DomainController {
@@ -53,6 +56,7 @@ export class DomainController {
     private readonly lifecycle: DomainLifecycleService,
     private readonly existing: ExistingDomainLinkService,
     private readonly inventory: DomainInventoryService,
+    private readonly facts: DomainFactsService,
   ) {}
   @Get('inventory')
   @Header('Cache-Control', 'private, no-store, max-age=0')
@@ -63,6 +67,41 @@ export class DomainController {
     @CurrentAuth() auth: AuthRequestContext,
   ) {
     return this.inventory.list(query, auth);
+  }
+  @Get(':id/registrar-facts')
+  @CustomerSupportAccess()
+  @Header('Cache-Control', 'private, no-store, max-age=0')
+  @Roles('ADMIN', 'CUSTOMER')
+  async registrarFacts(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @CurrentAuth() auth: AuthRequestContext,
+  ) {
+    return createApiSuccessResponse(await this.facts.stored(id, auth));
+  }
+  @Post(':id/registrar-facts/synchronize')
+  @Roles('ADMIN')
+  async synchronizeFacts(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body(new ZodValidationPipe(domainFactSyncRequestSchema))
+    input: z.output<typeof domainFactSyncRequestSchema>,
+    @CurrentAuth() auth: AuthRequestContext,
+  ) {
+    return createApiSuccessResponse(
+      await this.facts.synchronize(id, input, auth),
+    );
+  }
+  @Post(':id/registrar-facts/:attemptId/review')
+  @Roles('ADMIN')
+  async reviewFacts(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Param('attemptId', new ParseUUIDPipe()) attemptId: string,
+    @Body(new ZodValidationPipe(domainFactReviewRequestSchema))
+    input: z.output<typeof domainFactReviewRequestSchema>,
+    @CurrentAuth() auth: AuthRequestContext,
+  ) {
+    return createApiSuccessResponse(
+      await this.facts.review(id, attemptId, input, auth),
+    );
   }
   @Post('existing-links')
   @Roles('ADMIN')

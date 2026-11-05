@@ -6932,7 +6932,9 @@ the following renewal uses the successfully applied plan and eligible add-ons.
 
 ## Command 213 — Synchronize registrar domain facts
 
-**Status:** Proposed; implementation requires owner authorization.
+**Status:** Owner-authorized on 2026-11-05; implemented locally. See
+`docs/DOMAIN_FACT_SYNCHRONIZATION.md` and `docs/PROGRESS.md` for acceptance
+evidence and limits. No push, deployment or real registrar read.
 
 Extend the existing registrar abstraction with read-only synchronization of
 verified owned domains: registrar identity, expiry, renewal eligibility and

@@ -286,8 +286,16 @@ export class ResellbizLiveRegistrar implements DomainRegistrar {
   private bind(
     intent: RegistrarManagedIntent & { costCeiling?: bigint },
   ): ResellbizBinding {
-    this.domain(intent.domainName);
     registrarNameserversSchema.parse(intent.nameservers);
+    return this.bindOwnership(intent);
+  }
+  private bindOwnership(
+    intent: Pick<
+      RegistrarManagedIntent,
+      'accountId' | 'customerId' | 'domainName'
+    > & { costCeiling?: bigint },
+  ): ResellbizBinding {
+    this.domain(intent.domainName);
     if (
       !this.binding ||
       intent.accountId !== this.binding.accountId ||
@@ -503,7 +511,17 @@ export class ResellbizLiveRegistrar implements DomainRegistrar {
     intent: RegistrarManagedIntent,
     orderId: string,
   ): Promise<ResellbizManagedState> {
-    const binding = this.bind(intent);
+    this.bind(intent);
+    return this.managementObservation(intent, orderId);
+  }
+  private async managementObservation(
+    intent: Pick<
+      RegistrarManagedIntent,
+      'accountId' | 'customerId' | 'domainName'
+    >,
+    orderId: string,
+  ): Promise<ResellbizManagedState> {
+    const binding = this.bindOwnership(intent);
     const customer = record(
       await this.call('/api/customers/details-by-id.json', {
         'customer-id': binding.remoteCustomerId,
@@ -599,6 +617,25 @@ export class ResellbizLiveRegistrar implements DomainRegistrar {
       contact,
       orderId,
       contactIds,
+    };
+  }
+  async readDomainFacts(
+    reference: import('./provider').RegistrarDomainFactsReference,
+  ): Promise<import('@webhost-billing/shared').RegistrarDomainFacts> {
+    // Reuse authenticated ownership checks; management currently confirms only
+    // active records. Renewal eligibility/registrar auto-renew are not inferred.
+    const observed = await this.managementObservation(
+      reference,
+      reference.providerOrderId,
+    );
+    return {
+      ...reference,
+      observedAt: observed.observedAt,
+      expiresAt: observed.expiresAt,
+      status: 'ACTIVE',
+      renewalEligibility: 'UNKNOWN',
+      registrarAutoRenew: null,
+      simulated: false,
     };
   }
   async inspectExisting(input: {

@@ -10,6 +10,7 @@ import { Card, fieldClass } from '../customers/customer-fields';
 import { Button } from '../ui/button';
 import { DomainManagementPanel } from './domain-management';
 import { RegistrationApproval } from './registration-approval';
+import { DomainFacts } from './domain-facts';
 import { Field, labels, contactFields, money } from './domain-fields';
 export function DomainRecord({
   domain,
@@ -120,6 +121,16 @@ export function DomainRecord({
         </p>
       )}
       {!domain.expiresAt && <p>Registry expiry not yet confirmed.</p>}
+      {domain.state === 'REGISTERED' && (
+        <DomainFacts
+          domainId={domain.id}
+          domainName={domain.domainName}
+          administrator={administrator}
+          onUpdated={() => {
+            void perform(async () => undefined);
+          }}
+        />
+      )}
       {administrator && (
         <p className="my-2 text-sm text-slate-600">
           {domain.origin === 'EXISTING'
