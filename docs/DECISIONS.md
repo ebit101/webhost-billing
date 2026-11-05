@@ -3432,3 +3432,10 @@ The following decisions are intentionally unresolved and must be selected before
 - **Date:** 2026-11-05. Command 206.
 - **Decision:** Open a dedicated administrator page from the order number. Preserve validated ledger filters in the return link and show invoice payment status separately from order status on the list. Keep the existing quick review for reading an order in context.
 - **Approval:** Offer the existing processing transition from the details page for eligible paid hosting orders. Direct staff to the customer's Transactions view for unpaid invoices or to Domains for a new registration. Keep the server-side order, payment and registrar checks authoritative.
+
+## ADR-169 — Show purchased add-on cancellation follow-up to administrators
+
+- **Date:** 2026-11-05. Command 205.
+- **Decision:** Allow full administrators to read fulfilled recurring add-ons through the existing service add-on endpoint. Apply an optional customer scope at the database boundary and retain customer ownership and read-only support access. Staff receive no customer cancellation action.
+- **Display:** Reuse the purchased order-item name, integer price snapshot and recorded renewal cutoff in the service review and customer-specific service record. Show cutoff dates in the business time zone. Catalogue edits do not change the purchased price.
+- **Operations:** Remind staff to stop providing a cancelled extra from the recorded date and confirm manual work with the responsible team. This read does not call providers or record completion. Hosting continues on its existing cycle and issued invoices remain unchanged.

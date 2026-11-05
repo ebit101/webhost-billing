@@ -159,7 +159,13 @@ describe('client-owned record workspace', () => {
     expect(api.page).not.toHaveBeenCalled();
   });
   it('shows saved service facts with a client-owned return link without panel operations', async () => {
-    api.get.mockResolvedValue(service);
+    api.get.mockImplementation(async (path: string) =>
+      path.includes('/add-ons')
+        ? []
+        : path === '/settings'
+          ? { timeZone: 'Asia/Dhaka' }
+          : service,
+    );
     render(
       <ClientRecords
         customerId={clientId}
@@ -181,6 +187,9 @@ describe('client-owned record workspace', () => {
     ).toBe(clientRecordHref(clientId, 'services'));
     expect(screen.getByText(/90,071,992,547,409.93/)).toBeTruthy();
     expect(api.mutate).not.toHaveBeenCalled();
+    await screen.findByText(
+      'No fulfilled recurring add-ons recorded for this service.',
+    );
   });
   it('discards stale responses and details when the client changes', async () => {
     let resolve!: (value: unknown) => void;

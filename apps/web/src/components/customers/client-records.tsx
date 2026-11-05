@@ -22,6 +22,7 @@ import { DomainRecord } from '../domains/domain-record';
 import { ExistingDomainLink } from '../domains/existing-domain-link';
 import { formatMinor } from '../invoices/invoice-ui';
 import { serviceDate } from '../services/service-ui';
+import { AdminServiceAddOns } from '../services/admin-service-add-ons';
 
 type Props = {
   customerId?: string;
@@ -275,6 +276,7 @@ function Records({ customerId, kind, recordId, administrator = true }: Props) {
               </div>
             ))}
           </dl>
+          {administrator && <AdminServiceAddOns service={selected.record} />}
           <p className="mt-4 text-sm text-slate-600">
             Saved application information. This page does not contact the
             hosting panel.

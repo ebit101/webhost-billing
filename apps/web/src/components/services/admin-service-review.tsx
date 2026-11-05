@@ -12,6 +12,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { formatMinor } from '../invoices/invoice-ui';
 import { Button, buttonStyles } from '../ui/button';
 import { ErrorState, LoadingState } from '../ui/feedback-state';
+import { AdminServiceAddOns } from './admin-service-add-ons';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 const serviceResponse = apiSuccessResponseSchema(serviceSchema);
@@ -295,6 +296,7 @@ function ReviewDetails({
           </p>
         </div>
       </div>
+      <AdminServiceAddOns service={service} timeZone={timeZone} />
     </div>
   );
 }

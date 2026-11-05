@@ -2,14 +2,23 @@
 
 ## Status Summary
 
-- **Current command:** Command 207 — Give administrator menu items distinct icons
-- **Current status:** Distinct administrator sidebar icons verified locally.
+- **Current command:** Command 205 — Show scheduled add-on cancellations in the administrator service record
+- **Current status:** Administrator cancellation visibility verified locally.
 - **Last updated:** 2026-11-05
 - **Last recorded staging release:** Command 177, `887862020de1e472f303f359b793dccbedfb9b07`, deployed on 2026-11-03 (Asia/Dhaka).
-- **Next action:** Await authorization for Command 205 — Show scheduled add-on cancellations in the administrator service record.
-- **Next command authorized:** None after Command 207.
+- **Next action:** Await authorization for Command 208 — Track manual completion of scheduled add-on cancellations.
+- **Next command authorized:** None after Command 205.
 
 ## Command Reports
+
+### Command 205 — Show scheduled add-on cancellations in the administrator service record
+
+- Implemented locally on 2026-11-05 (Asia/Dhaka). Full administrators can see fulfilled recurring add-ons in the global service review and the customer-specific service record. Each row shows the purchased name and price, renewal cancellation status, effective end date in the business time zone, and dated manual delivery follow-up.
+- Extended the existing add-on read with full-administrator authorization and an optional customer scope. Customer ownership, read-only support behavior, and the customer-only cancellation action remain in place. The display uses purchase snapshots even after catalogue repricing or disabling.
+- Files changed: the API service add-on reader and controller, a new reader unit suite, the shared administrator add-on component and its tests, service review and customer service record integration and tests, the scheduled renewal browser rehearsal, the command playbook, ADR-169 and this log.
+- Validation passed: eight API unit cases, 66 focused web cases, the API build, strict web/browser types, scoped lint, formatting, Git whitespace checks, and all four offline documentation validators. The guarded Chromium rehearsal passed with local PostgreSQL, Redis and fake providers. It verified both administrator entry points, the original BDT 300.00 backup price after catalogue repricing, the recorded cutoff, rejected cross-customer scope, an unchanged issued invoice, the following hosting-only invoice, and continued active hosting after payment. The API cases also verify that only an owning customer receives a cancellation offer; administrator and read-only support sessions do not. The final seven add-on component cases passed after the wording adjustment.
+- Decisions and limits: this is a read-only operational reminder. Manual completion is not tracked and no external add-on shutdown runs. Hosting keeps its billing cycle and issued invoices remain unchanged. No migration, push or deployment is required. No known implementation blocker.
+- Recommended next command: **Command 208 — Track manual completion of scheduled add-on cancellations**. Add an audited administrator acknowledgement after staff discontinue a manually delivered extra, without changing hosting or historical invoices. Await owner authorization.
 
 ### Release v0.1.0-alpha.4
 

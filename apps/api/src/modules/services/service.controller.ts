@@ -124,13 +124,17 @@ export class ServiceController {
   }
 
   @Get(':serviceId/add-ons')
-  @Roles('CUSTOMER')
+  @Roles('ADMIN', 'CUSTOMER')
   @CustomerSupportAccess()
   async listAddOns(
     @Param('serviceId', new ParseUUIDPipe()) serviceId: string,
     @CurrentAuth() auth: AuthRequestContext,
+    @Query('customerId', new ParseUUIDPipe({ optional: true }))
+    customerId?: string,
   ) {
-    return createApiSuccessResponse(await this.addOns.list(serviceId, auth));
+    return createApiSuccessResponse(
+      await this.addOns.list(serviceId, auth, customerId),
+    );
   }
 
   @Post(':serviceId/add-ons/:addOnId/cancel')

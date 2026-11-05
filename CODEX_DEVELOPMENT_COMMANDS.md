@@ -6827,6 +6827,14 @@ Owner-authorized on 2026-11-04. Replace the separate administrator sidebar links
 with Billing. Open Invoices by default and show the existing payment ledger
 under Transactions. Keep existing URLs and staff permissions. Validate locally.
 
+## Command 205 — Show scheduled add-on cancellations in the administrator service record
+
+Owner-authorized on 2026-11-05. Show fulfilled recurring hosting add-ons at
+their purchased price in both administrator service views. Include the recorded
+cancellation cutoff and any manual follow-up needed to stop delivery. Preserve
+hosting and issued invoices, verify locally, and update the progress log. No
+deployment.
+
 ## Command 206 — Open administrator order details before approval
 
 Owner-authorized on 2026-11-05. Link the order number to a dedicated

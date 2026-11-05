@@ -79,9 +79,11 @@ function review(serviceId = id, scope?: string) {
 }
 function reads(row = service) {
   const fetchMock = vi.fn(async (input: RequestInfo | URL) =>
-    String(input).endsWith('/settings')
-      ? success({ timeZone: 'Asia/Dhaka', currency: 'BDT' })
-      : success(row),
+    String(input).includes('/add-ons')
+      ? success([])
+      : String(input).endsWith('/settings')
+        ? success({ timeZone: 'Asia/Dhaka', currency: 'BDT' })
+        : success(row),
   );
   vi.stubGlobal('fetch', fetchMock);
   return fetchMock;
@@ -124,7 +126,7 @@ describe('selected administrator service read', () => {
       expect(screen.getByRole('heading', { name: 'Service review' })).toBe(
         document.activeElement,
       );
-      expect(fetchMock).toHaveBeenCalledTimes(2);
+      expect(fetchMock).toHaveBeenCalledTimes(3);
       expect(fetchMock.mock.calls[0][0]).toContain(`/services/${id}`);
       // No write, per-row read, order/invoice chain, panel action or login URL.
       expect(fetchMock.mock.calls[1][0]).toMatch(/\/settings$/);
@@ -255,15 +257,16 @@ describe('selected administrator service read', () => {
       .fn()
       .mockRejectedValueOnce(new Error('private-response'))
       .mockResolvedValueOnce(success(service))
-      .mockResolvedValueOnce(success({ timeZone: 'UTC' }));
+      .mockResolvedValueOnce(success({ timeZone: 'UTC' }))
+      .mockResolvedValueOnce(success([]));
     vi.stubGlobal('fetch', fetchMock);
     render(review());
     await user.click(
       await screen.findByRole('button', { name: 'Retry service review' }),
     );
     await screen.findByRole('link', { name: 'View customer' });
-    expect(fetchMock).toHaveBeenCalledTimes(3);
-    for (const [, options] of fetchMock.mock.calls)
+    expect(fetchMock).toHaveBeenCalledTimes(4);
+    for (const [, options] of fetchMock.mock.calls.slice(0, 3))
       expect(options).toEqual({
         credentials: 'include',
         cache: 'no-store',
@@ -335,6 +338,7 @@ describe('service review integration preserves deliberate operations', () => {
         if (path === '/auth/csrf')
           return success({ csrfToken: 'fictional-csrf' });
         if (path === '/settings') return success({ timeZone: 'Asia/Dhaka' });
+        if (path.endsWith('/add-ons')) return success([]);
         if (path === '/services/setup-options')
           return success({
             servers: [service.server],

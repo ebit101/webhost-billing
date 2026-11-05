@@ -25,17 +25,28 @@ export class ServiceAddOnsService {
   async list(
     serviceId: string,
     actor: AuthRequestContext,
+    customerId?: string,
   ): Promise<ServiceAddOn[]> {
+    if (
+      actor.identity.role === 'ADMIN' &&
+      actor.identity.staffRole !== 'FULL_ADMINISTRATOR'
+    )
+      throw this.forbidden();
     const service = await this.ownedService(
       this.prisma,
       serviceId,
-      this.customerId(actor),
+      actor.identity.role === 'CUSTOMER' ? this.customerId(actor) : customerId,
     );
+    if (
+      customerId !== undefined &&
+      service.customerId.toLowerCase() !== customerId.toLowerCase()
+    )
+      throw this.forbidden();
     const rows = await this.findAddOns(this.prisma, service);
     return rows.map((item) =>
       this.serialize(
         item,
-        actor.supportAdministratorId
+        actor.identity.role === 'ADMIN' || actor.supportAdministratorId
           ? null
           : this.availableEndAt(service, item),
       ),
@@ -101,12 +112,13 @@ export class ServiceAddOnsService {
   private async ownedService(
     db: Pick<Prisma.TransactionClient, 'service'>,
     id: string,
-    customerId: string,
-  ): Promise<AddOnService> {
+    customerId?: string,
+  ): Promise<AddOnService & { customerId: string }> {
     const service = await db.service.findFirst({
-      where: { id, customerId },
+      where: { id, ...(customerId ? { customerId } : {}) },
       select: {
         id: true,
+        customerId: true,
         status: true,
         billingPeriod: true,
         currency: true,

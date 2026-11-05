@@ -591,6 +591,44 @@ test('the scheduled renewal and customer messages run through local workers', as
         where: { serviceId: service.id },
       }),
     ).toBe(0);
+    // Staff see the purchased snapshot and recorded cutoff, even after repricing.
+    const staffRead = await admin.get(`${addOnsPath}?customerId=${customerId}`);
+    expect(staffRead.ok()).toBe(true);
+    expect(await staffRead.json()).toMatchObject({
+      data: [
+        {
+          id: backupItem.id,
+          name: 'Fictional managed backup',
+          recurringAmount: { amount: '30000', currency: 'BDT' },
+          renewalEndsAt: endAt.toISOString(),
+          availableEndAt: null,
+        },
+      ],
+    });
+    expect(
+      (await admin.get(`${addOnsPath}?customerId=${staff.userId}`)).status(),
+    ).toBe(403);
+    await page.context().addCookies((await admin.storageState()).cookies);
+    await page.goto(`/admin/customers/${customerId}/services/${service.id}`);
+    const purchased = page.getByRole('region', {
+      name: 'Purchased recurring add-ons',
+    });
+    await expect(purchased.getByRole('table')).toContainText(
+      'Fictional managed backup',
+    );
+    await expect(purchased.getByRole('table')).toContainText('BDT 300.00');
+    await expect(purchased).toContainText(
+      'Stop providing Fictional managed backup',
+    );
+    await expect(purchased).toContainText('11/03/2025');
+    await expect(purchased).not.toContainText('Repriced backup');
+    await expect(purchased.getByRole('button')).toHaveCount(0);
+    await page.goto(`/admin/services?customerId=${customerId}`);
+    await page
+      .getByRole('button', { name: `Review ${service.domain}` })
+      .click();
+    await expect(purchased.getByRole('table')).toContainText('BDT 300.00');
+    await expect(purchased).toContainText('11/03/2025');
     await pay(catchUp, 'COMMAND202-PREVIOUS-RENEWAL');
     await expect
       .poll(serviceState, { timeout: 25_000 })
