@@ -6,10 +6,18 @@
 - **Current status:** Administrator acknowledgement verified locally.
 - **Last updated:** 2026-11-05
 - **Last recorded staging release:** Command 177, `887862020de1e472f303f359b793dccbedfb9b07`, deployed on 2026-11-03 (Asia/Dhaka).
-- **Next action:** Await authorization for Command 209 — List overdue add-on cancellation follow-up.
+- **Next action:** Await authorization for Command 210 — Define hosting plan changes and proration. Command 209 remains a separate proposed cancellation follow-up queue.
 - **Next command authorized:** None after Command 208.
 
 ## Command Reports
+
+### Planning update — Proposed Commands 210–224
+
+- Prepared locally on 2026-11-05 (Asia/Dhaka) at the owner's request. Added 15 proposed commands covering hosting upgrades/downgrades and proration (210–212), domain synchronization and renewal automation (213–215), support departments, attachments and incoming email (216–218), online payment readiness and a controlled production pilot (219–221), and usage statistics, configurable hosting products and expanded reports (222–224).
+- Files changed: `CODEX_DEVELOPMENT_COMMANDS.md` and this progress log. Each proposal defines scope, dependencies and acceptance checks. Existing registrar, ticket email, hosting package-change and bKash/SSLCommerz code inform the scope; the commands must review and extend those foundations rather than duplicate them.
+- These are planning entries. Implementation, live provider operations, payments, publishing and deployment have not been authorized by this roadmap. Command 209 remains reserved for the previously proposed manual follow-up queue. Command 208 remains the latest completed development command.
+- Validation: checked unique command numbers 210–224, proposed status on every new command, Markdown formatting and Git whitespace. No application checks are needed for this prose-only change. Open decisions include proration credit/refund policy, target-plan eligibility, registrar renewal responsibility, inbound-mail verification and the first production payment provider and merchant access.
+- Recommended next command: **Command 210 — Define hosting plan changes and proration**. Agree on the billing policy and verify fictional worked quotes before implementing paid upgrades or downgrade adjustments. Await owner authorization.
 
 ### Command 208 — Track manual completion of scheduled add-on cancellations
 

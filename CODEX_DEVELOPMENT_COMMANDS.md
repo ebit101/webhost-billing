@@ -6855,3 +6855,255 @@ manual cancellation work once the purchased add-on's end date arrives. Record
 the administrator and acknowledgement time in the audit log, preserve the first
 record on retries, and show completion in both administrator service views.
 Verify locally, update the progress log, and do not deploy.
+
+## Proposed development sequence — 2026-11-05
+
+The owner requested commands for the five feature areas below. These are
+proposed commands, not authorization to implement them. Command 209 remains
+reserved for the previously recommended add-on cancellation follow-up queue.
+The recommended starting point for this sequence is Command 210.
+
+For each implementation command, inspect the current code and reuse existing
+providers and business rules. Add focused tests, update `docs/PROGRESS.md`, and
+save a local commit. Do not push, deploy or enable live providers automatically.
+Use fictional data and fake providers unless a command explicitly receives
+separate authorization for named external operations. Preserve the installation's
+single base currency and historical financial records.
+
+## Command 210 — Define hosting plan changes and proration
+
+**Status:** Proposed; implementation requires owner authorization.
+
+Define eligible source and target plans, compatible servers and billing cycles,
+add-on compatibility, request states and quote expiry. Specify the remaining-period
+calculation, integer rounding, purchased-price snapshots and treatment of negative
+differences. Propose immediate upgrades, period-end downgrades and an optional
+immediate downgrade with explicit credit/refund rules. Obtain owner agreement on
+unresolved billing policy before commands that apply it; do not create a wallet
+or promise an automatic refund implicitly.
+
+**Acceptance:** Document worked fictional quotes for monthly, quarterly and
+annual plans, partial periods, calendar boundaries, no change and cheaper plans.
+Prove integer calculations, reject incompatible changes, and define how pending
+renewal invoices, cancellation requests and add-ons affect eligibility. Keep
+hosting and billing unchanged while producing a quote.
+
+## Command 211 — Implement paid hosting upgrades
+
+**Status:** Proposed; depends on the approved Command 210 policy.
+
+Let a customer review and confirm an upgrade quote. Issue one prorated invoice
+with snapshots, then apply the existing hosting package-change operation after
+verified payment and the required administrator approval. Update the recurring
+plan and next renewal price only when the package change is confirmed. Preserve
+the cycle boundary defined by the policy.
+
+**Acceptance:** Rehearse a fictional paid upgrade with fake hosting. Reject stale
+quotes, duplicate requests and concurrent settlement/provisioning. Rehearse a
+provider failure and recovery; keep the existing package and billing identity
+consistent until the outcome is confirmed. Show payment and package-change states
+separately.
+
+## Command 212 — Implement hosting downgrades and adjustments
+
+**Status:** Proposed; depends on Commands 210 and 211.
+
+Let customers schedule an eligible downgrade at the billing boundary and withdraw
+it before execution. Implement an immediate prorated downgrade only under the
+approved adjustment policy, with additive credit/refund records and explicit
+review where required. Check target-plan capacity and attached add-ons before
+applying a package change; unresolved usage or incompatible extras need review.
+
+**Acceptance:** Verify period-end execution once, immediate adjustment arithmetic,
+withdrawal, insufficient target capacity, failed package changes, and a renewal
+racing the downgrade. Preserve issued invoices and original payments. Confirm
+the following renewal uses the successfully applied plan and eligible add-ons.
+
+## Command 213 — Synchronize registrar domain facts
+
+**Status:** Proposed; implementation requires owner authorization.
+
+Extend the existing registrar abstraction with read-only synchronization of
+verified owned domains: registrar identity, expiry, renewal eligibility and
+supported status facts. Keep provider expiry separate from invoice due dates.
+Record last successful synchronization, errors and source freshness, with an
+administrator review path for ownership or date conflicts.
+
+**Acceptance:** Use a fake registrar to verify changed expiry, unavailable or
+stale responses, unsupported TLDs, account mismatches and retries. Do not attach
+another customer's domain or overwrite historical invoice data. Real registrar
+reads require separately authorized account and domain scope.
+
+## Command 214 — Automate domain renewal invoices and reminders
+
+**Status:** Proposed; depends on Command 213.
+
+Add explicit per-domain renewal preferences and a scheduler for eligible verified
+domains with confirmed terms and expiry. Generate one renewal invoice per domain
+and term, with snapshotted selling price and customer reminders. Keep registrar
+auto-renew and application-managed renewal distinct to avoid duplicate purchases.
+Keep external renewal dispatch disabled at this stage.
+
+**Acceptance:** Rehearse lead times, missed scheduler windows, opt-out, unpaid
+invoices, price changes and concurrent runs. Verify one invoice and bounded
+reminders per term. Route unknown expiry, unsupported renewal terms, grace or
+redemption pricing, and conflicting renewal responsibility to administrator
+review rather than silently buying a renewal.
+
+## Command 215 — Execute and reconcile paid domain renewals
+
+**Status:** Proposed; depends on Commands 213 and 214.
+
+After verified payment and required approval, dispatch one registrar renewal
+through the provider-neutral worker. Persist the operation and reconcile provider
+results and expiry before marking fulfillment successful. Provide administrator
+recovery for rejected, pending and uncertain outcomes. Leave live dispatch off
+until the owner explicitly approves the provider account, domain, term and cost.
+
+**Acceptance:** Verify fake success, rejection, insufficient provider balance,
+timeout after a possible purchase, duplicate jobs and replayed events. Query or
+review uncertain outcomes before retrying a chargeable renewal. Preserve paid
+invoice state independently from registrar fulfillment and show the synchronized
+expiry after success.
+
+## Command 216 — Add support departments and routing
+
+**Status:** Proposed; implementation requires owner authorization.
+
+Add administrator-managed departments such as Support, Billing and Sales, with
+customer visibility, staff access and ticket assignment rules. Route new tickets
+to a department and permit audited reassignment. Preserve existing ticket IDs,
+messages, ownership and access for authorized staff.
+
+**Acceptance:** Verify customer and staff access boundaries, restricted and
+disabled departments, reassignment, existing-ticket migration and notification
+recipients. A department choice must not grant a customer access to another
+customer's ticket or private staff messages.
+
+## Command 217 — Add private ticket attachments
+
+**Status:** Proposed; depends on Command 216.
+
+Add bounded attachments to ticket creation and replies using private storage,
+server-side type and size validation, generated storage names and authorized
+downloads. Define allowed formats, retention, malware screening and the behavior
+when screening is unavailable. Reject active content and executable uploads;
+serve accepted files as downloads with safe response headers.
+
+**Acceptance:** Verify ownership on upload and download, MIME/content mismatches,
+oversized files, traversal filenames, rejected or quarantined content and
+interrupted uploads. Keep file bytes out of logs and public URLs. Use local
+fictional files and document production storage and scanner requirements.
+
+## Command 218 — Receive support replies by email
+
+**Status:** Proposed; depends on Commands 216 and 217.
+
+Extend the existing outbound ticket email workflow with an inbound mail adapter
+and department routing. Correlate replies using opaque thread identifiers and
+define trusted delivery and sender-verification requirements; a From address or
+subject alone must not authorize a reply. Preserve private notes, attachment
+policy and closed-ticket rules. Prevent autoresponder loops and duplicate imports.
+
+**Acceptance:** Use a local mail provider and fictional accounts to verify a
+threaded reply, cross-customer spoof attempts, invalid routing tokens, duplicate
+Message-IDs, untrusted delivery, HTML sanitization, attachments, bounces and
+closed tickets. Require explicit authorization before connecting a real mailbox
+or sending customer mail.
+
+## Command 219 — Review online payment production readiness
+
+**Status:** Proposed; implementation requires owner authorization.
+
+Review the existing bKash and SSLCommerz adapters and choose one provider for the
+first online-payment pilot. Check the current official provider contract when
+this command starts. Document required merchant access, sandbox availability,
+credential handling, callbacks, reconciliation, expiry, failure recovery and
+refund capabilities. Identify confirmed code gaps and the owner decisions needed
+before live activation.
+
+**Acceptance:** Produce a provider-specific readiness checklist and test matrix
+using current code and official documentation. Distinguish existing features,
+unverified behavior and missing work. Do not collect live payments, expose
+credentials, enable a gateway or change the merchant account.
+
+## Command 220 — Verify the selected online gateway end to end
+
+**Status:** Proposed; depends on Command 219 and selection of one gateway.
+
+Fix confirmed gaps and rehearse checkout, authenticated provider callbacks and
+server-side reconciliation using fake responses and an explicitly authorized
+sandbox when available. Validate merchant, invoice, amount, base currency,
+provider transaction identity and callback authenticity before settlement.
+
+**Acceptance:** Verify success, cancellation, delayed callbacks, forged or
+mismatched events, expired sessions, duplicate callbacks, lost responses and
+concurrent manual settlement. Only one charge may settle the invoice. Browser
+redirects must never settle it. Keep live credentials and activation out of
+the implementation batch.
+
+## Command 221 — Rehearse controlled production payment activation
+
+**Status:** Proposed; depends on successful Command 220 acceptance and separate
+owner approval of the live provider, merchant account, bounded test amount,
+payment actor and any refund operation. Deployment requires separate approval.
+
+Prepare the live activation and rollback runbook, callback reachability checks,
+reconciliation visibility and a way to stop new checkouts without losing pending
+callbacks. When the required approvals and environment are available, supervise
+one approved payment and reconcile it against the provider transaction record.
+Use the supported reviewed refund path only if separately authorized.
+
+**Acceptance:** Record the confirmed payment outcome, invoice settlement and
+reconciliation evidence without storing secrets or sensitive payment data in
+Git. Verify activation rollback and handling of in-flight callbacks. If merchant
+access or approval is missing, report the exact blocker and keep live mode off.
+
+## Command 222 — Show hosting usage statistics
+
+**Status:** Proposed; implementation requires owner authorization.
+
+Add provider-neutral disk and bandwidth usage reads for supported hosting
+accounts, with a cached customer view and administrator view. Display limits,
+unlimited allowances, sample timestamps, stale data and unavailable metrics
+explicitly. Keep website SSL status separate from usage and hosting lifecycle.
+
+**Acceptance:** Verify fake samples, unit conversion, missing metrics, provider
+failures, bounded polling and ownership checks. Usage reads must not change
+packages, suspend hosting, add charges or expose another account's statistics.
+Record which adapters and metrics are supported.
+
+## Command 223 — Add configurable hosting product options
+
+**Status:** Proposed; implementation requires owner authorization. Build on the
+existing one-time and recurring add-ons; coordinate with Commands 210–212 before
+supporting changes to options on an existing service.
+
+Add bounded choices such as storage tiers or mailbox limits with allowed values,
+plan compatibility and explicit prices. Snapshot the selected configuration and
+price at checkout, validate it on the server, and renew recurring options on the
+hosting cycle. Map only supported choices to provider capabilities; clearly
+identify manually fulfilled options.
+
+**Acceptance:** Verify tampered and incompatible choices, exact money totals,
+catalogue edits after purchase, checkout retries, fulfillment failures and one
+charge per renewal. Preserve existing purchases and cancellation behavior.
+Do not add metered overage billing implicitly.
+
+## Command 224 — Extend operational and financial reports
+
+**Status:** Proposed; depends on the source features needed by each report.
+
+Extend the existing Reports workspace with collected income by product,
+paid-versus-outstanding renewal amounts, hosting and add-on recurring revenue,
+plan changes, domain renewal failures, ticket workload by department and pending
+manual cancellation work. Define each metric's grain, currency, date basis and
+whether it is historical or a current snapshot. Label forecasts separately from
+collected payments.
+
+**Acceptance:** Reconcile fictional report totals with invoices, successful
+charges and adjustments; prevent double-counting combined orders and add-ons.
+Verify business-time-zone boundaries, access restrictions, pagination and safe
+audited exports. Show gaps or missing provider data explicitly. Reuse existing
+queries and charts where appropriate, and keep all implementation local until
+separate publishing and deployment authorization.
