@@ -11,6 +11,15 @@
 
 ## Command Reports
 
+### Release v0.1.0-alpha.4
+
+- Prepared on 2026-11-05 (Asia/Dhaka) from Commands 202, 206 and 207. Updated all workspace versions, the changelog, release notes, current README and installation links, and the project handoff.
+- The release includes the additive add-on cancellation migration, customer period-end add-on cancellation, the administrator order details and approval flow, list payment status, and distinct sidebar icons.
+- Release validation passed with 813 frontend tests, 143 contract tests, 12 financial unit tests, 51 PostgreSQL API integration cases, four worker renewal integration cases, eight recovery inventory checks, workspace types, API and worker builds, documentation checks, and lint with two existing warnings.
+- The full browser run passed 40 cases and found an outdated expected-read list for the new add-on endpoint plus a support-expiry navigation timeout. Updated the read assertion and reran both cases successfully. The API write and database snapshot assertions remain active.
+- Local database checks initially encountered a stopped Docker engine and a Redis URL/password mismatch. Restarted the local services and supplied matching Redis credentials only to test processes. The dedicated SSH deployment uses the exact published version tag and verifies backup, migrations and service health.
+- Recommended next command remains **Command 205 — Show scheduled add-on cancellations in the administrator service record**.
+
 ### Command 207 — Give administrator menu items distinct icons
 
 - Implemented locally on 2026-11-05 (Asia/Dhaka). The administrator sidebar uses a cloud for Services, a rack for Servers, a globe for Domains, bars for Reports, a lightning bolt for Automation, a paper plane for Email delivery, a bell for Notifications, and a shield for Administrators.

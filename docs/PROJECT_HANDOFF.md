@@ -8,8 +8,8 @@ contains revenue, overdue invoice aging and audited CSV exports.
 ## Source and release
 
 - The source of record is [GitHub main](https://github.com/ebit101/webhost-billing/tree/main).
-- This handoff accompanies **v0.1.0-alpha.3**. The
-  [release notes](releases/v0.1.0-alpha.3.md) and [changelog](../CHANGELOG.md)
+- This handoff accompanies **v0.1.0-alpha.4**. The
+  [release notes](releases/v0.1.0-alpha.4.md) and [changelog](../CHANGELOG.md)
   describe the changes. Use the deployment output to confirm the active commit.
 - The operator installation is [my.speedhost.bd](https://my.speedhost.bd/).
   Sign in as an administrator to check

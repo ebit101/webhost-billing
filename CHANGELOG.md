@@ -8,6 +8,33 @@ and will be called out in release notes.
 
 ## [Unreleased]
 
+## [0.1.0-alpha.4] - 2026-11-05
+
+### Added
+
+- Customers can cancel a fulfilled recurring hosting add-on from its service page.
+  The confirmation shows the first unbilled period, preserves issued invoices,
+  and records one audited cancellation across retries. Hosting keeps its own cycle.
+- Administrator order numbers open a full details page with customer and invoice
+  information, purchased items, and the appropriate payment or registration action.
+
+### Changed
+
+- The Orders list shows payment status beside order status. Paid hosting approval
+  is available on the details page.
+- All 15 administrator sidebar items have distinct icons.
+
+### Fixed
+
+- Renewal generation excludes add-ons from their recorded cancellation boundary.
+- Browser acceptance observes billing API mutations separately from Next.js
+  development diagnostics.
+
+### Upgrade
+
+- Apply the additive `20261104000200_add_on_renewal_cancellation` migration.
+  Existing add-ons retain their renewal behavior until a customer cancels them.
+
 ## [0.1.0-alpha.3] - 2026-11-04
 
 ### Added
@@ -288,7 +315,8 @@ and will be called out in release notes.
 - Updated Vitest and pinned patched `brace-expansion` and `js-yaml` lines after
   release-day advisories, clearing the repository's open Dependabot alerts.
 
-[Unreleased]: https://github.com/ebit101/webhost-billing/compare/v0.1.0-alpha.3...HEAD
+[Unreleased]: https://github.com/ebit101/webhost-billing/compare/v0.1.0-alpha.4...HEAD
+[0.1.0-alpha.4]: https://github.com/ebit101/webhost-billing/compare/v0.1.0-alpha.3...v0.1.0-alpha.4
 [0.1.0-alpha.3]: https://github.com/ebit101/webhost-billing/compare/v0.1.0-alpha.2...v0.1.0-alpha.3
 [0.1.0-alpha.2]: https://github.com/ebit101/webhost-billing/compare/v0.1.0-alpha.1...v0.1.0-alpha.2
 [0.1.0-alpha.1]: https://github.com/ebit101/webhost-billing/releases/tag/v0.1.0-alpha.1

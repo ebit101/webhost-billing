@@ -228,11 +228,13 @@ test('customer searches and pages older owned services without business mutation
   await expect(
     page.getByRole('link', { name: '← Back to services' }),
   ).toHaveAttribute('href', '/portal/services');
-  // Both detail effects run twice under dev Strict Mode.
-  // The service and cancellation reads both target the selected service.
+  // Detail effects run twice under dev Strict Mode.
+  // Service, add-on and cancellation reads target the selected service.
   expect([...details].sort()).toEqual([
     '/services/' + serviceId,
     '/services/' + serviceId,
+    '/services/' + serviceId + '/add-ons',
+    '/services/' + serviceId + '/add-ons',
     '/services/' + serviceId + '/cancellation-request',
     '/services/' + serviceId + '/cancellation-request',
   ]);
