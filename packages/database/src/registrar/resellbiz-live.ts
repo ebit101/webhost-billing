@@ -816,6 +816,41 @@ export class ResellbizLiveRegistrar implements DomainRegistrar {
     if (cost <= 0n) throw new Error('Renewal price is not established.');
     return cost;
   }
+  async renewalQuote(
+    reference: import('./provider').RegistrarDomainFactsReference,
+  ): Promise<import('./provider').RegistrarRenewalQuote> {
+    await this.readDomainFacts(reference);
+    return {
+      costAmount: await this.renewalCost(reference.domainName),
+      costCurrency: 'USD',
+      balance: 'UNKNOWN',
+    };
+  }
+  async renewDomain(
+    intent: import('./provider').RegistrarRenewalIntent,
+    claimSubmission: () => Promise<void>,
+  ): Promise<void> {
+    const observed = await this.managementObservation(
+      intent,
+      intent.providerOrderId,
+    );
+    if (!observed.contact)
+      throw new Error('Registrar contact ownership is unavailable.');
+    if (observed.expiresAt !== intent.previousExpiry || intent.years !== 1)
+      throw new Error('Renewal expiry changed.');
+    // Existing supported mutation contract is reused. Unknown eligibility and
+    // balance still prevent the worker from reaching this method in live mode.
+    await this.renew(
+      {
+        ...intent,
+        nameservers: observed.nameservers,
+        contact: observed.contact,
+      },
+      intent.providerOrderId,
+      new Date(intent.previousExpiry),
+      claimSubmission,
+    );
+  }
   async renew(
     intent: RegistrarIntent,
     orderId: string,

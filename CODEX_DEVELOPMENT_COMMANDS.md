@@ -6967,7 +6967,9 @@ review rather than silently buying a renewal.
 
 ## Command 215 — Execute and reconcile paid domain renewals
 
-**Status:** Proposed; depends on Commands 213 and 214.
+**Status:** Owner-authorized on 2026-11-05; implemented locally after Commands
+213 and 214. See `docs/PAID_DOMAIN_RENEWALS.md` and `docs/PROGRESS.md` for
+acceptance and live-provider limits. No push, deployment or real registrar call.
 
 After verified payment and required approval, dispatch one registrar renewal
 through the provider-neutral worker. Persist the operation and reconcile provider

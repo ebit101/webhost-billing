@@ -1,9 +1,11 @@
 # Domain renewal invoices and reminders
 
 Command 214 adds application-managed renewal billing for individually reviewed
-domains. It starts off for every domain. It creates invoices and reminder events;
-it does not renew a domain at the registrar, advance provider expiry or suspend
-hosting. External dispatch remains disabled, including after payment.
+domains. It starts off for every domain. Billing creates invoices and reminders;
+it does not purchase a renewal, advance provider expiry or suspend hosting.
+[Command 215](PAID_DOMAIN_RENEWALS.md) adds separately approved worker execution
+and reconciliation. Payment alone cannot dispatch a renewal, and real dispatch
+remains disabled by default.
 
 ## Confirm terms and choose billing responsibility
 
@@ -68,6 +70,8 @@ invoice while the domain is unexpired and all facts are fresh. Expired domains,
 grace/redemption charges and unknown terms require administrator review instead.
 No new invoice is issued to replace an unresolved earlier term just because
 observed provider expiry changes.
+After independently confirmed fulfillment in Command 215, a later eligible
+period can receive its own invoice while completed history is retained.
 
 Changing catalogue pricing holds future billing until the administrator confirms
 the new revision. An already-issued invoice keeps its original amount and term.
@@ -103,9 +107,10 @@ ordinary pricing. Correct the underlying facts/terms and run a new authorized
 cycle. Do not resolve an ownership mismatch by attaching another customer's
 domain or reuse a historical invoice as proof of renewal.
 
-Command 215 is separate: execute and reconcile a verified paid renewal, establish
-supported live eligibility and safely close the pending term. This command adds
-no registrar dispatch, purchase, deployment or live-provider authorization.
+Command 215 supplies [paid execution and recovery](PAID_DOMAIN_RENEWALS.md).
+Live eligibility/balance readiness and actual provider scope remain separate
+requirements. Billing itself adds no registrar dispatch, purchase, deployment
+or live-provider authorization.
 
 Focused local checks:
 

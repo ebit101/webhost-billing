@@ -33,6 +33,7 @@ export const e2eApiEnvironment: Record<string, string> = {
   SSLCOMMERZ_ENABLED: 'false',
   RESELLBIZ_LIVE_ENABLED: 'false',
   REGISTRAR_DOMAIN_SYNC_LIVE_ENABLED: 'false',
+  REGISTRAR_RENEWAL_DISPATCH_ENABLED: 'false',
   VIRTUALIZOR_API_ENABLED: 'false',
   EMAIL_TRANSPORT: 'preview',
   API_PORT: '3201',

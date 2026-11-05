@@ -26,6 +26,8 @@ const expectedTables = [
   'domain_fact_syncs',
   'domain_renewal_preferences',
   'domain_renewal_invoices',
+  'domain_renewal_operations',
+  'fake_registrar_renewals',
   'domain_offers',
   'domain_actions',
   'domain_catalogue_tlds',
@@ -93,6 +95,7 @@ const requiredCustomConstraints = [
   'domain_fact_syncs_state_check',
   'domain_renewal_preferences_shape',
   'domain_renewal_invoices_term_check',
+  'domain_renewal_operations_state_check',
   'services_current_package_check',
   'registrar_mode',
   'currency_authorization_evidence_uuid_check',
@@ -170,6 +173,7 @@ const requiredCustomConstraints = [
 ] as const;
 
 const expectedMoneyColumns = [
+  'domain_renewal_operations.cost_ceiling',
   'domain_catalogue_tlds.renewal_amount',
   'domain_quotes.cost_amount',
   'domain_quotes.selling_amount',
@@ -243,6 +247,7 @@ async function verify(): Promise<void> {
       name !== 'registrar_profiles' &&
       name !== 'existing_domain_orders' &&
       name !== 'domain_renewal_preferences' &&
+      name !== 'fake_registrar_renewals' &&
       name !== 'notification_epochs' &&
       name !== 'notification_preferences' &&
       name !== 'notification_sources' &&

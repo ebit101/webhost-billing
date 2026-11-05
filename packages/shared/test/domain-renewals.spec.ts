@@ -5,6 +5,63 @@ import {
   domainRenewalPreferenceRequestSchema,
   domainRenewalTermsSchema,
 } from '../src/contracts/domain-renewals';
+import {
+  domainRenewalExecutionRequestSchema,
+  domainRenewalReconcileRequestSchema,
+} from '../src/contracts/domain-renewals';
+import { routeOutboxEvent } from '../src/contracts/background-jobs';
+import { randomUUID } from 'node:crypto';
+
+test('paid renewal approval fixes one year and native currency and rejects unapproved or supplied provider outcomes', () => {
+  const input = {
+    submissionKey: randomUUID(),
+    invoiceId: randomUUID(),
+    confirmation: 'fictional.com',
+    years: 1,
+    approved: true,
+    reason: 'Reviewed fictional renewal',
+    costCeiling: '1000',
+    costCurrency: 'USD',
+  };
+  assert.equal(
+    domainRenewalExecutionRequestSchema.safeParse(input).success,
+    true,
+  );
+  for (const patch of [
+    { approved: false },
+    { years: 2 },
+    { costCurrency: 'BDT' },
+    { costCeiling: '10.00' },
+    { costCeiling: '0' },
+    { reason: ' ' },
+    { targetExpiry: '2029-01-01T00:00:00Z' },
+    { status: 'SUCCEEDED' },
+  ])
+    assert.equal(
+      domainRenewalExecutionRequestSchema.safeParse({ ...input, ...patch })
+        .success,
+      false,
+    );
+  assert.equal(
+    domainRenewalReconcileRequestSchema.safeParse({
+      submissionKey: randomUUID(),
+      confirmation: 'fictional.com',
+      reason: 'Read-only recovery',
+      costCeiling: '1000',
+    }).success,
+    false,
+  );
+});
+test('renewal dispatch and reconciliation share the registrar queue with distinct job names', () => {
+  assert.deepEqual(routeOutboxEvent('DOMAIN_RENEWAL_REQUESTED'), {
+    queueName: 'domain-registration',
+    jobName: 'renew-paid-domain-once',
+  });
+  assert.deepEqual(routeOutboxEvent('DOMAIN_RENEWAL_RECONCILE'), {
+    queueName: 'domain-registration',
+    jobName: 'reconcile-paid-domain-renewal',
+  });
+});
 
 test('customer preference accepts no supplied prices, provider flags, years or identity claims', () => {
   const input = {

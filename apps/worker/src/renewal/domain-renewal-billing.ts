@@ -50,11 +50,21 @@ export class DomainRenewalBilling {
           where: { id: ctx.domain.customerId },
           include: { user: true },
         });
-        const existing = await tx.domainRenewalInvoice.findFirst({
+        let existing = await tx.domainRenewalInvoice.findFirst({
           where: { domainId: id },
           orderBy: { createdAt: 'desc' },
         });
         let code = ctx.code;
+        if (
+          existing &&
+          (await tx.domainRenewalOperation.count({
+            where: { renewalInvoiceId: existing.id, status: 'SUCCEEDED' },
+          }))
+        ) {
+          if (ctx.domain.expiresAt && ctx.domain.expiresAt >= existing.termEnd)
+            existing = null;
+          else code = 'COMPLETED_EXPIRY_REQUIRES_REVIEW';
+        }
         if (
           customer.deletedAt ||
           customer.status !== 'ACTIVE' ||

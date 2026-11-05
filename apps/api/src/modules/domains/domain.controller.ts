@@ -37,6 +37,8 @@ import {
   domainFactReviewRequestSchema,
   domainRenewalConfigureRequestSchema,
   domainRenewalPreferenceRequestSchema,
+  domainRenewalExecutionRequestSchema,
+  domainRenewalReconcileRequestSchema,
   type DomainInventoryQuery,
 } from '@webhost-billing/shared';
 import { ZodValidationPipe } from '../../common/validation/zod-validation.pipe';
@@ -51,6 +53,7 @@ import { ExistingDomainLinkService } from './existing-domain-link.service';
 import { DomainInventoryService } from './domain-inventory.service';
 import { DomainFactsService } from './domain-facts.service';
 import { DomainRenewalsService } from './domain-renewals.service';
+import { DomainRenewalExecutionService } from './domain-renewal-execution.service';
 
 @Controller('domains')
 export class DomainController {
@@ -61,6 +64,7 @@ export class DomainController {
     private readonly inventory: DomainInventoryService,
     private readonly facts: DomainFactsService,
     private readonly renewals: DomainRenewalsService,
+    private readonly renewalExecution: DomainRenewalExecutionService,
   ) {}
   @Get('inventory')
   @Header('Cache-Control', 'private, no-store, max-age=0')
@@ -71,6 +75,29 @@ export class DomainController {
     @CurrentAuth() auth: AuthRequestContext,
   ) {
     return this.inventory.list(query, auth);
+  }
+  @Post(':id/renewal-billing/execute')
+  @Roles('ADMIN')
+  async executePaidRenewal(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body(new ZodValidationPipe(domainRenewalExecutionRequestSchema))
+    input: z.infer<typeof domainRenewalExecutionRequestSchema>,
+    @CurrentAuth() auth: AuthRequestContext,
+  ) {
+    await this.renewalExecution.approve(id, input, auth);
+    return createApiSuccessResponse(await this.renewals.view(id, auth));
+  }
+  @Post(':id/renewal-billing/:operationId/reconcile')
+  @Roles('ADMIN')
+  async reconcilePaidRenewal(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Param('operationId', new ParseUUIDPipe()) operationId: string,
+    @Body(new ZodValidationPipe(domainRenewalReconcileRequestSchema))
+    input: z.infer<typeof domainRenewalReconcileRequestSchema>,
+    @CurrentAuth() auth: AuthRequestContext,
+  ) {
+    await this.renewalExecution.reconcile(id, operationId, input, auth);
+    return createApiSuccessResponse(await this.renewals.view(id, auth));
   }
   @Get(':id/renewal-billing')
   @Roles('ADMIN', 'CUSTOMER')

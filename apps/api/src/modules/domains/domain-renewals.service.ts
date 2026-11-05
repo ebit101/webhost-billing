@@ -10,10 +10,14 @@ import { PRISMA_CLIENT } from '../../infrastructure/database/database.module';
 import { ApplicationException } from '../../common/errors/application.exception';
 import type { AuthRequestContext } from '../auth/auth.types';
 import type { z } from 'zod';
+import { DomainRenewalExecutionService } from './domain-renewal-execution.service';
 
 @Injectable()
 export class DomainRenewalsService {
-  constructor(@Inject(PRISMA_CLIENT) private readonly prisma: PrismaClient) {}
+  constructor(
+    @Inject(PRISMA_CLIENT) private readonly prisma: PrismaClient,
+    private readonly execution: DomainRenewalExecutionService,
+  ) {}
   private admin(actor: AuthRequestContext) {
     return (
       actor.identity.role === 'ADMIN' &&
@@ -91,7 +95,7 @@ export class DomainRenewalsService {
               termEnd: record.termEnd.toISOString(),
             }
           : null,
-      externalDispatchEnabled: false,
+      ...(await this.execution.info(id, actor)),
     });
   }
   async update(

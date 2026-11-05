@@ -8,6 +8,15 @@
 
 **Technical identifier:** `webhost-billing`
 
+**Paid domain renewal direction — 2026-11-05:** Command 215 permits a full
+administrator with MFA to approve a verified paid one-year term within a native
+USD registrar-cost ceiling. Dispatch through a durable provider-neutral worker;
+confirm owned expiry before completing fulfillment. Fence stale workers, never
+resubmit a possibly purchased term, and provide bounded read-only reconciliation.
+Retain financial history independently, including refunds after submission.
+Real dispatch stays off and unknown provider eligibility/balance fails closed.
+See [paid domain renewals](docs/PAID_DOMAIN_RENEWALS.md).
+
 **Domain renewal billing direction — 2026-11-05:** Command 214 adds per-domain,
 default-off application-managed billing after ordinary one-year BDT terms and
 renewal responsibility are reviewed. The daily scheduler uses fresh owned

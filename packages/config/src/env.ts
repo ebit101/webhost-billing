@@ -127,6 +127,7 @@ const apiEnvironmentObjectSchema = serverEnvironmentSchema
       .max(30_000)
       .default(10_000),
     RESELLBIZ_LIVE_ENABLED: environmentBooleanSchema,
+    REGISTRAR_RENEWAL_DISPATCH_ENABLED: environmentBooleanSchema,
     REGISTRAR_DOMAIN_SYNC_LIVE_ENABLED: environmentBooleanSchema,
     VIRTUALIZOR_API_ENABLED: environmentBooleanSchema,
     BKASH_ENABLED: environmentBooleanSchema,
@@ -275,6 +276,7 @@ const workerEnvironmentObjectSchema = baseEnvironmentSchema
   .extend(infrastructureEnvironmentSchema.shape)
   .extend({
     RESELLBIZ_LIVE_ENABLED: environmentBooleanSchema,
+    REGISTRAR_RENEWAL_DISPATCH_ENABLED: environmentBooleanSchema,
     CREDENTIAL_ENCRYPTION_KEY:
       secretEnvironmentSchema.shape.CREDENTIAL_ENCRYPTION_KEY,
     OUTBOX_POLL_INTERVAL_MS: z.coerce

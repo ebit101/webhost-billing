@@ -1309,6 +1309,46 @@ model DomainRenewalInvoice {
   @@map("domain_renewal_invoices")
 }
 
+model DomainRenewalOperation {
+  id                      String    @id @db.Uuid
+  renewalInvoiceId        String    @map("renewal_invoice_id") @db.Uuid
+  domainId                String    @map("domain_id") @db.Uuid
+  accountId               String    @map("account_id") @db.Uuid
+  customerId              String    @map("customer_id") @db.Uuid
+  credentialId            String    @map("credential_id") @db.Uuid
+  approvedByUserId        String    @map("approved_by_user_id") @db.Uuid
+  bindingHash             String    @map("binding_hash") @db.Char(64)
+  reference               Json
+  costCeiling             BigInt    @map("cost_ceiling") @db.BigInt
+  costCurrency            String    @default("USD") @map("cost_currency") @db.Char(3)
+  attempt                 Int
+  status                  String    @default("QUEUED") @db.VarChar(32)
+  code                    String?   @db.VarChar(64)
+  leaseToken              String?   @map("lease_token") @db.Uuid
+  leaseUntil              DateTime? @map("lease_until") @db.Timestamptz(3)
+  readCount               Int       @default(0) @map("read_count")
+  submittedAt             DateTime? @map("submitted_at") @db.Timestamptz(3)
+  completedAt             DateTime? @map("completed_at") @db.Timestamptz(3)
+  expiryAfter             DateTime? @map("expiry_after") @db.Timestamptz(3)
+  financialReviewRequired Boolean   @default(false) @map("financial_review_required")
+  createdAt               DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@unique([renewalInvoiceId, attempt])
+  @@index([domainId, createdAt])
+  @@map("domain_renewal_operations")
+}
+
+model FakeRegistrarRenewal {
+  operationId    String   @id @map("operation_id") @db.Uuid
+  registrationId String   @map("registration_id") @db.Uuid
+  previousExpiry DateTime @map("previous_expiry") @db.Timestamptz(3)
+  targetExpiry   DateTime @map("target_expiry") @db.Timestamptz(3)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@unique([registrationId, previousExpiry])
+  @@map("fake_registrar_renewals")
+}
+
 model DomainFactSync {
   id                String    @id @db.Uuid
   domainId          String    @map("domain_id") @db.Uuid

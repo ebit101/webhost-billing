@@ -83,6 +83,14 @@ const exactOutboxRoutes: Readonly<Record<string, OutboxQueueRoute>> = {
     queueName: 'domain-registration',
     jobName: 'register-domain-once',
   },
+  DOMAIN_RENEWAL_REQUESTED: {
+    queueName: 'domain-registration',
+    jobName: 'renew-paid-domain-once',
+  },
+  DOMAIN_RENEWAL_RECONCILE: {
+    queueName: 'domain-registration',
+    jobName: 'reconcile-paid-domain-renewal',
+  },
   DOMAIN_REGISTRATION_RECONCILE: {
     queueName: 'domain-registration',
     jobName: 'reconcile-domain',

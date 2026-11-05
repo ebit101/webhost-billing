@@ -31,6 +31,142 @@ const terms = {
   catalogueRevision: 1,
 };
 afterEach(() => vi.resetAllMocks());
+const invoice = {
+  id: domainId,
+  invoiceNumber: 'INV-FICTIONAL',
+  status: 'PAID',
+  amount: '170000',
+  balanceDue: '0',
+  currency: 'BDT',
+  dueAt: '2026-11-20T00:00:00.000Z',
+  termStart: '2026-11-20T00:00:00.000Z',
+  termEnd: '2027-11-20T00:00:00.000Z',
+};
+it('requires a paid-renewal confirmation, review reason and exact USD cost ceiling before queueing', async () => {
+  api.get.mockResolvedValue({
+    ...empty,
+    enabled: true,
+    terms,
+    reviewCode: null,
+    invoice,
+    canApprove: true,
+  });
+  const execution = {
+    id: domainId,
+    attempt: 1,
+    status: 'QUEUED',
+    code: null,
+    submittedAt: null,
+    completedAt: null,
+    expiryAfter: null,
+    financialReviewRequired: false,
+  };
+  api.mutate.mockResolvedValue({
+    ...empty,
+    enabled: true,
+    terms,
+    reviewCode: null,
+    invoice,
+    execution,
+  });
+  render(<DomainRenewals {...props} administrator />);
+  const user = userEvent.setup();
+  await user.click(
+    await screen.findByRole('button', { name: 'Approve paid renewal' }),
+  );
+  const dialog = screen.getByRole('dialog', { name: 'Approve paid renewal' });
+  const save = within(dialog).getByRole('button', {
+    name: 'Queue approved renewal',
+  }) as HTMLButtonElement;
+  expect(save.disabled).toBe(true);
+  await user.type(
+    within(dialog).getByLabelText('Confirm domain name'),
+    props.domainName,
+  );
+  await user.type(within(dialog).getByLabelText('Review reason'), 'Verified');
+  await user.type(
+    within(dialog).getByLabelText('Registrar cost ceiling (USD)'),
+    '10.00',
+  );
+  await user.click(within(dialog).getByRole('checkbox'));
+  await user.click(save);
+  expect(api.mutate).toHaveBeenCalledWith(
+    `/domains/${domainId}/renewal-billing/execute`,
+    'POST',
+    expect.objectContaining({
+      costCeiling: '1000',
+      costCurrency: 'USD',
+      years: 1,
+      approved: true,
+      invoiceId: domainId,
+    }),
+  );
+  await screen.findByText(/Renewal fulfillment: Queued/);
+});
+it('offers read-only reconciliation for an uncertain operation without another purchase approval', async () => {
+  const execution = {
+    id: domainId,
+    attempt: 1,
+    status: 'NEEDS_RECONCILIATION',
+    code: 'RENEWAL_OUTCOME_UNCONFIRMED',
+    submittedAt: '2026-11-05T12:00:00.000Z',
+    completedAt: null,
+    expiryAfter: null,
+    financialReviewRequired: false,
+  };
+  api.get.mockResolvedValue({
+    ...empty,
+    terms,
+    invoice,
+    execution,
+    canReconcile: true,
+  });
+  api.mutate.mockResolvedValue({ ...empty, terms, invoice, execution });
+  render(<DomainRenewals {...props} administrator />);
+  const user = userEvent.setup();
+  await user.click(
+    await screen.findByRole('button', { name: 'Reconcile renewal' }),
+  );
+  expect(
+    screen.queryByRole('button', { name: 'Approve paid renewal' }),
+  ).toBeNull();
+  const dialog = screen.getByRole('dialog', { name: 'Reconcile renewal' });
+  await user.type(
+    within(dialog).getByLabelText('Confirm domain name'),
+    props.domainName,
+  );
+  await user.type(within(dialog).getByLabelText('Review reason'), 'Reviewed');
+  expect(
+    within(dialog).queryByLabelText('Registrar cost ceiling (USD)'),
+  ).toBeNull();
+  await user.click(
+    within(dialog).getByRole('button', { name: 'Request reconciliation' }),
+  );
+  expect(api.mutate).toHaveBeenCalledWith(
+    `/domains/${domainId}/renewal-billing/${domainId}/reconcile`,
+    'POST',
+    expect.not.objectContaining({ costCeiling: expect.anything() }),
+  );
+});
+it('shows completed expiry and financial review without exposing staff execution actions to a customer', async () => {
+  const execution = {
+    id: domainId,
+    attempt: 1,
+    status: 'SUCCEEDED',
+    code: 'FINANCIAL_REVIEW_REQUIRED',
+    submittedAt: '2026-11-05T12:00:00.000Z',
+    completedAt: '2026-11-05T12:01:00.000Z',
+    expiryAfter: '2027-11-20T00:00:00.000Z',
+    financialReviewRequired: true,
+  };
+  api.get.mockResolvedValue({ ...empty, invoice, execution });
+  render(<DomainRenewals {...props} />);
+  await screen.findByText(/Renewal fulfillment: Succeeded/);
+  expect(screen.getByText(/Confirmed provider expiry/)).toBeTruthy();
+  expect(
+    screen.queryByRole('button', { name: 'Approve paid renewal' }),
+  ).toBeNull();
+});
 
 it('defaults off, explains billing versus registrar renewal and prevents enabling unconfirmed terms', async () => {
   api.get.mockResolvedValue(empty);

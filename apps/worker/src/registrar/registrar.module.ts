@@ -8,7 +8,10 @@ import {
 } from '@nestjs/common';
 import type { WorkerEnvironment } from '@webhost-billing/config';
 import type { PrismaClient } from '@webhost-billing/database';
-import { RegistrarProcessor } from '@webhost-billing/database/registrar';
+import {
+  RegistrarProcessor,
+  DomainRenewalProcessor,
+} from '@webhost-billing/database/registrar';
 import { BackgroundWorker } from '@webhost-billing/queue';
 import {
   WorkerDatabaseModule,
@@ -25,6 +28,7 @@ export class RegistrarConsumer
 {
   private readonly worker: BackgroundWorker;
   private readonly processor: RegistrarProcessor;
+  private readonly renewals: DomainRenewalProcessor;
   private readonly simulationAllowed: boolean;
   private readonly liveAllowed: boolean;
   constructor(
@@ -48,10 +52,28 @@ export class RegistrarConsumer
         liveAllowed: this.liveAllowed,
       },
     );
+    this.renewals = new DomainRenewalProcessor(
+      prisma,
+      environment.CREDENTIAL_ENCRYPTION_KEY,
+      {
+        simulationAllowed: this.simulationAllowed,
+        liveAllowed:
+          this.liveAllowed && environment.REGISTRAR_RENEWAL_DISPATCH_ENABLED,
+        liveReadAllowed: this.liveAllowed,
+      },
+    );
   }
   onApplicationBootstrap() {
     if (!this.simulationAllowed && !this.liveAllowed) return;
     this.worker.register('domain-registration', async (data) => {
+      if (
+        ['DOMAIN_RENEWAL_REQUESTED', 'DOMAIN_RENEWAL_RECONCILE'].includes(
+          data.eventType,
+        )
+      ) {
+        await this.renewals.process(data);
+        return;
+      }
       const event = await this.prisma.outboxEvent.findUnique({
         where: { id: data.outboxEventId },
       });

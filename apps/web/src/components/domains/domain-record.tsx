@@ -124,6 +124,9 @@ export function DomainRecord({
       {!domain.expiresAt && <p>Registry expiry not yet confirmed.</p>}
       {domain.state === 'REGISTERED' && (
         <DomainRenewals
+          onUpdated={() => {
+            void perform(async () => undefined);
+          }}
           domainId={domain.id}
           domainName={domain.domainName}
           administrator={administrator}
@@ -131,6 +134,7 @@ export function DomainRecord({
       )}
       {domain.state === 'REGISTERED' && (
         <DomainFacts
+          key={domain.expiresAt}
           domainId={domain.id}
           domainName={domain.domainName}
           administrator={administrator}

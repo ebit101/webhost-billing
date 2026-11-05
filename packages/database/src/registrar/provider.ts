@@ -33,6 +33,13 @@ export interface RegistrarObservation {
   verification: 'Pending' | 'Verified';
 }
 export interface DomainRegistrar {
+  renewalQuote?(
+    reference: RegistrarDomainFactsReference,
+  ): Promise<RegistrarRenewalQuote>;
+  renewDomain?(
+    intent: RegistrarRenewalIntent,
+    claimSubmission: () => Promise<void>,
+  ): Promise<void>;
   supportsDomainFacts?(tld: string): boolean;
   readDomainFacts?(
     reference: RegistrarDomainFactsReference,
@@ -48,10 +55,83 @@ export interface RegistrarDomainFactsReference {
   domainName: string;
   providerOrderId: string;
 }
+export interface RegistrarRenewalQuote {
+  costAmount: bigint;
+  costCurrency: 'USD';
+  balance: 'SUFFICIENT' | 'INSUFFICIENT' | 'UNKNOWN';
+  rejectionCode?: 'PROVIDER_REJECTED';
+}
+export interface RegistrarRenewalIntent extends RegistrarDomainFactsReference {
+  operationId: string;
+  previousExpiry: string;
+  targetExpiry: string;
+  years: 1;
+  costCeiling: bigint;
+  costCurrency: 'USD';
+}
 
 // Deliberately fictional outcomes, not public DNS/availability or real registrations.
 export class FakeDomainRegistrar implements DomainRegistrar {
   constructor(private readonly prisma: PrismaClient) {}
+  async renewalQuote(
+    reference: RegistrarDomainFactsReference,
+  ): Promise<RegistrarRenewalQuote> {
+    const facts = await this.readDomainFacts(reference);
+    if (!facts) throw new Error('Fictional registration unavailable.');
+    return { costAmount: 1000n, costCurrency: 'USD', balance: 'SUFFICIENT' };
+  }
+  async renewDomain(
+    intent: RegistrarRenewalIntent,
+    claimSubmission: () => Promise<void>,
+  ): Promise<void> {
+    await claimSubmission();
+    await this.prisma.$transaction(async (tx) => {
+      const replay = await tx.fakeRegistrarRenewal.findUnique({
+        where: { operationId: intent.operationId },
+      });
+      if (replay) return;
+      const row = await tx.fakeRegistrarRegistration.findUniqueOrThrow({
+        where: {
+          accountId_domainName: {
+            accountId: intent.accountId,
+            domainName: intent.domainName,
+          },
+        },
+      });
+      await tx.$queryRaw`SELECT id FROM fake_registrar_registrations WHERE id=${row.id}::uuid FOR UPDATE`;
+      const current = await tx.fakeRegistrarRegistration.findUniqueOrThrow({
+        where: { id: row.id },
+      });
+      if (
+        current.id !== intent.providerOrderId ||
+        current.customerId !== intent.customerId ||
+        current.expiresAt.toISOString() !== intent.previousExpiry
+      )
+        throw new Error('Fictional registrar binding or expiry changed.');
+      const op = await tx.domainRenewalOperation.findUniqueOrThrow({
+        where: { id: intent.operationId },
+      });
+      if (
+        !op.submittedAt ||
+        op.status !== 'RUNNING' ||
+        op.accountId !== intent.accountId ||
+        intent.years !== 1
+      )
+        throw new Error('Fictional renewal has no submission claim.');
+      await tx.fakeRegistrarRenewal.create({
+        data: {
+          operationId: intent.operationId,
+          registrationId: row.id,
+          previousExpiry: new Date(intent.previousExpiry),
+          targetExpiry: new Date(intent.targetExpiry),
+        },
+      });
+      await tx.fakeRegistrarRegistration.update({
+        where: { id: row.id },
+        data: { expiresAt: new Date(intent.targetExpiry) },
+      });
+    });
+  }
   supportsDomainFacts(tld: string): boolean {
     return domainExtensionSchema.safeParse(tld).success;
   }

@@ -1,5 +1,20 @@
 import { z } from 'zod';
 import { domainNameSchema } from './domains';
+import { registrarDomainFactsSchema } from './domain-facts';
+
+export const domainRenewalReferenceSchema = registrarDomainFactsSchema
+  .pick({
+    accountId: true,
+    customerId: true,
+    domainName: true,
+    providerOrderId: true,
+  })
+  .extend({
+    previousExpiry: z.iso.datetime(),
+    targetExpiry: z.iso.datetime(),
+    years: z.literal(1),
+  })
+  .strict();
 
 export const domainRenewalTermsSchema = z
   .object({
@@ -28,6 +43,46 @@ export const domainRenewalConfigureRequestSchema =
       reason: z.string().trim().min(1).max(1000),
     })
     .strict();
+export const domainRenewalExecutionRequestSchema = z
+  .object({
+    submissionKey: z.uuid(),
+    invoiceId: z.uuid(),
+    confirmation: domainNameSchema,
+    costCeiling: z.string().regex(/^[1-9][0-9]{0,14}$/),
+    costCurrency: z.literal('USD'),
+    years: z.literal(1),
+    approved: z.literal(true),
+    reason: z.string().trim().min(1).max(1000),
+  })
+  .strict();
+export const domainRenewalReconcileRequestSchema = z
+  .object({
+    submissionKey: z.uuid(),
+    confirmation: domainNameSchema,
+    reason: z.string().trim().min(1).max(1000),
+  })
+  .strict();
+export const domainRenewalExecutionSchema = z
+  .object({
+    id: z.uuid(),
+    attempt: z.number().int().positive(),
+    status: z.enum([
+      'QUEUED',
+      'RUNNING',
+      'REJECTED',
+      'NEEDS_RECONCILIATION',
+      'SUCCEEDED',
+    ]),
+    code: z
+      .string()
+      .regex(/^[A-Z_]+$/)
+      .nullable(),
+    submittedAt: z.iso.datetime().nullable(),
+    completedAt: z.iso.datetime().nullable(),
+    expiryAfter: z.iso.datetime().nullable(),
+    financialReviewRequired: z.boolean(),
+  })
+  .strict();
 export const domainRenewalViewSchema = z
   .object({
     domainId: z.uuid(),
@@ -56,7 +111,10 @@ export const domainRenewalViewSchema = z
       })
       .strict()
       .nullable(),
-    externalDispatchEnabled: z.literal(false),
+    externalDispatchEnabled: z.boolean(),
+    execution: domainRenewalExecutionSchema.nullable().default(null),
+    canApprove: z.boolean().default(false),
+    canReconcile: z.boolean().default(false),
   })
   .strict();
 export type DomainRenewalView = z.infer<typeof domainRenewalViewSchema>;

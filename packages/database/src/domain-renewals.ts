@@ -132,6 +132,12 @@ export async function domainRenewalContext(
     },
   });
   if (!factCode && pendingAction) factCode = 'MANUAL_RENEWAL_PENDING';
+  if (
+    await db.domainRenewalOperation.count({
+      where: { domainId: id, financialReviewRequired: true },
+    })
+  )
+    factCode = 'FINANCIAL_REVIEW_REQUIRED';
   let code = factCode;
   if (!code && !terms.success) code = 'TERMS_UNCONFIRMED';
   if (
