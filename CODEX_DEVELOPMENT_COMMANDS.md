@@ -6915,7 +6915,9 @@ separately.
 
 ## Command 212 — Implement period-end hosting downgrades
 
-**Status:** Proposed; depends on Commands 210 and 211.
+**Status:** Owner-authorized and completed locally on 2026-11-05; fictional
+acceptance passed. No publishing or deployment. Reuse the administrator-offered
+plan pair and require a fresh full-administrator capacity/add-on review at the boundary.
 
 Let customers schedule an eligible downgrade at the billing boundary and withdraw
 it before execution. Preserve the owner-selected policy of no mid-period credit

@@ -32,6 +32,115 @@ const row = {
 };
 afterEach(() => vi.resetAllMocks());
 describe('customer and administrator hosting upgrades', () => {
+  it('shows a zero-charge scheduled downgrade and requires explicit withdrawal', async () => {
+    const scheduled = {
+      ...row,
+      change: 'DOWNGRADE',
+      status: 'SCHEDULED',
+      amount: { amount: '0', currency: 'BDT' },
+      canAccept: false,
+      canWithdraw: true,
+      acceptedAt: row.quotedAt,
+    };
+    api.get.mockResolvedValue([scheduled]);
+    render(<HostingUpgrades service={service} />);
+    const user = userEvent.setup();
+    await screen.findByText(/Immediate charge: BDT 0.00/);
+    expect(
+      screen.getByText(/No mid-period credit or automatic refund/),
+    ).toBeTruthy();
+    await user.click(
+      await screen.findByRole('button', { name: 'Withdraw downgrade' }),
+    );
+    const dialog = screen.getByRole('dialog', {
+      name: 'Confirm hosting downgrade action',
+    });
+    const confirm = within(dialog).getByRole('button', {
+      name: 'Confirm downgrade action',
+    }) as HTMLButtonElement;
+    expect(confirm.disabled).toBe(true);
+    await user.click(within(dialog).getByRole('checkbox'));
+    api.mutate.mockResolvedValue({
+      ...scheduled,
+      status: 'CANCELLED',
+      canWithdraw: false,
+    });
+    await user.click(confirm);
+    await screen.findByText(/Downgrade request: Cancelled/);
+    expect(api.mutate).toHaveBeenCalledWith(
+      `/services/${service.id}/upgrades/${row.id}/withdraw`,
+      'POST',
+      { acknowledged: true },
+    );
+  });
+  it('requires a boundary capacity result and reason without requiring payment for a downgrade', async () => {
+    const scheduled = {
+      ...row,
+      change: 'DOWNGRADE',
+      status: 'SCHEDULED',
+      canAccept: false,
+      periodEndAt: '2020-01-01T00:00:00.000Z',
+      amount: { amount: '0', currency: 'BDT' },
+    };
+    api.get.mockResolvedValue([scheduled]);
+    render(<HostingUpgrades service={service} administrator />);
+    const user = userEvent.setup();
+    await user.click(
+      await screen.findByRole('button', { name: 'Review due downgrade' }),
+    );
+    const dialog = screen.getByRole('dialog');
+    await user.click(within(dialog).getByRole('checkbox'));
+    expect(
+      (
+        within(dialog).getByRole('button', {
+          name: 'Confirm downgrade action',
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
+    await user.selectOptions(
+      within(dialog).getByLabelText('Capacity and add-on review'),
+      'review',
+    );
+    await user.type(
+      within(dialog).getByLabelText('Review reason'),
+      'Usage cannot be confirmed.',
+    );
+    api.mutate.mockResolvedValue({ ...scheduled, status: 'REVIEW_REQUIRED' });
+    await user.click(
+      within(dialog).getByRole('button', { name: 'Confirm downgrade action' }),
+    );
+    await screen.findByText(/Downgrade request: Review required/);
+    expect(api.mutate).toHaveBeenCalledWith(
+      `/services/${service.id}/upgrades/${row.id}/approve?customerId=${service.customerId}`,
+      'POST',
+      {
+        acknowledged: true,
+        downgradeReview: {
+          capacityFits: false,
+          reason: 'Usage cannot be confirmed.',
+        },
+      },
+    );
+  });
+  it('keeps scheduled downgrades read-only in support sessions', async () => {
+    api.get.mockResolvedValue([
+      {
+        ...row,
+        change: 'DOWNGRADE',
+        status: 'SCHEDULED',
+        canAccept: false,
+        canWithdraw: false,
+      },
+    ]);
+    render(<HostingUpgrades service={service} />);
+    await screen.findByText(/Downgrade request: Scheduled/);
+    expect(
+      screen.queryByRole('button', { name: 'Withdraw downgrade' }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: 'Review due downgrade' }),
+    ).toBeNull();
+  });
   it('shows the quoted charge, next renewal and separate payment and package states', async () => {
     api.get.mockResolvedValue([row]);
     render(<HostingUpgrades service={service} />);

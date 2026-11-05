@@ -8,7 +8,7 @@ import type {
 import {
   businessIdentitySchema,
   hostingAccountSchema,
-  hostingUpgradeQuoteSchema,
+  hostingPlanChangeQuoteSchema,
   hostingUpgradeSchema,
   quoteHostingPlanChange,
   PROJECT_NAME,
@@ -59,6 +59,7 @@ export class HostingUpgradeService {
       targetPriceId: string;
       reason: string;
       requirementsVerified: true;
+      change?: 'UPGRADE' | 'DOWNGRADE';
     },
     actor: AuthRequestContext,
     context: SecurityRequestContext,
@@ -76,8 +77,10 @@ export class HostingUpgradeService {
     if (prior) {
       if (
         prior.serviceId !== serviceId ||
-        hostingUpgradeQuoteSchema.parse(prior.quote).target.priceId !==
-          input.targetPriceId
+        hostingPlanChangeQuoteSchema.parse(prior.quote).target.priceId !==
+          input.targetPriceId ||
+        hostingPlanChangeQuoteSchema.parse(prior.quote).change !==
+          (input.change ?? 'UPGRADE')
       )
         throw this.error('The submission key belongs to another upgrade.');
       return this.serialize(prior);
@@ -106,8 +109,10 @@ export class HostingUpgradeService {
       if (replay) {
         if (
           replay.serviceId !== serviceId ||
-          hostingUpgradeQuoteSchema.parse(replay.quote).target.priceId !==
-            input.targetPriceId
+          hostingPlanChangeQuoteSchema.parse(replay.quote).target.priceId !==
+            input.targetPriceId ||
+          hostingPlanChangeQuoteSchema.parse(replay.quote).change !==
+            (input.change ?? 'UPGRADE')
         )
           throw this.error('The submission key belongs to another upgrade.');
         return replay;
@@ -116,7 +121,9 @@ export class HostingUpgradeService {
         tx,
         serviceId,
         input.targetPriceId,
-        new Date(),
+        new Date(Date.now()),
+        undefined,
+        input.change,
       );
       if (
         account.externalAccountId !== loaded.service.externalAccountId ||
@@ -164,7 +171,7 @@ export class HostingUpgradeService {
       if (request.acceptedAt && request.status !== 'CANCELLED') return request;
       if (request.status !== 'QUOTED')
         throw this.error('This quote is no longer available.');
-      const quote = hostingUpgradeQuoteSchema.parse(request.quote);
+      const quote = hostingPlanChangeQuoteSchema.parse(request.quote);
       this.currentWindow(quote.expiresAt);
       const loaded = await upgradeContext(
         tx,
@@ -172,13 +179,28 @@ export class HostingUpgradeService {
         quote.target.priceId,
         new Date(quote.quotedAt),
         id,
+        quote.change,
       );
       this.eligible(loaded.input);
       if (loaded.hash !== request.contextHash)
         throw this.error(
           'The service or price changed. Ask for a fresh quote.',
         );
-      const now = new Date();
+      const now = new Date(Date.now());
+      if (quote.change === 'DOWNGRADE') {
+        if (loaded.service.nextDueAt.toISOString() !== quote.paidPeriod.endAt)
+          throw this.error(
+            'Resolve prepaid renewal coverage before scheduling a downgrade.',
+          );
+        const scheduled = await tx.serviceUpgrade.update({
+          where: { id },
+          data: { status: 'SCHEDULED', acceptedAt: now },
+        });
+        await this.audit(tx, scheduled, 'SCHEDULED', actor, context, {
+          effectiveAt: quote.paidPeriod.endAt,
+        });
+        return scheduled;
+      }
       const amount = BigInt(quote.immediateCharge.amount);
       const customer = loaded.service.customer;
       const setting = await tx.setting.findUnique({
@@ -236,7 +258,7 @@ export class HostingUpgradeService {
       });
       return accepted;
     });
-    return this.serialize(row);
+    return this.serialize(row, true);
   }
 
   async approve(
@@ -245,6 +267,7 @@ export class HostingUpgradeService {
     actor: AuthRequestContext,
     context: SecurityRequestContext,
     customerId?: string,
+    downgradeReview?: { capacityFits: boolean; reason: string },
   ) {
     this.admin(actor);
     let handle = false;
@@ -253,9 +276,38 @@ export class HostingUpgradeService {
       await this.accessible(tx, serviceId, actor, customerId);
       let row = await this.record(tx, serviceId, id);
       if (row.status === 'COMPLETED') return row;
-      if (!['REQUESTED', 'APPLYING', 'REVIEW_REQUIRED'].includes(row.status))
+      if (
+        !['REQUESTED', 'SCHEDULED', 'APPLYING', 'REVIEW_REQUIRED'].includes(
+          row.status,
+        )
+      )
         throw this.error('The customer must accept this quote first.');
-      const quote = hostingUpgradeQuoteSchema.parse(row.quote);
+      const quote = hostingPlanChangeQuoteSchema.parse(row.quote);
+      this.executionWindow(quote);
+      if (quote.change === 'DOWNGRADE') {
+        if (!downgradeReview || !downgradeReview.reason.trim())
+          throw this.error(
+            'Recheck current account usage, target capacity and retained add-ons, and record a review reason.',
+          );
+        if (!downgradeReview.capacityFits) {
+          if (row.status === 'APPLYING' || row.operationId)
+            throw this.error(
+              'Reconcile the existing package operation before recording a capacity decision.',
+            );
+          const held = await tx.serviceUpgrade.update({
+            where: { id },
+            data: {
+              status: 'REVIEW_REQUIRED',
+              error:
+                'Target capacity or retained add-ons need review. Existing hosting stays unchanged; renewal billing remains on hold.',
+            },
+          });
+          await this.audit(tx, held, 'CAPACITY_REVIEW', actor, context, {
+            reason: downgradeReview.reason,
+          });
+          return held;
+        }
+      }
       const currentOp = await tx.hostingPanelOperation.findUnique({
         where: {
           idempotencyKey: `hosting-operation:${upgradeOperationKey(id, row.attempt)}`,
@@ -282,7 +334,7 @@ export class HostingUpgradeService {
         Date.now() - row.updatedAt.getTime() < 60_000
       )
         return row;
-      this.currentWindow(quote.expiresAt);
+      this.executionWindow(quote);
       await this.verifyContext(tx, row);
       await this.paid(tx, row);
       let attempt = row.attempt;
@@ -304,17 +356,26 @@ export class HostingUpgradeService {
         data: {
           status: 'APPLYING',
           attempt,
-          approvedAt: row.approvedAt ?? new Date(),
+          approvedAt: row.approvedAt ?? new Date(Date.now()),
           error: null,
         },
       });
-      await this.audit(tx, approved, 'APPROVED', actor, context);
+      await this.audit(
+        tx,
+        approved,
+        'APPROVED',
+        actor,
+        context,
+        downgradeReview
+          ? { reason: downgradeReview.reason, capacityFits: true }
+          : {},
+      );
       handle = true;
       return approved;
     });
     if (request.status === 'COMPLETED' || !handle)
       return this.serialize(request);
-    const quote = hostingUpgradeQuoteSchema.parse(request.quote);
+    const quote = hostingPlanChangeQuoteSchema.parse(request.quote);
     const key = upgradeOperationKey(id, request.attempt);
     let operation = await this.prisma.hostingPanelOperation.findUnique({
       where: { idempotencyKey: `hosting-operation:${key}` },
@@ -410,7 +471,7 @@ export class HostingUpgradeService {
           where: { id },
           data: { operationId: operation!.id },
         });
-        this.currentWindow(quote.expiresAt);
+        this.executionWindow(quote);
         const loaded = await this.verifyContext(tx, row);
         await this.paid(tx, row);
         if (
@@ -432,7 +493,11 @@ export class HostingUpgradeService {
         });
         const result = await tx.serviceUpgrade.update({
           where: { id },
-          data: { status: 'COMPLETED', completedAt: new Date(), error: null },
+          data: {
+            status: 'COMPLETED',
+            completedAt: new Date(Date.now()),
+            error: null,
+          },
         });
         await this.audit(tx, result, 'COMPLETED', actor, context, {
           operationId: operation!.id,
@@ -466,11 +531,11 @@ export class HostingUpgradeService {
       await this.review(
         id,
         operation?.id ?? null,
-        'Upgrade needs review. Keep the recorded plan and financial history until the provider outcome is reconciled.',
+        'Plan change needs review. Keep the recorded plan and financial history until the provider outcome is reconciled.',
       );
       if (caught instanceof ApplicationException) throw caught;
       throw this.error(
-        'The upgrade could not be confirmed. Review its recorded provider operation.',
+        'The plan change could not be confirmed. Review its recorded provider operation.',
       );
     }
   }
@@ -502,12 +567,16 @@ export class HostingUpgradeService {
       await this.accessible(tx, serviceId, actor, customerId);
       const row = await this.record(tx, serviceId, id);
       if (row.status === 'CANCELLED') return row;
-      if (!['QUOTED', 'REQUESTED', 'REVIEW_REQUIRED'].includes(row.status))
+      if (
+        !['QUOTED', 'REQUESTED', 'SCHEDULED', 'REVIEW_REQUIRED'].includes(
+          row.status,
+        )
+      )
         throw this.error(
           'Only an unstarted or financially reconciled upgrade can be closed.',
         );
       if (row.operationId || row.approvedAt) {
-        const quote = hostingUpgradeQuoteSchema.parse(row.quote);
+        const quote = hostingPlanChangeQuoteSchema.parse(row.quote);
         const op = row.operationId
           ? await tx.hostingPanelOperation.findUnique({
               where: { id: row.operationId },
@@ -547,7 +616,7 @@ export class HostingUpgradeService {
         if (invoice.status !== 'REFUNDED')
           await tx.invoice.update({
             where: { id: invoice.id },
-            data: { status: 'CANCELLED', cancelledAt: new Date() },
+            data: { status: 'CANCELLED', cancelledAt: new Date(Date.now()) },
           });
       }
       const result = await tx.serviceUpgrade.update({
@@ -564,23 +633,33 @@ export class HostingUpgradeService {
     tx: Prisma.TransactionClient,
     row: ServiceUpgrade,
   ) {
-    const quote = hostingUpgradeQuoteSchema.parse(row.quote);
+    const quote = hostingPlanChangeQuoteSchema.parse(row.quote);
     const loaded = await upgradeContext(
       tx,
       row.serviceId,
       quote.target.priceId,
       new Date(quote.quotedAt),
       row.id,
+      quote.change,
     );
     this.eligible(loaded.input);
     if (loaded.hash !== row.contextHash)
       throw this.error(
-        'The service or price changed. Review the upgrade before applying it.',
+        'The service or price changed. Review the plan change before applying it.',
       );
     return loaded;
   }
   private async paid(tx: Prisma.TransactionClient, row: ServiceUpgrade) {
-    const quote = hostingUpgradeQuoteSchema.parse(row.quote);
+    const quote = hostingPlanChangeQuoteSchema.parse(row.quote);
+    // Downgrades create no invoice, charge, credit or refund. Paid source
+    // coverage is checked by verifyContext under the source invoice lock.
+    if (quote.change === 'DOWNGRADE') {
+      if (row.invoiceId || quote.immediateCharge.amount !== '0')
+        throw this.error(
+          'The scheduled downgrade has unexpected financial records.',
+        );
+      return;
+    }
     if (row.invoiceId)
       await tx.$queryRaw`SELECT id FROM invoices WHERE id = ${row.invoiceId}::uuid FOR UPDATE`;
     const invoice = row.invoiceId
@@ -626,7 +705,7 @@ export class HostingUpgradeService {
     row: ServiceUpgrade,
     canAccept = false,
   ): Promise<HostingUpgrade> {
-    const quote = hostingUpgradeQuoteSchema.parse(row.quote);
+    const quote = hostingPlanChangeQuoteSchema.parse(row.quote);
     const invoice = row.invoiceId
       ? await this.prisma.invoice.findUnique({ where: { id: row.invoiceId } })
       : null;
@@ -638,6 +717,7 @@ export class HostingUpgradeService {
     return hostingUpgradeSchema.parse({
       id: row.id,
       serviceId: row.serviceId,
+      change: quote.change,
       status: row.status,
       sourceName: quote.current.name,
       targetName: quote.target.name,
@@ -661,21 +741,73 @@ export class HostingUpgradeService {
         canAccept &&
         row.status === 'QUOTED' &&
         Date.now() < Date.parse(quote.expiresAt),
+      canWithdraw:
+        canAccept &&
+        quote.change === 'DOWNGRADE' &&
+        row.status === 'SCHEDULED' &&
+        !row.approvedAt &&
+        Date.now() < Date.parse(quote.paidPeriod.endAt),
     });
   }
   private eligible(input: Parameters<typeof quoteHostingPlanChange>[0]) {
     const quote = quoteHostingPlanChange(input);
     if (quote.status !== 'QUOTED')
       throw this.error(
-        `Upgrade requires review: ${quote.reasons.map(sentenceCaseLabel).join(', ')}.`,
+        `Plan change requires review: ${quote.reasons.map(sentenceCaseLabel).join(', ')}.`,
       );
-    return hostingUpgradeQuoteSchema.parse(quote);
+    return hostingPlanChangeQuoteSchema.parse(quote);
   }
   private currentWindow(expiresAt: string) {
     if (Date.now() >= Date.parse(expiresAt))
       throw this.error(
         'The upgrade quote expired. Review any payment and request a fresh quote.',
       );
+  }
+  private executionWindow(quote: {
+    change: 'UPGRADE' | 'DOWNGRADE';
+    expiresAt: string;
+    paidPeriod: { endAt: string };
+  }) {
+    if (quote.change === 'UPGRADE') this.currentWindow(quote.expiresAt);
+    else if (Date.now() < Date.parse(quote.paidPeriod.endAt))
+      throw this.error(
+        'The downgrade can only be applied at or after the billing boundary.',
+      );
+  }
+
+  async withdraw(
+    serviceId: string,
+    id: string,
+    actor: AuthRequestContext,
+    context: SecurityRequestContext,
+  ) {
+    if (actor.identity.role !== 'CUSTOMER' || actor.supportAdministratorId)
+      throw this.denied();
+    const result = await this.prisma.$transaction(async (tx) => {
+      await this.lock(tx, serviceId);
+      await this.accessible(tx, serviceId, actor);
+      const row = await this.record(tx, serviceId, id);
+      const quote = hostingPlanChangeQuoteSchema.parse(row.quote);
+      if (quote.change !== 'DOWNGRADE')
+        throw this.error('Only a scheduled downgrade can be withdrawn.');
+      if (row.status === 'CANCELLED') return row;
+      if (
+        row.status !== 'SCHEDULED' ||
+        row.approvedAt ||
+        row.operationId ||
+        Date.now() >= Date.parse(quote.paidPeriod.endAt)
+      )
+        throw this.error(
+          'This downgrade can no longer be withdrawn. Ask support to review it.',
+        );
+      const withdrawn = await tx.serviceUpgrade.update({
+        where: { id },
+        data: { status: 'CANCELLED' },
+      });
+      await this.audit(tx, withdrawn, 'WITHDRAWN', actor, context);
+      return withdrawn;
+    });
+    return this.serialize(result);
   }
   private async record(
     tx: Prisma.TransactionClient,

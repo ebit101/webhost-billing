@@ -65,7 +65,9 @@ export class HostingCancellationService {
         await tx.serviceUpgrade.count({
           where: {
             serviceId,
-            status: { in: ['REQUESTED', 'APPLYING', 'REVIEW_REQUIRED'] },
+            status: {
+              in: ['REQUESTED', 'SCHEDULED', 'APPLYING', 'REVIEW_REQUIRED'],
+            },
           },
         })
       )

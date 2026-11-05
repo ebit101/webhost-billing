@@ -17,7 +17,7 @@ import {
   cpanelServerConfigurationSchema,
   managedCpanelServerSchema,
   hostingAccountSchema,
-  hostingUpgradeQuoteSchema,
+  hostingPlanChangeQuoteSchema,
   hostingPanelLoginUrlSchema,
   hostingPanelOperationResultSchema,
   hostingPanelOperationSchema,
@@ -731,7 +731,9 @@ export class HostingPanelService {
         const upgrade = await transaction.serviceUpgrade.findFirst({
           where: {
             serviceId,
-            status: { in: ['REQUESTED', 'APPLYING', 'REVIEW_REQUIRED'] },
+            status: {
+              in: ['REQUESTED', 'SCHEDULED', 'APPLYING', 'REVIEW_REQUIRED'],
+            },
           },
         });
         if (
@@ -744,23 +746,25 @@ export class HostingPanelService {
             'The upgrade is not approved for this operation.',
           );
         if (options.upgradeId && upgrade) {
-          const quote = hostingUpgradeQuoteSchema.parse(upgrade.quote);
+          const quote = hostingPlanChangeQuoteSchema.parse(upgrade.quote);
           if (
             input.type !== 'CHANGE_PACKAGE' ||
             input.packageIdentifier !== quote.target.packageIdentifier ||
-            Date.now() >= Date.parse(quote.expiresAt) ||
+            (quote.change === 'UPGRADE'
+              ? Date.now() >= Date.parse(quote.expiresAt)
+              : Date.now() < Date.parse(quote.paidPeriod.endAt)) ||
             service.updatedAt.toISOString() !== quote.serviceUpdatedAt ||
             service.productId !== quote.current.productId ||
             service.recurringAmount.toString() !==
               quote.current.recurringAmount.amount ||
-            !upgrade.invoiceId
+            (quote.change === 'UPGRADE' && !upgrade.invoiceId)
           )
             throw this.conflict(
               'The approved upgrade context changed or expired.',
             );
           for (const invoiceId of [
             quote.paidPeriod.invoiceId,
-            upgrade.invoiceId,
+            ...(upgrade.invoiceId ? [upgrade.invoiceId] : []),
           ]) {
             await transaction.$queryRaw`SELECT id FROM invoices WHERE id = ${invoiceId}::uuid FOR UPDATE`;
             const invoice = await transaction.invoice.findUniqueOrThrow({

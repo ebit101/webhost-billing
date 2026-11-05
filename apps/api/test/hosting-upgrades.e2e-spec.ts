@@ -1,4 +1,7 @@
 import { randomUUID } from 'node:crypto';
+import { execFile } from 'node:child_process';
+import { resolve } from 'node:path';
+import { promisify } from 'node:util';
 import { Test, type TestingModule } from '@nestjs/testing';
 import { parseApiEnvironment } from '@webhost-billing/config';
 import type { PrismaClient } from '@webhost-billing/database';
@@ -256,13 +259,14 @@ describe('paid hosting upgrade acceptance', () => {
         activatedAt: startedAt,
       },
     });
-    const offer = () =>
+    const offer = (change: 'UPGRADE' | 'DOWNGRADE' = 'UPGRADE') =>
       upgrades.offer(
         service.id,
         {
           submissionKey: randomUUID(),
           targetPriceId: target.prices[0].id,
           requirementsVerified: true,
+          change,
           reason:
             'Fictional package, target capacity and retained add-ons verified.',
         },
@@ -286,6 +290,401 @@ describe('paid hosting upgrade acceptance', () => {
     };
     return { service, source, target, initial, admin, customer, offer, pay };
   }
+
+  async function downgradeFixture() {
+    const f = await fixture();
+    await prisma.productPrice.update({
+      where: { id: f.target.prices[0].id },
+      data: { amount: 70_000n },
+    });
+    return f;
+  }
+  const capacity = {
+    capacityFits: true,
+    reason:
+      'Fictional usage, target limits and retained add-ons rechecked at the boundary.',
+  };
+  function boundary(f: Awaited<ReturnType<typeof fixture>>) {
+    jest
+      .spyOn(Date, 'now')
+      .mockReturnValue(f.service.nextDueAt.getTime() + 1000);
+  }
+  async function renew(serviceId: string, late = false) {
+    const args = [
+      'exec',
+      'tsx',
+      '--tsconfig',
+      'e2e/tsconfig.json',
+      'e2e/automation-runner.ts',
+      late ? 'create-renewal-after-boundary' : 'create-renewal',
+      serviceId,
+    ];
+    const windows = process.platform === 'win32';
+    await promisify(execFile)(
+      windows ? (process.env.ComSpec ?? 'cmd.exe') : 'pnpm',
+      windows ? ['/d', '/s', '/c', 'pnpm', ...args] : args,
+      {
+        cwd: resolve(__dirname, '../../web'),
+        env: process.env,
+        timeout: 90_000,
+        maxBuffer: 1024 * 1024,
+        windowsHide: true,
+      },
+    );
+  }
+
+  it('schedules a zero-charge downgrade once and supports owned withdrawal before the boundary', async () => {
+    const f = await downgradeFixture();
+    const quote = await f.offer('DOWNGRADE');
+    expect(quote).toMatchObject({
+      change: 'DOWNGRADE',
+      amount: { amount: '0' },
+      invoiceId: null,
+    });
+    const accepted = await Promise.all([
+      upgrades.accept(f.service.id, quote.id, f.customer, context),
+      upgrades.accept(f.service.id, quote.id, f.customer, context),
+    ]);
+    expect(
+      accepted.every(
+        (row) => row.status === 'SCHEDULED' && row.invoiceId === null,
+      ),
+    ).toBe(true);
+    expect(accepted.every((row) => row.canWithdraw)).toBe(true);
+    await expect(
+      upgrades.approve(
+        f.service.id,
+        quote.id,
+        f.admin,
+        context,
+        undefined,
+        capacity,
+      ),
+    ).rejects.toMatchObject({ status: 409 });
+    await expect(
+      upgrades.withdraw(
+        f.service.id,
+        quote.id,
+        { ...f.customer, supportAdministratorId: f.admin.identity.userId },
+        context,
+      ),
+    ).rejects.toMatchObject({ status: 403 });
+    if (f.customer.identity.role !== 'CUSTOMER')
+      throw new Error('Expected customer');
+    await expect(
+      upgrades.withdraw(
+        f.service.id,
+        quote.id,
+        {
+          ...f.customer,
+          identity: { ...f.customer.identity, customerId: randomUUID() },
+        },
+        context,
+      ),
+    ).rejects.toMatchObject({ status: 403 });
+    const cancelled = await Promise.all([
+      upgrades.withdraw(f.service.id, quote.id, f.customer, context),
+      upgrades.withdraw(f.service.id, quote.id, f.customer, context),
+    ]);
+    expect(cancelled.every((row) => row.status === 'CANCELLED')).toBe(true);
+    expect(
+      await prisma.activityLog.count({
+        where: { entityId: f.service.id, action: 'HOSTING_UPGRADE_WITHDRAWN' },
+      }),
+    ).toBe(1);
+    expect(
+      await prisma.invoice.count({
+        where: { customerId: f.service.customerId },
+      }),
+    ).toBe(1);
+    expect(
+      await prisma.hostingPanelOperation.count({
+        where: { serviceId: f.service.id, type: 'CHANGE_PACKAGE' },
+      }),
+    ).toBe(0);
+    await renew(f.service.id);
+    expect(
+      await prisma.invoiceItem.findFirst({
+        where: {
+          serviceId: f.service.id,
+          servicePeriodStart: f.service.nextDueAt,
+        },
+      }),
+    ).toMatchObject({ lineTotal: 100_000n });
+  });
+
+  it('holds early renewal and applies a boundary downgrade once while racing actual renewal generation', async () => {
+    const f = await downgradeFixture();
+    const addon = await prisma.product.create({
+      data: {
+        slug: `backup-${randomUUID()}`,
+        name: 'Fictional managed backup',
+        kind: 'ADD_ON',
+        status: 'ACTIVE',
+        eligibleHostingPlans: { create: { hostingProductId: f.target.id } },
+      },
+    });
+    const orderItem = await prisma.orderItem.findUniqueOrThrow({
+      where: { id: f.service.orderItemId! },
+    });
+    const addonPrice = await prisma.productPrice.create({
+      data: {
+        productId: addon.id,
+        billingPeriod: 'MONTHLY',
+        currency: 'BDT',
+        amount: 20_000n,
+      },
+    });
+    await prisma.orderItem.create({
+      data: {
+        orderId: orderItem.orderId,
+        kind: 'ADD_ON',
+        productId: addon.id,
+        productPriceId: addonPrice.id,
+        productNameSnapshot: addon.name,
+        billingPeriod: 'MONTHLY',
+        currency: 'BDT',
+        unitAmount: 20_000n,
+        lineTotal: 20_000n,
+        fulfilledAt: new Date(),
+      },
+    });
+    const quote = await f.offer('DOWNGRADE');
+    await upgrades.accept(f.service.id, quote.id, f.customer, context);
+    await renew(f.service.id);
+    expect(
+      await prisma.invoiceItem.count({
+        where: {
+          serviceId: f.service.id,
+          servicePeriodStart: f.service.nextDueAt,
+        },
+      }),
+    ).toBe(0);
+    boundary(f);
+    const write = jest.spyOn(fake, 'changePackage');
+    await expect(
+      upgrades.withdraw(f.service.id, quote.id, f.customer, context),
+    ).rejects.toMatchObject({ status: 409 });
+    await expect(
+      upgrades.approve(f.service.id, quote.id, f.admin, context),
+    ).rejects.toMatchObject({ status: 409 });
+    await Promise.all([
+      upgrades.approve(
+        f.service.id,
+        quote.id,
+        f.admin,
+        context,
+        undefined,
+        capacity,
+      ),
+      renew(f.service.id, true),
+    ]);
+    await upgrades.approve(
+      f.service.id,
+      quote.id,
+      f.admin,
+      context,
+      undefined,
+      capacity,
+    );
+    await renew(f.service.id, true);
+    expect(write).toHaveBeenCalledTimes(1);
+    const service = await prisma.service.findUniqueOrThrow({
+      where: { id: f.service.id },
+    });
+    expect(service).toMatchObject({
+      status: 'ACTIVE',
+      productId: f.target.id,
+      recurringAmount: 70_000n,
+      nextDueAt: f.service.nextDueAt,
+      provisioningSnapshot: f.service.provisioningSnapshot,
+    });
+    const lines = await prisma.invoiceItem.findMany({
+      where: {
+        serviceId: f.service.id,
+        servicePeriodStart: f.service.nextDueAt,
+      },
+      include: { invoice: { include: { items: true } } },
+    });
+    expect(lines).toHaveLength(1);
+    expect(lines[0].invoice).toMatchObject({
+      total: 90_000n,
+      status: 'UNPAID',
+    });
+    expect(lines[0].invoice.items.map((line) => line.lineTotal)).toEqual([
+      70_000n,
+      20_000n,
+    ]);
+    expect(lines[0].invoice.dueAt.getTime()).toBeGreaterThan(
+      f.service.nextDueAt.getTime(),
+    );
+    expect(
+      await prisma.invoice.findUniqueOrThrow({ where: { id: f.initial.id } }),
+    ).toMatchObject({ total: 100_000n, status: 'PAID' });
+    expect(
+      await prisma.payment.count({ where: { invoiceId: lines[0].invoiceId } }),
+    ).toBe(0);
+    expect(
+      await prisma.outboxEvent.count({
+        where: {
+          aggregateId: f.service.id,
+          eventType: 'HOSTING_SUSPENSION_REQUESTED',
+        },
+      }),
+    ).toBe(0);
+  }, 180_000);
+
+  it('keeps insufficient or unknown capacity in review without changing hosting or creating credit', async () => {
+    const f = await downgradeFixture();
+    const quote = await f.offer('DOWNGRADE');
+    await upgrades.accept(f.service.id, quote.id, f.customer, context);
+    boundary(f);
+    const write = jest.spyOn(fake, 'changePackage');
+    expect(
+      await upgrades.approve(
+        f.service.id,
+        quote.id,
+        f.admin,
+        context,
+        undefined,
+        {
+          capacityFits: false,
+          reason: 'Fictional usage exceeds target disk allowance.',
+        },
+      ),
+    ).toMatchObject({ status: 'REVIEW_REQUIRED', invoiceId: null });
+    expect(write).not.toHaveBeenCalled();
+    expect(
+      await prisma.service.findUniqueOrThrow({ where: { id: f.service.id } }),
+    ).toMatchObject({ status: 'ACTIVE', productId: f.source.id });
+    expect(
+      await prisma.payment.count({
+        where: {
+          invoice: { customerId: f.service.customerId },
+          kind: { in: ['REFUND', 'REVERSAL'] },
+        },
+      }),
+    ).toBe(0);
+    expect(
+      await prisma.activityLog.count({
+        where: {
+          entityId: f.service.id,
+          action: 'HOSTING_UPGRADE_CAPACITY_REVIEW',
+        },
+      }),
+    ).toBe(1);
+  });
+
+  it('retains the source after downgrade failure and recovers with one linked retry at the boundary', async () => {
+    const f = await downgradeFixture();
+    const quote = await f.offer('DOWNGRADE');
+    await upgrades.accept(f.service.id, quote.id, f.customer, context);
+    boundary(f);
+    const original = fake.changePackage.bind(fake);
+    const write = jest
+      .spyOn(fake, 'changePackage')
+      .mockRejectedValueOnce(
+        new HostingPanelProviderError(
+          'TEMPORARY',
+          'FICTIONAL_DOWNGRADE_RETRY',
+          'Fictional definite failure.',
+        ),
+      );
+    expect(
+      await upgrades.approve(
+        f.service.id,
+        quote.id,
+        f.admin,
+        context,
+        undefined,
+        capacity,
+      ),
+    ).toMatchObject({ status: 'REVIEW_REQUIRED' });
+    expect(
+      await prisma.service.findUniqueOrThrow({ where: { id: f.service.id } }),
+    ).toMatchObject({ productId: f.source.id, recurringAmount: 100_000n });
+    write.mockImplementation(original);
+    expect(
+      await upgrades.approve(
+        f.service.id,
+        quote.id,
+        f.admin,
+        context,
+        undefined,
+        capacity,
+      ),
+    ).toMatchObject({ status: 'COMPLETED', invoiceId: null });
+    expect(write).toHaveBeenCalledTimes(2);
+    expect(
+      await prisma.hostingPanelOperation.count({
+        where: {
+          serviceId: f.service.id,
+          type: 'CHANGE_PACKAGE',
+          retryOfOperationId: { not: null },
+        },
+      }),
+    ).toBe(1);
+  });
+
+  it('rejects a renewal issued between quotation and customer acceptance', async () => {
+    const f = await downgradeFixture();
+    const quote = await f.offer('DOWNGRADE');
+    await renew(f.service.id);
+    await expect(
+      upgrades.accept(f.service.id, quote.id, f.customer, context),
+    ).rejects.toMatchObject({ status: 409 });
+    await expect(f.offer('DOWNGRADE')).rejects.toMatchObject({ status: 409 });
+    expect(
+      await prisma.serviceUpgrade.count({ where: { serviceId: f.service.id } }),
+    ).toBe(1);
+  }, 120_000);
+
+  it('rejects incompatible retained recurring add-ons rather than dropping them', async () => {
+    const f = await downgradeFixture();
+    const item = await prisma.orderItem.findUniqueOrThrow({
+      where: { id: f.service.orderItemId! },
+    });
+    const addon = await prisma.product.create({
+      data: {
+        slug: `incompatible-${randomUUID()}`,
+        name: 'Fictional incompatible extra',
+        kind: 'ADD_ON',
+        status: 'ACTIVE',
+        prices: {
+          create: {
+            billingPeriod: 'MONTHLY',
+            currency: 'BDT',
+            amount: 10_000n,
+          },
+        },
+        eligibleHostingPlans: { create: { hostingProductId: f.source.id } },
+      },
+      include: { prices: true },
+    });
+    await prisma.orderItem.create({
+      data: {
+        orderId: item.orderId,
+        kind: 'ADD_ON',
+        productId: addon.id,
+        productPriceId: addon.prices[0].id,
+        productNameSnapshot: addon.name,
+        billingPeriod: 'MONTHLY',
+        currency: 'BDT',
+        unitAmount: 10_000n,
+        lineTotal: 10_000n,
+        fulfilledAt: new Date(),
+      },
+    });
+    await expect(f.offer('DOWNGRADE')).rejects.toMatchObject({ status: 409 });
+    expect(
+      await prisma.serviceUpgrade.count({ where: { serviceId: f.service.id } }),
+    ).toBe(0);
+    expect(
+      await prisma.orderItem.count({
+        where: { orderId: item.orderId, kind: 'ADD_ON' },
+      }),
+    ).toBe(1);
+  });
 
   it('issues one invoice on concurrent acceptance and applies one paid, approved package change', async () => {
     const f = await fixture();

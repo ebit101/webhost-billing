@@ -33,15 +33,21 @@ async function main(): Promise<void> {
   if (!action || !serviceId)
     throw new Error('Missing automation action or service ID.');
 
-  if (action === 'create-renewal') {
+  if (
+    action === 'create-renewal' ||
+    action === 'create-renewal-after-boundary'
+  ) {
     const service = await prisma.service.findUniqueOrThrow({
       where: { id: serviceId },
     });
-    const instant = new Date(
-      service.nextDueAt.getTime() -
-        DEFAULT_RENEWAL_AUTOMATION_POLICY.invoiceLeadDays * 86_400_000 +
-        43_200_000,
-    );
+    const instant =
+      action === 'create-renewal-after-boundary'
+        ? new Date(service.nextDueAt.getTime() + 2 * 86_400_000)
+        : new Date(
+            service.nextDueAt.getTime() -
+              DEFAULT_RENEWAL_AUTOMATION_POLICY.invoiceLeadDays * 86_400_000 +
+              43_200_000,
+          );
     await processCycle(instant);
     return;
   }

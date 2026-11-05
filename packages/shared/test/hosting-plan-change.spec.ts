@@ -2,6 +2,10 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   quoteHostingPlanChange,
+  hostingPlanChangeQuoteSchema,
+  hostingUpgradeQuoteSchema,
+  createHostingUpgradeQuoteSchema,
+  approveHostingPlanChangeSchema,
   type HostingPlanChangeQuote,
   type HostingPlanChangeQuoteInput,
 } from '../src/hosting-plan-change';
@@ -60,6 +64,66 @@ function fixture(): HostingPlanChangeQuoteInput {
     },
   };
 }
+
+describe('Command 212 scheduled downgrade contracts', () => {
+  it('retains a downgrade snapshot with zero charge and the original boundary', () => {
+    const input = fixture();
+    input.change = 'DOWNGRADE';
+    input.target.recurringAmount.amount = '70000';
+    const quote = quoteHostingPlanChange(input);
+    assert.equal(quote.status, 'QUOTED');
+    const parsed = hostingPlanChangeQuoteSchema.parse(quote);
+    assert.equal(parsed.change, 'DOWNGRADE');
+    assert.equal(parsed.immediateCharge.amount, '0');
+    assert.equal(parsed.effectiveAt, input.paidPeriod.endAt);
+    assert.equal(hostingUpgradeQuoteSchema.safeParse(quote).success, false);
+  });
+  it('preserves legacy upgrade submissions and rejects browser-authored money or capacity facts', () => {
+    const base = {
+      submissionKey: fixture().serviceId,
+      targetPriceId: fixture().target.priceId,
+      reason: 'Fictional review',
+      requirementsVerified: true,
+    };
+    assert.equal(createHostingUpgradeQuoteSchema.parse(base).change, 'UPGRADE');
+    assert.equal(
+      createHostingUpgradeQuoteSchema.parse({ ...base, change: 'DOWNGRADE' })
+        .change,
+      'DOWNGRADE',
+    );
+    assert.equal(
+      createHostingUpgradeQuoteSchema.safeParse({ ...base, amount: '0' })
+        .success,
+      false,
+    );
+    assert.equal(
+      createHostingUpgradeQuoteSchema.safeParse({
+        ...base,
+        requirementsVerified: false,
+      }).success,
+      false,
+    );
+  });
+  it('requires explicit acknowledgement and a bounded nonblank capacity-review reason', () => {
+    assert.equal(
+      approveHostingPlanChangeSchema.safeParse({ acknowledged: false }).success,
+      false,
+    );
+    assert.equal(
+      approveHostingPlanChangeSchema.safeParse({
+        acknowledged: true,
+        downgradeReview: { capacityFits: true, reason: ' ' },
+      }).success,
+      false,
+    );
+    const held = approveHostingPlanChangeSchema.parse({
+      acknowledged: true,
+      downgradeReview: { capacityFits: false, reason: ' Unknown limits. ' },
+    });
+    assert.equal(held.downgradeReview?.reason, 'Unknown limits.');
+    assert.equal(held.downgradeReview?.capacityFits, false);
+  });
+});
 function quoted(input: unknown): HostingPlanChangeQuote {
   const result = quoteHostingPlanChange(input);
   assert.equal(result.status, 'QUOTED');

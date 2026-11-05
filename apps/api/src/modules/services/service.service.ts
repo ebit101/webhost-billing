@@ -347,7 +347,9 @@ export class ServiceService {
         await transaction.serviceUpgrade.count({
           where: {
             serviceId,
-            status: { in: ['REQUESTED', 'APPLYING', 'REVIEW_REQUIRED'] },
+            status: {
+              in: ['REQUESTED', 'SCHEDULED', 'APPLYING', 'REVIEW_REQUIRED'],
+            },
           },
         })
       )

@@ -115,7 +115,9 @@ test('a customer accepts one upgrade invoice and an administrator applies the pa
     await admin.goto(
       `/admin/customers/${buyer.customerId}/services/${service.id}`,
     );
-    const upgrades = admin.getByRole('region', { name: 'Hosting upgrades' });
+    const upgrades = admin.getByRole('region', {
+      name: 'Hosting plan changes',
+    });
     await upgrades.getByRole('button', { name: 'Offer an upgrade' }).click();
     const offer = admin.getByRole('dialog', {
       name: 'Offer a hosting upgrade',
@@ -139,7 +141,7 @@ test('a customer accepts one upgrade invoice and an administrator applies the pa
     const customer = await customerContext.newPage();
     await customer.goto(`/portal/services/${service.id}`);
     const customerUpgrades = customer.getByRole('region', {
-      name: 'Hosting upgrades',
+      name: 'Hosting plan changes',
     });
     await customerUpgrades
       .getByRole('button', { name: 'Review and accept upgrade' })

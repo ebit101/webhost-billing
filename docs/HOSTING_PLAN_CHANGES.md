@@ -6,7 +6,7 @@ The owner selected **downgrades at the next billing date, with no mid-period
 credit or automatic refund**. Starting Command 211 accepts the upgrade proposal
 below for local implementation. Command 210 supplied the tested reference model;
 Command 211 adds the administrator-offered paid upgrade workflow described at
-the end of this document. Period-end downgrade execution remains Command 212.
+the end of this document. Command 212 adds the scheduled downgrade workflow below.
 
 ## Initial policy
 
@@ -276,3 +276,49 @@ paid requests require financial/provider review and cannot bypass quote expiry.
 The local acceptance harness migrates a fresh owned PostgreSQL schema, uses
 loopback Redis and fake hosting, and drops only that schema afterward. No live
 hosting, customer data, deployment or publishing is included in Command 211.
+
+## Command 212 implementation
+
+The same Hosting plan changes section offers full administrators a downgrade
+quote for an explicitly reviewed target on the same server, currency and cycle.
+The customer confirms the boundary and next recurring price within the quote's
+fifteen-minute window. Acceptance records a `SCHEDULED` reservation, not an
+invoice, credit or refund. Original hosting continues. A customer can explicitly
+withdraw before the boundary; repeats preserve one withdrawal audit record.
+Support sessions remain read-only.
+
+The existing `service_upgrades` table and `/services/:id/upgrades` API paths are
+retained for compatibility; the quote's `change` discriminates upgrades and
+downgrades. Migration 48 extends the state constraint and pending-request unique
+index without rewriting prior rows. One pending accepted plan change per service
+is shared by both kinds. Service row locks serialize acceptance, withdrawal,
+provider dispatch and renewal generation. Already-issued future renewal invoices
+block acceptance, including an invoice issued after quotation.
+
+A reservation blocks old-plan renewal invoices, automatic suspension and
+conflicting hosting/cancellation changes. At or after the boundary, a full
+administrator must freshly verify usage against the target limits and retained
+add-on compatibility and record a reason. Unknown or insufficient capacity is
+recorded as `REVIEW_REQUIRED` without a provider mutation. This first version
+does not automatically execute a downgrade from an old capacity attestation:
+machine-readable usage/limits remain separate work in Command 222. Staff must
+review due reservations in the service record. Missed boundaries keep the
+reservation and billing hold visible until staff resolve them.
+
+Approval revalidates the snapshotted source coverage, price, service revision,
+target availability, add-ons and provider account. The initial acceptance expiry
+does not expire a confirmed reservation. It cannot execute before its boundary.
+Reuse the stable operation key, bounded linked retry and uncertain-result
+reconciliation from paid upgrades. Only a confirmed target package updates the
+current service plan and recurring price; keep the original provisioning/order
+snapshots, invoices, payments and `nextDueAt` unchanged.
+
+After confirmation, the next ordinary renewal cycle creates one target-priced
+hosting invoice with compatible retained recurring extras at their purchased
+prices. Extras already scheduled to end by the boundary are excluded without
+reviving or altering them. A late invoice receives the existing full grace
+period from issuance. Failure keeps the original hosting and the renewal hold;
+an administrator may reconcile/retry, or explicitly close an unfulfilled
+reservation and resume original-plan renewal after verifying any provider work.
+There is no automatic fallback charge, invoice rewrite, mid-period credit,
+refund, suspension or permanent termination caused by a downgrade request.

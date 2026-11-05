@@ -17,6 +17,7 @@ import {
   createApiSuccessResponse,
   createHostingUpgradeQuoteSchema,
   confirmHostingUpgradeSchema,
+  approveHostingPlanChangeSchema,
 } from '@webhost-billing/shared';
 import type { z } from 'zod';
 import { createSecurityRequestContext } from '../../common/http/request-context';
@@ -98,8 +99,8 @@ export class HostingUpgradeController {
   async approve(
     @Param('serviceId', new ParseUUIDPipe()) serviceId: string,
     @Param('upgradeId', new ParseUUIDPipe()) id: string,
-    @Body(new ZodValidationPipe(confirmHostingUpgradeSchema))
-    _input: z.output<typeof confirmHostingUpgradeSchema>,
+    @Body(new ZodValidationPipe(approveHostingPlanChangeSchema))
+    input: z.output<typeof approveHostingPlanChangeSchema>,
     @CurrentAuth() actor: AuthRequestContext,
     @Req() request: Request,
     @Query('customerId', new ParseUUIDPipe({ optional: true }))
@@ -112,6 +113,7 @@ export class HostingUpgradeController {
         actor,
         this.context(request),
         customerId,
+        input.downgradeReview,
       ),
     );
   }
@@ -142,6 +144,21 @@ export class HostingUpgradeController {
     return createSecurityRequestContext(
       request,
       this.environment.SESSION_SECRET,
+    );
+  }
+  @Post(':upgradeId/withdraw')
+  @Roles('CUSTOMER')
+  @HttpCode(HttpStatus.OK)
+  async withdraw(
+    @Param('serviceId', new ParseUUIDPipe()) serviceId: string,
+    @Param('upgradeId', new ParseUUIDPipe()) id: string,
+    @Body(new ZodValidationPipe(confirmHostingUpgradeSchema))
+    _input: z.output<typeof confirmHostingUpgradeSchema>,
+    @CurrentAuth() actor: AuthRequestContext,
+    @Req() request: Request,
+  ) {
+    return createApiSuccessResponse(
+      await this.upgrades.withdraw(serviceId, id, actor, this.context(request)),
     );
   }
 }

@@ -9,6 +9,7 @@ import { nextServiceDueAt } from './service-period';
 
 export const pendingUpgradeStates = [
   'REQUESTED',
+  'SCHEDULED',
   'APPLYING',
   'REVIEW_REQUIRED',
 ];
@@ -24,6 +25,7 @@ export async function upgradeContext(
   targetPriceId: string,
   at: Date,
   ignoreUpgradeId?: string,
+  change: 'UPGRADE' | 'DOWNGRADE' = 'UPGRADE',
 ) {
   const service = await db.service.findUniqueOrThrow({
     where: { id: serviceId },
@@ -99,6 +101,7 @@ export async function upgradeContext(
   const paid = Boolean(
     coverage?.clean &&
     sourceInvoice &&
+    sourceInvoice.status === 'PAID' &&
     sourceInvoice.balanceDue === 0n &&
     sourceInvoice.amountPaid === sourceInvoice.total &&
     sourceInvoice.payments
@@ -166,6 +169,9 @@ export async function upgradeContext(
     (item) =>
       item.fulfilledAt &&
       (item.billingPeriod === 'ONE_TIME' ||
+        (change === 'DOWNGRADE' &&
+          item.renewalEndsAt &&
+          item.renewalEndsAt <= periodEnd) ||
         item.product.eligibleHostingPlans.some(
           (pair) => pair.hostingProductId === target.productId,
         )),
@@ -212,10 +218,11 @@ export async function upgradeContext(
     typeof provisioning.hostingPackageIdentifier === 'string'
       ? provisioning.hostingPackageIdentifier
       : '');
-  const now = new Date();
+  const now = new Date(Date.now());
   const activeTarget =
     target.product.kind === 'HOSTING' &&
     target.product.status === 'ACTIVE' &&
+    !target.product.deletedAt &&
     target.isActive &&
     (!target.validFrom || target.validFrom <= now) &&
     (!target.validUntil || target.validUntil > now);
@@ -223,7 +230,7 @@ export async function upgradeContext(
     serviceId,
     serviceUpdatedAt: service.updatedAt.toISOString(),
     baseCurrency: service.currency,
-    change: 'UPGRADE',
+    change,
     quotedAt: at.toISOString(),
     paidPeriod: {
       startAt: periodStart.toISOString(),

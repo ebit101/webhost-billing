@@ -163,7 +163,9 @@ export class HostingAutomationService {
         await tx.serviceUpgrade.count({
           where: {
             serviceId: payload.serviceId,
-            status: { in: ['REQUESTED', 'APPLYING', 'REVIEW_REQUIRED'] },
+            status: {
+              in: ['REQUESTED', 'SCHEDULED', 'APPLYING', 'REVIEW_REQUIRED'],
+            },
           },
         })
       )

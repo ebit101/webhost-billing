@@ -24,11 +24,11 @@ const planSnapshotSchema = z
   })
   .strict();
 
-export const hostingUpgradeQuoteSchema = z
+export const hostingPlanChangeQuoteSchema = z
   .object({
     status: z.literal('QUOTED'),
     policyVersion: z.literal(HOSTING_PLAN_CHANGE_POLICY),
-    change: z.literal('UPGRADE'),
+    change: z.enum(['UPGRADE', 'DOWNGRADE']),
     serviceId: z.uuid(),
     serviceUpdatedAt: timestampSchema,
     quotedAt: timestampSchema,
@@ -51,10 +51,14 @@ export const hostingUpgradeQuoteSchema = z
     rounding: z.literal('HALF_UP_ON_NET_DIFFERENCE'),
   })
   .strict();
+export const hostingUpgradeQuoteSchema = hostingPlanChangeQuoteSchema.extend({
+  change: z.literal('UPGRADE'),
+});
 
 export const createHostingUpgradeQuoteSchema = z
   .object({
     submissionKey: z.uuid(),
+    change: z.enum(['UPGRADE', 'DOWNGRADE']).default('UPGRADE'),
     targetPriceId: z.uuid(),
     requirementsVerified: z.literal(true),
     reason: z.string().trim().min(1).max(1000),
@@ -63,13 +67,25 @@ export const createHostingUpgradeQuoteSchema = z
 export const confirmHostingUpgradeSchema = z
   .object({ acknowledged: z.literal(true) })
   .strict();
+export const approveHostingPlanChangeSchema =
+  confirmHostingUpgradeSchema.extend({
+    downgradeReview: z
+      .object({
+        capacityFits: z.boolean(),
+        reason: z.string().trim().min(1).max(1000),
+      })
+      .strict()
+      .optional(),
+  });
 export const hostingUpgradeSchema = z
   .object({
     id: z.uuid(),
     serviceId: z.uuid(),
+    change: z.enum(['UPGRADE', 'DOWNGRADE']).default('UPGRADE'),
     status: z.enum([
       'QUOTED',
       'REQUESTED',
+      'SCHEDULED',
       'APPLYING',
       'REVIEW_REQUIRED',
       'COMPLETED',
@@ -91,6 +107,7 @@ export const hostingUpgradeSchema = z
     operationStatus: z.string().nullable(),
     error: z.string().nullable(),
     canAccept: z.boolean(),
+    canWithdraw: z.boolean().default(false),
   })
   .strict();
 export type HostingUpgrade = z.infer<typeof hostingUpgradeSchema>;

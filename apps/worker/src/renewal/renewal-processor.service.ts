@@ -117,7 +117,9 @@ export class RenewalProcessorService {
         },
         upgrades: {
           none: {
-            status: { in: ['REQUESTED', 'APPLYING', 'REVIEW_REQUIRED'] },
+            status: {
+              in: ['REQUESTED', 'SCHEDULED', 'APPLYING', 'REVIEW_REQUIRED'],
+            },
           },
         },
       },
@@ -179,7 +181,9 @@ export class RenewalProcessorService {
           await transaction.serviceUpgrade.count({
             where: {
               serviceId,
-              status: { in: ['REQUESTED', 'APPLYING', 'REVIEW_REQUIRED'] },
+              status: {
+                in: ['REQUESTED', 'SCHEDULED', 'APPLYING', 'REVIEW_REQUIRED'],
+              },
             },
           })
         )

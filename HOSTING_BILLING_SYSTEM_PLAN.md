@@ -8,6 +8,14 @@
 
 **Technical identifier:** `webhost-billing`
 
+**Scheduled downgrade direction — 2026-11-05:** Command 212 reserves a cheaper
+eligible plan at the paid-period boundary with zero immediate charge, credit or
+refund. Customers may withdraw before that boundary. Hold conflicting renewal
+billing until a full administrator rechecks current usage/capacity and retained
+add-ons at or after the boundary and confirms the provider package change. Keep
+issued financial records, original provisioning snapshots and the cycle intact.
+Unknown capacity and provider failures require review. No deployment is included.
+
 **Plan-change direction — 2026-11-05:** Command 211 authorizes paid upgrades
 using the Command 210 policy. A full administrator offers a verified target
 per service; the customer accepts one snapshotted prorated invoice. Apply the

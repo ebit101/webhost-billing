@@ -2,14 +2,26 @@
 
 ## Status Summary
 
-- **Current command:** Command 211 — Implement paid hosting upgrades
-- **Current status:** Command 211 complete locally; paid upgrades and recovery verified with fictional accounts and fake hosting. Not published or deployed.
+- **Current command:** Command 212 — Implement period-end hosting downgrades
+- **Current status:** Command 212 complete locally; scheduled downgrades, withdrawal, boundary review and renewal coordination verified with fictional data. No push or deployment.
 - **Last updated:** 2026-11-05
 - **Last recorded staging release:** Command 177, `887862020de1e472f303f359b793dccbedfb9b07`, deployed on 2026-11-03 (Asia/Dhaka).
-- **Next action:** Await authorization for Command 212 — Implement period-end hosting downgrades. Command 209 remains separately proposed.
-- **Next command authorized:** None after Command 211.
+- **Next action:** Await authorization for Command 213 — Synchronize registrar domain facts. Command 209 remains separately proposed.
+- **Next command authorized:** None after Command 212.
 
 ## Command Reports
+
+### Command 212 — Implement period-end hosting downgrades
+
+- Completed locally on 2026-11-05 (Asia/Dhaka). Full administrators offer a reviewed lower-priced plan on the same server/cycle/currency. Customer acceptance reserves the paid-period boundary with no invoice, charge, credit or refund. Owning customers can confirm withdrawal before the boundary; repeated withdrawal keeps one audit record. Support sessions remain read-only.
+- Extended the durable plan-change quote/store with `DOWNGRADE` and `SCHEDULED`, preserving existing upgrade routes, history and behavior. Migration `20261105000200_scheduled_hosting_downgrades` atomically extends the state check and shared one-pending-request index. No historical invoice, payment, original provisioning snapshot or billing boundary is rewritten.
+- The reservation holds conflicting hosting/cancellation actions and renewal billing under the worker's service lock. A renewal issued before acceptance rejects the stale quote. At or after the boundary, a full administrator must recheck actual usage, target limits and retained add-on compatibility, record a reason and confirm the action. Insufficient/unknown capacity records a review hold without a provider mutation. Confirmed package changes update current plan/price only; failed or uncertain operations use existing linked retry/reconciliation before another mutation. The next ordinary renewal uses the confirmed target and compatible purchased extras once, retaining the late-invoice grace policy.
+- Files changed: shared quote/request/response contracts and tests; API plan-change context/controller/orchestrator, hosting/cancellation/service guards and PostgreSQL cases; worker reservation guards; shared customer/admin plan-change UI and tests; guarded downgrade/upgrade browser rehearsals and the fictional renewal runner; migration and migration-count assertions; product plan, command playbook, ADR-173, policy document and this log.
+- Validation passed: all 13 guarded PostgreSQL cases (six downgrade cases plus seven upgrade regressions), including concurrent acceptance/withdrawal, immediate withdrawal permission in the acceptance response, pre-boundary rejection, capacity review, incompatible extras, definite provider failure/linked retry, early-renewal hold, actual renewal generation racing completion, target/add-on renewal totals and invoice-before-acceptance rejection. All 48 migrations applied and fictional seeding succeeded in the guarded scope. All 69 affected frontend tests and 46 shared proration/contract cases passed. API/worker builds, API/shared/web/browser types, scoped lint, Markdown/code formatting and Git whitespace checks passed. The final ten plan-change UI cases also passed after the price-label refinement.
+- Both guarded Chromium rehearsals passed. The new customer journey verified admin offer, zero-charge scheduling, immediate withdrawal availability, acceptance replay, rejection of early approval, explicit withdrawal, reload persistence, unchanged hosting/cycle, one original payment, no additional invoice and no package mutation. The paid-upgrade regression still verified settlement, approval, automatic current-plan refresh, one provider change and the next target-priced renewal. Inspected the customer screenshot; uncompleted downgrade prices are labelled as quotes. Initial browser acceptance found the response omitted withdrawal permission until reload; corrected the owned acceptance response and added a PostgreSQL assertion. Distinct fictional payment references fixed a test-fixture collision without relaxing duplicate-payment protection. No unresolved executed-check failure remains.
+- Decisions/limits: capacity cannot be proved from current catalogue feature text. Downgrades therefore require a fresh full-administrator review at the due boundary; there is no unattended provider dispatch based on the original quote. Staff must monitor due reservations in service records, and unresolved requests retain the billing hold. Existing first-pilot verified-coverage restrictions remain, including review after same-period upgrades. Full batch CI and the complete database regression suite are reserved for an authorized publication batch; this command ran the focused checks above. No push, deployment or live-provider operation ran.
+- Local environment: Docker Desktop was initially stopped; restarted it and brought the existing development PostgreSQL/Redis services to healthy state without deleting volumes. Test processes use the matching local Redis credentials without changing or printing `.env` values.
+- Recommended next command: **Command 213 — Synchronize registrar domain facts**. Implement bounded read-only synchronization with fake registrar responses and administrator review for uncertain ownership/expiry. Real registrar reads still require separately authorized account/domain scope. Await owner authorization.
 
 ### Command 211 — Implement paid hosting upgrades
 
