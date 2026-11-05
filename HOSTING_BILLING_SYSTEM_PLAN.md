@@ -8,6 +8,13 @@
 
 **Technical identifier:** `webhost-billing`
 
+**Plan-change direction — 2026-11-05:** Command 210 defines a tested, read-only
+quote model. The owner selected period-end downgrades without mid-period credit
+or automatic refunds. Upgrade proration, rounding, quote expiry and execution
+guards are proposed in `docs/HOSTING_PLAN_CHANGES.md` for agreement before
+Commands 211 and 212 apply plan changes. This definition does not activate
+customer requests, invoice generation or provider operations.
+
 **Recurring add-on cancellation direction — 2026-11-04:** Command 202 lets
 customers stop renewal of a fulfilled recurring hosting add-on at the first
 unbilled period boundary. Keep issued invoice amounts intact and continue the

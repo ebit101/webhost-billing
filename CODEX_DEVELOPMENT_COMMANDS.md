@@ -6858,9 +6858,10 @@ Verify locally, update the progress log, and do not deploy.
 
 ## Proposed development sequence — 2026-11-05
 
-The owner requested commands for the five feature areas below. These are
-proposed commands, not authorization to implement them. Command 209 remains
-reserved for the previously recommended add-on cancellation follow-up queue.
+The owner requested commands for the five feature areas below. Command 210 was
+authorized on 2026-11-05; Commands 211–224 remain proposals requiring separate
+authorization. Command 209 remains reserved for the previously recommended
+add-on cancellation follow-up queue.
 The recommended starting point for this sequence is Command 210.
 
 For each implementation command, inspect the current code and reuse existing
@@ -6872,14 +6873,18 @@ single base currency and historical financial records.
 
 ## Command 210 — Define hosting plan changes and proration
 
-**Status:** Proposed; implementation requires owner authorization.
+**Status:** Owner-authorized on 2026-11-05; policy and reference quotes verified
+locally. The owner selected period-end downgrades without mid-period credit or
+automatic refunds. Upgrade policy details are proposed for agreement before
+Command 211 applies them. See `docs/HOSTING_PLAN_CHANGES.md`.
 
 Define eligible source and target plans, compatible servers and billing cycles,
 add-on compatibility, request states and quote expiry. Specify the remaining-period
 calculation, integer rounding, purchased-price snapshots and treatment of negative
-differences. Propose immediate upgrades, period-end downgrades and an optional
-immediate downgrade with explicit credit/refund rules. Obtain owner agreement on
-unresolved billing policy before commands that apply it; do not create a wallet
+differences. Define immediate upgrade quotes and period-end downgrades. Immediate
+downgrade credits and automatic refunds remain outside the selected policy.
+Obtain owner agreement on unresolved billing policy before commands that apply
+it; do not create a wallet
 or promise an automatic refund implicitly.
 
 **Acceptance:** Document worked fictional quotes for monthly, quarterly and
@@ -6904,17 +6909,17 @@ provider failure and recovery; keep the existing package and billing identity
 consistent until the outcome is confirmed. Show payment and package-change states
 separately.
 
-## Command 212 — Implement hosting downgrades and adjustments
+## Command 212 — Implement period-end hosting downgrades
 
 **Status:** Proposed; depends on Commands 210 and 211.
 
 Let customers schedule an eligible downgrade at the billing boundary and withdraw
-it before execution. Implement an immediate prorated downgrade only under the
-approved adjustment policy, with additive credit/refund records and explicit
-review where required. Check target-plan capacity and attached add-ons before
+it before execution. Preserve the owner-selected policy of no mid-period credit
+or automatic refund. Any exceptional financial adjustment uses a separately
+reviewed additive record. Check target-plan capacity and attached add-ons before
 applying a package change; unresolved usage or incompatible extras need review.
 
-**Acceptance:** Verify period-end execution once, immediate adjustment arithmetic,
+**Acceptance:** Verify period-end execution once, zero immediate charge or credit,
 withdrawal, insufficient target capacity, failed package changes, and a renewal
 racing the downgrade. Preserve issued invoices and original payments. Confirm
 the following renewal uses the successfully applied plan and eligible add-ons.

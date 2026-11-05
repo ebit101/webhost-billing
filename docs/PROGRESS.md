@@ -2,14 +2,23 @@
 
 ## Status Summary
 
-- **Current command:** Command 208 — Track manual completion of scheduled add-on cancellations
-- **Current status:** Administrator acknowledgement verified locally.
+- **Current command:** Command 210 — Define hosting plan changes and proration
+- **Current status:** Plan-change definition and reference quotes verified locally; upgrade execution policy awaits owner agreement.
 - **Last updated:** 2026-11-05
 - **Last recorded staging release:** Command 177, `887862020de1e472f303f359b793dccbedfb9b07`, deployed on 2026-11-03 (Asia/Dhaka).
-- **Next action:** Await authorization for Command 210 — Define hosting plan changes and proration. Command 209 remains a separate proposed cancellation follow-up queue.
-- **Next command authorized:** None after Command 208.
+- **Next action:** Obtain agreement on the proposed upgrade policy before authorizing Command 211 — Implement paid hosting upgrades. Command 209 remains a separate proposed cancellation follow-up queue.
+- **Next command authorized:** None after Command 210.
 
 ## Command Reports
+
+### Command 210 — Define hosting plan changes and proration
+
+- Prepared locally on 2026-11-05 (Asia/Dhaka). The owner confirmed period-end downgrades with no mid-period credit or automatic refund. Added the full policy, eligible plan/server/cycle rules, add-on handling, request workflow, quote expiry, fictional worked quotes and future implementation gaps in `docs/HOSTING_PLAN_CHANGES.md`.
+- Added an internal, side-effect-free shared reference quote function with strict input validation, explicit trusted eligibility facts, purchased and target snapshots, integer UTC-duration proration and half-up rounding once on the net difference. It blocks incompatible or uncertain changes and returns a zero-charge period-end downgrade. It is not exported from the shared public entry point or connected to API/UI, persistence or providers.
+- Files changed: the new policy document, shared reference implementation and focused tests, product plan, command playbook, ADR-171 and this log. Updated proposed Command 212 to honor the owner's selected downgrade policy.
+- Validation passed: 43 focused reference cases, strict shared source/test types, the shared build, scoped Markdown validation, formatting and Git whitespace checks. Cases cover monthly/quarterly/annual periods, leap years, clamped month ends, intraday changes, rounding boundaries, period-end downgrades, zero difference, quote expiry, maximum integer amounts and rejection of incompatible or uncertain facts. No application or database checks are needed because no application path or persistence changes.
+- Decisions and limits: upgrade proration/expiry and pilot constraints remain proposed for agreement before execution. Verified paid coverage must drive the quote; early payment can move `nextDueAt` beyond the current period, and month-end clamping cannot be safely reversed. Commands 211 and 212 must add authoritative coverage resolution, approved plan pairs, durable requests, provider reconciliation and coordination with early renewal invoices. No financial records, hosting accounts, deployment or published source were changed.
+- Recommended next command: **Command 211 — Implement paid hosting upgrades**, after agreement on the proposal in `docs/HOSTING_PLAN_CHANGES.md`. Preserve issued financial records, distinguish payment from provider success, and keep the first rehearsal local with fictional data.
 
 ### Planning update — Proposed Commands 210–224
 
