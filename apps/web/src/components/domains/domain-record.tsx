@@ -11,6 +11,7 @@ import { Button } from '../ui/button';
 import { DomainManagementPanel } from './domain-management';
 import { RegistrationApproval } from './registration-approval';
 import { DomainFacts } from './domain-facts';
+import { DomainRenewals } from './domain-renewals';
 import { Field, labels, contactFields, money } from './domain-fields';
 export function DomainRecord({
   domain,
@@ -121,6 +122,13 @@ export function DomainRecord({
         </p>
       )}
       {!domain.expiresAt && <p>Registry expiry not yet confirmed.</p>}
+      {domain.state === 'REGISTERED' && (
+        <DomainRenewals
+          domainId={domain.id}
+          domainName={domain.domainName}
+          administrator={administrator}
+        />
+      )}
       {domain.state === 'REGISTERED' && (
         <DomainFacts
           domainId={domain.id}

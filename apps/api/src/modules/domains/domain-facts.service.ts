@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { domainFactsSource } from '@webhost-billing/database/domain-renewals';
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import type { ApiEnvironment } from '@webhost-billing/config';
 import { Prisma, type PrismaClient } from '@webhost-billing/database';
@@ -53,58 +53,23 @@ export class DomainFactsService {
   }
   private async source(db: Db, id: string, actor: AuthRequestContext) {
     if (actor.identity.role === 'ADMIN') this.admin(actor);
-    const domain = await db.domain.findFirst({
-      where: {
-        id,
-        ...(actor.identity.role === 'CUSTOMER'
-          ? { customerId: actor.identity.customerId }
-          : {}),
-      },
-    });
-    if (!domain)
+    const source = await domainFactsSource(
+      db,
+      id,
+      actor.identity.role === 'CUSTOMER'
+        ? actor.identity.customerId
+        : undefined,
+    );
+    if (
+      !source ||
+      (actor.identity.role === 'CUSTOMER' &&
+        source.domain.customerId !== actor.identity.customerId)
+    )
       throw this.error(
         'The domain record is unavailable.',
         HttpStatus.FORBIDDEN,
       );
-    const account = await db.registrarAccount.findUniqueOrThrow({
-      where: { id: domain.executionAccountId ?? domain.accountId },
-    });
-    const credential = await db.registrarCredential.findFirst({
-      where: { accountId: account.id },
-      orderBy: { version: 'desc' },
-    });
-    const operation = await db.registrarOperation.findUnique({
-      where: { domainId: id },
-    });
-    const hash = createHash('sha256')
-      .update(
-        JSON.stringify({
-          domainId: id,
-          customerId: domain.customerId,
-          accountId: domain.accountId,
-          executionAccountId: domain.executionAccountId,
-          name: domain.domainName,
-          providerOrderId: domain.providerOrderId,
-          state: domain.state,
-          origin: domain.origin,
-          ownershipVerifiedAt: domain.ownershipVerifiedAt,
-          linkCredentialId: domain.linkCredentialId,
-          linkEvidence: domain.linkEvidenceCiphertext,
-          quoteId: domain.quoteId,
-          account: {
-            id: account.id,
-            mode: account.mode,
-            enabled: account.enabled,
-            configuration: account.configuration,
-          },
-          credentialId: credential?.id,
-          operation: operation
-            ? { ...operation, costCeiling: operation.costCeiling.toString() }
-            : null,
-        }),
-      )
-      .digest('hex');
-    return { domain, account, operation, hash };
+    return source;
   }
 
   async stored(id: string, actor: AuthRequestContext) {

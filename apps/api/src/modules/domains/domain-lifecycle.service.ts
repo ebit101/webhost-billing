@@ -201,6 +201,14 @@ export class DomainLifecycleService {
       });
       let invoiceId: string | undefined;
       if (request.kind === 'RENEW') {
+        if (
+          (await tx.domainRenewalPreference.findUnique({ where: { domainId } }))
+            ?.enabled ||
+          (await tx.domainRenewalInvoice.count({ where: { domainId } }))
+        )
+          this.deny(
+            'Application-managed renewal billing exists. Review it before creating another paid renewal.',
+          );
         await tx.$queryRaw`SELECT pg_advisory_xact_lock(510118)::text`;
         const catalogue = await tx.domainCatalogueTld.findUnique({
           where: { tld: domainExtension(current.domainName) },

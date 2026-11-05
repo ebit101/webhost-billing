@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { createHash } from 'node:crypto';
 import type { WorkerEnvironment } from '@webhost-billing/config';
 import { OutboxStatus, type PrismaClient } from '@webhost-billing/database';
+import { domainRenewalContext } from '@webhost-billing/database/domain-renewals';
 import { BackgroundJobError } from '@webhost-billing/queue';
 import {
   emailOutboxEventTypeSchema,
@@ -325,6 +326,26 @@ export class EmailMessageResolver {
       where: { id: invoiceId },
     });
     if (!invoice) throw permanent('EMAIL_INVOICE_UNAVAILABLE');
+    if (eventType === 'EMAIL_RENEWAL_REMINDER') {
+      const renewal = await this.prisma.domainRenewalInvoice.findUnique({
+        where: { invoiceId },
+      });
+      if (renewal) {
+        const context = await this.prisma.$transaction((tx) =>
+          domainRenewalContext(tx, renewal.domainId, new Date(Date.now())),
+        );
+        if (
+          !context?.preference?.enabled ||
+          context.code ||
+          context.preference.reviewCode ||
+          context.domain.expiresAt?.getTime() !== renewal.termStart.getTime() ||
+          invoice.dueAt.getTime() <= Date.now() ||
+          !['UNPAID', 'OVERDUE'].includes(invoice.status) ||
+          invoice.balanceDue <= 0n
+        )
+          throw permanent('EMAIL_DOMAIN_RENEWAL_REMINDER_SUPPRESSED');
+      }
+    }
     const key =
       eventType === 'EMAIL_INVOICE_CREATED'
         ? 'invoice-created'

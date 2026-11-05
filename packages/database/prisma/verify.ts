@@ -24,6 +24,8 @@ const schema = testScope ?? 'public';
 const expectedTables = [
   'service_upgrades',
   'domain_fact_syncs',
+  'domain_renewal_preferences',
+  'domain_renewal_invoices',
   'domain_offers',
   'domain_actions',
   'domain_catalogue_tlds',
@@ -89,6 +91,8 @@ const expectedTables = [
 const requiredCustomConstraints = [
   'service_upgrades_state_check',
   'domain_fact_syncs_state_check',
+  'domain_renewal_preferences_shape',
+  'domain_renewal_invoices_term_check',
   'services_current_package_check',
   'registrar_mode',
   'currency_authorization_evidence_uuid_check',
@@ -238,6 +242,7 @@ async function verify(): Promise<void> {
       name !== 'currency_installations' &&
       name !== 'registrar_profiles' &&
       name !== 'existing_domain_orders' &&
+      name !== 'domain_renewal_preferences' &&
       name !== 'notification_epochs' &&
       name !== 'notification_preferences' &&
       name !== 'notification_sources' &&

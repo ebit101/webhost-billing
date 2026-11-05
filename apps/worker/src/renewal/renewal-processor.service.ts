@@ -27,6 +27,7 @@ import {
   isOnOrAfter,
 } from './renewal-calendar';
 import { allocateInvoiceNumber } from './invoice-number';
+import { DomainRenewalBilling } from './domain-renewal-billing';
 
 type Counters = { processed: number; succeeded: number; failed: number };
 
@@ -67,6 +68,13 @@ export class RenewalProcessorService {
     }
     const counters: Counters = { processed: 0, succeeded: 0, failed: 0 };
     try {
+      const domainCounts = await new DomainRenewalBilling(this.prisma).process(
+        this.clock.now(),
+        parsed.data.policy,
+      );
+      counters.processed += domainCounts.processed;
+      counters.succeeded += domainCounts.succeeded;
+      counters.failed += domainCounts.failed;
       await this.createDueInvoices(
         parsed.data.automationRunId,
         parsed.data.policy,

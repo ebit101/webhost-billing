@@ -6949,7 +6949,9 @@ reads require separately authorized account and domain scope.
 
 ## Command 214 — Automate domain renewal invoices and reminders
 
-**Status:** Proposed; depends on Command 213.
+**Status:** Owner-authorized on 2026-11-05; implemented locally after Command 213.
+See `docs/DOMAIN_RENEWAL_BILLING.md` and `docs/PROGRESS.md`. No push, deployment
+or registrar dispatch.
 
 Add explicit per-domain renewal preferences and a scheduler for eligible verified
 domains with confirmed terms and expiry. Generate one renewal invoice per domain

@@ -6,6 +6,10 @@
   "type": "commonjs",
   "types": "./src/index.ts",
   "exports": {
+    "./domain-renewals": {
+      "types": "./src/domain-renewals.ts",
+      "default": "./dist/domain-renewals.js"
+    },
     "./smtp-settings": {
       "types": "./src/smtp-settings.ts",
       "default": "./dist/smtp-settings.js"

@@ -1282,6 +1282,33 @@ model Domain {
   @@map("domains")
 }
 
+model DomainRenewalPreference {
+  domainId   String   @id @map("domain_id") @db.Uuid
+  enabled    Boolean  @default(false)
+  revision   Int      @default(1)
+  terms      Json?
+  reviewCode String?  @map("review_code") @db.VarChar(64)
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@map("domain_renewal_preferences")
+}
+
+model DomainRenewalInvoice {
+  id            String   @id @default(uuid()) @db.Uuid
+  domainId      String   @map("domain_id") @db.Uuid
+  customerId    String   @map("customer_id") @db.Uuid
+  invoiceId     String   @unique @map("invoice_id") @db.Uuid
+  sourceFactId  String   @map("source_fact_id") @db.Uuid
+  termStart     DateTime @map("term_start") @db.Timestamptz(3)
+  termEnd       DateTime @map("term_end") @db.Timestamptz(3)
+  years         Int      @default(1)
+  termsSnapshot Json     @map("terms_snapshot")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@unique([domainId, termStart, years])
+  @@map("domain_renewal_invoices")
+}
+
 model DomainFactSync {
   id                String    @id @db.Uuid
   domainId          String    @map("domain_id") @db.Uuid

@@ -8,6 +8,15 @@
 
 **Technical identifier:** `webhost-billing`
 
+**Domain renewal billing direction — 2026-11-05:** Command 214 adds per-domain,
+default-off application-managed billing after ordinary one-year BDT terms and
+renewal responsibility are reviewed. The daily scheduler uses fresh owned
+registrar facts to issue one snapshotted renewal invoice and bounded reminders.
+Hold uncertain expiry/eligibility, changed prices and conflicting renewal work
+for review. Keep hosting lifecycle, registrar auto-renewal and remote dispatch
+separate. Payment does not renew the domain. See
+[domain renewal billing](docs/DOMAIN_RENEWAL_BILLING.md).
+
 **Registrar synchronization direction — 2026-11-05:** Command 213 adds explicit,
 ownership-bound reads of registered domains and a saved customer view. Track
 provider expiry/status and unknown renewal capability separately from invoices,

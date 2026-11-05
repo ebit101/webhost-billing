@@ -35,6 +35,8 @@ import {
   domainInventoryQuerySchema,
   domainFactSyncRequestSchema,
   domainFactReviewRequestSchema,
+  domainRenewalConfigureRequestSchema,
+  domainRenewalPreferenceRequestSchema,
   type DomainInventoryQuery,
 } from '@webhost-billing/shared';
 import { ZodValidationPipe } from '../../common/validation/zod-validation.pipe';
@@ -48,6 +50,7 @@ import { DomainLifecycleService } from './domain-lifecycle.service';
 import { ExistingDomainLinkService } from './existing-domain-link.service';
 import { DomainInventoryService } from './domain-inventory.service';
 import { DomainFactsService } from './domain-facts.service';
+import { DomainRenewalsService } from './domain-renewals.service';
 
 @Controller('domains')
 export class DomainController {
@@ -57,6 +60,7 @@ export class DomainController {
     private readonly existing: ExistingDomainLinkService,
     private readonly inventory: DomainInventoryService,
     private readonly facts: DomainFactsService,
+    private readonly renewals: DomainRenewalsService,
   ) {}
   @Get('inventory')
   @Header('Cache-Control', 'private, no-store, max-age=0')
@@ -67,6 +71,40 @@ export class DomainController {
     @CurrentAuth() auth: AuthRequestContext,
   ) {
     return this.inventory.list(query, auth);
+  }
+  @Get(':id/renewal-billing')
+  @Roles('ADMIN', 'CUSTOMER')
+  @CustomerSupportAccess()
+  @Header('Cache-Control', 'private, no-store, max-age=0')
+  async renewalBilling(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @CurrentAuth() auth: AuthRequestContext,
+  ) {
+    return createApiSuccessResponse(await this.renewals.view(id, auth));
+  }
+  @Post(':id/renewal-billing/terms')
+  @Roles('ADMIN')
+  async renewalTerms(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body(new ZodValidationPipe(domainRenewalConfigureRequestSchema))
+    input: z.infer<typeof domainRenewalConfigureRequestSchema>,
+    @CurrentAuth() auth: AuthRequestContext,
+  ) {
+    return createApiSuccessResponse(
+      await this.renewals.update(id, input, auth, true),
+    );
+  }
+  @Patch(':id/renewal-billing')
+  @Roles('ADMIN', 'CUSTOMER')
+  async renewalPreference(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body(new ZodValidationPipe(domainRenewalPreferenceRequestSchema))
+    input: z.infer<typeof domainRenewalPreferenceRequestSchema>,
+    @CurrentAuth() auth: AuthRequestContext,
+  ) {
+    return createApiSuccessResponse(
+      await this.renewals.update(id, input, auth),
+    );
   }
   @Get(':id/registrar-facts')
   @CustomerSupportAccess()

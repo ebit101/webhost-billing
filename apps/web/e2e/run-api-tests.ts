@@ -22,6 +22,18 @@ async function main() {
           : seedArgs,
         { cwd: '../..', env: e2eApiEnvironment, stdio: 'inherit' },
       );
+    if (process.argv.includes('--verify-schema')) {
+      const verifyArgs = ['--filter', '@webhost-billing/database', 'db:verify'];
+      execFileSync(
+        process.platform === 'win32'
+          ? (process.env.ComSpec ?? 'cmd.exe')
+          : 'pnpm',
+        process.platform === 'win32'
+          ? ['/d', '/s', '/c', 'pnpm', ...verifyArgs]
+          : verifyArgs,
+        { cwd: '../..', env: e2eApiEnvironment, stdio: 'inherit' },
+      );
+    }
     const args =
       process.argv[2] === 'packages'
         ? ['test']
@@ -33,6 +45,7 @@ async function main() {
             process.argv[2] === 'hosting' ||
             process.argv[2] === 'upgrades' ||
             process.argv[2] === 'domain-facts' ||
+            process.argv[2] === 'domain-renewals' ||
             process.argv[2] === 'settings'
           ? [
               '--filter',
@@ -48,21 +61,23 @@ async function main() {
               ...(process.argv[2] === 'customers'
                 ? ['test/customers.e2e-spec.ts', 'test/staff.e2e-spec.ts']
                 : [
-                    process.argv[2] === 'domain-facts'
-                      ? 'test/domain-facts.e2e-spec.ts'
-                      : process.argv[2] === 'upgrades'
-                        ? 'test/hosting-upgrades.e2e-spec.ts'
-                        : process.argv[2] === 'products'
-                          ? 'test/products.e2e-spec.ts'
-                          : process.argv[2] === 'hosting'
-                            ? 'test/hosting-panels.e2e-spec.ts'
-                            : process.argv[2] === 'settings'
-                              ? 'test/settings.e2e-spec.ts'
-                              : process.argv[2] === 'smtp'
-                                ? 'test/smtp-settings.e2e-spec.ts'
-                                : process.argv[2] === 'orders'
-                                  ? 'test/orders.e2e-spec.ts'
-                                  : 'test/domains.e2e-spec.ts',
+                    process.argv[2] === 'domain-renewals'
+                      ? 'test/domain-renewals.e2e-spec.ts'
+                      : process.argv[2] === 'domain-facts'
+                        ? 'test/domain-facts.e2e-spec.ts'
+                        : process.argv[2] === 'upgrades'
+                          ? 'test/hosting-upgrades.e2e-spec.ts'
+                          : process.argv[2] === 'products'
+                            ? 'test/products.e2e-spec.ts'
+                            : process.argv[2] === 'hosting'
+                              ? 'test/hosting-panels.e2e-spec.ts'
+                              : process.argv[2] === 'settings'
+                                ? 'test/settings.e2e-spec.ts'
+                                : process.argv[2] === 'smtp'
+                                  ? 'test/smtp-settings.e2e-spec.ts'
+                                  : process.argv[2] === 'orders'
+                                    ? 'test/orders.e2e-spec.ts'
+                                    : 'test/domains.e2e-spec.ts',
                   ]),
             ]
           : process.argv[2] === 'whatsapp'

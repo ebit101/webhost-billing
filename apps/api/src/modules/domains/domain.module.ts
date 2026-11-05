@@ -7,6 +7,7 @@ import { DomainAdministrationController } from './domain-administration.controll
 import { ExistingDomainLinkService } from './existing-domain-link.service';
 import { DomainInventoryService } from './domain-inventory.service';
 import { DomainFactsService } from './domain-facts.service';
+import { DomainRenewalsService } from './domain-renewals.service';
 @Module({
   controllers: [DomainController, DomainAdministrationController],
   providers: [
@@ -16,6 +17,7 @@ import { DomainFactsService } from './domain-facts.service';
     ExistingDomainLinkService,
     DomainInventoryService,
     DomainFactsService,
+    DomainRenewalsService,
   ],
   exports: [DomainService],
 })

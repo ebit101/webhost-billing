@@ -38,3 +38,4 @@ export * from './contracts/whatsapp';
 export * from './contracts/checkout-terms';
 export * from './hosting-plan-change';
 export * from './contracts/domain-facts';
+export * from './contracts/domain-renewals';
