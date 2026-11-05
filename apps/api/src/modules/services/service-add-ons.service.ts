@@ -5,7 +5,12 @@ import type {
   PrismaClient,
   Service,
 } from '@webhost-billing/database';
-import { serializeMoney, type ServiceAddOn } from '@webhost-billing/shared';
+import {
+  serializeMoney,
+  type ServiceAddOn,
+  type AdminServiceAddOn,
+} from '@webhost-billing/shared';
+import { z } from 'zod';
 import { ApplicationException } from '../../common/errors/application.exception';
 import type { SecurityRequestContext } from '../../common/http/request-context';
 import { PRISMA_CLIENT } from '../../infrastructure/database/database.module';
@@ -18,6 +23,19 @@ type AddOnService = Pick<
   orderItem: { orderId: string } | null;
 };
 
+const completionAction = 'HOSTING_ADD_ON_CANCELLATION_COMPLETED';
+const completionMetadataSchema = z
+  .object({
+    orderItemId: z.uuid(),
+    renewalEndsAt: z.iso.datetime(),
+    completedByUserId: z.uuid(),
+    completedByName: z.string().min(1).max(150),
+  })
+  .strict();
+type Completion = z.infer<typeof completionMetadataSchema> & {
+  completedAt: string;
+};
+
 @Injectable()
 export class ServiceAddOnsService {
   constructor(@Inject(PRISMA_CLIENT) private readonly prisma: PrismaClient) {}
@@ -26,7 +44,7 @@ export class ServiceAddOnsService {
     serviceId: string,
     actor: AuthRequestContext,
     customerId?: string,
-  ): Promise<ServiceAddOn[]> {
+  ): Promise<ServiceAddOn[] | AdminServiceAddOn[]> {
     if (
       actor.identity.role === 'ADMIN' &&
       actor.identity.staffRole !== 'FULL_ADMINISTRATOR'
@@ -43,14 +61,146 @@ export class ServiceAddOnsService {
     )
       throw this.forbidden();
     const rows = await this.findAddOns(this.prisma, service);
+    if (actor.identity.role === 'ADMIN') {
+      const completions = rows.some((item) => item.renewalEndsAt)
+        ? await this.completions(this.prisma, serviceId)
+        : new Map<string, Completion>();
+      return rows.map((item) =>
+        this.serializeAdmin(item, completions.get(item.id)),
+      );
+    }
     return rows.map((item) =>
       this.serialize(
         item,
-        actor.identity.role === 'ADMIN' || actor.supportAdministratorId
+        actor.supportAdministratorId
           ? null
           : this.availableEndAt(service, item),
       ),
     );
+  }
+
+  async completeCancellation(
+    serviceId: string,
+    addOnId: string,
+    expectedEndAt: string,
+    actor: AuthRequestContext,
+    context: SecurityRequestContext,
+    customerId?: string,
+  ): Promise<AdminServiceAddOn> {
+    if (
+      actor.identity.role !== 'ADMIN' ||
+      actor.identity.staffRole !== 'FULL_ADMINISTRATOR' ||
+      actor.supportAdministratorId
+    ) {
+      throw this.forbidden();
+    }
+    const completedByUserId = actor.identity.userId;
+    const completedByName =
+      actor.identity.displayName ?? `Administrator (${completedByUserId})`;
+    return this.prisma.$transaction(async (tx) => {
+      // Share the service lock with customer cancellation, renewal and settlement.
+      await tx.$queryRaw`SELECT id FROM services WHERE id = ${serviceId}::uuid FOR UPDATE`;
+      const service = await this.ownedService(tx, serviceId, customerId);
+      const [item] = await this.findAddOns(tx, service, addOnId);
+      if (!item) throw this.forbidden();
+      if (
+        !item.renewalEndsAt ||
+        item.renewalEndsAt.getTime() !== Date.parse(expectedEndAt)
+      ) {
+        throw this.conflict(
+          'Reload the service and review the recorded add-on cancellation date.',
+        );
+      }
+      const existing = (await this.completions(tx, serviceId)).get(item.id);
+      if (existing) return this.serializeAdmin(item, existing);
+      const now = new Date();
+      if (item.renewalEndsAt > now) {
+        throw this.conflict(
+          'Completion can only be recorded once the add-on end date has arrived.',
+        );
+      }
+      const metadata = {
+        orderItemId: item.id,
+        renewalEndsAt: item.renewalEndsAt.toISOString(),
+        completedByUserId,
+        completedByName,
+      };
+      const record = await tx.activityLog.create({
+        data: {
+          actorUserId: completedByUserId,
+          ipAddressHash: context.ipAddressHash,
+          action: completionAction,
+          entityType: 'SERVICE',
+          entityId: serviceId,
+          createdAt: now,
+          metadata,
+        },
+      });
+      return this.serializeAdmin(item, {
+        ...metadata,
+        completedAt: record.createdAt.toISOString(),
+      });
+    });
+  }
+
+  private async completions(
+    db: Pick<Prisma.TransactionClient, 'activityLog'>,
+    serviceId: string,
+  ) {
+    const records = await db.activityLog.findMany({
+      where: {
+        action: completionAction,
+        entityType: 'SERVICE',
+        entityId: serviceId,
+      },
+      orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+      select: { metadata: true, createdAt: true },
+    });
+    const result = new Map<string, Completion>();
+    for (const record of records) {
+      const metadata = completionMetadataSchema.parse(record.metadata);
+      if (!result.has(metadata.orderItemId))
+        result.set(metadata.orderItemId, {
+          ...metadata,
+          completedAt: record.createdAt.toISOString(),
+        });
+    }
+    return result;
+  }
+
+  private serializeAdmin(
+    item: Pick<
+      OrderItem,
+      'id' | 'productNameSnapshot' | 'currency' | 'lineTotal' | 'renewalEndsAt'
+    >,
+    completion?: Completion,
+  ): AdminServiceAddOn {
+    if (
+      completion &&
+      completion.renewalEndsAt !== item.renewalEndsAt?.toISOString()
+    ) {
+      throw this.conflict(
+        'The completion record does not match the add-on cancellation date.',
+      );
+    }
+    return {
+      ...this.serialize(item, null),
+      manualCompletion: completion
+        ? {
+            completedAt: completion.completedAt,
+            completedByUserId: completion.completedByUserId,
+            completedByName: completion.completedByName,
+          }
+        : null,
+    };
+  }
+
+  private conflict(message: string) {
+    return new ApplicationException({
+      status: HttpStatus.CONFLICT,
+      code: 'CONFLICT',
+      message,
+    });
   }
 
   async cancel(

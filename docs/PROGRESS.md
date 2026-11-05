@@ -2,14 +2,23 @@
 
 ## Status Summary
 
-- **Current command:** Command 205 — Show scheduled add-on cancellations in the administrator service record
-- **Current status:** Administrator cancellation visibility verified locally.
+- **Current command:** Command 208 — Track manual completion of scheduled add-on cancellations
+- **Current status:** Administrator acknowledgement verified locally.
 - **Last updated:** 2026-11-05
 - **Last recorded staging release:** Command 177, `887862020de1e472f303f359b793dccbedfb9b07`, deployed on 2026-11-03 (Asia/Dhaka).
-- **Next action:** Await authorization for Command 208 — Track manual completion of scheduled add-on cancellations.
-- **Next command authorized:** None after Command 205.
+- **Next action:** Await authorization for Command 209 — List overdue add-on cancellation follow-up.
+- **Next command authorized:** None after Command 208.
 
 ## Command Reports
+
+### Command 208 — Track manual completion of scheduled add-on cancellations
+
+- Implemented locally on 2026-11-05 (Asia/Dhaka). Both administrator service views offer Mark completed for a cancelled recurring add-on after its effective end date. A confirmation checkbox is required. After acknowledgement, the row shows the administrator's saved name and confirmation time in the business time zone.
+- The existing audit log stores one append-only acknowledgement per purchased add-on, with the service, item, cancellation cutoff, administrator identity and UTC timestamp. The API locks the service row before checking and writing the record. Repeated or concurrent submissions retain the original acknowledgement. Full-administrator authorization, parent customer scope, cancellation date and due-date checks are enforced on the server. Customer and read-only support responses omit administrator completion details.
+- Files changed: shared service contracts and a new focused contract suite; API add-on reader, completion action, controller and tests; the administrator add-on component and tests; service review wording; the local scheduled renewal browser rehearsal; the command playbook, ADR-170 and this log.
+- Validation passed: 17 API cases, two shared contract cases, 70 focused web cases, shared and API builds, strict web/browser types, scoped lint, formatting and Git whitespace checks. The final 11 add-on component cases also passed after the acknowledgement wording update. The guarded Chromium rehearsal passed with local PostgreSQL, Redis and fake providers: explicit checkbox confirmation, rejection of a non-cancelled add-on, customer rejection, rejection of an unchecked acknowledgement, a browser/API submission race leaving one audit record, exact timestamp-preserving replay, administrator reload, and omission of staff details from the customer response. The existing invoice stayed intact, the next renewal excluded the cancelled add-on, and hosting remained active after payment. No unresolved failures.
+- Decisions and limits: the acknowledgement records staff confirmation of manual work. It does not perform or verify provider shutdown. Hosting, purchased prices, issued invoices and renewal exclusion remain unchanged. No schema migration is needed. No push or deployment is authorized.
+- Recommended next command: **Command 209 — List overdue add-on cancellation follow-up**. Provide an administrator list of pending manual work with effective dates and links to service records, excluding acknowledged items. Await owner authorization.
 
 ### Command 205 — Show scheduled add-on cancellations in the administrator service record
 

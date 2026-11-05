@@ -3,16 +3,21 @@
 import {
   businessLocalizationSettingsSchema,
   sentenceCaseLabel,
-  serviceAddOnSchema,
+  adminServiceAddOnSchema,
   type Service,
-  type ServiceAddOn,
+  type AdminServiceAddOn,
 } from '@webhost-billing/shared';
 import { useEffect, useState } from 'react';
-import { authenticatedGet } from '../../lib/auth-api';
+import {
+  authenticatedGet,
+  authMutation,
+  ApiMutationError,
+} from '../../lib/auth-api';
 import { formatMinor } from '../invoices/invoice-ui';
 import { Button } from '../ui/button';
 import { DataTable } from '../ui/data-table';
 import { ErrorState, LoadingState } from '../ui/feedback-state';
+import { RecordDialog } from '../ui/record-dialog';
 
 export function AdminServiceAddOns(props: {
   service: Service;
@@ -34,15 +39,24 @@ function AddOns({
   timeZone?: string;
 }) {
   const [result, setResult] = useState<{
-    items: ServiceAddOn[];
+    items: AdminServiceAddOn[];
     timeZone: string;
   }>();
   const [error, setError] = useState(false);
   const [attempt, setAttempt] = useState(0);
+  const [selected, setSelected] = useState<AdminServiceAddOn>();
+  const [acknowledged, setAcknowledged] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [mutationError, setMutationError] = useState('');
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(timer);
+  }, []);
   useEffect(() => {
     let active = true;
     void (async () => {
-      const items = serviceAddOnSchema
+      const items = adminServiceAddOnSchema
         .array()
         .parse(
           await authenticatedGet(
@@ -63,6 +77,46 @@ function AddOns({
       active = false;
     };
   }, [service.id, service.customerId, timeZone, attempt]);
+
+  async function complete() {
+    if (!selected?.renewalEndsAt || !acknowledged || busy) return;
+    setBusy(true);
+    setMutationError('');
+    try {
+      const item = adminServiceAddOnSchema.parse(
+        await authMutation<unknown>(
+          `/services/${service.id}/add-ons/${selected.id}/complete-cancellation?customerId=${encodeURIComponent(service.customerId)}`,
+          'POST',
+          { expectedEndAt: selected.renewalEndsAt, acknowledged: true },
+        ),
+      );
+      if (
+        item.id !== selected.id ||
+        item.renewalEndsAt !== selected.renewalEndsAt ||
+        !item.manualCompletion
+      )
+        throw new Error('Invalid completion response');
+      setResult((current) =>
+        current
+          ? {
+              ...current,
+              items: current.items.map((row) =>
+                row.id === item.id ? item : row,
+              ),
+            }
+          : current,
+      );
+      setSelected(undefined);
+    } catch (caught) {
+      setMutationError(
+        caught instanceof ApiMutationError
+          ? caught.message
+          : 'Completion could not be recorded. Reload and retry.',
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
 
   const date = (value: string) =>
     new Intl.DateTimeFormat('en-GB', {
@@ -142,18 +196,92 @@ function AddOns({
                 key: 'follow-up',
                 header: 'Manual follow-up',
                 render: (item) =>
-                  item.renewalEndsAt
-                    ? `Stop providing ${item.name} from ${date(item.renewalEndsAt)}. Confirm any manual work with the responsible team; completion is not tracked here.`
-                    : 'No cancellation follow-up requested',
+                  item.manualCompletion ? (
+                    <p>
+                      Completion confirmed by{' '}
+                      {item.manualCompletion.completedByName} on{' '}
+                      {date(item.manualCompletion.completedAt)}.
+                    </p>
+                  ) : item.renewalEndsAt ? (
+                    <div className="grid gap-2">
+                      <p>
+                        Stop providing {item.name} from{' '}
+                        {date(item.renewalEndsAt)}. Confirm any manual work with
+                        the responsible team.
+                      </p>
+                      <Button
+                        variant="secondary"
+                        disabled={busy || Date.parse(item.renewalEndsAt) > now}
+                        aria-label={`Mark ${item.name} completed`}
+                        onClick={() => {
+                          setSelected(item);
+                          setAcknowledged(false);
+                          setMutationError('');
+                        }}
+                      >
+                        Mark completed
+                      </Button>
+                      {Date.parse(item.renewalEndsAt) > now && (
+                        <p className="text-xs text-slate-500">
+                          Completion is available once the end date arrives.
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    'No cancellation follow-up requested'
+                  ),
               },
             ]}
           />
           <p className="text-xs text-slate-500">
-            Dates shown in {result.timeZone}. Renewal exclusion is recorded;
-            provider delivery must be reviewed separately.
+            Dates shown in {result.timeZone}. Completion is an administrator
+            acknowledgement; provider delivery is not checked automatically.
           </p>
         </>
       )}
+      <RecordDialog
+        open={Boolean(selected)}
+        title="Confirm add-on cancellation completion"
+        busy={busy}
+        onClose={() => {
+          setSelected(undefined);
+          setMutationError('');
+        }}
+      >
+        {selected?.renewalEndsAt && (
+          <form
+            className="grid gap-4"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void complete();
+            }}
+          >
+            <p>
+              Confirm the manual cancellation work for {selected.name} is
+              complete. Scheduled end: {date(selected.renewalEndsAt)}. Your name
+              and acknowledgement time will be recorded in the audit log.
+            </p>
+            <p>Hosting and issued invoices remain unchanged.</p>
+            <label className="flex items-start gap-2">
+              <input
+                type="checkbox"
+                checked={acknowledged}
+                disabled={busy}
+                onChange={(event) => setAcknowledged(event.target.checked)}
+              />
+              I confirm the manual cancellation work is complete.
+            </label>
+            {mutationError && (
+              <p role="alert" className="text-sm text-red-700">
+                {mutationError}
+              </p>
+            )}
+            <Button type="submit" disabled={busy || !acknowledged}>
+              {busy ? 'Recording completion…' : 'Record completion'}
+            </Button>
+          </form>
+        )}
+      </RecordDialog>
     </section>
   );
 }

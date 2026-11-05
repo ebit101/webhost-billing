@@ -1,4 +1,9 @@
 import { expect, test, type APIRequestContext } from '@playwright/test';
+import {
+  apiSuccessResponseSchema,
+  adminServiceAddOnSchema,
+  serviceAddOnSchema,
+} from '@webhost-billing/shared';
 import { spawn } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { once } from 'node:events';
@@ -328,6 +333,17 @@ test('the scheduled renewal and customer messages run through local workers', as
     });
     const addOnsPath = `/services/${service.id}/add-ons`;
     const cancelPath = `${addOnsPath}/${backupItem.id}/cancel`;
+    const completePath = `${addOnsPath}/${backupItem.id}/complete-cancellation?customerId=${customerId}`;
+    await mutation(
+      admin,
+      'POST',
+      completePath,
+      {
+        expectedEndAt: dueAt.toISOString(),
+        acknowledged: true,
+      },
+      409,
+    );
     const beforeIssuance = await customer.get(addOnsPath);
     expect(beforeIssuance.ok()).toBe(true);
     expect(await beforeIssuance.json()).toMatchObject({
@@ -622,13 +638,105 @@ test('the scheduled renewal and customer messages run through local workers', as
     );
     await expect(purchased).toContainText('11/03/2025');
     await expect(purchased).not.toContainText('Repriced backup');
-    await expect(purchased.getByRole('button')).toHaveCount(0);
+    await expect(
+      purchased.getByRole('button', {
+        name: 'Mark Fictional managed backup completed',
+      }),
+    ).toBeEnabled();
     await page.goto(`/admin/services?customerId=${customerId}`);
     await page
       .getByRole('button', { name: `Review ${service.domain}` })
       .click();
     await expect(purchased.getByRole('table')).toContainText('BDT 300.00');
     await expect(purchased).toContainText('11/03/2025');
+    await mutation(
+      customer,
+      'POST',
+      completePath,
+      {
+        expectedEndAt: endAt.toISOString(),
+        acknowledged: true,
+      },
+      403,
+    );
+    await mutation(
+      admin,
+      'POST',
+      completePath,
+      {
+        expectedEndAt: endAt.toISOString(),
+        acknowledged: false,
+      },
+      400,
+    );
+    await purchased
+      .getByRole('button', { name: 'Mark Fictional managed backup completed' })
+      .click();
+    const completionDialog = page.getByRole('dialog', {
+      name: 'Confirm add-on cancellation completion',
+    });
+    await expect(
+      completionDialog.getByRole('button', { name: 'Record completion' }),
+    ).toBeDisabled();
+    await completionDialog.getByRole('checkbox').check();
+    // Race the browser acknowledgement with a second request; retain one audit fact.
+    await Promise.all([
+      completionDialog
+        .getByRole('button', { name: 'Record completion' })
+        .click(),
+      mutation(admin, 'POST', completePath, {
+        expectedEndAt: endAt.toISOString(),
+        acknowledged: true,
+      }),
+    ]);
+    await expect(purchased).toContainText('Completion confirmed by');
+    await expect(purchased.getByRole('button')).toHaveCount(0);
+    const completedRead = await admin.get(
+      `${addOnsPath}?customerId=${customerId}`,
+    );
+    const completedBody = apiSuccessResponseSchema(
+      adminServiceAddOnSchema.array(),
+    ).parse(await completedRead.json());
+    expect(completedBody).toMatchObject({
+      data: [
+        {
+          manualCompletion: {
+            completedByUserId: staff.userId,
+            completedByName: 'Fictional Test Administrator',
+          },
+        },
+      ],
+    });
+    const replayCompletion = await mutation(admin, 'POST', completePath, {
+      expectedEndAt: endAt.toISOString(),
+      acknowledged: true,
+    });
+    const replayBody = apiSuccessResponseSchema(adminServiceAddOnSchema).parse(
+      await replayCompletion.json(),
+    );
+    expect(replayBody.data.manualCompletion).toEqual(
+      completedBody.data[0]!.manualCompletion,
+    );
+    expect(
+      await e2ePrisma.activityLog.count({
+        where: {
+          entityId: service.id,
+          action: 'HOSTING_ADD_ON_CANCELLATION_COMPLETED',
+        },
+      }),
+    ).toBe(1);
+    const customerAddOns = await customer.get(addOnsPath);
+    expect(
+      apiSuccessResponseSchema(serviceAddOnSchema.array()).parse(
+        await customerAddOns.json(),
+      ).data,
+    ).toHaveLength(1);
+    await page.reload();
+    await page
+      .getByRole('button', { name: `Review ${service.domain}` })
+      .click();
+    await expect(purchased).toContainText('Completion confirmed by');
+    await expect(purchased.getByRole('button')).toHaveCount(0);
     await pay(catchUp, 'COMMAND202-PREVIOUS-RENEWAL');
     await expect
       .poll(serviceState, { timeout: 25_000 })

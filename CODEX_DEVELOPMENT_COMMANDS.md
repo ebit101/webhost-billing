@@ -6847,3 +6847,11 @@ log.
 
 Owner-authorized on 2026-11-05. Use a distinct icon for each administrator
 sidebar item, preserving the current menu labels and destinations.
+
+## Command 208 — Track manual completion of scheduled add-on cancellations
+
+Owner-authorized on 2026-11-05. Let full administrators acknowledge completed
+manual cancellation work once the purchased add-on's end date arrives. Record
+the administrator and acknowledgement time in the audit log, preserve the first
+record on retries, and show completion in both administrator service views.
+Verify locally, update the progress log, and do not deploy.

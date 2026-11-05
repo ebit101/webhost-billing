@@ -61,6 +61,40 @@ export const serviceAddOnSchema = z
 
 export type ServiceAddOn = z.infer<typeof serviceAddOnSchema>;
 
+export const completeServiceAddOnCancellationSchema = z
+  .object({
+    expectedEndAt: z.iso.datetime(),
+    acknowledged: z.literal(true),
+  })
+  .strict();
+
+export const addOnCancellationCompletionSchema = z
+  .object({
+    completedAt: z.iso.datetime(),
+    completedByUserId: z.uuid(),
+    completedByName: z.string().min(1).max(150),
+  })
+  .strict();
+
+export const adminServiceAddOnSchema = serviceAddOnSchema
+  .extend({
+    availableEndAt: z.null(),
+    manualCompletion: addOnCancellationCompletionSchema.nullable(),
+  })
+  .strict()
+  .refine(
+    (item) =>
+      !item.manualCompletion ||
+      Boolean(
+        item.renewalEndsAt &&
+        Date.parse(item.manualCompletion.completedAt) >=
+          Date.parse(item.renewalEndsAt),
+      ),
+    { message: 'Completion must be on or after the recorded add-on end date.' },
+  );
+
+export type AdminServiceAddOn = z.infer<typeof adminServiceAddOnSchema>;
+
 export const hostingCancellationJobSchema = z
   .object({
     schemaVersion: z.literal(1),

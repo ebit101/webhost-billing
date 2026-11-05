@@ -4,14 +4,19 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { service } from '../../test/client-record-fixtures';
 import { AdminServiceAddOns } from './admin-service-add-ons';
 
-const api = vi.hoisted(() => ({ get: vi.fn() }));
-vi.mock('../../lib/auth-api', () => ({ authenticatedGet: api.get }));
+const api = vi.hoisted(() => ({ get: vi.fn(), mutate: vi.fn() }));
+vi.mock('../../lib/auth-api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../lib/auth-api')>()),
+  authenticatedGet: api.get,
+  authMutation: api.mutate,
+}));
 const item = {
   id: '20500000-0000-4000-8000-000000000001',
   name: '<b>Purchased backup</b>',
   recurringAmount: { amount: '9007199254740993', currency: 'BDT' },
   renewalEndsAt: '2026-12-01T18:30:00.000Z',
   availableEndAt: null,
+  manualCompletion: null,
 };
 afterEach(() => {
   vi.resetAllMocks();
@@ -31,12 +36,17 @@ describe('administrator recurring add-on visibility', () => {
         /Stop providing <b>Purchased backup<\/b> from 02\/12\/2026, 00:30/,
       ),
     ).toBeTruthy();
-    expect(screen.getByText(/completion is not tracked here/)).toBeTruthy();
     expect(
       screen.getByText(/leaves hosting on its existing cycle/),
     ).toBeTruthy();
     expect(container.querySelector('b, form, input')).toBeNull();
-    expect(screen.queryByRole('button')).toBeNull();
+    expect(
+      (
+        screen.getByRole('button', {
+          name: `Mark ${item.name} completed`,
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
     expect(api.get).toHaveBeenCalledWith(
       `/services/${service.id}/add-ons?customerId=${service.customerId}`,
     );
@@ -110,5 +120,81 @@ describe('administrator recurring add-on visibility', () => {
       finish([item]);
     });
     expect(screen.queryByRole('table')).toBeNull();
+  });
+
+  const dueItem = { ...item, renewalEndsAt: '2025-03-11T12:00:00.000Z' };
+  const completion = {
+    completedAt: '2026-11-05T12:00:00.000Z',
+    completedByUserId: item.id,
+    completedByName: '<b>Fictional admin</b>',
+  };
+  async function openCompletion() {
+    api.get.mockResolvedValue([dueItem]);
+    render(<AdminServiceAddOns service={service} timeZone="UTC" />);
+    const user = userEvent.setup();
+    await user.click(
+      await screen.findByRole('button', {
+        name: `Mark ${item.name} completed`,
+      }),
+    );
+    return {
+      user,
+      dialog: screen.getByRole('dialog', {
+        name: 'Confirm add-on cancellation completion',
+      }),
+    };
+  }
+  it('requires acknowledgement, records completion and shows who and when without another action', async () => {
+    const { user, dialog } = await openCompletion();
+    const submit = within(dialog).getByRole('button', {
+      name: 'Record completion',
+    }) as HTMLButtonElement;
+    expect(submit.disabled).toBe(true);
+    await user.click(within(dialog).getByRole('checkbox'));
+    api.mutate.mockResolvedValue({ ...dueItem, manualCompletion: completion });
+    await user.click(submit);
+    await screen.findByText(
+      'Completion confirmed by <b>Fictional admin</b> on 05/11/2026, 12:00.',
+    );
+    expect(api.mutate).toHaveBeenCalledWith(
+      `/services/${service.id}/add-ons/${item.id}/complete-cancellation?customerId=${service.customerId}`,
+      'POST',
+      { expectedEndAt: dueItem.renewalEndsAt, acknowledged: true },
+    );
+    expect(
+      screen.queryByRole('button', { name: `Mark ${item.name} completed` }),
+    ).toBeNull();
+    expect(document.querySelector('b')).toBeNull();
+  });
+  it('does not write when the confirmation is closed', async () => {
+    const { user, dialog } = await openCompletion();
+    await user.click(within(dialog).getByRole('button', { name: /Close/ }));
+    expect(api.mutate).not.toHaveBeenCalled();
+  });
+  it('keeps the pending work visible when recording fails and permits a deliberate retry', async () => {
+    const { user, dialog } = await openCompletion();
+    await user.click(within(dialog).getByRole('checkbox'));
+    api.mutate
+      .mockRejectedValueOnce(new Error('private-response'))
+      .mockResolvedValueOnce({ ...dueItem, manualCompletion: completion });
+    await user.click(
+      within(dialog).getByRole('button', { name: 'Record completion' }),
+    );
+    await screen.findByText(
+      'Completion could not be recorded. Reload and retry.',
+    );
+    expect(screen.queryByText(/private-response/)).toBeNull();
+    expect(screen.queryByText(/Completion confirmed by/)).toBeNull();
+    await user.click(
+      within(dialog).getByRole('button', { name: 'Record completion' }),
+    );
+    await screen.findByText(/Completion confirmed by/);
+  });
+  it('loads an existing acknowledgement without offering completion again', async () => {
+    api.get.mockResolvedValue([{ ...dueItem, manualCompletion: completion }]);
+    render(<AdminServiceAddOns service={service} timeZone="UTC" />);
+    await screen.findByText(/Completion confirmed by/);
+    expect(screen.queryByRole('button')).toBeNull();
+    expect(api.mutate).not.toHaveBeenCalled();
   });
 });

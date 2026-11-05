@@ -15,6 +15,7 @@ import {
 import type { ApiEnvironment } from '@webhost-billing/config';
 import {
   cancelServiceAddOnSchema,
+  completeServiceAddOnCancellationSchema,
   createApiSuccessResponse,
   createPaginatedApiSuccessResponse,
   createServiceRequestSchema,
@@ -134,6 +135,31 @@ export class ServiceController {
   ) {
     return createApiSuccessResponse(
       await this.addOns.list(serviceId, auth, customerId),
+    );
+  }
+
+  @Post(':serviceId/add-ons/:addOnId/complete-cancellation')
+  @HttpCode(HttpStatus.OK)
+  @Roles('ADMIN')
+  async completeAddOnCancellation(
+    @Param('serviceId', new ParseUUIDPipe()) serviceId: string,
+    @Param('addOnId', new ParseUUIDPipe()) addOnId: string,
+    @Body(new ZodValidationPipe(completeServiceAddOnCancellationSchema))
+    input: z.output<typeof completeServiceAddOnCancellationSchema>,
+    @CurrentAuth() auth: AuthRequestContext,
+    @Req() request: Request,
+    @Query('customerId', new ParseUUIDPipe({ optional: true }))
+    customerId?: string,
+  ) {
+    return createApiSuccessResponse(
+      await this.addOns.completeCancellation(
+        serviceId,
+        addOnId,
+        input.expectedEndAt,
+        auth,
+        this.context(request),
+        customerId,
+      ),
     );
   }
 

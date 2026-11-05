@@ -102,7 +102,7 @@ function ReviewRequest({
         </Button>
       </div>
       <p className="text-sm text-slate-600">
-        Read-only application facts as of this request, not a required approval
+        Saved application facts as of this request, not a required approval
         gate. This read does not contact the hosting panel or prove current
         remote account state. Payment is not proof of provisioning. Invoice,
         payment and current order state, operation history and provider

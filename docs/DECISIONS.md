@@ -3439,3 +3439,10 @@ The following decisions are intentionally unresolved and must be selected before
 - **Decision:** Allow full administrators to read fulfilled recurring add-ons through the existing service add-on endpoint. Apply an optional customer scope at the database boundary and retain customer ownership and read-only support access. Staff receive no customer cancellation action.
 - **Display:** Reuse the purchased order-item name, integer price snapshot and recorded renewal cutoff in the service review and customer-specific service record. Show cutoff dates in the business time zone. Catalogue edits do not change the purchased price.
 - **Operations:** Remind staff to stop providing a cancelled extra from the recorded date and confirm manual work with the responsible team. This read does not call providers or record completion. Hosting continues on its existing cycle and issued invoices remain unchanged.
+
+## ADR-170 — Acknowledge manual add-on cancellation completion
+
+- **Date:** 2026-11-05. Command 208.
+- **Decision:** Use the append-only `HOSTING_ADD_ON_CANCELLATION_COMPLETED` activity record as the acknowledgement. Snapshot the purchased order-item ID, effective cutoff, administrator ID and display name; use the record's UTC timestamp as acknowledgement time. There is no separate mutable completion flag or schema migration.
+- **Authorization and retries:** Only full administrators can acknowledge, with an explicit confirmation and the expected cutoff. Reject unscheduled, future, stale and out-of-scope requests. Lock the hosting service row in the transaction before checking for an existing record, so concurrent retries preserve the first acknowledgement and actor.
+- **Display and scope:** Both administrator service views show the acknowledgement in the business time zone. Customer and read-only support responses omit staff completion details. The action records an administrator assertion about completed manual work; it does not contact a provider, change hosting, adjust invoices or restart add-on renewal.
