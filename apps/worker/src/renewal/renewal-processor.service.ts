@@ -115,6 +115,11 @@ export class RenewalProcessorService {
         cancellationRequests: {
           none: { status: { in: ['OPEN', 'COMPLETED'] } },
         },
+        upgrades: {
+          none: {
+            status: { in: ['REQUESTED', 'APPLYING', 'REVIEW_REQUIRED'] },
+          },
+        },
       },
       select: { id: true, nextDueAt: true },
       orderBy: [{ nextDueAt: 'asc' }, { id: 'asc' }],
@@ -170,6 +175,15 @@ export class RenewalProcessorService {
         ) {
           return false;
         }
+        if (
+          await transaction.serviceUpgrade.count({
+            where: {
+              serviceId,
+              status: { in: ['REQUESTED', 'APPLYING', 'REVIEW_REQUIRED'] },
+            },
+          })
+        )
+          return false;
         const billingPeriod = hostingBillingPeriodSchema.parse(
           service.billingPeriod,
         );
@@ -321,6 +335,7 @@ export class RenewalProcessorService {
     const now = this.clock.now();
     const invoices = await this.prisma.invoice.findMany({
       where: {
+        hostingUpgrade: { is: null },
         status: { in: [InvoiceStatus.UNPAID, InvoiceStatus.OVERDUE] },
         balanceDue: { gt: 0n },
         items: { some: { serviceId: { not: null } } },

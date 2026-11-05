@@ -407,6 +407,7 @@ async function priorFacts(s: Scope) {
     },
   });
   await m.service.create({
+    select: { id: true }, // Historical schema predates the current package column.
     data: {
       customerId,
       productId: product.id,

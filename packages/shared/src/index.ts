@@ -36,3 +36,4 @@ export * from './contracts/notifications';
 export * from './contracts/whatsapp';
 
 export * from './contracts/checkout-terms';
+export * from './hosting-plan-change';

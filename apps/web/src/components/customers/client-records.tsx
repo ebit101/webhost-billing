@@ -23,6 +23,7 @@ import { ExistingDomainLink } from '../domains/existing-domain-link';
 import { formatMinor } from '../invoices/invoice-ui';
 import { serviceDate } from '../services/service-ui';
 import { AdminServiceAddOns } from '../services/admin-service-add-ons';
+import { HostingUpgrades } from '../services/hosting-upgrades';
 
 type Props = {
   customerId?: string;
@@ -277,9 +278,16 @@ function Records({ customerId, kind, recordId, administrator = true }: Props) {
             ))}
           </dl>
           {administrator && <AdminServiceAddOns service={selected.record} />}
+          {administrator && (
+            <HostingUpgrades
+              service={selected.record}
+              administrator
+              onCompleted={() => setRevision((value) => value + 1)}
+            />
+          )}
           <p className="mt-4 text-sm text-slate-600">
-            Saved application information. This page does not contact the
-            hosting panel.
+            The original order and issued invoices retain their purchase
+            details.
           </p>
           <div className="mt-4 flex flex-wrap gap-4">
             <Link

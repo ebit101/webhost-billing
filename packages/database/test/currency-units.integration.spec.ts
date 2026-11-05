@@ -365,6 +365,8 @@ for (const priorCount of [22, 23])
         },
       });
       await client.service.create({
+        // This fixture intentionally runs before the current-package column.
+        select: { id: true },
         data: {
           customerId,
           productId: product.id,

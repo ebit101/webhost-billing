@@ -31,6 +31,7 @@ async function main() {
             process.argv[2] === 'customers' ||
             process.argv[2] === 'orders' ||
             process.argv[2] === 'hosting' ||
+            process.argv[2] === 'upgrades' ||
             process.argv[2] === 'settings'
           ? [
               '--filter',
@@ -46,17 +47,19 @@ async function main() {
               ...(process.argv[2] === 'customers'
                 ? ['test/customers.e2e-spec.ts', 'test/staff.e2e-spec.ts']
                 : [
-                    process.argv[2] === 'products'
-                      ? 'test/products.e2e-spec.ts'
-                      : process.argv[2] === 'hosting'
-                        ? 'test/hosting-panels.e2e-spec.ts'
-                        : process.argv[2] === 'settings'
-                          ? 'test/settings.e2e-spec.ts'
-                          : process.argv[2] === 'smtp'
-                            ? 'test/smtp-settings.e2e-spec.ts'
-                            : process.argv[2] === 'orders'
-                              ? 'test/orders.e2e-spec.ts'
-                              : 'test/domains.e2e-spec.ts',
+                    process.argv[2] === 'upgrades'
+                      ? 'test/hosting-upgrades.e2e-spec.ts'
+                      : process.argv[2] === 'products'
+                        ? 'test/products.e2e-spec.ts'
+                        : process.argv[2] === 'hosting'
+                          ? 'test/hosting-panels.e2e-spec.ts'
+                          : process.argv[2] === 'settings'
+                            ? 'test/settings.e2e-spec.ts'
+                            : process.argv[2] === 'smtp'
+                              ? 'test/smtp-settings.e2e-spec.ts'
+                              : process.argv[2] === 'orders'
+                                ? 'test/orders.e2e-spec.ts'
+                                : 'test/domains.e2e-spec.ts',
                   ]),
             ]
           : process.argv[2] === 'whatsapp'

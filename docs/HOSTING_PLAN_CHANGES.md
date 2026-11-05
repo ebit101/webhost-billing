@@ -3,9 +3,10 @@
 Command 210, prepared 2026-11-05 (Asia/Dhaka).
 
 The owner selected **downgrades at the next billing date, with no mid-period
-credit or automatic refund**. The upgrade rules below are proposed for owner
-agreement before Command 211 applies them. This command supplies a tested
-reference quote model; it creates no invoices, requests or provider operations.
+credit or automatic refund**. Starting Command 211 accepts the upgrade proposal
+below for local implementation. Command 210 supplied the tested reference model;
+Command 211 adds the administrator-offered paid upgrade workflow described at
+the end of this document. Period-end downgrade execution remains Command 212.
 
 ## Initial policy
 
@@ -145,8 +146,9 @@ and 212, not features completed by Command 210.
 The reference quote records the policy version, service revision, source invoice
 and paid interval, source and target price/package snapshots, quotation and
 expiry times, charge, remaining duration and unchanged billing boundary. It has
-no random ID, wall-clock dependency or side effects. It is not exposed through
-the shared public entry point, API or UI.
+no random ID, wall-clock dependency or side effects. During Command 210 it was
+not exposed through the shared public entry point, API or UI. Command 211 exports
+its validated contracts and connects it to the upgrade workflow.
 
 The proposed upgrade fee is calculated as of the quotation timestamp. If the
 customer confirms a different amount after a refreshed quote, obtain confirmation
@@ -203,7 +205,7 @@ This worker coordination is required before period-end downgrades can be enabled
 
 - **Confirmed by owner:** Period-end downgrade; no mid-period credit or automatic
   refund.
-- **Proposed for agreement before Command 211:** Exact UTC-duration proration,
+- **Accepted by starting Command 211:** Exact UTC-duration proration,
   half-up rounding once on the net difference, a fifteen-minute quote window,
   same-cycle/same-server scope, one completed immediate change per paid interval,
   and the reviewed handling of delayed fulfillment and late payments.
@@ -220,3 +222,57 @@ eligibility cases are in `packages/shared/test/hosting-plan-change.spec.ts`.
 Run `pnpm --filter @webhost-billing/shared exec tsx --test test/hosting-plan-change.spec.ts`
 and `pnpm --filter @webhost-billing/shared typecheck` from the repository root.
 No database, queue, hosting panel, payment provider or email delivery is used.
+
+## Command 211 implementation
+
+The administrator service review and customer-specific service record now have
+a Hosting upgrades section. A full administrator chooses an active target price
+for the same currency and cycle, supplies a review reason, and confirms package,
+capacity and add-on compatibility. This explicit per-service offer is the first
+allowed plan-pair mechanism; public catalogue visibility alone grants no upgrade
+eligibility. Account identity and the source package are read from the provider.
+Capacity and target-package availability are administrator attestations until
+machine-readable quota statistics are implemented.
+
+The customer reviews the offered charge, following full-period price, quotation
+time, expiry and retained billing boundary. Explicit acceptance creates exactly
+one invoice. Its service line has no renewal-period columns, so settlement does
+not advance paid coverage. Payment uses the existing invoice payment workflow.
+A full administrator then reconfirms eligibility and approves the paid upgrade.
+Invoice/payment state, request state and package-operation state are shown
+separately. Support sessions can inspect offers but cannot accept them.
+
+`service_upgrades` stores the immutable quote/context hash, invoice reference,
+acceptance, approval and completion times, attempt and provider-operation link.
+One pending accepted request per service is enforced by a partial unique index.
+Service and invoice row locks serialize acceptance, approval and settlement
+checks. The paid source and upgrade invoices must match successful verified
+charge records, not just a status label. Prices, add-ons, service revision and
+coverage are revalidated before acceptance and fulfillment.
+
+Package changes reuse the existing hosting-panel operation and bounded retry
+chain, with a stable key per upgrade attempt. One caller claims initial dispatch;
+concurrent clicks read its progress. A lost claim without an operation can be
+reviewed after one minute. The current plan, recurring price and separate current
+package identifier update only after the account identity and target package are confirmed.
+The original provisioning snapshot, order and financial snapshots are retained, and
+`nextDueAt` stays unchanged.
+
+Definite retryable failures retain the original recorded plan. A reviewed retry
+uses the linked operation rather than a fresh unrelated key. If the provider
+changed its package but a reply or local finalization was lost, reconcile the
+recorded result/account before updating the service, without another mutation.
+An uncertain unconfirmed result stays in review. A fully refunded failed request
+can be closed only after the original package is verified; the refund and
+original charge remain separate financial records. There is no automatic refund.
+
+Pending accepted, applying or review requests hold conflicting service changes,
+hosting/add-on cancellation and scheduled renewal work. An upgrade invoice is
+excluded from renewal reminders/suspension processing. Ordinary hosting renewal
+continues at the confirmed price after completion. An unstarted unpaid request
+can be closed with its unpaid invoice cancelled, releasing the hold. Expired
+paid requests require financial/provider review and cannot bypass quote expiry.
+
+The local acceptance harness migrates a fresh owned PostgreSQL schema, uses
+loopback Redis and fake hosting, and drops only that schema afterward. No live
+hosting, customer data, deployment or publishing is included in Command 211.

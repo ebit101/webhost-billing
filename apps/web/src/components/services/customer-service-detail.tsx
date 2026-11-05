@@ -15,6 +15,7 @@ import { formatMinor } from '../invoices/invoice-ui';
 import { serviceDate, serviceError, serviceTone } from './service-ui';
 import { CustomerServiceAddOns } from './customer-service-add-ons';
 import { CustomerHostingCancellation } from './customer-hosting-cancellation';
+import { HostingUpgrades } from './hosting-upgrades';
 
 export function CustomerServiceDetail({ serviceId }: { serviceId: string }) {
   const [service, setService] = useState<Service>();
@@ -162,6 +163,7 @@ export function CustomerServiceDetail({ serviceId }: { serviceId: string }) {
         key={`add-ons:${service.id}`}
         serviceId={service.id}
       />
+      <HostingUpgrades service={service} />
       <CustomerHostingCancellation key={service.id} service={service} />
     </div>
   );

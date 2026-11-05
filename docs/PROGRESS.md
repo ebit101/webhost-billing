@@ -2,14 +2,26 @@
 
 ## Status Summary
 
-- **Current command:** Command 210 — Define hosting plan changes and proration
-- **Current status:** Plan-change definition and reference quotes verified locally; upgrade execution policy awaits owner agreement.
+- **Current command:** Command 211 — Implement paid hosting upgrades
+- **Current status:** Command 211 complete locally; paid upgrades and recovery verified with fictional accounts and fake hosting. Not published or deployed.
 - **Last updated:** 2026-11-05
 - **Last recorded staging release:** Command 177, `887862020de1e472f303f359b793dccbedfb9b07`, deployed on 2026-11-03 (Asia/Dhaka).
-- **Next action:** Obtain agreement on the proposed upgrade policy before authorizing Command 211 — Implement paid hosting upgrades. Command 209 remains a separate proposed cancellation follow-up queue.
-- **Next command authorized:** None after Command 210.
+- **Next action:** Await authorization for Command 212 — Implement period-end hosting downgrades. Command 209 remains separately proposed.
+- **Next command authorized:** None after Command 211.
 
 ## Command Reports
+
+### Command 211 — Implement paid hosting upgrades
+
+- Implemented locally on 2026-11-05 (Asia/Dhaka). Starting this command accepts the prior upgrade policy. Full administrators offer verified target prices per service; customers review and accept the prorated quote, pay its invoice through the existing workflow, and await administrator approval. Payment, request and package-operation states remain separate. Both administrator service views and the customer service page show upgrade history and actions.
+- Added a durable upgrade model/migration, validated shared contracts and runtime quote integration, owned quote/accept/approve/recovery endpoints, and invoice/provider orchestration. Service/invoice locks, one-pending-request uniqueness, verified charge totals, stable operation keys and a dispatch claim prevent duplicate invoices, settlement or package changes. The current plan, separate current package identifier and next recurring price update only after provider confirmation; original provisioning/order/invoice snapshots and the billing boundary remain intact.
+- Added conflict guards to hosting operations, service state, cancellation/add-on cancellation and renewal automation. Upgrade invoices do not trigger renewal suspension or advance a paid period. Definite failures use linked retries; confirmed changes after lost replies/finalization are reconciled before local completion. Unstarted unpaid requests or fully refunded failed requests can be closed without deleting financial history.
+- Files changed: shared quote/contracts; Prisma schema, migration, verifier, migration-count tests and historical-schema fixtures; API upgrade controller/context/service and acceptance tests; existing service/panel/cancellation guards; worker renewal guards; customer/admin upgrade UI and tests; guarded API launcher and browser rehearsal; the command playbook, product plan, policy document, ADR-172 and this log.
+- Validation passed: seven guarded PostgreSQL upgrade cases, 19 affected API unit cases, 77 focused web cases (including seven new upgrade cases), 45 focused shared cases, API/worker/database builds, strict API/database/shared/web/browser types, scoped lint, formatting and Git whitespace checks. The final 21 upgrade/client-record web cases passed after the surrounding-service wording update. All 91 guarded database cases passed with 47 migrations, fictional seed and schema verification. All four offline documentation validators passed.
+- The guarded Chromium upgrade rehearsal passed with fictional checkout, initial payment, admin offer, customer confirmation, one upgrade invoice, rejected unauthorized/unpaid approval, pending renewal hold, manual payment, admin approval and one provider mutation. It verified automatic refresh of the displayed current plan/price, unchanged due date and original provisioning/order/invoice data, idempotent replay and the next target-priced renewal. The existing scheduled renewal browser rehearsal also passed. PostgreSQL cases cover definite failure/retry, confirmed-provider recovery after blocked finalization, lost replies, manual refund/closure, ownership/support isolation and cancellation/service-state conflict guards.
+- Initial acceptance runs exposed fixture/build-order issues, a dispatch race and an attempted change to a protected provisioning snapshot. Added the dispatch claim and a separate current package field, retained the immutable snapshot guard, and exercised normal checkout-style snapshots in both acceptance layers. Updated historical-schema fixtures to request only columns present at that migration point. A deadline-sensitive preflight test passed on the serial database rerun without widening its limits. No unresolved check failure remains. Only local commits are part of this command; no push or deployment ran.
+- Limits: first-release target capacity and package availability are explicit full-administrator attestations; source account identity is verified through the adapter. No self-service unrestricted catalogue changes, cross-server moves, billing-cycle changes, mid-period downgrades or automatic refunds. No push, deployment, real customer data or live provider mutation is authorized.
+- Recommended next command: **Command 212 — Implement period-end hosting downgrades**. Preserve the owner-selected no-credit/no-automatic-refund policy and coordinate reservations with early renewal generation. Await owner authorization.
 
 ### Command 210 — Define hosting plan changes and proration
 

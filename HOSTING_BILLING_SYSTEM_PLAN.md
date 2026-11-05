@@ -8,7 +8,14 @@
 
 **Technical identifier:** `webhost-billing`
 
-**Plan-change direction — 2026-11-05:** Command 210 defines a tested, read-only
+**Plan-change direction — 2026-11-05:** Command 211 authorizes paid upgrades
+using the Command 210 policy. A full administrator offers a verified target
+per service; the customer accepts one snapshotted prorated invoice. Apply the
+package only after verified payment and administrator approval, and update
+current plan pricing only after provider confirmation. Keep historical records,
+add-ons and the cycle boundary intact. Test locally with fake providers.
+
+**Plan-change definition — 2026-11-05:** Command 210 defines a tested, read-only
 quote model. The owner selected period-end downgrades without mid-period credit
 or automatic refunds. Upgrade proration, rounding, quote expiry and execution
 guards are proposed in `docs/HOSTING_PLAN_CHANGES.md` for agreement before

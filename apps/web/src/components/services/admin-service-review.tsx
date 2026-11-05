@@ -13,6 +13,7 @@ import { formatMinor } from '../invoices/invoice-ui';
 import { Button, buttonStyles } from '../ui/button';
 import { ErrorState, LoadingState } from '../ui/feedback-state';
 import { AdminServiceAddOns } from './admin-service-add-ons';
+import { HostingUpgrades } from './hosting-upgrades';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 const serviceResponse = apiSuccessResponseSchema(serviceSchema);
@@ -129,7 +130,14 @@ function ReviewRequest({
           }
         />
       ) : (
-        <ReviewDetails service={result.service} timeZone={result.timeZone} />
+        <ReviewDetails
+          service={result.service}
+          timeZone={result.timeZone}
+          onUpgradeCompleted={() => {
+            setResult(undefined);
+            setAttempt((value) => value + 1);
+          }}
+        />
       )}
     </section>
   );
@@ -177,9 +185,11 @@ async function loadReview(
 function ReviewDetails({
   service,
   timeZone,
+  onUpgradeCompleted,
 }: {
   service: Service;
   timeZone: string;
+  onUpgradeCompleted: () => void;
 }) {
   const date = (value: string | null) =>
     value
@@ -216,13 +226,13 @@ function ReviewDetails({
             <Fact label="Application service state">
               {sentenceCaseLabel(service.status)}
             </Fact>
-            <Fact label="Historical product">{service.productName}</Fact>
+            <Fact label="Current plan">{service.productName}</Fact>
             <Fact label="Hosting setup">
               {service.hostingProvisioningMode === 'PRESERVE_EXISTING'
                 ? 'Keep existing website and email'
                 : 'Standard hosting'}
             </Fact>
-            <Fact label="Historical description">
+            <Fact label="Current plan description">
               {service.productDescription ?? 'Not recorded'}
             </Fact>
             <Fact label="Product reference">{service.productId}</Fact>
@@ -297,6 +307,11 @@ function ReviewDetails({
         </div>
       </div>
       <AdminServiceAddOns service={service} timeZone={timeZone} />
+      <HostingUpgrades
+        service={service}
+        administrator
+        onCompleted={onUpgradeCompleted}
+      />
     </div>
   );
 }

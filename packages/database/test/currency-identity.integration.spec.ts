@@ -888,6 +888,7 @@ test('the additive 26th migration preserves every prior-25 row, currency/auth/se
       },
     });
     await models.service.create({
+      select: { id: true }, // Historical schema predates the current package column.
       data: {
         customerId,
         productId: product.id,

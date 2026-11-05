@@ -7,9 +7,8 @@ import {
 } from './contracts/money';
 import { hostingBillingPeriodSchema } from './contracts/states';
 
-// Command 210 reference model. Not connected to application requests or billing.
-export const HOSTING_PLAN_CHANGE_POLICY =
-  'hosting-plan-change-proposal-v1' as const;
+// Proration policy approved for the Command 211 local upgrade implementation.
+export const HOSTING_PLAN_CHANGE_POLICY = 'hosting-plan-change-v1' as const;
 const quoteLifetimeMs = 900_000n;
 const timestampSchema = z.iso.datetime({ precision: 3 });
 const planSnapshotSchema = z
@@ -24,6 +23,77 @@ const planSnapshotSchema = z
     packageIdentifier: z.string().min(1).max(191),
   })
   .strict();
+
+export const hostingUpgradeQuoteSchema = z
+  .object({
+    status: z.literal('QUOTED'),
+    policyVersion: z.literal(HOSTING_PLAN_CHANGE_POLICY),
+    change: z.literal('UPGRADE'),
+    serviceId: z.uuid(),
+    serviceUpdatedAt: timestampSchema,
+    quotedAt: timestampSchema,
+    expiresAt: timestampSchema,
+    effectiveAt: timestampSchema,
+    nextDueAt: timestampSchema,
+    paidPeriod: z
+      .object({
+        startAt: timestampSchema,
+        endAt: timestampSchema,
+        invoiceId: z.uuid(),
+      })
+      .strict(),
+    current: planSnapshotSchema,
+    target: planSnapshotSchema,
+    immediateCharge: moneySchema,
+    nextRecurringAmount: moneySchema,
+    periodMs: z.string().regex(/^[1-9]\d*$/),
+    remainingMs: z.string().regex(/^[1-9]\d*$/),
+    rounding: z.literal('HALF_UP_ON_NET_DIFFERENCE'),
+  })
+  .strict();
+
+export const createHostingUpgradeQuoteSchema = z
+  .object({
+    submissionKey: z.uuid(),
+    targetPriceId: z.uuid(),
+    requirementsVerified: z.literal(true),
+    reason: z.string().trim().min(1).max(1000),
+  })
+  .strict();
+export const confirmHostingUpgradeSchema = z
+  .object({ acknowledged: z.literal(true) })
+  .strict();
+export const hostingUpgradeSchema = z
+  .object({
+    id: z.uuid(),
+    serviceId: z.uuid(),
+    status: z.enum([
+      'QUOTED',
+      'REQUESTED',
+      'APPLYING',
+      'REVIEW_REQUIRED',
+      'COMPLETED',
+      'CANCELLED',
+    ]),
+    sourceName: z.string(),
+    targetName: z.string(),
+    amount: moneySchema,
+    nextRecurringAmount: moneySchema,
+    quotedAt: timestampSchema,
+    expiresAt: timestampSchema,
+    periodEndAt: timestampSchema,
+    acceptedAt: timestampSchema.nullable(),
+    approvedAt: timestampSchema.nullable(),
+    completedAt: timestampSchema.nullable(),
+    invoiceId: z.uuid().nullable(),
+    invoiceNumber: z.string().nullable(),
+    paymentStatus: z.string().nullable(),
+    operationStatus: z.string().nullable(),
+    error: z.string().nullable(),
+    canAccept: z.boolean(),
+  })
+  .strict();
+export type HostingUpgrade = z.infer<typeof hostingUpgradeSchema>;
 
 export const hostingPlanChangeQuoteInputSchema = z
   .object({
@@ -42,7 +112,7 @@ export const hostingPlanChangeQuoteInputSchema = z
     current: planSnapshotSchema,
     target: planSnapshotSchema,
     targetActive: z.boolean(),
-    // Facts must be loaded by a future authorized server caller, never a browser.
+    // Facts must be loaded by an authorized server caller, never a browser.
     facts: z
       .object({
         customerOwnsService: z.boolean(),

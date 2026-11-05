@@ -185,6 +185,7 @@ export class ServiceAddOnsService {
     }
     return {
       ...this.serialize(item, null),
+      availableEndAt: null,
       manualCompletion: completion
         ? {
             completedAt: completion.completedAt,
@@ -220,6 +221,17 @@ export class ServiceAddOnsService {
         FOR UPDATE
       `;
       const service = await this.ownedService(tx, serviceId, customerId);
+      if (
+        await tx.serviceUpgrade.count({
+          where: {
+            serviceId,
+            status: { in: ['REQUESTED', 'APPLYING', 'REVIEW_REQUIRED'] },
+          },
+        })
+      )
+        throw this.conflict(
+          'Resolve the pending hosting upgrade before changing add-ons.',
+        );
       const [item] = await this.findAddOns(tx, service, addOnId);
       if (!item) throw this.forbidden();
       if (item.renewalEndsAt) return this.serialize(item, null);

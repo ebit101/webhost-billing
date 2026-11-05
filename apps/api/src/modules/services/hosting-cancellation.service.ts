@@ -61,6 +61,17 @@ export class HostingCancellationService {
     return this.prisma.$transaction(async (tx) => {
       await this.lock(tx, serviceId);
       const service = await this.ownedService(tx, serviceId, actor);
+      if (
+        await tx.serviceUpgrade.count({
+          where: {
+            serviceId,
+            status: { in: ['REQUESTED', 'APPLYING', 'REVIEW_REQUIRED'] },
+          },
+        })
+      )
+        throw this.invalid(
+          'Resolve the pending hosting upgrade before requesting cancellation.',
+        );
       const existing = await tx.hostingCancellationRequest.findFirst({
         where: { serviceId, status: { in: ['OPEN', 'COMPLETED'] } },
       });

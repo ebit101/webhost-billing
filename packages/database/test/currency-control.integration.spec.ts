@@ -784,6 +784,7 @@ test('the one additive migration preserves every prior-24 row, immutable policy/
       },
     });
     await old.models.service.create({
+      select: { id: true }, // Historical schema predates the current package column.
       data: {
         customerId,
         productId: product.id,

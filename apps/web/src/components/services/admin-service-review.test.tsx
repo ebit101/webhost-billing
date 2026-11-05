@@ -79,7 +79,7 @@ function review(serviceId = id, scope?: string) {
 }
 function reads(row = service) {
   const fetchMock = vi.fn(async (input: RequestInfo | URL) =>
-    String(input).includes('/add-ons')
+    String(input).includes('/add-ons') || String(input).includes('/upgrades')
       ? success([])
       : String(input).endsWith('/settings')
         ? success({ timeZone: 'Asia/Dhaka', currency: 'BDT' })
@@ -126,7 +126,7 @@ describe('selected administrator service read', () => {
       expect(screen.getByRole('heading', { name: 'Service review' })).toBe(
         document.activeElement,
       );
-      expect(fetchMock).toHaveBeenCalledTimes(3);
+      expect(fetchMock).toHaveBeenCalledTimes(4);
       expect(fetchMock.mock.calls[0][0]).toContain(`/services/${id}`);
       // No write, per-row read, order/invoice chain, panel action or login URL.
       expect(fetchMock.mock.calls[1][0]).toMatch(/\/settings$/);
@@ -258,6 +258,7 @@ describe('selected administrator service read', () => {
       .mockRejectedValueOnce(new Error('private-response'))
       .mockResolvedValueOnce(success(service))
       .mockResolvedValueOnce(success({ timeZone: 'UTC' }))
+      .mockResolvedValueOnce(success([]))
       .mockResolvedValueOnce(success([]));
     vi.stubGlobal('fetch', fetchMock);
     render(review());
@@ -265,7 +266,7 @@ describe('selected administrator service read', () => {
       await screen.findByRole('button', { name: 'Retry service review' }),
     );
     await screen.findByRole('link', { name: 'View customer' });
-    expect(fetchMock).toHaveBeenCalledTimes(4);
+    expect(fetchMock).toHaveBeenCalledTimes(5);
     for (const [, options] of fetchMock.mock.calls.slice(0, 3))
       expect(options).toEqual({
         credentials: 'include',
@@ -339,6 +340,7 @@ describe('service review integration preserves deliberate operations', () => {
           return success({ csrfToken: 'fictional-csrf' });
         if (path === '/settings') return success({ timeZone: 'Asia/Dhaka' });
         if (path.endsWith('/add-ons')) return success([]);
+        if (path.endsWith('/upgrades')) return success([]);
         if (path === '/services/setup-options')
           return success({
             servers: [service.server],

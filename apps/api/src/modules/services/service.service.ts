@@ -344,6 +344,17 @@ export class ServiceService {
       });
       if (!current) throw this.notFound();
       if (
+        await transaction.serviceUpgrade.count({
+          where: {
+            serviceId,
+            status: { in: ['REQUESTED', 'APPLYING', 'REVIEW_REQUIRED'] },
+          },
+        })
+      )
+        throw this.conflict(
+          'Resolve the pending hosting upgrade before changing service state.',
+        );
+      if (
         input.status === 'ACTIVE' &&
         current.status === 'SUSPENDED' &&
         (await transaction.hostingCancellationRequest.findFirst({

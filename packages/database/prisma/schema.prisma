@@ -717,43 +717,45 @@ model OrderItem {
 }
 
 model Service {
-  id                         String                  @id @default(uuid()) @db.Uuid
-  customerId                 String                  @map("customer_id") @db.Uuid
-  orderItemId                String?                 @unique(map: "services_order_item_id_key") @map("order_item_id") @db.Uuid
-  productId                  String                  @map("product_id") @db.Uuid
-  productPriceId             String                  @map("product_price_id") @db.Uuid
-  serverId                   String                  @map("server_id") @db.Uuid
-  terminatedByUserId         String?                 @map("terminated_by_user_id") @db.Uuid
-  suspensionInvoiceId        String?                 @map("suspension_invoice_id") @db.Uuid
-  status                     ServiceStatus           @default(PENDING)
-  domain                     String?                 @db.VarChar(253)
-  productNameSnapshot        String                  @map("product_name_snapshot") @db.VarChar(160)
-  productDescriptionSnapshot String?                 @map("product_description_snapshot") @db.Text
-  provisioningSnapshot       Json?                   @map("provisioning_snapshot")
-  controlPanelUsername       String?                 @map("control_panel_username") @db.VarChar(64)
-  externalAccountId          String?                 @map("external_account_id") @db.VarChar(191)
-  billingPeriod              BillingPeriod           @map("billing_period")
-  recurringAmount            BigInt                  @map("recurring_amount") @db.BigInt
-  currency                   String                  @db.Char(3)
-  startedAt                  DateTime                @map("started_at") @db.Timestamptz(3)
-  nextDueAt                  DateTime                @map("next_due_at") @db.Timestamptz(3)
-  activatedAt                DateTime?               @map("activated_at") @db.Timestamptz(3)
-  suspendedAt                DateTime?               @map("suspended_at") @db.Timestamptz(3)
-  suspensionReason           String?                 @map("suspension_reason") @db.Text
-  provisioningFailureReason  String?                 @map("provisioning_failure_reason") @db.Text
-  cancelledAt                DateTime?               @map("cancelled_at") @db.Timestamptz(3)
-  cancellationReason         String?                 @map("cancellation_reason") @db.Text
-  terminatedAt               DateTime?               @map("terminated_at") @db.Timestamptz(3)
-  terminationReason          String?                 @map("termination_reason") @db.Text
-  createdAt                  DateTime                @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt                  DateTime                @updatedAt @map("updated_at") @db.Timestamptz(3)
-  customer                   Customer                @relation(fields: [customerId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  orderItem                  OrderItem?              @relation(fields: [orderItemId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  product                    Product                 @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  productPrice               ProductPrice            @relation(fields: [productPriceId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  server                     Server                  @relation(fields: [serverId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  terminatedBy               User?                   @relation("ServiceTerminatedBy", fields: [terminatedByUserId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  suspensionInvoice          Invoice?                @relation("ServiceSuspensionInvoice", fields: [suspensionInvoiceId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  id                         String                       @id @default(uuid()) @db.Uuid
+  upgrades                   ServiceUpgrade[]
+  customerId                 String                       @map("customer_id") @db.Uuid
+  orderItemId                String?                      @unique(map: "services_order_item_id_key") @map("order_item_id") @db.Uuid
+  productId                  String                       @map("product_id") @db.Uuid
+  productPriceId             String                       @map("product_price_id") @db.Uuid
+  serverId                   String                       @map("server_id") @db.Uuid
+  terminatedByUserId         String?                      @map("terminated_by_user_id") @db.Uuid
+  suspensionInvoiceId        String?                      @map("suspension_invoice_id") @db.Uuid
+  status                     ServiceStatus                @default(PENDING)
+  domain                     String?                      @db.VarChar(253)
+  productNameSnapshot        String                       @map("product_name_snapshot") @db.VarChar(160)
+  productDescriptionSnapshot String?                      @map("product_description_snapshot") @db.Text
+  provisioningSnapshot       Json?                        @map("provisioning_snapshot")
+  currentPackageIdentifier   String?                      @map("current_package_identifier") @db.VarChar(191)
+  controlPanelUsername       String?                      @map("control_panel_username") @db.VarChar(64)
+  externalAccountId          String?                      @map("external_account_id") @db.VarChar(191)
+  billingPeriod              BillingPeriod                @map("billing_period")
+  recurringAmount            BigInt                       @map("recurring_amount") @db.BigInt
+  currency                   String                       @db.Char(3)
+  startedAt                  DateTime                     @map("started_at") @db.Timestamptz(3)
+  nextDueAt                  DateTime                     @map("next_due_at") @db.Timestamptz(3)
+  activatedAt                DateTime?                    @map("activated_at") @db.Timestamptz(3)
+  suspendedAt                DateTime?                    @map("suspended_at") @db.Timestamptz(3)
+  suspensionReason           String?                      @map("suspension_reason") @db.Text
+  provisioningFailureReason  String?                      @map("provisioning_failure_reason") @db.Text
+  cancelledAt                DateTime?                    @map("cancelled_at") @db.Timestamptz(3)
+  cancellationReason         String?                      @map("cancellation_reason") @db.Text
+  terminatedAt               DateTime?                    @map("terminated_at") @db.Timestamptz(3)
+  terminationReason          String?                      @map("termination_reason") @db.Text
+  createdAt                  DateTime                     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                  DateTime                     @updatedAt @map("updated_at") @db.Timestamptz(3)
+  customer                   Customer                     @relation(fields: [customerId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  orderItem                  OrderItem?                   @relation(fields: [orderItemId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  product                    Product                      @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  productPrice               ProductPrice                 @relation(fields: [productPriceId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  server                     Server                       @relation(fields: [serverId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  terminatedBy               User?                        @relation("ServiceTerminatedBy", fields: [terminatedByUserId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  suspensionInvoice          Invoice?                     @relation("ServiceSuspensionInvoice", fields: [suspensionInvoiceId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   invoiceItems               InvoiceItem[]
   tickets                    Ticket[]
   hostingPanelOperations     HostingPanelOperation[]
@@ -821,6 +823,7 @@ model Server {
 
 model HostingPanelOperation {
   id                 String                      @id @default(uuid()) @db.Uuid
+  upgradeResult      ServiceUpgrade?
   serviceId          String?                     @map("service_id") @db.Uuid
   serverId           String                      @map("server_id") @db.Uuid
   requestedByUserId  String?                     @map("requested_by_user_id") @db.Uuid
@@ -857,42 +860,66 @@ model HostingPanelOperation {
 }
 
 model Invoice {
-  id                       String        @id @default(uuid()) @db.Uuid
-  invoiceNumber            String        @unique(map: "invoices_number_key") @map("invoice_number") @db.VarChar(32)
-  submissionKey            String        @unique(map: "invoices_submission_key_key") @map("submission_key") @db.VarChar(191)
-  customerId               String        @map("customer_id") @db.Uuid
-  orderId                  String?       @map("order_id") @db.Uuid
-  status                   InvoiceStatus @default(DRAFT)
-  currency                 String        @db.Char(3)
-  subtotal                 BigInt        @db.BigInt
-  discountTotal            BigInt        @default(0) @map("discount_total") @db.BigInt
-  taxTotal                 BigInt        @default(0) @map("tax_total") @db.BigInt
-  total                    BigInt        @db.BigInt
-  creditTotal              BigInt        @default(0) @map("credit_total") @db.BigInt
-  amountPaid               BigInt        @default(0) @map("amount_paid") @db.BigInt
-  balanceDue               BigInt        @map("balance_due") @db.BigInt
-  customerNameSnapshot     String        @map("customer_name_snapshot") @db.VarChar(200)
-  customerEmailSnapshot    String        @map("customer_email_snapshot") @db.VarChar(320)
-  customerAddressSnapshot  Json          @map("customer_address_snapshot")
-  businessIdentitySnapshot Json          @map("business_identity_snapshot")
-  taxIdentitySnapshot      Json?         @map("tax_identity_snapshot")
-  issuedAt                 DateTime?     @map("issued_at") @db.Timestamptz(3)
-  dueAt                    DateTime      @map("due_at") @db.Timestamptz(3)
-  paidAt                   DateTime?     @map("paid_at") @db.Timestamptz(3)
-  cancelledAt              DateTime?     @map("cancelled_at") @db.Timestamptz(3)
-  createdAt                DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt                DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
-  customer                 Customer      @relation(fields: [customerId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  order                    Order?        @relation(fields: [orderId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  id                       String          @id @default(uuid()) @db.Uuid
+  hostingUpgrade           ServiceUpgrade?
+  invoiceNumber            String          @unique(map: "invoices_number_key") @map("invoice_number") @db.VarChar(32)
+  submissionKey            String          @unique(map: "invoices_submission_key_key") @map("submission_key") @db.VarChar(191)
+  customerId               String          @map("customer_id") @db.Uuid
+  orderId                  String?         @map("order_id") @db.Uuid
+  status                   InvoiceStatus   @default(DRAFT)
+  currency                 String          @db.Char(3)
+  subtotal                 BigInt          @db.BigInt
+  discountTotal            BigInt          @default(0) @map("discount_total") @db.BigInt
+  taxTotal                 BigInt          @default(0) @map("tax_total") @db.BigInt
+  total                    BigInt          @db.BigInt
+  creditTotal              BigInt          @default(0) @map("credit_total") @db.BigInt
+  amountPaid               BigInt          @default(0) @map("amount_paid") @db.BigInt
+  balanceDue               BigInt          @map("balance_due") @db.BigInt
+  customerNameSnapshot     String          @map("customer_name_snapshot") @db.VarChar(200)
+  customerEmailSnapshot    String          @map("customer_email_snapshot") @db.VarChar(320)
+  customerAddressSnapshot  Json            @map("customer_address_snapshot")
+  businessIdentitySnapshot Json            @map("business_identity_snapshot")
+  taxIdentitySnapshot      Json?           @map("tax_identity_snapshot")
+  issuedAt                 DateTime?       @map("issued_at") @db.Timestamptz(3)
+  dueAt                    DateTime        @map("due_at") @db.Timestamptz(3)
+  paidAt                   DateTime?       @map("paid_at") @db.Timestamptz(3)
+  cancelledAt              DateTime?       @map("cancelled_at") @db.Timestamptz(3)
+  createdAt                DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
+  customer                 Customer        @relation(fields: [customerId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  order                    Order?          @relation(fields: [orderId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   items                    InvoiceItem[]
   payments                 Payment[]
   emailLogs                EmailLog[]
-  suspendedServices        Service[]     @relation("ServiceSuspensionInvoice")
+  suspendedServices        Service[]       @relation("ServiceSuspensionInvoice")
 
   @@index([customerId, createdAt], map: "invoices_customer_created_at_idx")
   @@index([status, dueAt], map: "invoices_status_due_at_idx")
   @@index([orderId], map: "invoices_order_id_idx")
   @@map("invoices")
+}
+
+model ServiceUpgrade {
+  id          String                 @id @default(uuid()) @db.Uuid
+  serviceId   String                 @map("service_id") @db.Uuid
+  invoiceId   String?                @unique @map("invoice_id") @db.Uuid
+  operationId String?                @unique @map("operation_id") @db.Uuid
+  status      String                 @default("QUOTED") @db.VarChar(24)
+  quote       Json
+  contextHash String                 @map("context_hash") @db.Char(64)
+  attempt     Int                    @default(0)
+  acceptedAt  DateTime?              @map("accepted_at") @db.Timestamptz(3)
+  approvedAt  DateTime?              @map("approved_at") @db.Timestamptz(3)
+  completedAt DateTime?              @map("completed_at") @db.Timestamptz(3)
+  error       String?                @db.VarChar(1000)
+  createdAt   DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime               @updatedAt @map("updated_at") @db.Timestamptz(3)
+  service     Service                @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+  invoice     Invoice?               @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
+  operation   HostingPanelOperation? @relation(fields: [operationId], references: [id], onDelete: Restrict)
+
+  @@index([serviceId, createdAt], map: "service_upgrades_service_created_at_idx")
+  @@map("service_upgrades")
 }
 
 model InvoiceItem {

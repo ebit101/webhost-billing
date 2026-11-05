@@ -17,6 +17,7 @@ import {
   cpanelServerConfigurationSchema,
   managedCpanelServerSchema,
   hostingAccountSchema,
+  hostingUpgradeQuoteSchema,
   hostingPanelLoginUrlSchema,
   hostingPanelOperationResultSchema,
   hostingPanelOperationSchema,
@@ -82,6 +83,7 @@ const provisioningSnapshotSchema = z
 interface ExecutionOptions {
   retryOfOperationId?: string;
   attemptNumber?: number;
+  upgradeId?: string;
 }
 
 interface ProviderSuccess {
@@ -480,6 +482,24 @@ export class HostingPanelService {
     return this.executeServiceOperation(serviceId, input, actor, context, {});
   }
 
+  executeUpgrade(
+    serviceId: string,
+    input: ExecuteHostingOperationRequest,
+    actor: AuthRequestContext,
+    context: SecurityRequestContext,
+    upgradeId: string,
+  ) {
+    if (
+      actor.identity.role !== 'ADMIN' ||
+      actor.identity.staffRole !== 'FULL_ADMINISTRATOR' ||
+      input.type !== 'CHANGE_PACKAGE'
+    )
+      throw this.forbidden('Only full administrators can approve upgrades.');
+    return this.executeServiceOperation(serviceId, input, actor, context, {
+      upgradeId,
+    });
+  }
+
   async generateCustomerLogin(
     serviceId: string,
     submissionKey: string,
@@ -608,6 +628,7 @@ export class HostingPanelService {
     input: RetryHostingOperationRequest,
     actor: AuthRequestContext,
     context: SecurityRequestContext,
+    upgradeId?: string,
   ): Promise<HostingPanelOperationResult> {
     if (actor.identity.role !== 'ADMIN') {
       throw this.forbidden('Only administrators can retry hosting operations.');
@@ -665,6 +686,7 @@ export class HostingPanelService {
       {
         retryOfOperationId: original.id,
         attemptNumber: original.attemptNumber + 1,
+        upgradeId,
       },
     );
   }
@@ -706,6 +728,67 @@ export class HostingPanelService {
           include: serviceInclude,
         });
         if (!service) throw this.notFound('Service was not found.');
+        const upgrade = await transaction.serviceUpgrade.findFirst({
+          where: {
+            serviceId,
+            status: { in: ['REQUESTED', 'APPLYING', 'REVIEW_REQUIRED'] },
+          },
+        });
+        if (
+          options.upgradeId &&
+          (!upgrade ||
+            upgrade.id !== options.upgradeId ||
+            upgrade.status !== 'APPLYING')
+        )
+          throw this.conflict(
+            'The upgrade is not approved for this operation.',
+          );
+        if (options.upgradeId && upgrade) {
+          const quote = hostingUpgradeQuoteSchema.parse(upgrade.quote);
+          if (
+            input.type !== 'CHANGE_PACKAGE' ||
+            input.packageIdentifier !== quote.target.packageIdentifier ||
+            Date.now() >= Date.parse(quote.expiresAt) ||
+            service.updatedAt.toISOString() !== quote.serviceUpdatedAt ||
+            service.productId !== quote.current.productId ||
+            service.recurringAmount.toString() !==
+              quote.current.recurringAmount.amount ||
+            !upgrade.invoiceId
+          )
+            throw this.conflict(
+              'The approved upgrade context changed or expired.',
+            );
+          for (const invoiceId of [
+            quote.paidPeriod.invoiceId,
+            upgrade.invoiceId,
+          ]) {
+            await transaction.$queryRaw`SELECT id FROM invoices WHERE id = ${invoiceId}::uuid FOR UPDATE`;
+            const invoice = await transaction.invoice.findUniqueOrThrow({
+              where: { id: invoiceId },
+            });
+            if (
+              invoice.customerId !== service.customerId ||
+              invoice.status !== 'PAID' ||
+              invoice.balanceDue !== 0n ||
+              invoice.amountPaid !== invoice.total ||
+              invoice.creditTotal !== 0n ||
+              invoice.taxTotal !== 0n ||
+              invoice.discountTotal !== 0n ||
+              invoice.currency !== service.currency
+            )
+              throw this.conflict(
+                'Verify both paid invoices before changing the package.',
+              );
+          }
+        }
+        if (
+          upgrade &&
+          !['GET_ACCOUNT', 'GENERATE_LOGIN_URL'].includes(input.type) &&
+          options.upgradeId !== upgrade.id
+        )
+          throw this.conflict(
+            'Resolve the pending hosting upgrade before another hosting operation.',
+          );
         if (
           input.type === 'UNSUSPEND_ACCOUNT' &&
           (await transaction.hostingCancellationRequest.findFirst({
@@ -1536,6 +1619,7 @@ export class HostingPanelService {
   }
 
   private reference(service: {
+    currentPackageIdentifier: string | null;
     externalAccountId: string | null;
     controlPanelUsername: string | null;
     domain: string | null;
@@ -1552,7 +1636,9 @@ export class HostingPanelService {
       externalAccountId: service.externalAccountId,
       username: service.controlPanelUsername,
       domain: service.domain,
-      packageIdentifier: this.packageIdentifier(service.provisioningSnapshot),
+      packageIdentifier:
+        service.currentPackageIdentifier ??
+        this.packageIdentifier(service.provisioningSnapshot),
     };
   }
 

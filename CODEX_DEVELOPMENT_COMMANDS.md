@@ -6858,8 +6858,8 @@ Verify locally, update the progress log, and do not deploy.
 
 ## Proposed development sequence — 2026-11-05
 
-The owner requested commands for the five feature areas below. Command 210 was
-authorized on 2026-11-05; Commands 211–224 remain proposals requiring separate
+The owner requested commands for the five feature areas below. Commands 210 and 211 were
+authorized on 2026-11-05; Commands 212–224 remain proposals requiring separate
 authorization. Command 209 remains reserved for the previously recommended
 add-on cancellation follow-up queue.
 The recommended starting point for this sequence is Command 210.
@@ -6895,7 +6895,11 @@ hosting and billing unchanged while producing a quote.
 
 ## Command 211 — Implement paid hosting upgrades
 
-**Status:** Proposed; depends on the approved Command 210 policy.
+**Status:** Owner-authorized on 2026-11-05. Starting Command 211 accepts the
+Command 210 upgrade proposal for this local implementation. First-release
+quotes are offered per service by a full administrator after verifying the
+target package, capacity and add-on compatibility. No deployment or live test.
+Completed locally with guarded acceptance and recovery checks; see `docs/PROGRESS.md`.
 
 Let a customer review and confirm an upgrade quote. Issue one prorated invoice
 with snapshots, then apply the existing hosting package-change operation after

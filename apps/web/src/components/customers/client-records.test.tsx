@@ -160,7 +160,7 @@ describe('client-owned record workspace', () => {
   });
   it('shows saved service facts with a client-owned return link without panel operations', async () => {
     api.get.mockImplementation(async (path: string) =>
-      path.includes('/add-ons')
+      path.includes('/add-ons') || path.includes('/upgrades')
         ? []
         : path === '/settings'
           ? { timeZone: 'Asia/Dhaka' }

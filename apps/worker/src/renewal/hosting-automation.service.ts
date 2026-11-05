@@ -159,6 +159,15 @@ export class HostingAutomationService {
     const idempotencyKey = `automation:${action.toLowerCase()}:${payload.serviceId}:${sourceId}`;
     return this.prisma.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT id FROM services WHERE id = ${payload.serviceId}::uuid FOR UPDATE`;
+      if (
+        await tx.serviceUpgrade.count({
+          where: {
+            serviceId: payload.serviceId,
+            status: { in: ['REQUESTED', 'APPLYING', 'REVIEW_REQUIRED'] },
+          },
+        })
+      )
+        throw this.jobError('TEMPORARY', 'HOSTING_UPGRADE_PENDING');
       const existing = await tx.hostingPanelOperation.findFirst({
         where: { idempotencyKey: { startsWith: idempotencyKey } },
         orderBy: { attemptNumber: 'desc' },
@@ -315,13 +324,20 @@ export class HostingAutomationService {
     const invoice = await this.prisma.invoice.findUnique({
       where: { id: payload.invoiceId },
       include: {
+        hostingUpgrade: { select: { id: true } },
         items: {
           where: { serviceId: payload.serviceId },
           select: { id: true },
         },
       },
     });
-    if (!service || !invoice || invoice.items.length === 0) return false;
+    if (
+      !service ||
+      !invoice ||
+      invoice.hostingUpgrade ||
+      invoice.items.length === 0
+    )
+      return false;
     if (
       action === 'UNSUSPEND' &&
       (await this.prisma.hostingCancellationRequest.findFirst({
