@@ -24,11 +24,11 @@ const navigation: WorkspaceNavigationItem[] = [
   { href: '/admin/customers', label: 'Customers', icon: 'users' },
   { href: '/admin/products', label: 'Products', icon: 'product' },
   { href: '/admin/orders', label: 'Orders', icon: 'order', badge: '4' },
-  { href: '/admin/services', label: 'Services', icon: 'server' },
+  { href: '/admin/services', label: 'Services', icon: 'cloud' },
   { href: '/admin/servers', label: 'Servers', icon: 'server' },
   {
     ...domainWorkspaceTabs[0],
-    icon: 'server',
+    icon: 'globe',
     activePaths: domainWorkspaceTabs.slice(1).map(({ href }) => href),
   },
   {
@@ -38,13 +38,13 @@ const navigation: WorkspaceNavigationItem[] = [
     badge: '7',
     activePaths: [billingWorkspaceTabs[1].href],
   },
-  { href: '/admin/reports', label: 'Reports', icon: 'activity' },
+  { href: '/admin/reports', label: 'Reports', icon: 'bar-chart' },
   { href: '/admin/support', label: 'Support', icon: 'support', badge: '3' },
-  { href: '/admin/automation', label: 'Automation', icon: 'activity' },
-  { href: '/admin/email', label: 'Email delivery', icon: 'bell' },
+  { href: '/admin/automation', label: 'Automation', icon: 'bolt' },
+  { href: '/admin/email', label: 'Email delivery', icon: 'send' },
   { href: '/admin/notifications', label: 'Notifications', icon: 'bell' },
   { href: '/admin/settings', label: 'Settings', icon: 'settings' },
-  { href: '/admin/staff', label: 'Administrators', icon: 'users' },
+  { href: '/admin/staff', label: 'Administrators', icon: 'shield' },
 ];
 
 export default async function AdminLayout({

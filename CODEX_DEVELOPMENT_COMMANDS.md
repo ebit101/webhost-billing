@@ -6834,3 +6834,8 @@ administrator details page and display payment status on the Orders list.
 Place hosting approval in the details page and keep payment verification and
 domain registration separate. Verify the flow locally and update the progress
 log.
+
+## Command 207 — Give administrator menu items distinct icons
+
+Owner-authorized on 2026-11-05. Use a distinct icon for each administrator
+sidebar item, preserving the current menu labels and destinations.

@@ -4,9 +4,12 @@ export type IconName =
   | 'activity'
   | 'alert'
   | 'arrow-right'
+  | 'bar-chart'
   | 'bell'
+  | 'bolt'
   | 'check'
   | 'close'
+  | 'cloud'
   | 'dashboard'
   | 'globe'
   | 'invoice'
@@ -17,6 +20,7 @@ export type IconName =
   | 'plus'
   | 'product'
   | 'search'
+  | 'send'
   | 'server'
   | 'settings'
   | 'shield'
@@ -57,6 +61,8 @@ function iconPath(name: IconName) {
       );
     case 'arrow-right':
       return <path d="M5 12h14m-6-6 6 6-6 6" />;
+    case 'bar-chart':
+      return <path d="M3 3v18h18M7 17v-4m5 4V9m5 8V5" />;
     case 'bell':
       return (
         <>
@@ -64,10 +70,16 @@ function iconPath(name: IconName) {
           <path d="M10 21h4" />
         </>
       );
+    case 'bolt':
+      return <path d="m13 2-9 12h7l-1 8 10-12h-7l1-8Z" />;
     case 'check':
       return <path d="m5 12 4 4L19 6" />;
     case 'close':
       return <path d="m6 6 12 12M18 6 6 18" />;
+    case 'cloud':
+      return (
+        <path d="M7 18h10.5a4.5 4.5 0 0 0 .5-9 6 6 0 0 0-11.4 1.7A3.7 3.7 0 0 0 7 18Z" />
+      );
     case 'dashboard':
       return (
         <>
@@ -123,6 +135,8 @@ function iconPath(name: IconName) {
           <path d="m20 20-4-4" />
         </>
       );
+    case 'send':
+      return <path d="m3 10 18-7-7 18-3.5-7.5L3 10Zm7.5 3.5L21 3" />;
     case 'server':
       return (
         <>
