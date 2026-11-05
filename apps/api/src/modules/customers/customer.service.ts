@@ -3,6 +3,7 @@ import {
   CustomerStatus,
   InvoiceStatus,
   Prisma,
+  supportDepartmentAccess,
   ServiceStatus,
   TicketStatus,
   UserStatus,
@@ -58,10 +59,13 @@ export class CustomerService {
     const account = await this.auth.register(input, context, {
       administratorActorUserId: actor.identity.userId,
     });
-    return this.getById(account.customerId);
+    return this.getById(account.customerId, actor);
   }
 
-  async list(query: CustomerListQuery): Promise<{
+  async list(
+    query: CustomerListQuery,
+    actor: AuthRequestContext,
+  ): Promise<{
     data: CustomerSummary[];
     pagination: PaginationMeta;
   }> {
@@ -101,7 +105,7 @@ export class CustomerService {
               orders: true,
               services: true,
               invoices: true,
-              tickets: true,
+              tickets: { where: this.ticketVisibility(actor) },
             },
           },
         },
@@ -129,7 +133,20 @@ export class CustomerService {
     };
   }
 
-  async getById(customerId: string): Promise<CustomerDetail> {
+  private ticketVisibility(actor: AuthRequestContext): Prisma.TicketWhereInput {
+    const identity = actor.identity;
+    if (identity.role === 'CUSTOMER')
+      return { customerId: identity.customerId };
+    if (identity.staffRole === 'FULL_ADMINISTRATOR') return {};
+    if (identity.staffRole === 'SUPPORT_OPERATOR' && identity.twoFactorEnabled)
+      return { department: supportDepartmentAccess(identity.userId) };
+    return { id: { in: [] } };
+  }
+
+  async getById(
+    customerId: string,
+    actor: AuthRequestContext,
+  ): Promise<CustomerDetail> {
     const customer = await this.prisma.customer.findFirst({
       where: { id: customerId, deletedAt: null },
       include: {
@@ -147,6 +164,7 @@ export class CustomerService {
           take: RECENT_LINKED_RECORD_LIMIT,
         },
         tickets: {
+          where: this.ticketVisibility(actor),
           orderBy: { updatedAt: 'desc' },
           take: RECENT_LINKED_RECORD_LIMIT,
         },
@@ -155,7 +173,7 @@ export class CustomerService {
             orders: true,
             services: true,
             invoices: true,
-            tickets: true,
+            tickets: { where: this.ticketVisibility(actor) },
           },
         },
       },
@@ -469,7 +487,7 @@ export class CustomerService {
         },
       }),
     ]);
-    return this.getById(customerId);
+    return this.getById(customerId, actor);
   }
 
   async updateBilling(
@@ -492,7 +510,7 @@ export class CustomerService {
         },
       }),
     ]);
-    return this.getById(customerId);
+    return this.getById(customerId, actor);
   }
 
   async updateAccess(
@@ -543,7 +561,7 @@ export class CustomerService {
         },
       });
     });
-    return this.getById(customerId);
+    return this.getById(customerId, actor);
   }
 
   async changePassword(

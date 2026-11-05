@@ -1,4 +1,5 @@
 'use client';
+import { SupportDepartmentManager } from './support-department-manager';
 import { sentenceCaseLabel } from '@webhost-billing/shared';
 
 import type {
@@ -40,7 +41,11 @@ import {
   ticketTone,
 } from './support-ui';
 
-const emptyOptions: TicketSetupOptions = { admins: [] };
+const emptyOptions: TicketSetupOptions = {
+  admins: [],
+  departments: [],
+  canManageDepartments: false,
+};
 
 export function AdminTicketManager({
   customerFilter = emptyAdminCustomerFilter,
@@ -90,6 +95,11 @@ export function AdminTicketManager({
   }, [filteredCustomerId, ticketsPath, canReadCustomerContext]);
 
   const columns: DataColumn<TicketSummary>[] = [
+    {
+      key: 'department',
+      header: 'Department',
+      render: (ticket) => ticket.department.name,
+    },
     {
       key: 'ticket',
       header: 'Ticket',
@@ -155,7 +165,13 @@ export function AdminTicketManager({
     event.preventDefault();
     const values = new FormData(event.currentTarget);
     const query = new URLSearchParams({ pageSize: '100' });
-    for (const key of ['search', 'status', 'priority', 'assignedAdminId']) {
+    for (const key of [
+      'search',
+      'status',
+      'priority',
+      'assignedAdminId',
+      'departmentId',
+    ]) {
       const value = String(values.get(key) ?? '');
       if (value) query.set(key, value);
     }
@@ -197,13 +213,19 @@ export function AdminTicketManager({
         `/tickets/${selected.id}`,
         'PATCH',
         {
+          departmentId: String(values.get('departmentId')),
+          ...(values.get('routingReason')
+            ? { routingReason: String(values.get('routingReason')) }
+            : {}),
           status: String(values.get('status')),
           priority: String(values.get('priority')),
           assignedAdminId: assignedAdminId || null,
         },
       );
       replace(updated);
-      setNotice('Ticket assignment, priority, and status were saved.');
+      setNotice(
+        'Ticket department, assignment, priority and status were saved.',
+      );
     } catch (caught) {
       setError(ticketError(caught));
     } finally {
@@ -257,6 +279,19 @@ export function AdminTicketManager({
         title="Support queue"
         description="Filter customer requests, assign ownership, set priority, and keep every status change auditable."
       />
+      {options.canManageDepartments && (
+        <SupportDepartmentManager
+          departments={options.departments}
+          admins={options.admins}
+          onSaved={async () =>
+            setOptions(
+              await authenticatedGet<TicketSetupOptions>(
+                '/tickets/setup-options',
+              ),
+            )
+          }
+        />
+      )}
       <AdminCustomerFilterNotice
         customer={filteredCustomer}
         invalid={customerFilter.invalid}
@@ -291,6 +326,18 @@ export function AdminTicketManager({
             className={fieldStyles}
             placeholder="Ticket, subject, customer, or domain"
           />
+        </label>
+        <label className="text-sm font-semibold text-slate-700">
+          Department
+          <select name="departmentId" className={fieldStyles}>
+            <option value="">All accessible departments</option>
+            {options.departments.map((department) => (
+              <option key={department.id} value={department.id}>
+                {department.name}
+                {department.enabled ? '' : ' (disabled)'}
+              </option>
+            ))}
+          </select>
         </label>
         <FilterSelect name="status" label="Status" values={ticketStatuses} />
         <FilterSelect
@@ -366,6 +413,35 @@ export function AdminTicketManager({
                   onSubmit={update}
                   className="mt-5 grid gap-3 rounded-xl border border-slate-200 bg-white p-4 md:grid-cols-3 md:items-end"
                 >
+                  <label className="text-sm font-semibold text-slate-700">
+                    Department
+                    <select
+                      name="departmentId"
+                      defaultValue={selected.department.id}
+                      className={fieldStyles}
+                    >
+                      {options.departments
+                        .filter(
+                          (department) =>
+                            department.enabled ||
+                            department.id === selected.department.id,
+                        )
+                        .map((department) => (
+                          <option key={department.id} value={department.id}>
+                            {department.name}
+                            {department.enabled ? '' : ' (disabled)'}
+                          </option>
+                        ))}
+                    </select>
+                  </label>
+                  <label className="text-sm font-semibold text-slate-700">
+                    Reason for department change
+                    <input
+                      name="routingReason"
+                      maxLength={500}
+                      className={fieldStyles}
+                    />
+                  </label>
                   <FilterSelect
                     name="assignedAdminId"
                     label="Assign administrator"

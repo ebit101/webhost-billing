@@ -6985,7 +6985,9 @@ expiry after success.
 
 ## Command 216 — Add support departments and routing
 
-**Status:** Proposed; implementation requires owner authorization.
+**Status:** Owner-authorized on 2026-11-05; implemented locally. See
+`docs/SUPPORT_DEPARTMENTS.md` and `docs/PROGRESS.md` for scope and acceptance.
+No push or deployment.
 
 Add administrator-managed departments such as Support, Billing and Sales, with
 customer visibility, staff access and ticket assignment rules. Route new tickets

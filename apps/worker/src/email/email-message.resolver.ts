@@ -1,7 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { createHash } from 'node:crypto';
 import type { WorkerEnvironment } from '@webhost-billing/config';
-import { OutboxStatus, type PrismaClient } from '@webhost-billing/database';
+import {
+  supportStaffWhere,
+  OutboxStatus,
+  type PrismaClient,
+} from '@webhost-billing/database';
 import { domainRenewalContext } from '@webhost-billing/database/domain-renewals';
 import { BackgroundJobError } from '@webhost-billing/queue';
 import {
@@ -413,6 +417,7 @@ export class EmailMessageResolver {
     const ticket = await this.prisma.ticket.findUnique({
       where: { id: ticketId },
       include: {
+        department: true,
         customer: { include: { user: true } },
         assignedAdmin: { include: { adminProfile: true } },
         messages: { where: { id: messageId }, take: 1 },
@@ -420,21 +425,25 @@ export class EmailMessageResolver {
     });
     const message = ticket?.messages[0];
     if (!ticket || !message) throw permanent('EMAIL_TICKET_REPLY_UNAVAILABLE');
+    if (message.kind === 'SYSTEM')
+      throw permanent('EMAIL_PRIVATE_TICKET_MESSAGE');
     if (message.kind === 'CUSTOMER') {
+      const eligible = supportStaffWhere(
+        ticket.departmentId,
+        ticket.department.restricted,
+      );
       const assignedAdmin =
-        ticket.assignedAdmin?.status === 'ACTIVE' &&
-        ticket.assignedAdmin.deletedAt === null
-          ? ticket.assignedAdmin
-          : await this.prisma.user.findFirst({
-              where: {
-                role: 'ADMIN',
-                status: 'ACTIVE',
-                deletedAt: null,
-                adminProfile: { isNot: null },
-              },
+        (ticket.assignedAdminId
+          ? await this.prisma.user.findFirst({
+              where: { ...eligible, id: ticket.assignedAdminId },
               include: { adminProfile: true },
-              orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
-            });
+            })
+          : null) ??
+        (await this.prisma.user.findFirst({
+          where: eligible,
+          include: { adminProfile: true },
+          orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+        }));
       if (!assignedAdmin) throw permanent('EMAIL_TICKET_ADMIN_UNAVAILABLE');
       return this.render(
         assignedAdmin.email,

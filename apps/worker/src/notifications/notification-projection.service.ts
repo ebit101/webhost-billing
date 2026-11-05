@@ -425,7 +425,11 @@ export class NotificationProjectionService {
           include: { messages: { where: { id: payload.messageId } } },
         });
         const message = ticket?.messages[0];
-        if (ticket?.priority === 'URGENT' && message)
+        if (
+          ticket?.priority === 'URGENT' &&
+          message &&
+          message.kind !== 'SYSTEM'
+        )
           await this.emit(
             tx,
             message.kind === 'CUSTOMER'

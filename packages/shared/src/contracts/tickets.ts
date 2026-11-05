@@ -59,10 +59,51 @@ export const ticketMessageSchema = z
   })
   .strict();
 
+export const defaultSupportDepartmentId =
+  '21600000-0000-4000-8000-000000000001';
+export const supportDepartmentOptionSchema = z
+  .object({
+    id: z.uuid(),
+    name: plainText(80),
+    enabled: z.boolean(),
+    customerVisible: z.boolean(),
+  })
+  .strict();
+export const supportDepartmentSchema = supportDepartmentOptionSchema
+  .extend({
+    restricted: z.boolean(),
+    revision: z.number().int().positive(),
+    memberUserIds: z.array(z.uuid()).max(100),
+  })
+  .strict();
+export const saveSupportDepartmentSchema = z
+  .object({
+    name: plainText(80),
+    enabled: z.boolean(),
+    customerVisible: z.boolean(),
+    restricted: z.boolean(),
+    memberUserIds: z
+      .array(z.uuid())
+      .max(100)
+      .refine(
+        (ids) => new Set(ids).size === ids.length,
+        'Duplicate staff members.',
+      ),
+    reason: plainText(500),
+    revision: z.number().int().positive().optional(),
+  })
+  .strict();
+export type SupportDepartmentOption = z.infer<
+  typeof supportDepartmentOptionSchema
+>;
+export type SupportDepartment = z.infer<typeof supportDepartmentSchema>;
+export type SaveSupportDepartment = z.infer<typeof saveSupportDepartmentSchema>;
+
 export const ticketSummarySchema = z
   .object({
     id: z.uuid(),
     ticketNumber: z.string().min(1).max(32),
+    department: supportDepartmentOptionSchema,
     customer: ticketCustomerSchema,
     service: ticketServiceReferenceSchema.nullable(),
     assignee: ticketAssigneeSchema.nullable(),
@@ -84,6 +125,7 @@ export const ticketDetailSchema = ticketSummarySchema
 export const createTicketRequestSchema = z
   .object({
     submissionKey: z.uuid(),
+    departmentId: z.uuid().optional(),
     subject: ticketSubjectSchema,
     body: ticketMessageBodySchema,
     serviceId: z.uuid().nullable().optional(),
@@ -102,6 +144,8 @@ export const updateTicketRequestSchema = z
     status: ticketStatusSchema.optional(),
     priority: ticketPrioritySchema.optional(),
     assignedAdminId: z.uuid().nullable().optional(),
+    departmentId: z.uuid().optional(),
+    routingReason: plainText(500).optional(),
   })
   .strict()
   .refine(
@@ -116,6 +160,7 @@ export const ticketListQuerySchema = paginationQuerySchema
     search: z.string().trim().max(200).optional(),
     status: ticketStatusSchema.optional(),
     priority: ticketPrioritySchema.optional(),
+    departmentId: z.uuid().optional(),
     customerId: z.uuid().optional(),
     serviceId: z.uuid().optional(),
     assignedAdminId: z.uuid().optional(),
@@ -135,7 +180,11 @@ export const myTicketListQuerySchema = paginationQuerySchema.extend({
 export const ticketAdminOptionSchema = ticketAssigneeSchema;
 
 export const ticketSetupOptionsSchema = z
-  .object({ admins: z.array(ticketAdminOptionSchema) })
+  .object({
+    admins: z.array(ticketAdminOptionSchema),
+    departments: z.array(supportDepartmentSchema),
+    canManageDepartments: z.boolean(),
+  })
   .strict();
 
 export type TicketPriority = z.infer<typeof ticketPrioritySchema>;

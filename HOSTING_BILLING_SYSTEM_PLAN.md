@@ -8,6 +8,14 @@
 
 **Technical identifier:** `webhost-billing`
 
+**Support department direction — 2026-11-05:** Command 216 adds full-administrator
+managed departments with customer visibility, enabled state and optional support
+staff membership restrictions. Preserve legacy tickets in a default Support
+queue, enforce ownership and department access in ticket operations, and audit
+configuration and routing reasons. Revalidate notification recipients against
+current access. Disabled departments retain existing conversations while blocking
+new intake. See [support departments](docs/SUPPORT_DEPARTMENTS.md).
+
 **Paid domain renewal direction — 2026-11-05:** Command 215 permits a full
 administrator with MFA to approve a verified paid one-year term within a native
 USD registrar-cost ceiling. Dispatch through a durable provider-neutral worker;

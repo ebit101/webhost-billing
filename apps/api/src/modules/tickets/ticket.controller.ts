@@ -17,6 +17,8 @@ import {
   createApiSuccessResponse,
   createPaginatedApiSuccessResponse,
   createTicketRequestSchema,
+  saveSupportDepartmentSchema,
+  type SaveSupportDepartment,
   myTicketListQuerySchema,
   replyToTicketRequestSchema,
   ticketListQuerySchema,
@@ -53,8 +55,50 @@ export class TicketController {
   @Get('setup-options')
   @StaffPermissionRequired('tickets.manage')
   @Roles('ADMIN')
-  async setupOptions() {
-    return createApiSuccessResponse(await this.tickets.setupOptions());
+  async setupOptions(@CurrentAuth() auth: AuthRequestContext) {
+    return createApiSuccessResponse(await this.tickets.setupOptions(auth));
+  }
+
+  @Get('departments')
+  @CustomerSupportAccess()
+  @StaffPermissionRequired('tickets.manage')
+  @Roles('ADMIN', 'CUSTOMER')
+  async departments(@CurrentAuth() auth: AuthRequestContext) {
+    return createApiSuccessResponse(await this.tickets.departments(auth));
+  }
+
+  @Post('departments')
+  @StaffPermissionRequired('staff.manage')
+  @Roles('ADMIN')
+  async createDepartment(
+    @Body(new ZodValidationPipe(saveSupportDepartmentSchema))
+    input: SaveSupportDepartment,
+    @CurrentAuth() auth: AuthRequestContext,
+    @Req() request: Request,
+  ) {
+    return createApiSuccessResponse(
+      await this.tickets.saveDepartment(
+        undefined,
+        input,
+        auth,
+        this.context(request),
+      ),
+    );
+  }
+
+  @Patch('departments/:departmentId')
+  @StaffPermissionRequired('staff.manage')
+  @Roles('ADMIN')
+  async updateDepartment(
+    @Param('departmentId', new ParseUUIDPipe()) id: string,
+    @Body(new ZodValidationPipe(saveSupportDepartmentSchema))
+    input: SaveSupportDepartment,
+    @CurrentAuth() auth: AuthRequestContext,
+    @Req() request: Request,
+  ) {
+    return createApiSuccessResponse(
+      await this.tickets.saveDepartment(id, input, auth, this.context(request)),
+    );
   }
 
   @Get('my')
@@ -66,11 +110,14 @@ export class TicketController {
     @CurrentAuth() auth: AuthRequestContext,
   ) {
     if (auth.identity.role !== 'CUSTOMER') throw new Error('Unreachable role');
-    const result = await this.tickets.list({
-      ...query,
-      customerId: auth.identity.customerId,
-      unassigned: false,
-    });
+    const result = await this.tickets.list(
+      {
+        ...query,
+        customerId: auth.identity.customerId,
+        unassigned: false,
+      },
+      auth,
+    );
     return createPaginatedApiSuccessResponse(result.data, result.pagination);
   }
 
@@ -80,8 +127,9 @@ export class TicketController {
   async list(
     @Query(new ZodValidationPipe(ticketListQuerySchema))
     query: TicketListQuery,
+    @CurrentAuth() auth: AuthRequestContext,
   ) {
-    const result = await this.tickets.list(query);
+    const result = await this.tickets.list(query, auth);
     return createPaginatedApiSuccessResponse(result.data, result.pagination);
   }
 

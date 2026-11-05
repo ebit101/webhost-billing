@@ -79,8 +79,9 @@ export class CustomerController {
   async list(
     @Query(new ZodValidationPipe(customerListQuerySchema))
     query: CustomerListQuery,
+    @CurrentAuth() auth: AuthRequestContext,
   ) {
-    const result = await this.customers.list(query);
+    const result = await this.customers.list(query, auth);
     return createPaginatedApiSuccessResponse(result.data, result.pagination);
   }
 
@@ -89,8 +90,13 @@ export class CustomerController {
   @StaffPermissionRequired('customers.read')
   @Roles('ADMIN', 'CUSTOMER')
   @RequireCustomerOwnership('customerId')
-  async detail(@Param('customerId', new ParseUUIDPipe()) customerId: string) {
-    return createApiSuccessResponse(await this.customers.getById(customerId));
+  async detail(
+    @Param('customerId', new ParseUUIDPipe()) customerId: string,
+    @CurrentAuth() auth: AuthRequestContext,
+  ) {
+    return createApiSuccessResponse(
+      await this.customers.getById(customerId, auth),
+    );
   }
 
   @Get(':customerId/portal-summary')

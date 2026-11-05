@@ -87,10 +87,13 @@ const expectedTables = [
   'settings',
   'ticket_messages',
   'tickets',
+  'support_departments',
+  'support_department_members',
   'users',
 ] as const;
 
 const requiredCustomConstraints = [
+  'support_departments_revision_check',
   'service_upgrades_state_check',
   'domain_fact_syncs_state_check',
   'domain_renewal_preferences_shape',

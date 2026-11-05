@@ -5,6 +5,7 @@ import { RecordDialog } from '../ui/record-dialog';
 import { DataTable } from '../ui/data-table';
 import type {
   Service,
+  SupportDepartmentOption,
   TicketDetail,
   TicketSummary,
 } from '@webhost-billing/shared';
@@ -28,6 +29,7 @@ import {
 
 export function CustomerTicketManager() {
   const [tickets, setTickets] = useState<TicketSummary[]>([]);
+  const [departments, setDepartments] = useState<SupportDepartmentOption[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [selected, setSelected] = useState<TicketDetail>();
   const [showCreate, setShowCreate] = useState(false);
@@ -41,11 +43,13 @@ export function CustomerTicketManager() {
     void Promise.all([
       authenticatedPaginatedGet<TicketSummary>('/tickets/my?pageSize=100'),
       authenticatedPaginatedGet<Service>('/services/my?pageSize=100'),
+      authenticatedGet<SupportDepartmentOption[]>('/tickets/departments'),
     ])
-      .then(async ([ticketResult, serviceResult]) => {
+      .then(async ([ticketResult, serviceResult, departmentResult]) => {
         if (!active) return;
         setTickets(ticketResult.data);
         setServices(serviceResult.data);
+        setDepartments(departmentResult);
       })
       .catch((caught: unknown) => {
         if (active) setError(ticketError(caught));
@@ -77,6 +81,7 @@ export function CustomerTicketManager() {
       const serviceId = String(values.get('serviceId') ?? '');
       const created = await authMutation<TicketDetail>('/tickets', 'POST', {
         submissionKey: crypto.randomUUID(),
+        departmentId: String(values.get('departmentId')),
         subject: String(values.get('subject')),
         body: String(values.get('body')),
         serviceId: serviceId || null,
@@ -177,6 +182,30 @@ export function CustomerTicketManager() {
         >
           <div className="grid gap-4 lg:grid-cols-2">
             <label className="block text-sm font-semibold text-slate-700">
+              Department
+              <select
+                name="departmentId"
+                required
+                className={fieldStyles}
+                defaultValue={departments[0]?.id ?? ''}
+              >
+                <option value="" disabled>
+                  Choose a department
+                </option>
+                {departments.map((department) => (
+                  <option key={department.id} value={department.id}>
+                    {department.name}
+                  </option>
+                ))}
+              </select>
+              {!departments.length && (
+                <span>
+                  No departments are currently open. Existing conversations
+                  remain available.
+                </span>
+              )}
+            </label>
+            <label className="block text-sm font-semibold text-slate-700">
               Subject
               <input
                 required
@@ -214,7 +243,7 @@ export function CustomerTicketManager() {
               Plain text only. Attachments, HTML, passwords, and secret keys are
               not accepted.
             </p>
-            <Button disabled={saving} type="submit">
+            <Button disabled={saving || !departments.length} type="submit">
               {saving ? 'Opening…' : 'Open support ticket'}
             </Button>
           </div>
@@ -243,6 +272,11 @@ export function CustomerTicketManager() {
                     {ticket.ticketNumber}
                   </button>
                 ),
+              },
+              {
+                key: 'department',
+                header: 'Department',
+                render: (ticket) => ticket.department.name,
               },
               {
                 key: 'subject',

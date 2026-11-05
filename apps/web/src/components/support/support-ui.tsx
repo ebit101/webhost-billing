@@ -136,6 +136,9 @@ export function TicketConversation({
               {ticket.subject}
             </h2>
             <p className="mt-2 text-sm text-slate-600">
+              Department: {ticket.department.name}
+            </p>
+            <p className="mt-2 text-sm text-slate-600">
               {ticket.service
                 ? `${ticket.service.productName} · ${ticket.service.domain ?? 'No domain'}`
                 : 'General support · no hosting service linked'}

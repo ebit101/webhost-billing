@@ -17,6 +17,12 @@ const serviceId = '40000000-0000-4000-8000-000000000005';
 
 const ticket: TicketDetail = {
   id: ticketId,
+  department: {
+    id: '21600000-0000-4000-8000-000000000001',
+    name: 'Support',
+    enabled: true,
+    customerVisible: true,
+  },
   ticketNumber: 'TKT-20260825-ABC123',
   customer: {
     id: customerId,
@@ -91,6 +97,10 @@ const service: Service = {
 };
 
 const setup: TicketSetupOptions = {
+  departments: [
+    { ...ticket.department, restricted: false, revision: 1, memberUserIds: [] },
+  ],
+  canManageDepartments: false,
   admins: [{ userId: adminId, displayName: 'Support Administrator' }],
 };
 
@@ -111,6 +121,8 @@ describe('support ticket interfaces', () => {
     const fetchMock = vi.fn(
       (request: RequestInfo | URL, init?: RequestInit) => {
         const url = String(request);
+        if (url.endsWith('/tickets/departments'))
+          return Promise.resolve(success([ticket.department]));
         if (url.includes('/auth/csrf')) return Promise.resolve(csrf());
         if (init?.method === 'POST' && url.endsWith('/tickets')) {
           return Promise.resolve(success(created));
@@ -181,6 +193,8 @@ describe('support ticket interfaces', () => {
     const fetchMock = vi.fn(
       (request: RequestInfo | URL, init?: RequestInit) => {
         const url = String(request);
+        if (url.endsWith('/tickets/departments'))
+          return Promise.resolve(success([ticket.department]));
         if (url.includes('/auth/csrf')) return Promise.resolve(csrf());
         if (init?.method === 'POST') return Promise.resolve(success(replied));
         if (url.includes('/tickets/my')) {
@@ -244,6 +258,8 @@ describe('support ticket interfaces', () => {
     const fetchMock = vi.fn(
       (request: RequestInfo | URL, init?: RequestInit) => {
         const url = String(request);
+        if (url.endsWith('/tickets/departments'))
+          return Promise.resolve(success([ticket.department]));
         if (url.includes('/auth/csrf')) return Promise.resolve(csrf());
         if (init?.method === 'POST') return Promise.resolve(success(replied));
         if (init?.method === 'PATCH') return Promise.resolve(success(closed));
@@ -295,6 +311,7 @@ describe('support ticket interfaces', () => {
       ([, init]) => (init as RequestInit | undefined)?.method === 'PATCH',
     );
     expect(JSON.parse(String((patch?.[1] as RequestInit).body))).toEqual({
+      departmentId: ticket.department.id,
       status: 'CLOSED',
       priority: 'HIGH',
       assignedAdminId: adminId,

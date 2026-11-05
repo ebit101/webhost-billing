@@ -37,7 +37,8 @@ async function main() {
     const args =
       process.argv[2] === 'packages'
         ? ['test']
-        : process.argv[2] === 'domains' ||
+        : process.argv[2] === 'support' ||
+            process.argv[2] === 'domains' ||
             process.argv[2] === 'smtp' ||
             process.argv[2] === 'products' ||
             process.argv[2] === 'customers' ||
@@ -59,29 +60,36 @@ async function main() {
               './test/jest-e2e.json',
               '--runInBand',
               '--runTestsByPath',
-              ...(process.argv[2] === 'customers'
-                ? ['test/customers.e2e-spec.ts', 'test/staff.e2e-spec.ts']
-                : [
-                    process.argv[2] === 'domain-renewal-execution'
-                      ? 'test/domain-renewal-execution.e2e-spec.ts'
-                      : process.argv[2] === 'domain-renewals'
-                        ? 'test/domain-renewals.e2e-spec.ts'
-                        : process.argv[2] === 'domain-facts'
-                          ? 'test/domain-facts.e2e-spec.ts'
-                          : process.argv[2] === 'upgrades'
-                            ? 'test/hosting-upgrades.e2e-spec.ts'
-                            : process.argv[2] === 'products'
-                              ? 'test/products.e2e-spec.ts'
-                              : process.argv[2] === 'hosting'
-                                ? 'test/hosting-panels.e2e-spec.ts'
-                                : process.argv[2] === 'settings'
-                                  ? 'test/settings.e2e-spec.ts'
-                                  : process.argv[2] === 'smtp'
-                                    ? 'test/smtp-settings.e2e-spec.ts'
-                                    : process.argv[2] === 'orders'
-                                      ? 'test/orders.e2e-spec.ts'
-                                      : 'test/domains.e2e-spec.ts',
-                  ]),
+              ...(process.argv[2] === 'support'
+                ? [
+                    'test/tickets.e2e-spec.ts',
+                    'test/support-departments.e2e-spec.ts',
+                    'test/customers.e2e-spec.ts',
+                    'test/staff.e2e-spec.ts',
+                  ]
+                : process.argv[2] === 'customers'
+                  ? ['test/customers.e2e-spec.ts', 'test/staff.e2e-spec.ts']
+                  : [
+                      process.argv[2] === 'domain-renewal-execution'
+                        ? 'test/domain-renewal-execution.e2e-spec.ts'
+                        : process.argv[2] === 'domain-renewals'
+                          ? 'test/domain-renewals.e2e-spec.ts'
+                          : process.argv[2] === 'domain-facts'
+                            ? 'test/domain-facts.e2e-spec.ts'
+                            : process.argv[2] === 'upgrades'
+                              ? 'test/hosting-upgrades.e2e-spec.ts'
+                              : process.argv[2] === 'products'
+                                ? 'test/products.e2e-spec.ts'
+                                : process.argv[2] === 'hosting'
+                                  ? 'test/hosting-panels.e2e-spec.ts'
+                                  : process.argv[2] === 'settings'
+                                    ? 'test/settings.e2e-spec.ts'
+                                    : process.argv[2] === 'smtp'
+                                      ? 'test/smtp-settings.e2e-spec.ts'
+                                      : process.argv[2] === 'orders'
+                                        ? 'test/orders.e2e-spec.ts'
+                                        : 'test/domains.e2e-spec.ts',
+                    ]),
             ]
           : process.argv[2] === 'whatsapp'
             ? [

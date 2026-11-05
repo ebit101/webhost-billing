@@ -157,6 +157,12 @@ export const payment: ManualPayment = {
 const date = '2026-10-29T00:00:00.000Z';
 export const ticket: TicketDetail = {
   id,
+  department: {
+    id: '21600000-0000-4000-8000-000000000001',
+    name: 'Support',
+    enabled: true,
+    customerVisible: true,
+  },
   ticketNumber: 'TKT-FICTIONAL-141',
   customer: {
     id: clientId,

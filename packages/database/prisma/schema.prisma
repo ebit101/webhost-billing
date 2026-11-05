@@ -323,6 +323,7 @@ model User {
   adminProfile                  AdminProfile?
   paymentsCreated               Payment[]                       @relation("PaymentCreatedBy")
   paymentsReviewed              Payment[]                       @relation("PaymentReviewedBy")
+  supportMemberships            SupportDepartmentMember[]
   ticketsAssigned               Ticket[]                        @relation("TicketAssignedAdmin")
   ticketMessages                TicketMessage[]
   activityLogs                  ActivityLog[]                   @relation("ActivityActor")
@@ -1007,8 +1008,37 @@ model PaymentEvent {
   @@map("payment_events")
 }
 
+model SupportDepartment {
+  id              String                    @id @default(uuid()) @db.Uuid
+  name            String                    @unique @db.VarChar(80)
+  enabled         Boolean                   @default(true)
+  customerVisible Boolean                   @default(true) @map("customer_visible")
+  restricted      Boolean                   @default(false)
+  revision        Int                       @default(1)
+  createdAt       DateTime                  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime                  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  members         SupportDepartmentMember[]
+  tickets         Ticket[]
+
+  @@map("support_departments")
+}
+
+model SupportDepartmentMember {
+  id           String            @id @default(uuid()) @db.Uuid
+  departmentId String            @map("department_id") @db.Uuid
+  userId       String            @map("user_id") @db.Uuid
+  department   SupportDepartment @relation(fields: [departmentId], references: [id], onDelete: Restrict)
+  user         User              @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([departmentId, userId])
+  @@index([userId])
+  @@map("support_department_members")
+}
+
 model Ticket {
   id              String          @id @default(uuid()) @db.Uuid
+  departmentId    String          @default("21600000-0000-4000-8000-000000000001") @map("department_id") @db.Uuid
+  department      SupportDepartment @relation(fields: [departmentId], references: [id], onDelete: Restrict)
   ticketNumber    String          @unique(map: "tickets_number_key") @map("ticket_number") @db.VarChar(32)
   customerId      String          @map("customer_id") @db.Uuid
   serviceId       String?         @map("service_id") @db.Uuid
@@ -1026,6 +1056,7 @@ model Ticket {
   messages        TicketMessage[]
   emailLogs       EmailLog[]
 
+  @@index([departmentId, status], map: "tickets_department_status_idx")
   @@index([customerId, status], map: "tickets_customer_status_idx")
   @@index([assignedAdminId, status], map: "tickets_assignee_status_idx")
   @@index([status, priority, updatedAt], map: "tickets_queue_idx")
