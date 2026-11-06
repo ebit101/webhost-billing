@@ -102,7 +102,52 @@ const optionalCredentialSchema = z.preprocess(
   z.string().min(1).max(512).optional(),
 );
 
+const inboundEmailEnvironmentSchema = z.object({
+  SUPPORT_EMAIL_MODE: z
+    .enum(['disabled', 'local', 'gateway'])
+    .default('disabled'),
+  SUPPORT_EMAIL_SECRET: z.preprocess(
+    (value) => (value === '' ? undefined : value),
+    z.string().min(32).max(256).optional(),
+  ),
+  SUPPORT_EMAIL_DOMAIN: z.preprocess(
+    (value) => (value === '' ? undefined : value),
+    z
+      .string()
+      .max(190)
+      .regex(/^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$/)
+      .optional(),
+  ),
+});
+
+function validateInboundEmail(
+  environment: z.infer<typeof inboundEmailEnvironmentSchema> & {
+    NODE_ENV: string;
+  },
+  context: z.RefinementCtx,
+) {
+  if (
+    environment.SUPPORT_EMAIL_MODE === 'local' &&
+    environment.NODE_ENV === 'production'
+  )
+    context.addIssue({
+      code: 'custom',
+      path: ['SUPPORT_EMAIL_MODE'],
+      message: 'Local inbound mail is forbidden in production.',
+    });
+  if (
+    environment.SUPPORT_EMAIL_MODE !== 'disabled' &&
+    (!environment.SUPPORT_EMAIL_SECRET || !environment.SUPPORT_EMAIL_DOMAIN)
+  )
+    context.addIssue({
+      code: 'custom',
+      path: ['SUPPORT_EMAIL_MODE'],
+      message: 'Inbound mail requires a dedicated secret and reply domain.',
+    });
+}
+
 const apiEnvironmentObjectSchema = serverEnvironmentSchema
+  .extend(inboundEmailEnvironmentSchema.shape)
   .extend(infrastructureEnvironmentSchema.shape)
   .extend(secretEnvironmentSchema.shape)
   .extend({
@@ -194,6 +239,7 @@ function requireCredential(
 
 export const apiEnvironmentSchema = apiEnvironmentObjectSchema.superRefine(
   (environment, context) => {
+    validateInboundEmail(environment, context);
     if (environment.NODE_ENV === 'production') {
       if (environment.TICKET_ATTACHMENT_SCANNER === 'fake')
         context.addIssue({
@@ -293,6 +339,7 @@ const emailHeaderValueSchema = z
   });
 
 const workerEnvironmentObjectSchema = baseEnvironmentSchema
+  .extend(inboundEmailEnvironmentSchema.shape)
   .extend(infrastructureEnvironmentSchema.shape)
   .extend({
     RESELLBIZ_LIVE_ENABLED: environmentBooleanSchema,
@@ -370,6 +417,7 @@ const workerEnvironmentObjectSchema = baseEnvironmentSchema
 
 export const workerEnvironmentSchema =
   workerEnvironmentObjectSchema.superRefine((environment, context) => {
+    validateInboundEmail(environment, context);
     const publicUrl = new URL(environment.EMAIL_PUBLIC_WEB_URL);
     if (
       publicUrl.username ||

@@ -323,6 +323,7 @@ model User {
   adminProfile                  AdminProfile?
   paymentsCreated               Payment[]                       @relation("PaymentCreatedBy")
   paymentsReviewed              Payment[]                       @relation("PaymentReviewedBy")
+  supportEmailThreads           SupportEmailThread[]
   ticketAttachments             TicketAttachment[]
   supportMemberships            SupportDepartmentMember[]
   ticketsAssigned               Ticket[]                        @relation("TicketAssignedAdmin")
@@ -1054,6 +1055,7 @@ model Ticket {
   customer        Customer        @relation(fields: [customerId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   service         Service?        @relation(fields: [serviceId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   assignedAdmin   User?           @relation("TicketAssignedAdmin", fields: [assignedAdminId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  emailThreads    SupportEmailThread[]
   attachments     TicketAttachment[]
   messages        TicketMessage[]
   emailLogs       EmailLog[]
@@ -1073,6 +1075,8 @@ model TicketMessage {
   body         String            @db.Text
   createdAt    DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
   ticket       Ticket            @relation(fields: [ticketId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  emailThreads SupportEmailThread[]
+  emailReceipt SupportEmailReceipt?
   attachments  TicketAttachment[]
   author       User              @relation(fields: [authorUserId], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
@@ -1573,4 +1577,37 @@ model DomainCatalogueTld {
   revision             Int     @default(1)
 
   @@map("domain_catalogue_tlds")
+}
+
+model SupportEmailThread {
+  id              String                @id @default(uuid()) @db.Uuid
+  ticketId        String                @map("ticket_id") @db.Uuid
+  recipientUserId String                @map("recipient_user_id") @db.Uuid
+  sourceMessageId String                @map("source_message_id") @db.Uuid
+  senderHash      String                @map("sender_hash") @db.Char(64)
+  expiresAt       DateTime              @map("expires_at") @db.Timestamptz(3)
+  createdAt       DateTime              @default(now()) @map("created_at") @db.Timestamptz(3)
+  ticket          Ticket                @relation(fields: [ticketId], references: [id], onDelete: Restrict)
+  recipient       User                  @relation(fields: [recipientUserId], references: [id], onDelete: Restrict)
+  sourceMessage   TicketMessage         @relation(fields: [sourceMessageId], references: [id], onDelete: Restrict)
+  receipts        SupportEmailReceipt[]
+
+  @@unique([sourceMessageId, recipientUserId])
+  @@map("support_email_threads")
+}
+
+model SupportEmailReceipt {
+  id                 String              @id @default(uuid()) @db.Uuid
+  deliveryKey        String              @unique @map("delivery_key") @db.Char(64)
+  acceptedMessageKey String?             @unique @map("accepted_message_key") @db.Char(64)
+  payloadHash        String              @map("payload_hash") @db.Char(64)
+  threadId           String?             @map("thread_id") @db.Uuid
+  messageId          String?             @unique @map("message_id") @db.Uuid
+  outcome            String              @db.VarChar(20)
+  reason             String              @db.VarChar(40)
+  createdAt          DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+  thread             SupportEmailThread? @relation(fields: [threadId], references: [id], onDelete: Restrict)
+  message            TicketMessage?      @relation(fields: [messageId], references: [id], onDelete: Restrict)
+
+  @@map("support_email_receipts")
 }

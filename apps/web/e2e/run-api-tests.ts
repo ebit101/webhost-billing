@@ -65,6 +65,7 @@ async function main() {
                     'test/tickets.e2e-spec.ts',
                     'test/support-departments.e2e-spec.ts',
                     'test/ticket-attachments.e2e-spec.ts',
+                    'test/support-email.e2e-spec.ts',
                     'test/customers.e2e-spec.ts',
                     'test/staff.e2e-spec.ts',
                   ]

@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { createHash } from 'node:crypto';
 import type { WorkerEnvironment } from '@webhost-billing/config';
 import {
+  issueSupportReplyAddress,
   supportStaffWhere,
   OutboxStatus,
   type PrismaClient,
@@ -33,7 +34,7 @@ export class EmailMessageResolver {
 
   constructor(
     @Inject(WORKER_PRISMA) private readonly prisma: PrismaClient,
-    @Inject(WORKER_ENVIRONMENT) environment: WorkerEnvironment,
+    @Inject(WORKER_ENVIRONMENT) private readonly environment: WorkerEnvironment,
     private readonly templates: EmailTemplateCatalog,
   ) {
     this.tokenCipher = new DeliveryTokenCipher(
@@ -461,7 +462,7 @@ export class EmailMessageResolver {
         ticket.id,
       );
     }
-    return this.render(
+    const rendered = this.render(
       ticket.customer.user.email,
       {
         key: 'ticket-reply',
@@ -475,6 +476,21 @@ export class EmailMessageResolver {
       undefined,
       ticket.id,
     );
+    if (
+      this.environment.SUPPORT_EMAIL_MODE !== 'disabled' &&
+      this.environment.SUPPORT_EMAIL_SECRET &&
+      this.environment.SUPPORT_EMAIL_DOMAIN
+    ) {
+      const replyToAddress = await issueSupportReplyAddress(
+        this.prisma,
+        ticket.id,
+        message.id,
+        this.environment.SUPPORT_EMAIL_SECRET,
+        this.environment.SUPPORT_EMAIL_DOMAIN,
+      );
+      if (replyToAddress) return { ...rendered, replyToAddress };
+    }
+    return rendered;
   }
 
   private render(

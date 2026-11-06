@@ -14,6 +14,7 @@ export interface AuthRateLimitDefinition {
     | 'payment-webhook'
     | 'bkash-callback'
     | 'sslcommerz-return'
+    | 'support-email-ingress'
     | 'ticket-file-download'
     | 'ticket-file-intent'
     | 'ticket-file-content'

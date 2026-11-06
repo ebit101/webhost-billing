@@ -8,6 +8,14 @@
 
 **Technical identifier:** `webhost-billing`
 
+**Support email reply direction — 2026-11-06:** Command 218 adds default-off
+customer replies through opaque ticket/customer-bound reply addresses and a
+signed normalized-mail gateway adapter. Require independently trusted sender
+verification, preserve current department/closed-ticket rules, screen private
+attachments and atomically deduplicate imports and staff notifications. Local
+preview-provider acceptance does not activate a real mailbox or establish live
+gateway trust. See [support email replies](docs/SUPPORT_EMAIL_REPLIES.md).
+
 **Private ticket attachment direction — 2026-11-06:** Command 217 adds bounded
 PNG/JPEG and UTF-8 text/log attachments to new tickets and replies. Screen and
 normalize files before claiming them atomically with a message, retain content in

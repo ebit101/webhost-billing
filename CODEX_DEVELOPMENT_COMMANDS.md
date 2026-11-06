@@ -7018,7 +7018,9 @@ fictional files and document production storage and scanner requirements.
 
 ## Command 218 — Receive support replies by email
 
-**Status:** Proposed; depends on Commands 216 and 217.
+**Status:** Owner-authorized on 2026-11-06; implemented locally after Commands 216
+and 217. See `docs/SUPPORT_EMAIL_REPLIES.md` and `docs/PROGRESS.md` for the local
+adapter acceptance and production trust requirements. No push or deployment.
 
 Extend the existing outbound ticket email workflow with an inbound mail adapter
 and department routing. Correlate replies using opaque thread identifiers and

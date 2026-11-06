@@ -25,6 +25,10 @@
     "./observability": {
       "types": "./src/observability.ts",
       "default": "./dist/observability.js"
+    },
+    "./support-email": {
+      "types": "./src/support-email.ts",
+      "default": "./dist/support-email.js"
     }
   },
   "scripts": {

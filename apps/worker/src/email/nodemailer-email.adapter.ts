@@ -131,6 +131,10 @@ function mailOptions(message: EmailSendRequest) {
     text: message.text,
     html: message.html,
     messageId: message.messageId,
+    headers: {
+      'Auto-Submitted': 'auto-generated',
+      'X-Auto-Response-Suppress': 'All',
+    },
     disableFileAccess: true,
     disableUrlAccess: true,
   };

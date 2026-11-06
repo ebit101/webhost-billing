@@ -123,6 +123,14 @@ http {
     add_header Cache-Control 'no-store' always;
     proxy_hide_header Strict-Transport-Security;
 
+    # Authenticated gateway intake; bounded streaming JSON, not a public mailbox.
+    location = /support-email/deliveries {
+      client_max_body_size 9m;
+      proxy_request_buffering off;
+      proxy_read_timeout 120s;
+      proxy_pass http://api:3001;
+    }
+
     # Raw private uploads have their own bounded body and scanning deadline.
     location ^~ /tickets/attachment-uploads/ {
       client_max_body_size 2m;

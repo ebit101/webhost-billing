@@ -87,6 +87,8 @@ const expectedTables = [
   'settings',
   'ticket_messages',
   'tickets',
+  'support_email_threads',
+  'support_email_receipts',
   'ticket_attachments',
   'ticket_attachment_blobs',
   'support_departments',
@@ -95,6 +97,7 @@ const expectedTables = [
 ] as const;
 
 const requiredCustomConstraints = [
+  'support_email_receipt_shape',
   'ticket_attachment_shape',
   'ticket_attachment_blob_size',
   'support_departments_revision_check',
