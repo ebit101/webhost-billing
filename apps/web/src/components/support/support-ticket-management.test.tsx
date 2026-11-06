@@ -175,7 +175,7 @@ describe('support ticket interfaces', () => {
     expect(body).not.toHaveProperty('attachments');
   });
 
-  it('adds a customer reply and explains the no-attachment policy', async () => {
+  it('adds a customer reply and explains the attachment screening policy', async () => {
     const user = userEvent.setup();
     const replied: TicketDetail = {
       ...ticket,
@@ -212,7 +212,7 @@ describe('support ticket interfaces', () => {
     );
     const replyBox = await screen.findByLabelText('Reply in plain text');
     expect(
-      screen.getByText(/Attachments and HTML are not accepted/i),
+      screen.getByText(/HTML is not accepted in message text/i),
     ).toBeTruthy();
     await user.type(replyBox, 'Customer follow-up.');
     await user.click(screen.getByRole('button', { name: 'Send reply' }));

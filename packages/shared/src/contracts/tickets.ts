@@ -47,12 +47,70 @@ export const ticketAssigneeSchema = z
   })
   .strict();
 
+export const TICKET_ATTACHMENT_MAX_BYTES = 2 * 1024 * 1024;
+export const TICKET_ATTACHMENT_MAX_FILES = 3;
+export const ticketAttachmentFilenameSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(120)
+  .regex(/^[A-Za-z0-9][A-Za-z0-9 _.-]*\.(png|jpg|jpeg|txt|log)$/i)
+  .refine(
+    (value) =>
+      !value.includes('..') &&
+      !/[\\/:<>|?*]/.test(value) &&
+      !/^(con|prn|aux|nul|com[1-9]|lpt[1-9])\./i.test(value),
+    'Use a simple filename without paths.',
+  );
+export const ticketAttachmentSchema = z
+  .object({
+    id: z.uuid(),
+    filename: ticketAttachmentFilenameSchema,
+    mediaType: z.enum(['image/png', 'image/jpeg', 'text/plain']),
+    sizeBytes: z.number().int().min(0).max(TICKET_ATTACHMENT_MAX_BYTES),
+    status: z.enum([
+      'PENDING',
+      'UPLOADING',
+      'READY',
+      'ATTACHED',
+      'QUARANTINED',
+      'REJECTED',
+      'EXPIRED',
+    ]),
+    expiresAt: z.iso.datetime(),
+  })
+  .strict();
+export const createTicketAttachmentSchema = z
+  .object({
+    submissionKey: z.uuid(),
+    messageSubmissionKey: z.uuid(),
+    ticketId: z.uuid().optional(),
+    departmentId: z.uuid().optional(),
+    filename: ticketAttachmentFilenameSchema,
+    mediaType: z.enum(['image/png', 'image/jpeg', 'text/plain']),
+    sizeBytes: z.number().int().positive().max(TICKET_ATTACHMENT_MAX_BYTES),
+  })
+  .strict();
+export type TicketAttachment = z.infer<typeof ticketAttachmentSchema>;
+export type CreateTicketAttachment = z.infer<
+  typeof createTicketAttachmentSchema
+>;
+const attachmentIdsSchema = z
+  .array(z.uuid())
+  .max(TICKET_ATTACHMENT_MAX_FILES)
+  .refine((ids) => new Set(ids).size === ids.length, 'Duplicate attachments.')
+  .optional();
+
 export const ticketMessageSchema = z
   .object({
     id: z.uuid(),
     ticketId: z.uuid(),
     authorUserId: z.uuid(),
     authorName: z.string().min(1).max(200),
+    attachments: z
+      .array(ticketAttachmentSchema)
+      .max(TICKET_ATTACHMENT_MAX_FILES)
+      .optional(),
     kind: ticketMessageKindSchema,
     body: ticketMessageBodySchema,
     createdAt: z.iso.datetime({ offset: true }),
@@ -126,6 +184,7 @@ export const createTicketRequestSchema = z
   .object({
     submissionKey: z.uuid(),
     departmentId: z.uuid().optional(),
+    attachmentIds: attachmentIdsSchema,
     subject: ticketSubjectSchema,
     body: ticketMessageBodySchema,
     serviceId: z.uuid().nullable().optional(),
@@ -135,6 +194,7 @@ export const createTicketRequestSchema = z
 export const replyToTicketRequestSchema = z
   .object({
     submissionKey: z.uuid(),
+    attachmentIds: attachmentIdsSchema,
     body: ticketMessageBodySchema,
   })
   .strict();

@@ -8,6 +8,15 @@
 
 **Technical identifier:** `webhost-billing`
 
+**Private ticket attachment direction — 2026-11-06:** Command 217 adds bounded
+PNG/JPEG and UTF-8 text/log attachments to new tickets and replies. Screen and
+normalize files before claiming them atomically with a message, retain content in
+private database storage, and authorize every download against current ticket
+access. Preserve metadata while expiring bytes through the dedicated scheduler.
+Uploads stay off until a private malware scanner is configured; simulated scans
+are limited to fictional development acceptance. See
+[private ticket attachments](docs/TICKET_ATTACHMENTS.md).
+
 **Support department direction — 2026-11-05:** Command 216 adds full-administrator
 managed departments with customer visibility, enabled state and optional support
 staff membership restrictions. Preserve legacy tickets in a default Support

@@ -1,3 +1,9 @@
+import type { ApiEnvironment } from '@webhost-billing/config';
+import { API_ENVIRONMENT } from '../../infrastructure/environment/environment.module';
+import {
+  claimTicketAttachments,
+  sameAttachmentIds,
+} from './ticket-attachment-claims';
 import { randomUUID } from 'node:crypto';
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import {
@@ -52,6 +58,7 @@ const ticketInclude = {
   ...ticketSummaryInclude,
   messages: {
     include: {
+      attachments: true,
       author: { include: { adminProfile: true, customer: true } },
     },
     orderBy: [{ createdAt: 'asc' as const }, { id: 'asc' as const }],
@@ -66,7 +73,10 @@ type TicketRecord = Prisma.TicketGetPayload<{ include: typeof ticketInclude }>;
 
 @Injectable()
 export class TicketService {
-  constructor(@Inject(PRISMA_CLIENT) private readonly prisma: PrismaClient) {}
+  constructor(
+    @Inject(PRISMA_CLIENT) private readonly prisma: PrismaClient,
+    @Inject(API_ENVIRONMENT) private readonly environment: ApiEnvironment,
+  ) {}
 
   async list(
     query: TicketListQuery,
@@ -233,6 +243,17 @@ export class TicketService {
           where: { ticketId: input.submissionKey },
           select: { id: true },
         });
+        await claimTicketAttachments(
+          transaction,
+          input.attachmentIds,
+          userId,
+          input.submissionKey,
+          input.submissionKey,
+          initial.id,
+          department.id,
+          true,
+          this.environment.NODE_ENV === 'production',
+        );
         await transaction.outboxEvent.create({
           data: {
             aggregateType: 'TICKET',
@@ -306,6 +327,12 @@ export class TicketService {
       ) {
         throw this.conflict('This reply submission key was already used.');
       }
+      const attachmentIds = await this.prisma.ticketAttachment.findMany({
+        where: { messageId: existing.id },
+        select: { id: true },
+      });
+      if (!sameAttachmentIds(attachmentIds, input.attachmentIds))
+        throw this.conflict('This reply submission key was already used.');
       return this.get(ticketId, actor);
     }
 
@@ -347,6 +374,17 @@ export class TicketService {
             createdAt: now,
           },
         });
+        await claimTicketAttachments(
+          transaction,
+          input.attachmentIds,
+          actor.identity.userId,
+          input.submissionKey,
+          ticketId,
+          input.submissionKey,
+          ticket.departmentId,
+          false,
+          this.environment.NODE_ENV === 'production',
+        );
         await transaction.ticket.update({
           where: { id: ticketId },
           data: { status, lastReplyAt: now, closedAt: null },
@@ -392,6 +430,12 @@ export class TicketService {
         raced.authorUserId === actor.identity.userId &&
         raced.body === input.body
       ) {
+        const attachmentIds = await this.prisma.ticketAttachment.findMany({
+          where: { messageId: raced.id },
+          select: { id: true },
+        });
+        if (!sameAttachmentIds(attachmentIds, input.attachmentIds))
+          throw this.conflict('This reply submission key was already used.');
         return this.get(ticketId, actor);
       }
       throw this.conflict('The ticket reply could not be recorded safely.');
@@ -539,7 +583,8 @@ export class TicketService {
       ticket.departmentId !==
         (input.departmentId ?? defaultSupportDepartmentId) ||
       initial?.authorUserId !== identity.userId ||
-      initial.body !== input.body
+      initial.body !== input.body ||
+      !sameAttachmentIds(initial.attachments, input.attachmentIds)
     ) {
       throw this.conflict('This ticket submission key was already used.');
     }
@@ -553,6 +598,45 @@ export class TicketService {
     });
     if (!ticket) throw this.notFound();
     return ticket;
+  }
+
+  async attachmentTarget(
+    tx: Prisma.TransactionClient,
+    ticketId: string | undefined,
+    departmentId: string | undefined,
+    actor: AuthRequestContext,
+    writing: boolean,
+  ): Promise<string> {
+    if (
+      writing &&
+      (actor.supportAdministratorId ||
+        (actor.identity.role === 'CUSTOMER' && actor.identity.supportSession))
+    )
+      throw new ApplicationException({
+        status: HttpStatus.FORBIDDEN,
+        code: 'FORBIDDEN',
+        message: 'Customer support sessions are read-only.',
+      });
+    if (ticketId) {
+      await tx.$queryRaw`SELECT id FROM tickets WHERE id = ${ticketId}::uuid FOR UPDATE`;
+      const ticket = await tx.ticket.findUnique({ where: { id: ticketId } });
+      if (!ticket) throw this.notFound();
+      await this.lockDepartment(tx, ticket.departmentId);
+      await this.assertAccess(tx, ticket, actor);
+      if (writing && ticket.status === 'CLOSED')
+        throw this.invalid(
+          'Reopen the ticket before uploading a reply attachment.',
+        );
+      return ticket.departmentId;
+    }
+    if (actor.identity.role !== 'CUSTOMER') throw this.notFound();
+    const department = await this.lockDepartment(
+      tx,
+      departmentId ?? defaultSupportDepartmentId,
+    );
+    if (!department.enabled || !department.customerVisible)
+      throw this.invalid('This department is not open for new tickets.');
+    return department.id;
   }
 
   private assertStaffActor(actor: AuthRequestContext) {
@@ -816,6 +900,14 @@ export class TicketService {
           (message.author.customer
             ? this.customerName(message.author.customer)
             : 'System'),
+        attachments: message.attachments.map((file) => ({
+          id: file.id,
+          filename: file.filename,
+          mediaType: file.mediaType,
+          sizeBytes: file.sizeBytes,
+          status: file.expiresAt <= new Date() ? 'EXPIRED' : file.status,
+          expiresAt: file.expiresAt.toISOString(),
+        })),
         kind: message.kind,
         body: message.body,
         createdAt: message.createdAt.toISOString(),

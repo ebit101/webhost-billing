@@ -87,12 +87,16 @@ const expectedTables = [
   'settings',
   'ticket_messages',
   'tickets',
+  'ticket_attachments',
+  'ticket_attachment_blobs',
   'support_departments',
   'support_department_members',
   'users',
 ] as const;
 
 const requiredCustomConstraints = [
+  'ticket_attachment_shape',
+  'ticket_attachment_blob_size',
   'support_departments_revision_check',
   'service_upgrades_state_check',
   'domain_fact_syncs_state_check',

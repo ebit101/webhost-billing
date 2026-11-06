@@ -1,6 +1,7 @@
 'use client';
 
 import { sentenceCaseLabel } from '@webhost-billing/shared';
+import { TicketAttachmentInput } from './ticket-attachments';
 import { RecordDialog } from '../ui/record-dialog';
 import { DataTable } from '../ui/data-table';
 import type {
@@ -9,12 +10,16 @@ import type {
   TicketDetail,
   TicketSummary,
 } from '@webhost-billing/shared';
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import {
   authenticatedGet,
   authenticatedPaginatedGet,
   authMutation,
 } from '../../lib/auth-api';
+import {
+  uploadTicketAttachments,
+  clearTicketUploadDraft,
+} from '../../lib/ticket-attachment-upload';
 import { Button } from '../ui/button';
 import { EmptyState, LoadingState } from '../ui/feedback-state';
 import { PageHeader } from '../ui/page-header';
@@ -28,6 +33,8 @@ import {
 } from './support-ui';
 
 export function CustomerTicketManager() {
+  const createKey = useRef<string | undefined>(undefined);
+  const replyKeys = useRef(new Map<string, string>());
   const [tickets, setTickets] = useState<TicketSummary[]>([]);
   const [departments, setDepartments] = useState<SupportDepartmentOption[]>([]);
   const [services, setServices] = useState<Service[]>([]);
@@ -79,8 +86,18 @@ export function CustomerTicketManager() {
     clearMessages();
     try {
       const serviceId = String(values.get('serviceId') ?? '');
+      const submissionKey = createKey.current ?? crypto.randomUUID();
+      createKey.current = submissionKey;
+      const departmentId = String(values.get('departmentId'));
+      const attachmentIds = await uploadTicketAttachments(
+        form,
+        submissionKey,
+        undefined,
+        departmentId,
+      );
       const created = await authMutation<TicketDetail>('/tickets', 'POST', {
-        submissionKey: crypto.randomUUID(),
+        submissionKey,
+        ...(attachmentIds.length ? { attachmentIds } : {}),
         departmentId: String(values.get('departmentId')),
         subject: String(values.get('subject')),
         body: String(values.get('body')),
@@ -91,6 +108,8 @@ export function CustomerTicketManager() {
         ...current.filter((ticket) => ticket.id !== created.id),
       ]);
       setSelected(created);
+      clearTicketUploadDraft(submissionKey);
+      createKey.current = undefined;
       form.reset();
       setShowCreate(false);
       setNotice(`${created.ticketNumber} was opened.`);
@@ -109,12 +128,26 @@ export function CustomerTicketManager() {
     setSaving(true);
     clearMessages();
     try {
+      const submissionKey =
+        replyKeys.current.get(selected.id) ?? crypto.randomUUID();
+      replyKeys.current.set(selected.id, submissionKey);
+      const attachmentIds = await uploadTicketAttachments(
+        form,
+        submissionKey,
+        selected.id,
+      );
       const updated = await authMutation<TicketDetail>(
         `/tickets/${selected.id}/replies`,
         'POST',
-        { submissionKey: crypto.randomUUID(), body },
+        {
+          submissionKey,
+          body,
+          ...(attachmentIds.length ? { attachmentIds } : {}),
+        },
       );
       replace(updated);
+      clearTicketUploadDraft(submissionKey);
+      replyKeys.current.delete(selected.id);
       form.reset();
       setNotice('Your reply was added and the support team was notified.');
     } catch (caught) {
@@ -238,10 +271,12 @@ export function CustomerTicketManager() {
               placeholder="Include steps, timing, and any safe error text. Never include a password or API key."
             />
           </label>
+          <div className="mt-4">
+            <TicketAttachmentInput disabled={saving} />
+          </div>
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
             <p className="text-xs text-slate-600">
-              Plain text only. Attachments, HTML, passwords, and secret keys are
-              not accepted.
+              Plain text only. Do not include HTML, passwords or secret keys.
             </p>
             <Button disabled={saving || !departments.length} type="submit">
               {saving ? 'Opening…' : 'Open support ticket'}

@@ -127,6 +127,19 @@ const apiEnvironmentObjectSchema = serverEnvironmentSchema
       .max(30_000)
       .default(10_000),
     RESELLBIZ_LIVE_ENABLED: environmentBooleanSchema,
+    TICKET_ATTACHMENT_SCANNER: z
+      .enum(['disabled', 'fake', 'clamav'])
+      .default('disabled'),
+    TICKET_ATTACHMENT_CLAMAV_HOST: z
+      .string()
+      .regex(/^[A-Za-z0-9][A-Za-z0-9.-]{0,252}$/)
+      .default('127.0.0.1'),
+    TICKET_ATTACHMENT_CLAMAV_PORT: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(65535)
+      .default(3310),
     REGISTRAR_RENEWAL_DISPATCH_ENABLED: environmentBooleanSchema,
     REGISTRAR_DOMAIN_SYNC_LIVE_ENABLED: environmentBooleanSchema,
     VIRTUALIZOR_API_ENABLED: environmentBooleanSchema,
@@ -182,6 +195,13 @@ function requireCredential(
 export const apiEnvironmentSchema = apiEnvironmentObjectSchema.superRefine(
   (environment, context) => {
     if (environment.NODE_ENV === 'production') {
+      if (environment.TICKET_ATTACHMENT_SCANNER === 'fake')
+        context.addIssue({
+          code: 'custom',
+          path: ['TICKET_ATTACHMENT_SCANNER'],
+          message:
+            'The simulated attachment scanner is forbidden in production.',
+        });
       for (const key of ['WEB_ORIGIN', 'API_PUBLIC_ORIGIN'] as const) {
         if (!isSecureOrLoopbackOrigin(environment[key])) {
           context.addIssue({

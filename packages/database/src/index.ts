@@ -3,3 +3,5 @@ export * from './generated/prisma/client';
 export { orderFulfillmentComplete } from './fulfillment';
 
 export { supportDepartmentAccess, supportStaffWhere } from './support-access';
+
+export { purgeExpiredTicketAttachments } from './ticket-attachment-retention';

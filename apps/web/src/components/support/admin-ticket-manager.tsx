@@ -8,7 +8,7 @@ import type {
   TicketSetupOptions,
   TicketSummary,
 } from '@webhost-billing/shared';
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import {
   authenticatedGet,
   authenticatedPaginatedGet,
@@ -19,6 +19,10 @@ import {
   type AdminCustomerFilter,
   withAdminCustomerFilter,
 } from '../../lib/admin-customer-filter';
+import {
+  uploadTicketAttachments,
+  clearTicketUploadDraft,
+} from '../../lib/ticket-attachment-upload';
 import { Button } from '../ui/button';
 import { DataTable, type DataColumn } from '../ui/data-table';
 import { EmptyState, LoadingState } from '../ui/feedback-state';
@@ -54,6 +58,7 @@ export function AdminTicketManager({
   customerFilter?: AdminCustomerFilter;
   canReadCustomerContext?: boolean;
 } = {}) {
+  const replyKeys = useRef(new Map<string, string>());
   const [tickets, setTickets] = useState<TicketSummary[]>([]);
   const [options, setOptions] = useState(emptyOptions);
   const [selected, setSelected] = useState<TicketDetail>();
@@ -241,12 +246,26 @@ export function AdminTicketManager({
     setSaving(true);
     clearMessages();
     try {
+      const submissionKey =
+        replyKeys.current.get(selected.id) ?? crypto.randomUUID();
+      replyKeys.current.set(selected.id, submissionKey);
+      const attachmentIds = await uploadTicketAttachments(
+        form,
+        submissionKey,
+        selected.id,
+      );
       const updated = await authMutation<TicketDetail>(
         `/tickets/${selected.id}/replies`,
         'POST',
-        { submissionKey: crypto.randomUUID(), body },
+        {
+          submissionKey,
+          body,
+          ...(attachmentIds.length ? { attachmentIds } : {}),
+        },
       );
       replace(updated);
+      clearTicketUploadDraft(submissionKey);
+      replyKeys.current.delete(selected.id);
       form.reset();
       setNotice('Reply added. A customer email notification was queued.');
     } catch (caught) {

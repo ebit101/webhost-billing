@@ -323,6 +323,7 @@ model User {
   adminProfile                  AdminProfile?
   paymentsCreated               Payment[]                       @relation("PaymentCreatedBy")
   paymentsReviewed              Payment[]                       @relation("PaymentReviewedBy")
+  ticketAttachments             TicketAttachment[]
   supportMemberships            SupportDepartmentMember[]
   ticketsAssigned               Ticket[]                        @relation("TicketAssignedAdmin")
   ticketMessages                TicketMessage[]
@@ -1053,6 +1054,7 @@ model Ticket {
   customer        Customer        @relation(fields: [customerId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   service         Service?        @relation(fields: [serviceId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   assignedAdmin   User?           @relation("TicketAssignedAdmin", fields: [assignedAdminId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  attachments     TicketAttachment[]
   messages        TicketMessage[]
   emailLogs       EmailLog[]
 
@@ -1071,11 +1073,50 @@ model TicketMessage {
   body         String            @db.Text
   createdAt    DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
   ticket       Ticket            @relation(fields: [ticketId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  attachments  TicketAttachment[]
   author       User              @relation(fields: [authorUserId], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
   @@index([ticketId, createdAt], map: "ticket_messages_ticket_created_at_idx")
   @@index([authorUserId], map: "ticket_messages_author_user_id_idx")
   @@map("ticket_messages")
+}
+
+model TicketAttachmentBlob {
+  id         String            @id @default(uuid()) @db.Uuid
+  content    Bytes
+  attachment TicketAttachment?
+
+  @@map("ticket_attachment_blobs")
+}
+
+model TicketAttachment {
+  id                   String                @id @db.Uuid
+  uploaderUserId       String                @map("uploader_user_id") @db.Uuid
+  messageSubmissionKey String                @map("message_submission_key") @db.Uuid
+  departmentId         String                @map("department_id") @db.Uuid
+  ticketId             String?               @map("ticket_id") @db.Uuid
+  messageId            String?               @map("message_id") @db.Uuid
+  blobId               String?               @unique @map("blob_id") @db.Uuid
+  filename             String                @db.VarChar(120)
+  mediaType            String                @map("media_type") @db.VarChar(40)
+  declaredSize         Int                   @map("declared_size")
+  sizeBytes            Int                   @default(0) @map("size_bytes")
+  status               String                @default("PENDING") @db.VarChar(20)
+  scanner              String?               @db.VarChar(20)
+  sha256               String?               @db.VarChar(64)
+  claimToken           String?               @map("claim_token") @db.Uuid
+  leaseUntil           DateTime?             @map("lease_until") @db.Timestamptz(3)
+  expiresAt            DateTime              @map("expires_at") @db.Timestamptz(3)
+  createdAt            DateTime              @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt            DateTime              @updatedAt @map("updated_at") @db.Timestamptz(3)
+  uploader             User                  @relation(fields: [uploaderUserId], references: [id], onDelete: Restrict)
+  ticket               Ticket?               @relation(fields: [ticketId], references: [id], onDelete: Restrict)
+  message              TicketMessage?        @relation(fields: [messageId], references: [id], onDelete: Restrict)
+  blob                 TicketAttachmentBlob? @relation(fields: [blobId], references: [id], onDelete: Restrict)
+
+  @@index([uploaderUserId, messageSubmissionKey])
+  @@index([status, expiresAt])
+  @@map("ticket_attachments")
 }
 
 model EmailLog {

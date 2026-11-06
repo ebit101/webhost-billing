@@ -29,6 +29,7 @@ export const E2E_ENCRYPTION_KEY =
 export const e2eApiEnvironment: Record<string, string> = {
   ...inheritedEnvironment,
   NODE_ENV: 'test',
+  TICKET_ATTACHMENT_SCANNER: 'fake',
   BKASH_ENABLED: 'false',
   SSLCOMMERZ_ENABLED: 'false',
   RESELLBIZ_LIVE_ENABLED: 'false',

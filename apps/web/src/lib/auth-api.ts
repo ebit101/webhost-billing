@@ -201,3 +201,20 @@ export async function publicGet<T>(path: string): Promise<T> {
 }
 
 export type { ApiFailure, PaginatedApiSuccess };
+
+export async function authenticatedBinaryUpload(
+  path: string,
+  file: Blob,
+): Promise<void> {
+  const csrf = await csrfToken();
+  const response = await fetch(`${API_URL}${path}`, {
+    method: 'PUT',
+    credentials: 'include',
+    headers: {
+      'X-CSRF-Token': csrf,
+      'Content-Type': 'application/octet-stream',
+    },
+    body: file,
+  });
+  if (!response.ok) throw new Error(errorMessage(await responseBody(response)));
+}

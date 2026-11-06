@@ -5,6 +5,9 @@ import type { IntegrationCredentialService } from '../settings/integration-crede
 
 const environment = {
   NODE_ENV: 'test',
+  TICKET_ATTACHMENT_SCANNER: 'disabled',
+  TICKET_ATTACHMENT_CLAMAV_HOST: '127.0.0.1',
+  TICKET_ATTACHMENT_CLAMAV_PORT: 3310,
   NOTIFICATION_DELIVERY_MODE: 'disabled',
   WHATSAPP_LIVE_ENABLED: false,
   RESELLBIZ_LIVE_ENABLED: false,

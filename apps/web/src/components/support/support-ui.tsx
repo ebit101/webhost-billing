@@ -1,3 +1,7 @@
+import {
+  TicketAttachmentInput,
+  TicketAttachmentDownloads,
+} from './ticket-attachments';
 import { sentenceCaseLabel } from '@webhost-billing/shared';
 import type {
   TicketDetail,
@@ -177,6 +181,7 @@ export function TicketConversation({
             <p className="mt-3 whitespace-pre-wrap break-words text-sm leading-6 text-slate-700">
               {message.body}
             </p>
+            <TicketAttachmentDownloads files={message.attachments ?? []} />
           </li>
         ))}
       </ol>
@@ -201,9 +206,10 @@ export function TicketConversation({
                   placeholder="Write a clear reply without passwords or secret keys."
                 />
               </label>
+              <TicketAttachmentInput disabled={saving} />
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <p className="text-xs text-slate-500">
-                  Attachments and HTML are not accepted in this release.
+                  HTML is not accepted in message text.
                 </p>
                 <Button disabled={saving} type="submit">
                   {saving ? 'Sending…' : 'Send reply'}

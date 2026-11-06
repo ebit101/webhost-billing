@@ -7001,7 +7001,9 @@ customer's ticket or private staff messages.
 
 ## Command 217 — Add private ticket attachments
 
-**Status:** Proposed; depends on Command 216.
+**Status:** Owner-authorized on 2026-11-06; implemented locally after Command 216.
+See `docs/TICKET_ATTACHMENTS.md` and `docs/PROGRESS.md` for acceptance and
+production scanner requirements. No push or deployment.
 
 Add bounded attachments to ticket creation and replies using private storage,
 server-side type and size validation, generated storage names and authorized
