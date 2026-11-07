@@ -7036,7 +7036,10 @@ or sending customer mail.
 
 ## Command 219 — Review online payment production readiness
 
-**Status:** Proposed; implementation requires owner authorization.
+**Status:** Owner-authorized and reviewed locally on 2026-11-07. Selected
+SSLCOMMERZ Hosted Checkout for the technical pilot; merchant/sandbox access is
+unavailable and production remains closed. See `docs/ONLINE_PAYMENT_READINESS.md`
+and `docs/PROGRESS.md`. No runtime changes, push or deployment.
 
 Review the existing bKash and SSLCommerz adapters and choose one provider for the
 first online-payment pilot. Check the current official provider contract when

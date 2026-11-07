@@ -1,4 +1,11 @@
-# Payment Gateways
+# Payment gateways
+
+**Readiness review — 2026-11-07:** Both real adapters remain sandbox-only.
+Command 219 selects SSLCOMMERZ Hosted Checkout for the first technical pilot and
+records confirmed recovery gaps and unverified merchant contracts in
+[online payment readiness](ONLINE_PAYMENT_READINESS.md). The owner currently has
+access to neither provider. Existing mock tests do not certify genuine sandbox
+or production use; no gateway activation is authorized.
 
 ## Scope
 
@@ -10,8 +17,8 @@ Commands 12 and 13 provide the provider-neutral payment boundary plus sandbox-on
 
 Every payment adapter implements `PaymentGateway` with:
 
-- idempotent payment-session creation;
-- signature verification against the exact unparsed request bytes;
+- application-attempt session idempotency, without blindly retrying uncertain external creation;
+- provider-specific callback authentication: exact-byte signatures for the fake provider, authoritative SSL validation and legacy bKash execute/query proof;
 - provider-event normalization into internal status and identity fields;
 - server-to-server transaction-status lookup;
 - provider transaction-ID extraction;
@@ -118,7 +125,7 @@ Official contract references: [token management](https://developer.bka.sh/v1.2.0
 The portal also publishes V2 documentation; this command preserves the installed
 adapter's versioned protocol rather than silently mixing versions or credentials.
 
-The callback is navigation, not a signed webhook and never settles from query-string values alone. The server requires the stored payment/session identity and bKash's authenticated execute/query response. A completed transaction must still match the stored invoice, amount, currency, and unique transaction ID.
+The installed legacy callback is navigation, not a signed webhook and never settles from query-string values alone. The current bKash portal separately documents a signed IPN product that this adapter does not implement; see the Command 219 version review. The server requires the stored payment/session identity and bKash's authenticated execute/query response. A completed transaction must still match the stored invoice, amount, currency, and unique transaction ID.
 
 Official references: [checkout overview](https://developer.bka.sh/docs/checkout-process-overview), [grant token](https://developer.bka.sh/docs/grant-token-1), [create payment](https://developer.bka.sh/docs/create-payment-2), [execute payment](https://developer.bka.sh/docs/execute-payment-2), and [query payment](https://developer.bka.sh/docs/query-payment-2).
 
@@ -160,8 +167,8 @@ No automated test calls either provider. Provider-contract tests use a mocked HT
 
 - Session creation and bKash execute are not automatically retried because an unknown result could duplicate an external financial operation.
 - Token grant may retry once; read-only validation/query operations may retry twice for network or provider `5xx` failures.
-- Requests use the configured 1–30 second timeout, reject redirects at the API boundary, and return only fixed safe failure text.
-- Unknown outcomes remain pending. Administrators can use the Payments attention queue to query the provider; definitive failures remain immutable failed attempts.
+- Requests use the configured 1–30 second timeout and reject redirects at the API boundary. Command 219 identifies missing response-size limits and SSL query-error text handling; do not assume all provider text is already sanitized.
+- Unknown outcomes are intended to remain pending. Administrators can query referenced pending attempts through the attention queue. Orphan session recovery, stale callback writes and late-success handling remain open Command 219 findings; the current reconciliation path does not resolve every state.
 - Reconciliation uses the same merchant, payment, invoice, amount, currency, status, transaction-uniqueness, invoice-lock, event-idempotency, and settlement checks as callbacks.
 
 ## API
