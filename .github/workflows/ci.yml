@@ -103,15 +103,15 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: bash scripts/docs/ci-change-scope.sh "$BASE_SHA" images
 
-      - name: Lint
-        if: steps.scope.outputs.docs_only != 'true'
-        run: pnpm lint
-
       - name: Prepare backend artifacts for E2E type imports
         if: steps.scope.outputs.docs_only != 'true'
         run: |
           pnpm --filter @webhost-billing/api build
           pnpm --filter @webhost-billing/worker build
+
+      - name: Lint
+        if: steps.scope.outputs.docs_only != 'true'
+        run: pnpm lint
 
       - name: Type check
         if: steps.scope.outputs.docs_only != 'true'
