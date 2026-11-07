@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
+import { browserIsolationPatterns } from './e2e/browser-isolation';
 import {
   E2E_API_ORIGIN,
   E2E_WEB_ORIGIN,
@@ -7,6 +8,7 @@ import {
 } from './e2e/environment';
 
 export default defineConfig({
+  ...browserIsolationPatterns(process.env.WEBHOST_BROWSER_ACCEPTANCE_GROUP),
   testDir: './e2e/specs',
   globalSetup: './e2e/check-scope.ts',
   fullyParallel: false,
