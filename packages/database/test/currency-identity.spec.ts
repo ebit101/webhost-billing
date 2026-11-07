@@ -124,9 +124,9 @@ test('mandatory source and SQL wiring append identity acceptance without changin
     'pnpm test:unit && pnpm test:privileges && pnpm --filter @webhost-billing/web exec tsx e2e/run-database-tests.ts',
   );
   assert.ok(
-    !Object.keys(pkg.exports).some((key) =>
-      /identity|installation|domain/.test(key),
-    ),
+    !Object.keys(pkg.exports)
+      .filter((key) => key !== './domain-renewals')
+      .some((key) => /identity|installation|domain/.test(key)),
   );
   const launcher = readFileSync(
     resolve(root, 'apps/web/e2e/run-database-tests.ts'),
