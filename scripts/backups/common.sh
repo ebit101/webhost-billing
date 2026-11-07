@@ -28,14 +28,19 @@ BACKUP_REQUIRED_TABLES=(
   customers
   domain_actions
   domain_catalogue_tlds
+  domain_fact_syncs
   domain_offers
   domain_quotes
+  domain_renewal_invoices
+  domain_renewal_operations
+  domain_renewal_preferences
   domains
   email_attempts
   email_logs
   email_verification_tokens
   existing_domain_orders
   fake_registrar_registrations
+  fake_registrar_renewals
   hosting_panel_operations
   hosting_cancellation_requests
   integration_credentials
@@ -63,8 +68,17 @@ BACKUP_REQUIRED_TABLES=(
   registrar_preparations
   registrar_profiles
   servers
+  service_upgrades
   services
   settings
+  ssl_checkouts
+  ssl_refunds
+  support_department_members
+  support_departments
+  support_email_receipts
+  support_email_threads
+  ticket_attachment_blobs
+  ticket_attachments
   ticket_messages
   tickets
   users

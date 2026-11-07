@@ -18,14 +18,20 @@ backup_require_runtime
 
 source_database='webhost_billing_backup_source_command28'
 restored_database='webhost_billing_restore_command28'
+source_created=false
+restore_owned=false
+# Refuse collisions instead of resetting a database merely because its name fits.
+if backup_database_exists "$source_database" || backup_database_exists "$restored_database"; then
+  backup_die "Recovery drill names already exist. Preserve them and review ownership before retrying."
+fi
 drill_parent=$(cd -- "${TMPDIR:-/tmp}" && pwd -P)
 drill_directory=$(mktemp -d "$drill_parent/webhost-billing-recovery.XXXXXXXXXX")
 passphrase_file="$drill_directory/passphrase"
 backup_directory="$drill_directory/encrypted"
 
 cleanup() {
-  backup_drop_isolated_database "$restored_database" || true
-  backup_drop_isolated_database "$source_database" || true
+  if $restore_owned; then backup_drop_isolated_database "$restored_database" || true; fi
+  if $source_created; then backup_drop_isolated_database "$source_database" || true; fi
   [[ $(cd -- "$drill_directory" && pwd -P) == "$drill_directory" &&
     $(dirname -- "$drill_directory") == "$drill_parent" &&
     $(basename -- "$drill_directory") == webhost-billing-recovery.* ]] ||
@@ -35,14 +41,13 @@ cleanup() {
 }
 trap cleanup EXIT
 
-backup_drop_isolated_database "$restored_database"
-backup_drop_isolated_database "$source_database"
 backup_compose exec -T \
   -e RECOVERY_TARGET_DATABASE="$source_database" \
   "$BACKUP_POSTGRES_SERVICE" \
   sh -ceu '
     createdb --username "$POSTGRES_USER" --template template0 --encoding UTF8 "$RECOVERY_TARGET_DATABASE"
   '
+source_created=true
 
 database_url_for() {
   local database_name=$1
@@ -64,6 +69,8 @@ restored_database_url=$(database_url_for "$restored_database")
   DATABASE_URL="$source_database_url" pnpm db:migrate:deploy
   DATABASE_URL="$source_database_url" pnpm db:seed
   DATABASE_URL="$source_database_url" pnpm db:verify
+  RECOVERY_FIXTURE_CONFIRMATION=FICTIONAL_RECOVERY_ONLY DATABASE_URL="$source_database_url" \
+    pnpm --filter @webhost-billing/database exec tsx prisma/recovery-fixture.ts populate
 )
 
 umask 077
@@ -89,6 +96,7 @@ if "$script_directory/verify-postgres-backup.sh" \
 fi
 printf 'Deliberately corrupted encrypted backup was rejected.\n'
 
+restore_owned=true
 RECOVERY_CONFIRMATION="RESTORE_TO_${restored_database}" \
   "$script_directory/restore-postgres-backup.sh" \
   "$backup_file" \
@@ -101,7 +109,7 @@ RECOVERY_CONFIRMATION="RESTORE_TO_${restored_database}" \
 
 # Genuine encrypted archives that omit newer application data must fail before
 # restore creates a database. Checksums alone cannot establish completeness.
-for missing_table in notification_entries existing_domain_orders; do
+for missing_table in notification_entries existing_domain_orders ssl_checkouts ssl_refunds support_email_receipts domain_renewal_operations; do
   incomplete_backup="$drill_directory/missing-${missing_table}.dump.gpg"
   backup_compose exec -T -e RECOVERY_TARGET_DATABASE="$source_database" \
     -e RECOVERY_EXCLUDED_TABLE="$missing_table" "$BACKUP_POSTGRES_SERVICE" \
@@ -186,6 +194,8 @@ RECOVERY_CONFIRMATION="RESTORE_TO_${restored_database}" \
   DATABASE_URL="$restored_database_url" pnpm db:migrate:deploy
   DATABASE_URL="$restored_database_url" pnpm db:migrate:status
   DATABASE_URL="$restored_database_url" pnpm db:verify
+  RECOVERY_FIXTURE_CONFIRMATION=FICTIONAL_RECOVERY_ONLY DATABASE_URL="$restored_database_url" \
+    pnpm --filter @webhost-billing/database exec tsx prisma/recovery-fixture.ts verify
 )
 
 printf 'Command 28 recovery drill passed using fictional data; temporary databases, key, and backup will now be removed.\n'

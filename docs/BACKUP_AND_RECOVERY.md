@@ -26,14 +26,13 @@ Logical dumps are not point-in-time recovery. Production should add provider-man
 - A restricted backup destination. The repository ignores `backups/` and encrypted dump artifacts, but ignore rules are not access control.
 - The reviewed source release matching the database, including its migration SQL. Verification must require the complete trusted table inventory and exactly the completed migrations present in those sources; it rejects unfinished history, missing/extra tables and untrusted checksums. Use historical release sources for historical backups.
 
-**Command 221 finding — 2026-11-07:** The current required-table list in
-`scripts/backups/common.sh` is behind the Prisma schema/database verifier by
-14 tables, including retained SSL checkout/refund history. The existing local
-inventory tests return six passes and two failures. This command did not run a
-backup or restore and does not establish their current release compatibility.
-Repair and verify the inventory under separately authorized Command 225 before
-accepting recovery or payment activation; do not weaken checks or assume an
-older installed verifier covers the newer schema. See
+**Command 221 finding — 2026-11-07:** The source review found the required-table
+list in `scripts/backups/common.sh` behind the Prisma schema/database verifier
+by 14 tables, including retained SSL checkout/refund history. At that time the
+inventory tests returned six passes and two failures; no backup or restore was
+run by the documentation command. Command 225 repairs that inventory and extends
+the isolated fictional acceptance drill described below. Keep exact parity and
+checksum checks; an older installed verifier does not cover a newer schema. See
 [the payment recovery gate](SSLCOMMERZ_ACTIVATION_RUNBOOK.md).
 
 Example local-only key preparation:
@@ -217,19 +216,31 @@ does not prove application, key, sequence or external-provider recovery by itsel
 
 ## Fictional automated recovery drill
 
-The drill is intentionally destructive only to these exact databases:
+Run the drill against a dedicated fictional PostgreSQL Compose project. It
+creates only these exact databases and refuses to start if either already exists:
 
 - `webhost_billing_backup_source_command28`
 - `webhost_billing_restore_command28`
 
-It recreates the source, deploys all migrations, loads the reserved `.test` seed, validates it,
-creates and verifies an encrypted backup, restores it and compares all 56 tables and their
-full row contents. Negative cases reject corrupted ciphertext, genuine archives missing
-notification or combined-order history, equal-count row alteration, arbitrary migration
-checksums, unfinished migrations, a source target and replacement of an existing target.
+It creates the source, deploys all migrations, loads the reserved `.test` seed,
+validates it, and adds fictional captured-payment, callback, successful/uncertain
+refund and encrypted credential-snapshot fixtures. It creates and verifies an
+encrypted backup, restores it and compares every trusted table and its full row
+contents. Inventory checks require exact agreement with current mapped models
+and the schema verifier; the table count is not frozen at a historical release.
+Negative cases reject corrupted ciphertext, genuine archives missing notification,
+combined-order, checkout, refund, support-email or domain-renewal history,
+equal-count row alteration, arbitrary migration checksums, unfinished migrations,
+a source target and replacement of an existing target.
 A trusted LF/CRLF checksum variant passes. A clean second restore must pass migration
-deployment/status and relationship verification. The temporary databases, encrypted artifact,
-generated passphrase and private GnuPG home are removed on exit; personal keyrings are untouched.
+deployment/status and relationship verification. The final fixture check verifies
+retained financial links and states, decrypts the fictional saved merchant
+credentials and checks restored immutability guards. The fixture requires explicit
+fictional confirmation and exact source/restore database names; it loads no gateway
+or email adapter. The drill removes its owned temporary databases, encrypted artifact,
+generated passphrase and private GnuPG home on exit; personal keyrings are untouched.
+On Windows, use a Linux rehearsal container or host with POSIX file permissions;
+do not weaken the passphrase permission check for NTFS.
 
 ```bash
 COMMAND28_RECOVERY_DRILL_CONFIRMATION=RESET_COMMAND28_FICTIONAL_DATABASES \
@@ -242,6 +253,21 @@ CI runs this actual encrypted recovery drill against the fixed fictional databas
 `pnpm test:recovery-inventory` separately checks inventory agreement and checksum byte
 handling without a database. The Command 158 local drill passed with 39 migrations;
 its approximately 19-minute multi-case Windows run is not a production restore time.
+
+**Command 225 acceptance — 2026-11-07:** Nine inventory/checksum tests passed on
+Windows and Linux. A dedicated PostgreSQL 18.6 Compose project with no published
+port passed the complete encrypted backup/restore drill for 75 tables and 55
+migrations. Both clean restores matched all source table counts and row contents;
+relationship/financial verification found zero orphans and zero violations.
+Captured payments, processed callbacks, linked confirmed refunds and uncertain
+refund reservations survived. The fictional saved credential snapshot decrypted
+correctly, and restored immutable guards rejected prohibited changes/deletions.
+All negative archive, row-tampering and migration-history cases passed. Additional
+pre-existing source/restore database checks preserved sentinel data. Owned drill
+databases, temporary archives, passphrase and GnuPG home were removed afterward.
+No application server, worker, gateway adapter or mail provider was started for
+this rehearsal. This local acceptance does not establish production key custody,
+off-site backup retrieval, operational recovery time or deployed-release readiness.
 
 ## Command 158 retrieval evidence
 

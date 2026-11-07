@@ -28,8 +28,11 @@ SSLCOMMERZ activation gates, stop-new-checkout procedure, reconciliation and
 financially compatible rollback. This is documentation only; real provider
 acceptance and live implementation/approval remain open. See the
 [activation runbook](docs/SSLCOMMERZ_ACTIVATION_RUNBOOK.md).
-The review also found a stale backup table inventory; proposed Command 225 must
-repair and verify that recovery prerequisite before activation or deployment.
+The review also found a stale backup table inventory. Command 225 aligns the
+inventory with current mapped models and extends the isolated fictional
+encrypted recovery rehearsal. Its local acceptance is recorded in the
+[progress log](docs/PROGRESS.md); installed-release recovery and payment
+activation still require separate verification and authorization.
 
 **Support email reply direction — 2026-11-06:** Command 218 adds default-off
 customer replies through opaque ticket/customer-bound reply addresses and a

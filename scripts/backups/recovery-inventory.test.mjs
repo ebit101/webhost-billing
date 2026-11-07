@@ -43,6 +43,41 @@ test('recovery requires every mapped model, including newer billing and domain h
   assert.deepEqual([...inventory].sort(), tables.sort());
   assert.ok(inventory.includes('existing_domain_orders'));
   assert.ok(inventory.includes('notification_entries'));
+  for (const table of [
+    'ssl_checkouts',
+    'ssl_refunds',
+    'service_upgrades',
+    'domain_fact_syncs',
+    'domain_renewal_operations',
+    'support_departments',
+    'support_email_receipts',
+    'ticket_attachments',
+    'ticket_attachment_blobs',
+  ]) {
+    assert.ok(
+      inventory.includes(table),
+      `Retained recovery history missing: ${table}`,
+    );
+  }
+});
+
+test('the real recovery drill rejects archives missing retained payment and support history', () => {
+  const drill = readFileSync(
+    new URL('scripts/backups/test-recovery-drill.sh', root),
+    'utf8',
+  );
+  const omissions = drill
+    .match(/for missing_table in ([^;]+); do/)?.[1]
+    .split(/\s+/);
+  for (const table of [
+    'ssl_checkouts',
+    'ssl_refunds',
+    'support_email_receipts',
+    'domain_renewal_operations',
+  ])
+    assert.ok(omissions?.includes(table));
+  assert.ok(drill.includes('recovery-fixture.ts populate'));
+  assert.ok(drill.includes('recovery-fixture.ts verify'));
 });
 
 test('recovery and the database verifier agree on the entire application table set', () => {

@@ -14,16 +14,16 @@ before any later authorized provider work.
 
 ## Current gate and responsibilities
 
-| Item                                     | Prepared status                                                                                                 |
-| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| Local payment acceptance                 | Command 220 recorded 58 API, 43 unit and 50 UI cases passing. Not rerun by this documentation command.          |
-| Installed release                        | Not inspected here. A local commit or version label does not prove the target includes Command 220.             |
-| Merchant access                          | Owner last confirmed neither provider has approved API/sandbox access. No account checked here.                 |
-| Genuine sandbox acceptance               | Missing; not authorized by this request.                                                                        |
-| Recovery inventory                       | Blocked: the existing local recovery inventory test fails against current mapped tables. See the finding below. |
-| Live implementation                      | Missing. Current adapter, transport hosts, stored environment and refund confirmation are sandbox-only.         |
-| Payment, refund and deployment authority | None in this command. Each needs separate scope and owner approval.                                             |
-| Operational decision                     | Keep activation closed. Existing manual payments remain the fallback.                                           |
+| Item                                     | Prepared status                                                                                                                                          |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Local payment acceptance                 | Command 220 recorded 58 API, 43 unit and 50 UI cases passing. Not rerun by this documentation command.                                                   |
+| Installed release                        | Not inspected here. A local commit or version label does not prove the target includes Command 220.                                                      |
+| Merchant access                          | Owner last confirmed neither provider has approved API/sandbox access. No account checked here.                                                          |
+| Genuine sandbox acceptance               | Missing; not authorized by this request.                                                                                                                 |
+| Recovery inventory                       | Command 225 local repair and fictional encrypted restore passed: 75 tables, 55 migrations. Installed-release and operational recovery remain unverified. |
+| Live implementation                      | Missing. Current adapter, transport hosts, stored environment and refund confirmation are sandbox-only.                                                  |
+| Payment, refund and deployment authority | None in this command. Each needs separate scope and owner approval.                                                                                      |
+| Operational decision                     | Keep activation closed. Existing manual payments remain the fallback.                                                                                    |
 
 Name a business owner who approves scope and money limits, an operator who
 changes settings and reconciles, and a recovery owner who can restore compatible
@@ -217,24 +217,30 @@ refund procedure implemented by this release.
 
 ## Rollback and incident recovery
 
-### Known recovery prerequisite failure
+### Recovery prerequisite history
 
-Source review found that `scripts/backups/common.sh` has a stale required-table
-inventory. The existing local command
+Command 221 source review found that `scripts/backups/common.sh` had a stale
+required-table inventory. At that time the existing local command
 `node --test scripts/backups/recovery-inventory.test.mjs` returned **6 passed,
-2 failed**: the model inventory and database-verifier parity assertions fail.
-Fourteen current mapped tables are missing, including `ssl_checkouts` and
+2 failed**: the model inventory and database-verifier parity assertions failed.
+Fourteen current mapped tables were missing, including `ssl_checkouts` and
 `ssl_refunds`, plus newer domain, plan-change, department, attachment and email
 history. Migration naming and all five checksum-variant cases passed.
 
-This is an existing source mismatch, not a failure caused by the new prose.
+This was an existing source mismatch, not a failure caused by the new prose.
 It does not prove that a full PostgreSQL dump omits those tables; it means the
-recovery verification inventory cannot currently be accepted for this source.
-No database, backup, archive or restore was accessed to test that behavior.
-**Keep the recovery/activation gate closed** until a separately authorized fix
-aligns the inventory without weakening checks and verifies isolated recovery.
-Command 225 is proposed for that work. Do not bypass the verifier or rely on an
-older installed inventory to approve the current release.
+recovery verification inventory could not be accepted for that source. No
+database, backup, archive or restore was accessed by Command 221.
+
+Command 225 repairs the 14 missing mappings without weakening inventory or
+checksum checks and adds isolated fictional retained-history recovery acceptance.
+Its nine inventory/checksum tests and full encrypted restore rehearsal passed
+locally on 2026-11-07, including retained financial records, snapshot decryption
+and restored immutability guards. See [the progress log](PROGRESS.md). This local repair
+does not establish the installed release, operational key custody, off-site
+retrieval or provider reconciliation. Keep activation closed until those
+separate gates pass; never bypass the verifier or use an older installed
+inventory to approve the current release.
 
 ### Containment and recovery choices
 
@@ -292,5 +298,5 @@ Outstanding items, owner, next review time and final owner decision:
 outcome, callback reachability, credential provisioning, rollback drill or
 deployed state was verified. Merchant access, genuine sandbox scope, reviewed
 live implementation and separate financial/deployment approvals remain open.
-The confirmed recovery-inventory failure is also unresolved; its proposed fix
-is separate work, not silently included in this preparation.
+The recovery-inventory repair and fictional acceptance belong to Command 225,
+not this documentation-only preparation; see its current progress record.

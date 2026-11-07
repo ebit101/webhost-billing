@@ -7082,8 +7082,8 @@ implementation where applicable and separately approved amount/actor/refund scop
 Deployment requires separate approval.
 
 The preparation found a pre-existing mismatch between the backup required-table
-inventory and the current schema. Command 225 is proposed to repair and verify
-that prerequisite; no recovery script was changed by Command 221.
+inventory and the current schema. Command 225 addresses that prerequisite;
+no recovery script was changed by Command 221.
 
 Prepare the live activation and rollback runbook, callback reachability checks,
 reconciliation visibility and a way to stop new checkouts without losing pending
@@ -7147,10 +7147,14 @@ separate publishing and deployment authorization.
 
 ## Command 225 — Align backup and restore inventory with the current schema
 
-**Status:** Proposed after the Command 221 source review on 2026-11-07;
-requires owner authorization. Prioritize this recovery prerequisite before any
-payment activation or accumulated release deployment. Command 222 remains a
-separate proposed feature.
+**Status:** Completed locally on 2026-11-07 after owner authorization. All 14
+missing table mappings were restored; nine inventory/checksum tests and the
+isolated fictional encrypted recovery drill passed with 75 tables and 55
+migrations. Retained payment/refund/callback history, snapshot decryption and
+restored immutability guards passed. No provider connection, production data,
+push or deployment. See [the progress log](docs/PROGRESS.md). Installed-release
+recovery and payment activation remain separate gates. Command 222 is proposed
+and requires authorization.
 
 Align the trusted recovery table inventory with every current mapped Prisma
 model and the database verifier, including retained checkout/refund, domain,
