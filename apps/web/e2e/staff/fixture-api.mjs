@@ -62,7 +62,12 @@ createServer((request, response) => {
     return send({ partialPaymentsEnabled: false });
   if (url.pathname === '/settings/presentation')
     return send({ timeZone: 'Asia/Dhaka' });
-  if (url.pathname === '/tickets/setup-options') return send({ admins: [] });
+  if (url.pathname === '/tickets/setup-options')
+    return send({
+      admins: [],
+      departments: [],
+      canManageDepartments: staffRole === 'FULL_ADMINISTRATOR',
+    });
   if (url.pathname === '/auth/sessions') return send([]);
   if (url.pathname === '/auth/two-factor')
     return send({
