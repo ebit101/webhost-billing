@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Invoked by scripts/deploy-staging.ps1 after GitHub validation and archive upload.
-set -euo pipefail
+# Invoked by the owner-authorized SSH launcher after validation and archive upload.
+set -Eeuo pipefail
 
 [[ $# -eq 2 && $1 =~ ^[0-9a-f]{40}$ && $2 =~ ^[0-9a-f]{64}$ ]] || {
   echo 'Expected a commit SHA and archive SHA-256.' >&2
@@ -12,12 +12,17 @@ base=/srv/webhost-billing-staging
 release="$base/releases/$sha"
 archive="$base/incoming/webhost-staging-$sha.tar.gz"
 env_file="$base/.env.staging"
+hold="$base/deployment-held"
 [[ $(id -u) -eq 0 && -L "$base/current" && -f "$env_file" ]] || {
   echo 'Expected the existing root-owned staging installation.' >&2
   exit 1
 }
 [[ $(stat -c '%a' "$env_file") == 600 ]] || {
   echo 'Staging environment file must have mode 0600.' >&2
+  exit 1
+}
+[[ ! -e "$hold" && ! -L "$hold" ]] || {
+  echo 'An earlier deployment requires an operator recovery decision. Inspect deployment-held before another attempt.' >&2
   exit 1
 }
 grep -qx 'RESELLBIZ_LIVE_ENABLED=false' "$env_file" || {
@@ -95,23 +100,34 @@ compose ps --format json </dev/null >"$rollback/preflight-services.json"
 )
 echo "Verified backup and rollback inventory: $rollback"
 
-restart_previous() {
-  cp -p "$rollback/previous-env" "$env_file"
-  cd "$old"
-  unset IMAGE_TAG
-  compose up -d --no-deps api worker scheduler </dev/null || true
+stage=stopping-writers
+# Exclusive creation also leaves a durable hold if the process is interrupted.
+(set -o noclobber; printf 'candidate_commit=%s\nstatus=in-progress\nrollback=%s\n' "$sha" "$rollback" >"$hold") || {
+  echo 'Another deployment owns the recovery hold.' >&2
+  exit 1
 }
-recover_before_switch() {
-  echo 'Deployment stopped before release switch; restoring the previous app services.' >&2
-  restart_previous
+contain_failure() {
+  local status=${1:-1} stop_status
+  [[ $status != 0 ]] || status=1
+  trap - ERR
+  set +e
+  compose stop api worker scheduler </dev/null
+  stop_status=$?
+  printf 'candidate_commit=%s\nstatus=held\nstage=%s\nexit_status=%s\nwriters_stop_status=%s\nrollback=%s\n' \
+    "$sha" "$stage" "$status" "$stop_status" "$rollback" >"$hold"
+  cp "$hold" "$rollback/deployment-held"
+  echo "Deployment held at $stage. No previous writers were restarted. Inspect $hold and $rollback; require an explicit compatibility or recovery decision." >&2
+  if [[ $stop_status != 0 ]]; then
+    echo 'Writer shutdown could not be confirmed. Block writes and consumers manually before investigating.' >&2
+  fi
+  exit "$status"
 }
 # Only application writers stop; PostgreSQL, Redis, Mailpit and unrelated stacks remain running.
-trap recover_before_switch ERR
+trap 'contain_failure $?' ERR
 compose stop api worker scheduler </dev/null
-if ! compose --profile tools run --rm --no-deps migrate </dev/null; then
-  recover_before_switch
-  exit 1
-fi
+stage=migrating
+compose --profile tools run --rm --no-deps migrate </dev/null
+stage=checking-migration-ledger
 unfinished=$(compose exec -T postgres sh -ceu '
   psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" \
     --no-align --tuples-only --set ON_ERROR_STOP=1 \
@@ -119,10 +135,10 @@ unfinished=$(compose exec -T postgres sh -ceu '
 ' </dev/null | tr -d '\r\n')
 if [[ $unfinished != 0 ]]; then
   echo "Database has $unfinished unfinished migrations." >&2
-  recover_before_switch
-  exit 1
+  contain_failure 1
 fi
 
+stage=switching-release
 next_env=$(mktemp "$base/.env.staging.XXXXXXXX")
 sed "s/^IMAGE_TAG=.*/IMAGE_TAG=$sha/" "$env_file" >"$next_env"
 chmod 600 "$next_env"
@@ -130,21 +146,22 @@ mv -f "$next_env" "$env_file"
 next_link="$base/.current-$sha"
 ln -s "$release" "$next_link"
 mv -Tf "$next_link" "$base/current"
-trap - ERR
 cd "$base/current"
+stage=starting-candidate
 compose up -d --no-deps --force-recreate --wait api web worker scheduler </dev/null
+stage=checking-candidate
 compose ps --format json </dev/null >"$rollback/postflight-services.json"
 jq -es 'length == 7 and all(.[]; .State == "running" and .Health == "healthy")' \
   "$rollback/postflight-services.json" >/dev/null || {
     echo 'Staging postflight services are not all healthy.' >&2
-    exit 1
+    contain_failure 1
   }
 for service in postgres redis mailpit; do
   before=$(jq -r --arg service "$service" 'select(.Service == $service) | .ID' "$rollback/preflight-services.json")
   after=$(jq -r --arg service "$service" 'select(.Service == $service) | .ID' "$rollback/postflight-services.json")
   [[ -n $before && $before == "$after" ]] || {
     echo "$service was replaced unexpectedly." >&2
-    exit 1
+    contain_failure 1
   }
 done
 
@@ -157,8 +174,11 @@ node deploy/staging/verify-web-origin.cjs https://my.speedhost.bd https://my.spe
 for service in api worker scheduler; do
   [[ $(compose exec -T "$service" printenv RESELLBIZ_LIVE_ENABLED </dev/null) == false ]] || {
     echo "Live registrar flag unexpectedly enabled in $service." >&2
-    exit 1
+    contain_failure 1
   }
 done
+grep -qx "candidate_commit=$sha" "$hold"
+rm -- "$hold"
+trap - ERR
 echo "Staging deployment healthy: $sha"
 echo "Rollback inventory: $rollback"

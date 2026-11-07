@@ -7244,7 +7244,11 @@ activate providers, publish or deploy without separate owner authorization.
 
 ## Command 230 — Rehearse the full alpha.4 upgrade and contain failed migrations
 
-**Status:** Proposed; requires owner authorization. Not started.
+**Status:** Completed locally on 2026-11-07. The full populated 46→58 upgrade,
+five billing cases, real partial-migration refusal and twelve isolated deployment
+fault cases passed. See [the progress log](docs/PROGRESS.md). The owner subsequently
+requested publication and deployment of the accumulated batch; track that delivery
+separately from this command's local acceptance.
 
 Populate an isolated fictional 46-migration alpha.4 installation and upgrade
 through the accumulated candidate migrations. Verify commercial/support history,
@@ -7253,3 +7257,14 @@ migration failure; keep writers stopped until an explicit compatibility or
 recovery decision. Align and test the dedicated SSH failure path locally with
 controlled command doubles. Update the progress log. No deployment, publication
 or real provider connection.
+
+## Command 231 — Review first-cycle billing and manual follow-up after alpha.5
+
+**Status:** Proposed; requires owner authorization. Not started.
+
+Review the first supervised billing cycle after the release. Reconcile issued
+renewals and verified payments, legacy domain review holds, due downgrades,
+cancelled add-on resource removal and purchased configuration follow-up. Record
+read-only queue/account observations and named operator actions privately, with
+sanitized progress evidence. Do not submit provider purchases, hosting mutations,
+payments/refunds or customer messages without their separately approved scope.

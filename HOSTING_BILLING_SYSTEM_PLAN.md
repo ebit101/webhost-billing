@@ -8,6 +8,13 @@
 
 **Technical identifier:** `webhost-billing`
 
+**Full upgrade containment — 2026-11-07:** Command 230 extends the local rehearsal
+to populated published alpha.4 at migration 46, preserving legacy commercial and
+support history through 58. The dedicated SSH script holds application writers
+after migration/rollout failure or interruption until an explicit operator
+compatibility/recovery decision. See [the upgrade rehearsal](docs/BILLING_UPGRADE_REHEARSAL.md)
+and [SSH handoff](docs/SSH_DEPLOYMENT_HANDOFF.md).
+
 **Billing upgrade rehearsal — 2026-11-07:** Command 228 verifies a populated
 fictional installation across the 56 → 57 → 58 migration sequence. Preserve
 issued history, pending payment and renewal work, require legacy-term review

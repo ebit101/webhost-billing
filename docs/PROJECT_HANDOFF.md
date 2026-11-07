@@ -48,8 +48,10 @@ contains revenue, overdue invoice aging and audited CSV exports.
    [deployment and rollback runbook](STAGING_DEPLOYMENT.md) and the
    [backup and restore procedure](BACKUP_AND_RECOVERY.md).
 
-The next proposed development command is **Command 230 — Rehearse the full
-alpha.4 upgrade and contain failed migrations**. It requires owner authorization;
-do not start a release or resume old writers after a partial migration without
-the compatibility/recovery decision described in the current readiness review.
+Command 230 completed the full local alpha.4 upgrade and failure-containment
+acceptance. The owner subsequently requested delivery of the accumulated batch;
+see the progress log for the actual release outcome. Never resume old writers
+after a partial migration without the documented compatibility/recovery decision.
+The next proposed development command is **Command 231 — Review first-cycle
+billing and manual follow-up after alpha.5**; it requires owner authorization.
 The [Phase 2 pilot backlog](PHASE_2_PILOT.md) retains the earlier pilot history.

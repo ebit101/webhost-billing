@@ -4,6 +4,12 @@ Reviewed on 2026-11-07 (Asia/Dhaka), under Command 229. This is a source and
 recorded-evidence review. It does not publish, tag, deploy, connect a provider,
 inspect a production database or establish current server readiness.
 
+**Follow-up:** Command 230 subsequently completed the full populated alpha.4
+upgrade and failure-containment acceptance. The owner then requested delivery.
+The findings below remain the dated review at `5aa33a8`; use the
+[progress log](PROGRESS.md) for current validation and release status rather than
+interpreting this snapshot as a new deployment approval or a current incident.
+
 ## Decision and exact source
 
 **Hold deployment of the accumulated batch.** Focused local acceptance supports

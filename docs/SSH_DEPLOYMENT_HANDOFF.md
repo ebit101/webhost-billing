@@ -26,3 +26,40 @@ The default key path is `~/.ssh/webhost_billing_46_250_239_221_ed25519`. The ded
 Check that the reported server commit matches the requested commit. Confirm that the storefront, `/health`, and `/ready` respond successfully. If the release fails, record the error and inspect the active release before trying again. The [deployment runbook](STAGING_DEPLOYMENT.md) describes the rollback procedure.
 
 The read-only preflight passed against my.speedhost.bd using the default dedicated key on 2026-11-04. On 2026-11-04, the `-Apply` path deployed commit `fe21c19719a0c7cef461179048052756f1e52f04` in 13 minutes 47 seconds, including four server image builds. All seven services were healthy, and the storefront, shared hosting, health, and readiness endpoints returned HTTP 200.
+
+## Recovery hold after a failed or interrupted update
+
+Command 230 changes the server script's failure policy. Once the encrypted backup
+has been verified, it exclusively creates
+`/srv/webhost-billing-staging/deployment-held` before stopping writers. The hold
+records the candidate and protected rollback directory. Bash error traps are
+inherited by functions and substitutions. Migration/ledger, release-switch and
+candidate startup/health failures attempt to stop API, worker and scheduler and
+retain the hold; they do not restore the old environment or restart old binaries.
+PostgreSQL, Redis, Mailpit and unrelated stacks are not stopped or replaced.
+
+The hold includes the stage, exit status and writer-stop result on handled
+failures. An interrupted process can leave `status=in-progress`. If the stop
+result is nonzero, shutdown has not been established: contain writes/consumers
+manually. Any existing hold blocks another launcher attempt before Docker work.
+The successful path clears its own hold only after all final checks pass.
+
+Before clearing a hold, the authorized operator must:
+
+1. Inspect the hold and protected rollback inventory, actual `current` symlink,
+   environment/image references and service state. A failed switch can leave
+   these at different checkpoints; do not assume the previous version is active.
+2. Keep writers contained. Inspect trusted migration status/checksums and actual
+   effects; preserve the failed database, logs and post-backup payment/provider
+   evidence. Do not blindly resolve a migration or restore over the failed DB.
+3. Record an explicit compatible roll-forward, verified old-binary compatibility,
+   or isolated restore/cutover decision with matching images, keys and queue
+   reconciliation. Use [backup and recovery](BACKUP_AND_RECOVERY.md).
+4. Verify the selected schema/writers and approve resumption before removing
+   the hold. Removing it alone is not recovery. If the candidate is already
+   `current`, repeating the same launcher is intentionally rejected; complete
+   the separately reviewed startup/recovery procedure instead.
+
+Local fault tests and the populated alpha.4 upgrade are described in
+[the rehearsal guide](BILLING_UPGRADE_REHEARSAL.md). They do not certify every
+installed old image or replace a real pre-change backup.

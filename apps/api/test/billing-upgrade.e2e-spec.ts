@@ -29,6 +29,11 @@ import { OperationalReportService } from '../src/modules/dashboard-reports/opera
 import { businessDate } from '../src/modules/dashboard-reports/dashboard-period';
 import { DomainRenewalBilling } from '../../worker/src/renewal/domain-renewal-billing';
 import { addBillingPeriod } from '../../worker/src/renewal/renewal-calendar';
+import { ServiceAddOnsService } from '../src/modules/services/service-add-ons.service';
+import {
+  alpha4FixtureSchema,
+  type Alpha4Fixture,
+} from './fixtures/alpha4-billing.fixture';
 import {
   assertBrowserDatabaseScope,
   validateBrowserDatabaseUrl,
@@ -60,6 +65,7 @@ describeUpgrade('Command 228 existing billing installation upgrade', () => {
   let admin: AuthRequestContext;
   let customer: AuthRequestContext;
   let state: State;
+  let alpha4: Alpha4Fixture;
   const context = { ipAddressHash: 'fictional-command228' };
   const policy = DEFAULT_RENEWAL_AUTOMATION_POLICY;
   beforeAll(async () => {
@@ -88,6 +94,10 @@ describeUpgrade('Command 228 existing billing installation upgrade', () => {
       process.env.WEBHOST_BROWSER_E2E_SCHEMA ?? '',
     );
     await module.init();
+    const original = await prisma.$queryRaw<
+      Array<{ alpha4_fixture: unknown }>
+    >`SELECT alpha4_fixture FROM __browser_e2e_scope`;
+    alpha4 = alpha4FixtureSchema.parse(original[0].alpha4_fixture);
     if (phase === 'current') {
       const rows = await prisma.$queryRaw<
         Array<{ fixture: unknown }>
@@ -531,7 +541,7 @@ describeUpgrade('Command 228 existing billing installation upgrade', () => {
           .duplicate,
       ).toBe(true);
       const before = await income();
-      expect(BigInt(before.totals[2])).toBe(740000n);
+      expect(BigInt(before.totals[2])).toBe(740000n + BigInt(alpha4.addedCash));
       const rollbackKey = `command228-rollback-${randomUUID()}`;
       await expect(
         prisma.$transaction(async (tx) => {
@@ -679,7 +689,7 @@ describeUpgrade('Command 228 existing billing installation upgrade', () => {
         }),
       ).toEqual(before);
       const after = await income();
-      expect(BigInt(after.totals[2])).toBe(1080000n);
+      expect(BigInt(after.totals[2])).toBe(1080000n + BigInt(alpha4.addedCash));
       expect(
         after.rows
           .filter((row) => row.id.startsWith('unknown|'))
@@ -696,6 +706,100 @@ describeUpgrade('Command 228 existing billing installation upgrade', () => {
       expect(
         await prisma.service.count({ where: { status: 'ACTIVE' } }),
       ).toBeGreaterThan(0);
+    });
+    it('retains alpha.4 support and cancelled add-on history and settles its pending hosting renewal once', async () => {
+      const ticket = await prisma.ticket.findUniqueOrThrow({
+        where: { id: '10000000-0000-4000-8000-000000000015' },
+      });
+      expect(ticket.departmentId).toBe('21600000-0000-4000-8000-000000000001');
+      expect(
+        (
+          await prisma.ticketMessage.findUniqueOrThrow({
+            where: { id: alpha4.noteId },
+          })
+        ).kind,
+      ).toBe('SYSTEM');
+      const extras = await module
+        .get(ServiceAddOnsService)
+        .list(alpha4.serviceId, admin);
+      expect(extras).toEqual([
+        expect.objectContaining({
+          id: alpha4.addOnId,
+          recurringAmount: { amount: '25000', currency: 'BDT' },
+          renewalEndsAt: '2026-09-01T03:00:00.000Z',
+          manualCompletion: null,
+        }),
+      ]);
+      expect(
+        (
+          await prisma.outboxEvent.findUniqueOrThrow({
+            where: { id: alpha4.outboxId },
+          })
+        ).status,
+      ).toBe('PENDING');
+      const before = await prisma.invoiceItem.findMany({
+        where: { invoiceId: alpha4.pendingInvoiceId },
+      });
+      expect(before).toHaveLength(1);
+      expect(before[0].lineTotal).toBe(120000n);
+      expect(before[0].productAttributionSnapshot).toBeNull();
+      const results = await Promise.allSettled([
+        payments().review(
+          alpha4.pendingPaymentId,
+          { action: 'VERIFY' },
+          admin,
+          context,
+        ),
+        payments().review(
+          alpha4.pendingPaymentId,
+          { action: 'VERIFY' },
+          admin,
+          context,
+        ),
+      ]);
+      expect(
+        results.filter((result) => result.status === 'fulfilled'),
+      ).toHaveLength(1);
+      expect(
+        await prisma.payment.count({
+          where: {
+            invoiceId: alpha4.pendingInvoiceId,
+            kind: 'CHARGE',
+            status: 'SUCCEEDED',
+          },
+        }),
+      ).toBe(1);
+      expect(
+        await prisma.invoice.findUniqueOrThrow({
+          where: { id: alpha4.pendingInvoiceId },
+        }),
+      ).toMatchObject({ status: 'PAID', amountPaid: 120000n, balanceDue: 0n });
+      expect(
+        await prisma.invoiceItem.findMany({
+          where: { invoiceId: alpha4.pendingInvoiceId },
+        }),
+      ).toEqual(before);
+      expect(
+        (
+          await prisma.service.findUniqueOrThrow({
+            where: { id: alpha4.serviceId },
+          })
+        ).status,
+      ).toBe('ACTIVE');
+      expect(BigInt((await income()).totals[2])).toBe(1345000n);
+      await expect(
+        prisma.invoiceItem.update({
+          where: { id: before[0].id },
+          data: {
+            productAttributionSnapshot: snapshotDomainRenewalProduct({
+              productId: randomUUID(),
+              catalogueId: randomUUID(),
+              catalogueRevision: 1,
+              name: 'Rejected legacy label',
+            }),
+          },
+        }),
+      ).rejects.toThrow(/immutable/);
     });
   }
 });

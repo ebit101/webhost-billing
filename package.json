@@ -10,6 +10,7 @@
   },
   "scripts": {
     "test:billing-upgrade": "pnpm --filter @webhost-billing/web exec tsx ../api/test/run-billing-upgrade.ts",
+    "test:deployment-containment": "node scripts/deploy/run-deployment-tests.mjs",
     "test:whatsapp:database": "pnpm --filter @webhost-billing/web exec tsx e2e/run-api-tests.ts whatsapp",
     "build": "pnpm -r --workspace-concurrency=1 --if-present build",
     "build:packages": "pnpm --filter @webhost-billing/config build && pnpm --filter @webhost-billing/shared build && pnpm --filter @webhost-billing/database build && pnpm --filter @webhost-billing/queue build",

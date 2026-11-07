@@ -1,31 +1,37 @@
 # Billing upgrade and legacy renewal review
 
-Command 228 rehearses the data/schema transition from migration 56 through
-invoice attribution (57) and domain renewal attribution (58), using fictional
-records in a fresh loopback-only schema. It does not deploy an application or
-connect to a real payment, registrar, hosting or mail provider.
+Command 230 extends Command 228 to the published alpha.4 baseline: migration 46
+through all 58 migrations, using fictional records in fresh loopback-only
+schemas. It also exercises a real partially applied migration failure and the
+SSH script's containment behavior. These local tests do not deploy an application
+or connect to a real payment, registrar, hosting or mail provider.
 
 ## Run locally
 
-With the project's dependencies/packages built and local PostgreSQL/Redis
-configured, run from the repository root:
+With the project's dependencies/packages built, local PostgreSQL/Redis
+configured and full Git history including `v0.1.0-alpha.4`, run from the repository root:
 
 ```powershell
 pnpm test:billing-upgrade
+pnpm test:deployment-containment
 ```
 
-The launcher creates its own schema and ownership marker. It copies the exact
-trusted migration SQL into a private temporary directory, applies the 56-file
-prefix, creates the legacy fixture, then applies migrations 57 and 58 through
-Prisma. A final deployment replay must be a no-op. It refuses a supplied/reused
-schema and a source migration set different from the pinned 58-migration scope.
-It never runs a database reset, disables a history guard or changes source SQL.
+The billing launcher creates its own schema and ownership marker. It pins
+alpha.4 to `24af57553937574dc4f0c12cd1b0be2078ba7ed7`, verifies the 46-migration
+prefix, and applies exact trusted SQL copied into a private temporary directory.
+It generates alpha.4's Prisma model in an owned ignored directory and runs the
+published seed with import paths adapted to that model and the current isolation
+guard. It changes neither the seed's records nor its write operations. Extra
+old-column SQL fixtures represent paid hosting with a cancelled recurring
+add-on, an unpaid hosting renewal and bank reference, pending email and ticket
+history. Only fictional seed rows can be copied in the verified owned scope.
 
-The current test harness uses schema-compatible initial registration/payment
-services and explicit old-column fixture writes for pre-attribution renewal
-history. This is a populated data/schema rehearsal, not a test of an old
-application image or a running production installation. The development seed
-selects only the unused invoice-line ID so it can populate that older column set.
+The populated installation then migrates 46→56, adds Command 228's legacy domain
+fixture and migrates 57→58. A deployment replay must be a no-op. The launcher
+refuses supplied/reused schemas and a different source migration set. It does
+not reset a database, disable history guards, edit trusted migration SQL or mark
+failed migrations resolved. This proves populated schema/data behavior with the
+published data model, not an old application image or a running installation.
 
 ## Fixture and acceptance
 
@@ -36,9 +42,18 @@ selects only the unused invoice-line ID so it can populate that older column set
 | Issued legacy renewal with a pending manual payment      | Keep the invoice payable and eligible for its existing reminders; settle the retained payment once across concurrent reviews and duplicate submissions. |
 | Paid renewal with a queued registrar operation           | Retain its identity, reference, approval, financial state and queued work; do not dispatch it during the rehearsal.                                     |
 
-SHA-256 fingerprints compare every row across all 74 application tables before
-and after each migration and deployment replay. The comparison removes only
-the newly added nullable attribution field from invoice-line projections.
+Command 230 additionally verifies the alpha.4 ticket's Support department
+backfill without changing old columns, a retained staff-only note, purchased
+add-on price/cancellation/manual-follow-up state, pending email, and concurrent
+settlement of the original hosting renewal with hosting active. The renewal
+contains hosting only; the cancelled add-on and its issued history remain intact.
+
+Lossless SQL JSON text fingerprints compare all original columns and rows of
+the 60 alpha.4 application tables through migration 56. New columns/tables are
+checked separately, including Support backfill and empty new operation stores.
+After the domain fixture is added, fingerprints compare all 74 application
+tables across migrations 57/58 and replay, excluding only the new nullable
+attribution field from invoice-line projections.
 Original migration records and source checksums must remain unchanged. Old lines
 must gain no attribution. The standard schema/seed verifier runs in a second
 fresh owned schema at migration 58: its intentional empty-catalogue assertions
@@ -53,7 +68,33 @@ again after the operational checks.
 
 All test records use reserved fictional identities. No scheduler daemon, email
 sender or registrar renewal worker is started. Only the marked schema and the
-launcher's validated temporary directory are removed on exit.
+launcher's validated temporary directories/generated client are removed on exit.
+
+## Deliberate migration failure
+
+A separate owned schema starts from the same populated alpha.4 fixture. Trusted
+migration 47 commits before a synthetic, temporary migration fails with division
+by zero. Prisma must report `P3018`, retain the unfinished ledger entry and refuse
+another deployment with `P3009`. All 60 original table projections and 46 ledger
+rows must remain intact through that refusal. No application/provider worker is
+started. After evidence is checked, only this disposable fictional scope is
+removed; this is not a production repair or backup restore.
+
+## SSH containment acceptance
+
+The deployment test command requires the cached pinned Node image listed in its
+launcher. It refuses an absent image rather than pulling one. The container has
+no network, no Docker socket and only read-only mounts of the test files and real
+server script; it cannot access application environments or SSH keys. Its fake
+installation and command doubles execute the actual Bash control flow.
+
+Cases cover success, backup failure, interruption, early/partial migration
+failure, unfinished/unreadable ledger, environment/switch failure, candidate
+startup/health failure and failed writer shutdown. Failures after the writer
+boundary retain `deployment-held`, attempt to stop writers and never restart old
+ones. Failed shutdown is reported as unconfirmed. A held retry cannot invoke
+Docker; only successful final acceptance clears the hold. See the
+[SSH handoff](SSH_DEPLOYMENT_HANDOFF.md) for the operator decision procedure.
 
 ## Operator review before any separately authorized release
 
