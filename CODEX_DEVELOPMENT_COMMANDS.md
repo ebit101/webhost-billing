@@ -7055,7 +7055,10 @@ credentials, enable a gateway or change the merchant account.
 
 ## Command 220 — Verify the selected online gateway end to end
 
-**Status:** Proposed; depends on Command 219 and selection of one gateway.
+**Status:** Completed locally with SSLCOMMERZ fixes and fictional mocked
+acceptance on 2026-11-07. See `docs/SSLCOMMERZ_CHECKOUT_RECOVERY.md` and the
+execution results in `docs/PROGRESS.md`. No sandbox connection, push or
+deployment; genuine provider acceptance remains separately gated.
 
 Fix confirmed gaps and rehearse checkout, authenticated provider callbacks and
 server-side reconciliation using fake responses and an explicitly authorized

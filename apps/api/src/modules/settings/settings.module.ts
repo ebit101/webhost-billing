@@ -13,6 +13,10 @@ import { SmtpSettingsService } from './smtp-settings.service';
     IntegrationCredentialService,
     SettingsService,
   ],
-  exports: [IntegrationCredentialService, SettingsService],
+  exports: [
+    IntegrationCredentialService,
+    IntegrationCredentialCipher,
+    SettingsService,
+  ],
 })
 export class SettingsModule {}

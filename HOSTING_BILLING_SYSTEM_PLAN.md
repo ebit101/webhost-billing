@@ -15,6 +15,14 @@ recovery, identity, risk and financial-reconciliation gaps with fictional tests
 before separately authorized sandbox access; live activation is not approved.
 See [online payment readiness](docs/ONLINE_PAYMENT_READINESS.md).
 
+**Selected payment recovery — 2026-11-07:** Command 220 binds SSLCOMMERZ
+checkout attempts to an immutable sandbox merchant/credential snapshot, retains
+unknown outcomes for query recovery and serializes capture, manual settlement
+and append-only refund review. Verify with fictional PostgreSQL and mocked HTTP
+only. Browser returns never settle invoices; unapplied captures require review.
+No sandbox connection, live activation or deployment is authorized. See
+[SSLCOMMERZ recovery](docs/SSLCOMMERZ_CHECKOUT_RECOVERY.md).
+
 **Support email reply direction — 2026-11-06:** Command 218 adds default-off
 customer replies through opaque ticket/customer-bound reply addresses and a
 signed normalized-mail gateway adapter. Require independently trusted sender

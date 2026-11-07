@@ -55,6 +55,7 @@ const input = {
   currency: 'BDT',
   customerName: 'Sandbox Customer',
   customerEmail: 'customer@example.test',
+  customerPhone: '+8801700000000',
   customerAddress: {
     line1: '1 Test Road',
     line2: null,
@@ -117,7 +118,7 @@ describe('SslCommerzPaymentGateway provider contract', () => {
     );
 
     await expect(gateway.createPaymentSession(input)).rejects.toMatchObject({
-      safeMessage: 'SSLCOMMERZ returned an unsafe checkout URL.',
+      outcome: 'UNKNOWN',
     });
   });
 
@@ -166,7 +167,7 @@ describe('SslCommerzPaymentGateway provider contract', () => {
     expect(gateway.normalizeProviderEvent(raw)).toMatchObject({
       status: 'SUCCEEDED',
       amount: '25000',
-      providerTransactionId: 'WHBTESTTRANSACTION',
+      providerTransactionId: 'bank-transaction-1',
     });
     const validation = request.mock.calls[0]?.[0];
     expect(validation?.url).toContain('validationserverAPI.php');
@@ -274,6 +275,6 @@ describe('SslCommerzPaymentGateway provider contract', () => {
     await expect(gateway.verifyWebhookSignature(raw, '')).resolves.toBe(true);
     const event = gateway.normalizeProviderEvent(raw);
     expect(event.status).toBe('PENDING');
-    expect(event.failureReason).toContain('high risk');
+    expect(event.failureReason).toContain('risk review');
   });
 });

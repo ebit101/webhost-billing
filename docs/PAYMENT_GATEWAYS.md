@@ -7,6 +7,12 @@ records confirmed recovery gaps and unverified merchant contracts in
 access to neither provider. Existing mock tests do not certify genuine sandbox
 or production use; no gateway activation is authorized.
 
+**Command 220 local update:** SSLCOMMERZ now uses bound retained checkout and
+refund recovery, with merchant/credential snapshots, semantic observations and
+unapplied-capture review. Read [the current SSL policy](SSLCOMMERZ_CHECKOUT_RECOVERY.md)
+for its rules and local acceptance. Generic/fake and legacy bKash behavior below
+does not imply those same guarantees for bKash.
+
 ## Scope
 
 Commands 12 and 13 provide the provider-neutral payment boundary plus sandbox-only bKash Tokenized Checkout and SSLCOMMERZ Hosted Checkout adapters. Cash and bank deposits remain the reviewed manual-payment flow described in `MANUAL_PAYMENTS.md`. No production credential or real charge is part of this integration.
@@ -37,9 +43,14 @@ Provider-specific request shapes, signature rules, statuses, credentials, and er
 5. calls the adapter with its own provider-neutral session request;
 6. stores the provider session reference, checkout URL, and expiry and returns money as a decimal string.
 
-An exact retry returns the same unexpired session. Concurrent retries cannot create two external sessions. An uncertain create result remains pending with a safe administrator-visible reconciliation reason and cannot be blindly retried. Reusing a submission key for another actor or invoice conflicts. Creating a session does not settle the invoice, and a checkout or browser redirect is never evidence of payment.
+An exact retry returns the same unexpired session. Same-key concurrent retries cannot create two external sessions. SSLCOMMERZ additionally holds different keys behind one unresolved invoice attempt and preserves a pre-saved merchant reference after lost creation responses. An uncertain create result cannot be blindly retried. Reusing a submission key for another invoice conflicts. Creating a session does not settle the invoice, and a checkout or browser redirect is never evidence of payment.
 
 ## Webhook processing
+
+This section describes the generic/fake and legacy bKash processor. The bound
+SSLCOMMERZ path additionally retains unapplied remote captures and deduplicates
+semantic observations rather than rejecting changed form encoding; its current
+rules are in [SSLCOMMERZ recovery](SSLCOMMERZ_CHECKOUT_RECOVERY.md).
 
 `POST /payment-gateways/:provider/webhooks` is public because the provider, not a browser session, calls it. It explicitly skips browser CSRF and uses the adapter's documented provider authentication. The route is Redis-rate-limited to 120 requests per source address per minute and accepts at most 256 KiB.
 
@@ -131,7 +142,7 @@ Official references: [checkout overview](https://developer.bka.sh/docs/checkout-
 
 ## SSLCOMMERZ sandbox
 
-The SSLCOMMERZ adapter posts BDT invoice/customer/product snapshots to the official v4 sandbox session endpoint and redirects the customer to `GatewayPageURL` only when it is credential-free HTTPS on `sandbox.sslcommerz.com`. It accepts the provider's form-encoded IPN only after calling the official Order Validation API with `val_id`. The validation result must be `VALID` or `VALIDATED` and must exactly match the IPN transaction, validation ID, internal payment/invoice values, amount, and currency. A `risk_level` of `1` remains pending, is not settled, and is placed in the administrator attention queue.
+The SSLCOMMERZ adapter posts BDT invoice/customer/product snapshots and the customer's real contact phone to the official v4 sandbox session endpoint. It redirects to `GatewayPageURL` only when credential-free HTTPS on `sandbox.sslcommerz.com`. Before that request, retain the merchant reference, sandbox identity and encrypted credential snapshot. Validate IPN with that bound account, retaining the distinct bank reference and checking amount/currency, transaction and optional echoed internal IDs. Missing, unknown or high risk and missing completion time remain held. A store ID in the IPN is optional but must match when present. See the current recovery policy for concurrent settlement, semantic replay, legacy holds and refunds.
 
 Browser success/fail/cancel returns only navigate back to the invoice. They never establish payment. Administrator reconciliation uses the Merchant Transaction ID Validation API and the stored merchant transaction reference.
 
@@ -167,8 +178,8 @@ No automated test calls either provider. Provider-contract tests use a mocked HT
 
 - Session creation and bKash execute are not automatically retried because an unknown result could duplicate an external financial operation.
 - Token grant may retry once; read-only validation/query operations may retry twice for network or provider `5xx` failures.
-- Requests use the configured 1–30 second timeout and reject redirects at the API boundary. Command 219 identifies missing response-size limits and SSL query-error text handling; do not assume all provider text is already sanitized.
-- Unknown outcomes are intended to remain pending. Administrators can query referenced pending attempts through the attention queue. Orphan session recovery, stale callback writes and late-success handling remain open Command 219 findings; the current reconciliation path does not resolve every state.
+- Requests use the configured 1–30 second timeout, reject redirects and bound response bodies to 256 KiB. SSL errors use fixed safe messages; credential-bearing validation URLs must also be redacted by external monitoring tools.
+- SSLCOMMERZ unknown outcomes retain their saved reference and credential snapshot for administrator queries, even after stopping new checkouts or rotating current credentials. Local URL expiry does not prove failure. Retain late captures without another invoice credit when the balance is already closed. Legacy unbound SSL attempts and the alternative bKash recovery findings still require separate review.
 - Reconciliation uses the same merchant, payment, invoice, amount, currency, status, transaction-uniqueness, invoice-lock, event-idempotency, and settlement checks as callbacks.
 
 ## API

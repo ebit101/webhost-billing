@@ -12,6 +12,8 @@ export interface AuthRateLimitDefinition {
     | 'password-reset-request'
     | 'password-reset-confirmation'
     | 'payment-webhook'
+    | 'ssl-refund-request'
+    | 'ssl-refund-reconcile'
     | 'bkash-callback'
     | 'sslcommerz-return'
     | 'support-email-ingress'

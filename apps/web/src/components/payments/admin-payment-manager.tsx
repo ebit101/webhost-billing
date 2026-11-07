@@ -33,6 +33,7 @@ import { RecordAction, RecordDialog } from '../ui/record-dialog';
 import { PageHeader } from '../ui/page-header';
 import { StatusBadge } from '../ui/status-badge';
 import { paymentDate, paymentError, paymentTone } from './payment-ui';
+import { SslCheckoutReview } from './ssl-checkout-review';
 import { GatewayFailurePanel } from './gateway-failure-panel';
 import { AdminPaymentReview } from './admin-payment-review';
 import { moneyForInput, moneyToMinor } from '../../lib/money-input';
@@ -417,6 +418,7 @@ function PaymentWorkspace({
       {fullAdministrator ? (
         <RecordAction label="Gateway exceptions">
           <GatewayFailurePanel />
+          <SslCheckoutReview />
         </RecordAction>
       ) : null}
 

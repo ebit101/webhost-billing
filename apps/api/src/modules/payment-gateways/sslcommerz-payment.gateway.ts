@@ -17,117 +17,85 @@ import {
   PAYMENT_HTTP_CLIENT,
   type PaymentHttpClient,
 } from './payment-http.client';
-import { majorToMinor, minorToMajor } from './payment-money';
+import { minorToMajor } from './payment-money';
 import { PaymentProviderError } from './payment-provider.error';
 import { IntegrationCredentialService } from '../settings/integration-credential.service';
+import {
+  sslQuery,
+  sslValidate,
+  sslRefundCall,
+  sslObservationKey,
+  invalidSsl,
+  unknownSsl,
+  type SslAccount,
+  type SslObservation,
+} from './ssl-provider.protocol';
 
-const sessionSchema = z
-  .object({
-    status: z.literal('SUCCESS'),
-    sessionkey: z.string().min(1),
-    GatewayPageURL: z.url(),
-  })
-  .passthrough();
-
-function safeCheckoutUrl(value: string): string {
-  const url = new URL(value);
-  if (
-    url.protocol !== 'https:' ||
-    url.username ||
-    url.password ||
-    url.hostname !== 'sandbox.sslcommerz.com' ||
-    url.port
-  ) {
-    throw new PaymentProviderError(
-      'SSLCOMMERZ returned an unsafe checkout URL.',
-      'FAILED',
-    );
-  }
-  return url.toString();
+export function sslMerchantReference(key: string): string {
+  return `WHB${createHash('sha256').update(key).digest('hex').slice(0, 27)}`;
 }
-
-const ipnSchema = z
-  .object({
-    val_id: z.string().min(1).max(191),
-    tran_id: z.string().min(1).max(191),
-    amount: z.string().min(1),
-    currency: z.string().length(3),
-    store_id: z.string().min(1),
-    status: z.string().min(1),
-    value_a: z.uuid(),
-    value_b: z.uuid(),
-    risk_level: z.string().optional(),
-  })
-  .passthrough();
-
-const validationSchema = z
-  .object({
-    status: z.enum(['VALID', 'VALIDATED']),
-    APIConnect: z.literal('DONE'),
-    val_id: z.string().min(1).max(191),
-    tran_id: z.string().min(1).max(191),
-    amount: z.union([z.string(), z.number()]).transform(String),
-    currency: z.string().length(3),
-    bank_tran_id: z.string().min(1).max(191),
-    tran_date: z.string().optional(),
-    value_a: z.uuid(),
-    value_b: z.uuid(),
-    risk_level: z.union([z.string(), z.number()]).transform(String).optional(),
-  })
-  .passthrough();
-
-const queryEntrySchema = z
-  .object({
-    status: z.string().min(1),
-    tran_id: z.string().min(1).max(191),
-    amount: z.union([z.string(), z.number()]).transform(String),
-    currency: z.string().length(3),
-    bank_tran_id: z.string().max(191).optional(),
-    tran_date: z.string().optional(),
-    error: z.string().max(500).optional(),
-    risk_level: z.union([z.string(), z.number()]).transform(String).optional(),
-  })
-  .passthrough();
-
-const querySchema = z
-  .object({
-    APIConnect: z.literal('DONE'),
-    element: z.array(queryEntrySchema),
-  })
-  .passthrough();
-
-interface VerifiedIpn {
-  ipn: z.infer<typeof ipnSchema>;
-  validation: z.infer<typeof validationSchema>;
-}
-
 @Injectable()
 export class SslCommerzPaymentGateway implements PaymentGateway {
   readonly key = 'sslcommerz';
   readonly displayName = 'SSLCOMMERZ';
   readonly mode = 'SANDBOX' as const;
   readonly merchantId = 'sslcommerz-sandbox';
-  private readonly verified = new Map<string, VerifiedIpn>();
-
+  private readonly verified = new Map<
+    string,
+    { value: SslObservation; at: number }
+  >();
   constructor(
     @Inject(API_ENVIRONMENT) private readonly environment: ApiEnvironment,
     @Inject(PAYMENT_HTTP_CLIENT) private readonly http: PaymentHttpClient,
     private readonly credentials: IntegrationCredentialService,
   ) {}
-
   async createPaymentSession(
     input: CreateGatewaySessionInput,
   ): Promise<GatewayPaymentSession> {
-    this.assertSupported(input.amount, input.currency);
-    const credentials = await this.providerCredentials();
-    const transactionId = this.transactionId(input.idempotencyKey);
+    return this.createBoundSession(
+      input,
+      await this.account(),
+      sslMerchantReference(input.idempotencyKey),
+    );
+  }
+  async createBoundSession(
+    input: CreateGatewaySessionInput,
+    account: SslAccount,
+    reference: string,
+  ) {
+    if (
+      input.currency !== 'BDT' ||
+      input.amount < 1000n ||
+      input.amount > 50000000n
+    )
+      throw new PaymentProviderError(
+        'SSLCOMMERZ requires BDT 10.00 to BDT 500,000.00.',
+        'FAILED',
+      );
+    if (!input.customerPhone || !/^\+?[0-9]{8,15}$/.test(input.customerPhone))
+      throw new PaymentProviderError(
+        'Add a valid customer phone number before online checkout.',
+        'FAILED',
+      );
+    const country = new Intl.DisplayNames(['en'], { type: 'region' }).of(
+      input.customerAddress.countryCode,
+    );
+    if (
+      !country ||
+      country === input.customerAddress.countryCode ||
+      country === 'Unknown Region'
+    )
+      throw new PaymentProviderError(
+        'A valid billing country is required.',
+        'FAILED',
+      );
     const callbacks = `${this.environment.API_PUBLIC_ORIGIN}/payment-gateways/sslcommerz`;
     const body = new URLSearchParams({
-      store_id: credentials.storeId,
-      store_passwd: credentials.storePassword,
+      store_id: account.storeId,
+      store_passwd: account.storePassword,
       total_amount: minorToMajor(input.amount),
       currency: 'BDT',
-      tran_id: transactionId,
+      tran_id: reference,
       success_url: `${callbacks}/return/success`,
       fail_url: `${callbacks}/return/fail`,
       cancel_url: `${callbacks}/return/cancel`,
@@ -139,8 +107,8 @@ export class SslCommerzPaymentGateway implements PaymentGateway {
       cus_city: input.customerAddress.city,
       cus_state: input.customerAddress.region ?? '',
       cus_postcode: input.customerAddress.postalCode ?? '',
-      cus_country: input.customerAddress.countryCode,
-      cus_phone: 'N/A',
+      cus_country: country,
+      cus_phone: input.customerPhone,
       shipping_method: 'NO',
       product_name: `Web hosting invoice ${input.invoiceNumber}`,
       product_category: 'Web Hosting',
@@ -158,229 +126,143 @@ export class SslCommerzPaymentGateway implements PaymentGateway {
       },
       body,
       timeoutMs: this.environment.PAYMENT_PROVIDER_TIMEOUT_MS,
-      // Session creation is not retried after an uncertain response.
       retries: 0,
     });
-    if (response.status < 200 || response.status >= 300) {
-      throw this.httpFailure(
-        response.status,
-        'SSLCOMMERZ rejected the checkout request.',
-      );
-    }
-    const session = this.parse(sessionSchema, response.body, 'UNKNOWN');
+    if (response.status !== 200) throw unknownSsl();
+    const parsed = z
+      .object({
+        status: z.literal('SUCCESS'),
+        sessionkey: z.string().min(1).max(191),
+        GatewayPageURL: z.url(),
+      })
+      .safeParse(response.body);
+    if (!parsed.success) throw unknownSsl();
+    const url = new URL(parsed.data.GatewayPageURL);
+    if (
+      url.protocol !== 'https:' ||
+      url.hostname !== 'sandbox.sslcommerz.com' ||
+      url.username ||
+      url.password ||
+      url.port
+    )
+      throw unknownSsl();
     return {
-      providerSessionId: transactionId,
-      checkoutUrl: safeCheckoutUrl(session.GatewayPageURL),
-      expiresAt: new Date(Date.now() + 30 * 60 * 1000),
+      providerSessionId: reference,
+      providerSessionKey: parsed.data.sessionkey,
+      checkoutUrl: url.toString(),
+      expiresAt: new Date(Date.now() + 30 * 60000),
     };
   }
-
+  validateBound(raw: Buffer, account: SslAccount) {
+    return sslValidate(
+      this.http,
+      this.environment.PAYMENT_PROVIDER_TIMEOUT_MS,
+      account,
+      raw,
+    );
+  }
+  queryBound(reference: string, account: SslAccount) {
+    return sslQuery(
+      this.http,
+      this.environment.PAYMENT_PROVIDER_TIMEOUT_MS,
+      account,
+      reference,
+    );
+  }
+  refundBound(account: SslAccount, input: Parameters<typeof sslRefundCall>[3]) {
+    return sslRefundCall(
+      this.http,
+      this.environment.PAYMENT_PROVIDER_TIMEOUT_MS,
+      account,
+      input,
+    );
+  }
   async verifyWebhookSignature(
-    rawBody: Buffer,
-    signature: string,
+    raw: Buffer,
+    signature?: string,
   ): Promise<boolean> {
     void signature;
-    const credentials = await this.providerCredentials();
-    const ipnResult = ipnSchema.safeParse(
-      Object.fromEntries(new URLSearchParams(rawBody.toString('utf8'))),
-    );
-    if (
-      !ipnResult.success ||
-      ipnResult.data.store_id !== credentials.storeId ||
-      !['VALID', 'VALIDATED'].includes(ipnResult.data.status.toUpperCase())
-    ) {
-      return false;
-    }
-    const url = new URL(
-      'https://sandbox.sslcommerz.com/validator/api/validationserverAPI.php',
-    );
-    url.search = new URLSearchParams({
-      val_id: ipnResult.data.val_id,
-      store_id: credentials.storeId,
-      store_passwd: credentials.storePassword,
-      format: 'json',
-      v: '1',
-    }).toString();
-    const response = await this.http.request({
-      url: url.toString(),
-      method: 'GET',
-      headers: { accept: 'application/json' },
-      timeoutMs: this.environment.PAYMENT_PROVIDER_TIMEOUT_MS,
-      retries: 2,
-    });
-    if (response.status < 200 || response.status >= 300) {
+    for (const [key, value] of this.verified)
+      if (Date.now() - value.at > 30000) this.verified.delete(key);
+    if (this.verified.size >= 64) return false;
+    try {
+      this.verified.set(this.hash(raw), {
+        value: await this.validateBound(raw, await this.account()),
+        at: Date.now(),
+      });
+      return true;
+    } catch (error) {
       if (
-        response.status === 408 ||
-        response.status === 429 ||
-        response.status >= 500
-      ) {
-        throw this.unknown('SSLCOMMERZ validation is temporarily unavailable.');
-      }
+        error instanceof PaymentProviderError &&
+        error.safeMessage === unknownSsl().safeMessage
+      )
+        throw error;
       return false;
     }
-    const validationResult = validationSchema.safeParse(response.body);
-    if (!validationResult.success) return false;
-    const ipn = ipnResult.data;
-    const validation = validationResult.data;
-    if (
-      validation.val_id !== ipn.val_id ||
-      validation.tran_id !== ipn.tran_id ||
-      validation.value_a !== ipn.value_a ||
-      validation.value_b !== ipn.value_b ||
-      validation.currency.toUpperCase() !== ipn.currency.toUpperCase() ||
-      majorToMinor(validation.amount) !== majorToMinor(ipn.amount)
-    ) {
-      return false;
-    }
-    this.verified.set(this.payloadHash(rawBody), { ipn, validation });
-    return true;
   }
-
-  normalizeProviderEvent(rawBody: Buffer): NormalizedPaymentEvent {
-    const key = this.payloadHash(rawBody);
-    const verified = this.verified.get(key);
+  normalizeProviderEvent(raw: Buffer): NormalizedPaymentEvent {
+    const key = this.hash(raw);
+    const proof = this.verified.get(key);
     this.verified.delete(key);
-    if (!verified) throw this.failure('SSLCOMMERZ IPN was not validated.');
-    const highRisk =
-      verified.validation.risk_level === '1' || verified.ipn.risk_level === '1';
-    const occurredAt = this.sslDate(verified.validation.tran_date);
+    if (
+      !proof ||
+      Date.now() - proof.at > 30000 ||
+      !proof.value.paymentId ||
+      !proof.value.invoiceId
+    )
+      throw invalidSsl();
+    const value = proof.value;
     return normalizedPaymentEventSchema.parse({
-      providerEventId: `sslcommerz:${verified.validation.val_id}`,
-      eventType: highRisk ? 'payment.high_risk' : 'payment.succeeded',
-      status: highRisk ? 'PENDING' : 'SUCCEEDED',
+      providerEventId: `sslcommerz:${sslObservationKey(value)}`,
+      eventType: 'payment.observed',
+      status:
+        value.risk === 'SAFE' && value.occurredAt ? value.status : 'PENDING',
       merchantId: this.merchantId,
-      paymentId: verified.validation.value_a,
-      invoiceId: verified.validation.value_b,
-      amount: majorToMinor(verified.validation.amount).toString(),
-      currency: verified.validation.currency.toUpperCase(),
-      providerTransactionId: verified.validation.tran_id,
-      occurredAt: occurredAt.toISOString(),
-      failureReason: highRisk
-        ? 'SSLCOMMERZ marked this transaction as high risk; administrator review is required.'
-        : null,
+      paymentId: value.paymentId,
+      invoiceId: value.invoiceId,
+      amount: value.amount.toString(),
+      currency: value.currency,
+      providerTransactionId: value.bankReference,
+      occurredAt: (value.occurredAt ?? new Date(0)).toISOString(),
+      failureReason:
+        value.risk === 'HELD' ? 'The payment requires risk review.' : null,
     });
   }
-
   async queryTransactionStatus(
-    transactionId: string,
+    reference: string,
   ): Promise<GatewayTransactionStatus> {
-    const credentials = await this.providerCredentials();
-    const url = new URL(
-      'https://sandbox.sslcommerz.com/validator/api/merchantTransIDvalidationAPI.php',
-    );
-    url.search = new URLSearchParams({
-      tran_id: transactionId,
-      store_id: credentials.storeId,
-      store_passwd: credentials.storePassword,
-      format: 'json',
-    }).toString();
-    const response = await this.http.request({
-      url: url.toString(),
-      method: 'GET',
-      headers: { accept: 'application/json' },
-      timeoutMs: this.environment.PAYMENT_PROVIDER_TIMEOUT_MS,
-      retries: 2,
-    });
-    if (response.status < 200 || response.status >= 300) {
-      throw this.unknown('SSLCOMMERZ could not confirm the payment status.');
-    }
-    const query = this.parse(querySchema, response.body, 'UNKNOWN');
-    const transaction = query.element.find(
-      (entry) => entry.tran_id === transactionId,
-    );
-    if (!transaction) {
-      throw this.failure(
-        'SSLCOMMERZ did not return the requested transaction.',
-      );
-    }
-    const providerStatus = transaction.status.toUpperCase();
-    const highRisk = transaction.risk_level === '1';
-    const status = highRisk
-      ? 'PENDING'
-      : providerStatus === 'VALID' || providerStatus === 'VALIDATED'
-        ? 'SUCCEEDED'
-        : providerStatus === 'PENDING'
-          ? 'PENDING'
-          : providerStatus === 'REFUNDED'
-            ? 'REFUNDED'
-            : 'FAILED';
+    const value = await this.queryBound(reference, await this.account());
     return {
-      providerTransactionId: transaction.tran_id,
-      status,
-      amount: majorToMinor(transaction.amount),
-      currency: transaction.currency.toUpperCase(),
-      occurredAt: this.sslDate(transaction.tran_date),
-      failureReason: highRisk
-        ? 'SSLCOMMERZ marked this transaction as high risk; administrator review is required.'
-        : status === 'FAILED'
-          ? (transaction.error ?? 'SSLCOMMERZ reported payment failure.')
-          : null,
+      providerTransactionId: value.bankReference,
+      status:
+        value.status === 'SUCCEEDED' &&
+        (value.risk !== 'SAFE' || !value.occurredAt)
+          ? 'PENDING'
+          : value.status,
+      amount: value.amount,
+      currency: value.currency,
+      occurredAt: value.occurredAt ?? new Date(0),
+      failureReason:
+        value.status === 'FAILED'
+          ? 'The provider reported a failed payment.'
+          : value.risk === 'HELD'
+            ? 'The payment requires review.'
+            : null,
     };
   }
-
-  extractProviderTransactionId(event: NormalizedPaymentEvent): string | null {
+  extractProviderTransactionId(event: NormalizedPaymentEvent) {
     return event.providerTransactionId;
   }
-
-  private transactionId(idempotencyKey: string): string {
-    return `WHB${createHash('sha256').update(idempotencyKey).digest('hex').slice(0, 27)}`;
+  private hash(raw: Buffer) {
+    return createHash('sha256').update(raw).digest('hex');
   }
-
-  private payloadHash(rawBody: Buffer): string {
-    return createHash('sha256').update(rawBody).digest('hex');
-  }
-
-  private async providerCredentials() {
-    const credentials = await this.credentials.sslCommerz();
-    if (!credentials) {
-      throw this.failure('SSLCOMMERZ sandbox is not configured.');
-    }
-    return credentials.value;
-  }
-
-  private assertSupported(amount: bigint, currency: string): void {
-    if (currency !== 'BDT') {
-      throw this.failure('SSLCOMMERZ sandbox accepts BDT invoices only.');
-    }
-    if (amount < 1_000n || amount > 50_000_000n) {
-      throw this.failure(
-        'SSLCOMMERZ requires an amount from BDT 10.00 to BDT 500,000.00.',
-      );
-    }
-  }
-
-  private sslDate(value: string | undefined): Date {
-    if (!value) return new Date();
-    const parsed = new Date(`${value.replace(' ', 'T')}+06:00`);
-    return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
-  }
-
-  private parse<T>(
-    schema: z.ZodType<T>,
-    value: unknown,
-    outcome: 'FAILED' | 'UNKNOWN' = 'FAILED',
-  ): T {
-    const result = schema.safeParse(value);
-    if (!result.success) {
+  private async account() {
+    const value = await this.credentials.sslCommerz();
+    if (!value)
       throw new PaymentProviderError(
-        'SSLCOMMERZ returned an invalid response.',
-        outcome,
+        'SSLCOMMERZ sandbox is not configured.',
+        'FAILED',
       );
-    }
-    return result.data;
-  }
-
-  private failure(message: string): PaymentProviderError {
-    return new PaymentProviderError(message, 'FAILED');
-  }
-
-  private unknown(message: string): PaymentProviderError {
-    return new PaymentProviderError(message, 'UNKNOWN');
-  }
-
-  private httpFailure(status: number, message: string): PaymentProviderError {
-    return status === 408 || status === 429 || status >= 500
-      ? this.unknown(`${message} Reconciliation is required before retrying.`)
-      : this.failure(message);
+    return value.value;
   }
 }

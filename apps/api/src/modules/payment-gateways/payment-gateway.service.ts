@@ -1,5 +1,12 @@
+import { SslCheckoutService } from './ssl-checkout.service';
 import { createHash } from 'node:crypto';
-import { HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
+import {
+  HttpStatus,
+  Inject,
+  Injectable,
+  Logger,
+  Optional,
+} from '@nestjs/common';
 import {
   InvoiceStatus,
   OrderStatus,
@@ -66,6 +73,7 @@ export class PaymentGatewayService {
   constructor(
     @Inject(PRISMA_CLIENT) private readonly prisma: PrismaClient,
     private readonly gateways: PaymentGatewayRegistry,
+    @Optional() private readonly ssl?: SslCheckoutService,
   ) {}
 
   async listGateways(): Promise<PaymentGatewayDescriptor[]> {
@@ -82,7 +90,13 @@ export class PaymentGatewayService {
     const failures = await this.prisma.payment.findMany({
       where: {
         provider: { in: ['bkash', 'sslcommerz'] },
-        status: { in: [PaymentStatus.PENDING, PaymentStatus.FAILED] },
+        status: {
+          in: [
+            PaymentStatus.PENDING,
+            PaymentStatus.FAILED,
+            PaymentStatus.SUCCEEDED,
+          ],
+        },
         failureReason: { not: null },
       },
       orderBy: { updatedAt: 'desc' },
@@ -107,6 +121,11 @@ export class PaymentGatewayService {
     input: CreatePaymentSessionRequest,
     actor: AuthRequestContext,
   ): Promise<PaymentSession> {
+    if (provider === 'sslcommerz') {
+      if (!this.ssl)
+        throw this.invalid('Bound checkout service is unavailable.');
+      return this.ssl.create(input, actor);
+    }
     const gateway = await this.gateways.get(provider, true);
     const idempotencyKey = `gateway-session:${provider}:${input.submissionKey}`;
     let duplicate = false;
@@ -135,6 +154,17 @@ export class PaymentGatewayService {
           if (invoice.balanceDue <= 0n) {
             throw this.invalid('The invoice does not have a payable balance.');
           }
+          const sslAttempt = await transaction.sslCheckout.findFirst({
+            where: {
+              invoiceId: invoice.id,
+              state: { in: ['CREATING', 'OPEN', 'UNKNOWN'] },
+            },
+            select: { id: true },
+          });
+          if (sslAttempt)
+            throw this.conflict(
+              'Reconcile the saved SSLCOMMERZ attempt before switching payment providers.',
+            );
           const createdPayment = await transaction.payment.create({
             data: {
               invoiceId: invoice.id,
@@ -286,6 +316,11 @@ export class PaymentGatewayService {
     rawBody: Buffer,
     signature: string,
   ): Promise<PaymentWebhookResult> {
+    if (provider === 'sslcommerz') {
+      if (!this.ssl)
+        throw this.invalid('Bound checkout service is unavailable.');
+      return this.ssl.webhook(rawBody);
+    }
     const gateway = await this.gateways.get(provider);
     if (rawBody.length === 0 || rawBody.length > MAX_WEBHOOK_BYTES) {
       throw this.webhookRejected('Webhook body is missing or too large.');
@@ -596,6 +631,11 @@ export class PaymentGatewayService {
     paymentId: string,
     actor: AuthRequestContext,
   ): Promise<PaymentWebhookResult> {
+    if (provider === 'sslcommerz') {
+      if (!this.ssl)
+        throw this.invalid('Bound checkout service is unavailable.');
+      return this.ssl.reconcile(paymentId, actor);
+    }
     const gateway = await this.gateways.get(provider);
     const payment = await this.prisma.payment.findUnique({
       where: { id: paymentId },

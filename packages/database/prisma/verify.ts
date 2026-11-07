@@ -87,6 +87,8 @@ const expectedTables = [
   'settings',
   'ticket_messages',
   'tickets',
+  'ssl_checkouts',
+  'ssl_refunds',
   'support_email_threads',
   'support_email_receipts',
   'ticket_attachments',
@@ -97,6 +99,8 @@ const expectedTables = [
 ] as const;
 
 const requiredCustomConstraints = [
+  'ssl_checkout_shape',
+  'ssl_refund_shape',
   'support_email_receipt_shape',
   'ticket_attachment_shape',
   'ticket_attachment_blob_size',
@@ -211,6 +215,7 @@ const expectedMoneyColumns = [
   'product_prices.amount',
   'product_prices.setup_fee',
   'services.recurring_amount',
+  'ssl_refunds.amount',
 ] as const;
 
 async function verify(): Promise<void> {

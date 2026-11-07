@@ -85,6 +85,7 @@ const pendingPayment: ManualPayment = {
 describe('manual payment interfaces', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
+    window.sessionStorage.clear();
   });
 
   it('loads the administrator ledger, review controls, and settlement policy', async () => {
@@ -360,6 +361,59 @@ describe('manual payment interfaces', () => {
       screen.getByRole('button', { name: 'Pay with SSLCOMMERZ' }),
     ).toBeTruthy();
     expect(screen.getByText(/return to this page does not/i)).toBeTruthy();
+  });
+  it('retains the same checkout key after a lost response and a remount, until a deliberate new attempt', async () => {
+    const user = userEvent.setup();
+    const fetch = vi.fn(async (url: string, options?: RequestInit) => {
+      void options;
+      if (url.endsWith('/auth/csrf'))
+        return jsonResponse({
+          success: true,
+          data: { csrfToken: 'x'.repeat(32) },
+        });
+      if (url.endsWith('/payment-gateways'))
+        return jsonResponse({
+          success: true,
+          data: [
+            { key: 'sslcommerz', displayName: 'SSLCOMMERZ', mode: 'SANDBOX' },
+          ],
+        });
+      return jsonResponse({
+        success: false,
+        error: {
+          code: 'SERVICE_UNAVAILABLE',
+          message: 'Reconcile the saved attempt before retrying.',
+        },
+      });
+    });
+    vi.stubGlobal('fetch', fetch);
+    const first = render(<CustomerGatewayPayment invoice={invoice} />);
+    await user.click(
+      await screen.findByRole('button', { name: 'Pay with SSLCOMMERZ' }),
+    );
+    await screen.findByRole('alert');
+    first.unmount();
+    render(<CustomerGatewayPayment invoice={invoice} />);
+    await user.click(
+      await screen.findByRole('button', { name: 'Pay with SSLCOMMERZ' }),
+    );
+    await screen.findByRole('alert');
+    const sessionCalls = () =>
+      fetch.mock.calls.filter(([url]) => url.endsWith('/sessions'));
+    const body = (index: number) =>
+      JSON.parse(String(sessionCalls()[index]![1]?.body)) as {
+        submissionKey: string;
+      };
+    expect(body(0).submissionKey).toMatch(/^[a-f0-9-]{36}$/);
+    expect(body(1).submissionKey).toBe(body(0).submissionKey);
+    await user.click(
+      screen.getByRole('button', { name: 'Start another payment attempt' }),
+    );
+    await user.click(
+      screen.getByRole('button', { name: 'Pay with SSLCOMMERZ' }),
+    );
+    await screen.findByRole('alert');
+    expect(body(2).submissionKey).not.toBe(body(0).submissionKey);
   });
 });
 

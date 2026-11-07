@@ -1,3 +1,6 @@
+import { SslCheckoutService } from './ssl-checkout.service';
+import { SslRefundService } from './ssl-refund.service';
+import { SslCheckoutController } from './ssl-checkout.controller';
 import { Module } from '@nestjs/common';
 import { BkashPaymentGateway } from './bkash-payment.gateway';
 import { FakePaymentGateway } from './fake-payment.gateway';
@@ -13,8 +16,10 @@ import { SettingsModule } from '../settings/settings.module';
 
 @Module({
   imports: [SettingsModule],
-  controllers: [PaymentGatewayController],
+  controllers: [SslCheckoutController, PaymentGatewayController],
   providers: [
+    SslCheckoutService,
+    SslRefundService,
     FakePaymentGateway,
     BkashPaymentGateway,
     SslCommerzPaymentGateway,

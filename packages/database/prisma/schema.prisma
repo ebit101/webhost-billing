@@ -322,6 +322,7 @@ model User {
   customer                      Customer?
   adminProfile                  AdminProfile?
   paymentsCreated               Payment[]                       @relation("PaymentCreatedBy")
+  sslRefunds                    SslRefund[]
   paymentsReviewed              Payment[]                       @relation("PaymentReviewedBy")
   supportEmailThreads           SupportEmailThread[]
   ticketAttachments             TicketAttachment[]
@@ -892,6 +893,7 @@ model Invoice {
   customer                 Customer        @relation(fields: [customerId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   order                    Order?          @relation(fields: [orderId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   items                    InvoiceItem[]
+  sslCheckouts             SslCheckout[]
   payments                 Payment[]
   emailLogs                EmailLog[]
   suspendedServices        Service[]       @relation("ServiceSuspensionInvoice")
@@ -979,6 +981,8 @@ model Payment {
   adjustments              Payment[]      @relation("PaymentAdjustments")
   createdBy                User?          @relation("PaymentCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   reviewedBy               User?          @relation("PaymentReviewedBy", fields: [reviewedByUserId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  sslCheckout              SslCheckout?
+  sslRefund                SslRefund?
   events                   PaymentEvent[]
 
   @@unique([provider, providerTransactionId], map: "payments_provider_transaction_key")
@@ -1610,4 +1614,50 @@ model SupportEmailReceipt {
   message            TicketMessage?      @relation(fields: [messageId], references: [id], onDelete: Restrict)
 
   @@map("support_email_receipts")
+}
+
+model SslCheckout {
+  id                   String      @id @default(uuid()) @db.Uuid
+  paymentId            String      @unique @map("payment_id") @db.Uuid
+  invoiceId            String      @map("invoice_id") @db.Uuid
+  merchantReference    String      @unique @map("merchant_reference") @db.VarChar(30)
+  environment          String      @default("SANDBOX") @db.VarChar(12)
+  accountHash          String      @map("account_hash") @db.Char(64)
+  credentialCiphertext String      @map("credential_ciphertext") @db.Text
+  credentialKeyVersion String      @map("credential_key_version") @db.VarChar(64)
+  credentialRevision   String      @map("credential_revision") @db.VarChar(100)
+  state                String      @default("CREATING") @db.VarChar(20)
+  sessionKey           String?     @map("session_key") @db.VarChar(191)
+  bankReference        String?     @unique @map("bank_reference") @db.VarChar(120)
+  capturedAt           DateTime?   @map("captured_at") @db.Timestamptz(3)
+  appliedToInvoice     Boolean     @default(false) @map("applied_to_invoice")
+  reviewReason         String?     @map("review_reason") @db.VarChar(500)
+  createdAt            DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt            DateTime    @updatedAt @map("updated_at") @db.Timestamptz(3)
+  payment              Payment     @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+  invoice              Invoice     @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
+  refunds              SslRefund[]
+
+  @@index([invoiceId, createdAt])
+  @@map("ssl_checkouts")
+}
+
+model SslRefund {
+  id                String      @id @default(uuid()) @db.Uuid
+  checkoutId        String      @map("checkout_id") @db.Uuid
+  submissionKey     String      @unique @map("submission_key") @db.Uuid
+  amount            BigInt      @db.BigInt
+  reason            String      @db.VarChar(500)
+  actorUserId       String      @map("actor_user_id") @db.Uuid
+  actor             User        @relation(fields: [actorUserId], references: [id], onDelete: Restrict)
+  state             String      @default("SUBMITTING") @db.VarChar(20)
+  providerReference String?     @unique @map("provider_reference") @db.VarChar(191)
+  paymentId         String?     @unique @map("payment_id") @db.Uuid
+  createdAt         DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt         DateTime    @updatedAt @map("updated_at") @db.Timestamptz(3)
+  checkout          SslCheckout @relation(fields: [checkoutId], references: [id], onDelete: Restrict)
+  payment           Payment?    @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+
+  @@index([checkoutId, createdAt])
+  @@map("ssl_refunds")
 }

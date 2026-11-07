@@ -5,6 +5,13 @@ Reviewed **2026-11-07 (Asia/Dhaka)** for Command 219 against application commit
 review, with local mocked checks. It does not certify a merchant account, actual
 sandbox checkout, reachable callback, production release or live transaction.
 
+**Command 220 follow-up — 2026-11-07:** Selected SSLCOMMERZ recovery fixes now
+have local fictional acceptance; see [checkout and recovery](SSLCOMMERZ_CHECKOUT_RECOVERY.md)
+and the exact results in [the progress log](PROGRESS.md). The tables below retain
+the Command 219 review baseline. Merchant access, genuine sandbox acceptance,
+live implementation/approval and the bKash-specific findings remain open. No
+sandbox connection or deployment is part of Command 220.
+
 ## Decision and current gate
 
 **Selected technical pilot: SSLCOMMERZ v4 Hosted Checkout**, initially with

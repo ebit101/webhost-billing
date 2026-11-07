@@ -20,7 +20,7 @@ export const paymentGatewayFailureSchema = z
     invoiceId: z.uuid(),
     invoiceNumber: z.string().min(1).max(32),
     provider: paymentGatewayProviderSchema,
-    status: z.enum(['PENDING', 'FAILED']),
+    status: z.enum(['PENDING', 'FAILED', 'SUCCEEDED']),
     failureReason: z.string().min(1).max(500),
     updatedAt: z.iso.datetime({ offset: true }),
   })

@@ -8,6 +8,7 @@ export interface CreateGatewaySessionInput {
   currency: string;
   customerName: string;
   customerEmail: string;
+  customerPhone?: string;
   customerAddress: {
     line1: string;
     line2: string | null;

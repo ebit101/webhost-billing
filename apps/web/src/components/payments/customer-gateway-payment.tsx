@@ -5,12 +5,17 @@ import type {
   PaymentGatewayDescriptor,
   PaymentSession,
 } from '@webhost-billing/shared';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { authMutation, authenticatedGet } from '../../lib/auth-api';
+import {
+  gatewayAttemptKey,
+  clearGatewayAttempt,
+} from '../../lib/gateway-attempt';
 import { Button } from '../ui/button';
 import { paymentError } from './payment-ui';
 
 export function CustomerGatewayPayment({ invoice }: { invoice: Invoice }) {
+  const keys = useRef(new Map<string, string>());
   const [gateways, setGateways] = useState<PaymentGatewayDescriptor[]>([]);
   const [active, setActive] = useState('');
   const [error, setError] = useState('');
@@ -36,10 +41,16 @@ export function CustomerGatewayPayment({ invoice }: { invoice: Invoice }) {
     setActive(provider);
     setError('');
     try {
+      const key = gatewayAttemptKey(
+        invoice.id,
+        provider,
+        keys.current.get(provider),
+      );
+      keys.current.set(provider, key);
       const session = await authMutation<PaymentSession>(
         `/payment-gateways/${provider}/sessions`,
         'POST',
-        { invoiceId: invoice.id, submissionKey: crypto.randomUUID() },
+        { invoiceId: invoice.id, submissionKey: key },
       );
       window.location.assign(session.checkoutUrl);
     } catch (caught) {
@@ -67,6 +78,18 @@ export function CustomerGatewayPayment({ invoice }: { invoice: Invoice }) {
           className="mt-4 rounded-xl bg-red-50 p-4 text-sm font-semibold text-red-800"
         >
           {error}
+          <button
+            type="button"
+            className="mt-2 block underline"
+            onClick={() => {
+              for (const gateway of gateways)
+                clearGatewayAttempt(invoice.id, gateway.key);
+              keys.current.clear();
+              setError('');
+            }}
+          >
+            Start another payment attempt
+          </button>
         </p>
       ) : null}
       {payable && gateways.length ? (

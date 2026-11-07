@@ -24,6 +24,20 @@ export interface PaymentHttpClient {
 @Injectable()
 export class FetchPaymentHttpClient implements PaymentHttpClient {
   async request(input: PaymentHttpRequest): Promise<PaymentHttpResponse> {
+    const url = new URL(input.url);
+    if (
+      url.protocol !== 'https:' ||
+      url.username ||
+      url.password ||
+      url.port ||
+      !['sandbox.sslcommerz.com', 'tokenized.sandbox.bka.sh'].includes(
+        url.hostname,
+      )
+    )
+      throw new PaymentProviderError(
+        'The payment endpoint is not allowed.',
+        'FAILED',
+      );
     let lastError: unknown;
     for (let attempt = 0; attempt <= input.retries; attempt += 1) {
       try {
@@ -34,7 +48,30 @@ export class FetchPaymentHttpClient implements PaymentHttpClient {
           redirect: 'error',
           signal: AbortSignal.timeout(input.timeoutMs),
         });
-        const text = await response.text();
+        const reader = response.body?.getReader();
+        const chunks: Uint8Array[] = [];
+        let size = 0;
+        if (reader)
+          try {
+            while (true) {
+              const next = await reader.read();
+              if (next.done) break;
+              size += next.value.length;
+              if (size > 262144) {
+                await reader.cancel();
+                throw new PaymentProviderError(
+                  'The payment response exceeds its limit. Reconciliation is required.',
+                  'UNKNOWN',
+                );
+              }
+              chunks.push(next.value);
+            }
+          } finally {
+            reader.releaseLock();
+          }
+        const text = new TextDecoder('utf-8', { fatal: true }).decode(
+          Buffer.concat(chunks),
+        );
         const body = this.parseBody(text);
         if (response.status >= 500 && attempt < input.retries) {
           await this.backoff(attempt);
@@ -42,6 +79,7 @@ export class FetchPaymentHttpClient implements PaymentHttpClient {
         }
         return { status: response.status, body };
       } catch (error) {
+        if (error instanceof PaymentProviderError) throw error;
         lastError = error;
         if (attempt < input.retries) {
           await this.backoff(attempt);
