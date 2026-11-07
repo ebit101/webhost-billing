@@ -96,11 +96,23 @@ test('customer receives an email sign-in code and can withdraw marketing consent
   }
 
   async function passwordSignIn() {
-    await page.getByLabel('Email address').fill(customer.email);
-    await page
+    const form = page
+      .locator('form:visible')
+      .filter({ has: page.locator('fieldset:not([disabled])') })
+      .filter({
+        has: page.getByRole('button', { name: 'Sign in', exact: true }),
+      });
+    await expect(form).toHaveCount(1);
+    await expect(
+      form.getByRole('button', { name: 'Sign in', exact: true }),
+    ).toBeEnabled();
+    await form
+      .getByLabel('Email address', { exact: true })
+      .fill(customer.email);
+    await form
       .getByLabel('Password', { exact: true })
       .fill(E2E_HEALTHY_CUSTOMER.password);
-    await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+    await form.getByRole('button', { name: 'Sign in', exact: true }).click();
   }
   const consent = page.getByRole('checkbox', {
     name: 'I agree to receive marketing emails',
