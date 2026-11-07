@@ -6,6 +6,7 @@ import {
   randomBytes,
 } from 'node:crypto';
 import { createPrismaClient } from '../src/client';
+import { snapshotInvoiceProduct } from '@webhost-billing/shared';
 
 // Fictional recovery acceptance only. No gateway adapter or network client is loaded.
 const databaseUrl = new URL(process.env.DATABASE_URL ?? '');
@@ -97,6 +98,9 @@ async function main(): Promise<void> {
       where: { id: '10000000-0000-4000-8000-000000000001' },
     });
     assert.ok(admin.email.endsWith('@example.test'));
+    const hosting = await prisma.service.findFirstOrThrow({
+      where: { customerId: customer.id },
+    });
     await prisma.$transaction(async (tx) => {
       await tx.invoice.create({
         data: {
@@ -125,6 +129,16 @@ async function main(): Promise<void> {
             create: {
               linePosition: 1,
               descriptionSnapshot: 'Fictional hosting recovery',
+              serviceId: hosting.id,
+              productAttributionSnapshot: snapshotInvoiceProduct({
+                productId: hosting.productId,
+                productPriceId: hosting.productPriceId,
+                name: hosting.productNameSnapshot,
+                kind: 'HOSTING',
+                source: 'HOSTING_RENEWAL',
+              }),
+              servicePeriodStart: moment,
+              servicePeriodEnd: new Date(moment.getTime() + 86400000),
               currency: 'BDT',
               quantity: 1,
               unitAmount: 10000n,
@@ -252,7 +266,7 @@ async function main(): Promise<void> {
     include: {
       payment: { include: { events: true, adjustments: true } },
       refunds: true,
-      invoice: true,
+      invoice: { include: { items: true } },
     },
   });
   assert.equal(checkout.state, 'CAPTURED');
@@ -279,6 +293,37 @@ async function main(): Promise<void> {
   assert.equal(checkout.invoice.status, 'PARTIALLY_REFUNDED');
   assert.equal(checkout.invoice.amountPaid, 9000n);
   assert.equal(checkout.invoice.balanceDue, 1000n);
+  const line = checkout.invoice.items[0];
+  assert.ok(line?.serviceId);
+  const hosting = await prisma.service.findUniqueOrThrow({
+    where: { id: line.serviceId },
+  });
+  assert.deepEqual(
+    line.productAttributionSnapshot,
+    snapshotInvoiceProduct({
+      productId: hosting.productId,
+      productPriceId: hosting.productPriceId,
+      name: hosting.productNameSnapshot,
+      kind: 'HOSTING',
+      source: 'HOSTING_RENEWAL',
+    }),
+  );
+  await assert.rejects(
+    prisma.invoiceItem.update({
+      where: { id: line.id },
+      data: {
+        productAttributionSnapshot: {
+          version: 1,
+          productId: hosting.productId,
+          productPriceId: hosting.productPriceId,
+          name: 'Rewritten',
+          kind: 'HOSTING',
+          source: 'HOSTING_RENEWAL',
+        },
+      },
+    }),
+  );
+  await assert.rejects(prisma.invoiceItem.delete({ where: { id: line.id } }));
   assert.equal(checkout.refunds.length, 2);
   assert.equal(
     checkout.refunds.find((value) => value.id === ids.refund)?.paymentId,

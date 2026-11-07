@@ -73,9 +73,15 @@ async function main(): Promise<void> {
     return;
   }
 
-  if (action === 'apply-payment') {
+  if (action === 'apply-payment' || action === 'apply-renewal-payment') {
     const payment = await prisma.payment.findFirstOrThrow({
-      where: { invoiceId, status: 'SUCCEEDED', provider: 'fake' },
+      where: {
+        invoiceId,
+        kind: 'CHARGE',
+        status: 'SUCCEEDED',
+        provider:
+          action === 'apply-payment' ? 'fake' : { in: ['fake', 'manual'] },
+      },
       orderBy: { createdAt: 'desc' },
     });
     const paymentEvent = await publishOutboxEvent(
@@ -83,12 +89,16 @@ async function main(): Promise<void> {
       payment.id,
       'RENEWAL_PAYMENT_COMPLETED',
     );
-    const instant = new Date(invoice.dueAt.getTime() + 6 * 86_400_000);
+    const instant =
+      action === 'apply-renewal-payment'
+        ? new Date()
+        : new Date(invoice.dueAt.getTime() + 6 * 86_400_000);
     const processor = new RenewalProcessorService(
       prisma,
       new FixedClock(instant),
     );
     await processor.process(jobData(paymentEvent));
+    if (action === 'apply-renewal-payment') return;
     await processHostingEvent(
       serviceId,
       invoiceId,

@@ -928,24 +928,25 @@ model ServiceUpgrade {
 }
 
 model InvoiceItem {
-  id                  String     @id @default(uuid()) @db.Uuid
-  invoiceId           String     @map("invoice_id") @db.Uuid
-  linePosition        Int        @map("line_position")
-  orderItemId         String?    @map("order_item_id") @db.Uuid
-  serviceId           String?    @map("service_id") @db.Uuid
-  descriptionSnapshot String     @map("description_snapshot") @db.Text
-  currency            String     @db.Char(3)
-  quantity            Int        @default(1)
-  unitAmount          BigInt     @map("unit_amount") @db.BigInt
-  discountAmount      BigInt     @default(0) @map("discount_amount") @db.BigInt
-  taxAmount           BigInt     @default(0) @map("tax_amount") @db.BigInt
-  lineTotal           BigInt     @map("line_total") @db.BigInt
-  servicePeriodStart  DateTime?  @map("service_period_start") @db.Timestamptz(3)
-  servicePeriodEnd    DateTime?  @map("service_period_end") @db.Timestamptz(3)
-  createdAt           DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
-  invoice             Invoice    @relation(fields: [invoiceId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  orderItem           OrderItem? @relation(fields: [orderItemId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  service             Service?   @relation(fields: [serviceId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  productAttributionSnapshot Json?      @map("product_attribution_snapshot")
+  id                         String     @id @default(uuid()) @db.Uuid
+  invoiceId                  String     @map("invoice_id") @db.Uuid
+  linePosition               Int        @map("line_position")
+  orderItemId                String?    @map("order_item_id") @db.Uuid
+  serviceId                  String?    @map("service_id") @db.Uuid
+  descriptionSnapshot        String     @map("description_snapshot") @db.Text
+  currency                   String     @db.Char(3)
+  quantity                   Int        @default(1)
+  unitAmount                 BigInt     @map("unit_amount") @db.BigInt
+  discountAmount             BigInt     @default(0) @map("discount_amount") @db.BigInt
+  taxAmount                  BigInt     @default(0) @map("tax_amount") @db.BigInt
+  lineTotal                  BigInt     @map("line_total") @db.BigInt
+  servicePeriodStart         DateTime?  @map("service_period_start") @db.Timestamptz(3)
+  servicePeriodEnd           DateTime?  @map("service_period_end") @db.Timestamptz(3)
+  createdAt                  DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  invoice                    Invoice    @relation(fields: [invoiceId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  orderItem                  OrderItem? @relation(fields: [orderItemId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  service                    Service?   @relation(fields: [serviceId], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
   @@unique([invoiceId, linePosition], map: "invoice_items_invoice_id_line_position_key")
   @@index([serviceId], map: "invoice_items_service_id_idx")

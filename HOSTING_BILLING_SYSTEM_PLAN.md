@@ -8,6 +8,13 @@
 
 **Technical identifier:** `webhost-billing`
 
+**Invoice attribution direction — 2026-11-07:** Command 226 saves immutable
+product identity on future hosting/add-on renewal and hosting upgrade invoice
+lines, using the service, purchased item or saved quote. Prefer that evidence in
+income reports without changing historical invoices or repricing old charges.
+Update schema/recovery verification and verify with fictional data only. See
+[invoice product attribution](docs/INVOICE_PRODUCT_ATTRIBUTION.md).
+
 **Operational reporting direction — 2026-11-07:** Command 224 extends Reports
 with product cash allocation, renewal balances, next-cycle forecasts, plan-change
 history, domain renewal exceptions, department workload and pending cancellation

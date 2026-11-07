@@ -37,7 +37,8 @@ async function main() {
     const args =
       process.argv[2] === 'packages'
         ? ['test']
-        : process.argv[2] === 'reports' ||
+        : process.argv[2] === 'attribution' ||
+            process.argv[2] === 'reports' ||
             process.argv[2] === 'online-payments' ||
             process.argv[2] === 'usage' ||
             process.argv[2] === 'configuration' ||
@@ -70,44 +71,53 @@ async function main() {
                     'test/payment-gateways.e2e-spec.ts',
                     'test/payments.e2e-spec.ts',
                   ]
-                : process.argv[2] === 'reports'
-                  ? ['test/operational-reports.e2e-spec.ts']
-                  : process.argv[2] === 'support'
-                    ? [
-                        'test/tickets.e2e-spec.ts',
-                        'test/support-departments.e2e-spec.ts',
-                        'test/ticket-attachments.e2e-spec.ts',
-                        'test/support-email.e2e-spec.ts',
-                        'test/customers.e2e-spec.ts',
-                        'test/staff.e2e-spec.ts',
-                      ]
-                    : process.argv[2] === 'customers'
-                      ? ['test/customers.e2e-spec.ts', 'test/staff.e2e-spec.ts']
-                      : [
-                          process.argv[2] === 'configuration'
-                            ? 'test/hosting-options.e2e-spec.ts'
-                            : process.argv[2] === 'usage'
-                              ? 'test/services.e2e-spec.ts'
-                              : process.argv[2] === 'domain-renewal-execution'
-                                ? 'test/domain-renewal-execution.e2e-spec.ts'
-                                : process.argv[2] === 'domain-renewals'
-                                  ? 'test/domain-renewals.e2e-spec.ts'
-                                  : process.argv[2] === 'domain-facts'
-                                    ? 'test/domain-facts.e2e-spec.ts'
-                                    : process.argv[2] === 'upgrades'
-                                      ? 'test/hosting-upgrades.e2e-spec.ts'
-                                      : process.argv[2] === 'products'
-                                        ? 'test/products.e2e-spec.ts'
-                                        : process.argv[2] === 'hosting'
-                                          ? 'test/hosting-panels.e2e-spec.ts'
-                                          : process.argv[2] === 'settings'
-                                            ? 'test/settings.e2e-spec.ts'
-                                            : process.argv[2] === 'smtp'
-                                              ? 'test/smtp-settings.e2e-spec.ts'
-                                              : process.argv[2] === 'orders'
-                                                ? 'test/orders.e2e-spec.ts'
-                                                : 'test/domains.e2e-spec.ts',
-                        ]),
+                : process.argv[2] === 'attribution'
+                  ? [
+                      'test/hosting-upgrades.e2e-spec.ts',
+                      '--testNamePattern',
+                      'attribution',
+                    ]
+                  : process.argv[2] === 'reports'
+                    ? ['test/operational-reports.e2e-spec.ts']
+                    : process.argv[2] === 'support'
+                      ? [
+                          'test/tickets.e2e-spec.ts',
+                          'test/support-departments.e2e-spec.ts',
+                          'test/ticket-attachments.e2e-spec.ts',
+                          'test/support-email.e2e-spec.ts',
+                          'test/customers.e2e-spec.ts',
+                          'test/staff.e2e-spec.ts',
+                        ]
+                      : process.argv[2] === 'customers'
+                        ? [
+                            'test/customers.e2e-spec.ts',
+                            'test/staff.e2e-spec.ts',
+                          ]
+                        : [
+                            process.argv[2] === 'configuration'
+                              ? 'test/hosting-options.e2e-spec.ts'
+                              : process.argv[2] === 'usage'
+                                ? 'test/services.e2e-spec.ts'
+                                : process.argv[2] === 'domain-renewal-execution'
+                                  ? 'test/domain-renewal-execution.e2e-spec.ts'
+                                  : process.argv[2] === 'domain-renewals'
+                                    ? 'test/domain-renewals.e2e-spec.ts'
+                                    : process.argv[2] === 'domain-facts'
+                                      ? 'test/domain-facts.e2e-spec.ts'
+                                      : process.argv[2] === 'upgrades'
+                                        ? 'test/hosting-upgrades.e2e-spec.ts'
+                                        : process.argv[2] === 'products'
+                                          ? 'test/products.e2e-spec.ts'
+                                          : process.argv[2] === 'hosting'
+                                            ? 'test/hosting-panels.e2e-spec.ts'
+                                            : process.argv[2] === 'settings'
+                                              ? 'test/settings.e2e-spec.ts'
+                                              : process.argv[2] === 'smtp'
+                                                ? 'test/smtp-settings.e2e-spec.ts'
+                                                : process.argv[2] === 'orders'
+                                                  ? 'test/orders.e2e-spec.ts'
+                                                  : 'test/domains.e2e-spec.ts',
+                          ]),
             ]
           : process.argv[2] === 'whatsapp'
             ? [
@@ -123,14 +133,27 @@ async function main() {
               ]
             : process.argv[2] === 'invariants'
               ? ['test:invariants']
-              : process.argv[2] === 'worker'
-                ? ['--filter', '@webhost-billing/worker', 'test']
-                : [
+              : process.argv[2] === 'renewal'
+                ? [
                     '--filter',
-                    '@webhost-billing/api',
-                    'test:e2e',
+                    '@webhost-billing/worker',
+                    'exec',
+                    'cross-env',
+                    'NODE_OPTIONS=--experimental-vm-modules',
+                    'jest',
                     '--runInBand',
-                  ];
+                    '--runTestsByPath',
+                    'src/renewal/renewal-lifecycle.integration.spec.ts',
+                    'src/renewal/renewal-scheduler.integration.spec.ts',
+                  ]
+                : process.argv[2] === 'worker'
+                  ? ['--filter', '@webhost-billing/worker', 'test']
+                  : [
+                      '--filter',
+                      '@webhost-billing/api',
+                      'test:e2e',
+                      '--runInBand',
+                    ];
     execFileSync(
       process.platform === 'win32'
         ? (process.env.ComSpec ?? 'cmd.exe')

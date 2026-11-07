@@ -7185,7 +7185,9 @@ Update the progress log with actual checks and any remaining recovery limits.
 
 ## Command 226 — Preserve product attribution on future invoice lines
 
-**Status:** Proposed; requires separate owner authorization after Command 224.
+**Status:** Completed locally on 2026-11-07, including fictional acceptance and
+encrypted recovery. See [invoice attribution](docs/INVOICE_PRODUCT_ATTRIBUTION.md)
+and [the progress log](docs/PROGRESS.md). No push or deployment.
 
 Snapshot immutable product identity and reporting labels on new hosting renewal
 and plan-change invoice lines, alongside their existing service and purchased
@@ -7198,3 +7200,18 @@ catalogue edits, combined add-ons, partial payment, refund/reversal and checkout
 or renewal retries. Reconcile allocations with the payment ledger, retain exact
 minor units and immutable snapshot guards, and update recovery verification if
 the schema changes. Local fictional verification only; no deployment.
+
+## Command 227 — Preserve product attribution for future domain renewals
+
+**Status:** Proposed; requires separate owner authorization after Command 226.
+
+Extend invoice attribution to newly issued domain-renewal lines using the
+authorized renewal terms and product/price evidence. Preserve domain/renewal
+links and bind identity at creation. Keep historical and unsupported ad-hoc
+lines explicitly unattributed instead of inferring names from current catalogue
+or registrar state. Do not enable registrar dispatch or rewrite issued history.
+
+**Acceptance:** Reconcile fictional domain-renewal cash, partial payment,
+refund/reversal and retries with the ledger. Verify catalogue edits, combined
+report totals, immutable guards and recovery metadata. Update the progress log;
+no real provider connection or deployment.

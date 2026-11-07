@@ -20,11 +20,13 @@ Logical dumps are not point-in-time recovery. Production should add provider-man
 
 ## Prerequisites
 
-**Current source — Command 223, 2026-11-07:** The recovery inventory remains
-75 tables. The configuration-choice guard migration brings the source migration
-set to 56; use matching source SQL for backup verification and restore. Command
-223 verified fresh migration/schema guards and the nine inventory/checksum
-tests, without repeating the earlier 55-migration encrypted recovery drill.
+**Current source — Command 226, 2026-11-07:** The recovery inventory remains
+75 tables, with 57 migrations. Invoice product attribution adds a protected
+JSONB column on invoice items. Restored-database verification requires its
+shape constraint and insert/update/delete trigger; the fictional recovery
+fixture also checks retained attribution and immutable guards. Use matching
+source SQL for backup verification and restore. See
+[invoice attribution](INVOICE_PRODUCT_ATTRIBUTION.md) and the acceptance evidence below.
 
 - A healthy PostgreSQL Compose service and enough free space at the encrypted destination.
 - GnuPG, SHA-256 tools, Docker Compose, and a PostgreSQL image matching the server major version.
@@ -274,6 +276,17 @@ databases, temporary archives, passphrase and GnuPG home were removed afterward.
 No application server, worker, gateway adapter or mail provider was started for
 this rehearsal. This local acceptance does not establish production key custody,
 off-site backup retrieval, operational recovery time or deployed-release readiness.
+
+**Command 226 acceptance — 2026-11-07:** The complete encrypted drill passed
+again for 75 tables and 57 migrations in an isolated local PostgreSQL 18.6
+project. Both clean restores matched every source row and table count, with
+zero financial violations and orphans. The retained invoice product attribution
+matched its fictional source, and restored guards rejected snapshot edits and
+line deletion. Corrupted/incomplete archives, equal-count row tampering,
+untrusted or unfinished migration history, and source/existing-target overwrite
+attempts were rejected. Trusted LF/CRLF checksum variants remained accepted.
+The owned source and restore databases, encrypted archives, passphrase and GnuPG
+home were removed; no provider, mail delivery or deployment was involved.
 
 ## Command 158 retrieval evidence
 

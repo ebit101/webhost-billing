@@ -7,6 +7,7 @@ import type {
 } from '@webhost-billing/database';
 import {
   businessIdentitySchema,
+  snapshotInvoiceProduct,
   hostingAccountSchema,
   hostingPlanChangeQuoteSchema,
   hostingUpgradeSchema,
@@ -241,6 +242,13 @@ export class HostingUpgradeService {
             create: {
               linePosition: 1,
               serviceId,
+              productAttributionSnapshot: snapshotInvoiceProduct({
+                productId: quote.target.productId,
+                productPriceId: quote.target.priceId,
+                name: quote.target.name,
+                kind: 'HOSTING',
+                source: 'HOSTING_PLAN_CHANGE',
+              }),
               descriptionSnapshot: `Hosting upgrade: ${quote.current.name} to ${quote.target.name} (${quote.quotedAt} to ${quote.paidPeriod.endAt})`,
               currency: quote.immediateCharge.currency,
               unitAmount: amount,

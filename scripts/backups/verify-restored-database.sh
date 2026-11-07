@@ -13,6 +13,19 @@ backup_require_runtime
 backup_database_exists "$target_database" || backup_die "The recovery database does not exist."
 backup_verify_database_release "$target_database"
 
+attribution_verification=$(
+  backup_compose exec -T -e RECOVERY_TARGET_DATABASE="$target_database" "$BACKUP_POSTGRES_SERVICE" sh -ceu '
+    psql --username "$POSTGRES_USER" --dbname "$RECOVERY_TARGET_DATABASE" --no-align --tuples-only --set ON_ERROR_STOP=1 <<'\''SQL'\''
+SELECT
+ (SELECT count(*) FROM information_schema.columns WHERE table_schema='\''public'\'' AND table_name='\''invoice_items'\'' AND column_name='\''product_attribution_snapshot'\'' AND data_type='\''jsonb'\'') || '\''|'\'' ||
+ (SELECT count(*) FROM information_schema.table_constraints WHERE constraint_schema='\''public'\'' AND constraint_name='\''invoice_items_product_attribution_shape'\'') || '\''|'\'' ||
+ (SELECT count(*) FROM information_schema.triggers WHERE trigger_schema='\''public'\'' AND trigger_name='\''protect_invoice_product_attribution'\'' AND event_manipulation IN ('\''INSERT'\'','\''UPDATE'\'','\''DELETE'\'')) || '\''|'\'' ||
+ (SELECT count(*) FROM invoice_items WHERE product_attribution_snapshot IS NOT NULL AND NOT invoice_product_attribution_shape(product_attribution_snapshot));
+SQL
+  '
+)
+[[ "$attribution_verification" == '1|1|3|0' ]] || backup_die "Restored invoice product attribution or guards failed verification."
+
 verification_result=$(
   backup_compose exec -T \
     -e RECOVERY_TARGET_DATABASE="$target_database" \

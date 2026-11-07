@@ -22,8 +22,9 @@ export function operationalReportSql(
           ii.id AS line_id, ii.line_position,
           greatest(coalesce(ii.line_total,0),0)::numeric AS weight,
           (ii.line_total<0 OR ii.currency<>p.currency) AS invalid,
-          oi.product_id::text AS product_id, oi.product_name_snapshot AS label,
-          CASE oi.kind WHEN 'HOSTING' THEN 'Hosting' WHEN 'ADD_ON' THEN 'Add-on' WHEN 'DOMAIN' THEN 'Domain' ELSE 'Unattributed' END AS kind
+          coalesce(ii.product_attribution_snapshot->>'productId',oi.product_id::text) AS product_id,
+          coalesce(ii.product_attribution_snapshot->>'name',oi.product_name_snapshot) AS label,
+          CASE coalesce(ii.product_attribution_snapshot->>'kind',oi.kind::text) WHEN 'HOSTING' THEN 'Hosting' WHEN 'ADD_ON' THEN 'Add-on' WHEN 'DOMAIN' THEN 'Domain' ELSE 'Unattributed' END AS kind
         FROM payments p LEFT JOIN invoice_items ii ON ii.invoice_id=p.invoice_id
         LEFT JOIN order_items oi ON oi.id=ii.order_item_id
         WHERE p.status='SUCCEEDED' AND p.currency=${currency} AND p.verified_at>=${start} AND p.verified_at<${end}

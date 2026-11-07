@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 import { promisify } from 'node:util';
 import { Test, type TestingModule } from '@nestjs/testing';
 import { parseApiEnvironment } from '@webhost-billing/config';
-import type { PrismaClient } from '@webhost-billing/database';
+import { Prisma, type PrismaClient } from '@webhost-billing/database';
 import type { AuthRequestContext } from '../src/modules/auth/auth.types';
 import { AppModule } from '../src/app.module';
 import { API_ENVIRONMENT } from '../src/infrastructure/environment/environment.module';
@@ -19,6 +19,13 @@ import { ServiceAddOnsService } from '../src/modules/services/service-add-ons.se
 import { ServiceService } from '../src/modules/services/service.service';
 import { nextServiceDueAt } from '../src/modules/services/service-period';
 import { hostingUpgradeQuoteSchema } from '@webhost-billing/shared';
+import {
+  invoiceProductAttributionSchema,
+  operationalReportRequestSchema,
+  PARTIAL_PAYMENT_POLICY_CONFIRMATION,
+} from '@webhost-billing/shared';
+import { OperationalReportService } from '../src/modules/dashboard-reports/operational-report.service';
+import { businessDate } from '../src/modules/dashboard-reports/dashboard-period';
 
 describe('paid hosting upgrade acceptance', () => {
   let module: TestingModule;
@@ -48,7 +55,7 @@ describe('paid hosting upgrade acceptance', () => {
   afterEach(() => jest.restoreAllMocks());
   afterAll(async () => module?.close());
 
-  async function fixture() {
+  async function fixture(withAddOns = false) {
     const suffix = randomUUID();
     const adminUser = await prisma.user.create({
       data: {
@@ -133,6 +140,38 @@ describe('paid hosting upgrade acceptance', () => {
       },
       include: { prices: true },
     });
+    const extras = withAddOns
+      ? await Promise.all(
+          (['MONTHLY', 'ONE_TIME'] as const).map((billingPeriod, index) =>
+            prisma.product.create({
+              data: {
+                kind: 'ADD_ON',
+                slug: `attribution-extra-${index}-${suffix}`,
+                name:
+                  index === 0
+                    ? 'Fictional purchased backup'
+                    : 'Fictional migration',
+                status: 'ACTIVE',
+                eligibleHostingPlans: {
+                  create: [
+                    { hostingProductId: source.id },
+                    { hostingProductId: target.id },
+                  ],
+                },
+                prices: {
+                  create: {
+                    billingPeriod,
+                    currency: 'BDT',
+                    amount: index === 0 ? 15000n : 5000n,
+                  },
+                },
+              },
+              include: { prices: true },
+            }),
+          ),
+        )
+      : [];
+    const total = withAddOns ? 120000n : 100000n;
     const server = await prisma.server.create({
       data: {
         name: `Upgrade ${suffix}`,
@@ -147,28 +186,42 @@ describe('paid hosting upgrade acceptance', () => {
         customerId: user.customer!.id,
         status: 'AWAITING_PAYMENT',
         currency: 'BDT',
-        subtotal: 100_000n,
-        total: 100_000n,
+        subtotal: total,
+        total,
         customerEmailSnapshot: user.email,
         items: {
-          create: {
-            productId: source.id,
-            productPriceId: source.prices[0].id,
-            productNameSnapshot: source.name,
-            billingPeriod: 'MONTHLY',
-            currency: 'BDT',
-            unitAmount: 100_000n,
-            lineTotal: 100_000n,
-            requestedDomain: `${suffix}.example.test`,
-            provisioningSnapshot: {
-              hostingPackageIdentifier: 'fictional_starter',
-              hostingProvisioningMode: 'STANDARD',
+          create: [
+            {
+              productId: source.id,
+              productPriceId: source.prices[0].id,
+              productNameSnapshot: source.name,
+              billingPeriod: 'MONTHLY',
+              currency: 'BDT',
+              unitAmount: 100_000n,
+              lineTotal: 100_000n,
+              requestedDomain: `${suffix}.example.test`,
+              provisioningSnapshot: {
+                hostingPackageIdentifier: 'fictional_starter',
+                hostingProvisioningMode: 'STANDARD',
+              },
             },
-          },
+            ...extras.map((extra) => ({
+              kind: 'ADD_ON' as const,
+              productId: extra.id,
+              productPriceId: extra.prices[0].id,
+              productNameSnapshot: extra.name,
+              billingPeriod: extra.prices[0].billingPeriod,
+              currency: 'BDT',
+              unitAmount: extra.prices[0].amount,
+              lineTotal: extra.prices[0].amount,
+              fulfilledAt: new Date(),
+            })),
+          ],
         },
       },
       include: { items: true },
     });
+    const hostingItem = order.items.find((item) => item.kind === 'HOSTING')!;
     const initial = await prisma.invoice.create({
       data: {
         invoiceNumber: `UI-${suffix.slice(0, 12)}`,
@@ -179,9 +232,9 @@ describe('paid hosting upgrade acceptance', () => {
         issuedAt: new Date(),
         dueAt: new Date(),
         currency: 'BDT',
-        subtotal: 100_000n,
-        total: 100_000n,
-        balanceDue: 100_000n,
+        subtotal: total,
+        total,
+        balanceDue: total,
         customerNameSnapshot: 'Fictional Upgrade',
         customerEmailSnapshot: user.email,
         customerAddressSnapshot: {
@@ -191,32 +244,44 @@ describe('paid hosting upgrade acceptance', () => {
         },
         businessIdentitySnapshot: { name: 'Fictional host' },
         items: {
-          create: {
-            orderItemId: order.items[0].id,
-            linePosition: 1,
-            descriptionSnapshot: source.name,
-            currency: 'BDT',
-            unitAmount: 100_000n,
-            lineTotal: 100_000n,
-          },
+          create: [
+            {
+              orderItemId: hostingItem.id,
+              linePosition: 1,
+              descriptionSnapshot: source.name,
+              currency: 'BDT',
+              unitAmount: 100_000n,
+              lineTotal: 100_000n,
+            },
+            ...order.items
+              .filter((item) => item.kind === 'ADD_ON')
+              .map((item, index) => ({
+                orderItemId: item.id,
+                linePosition: index + 2,
+                descriptionSnapshot: item.productNameSnapshot,
+                currency: 'BDT',
+                unitAmount: item.unitAmount,
+                lineTotal: item.lineTotal,
+              })),
+          ],
         },
       },
     });
     await payments.recordManual(
       {
         invoiceId: initial.id,
-        amount: '100000',
+        amount: total.toString(),
         submissionKey: randomUUID(),
         proof: { method: 'BANK_TRANSFER', reference: `INITIAL-${suffix}` },
       },
       admin,
       context,
     );
-    const startedAt = new Date(Date.now() - 14 * 86400000);
+    const startedAt = new Date(Date.now() - (withAddOns ? 45 : 14) * 86400000);
     const service = await prisma.service.create({
       data: {
         customerId: user.customer!.id,
-        orderItemId: order.items[0].id,
+        orderItemId: hostingItem.id,
         productId: source.id,
         productPriceId: source.prices[0].id,
         productNameSnapshot: source.name,
@@ -282,13 +347,23 @@ describe('paid hosting upgrade acceptance', () => {
           invoiceId,
           amount: invoice.balanceDue.toString(),
           submissionKey: randomUUID(),
-          proof: { method: 'BANK_TRANSFER', reference: `UPGRADE-${suffix}` },
+          proof: { method: 'BANK_TRANSFER', reference: `UPGRADE-${invoiceId}` },
         },
         admin,
         context,
       );
     };
-    return { service, source, target, initial, admin, customer, offer, pay };
+    return {
+      service,
+      source,
+      target,
+      initial,
+      admin,
+      customer,
+      offer,
+      pay,
+      extras,
+    };
   }
 
   async function downgradeFixture() {
@@ -309,15 +384,24 @@ describe('paid hosting upgrade acceptance', () => {
       .spyOn(Date, 'now')
       .mockReturnValue(f.service.nextDueAt.getTime() + 1000);
   }
-  async function renew(serviceId: string, late = false) {
+  async function renew(
+    serviceId: string,
+    late = false,
+    paymentInvoiceId?: string,
+  ) {
     const args = [
       'exec',
       'tsx',
       '--tsconfig',
       'e2e/tsconfig.json',
       'e2e/automation-runner.ts',
-      late ? 'create-renewal-after-boundary' : 'create-renewal',
+      paymentInvoiceId
+        ? 'apply-renewal-payment'
+        : late
+          ? 'create-renewal-after-boundary'
+          : 'create-renewal',
       serviceId,
+      ...(paymentInvoiceId ? [paymentInvoiceId] : []),
     ];
     const windows = process.platform === 'win32';
     await promisify(execFile)(
@@ -684,6 +768,337 @@ describe('paid hosting upgrade acceptance', () => {
         where: { orderId: item.orderId, kind: 'ADD_ON' },
       }),
     ).toBe(1);
+  });
+
+  it('preserves product cash attribution through a paid source renewal, upgrade, catalogue edits and target renewal', async () => {
+    const f = await fixture(true);
+    const legacyBefore = await prisma.invoiceItem.findMany({
+      where: { invoiceId: f.initial.id },
+      orderBy: { linePosition: 'asc' },
+    });
+    expect(
+      legacyBefore.every((item) => item.productAttributionSnapshot === null),
+    ).toBe(true);
+    await renew(f.service.id, true);
+    await renew(f.service.id, true);
+    const before = await prisma.invoice.findMany({
+      where: {
+        items: {
+          some: { serviceId: f.service.id, servicePeriodStart: { not: null } },
+        },
+      },
+      include: { items: { orderBy: { linePosition: 'asc' } } },
+    });
+    expect(before).toHaveLength(1);
+    expect(before[0].total).toBe(115000n);
+    expect(before[0].items).toHaveLength(2);
+    const sourceSnapshot = invoiceProductAttributionSchema.parse(
+      before[0].items[0].productAttributionSnapshot,
+    );
+    expect(sourceSnapshot).toMatchObject({
+      productId: f.source.id,
+      productPriceId: f.source.prices[0].id,
+      name: f.source.name,
+      kind: 'HOSTING',
+      source: 'HOSTING_RENEWAL',
+    });
+    const backup = f.extras.find(
+      (item) => item.prices[0].billingPeriod === 'MONTHLY',
+    )!;
+    expect(
+      invoiceProductAttributionSchema.parse(
+        before[0].items[1].productAttributionSnapshot,
+      ),
+    ).toMatchObject({
+      productId: backup.id,
+      name: backup.name,
+      source: 'ADD_ON_RENEWAL',
+    });
+    await f.pay(before[0].id);
+    await renew(f.service.id, false, before[0].id);
+    await renew(f.service.id, false, before[0].id);
+    const quote = await f.offer();
+    const accepted = await Promise.all([
+      upgrades.accept(f.service.id, quote.id, f.customer, context),
+      upgrades.accept(f.service.id, quote.id, f.customer, context),
+    ]);
+    expect(accepted[0].invoiceId).toBe(accepted[1].invoiceId);
+    const upgradeLine = await prisma.invoiceItem.findFirstOrThrow({
+      where: { invoiceId: accepted[0].invoiceId! },
+    });
+    expect(
+      invoiceProductAttributionSchema.parse(
+        upgradeLine.productAttributionSnapshot,
+      ),
+    ).toMatchObject({
+      productId: f.target.id,
+      productPriceId: f.target.prices[0].id,
+      name: f.target.name,
+      source: 'HOSTING_PLAN_CHANGE',
+    });
+    await f.pay(accepted[0].invoiceId!);
+    await upgrades.approve(f.service.id, quote.id, f.admin, context);
+    await prisma.product.update({
+      where: { id: f.source.id },
+      data: { name: 'Renamed source catalogue' },
+    });
+    await prisma.product.update({
+      where: { id: f.target.id },
+      data: { name: 'Renamed target catalogue' },
+    });
+    await prisma.product.update({
+      where: { id: backup.id },
+      data: { name: 'Renamed backup catalogue' },
+    });
+    await prisma.productPrice.update({
+      where: { id: f.target.prices[0].id },
+      data: { amount: 999999n },
+    });
+    await renew(f.service.id);
+    await renew(f.service.id);
+    const invoices = await prisma.invoice.findMany({
+      where: {
+        items: {
+          some: { serviceId: f.service.id, servicePeriodStart: { not: null } },
+        },
+      },
+      include: { items: { orderBy: { linePosition: 'asc' } } },
+      orderBy: { createdAt: 'asc' },
+    });
+    expect(invoices).toHaveLength(2);
+    const targetInvoice = invoices.find(
+      (invoice) => invoice.id !== before[0].id,
+    )!;
+    expect(targetInvoice.total).toBe(175000n);
+    expect(targetInvoice.items).toHaveLength(2);
+    expect(
+      invoiceProductAttributionSchema.parse(
+        targetInvoice.items[0].productAttributionSnapshot,
+      ),
+    ).toMatchObject({
+      productId: f.target.id,
+      productPriceId: f.target.prices[0].id,
+      name: f.target.name,
+      source: 'HOSTING_RENEWAL',
+    });
+    expect(
+      invoiceProductAttributionSchema.parse(
+        targetInvoice.items[1].productAttributionSnapshot,
+      ),
+    ).toMatchObject({
+      productId: backup.id,
+      name: backup.name,
+      source: 'ADD_ON_RENEWAL',
+    });
+    const report = module.get(OperationalReportService);
+    const today = businessDate(new Date(), 'Asia/Dhaka');
+    const load = () =>
+      report.list(
+        'income',
+        operationalReportRequestSchema.parse({
+          from: today,
+          to: today,
+          pageSize: 100,
+        }),
+        f.admin,
+      );
+    const baseline = await load();
+    expect(baseline.pagination.totalPages).toBe(1);
+    const amount = (rows: typeof baseline.rows, id: string) =>
+      rows
+        .filter((row) => row.id.startsWith(id + '|'))
+        .reduce((sum, row) => sum + BigInt(row.cells[2]), 0n);
+    const previousPolicy = await payments.getSettings();
+    await payments.updateSettings(
+      {
+        partialPaymentsEnabled: true,
+        partialPaymentPolicyConfirmation: PARTIAL_PAYMENT_POLICY_CONFIRMATION,
+      },
+      f.admin,
+      context,
+    );
+    const partial = await payments.recordManual(
+      {
+        invoiceId: targetInvoice.id,
+        amount: '10001',
+        submissionKey: randomUUID(),
+        proof: {
+          method: 'BANK_TRANSFER',
+          reference: 'FICTIONAL-ATTRIBUTION-' + randomUUID(),
+        },
+      },
+      f.admin,
+      context,
+    );
+    await payments.updateSettings(
+      {
+        ...previousPolicy,
+        partialPaymentPolicyConfirmation: PARTIAL_PAYMENT_POLICY_CONFIRMATION,
+      },
+      f.admin,
+      context,
+    );
+    const refund = {
+      kind: 'REFUND' as const,
+      amount: '500',
+      reference: 'FICTIONAL-REFUND-' + randomUUID(),
+      note: 'Fictional attribution refund',
+      submissionKey: randomUUID(),
+    };
+    const refunds = await Promise.all([
+      payments.adjust(partial.payment.id, refund, f.admin, context),
+      payments.adjust(partial.payment.id, refund, f.admin, context),
+    ]);
+    expect(refunds[0].payment.id).toBe(refunds[1].payment.id);
+    await payments.adjust(
+      partial.payment.id,
+      {
+        kind: 'REVERSAL',
+        amount: '1',
+        reference: 'FICTIONAL-REVERSAL-' + randomUUID(),
+        note: 'Fictional attribution reversal',
+        submissionKey: randomUUID(),
+      },
+      f.admin,
+      context,
+    );
+    const after = await load();
+    expect(amount(after.rows, f.source.id)).toBe(200000n);
+    expect(
+      amount(after.rows, f.target.id) - amount(baseline.rows, f.target.id),
+    ).toBe(8686n);
+    expect(
+      amount(after.rows, backup.id) - amount(baseline.rows, backup.id),
+    ).toBe(814n);
+    expect(BigInt(after.totals[2]) - BigInt(baseline.totals[2])).toBe(9500n);
+    expect(
+      after.rows
+        .filter((row) => row.id.startsWith(f.target.id + '|'))
+        .every((row) => row.cells[0] === f.target.name),
+    ).toBe(true);
+    expect(
+      await prisma.payment.findUniqueOrThrow({
+        where: { id: partial.payment.id },
+      }),
+    ).toMatchObject({ amount: 10001n, status: 'SUCCEEDED', kind: 'CHARGE' });
+    expect(
+      await prisma.invoiceItem.findMany({
+        where: { invoiceId: f.initial.id },
+        orderBy: { linePosition: 'asc' },
+      }),
+    ).toEqual(legacyBefore);
+    expect(
+      (
+        await prisma.invoiceItem.findUniqueOrThrow({
+          where: { id: before[0].items[0].id },
+        })
+      ).productAttributionSnapshot,
+    ).toEqual(sourceSnapshot);
+    expect(
+      await prisma.invoice.count({
+        where: { submissionKey: `hosting-upgrade:${quote.id}` },
+      }),
+    ).toBe(1);
+  }, 180000);
+
+  it('rejects attribution rewrites, detachment, forged source identity and retroactive legacy tagging', async () => {
+    const f = await fixture();
+    await renew(f.service.id);
+    const line = await prisma.invoiceItem.findFirstOrThrow({
+      where: { serviceId: f.service.id, servicePeriodStart: { not: null } },
+    });
+    const snapshot = invoiceProductAttributionSchema.parse(
+      line.productAttributionSnapshot,
+    );
+    for (const data of [
+      { productAttributionSnapshot: { ...snapshot, name: 'Rewritten' } },
+      { productAttributionSnapshot: Prisma.DbNull },
+      { descriptionSnapshot: 'Rewritten line' },
+      { lineTotal: line.lineTotal + 1n },
+      { invoiceId: f.initial.id },
+    ])
+      await expect(
+        prisma.invoiceItem.update({ where: { id: line.id }, data }),
+      ).rejects.toThrow();
+    await expect(
+      prisma.invoiceItem.delete({ where: { id: line.id } }),
+    ).rejects.toThrow();
+    const legacy = await prisma.invoiceItem.findFirstOrThrow({
+      where: { invoiceId: f.initial.id },
+    });
+    await expect(
+      prisma.invoiceItem.update({
+        where: { id: legacy.id },
+        data: { productAttributionSnapshot: snapshot },
+      }),
+    ).rejects.toThrow();
+    for (const forged of [
+      { ...snapshot, productId: randomUUID() },
+      { ...snapshot, productPriceId: randomUUID() },
+      { ...snapshot, version: 2 },
+      { ...snapshot, source: 'HOSTING_PLAN_CHANGE' },
+      { ...snapshot, privateData: 'forbidden' },
+    ])
+      await expect(
+        prisma.invoiceItem.create({
+          data: {
+            invoiceId: line.invoiceId,
+            linePosition: 99,
+            serviceId: f.service.id,
+            descriptionSnapshot: 'Fictional rejected line',
+            currency: 'BDT',
+            unitAmount: 1n,
+            lineTotal: 1n,
+            servicePeriodStart: new Date('2050-01-01T00:00:00Z'),
+            servicePeriodEnd: new Date('2050-02-01T00:00:00Z'),
+            productAttributionSnapshot: forged,
+          },
+        }),
+      ).rejects.toThrow();
+    for (const currency of ['USD', 'BDT']) {
+      const issued = currency === 'USD';
+      const parent = await prisma.invoice.create({
+        data: {
+          invoiceNumber: `FORGED-${randomUUID().slice(0, 12)}`,
+          submissionKey: randomUUID(),
+          customerId: f.service.customerId,
+          status: issued ? 'UNPAID' : 'DRAFT',
+          issuedAt: issued ? new Date() : null,
+          dueAt: new Date(),
+          currency,
+          subtotal: 1n,
+          total: 1n,
+          balanceDue: 1n,
+          customerNameSnapshot: 'Fictional attribution',
+          customerEmailSnapshot: 'attribution@example.test',
+          customerAddressSnapshot: {},
+          businessIdentitySnapshot: {},
+        },
+      });
+      await expect(
+        prisma.invoiceItem.create({
+          data: {
+            invoiceId: parent.id,
+            linePosition: 1,
+            serviceId: f.service.id,
+            descriptionSnapshot: 'Rejected currency or draft attribution',
+            currency: 'BDT',
+            unitAmount: 1n,
+            lineTotal: 1n,
+            servicePeriodStart: new Date('2050-01-01T00:00:00Z'),
+            servicePeriodEnd: new Date('2050-02-01T00:00:00Z'),
+            productAttributionSnapshot: snapshot,
+          },
+        }),
+      ).rejects.toThrow();
+    }
+    expect(
+      await prisma.invoiceItem.findUniqueOrThrow({ where: { id: line.id } }),
+    ).toEqual(line);
+    expect(
+      (await prisma.invoiceItem.findUniqueOrThrow({ where: { id: legacy.id } }))
+        .productAttributionSnapshot,
+    ).toBeNull();
   });
 
   it('issues one invoice on concurrent acceptance and applies one paid, approved package change', async () => {

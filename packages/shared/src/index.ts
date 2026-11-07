@@ -23,6 +23,7 @@ export * from './contracts/services';
 export * from './contracts/hosting-usage';
 export * from './contracts/hosting-options';
 export * from './contracts/operational-reports';
+export * from './contracts/invoice-product-attribution';
 export * from './contracts/settings';
 export * from './contracts/smtp-settings';
 export * from './contracts/hosting-panels';

@@ -147,6 +147,7 @@ const requiredCustomConstraints = [
   'automation_runs_counts_check',
   'customers_country_code_check',
   'invoice_items_total_check',
+  'invoice_items_product_attribution_shape',
   'invoice_items_line_position_check',
   'invoices_balance_check',
   'invoices_settlement_limit_check',
@@ -252,6 +253,17 @@ async function verify(): Promise<void> {
     WHERE trigger_schema=${schema} AND trigger_name='protect_hosting_option_purchase' AND event_manipulation IN ('UPDATE','DELETE')
   `;
   assert.equal(optionTrigger[0]?.count, 2n);
+  const attributionColumn = await prisma.$queryRaw<
+    Array<{ data_type: string }>
+  >`
+    SELECT data_type FROM information_schema.columns WHERE table_schema=${schema} AND table_name='invoice_items' AND column_name='product_attribution_snapshot'
+  `;
+  assert.equal(attributionColumn[0]?.data_type, 'jsonb');
+  const attributionTrigger = await prisma.$queryRaw<Array<{ count: bigint }>>`
+    SELECT count(*)::bigint AS count FROM information_schema.triggers WHERE trigger_schema=${schema} AND trigger_name='protect_invoice_product_attribution'
+      AND event_manipulation IN ('INSERT','UPDATE','DELETE')
+  `;
+  assert.equal(attributionTrigger[0]?.count, 3n);
 
   const idColumnTypes = await prisma.$queryRaw<
     Array<{ table_name: string; data_type: string }>

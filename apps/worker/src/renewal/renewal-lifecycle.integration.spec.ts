@@ -131,74 +131,36 @@ describe('renewal lifecycle integration', () => {
   });
 
   afterAll(async () => {
-    await prisma.hostingPanelOperation.deleteMany({
-      where: { serviceId: ids.service },
-    });
-    const invoices = await prisma.invoice.findMany({
-      where: { items: { some: { serviceId: ids.service } } },
-      select: { id: true },
-    });
-    const invoiceIds = invoices.map(({ id }) => id);
-    const payments = await prisma.payment.findMany({
-      where: { invoiceId: { in: invoiceIds } },
-      select: { id: true },
-    });
-    const paymentIds = payments.map(({ id }) => id);
-    const automationRuns = await prisma.automationRun.findMany({
-      where: {
-        OR: [
-          { id: { in: runIds } },
-          {
-            idempotencyKey: {
-              in: paymentIds.map((id) => `renewal-payment:${id}`),
-            },
-          },
-        ],
-      },
-      select: { id: true },
-    });
-    const allRunIds = automationRuns.map(({ id }) => id);
-    await prisma.activityLog.deleteMany({
-      where: {
-        OR: [
-          { entityId: ids.service },
-          { entityId: { in: invoiceIds } },
-          { entityId: { in: paymentIds } },
-          { correlationId: { in: allRunIds } },
-        ],
-      },
-    });
-    await prisma.outboxEvent.deleteMany({
-      where: {
-        OR: [
-          { aggregateId: ids.service },
-          { aggregateId: { in: invoiceIds } },
-          { aggregateId: { in: paymentIds } },
-          { aggregateId: { in: allRunIds } },
-        ],
-      },
-    });
-    await prisma.payment.deleteMany({ where: { id: { in: paymentIds } } });
-    await prisma.invoiceItem.deleteMany({
-      where: { invoiceId: { in: invoiceIds } },
-    });
+    // Preserve immutable financial/audit history. The guarded launcher owns
+    // schema disposal; direct local runs archive only this random fixture.
     await prisma.service.updateMany({
       where: { id: ids.service },
-      data: { suspensionInvoiceId: null },
+      data: {
+        status: ServiceStatus.CANCELLED,
+        cancelledAt: new Date(),
+        cancellationReason: 'Fictional lifecycle fixture completed.',
+      },
     });
-    await prisma.invoice.deleteMany({ where: { id: { in: invoiceIds } } });
-    await prisma.hostingCancellationRequest.deleteMany({
-      where: { serviceId: ids.service },
+    await prisma.server.updateMany({
+      where: { id: ids.server },
+      data: { deletedAt: new Date() },
     });
-    await prisma.service.deleteMany({ where: { id: ids.service } });
-    await prisma.automationRun.deleteMany({
-      where: { id: { in: allRunIds } },
+    await prisma.productPrice.updateMany({
+      where: { id: ids.price },
+      data: { isActive: false },
     });
-    await prisma.server.deleteMany({ where: { id: ids.server } });
-    await prisma.productPrice.deleteMany({ where: { id: ids.price } });
-    await prisma.product.deleteMany({ where: { id: ids.product } });
-    await prisma.customer.deleteMany({ where: { id: ids.customer } });
-    await prisma.user.deleteMany({ where: { id: ids.user } });
+    await prisma.product.updateMany({
+      where: { id: ids.product },
+      data: { status: ProductStatus.ARCHIVED, publicVisible: false },
+    });
+    await prisma.customer.updateMany({
+      where: { id: ids.customer },
+      data: { deletedAt: new Date() },
+    });
+    await prisma.user.updateMany({
+      where: { id: ids.user },
+      data: { deletedAt: new Date() },
+    });
     await prisma.$disconnect();
   });
 

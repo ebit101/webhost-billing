@@ -9,6 +9,7 @@ import {
 import { BackgroundJobError } from '@webhost-billing/queue';
 import {
   POSTGRES_BIGINT_MAX,
+  snapshotInvoiceProduct,
   PROJECT_NAME,
   businessIdentitySchema,
   hostingBillingPeriodSchema,
@@ -279,6 +280,13 @@ export class RenewalProcessorService {
                 {
                   linePosition: 1,
                   serviceId: service.id,
+                  productAttributionSnapshot: snapshotInvoiceProduct({
+                    productId: service.productId,
+                    productPriceId: service.productPriceId,
+                    name: service.productNameSnapshot,
+                    kind: 'HOSTING',
+                    source: 'HOSTING_RENEWAL',
+                  }),
                   descriptionSnapshot: `Renewal: ${service.productNameSnapshot}${service.domain ? ` (${service.domain})` : ''}`,
                   currency: service.currency,
                   quantity: 1,
@@ -291,6 +299,13 @@ export class RenewalProcessorService {
                 ...addOns.map((item, index) => ({
                   linePosition: index + 2,
                   orderItemId: item.id,
+                  productAttributionSnapshot: snapshotInvoiceProduct({
+                    productId: item.productId,
+                    productPriceId: item.productPriceId,
+                    name: item.productNameSnapshot,
+                    kind: 'ADD_ON',
+                    source: 'ADD_ON_RENEWAL',
+                  }),
                   descriptionSnapshot: `Renewal: ${item.productNameSnapshot}`,
                   currency: item.currency,
                   quantity: item.quantity,
