@@ -15,6 +15,13 @@ income reports without changing historical invoices or repricing old charges.
 Update schema/recovery verification and verify with fictional data only. See
 [invoice product attribution](docs/INVOICE_PRODUCT_ATTRIBUTION.md).
 
+**Domain invoice attribution — 2026-11-07:** Command 227 saves the domain product
+ID/name and catalogue ID/revision from administrator-confirmed renewal terms.
+Preserve the exact annual amount and coverage instead of inventing a hosting
+price ID. Require a matching renewal record at transaction commit. Hold new
+legacy-term billing for review while keeping issued legacy invoices payable,
+reminded and unchanged.
+
 **Operational reporting direction — 2026-11-07:** Command 224 extends Reports
 with product cash allocation, renewal balances, next-cycle forecasts, plan-change
 history, domain renewal exceptions, department workload and pending cancellation

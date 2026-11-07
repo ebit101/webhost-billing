@@ -6,7 +6,10 @@ import {
   randomBytes,
 } from 'node:crypto';
 import { createPrismaClient } from '../src/client';
-import { snapshotInvoiceProduct } from '@webhost-billing/shared';
+import {
+  snapshotInvoiceProduct,
+  snapshotDomainRenewalProduct,
+} from '@webhost-billing/shared';
 
 // Fictional recovery acceptance only. No gateway adapter or network client is loaded.
 const databaseUrl = new URL(process.env.DATABASE_URL ?? '');
@@ -324,6 +327,37 @@ async function main(): Promise<void> {
     }),
   );
   await assert.rejects(prisma.invoiceItem.delete({ where: { id: line.id } }));
+  const domainAttribution = snapshotDomainRenewalProduct({
+    productId: '22700000-0000-4000-8000-000000000001',
+    catalogueId: '22700000-0000-4000-8000-000000000002',
+    catalogueRevision: 1,
+    name: 'Fictional domain recovery',
+  });
+  const domainShape = await prisma.$queryRaw<Array<{ valid: boolean }>>`
+    SELECT invoice_product_attribution_shape(${JSON.stringify(domainAttribution)}::jsonb) AS valid
+  `;
+  assert.equal(domainShape[0]?.valid, true);
+  // This is shape-valid, but it has no domain renewal binding. Autocommit must
+  // execute the restored deferred constraint and reject it, leaving no row.
+  await assert.rejects(
+    prisma.invoiceItem.create({
+      data: {
+        invoiceId: ids.invoice,
+        linePosition: 99,
+        currency: 'BDT',
+        descriptionSnapshot: 'Rejected unbound domain recovery',
+        unitAmount: 1n,
+        lineTotal: 1n,
+        productAttributionSnapshot: domainAttribution,
+      },
+    }),
+  );
+  assert.equal(
+    await prisma.invoiceItem.count({
+      where: { invoiceId: ids.invoice, linePosition: 99 },
+    }),
+    0,
+  );
   assert.equal(checkout.refunds.length, 2);
   assert.equal(
     checkout.refunds.find((value) => value.id === ids.refund)?.paymentId,

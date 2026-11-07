@@ -148,6 +148,15 @@ export async function domainRenewalContext(
       terms.data.catalogueRevision !== catalogue?.revision)
   )
     code = 'TERMS_CHANGED';
+  const attribution = terms.success ? terms.data.productAttribution : undefined;
+  if (
+    !code &&
+    attribution &&
+    (attribution.catalogueId !== catalogue?.id ||
+      attribution.productId !== catalogue?.productId ||
+      attribution.catalogueRevision !== catalogue?.revision)
+  )
+    code = 'TERMS_CHANGED';
   return {
     ...source,
     preference,

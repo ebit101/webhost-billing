@@ -1,5 +1,11 @@
 # Domain renewal invoices and reminders
 
+Command 227 saves the product ID/name and catalogue revision confirmed by the
+administrator on future renewal invoice lines. Older terms require review and
+reconfirmation before creating another invoice. Existing issued invoices remain
+unchanged, payable and eligible for their original reminders. See
+[invoice attribution](INVOICE_PRODUCT_ATTRIBUTION.md).
+
 Command 214 adds application-managed renewal billing for individually reviewed
 domains. It starts off for every domain. Billing creates invoices and reminders;
 it does not purchase a renewal, advance provider expiry or suspend hosting.

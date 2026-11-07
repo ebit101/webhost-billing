@@ -20,11 +20,13 @@ SELECT
  (SELECT count(*) FROM information_schema.columns WHERE table_schema='\''public'\'' AND table_name='\''invoice_items'\'' AND column_name='\''product_attribution_snapshot'\'' AND data_type='\''jsonb'\'') || '\''|'\'' ||
  (SELECT count(*) FROM information_schema.table_constraints WHERE constraint_schema='\''public'\'' AND constraint_name='\''invoice_items_product_attribution_shape'\'') || '\''|'\'' ||
  (SELECT count(*) FROM information_schema.triggers WHERE trigger_schema='\''public'\'' AND trigger_name='\''protect_invoice_product_attribution'\'' AND event_manipulation IN ('\''INSERT'\'','\''UPDATE'\'','\''DELETE'\'')) || '\''|'\'' ||
- (SELECT count(*) FROM invoice_items WHERE product_attribution_snapshot IS NOT NULL AND NOT invoice_product_attribution_shape(product_attribution_snapshot));
+ (SELECT count(*) FROM invoice_items WHERE product_attribution_snapshot IS NOT NULL AND NOT invoice_product_attribution_shape(product_attribution_snapshot)) || '\''|'\'' ||
+ (SELECT count(*) FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace
+  WHERE n.nspname='\''public'\'' AND c.relname='\''invoice_items'\'' AND t.tgname='\''bind_domain_invoice_attribution'\'' AND t.tgdeferrable AND t.tginitdeferred AND t.tgenabled='\''O'\'');
 SQL
   '
 )
-[[ "$attribution_verification" == '1|1|3|0' ]] || backup_die "Restored invoice product attribution or guards failed verification."
+[[ "$attribution_verification" == '1|1|3|0|1' ]] || backup_die "Restored invoice product attribution or guards failed verification."
 
 verification_result=$(
   backup_compose exec -T \

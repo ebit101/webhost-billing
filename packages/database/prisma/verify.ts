@@ -264,6 +264,15 @@ async function verify(): Promise<void> {
       AND event_manipulation IN ('INSERT','UPDATE','DELETE')
   `;
   assert.equal(attributionTrigger[0]?.count, 3n);
+  const domainAttributionTrigger = await prisma.$queryRaw<
+    Array<{ count: bigint }>
+  >`
+    SELECT count(*)::bigint AS count FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid
+    JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname=${schema}
+    AND c.relname='invoice_items' AND t.tgname='bind_domain_invoice_attribution'
+    AND t.tgdeferrable AND t.tginitdeferred AND t.tgenabled='O'
+  `;
+  assert.equal(domainAttributionTrigger[0]?.count, 1n);
 
   const idColumnTypes = await prisma.$queryRaw<
     Array<{ table_name: string; data_type: string }>

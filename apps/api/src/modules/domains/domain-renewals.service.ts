@@ -5,6 +5,7 @@ import {
   domainRenewalConfigureRequestSchema,
   domainRenewalPreferenceRequestSchema,
   domainRenewalViewSchema,
+  snapshotDomainRenewalProduct,
 } from '@webhost-billing/shared';
 import { PRISMA_CLIENT } from '../../infrastructure/database/database.module';
 import { ApplicationException } from '../../common/errors/application.exception';
@@ -149,6 +150,17 @@ export class DomainRenewalsService {
           amount: configured.sellingAmount,
           catalogueRevision: configured.catalogueRevision,
           bindingHash: fresh.hash,
+          productAttribution: snapshotDomainRenewalProduct({
+            productId: fresh.catalogue.productId,
+            catalogueId: fresh.catalogue.id,
+            catalogueRevision: fresh.catalogue.revision,
+            name: (
+              await tx.product.findFirstOrThrow({
+                where: { id: fresh.catalogue.productId, kind: 'DOMAIN' },
+                select: { name: true },
+              })
+            ).name,
+          }),
         };
       } else if (input.enabled && current.code)
         throw this.error(

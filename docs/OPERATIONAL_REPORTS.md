@@ -47,8 +47,8 @@ to a current catalogue product.
 
 Prefer the saved invoice-line product snapshot introduced by Command 226, then
 the existing purchased order-item product ID and saved name. Future hosting and
-add-on renewals and upgrade charges retain that snapshot. Some older lines have
-only a service link; their cash remains in **Unattributed product**. Current
+add-on renewals, upgrade charges and newly confirmed domain renewals retain that snapshot. Some older lines lack
+either form of product evidence; their cash remains in **Unattributed product**. Current
 service/catalogue names are not substituted for missing historical evidence.
 The renewal-balance report still includes those invoices. Do not rewrite issued
 history or fabricate old identities. See [invoice attribution](INVOICE_PRODUCT_ATTRIBUTION.md).

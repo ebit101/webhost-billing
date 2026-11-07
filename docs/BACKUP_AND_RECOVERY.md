@@ -20,11 +20,13 @@ Logical dumps are not point-in-time recovery. Production should add provider-man
 
 ## Prerequisites
 
-**Current source — Command 226, 2026-11-07:** The recovery inventory remains
-75 tables, with 57 migrations. Invoice product attribution adds a protected
-JSONB column on invoice items. Restored-database verification requires its
-shape constraint and insert/update/delete trigger; the fictional recovery
-fixture also checks retained attribution and immutable guards. Use matching
+**Current source — Command 227, 2026-11-07:** The recovery inventory remains
+75 tables, with 58 migrations. Invoice attribution uses a protected JSONB column
+with hosting and domain shapes. Restored-database verification requires its
+shape constraint, immutable insert/update/delete guard and enabled, initially
+deferred domain-binding constraint. The fixture checks retained hosting
+attribution, domain-shape support and rejection of an unbound domain line after
+restore. Use matching
 source SQL for backup verification and restore. See
 [invoice attribution](INVOICE_PRODUCT_ATTRIBUTION.md) and the acceptance evidence below.
 
@@ -287,6 +289,19 @@ untrusted or unfinished migration history, and source/existing-target overwrite
 attempts were rejected. Trusted LF/CRLF checksum variants remained accepted.
 The owned source and restore databases, encrypted archives, passphrase and GnuPG
 home were removed; no provider, mail delivery or deployment was involved.
+
+**Command 227 acceptance — 2026-11-07:** One focused encrypted backup/restore
+round trip passed for 75 tables and 58 migrations. Every source/restored row and
+table count matched; migration status and schema/financial checks passed with
+zero orphans or financial violations. The restored deferred trigger was enabled
+and initially deferred. Verification accepted the version 2 domain shape and
+rejected a shape-valid but unbound domain line at commit, leaving no row. Retained
+version 1 invoice attribution and its immutable guards, capture/refund history
+and decryptable fictional credential snapshot also passed. Temporary databases,
+encrypted archive, key, GnuPG home and owned containers/network/volume were
+removed. This was one focused round trip; Command 226's full negative-archive
+matrix remains historical evidence for its 57-migration sources. No provider
+connection, production data or deployment was involved.
 
 ## Command 158 retrieval evidence
 

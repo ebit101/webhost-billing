@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { domainNameSchema } from './domains';
 import { registrarDomainFactsSchema } from './domain-facts';
+import { domainRenewalProductAttributionSchema } from './invoice-product-attribution';
 
 export const domainRenewalReferenceSchema = registrarDomainFactsSchema
   .pick({
@@ -24,6 +25,7 @@ export const domainRenewalTermsSchema = z
     amount: z.string().regex(/^[1-9][0-9]{0,14}$/),
     catalogueRevision: z.number().int().positive(),
     bindingHash: z.string().regex(/^[a-f0-9]{64}$/),
+    productAttribution: domainRenewalProductAttributionSchema.optional(),
   })
   .strict();
 export const domainRenewalPreferenceRequestSchema = z
@@ -88,7 +90,9 @@ export const domainRenewalViewSchema = z
     domainId: z.uuid(),
     enabled: z.boolean(),
     revision: z.number().int().nonnegative(),
-    terms: domainRenewalTermsSchema.omit({ bindingHash: true }).nullable(),
+    terms: domainRenewalTermsSchema
+      .omit({ bindingHash: true, productAttribution: true })
+      .nullable(),
     suggestedAmount: z.string().nullable(),
     catalogueRevision: z.number().int().nullable(),
     reviewCode: z

@@ -7203,7 +7203,8 @@ the schema changes. Local fictional verification only; no deployment.
 
 ## Command 227 — Preserve product attribution for future domain renewals
 
-**Status:** Proposed; requires separate owner authorization after Command 226.
+**Status:** Completed locally on 2026-11-07. Fictional acceptance, regression
+checks and a focused encrypted recovery round trip passed. No push or deployment.
 
 Extend invoice attribution to newly issued domain-renewal lines using the
 authorized renewal terms and product/price evidence. Preserve domain/renewal
@@ -7215,3 +7216,13 @@ or registrar state. Do not enable registrar dispatch or rewrite issued history.
 refund/reversal and retries with the ledger. Verify catalogue edits, combined
 report totals, immutable guards and recovery metadata. Update the progress log;
 no real provider connection or deployment.
+
+## Command 228 — Rehearse billing upgrade and legacy renewal review
+
+**Status:** Proposed; requires separate owner authorization after Command 227.
+
+Rehearse an existing fictional installation upgrading through the accumulated
+billing migrations. Preserve issued invoices/payments and pending renewal work,
+review legacy domain terms before new billing, and reconcile product cash
+reporting against the ledger. Record the upgrade/recovery evidence and remaining
+operator actions. Do not rewrite history, activate providers, publish or deploy.

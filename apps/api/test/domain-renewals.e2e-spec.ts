@@ -11,6 +11,10 @@ import { EmailDeliveryService } from '../../worker/src/email/email-delivery.serv
 import { DomainRenewalsService } from '../src/modules/domains/domain-renewals.service';
 import {
   DEFAULT_RENEWAL_AUTOMATION_POLICY,
+  domainRenewalTermsSchema,
+  domainRenewalProductAttributionSchema,
+  operationalReportRequestSchema,
+  PARTIAL_PAYMENT_POLICY_CONFIRMATION,
   type BackgroundJobData,
 } from '@webhost-billing/shared';
 import { randomUUID } from 'node:crypto';
@@ -19,7 +23,7 @@ import {
   parseApiEnvironment,
   type ApiEnvironment,
 } from '@webhost-billing/config';
-import { type PrismaClient } from '@webhost-billing/database';
+import { Prisma, type PrismaClient } from '@webhost-billing/database';
 import {
   FakeDomainRegistrar,
   RegistrarProcessor,
@@ -33,6 +37,8 @@ import { TotpService } from '../src/modules/auth/services/totp.service';
 import { PaymentService } from '../src/modules/payments/payment.service';
 import { DomainService } from '../src/modules/domains/domain.service';
 import { DomainFactsService } from '../src/modules/domains/domain-facts.service';
+import { OperationalReportService } from '../src/modules/dashboard-reports/operational-report.service';
+import { businessDate } from '../src/modules/dashboard-reports/dashboard-period';
 
 jest.setTimeout(60_000);
 
@@ -127,7 +133,41 @@ describe('Command 214 domain renewal billing', () => {
     };
     await domains.setup('150000', admin);
     offerId = (await domains.offers()).find((row) => row.tld === 'com')!.id;
-    for (let index = 0; index < 8; index += 1) prepared.push(await fixture());
+    const originalCustomer = customer;
+    for (let index = 0; index < 11; index += 1) {
+      if (index === 8) {
+        const additionalBuyer = await prisma.user.create({
+          data: {
+            email: `attribution-buyer-${randomUUID()}@example.test`,
+            role: 'CUSTOMER',
+            status: 'ACTIVE',
+            emailVerifiedAt: new Date(),
+            customer: {
+              create: {
+                customerNumber: `ATTR-${randomUUID().slice(0, 20)}`,
+                firstName: 'Fictional',
+                lastName: 'Attribution',
+                addressLine1: '227 Test Road',
+                city: 'Dhaka',
+                countryCode: 'BD',
+              },
+            },
+          },
+          include: { customer: true },
+        });
+        customer = {
+          sessionId: randomUUID(),
+          identity: {
+            role: 'CUSTOMER',
+            userId: additionalBuyer.id,
+            email: additionalBuyer.email,
+            customerId: additionalBuyer.customer!.id,
+          },
+        };
+      }
+      prepared.push(await fixture());
+    }
+    customer = originalCustomer;
     const offer = await prisma.domainOffer.findUniqueOrThrow({
       where: { id: offerId },
     });
@@ -207,7 +247,7 @@ describe('Command 214 domain renewal billing', () => {
         { submissionKey: key, confirmation: domain.domainName },
         admin,
       );
-    return { domain, sync };
+    return { domain, sync, owner: customer };
   }
   function observed(
     f: Awaited<ReturnType<typeof fixture>>,
@@ -237,6 +277,7 @@ describe('Command 214 domain renewal billing', () => {
   async function eligible(days = 14) {
     const f = prepared.shift();
     if (!f) throw new Error('Missing fictional registration fixture');
+    customer = f.owner;
     const expiry = new Date(Date.now() + days * 86_400_000);
     await prisma.fakeRegistrarRegistration.update({
       where: { id: f.domain.providerOrderId! },
@@ -286,6 +327,16 @@ describe('Command 214 domain renewal billing', () => {
   }
   const record = (id: string) =>
     prisma.domainRenewalInvoice.findFirstOrThrow({ where: { domainId: id } });
+  const income = () =>
+    module.get(OperationalReportService).list(
+      'income',
+      operationalReportRequestSchema.parse({
+        from: businessDate(new Date(), 'Asia/Dhaka'),
+        to: businessDate(new Date(), 'Asia/Dhaka'),
+        pageSize: 100,
+      }),
+      admin,
+    );
   function job(event: {
     id: string;
     aggregateType: string;
@@ -705,5 +756,467 @@ describe('Command 214 domain renewal billing', () => {
         where: { domainId: f.domain.id },
       }),
     ).toBe(1);
+  });
+
+  it('preserves confirmed domain attribution through catalogue edits, renewal retries and partial cash adjustments', async () => {
+    const f = await eligible();
+    const catalogue = await prisma.domainCatalogueTld.findUniqueOrThrow({
+      where: { tld: 'com' },
+    });
+    const product = await prisma.product.findUniqueOrThrow({
+      where: { id: catalogue.productId },
+    });
+    const legacy = await prisma.invoiceItem.findMany({
+      where: { invoiceId: f.domain.invoiceId! },
+    });
+    await prisma.product.update({
+      where: { id: product.id },
+      data: { name: 'Fictional confirmed domain renewal' },
+    });
+    await configure(f);
+    const terms = domainRenewalTermsSchema.parse(
+      (
+        await prisma.domainRenewalPreference.findUniqueOrThrow({
+          where: { domainId: f.domain.id },
+        })
+      ).terms,
+    );
+    expect(terms.productAttribution).toMatchObject({
+      version: 2,
+      productId: product.id,
+      catalogueId: catalogue.id,
+      catalogueRevision: catalogue.revision,
+      name: 'Fictional confirmed domain renewal',
+      kind: 'DOMAIN',
+      source: 'DOMAIN_RENEWAL',
+    });
+    await prisma.product.update({
+      where: { id: product.id },
+      data: { name: 'Changed after confirmation' },
+    });
+    await Promise.all([
+      billing().process(new Date(Date.now()), policy),
+      billing().process(new Date(Date.now()), policy),
+    ]);
+    const renewal = await record(f.domain.id);
+    const line = await prisma.invoiceItem.findFirstOrThrow({
+      where: { invoiceId: renewal.invoiceId },
+    });
+    expect(line.productAttributionSnapshot).toEqual(terms.productAttribution);
+    expect(line).toMatchObject({
+      lineTotal: 170000n,
+      servicePeriodStart: renewal.termStart,
+      servicePeriodEnd: renewal.termEnd,
+      serviceId: null,
+      orderItemId: null,
+    });
+    await prisma.domainCatalogueTld.update({
+      where: { id: catalogue.id },
+      data: { renewalAmount: 190000n, revision: { increment: 1 } },
+    });
+    await billing().process(new Date(Date.now()), policy);
+    expect(
+      await prisma.domainRenewalInvoice.count({
+        where: { domainId: f.domain.id },
+      }),
+    ).toBe(1);
+    expect(
+      (
+        await prisma.invoice.findUniqueOrThrow({
+          where: { id: renewal.invoiceId },
+        })
+      ).total,
+    ).toBe(170000n);
+    const payments = module.get(PaymentService);
+    const before = await income();
+    const oldPolicy = await payments.getSettings();
+    await payments.updateSettings(
+      {
+        partialPaymentsEnabled: true,
+        partialPaymentPolicyConfirmation: PARTIAL_PAYMENT_POLICY_CONFIRMATION,
+      },
+      admin,
+      { ipAddressHash: 'fictional' },
+    );
+    const partial = await payments.recordManual(
+      {
+        invoiceId: renewal.invoiceId,
+        amount: '10001',
+        submissionKey: randomUUID(),
+        proof: {
+          method: 'BANK_TRANSFER',
+          reference: `FICTIONAL-227-${randomUUID()}`,
+        },
+      },
+      admin,
+      { ipAddressHash: 'fictional' },
+    );
+    await payments.updateSettings(
+      {
+        ...oldPolicy,
+        partialPaymentPolicyConfirmation: PARTIAL_PAYMENT_POLICY_CONFIRMATION,
+      },
+      admin,
+      { ipAddressHash: 'fictional' },
+    );
+    const refund = {
+      kind: 'REFUND' as const,
+      amount: '500',
+      reference: `FICTIONAL-227-REFUND-${randomUUID()}`,
+      submissionKey: randomUUID(),
+    };
+    const refunds = await Promise.all([
+      payments.adjust(partial.payment.id, refund, admin, {
+        ipAddressHash: 'fictional',
+      }),
+      payments.adjust(partial.payment.id, refund, admin, {
+        ipAddressHash: 'fictional',
+      }),
+    ]);
+    expect(refunds[0].payment.id).toBe(refunds[1].payment.id);
+    await payments.adjust(
+      partial.payment.id,
+      {
+        kind: 'REVERSAL',
+        amount: '1',
+        reference: `FICTIONAL-227-REVERSAL-${randomUUID()}`,
+        submissionKey: randomUUID(),
+      },
+      admin,
+      { ipAddressHash: 'fictional' },
+    );
+    const after = await income();
+    expect(before.pagination.totalPages).toBe(1);
+    expect(after.pagination.totalPages).toBe(1);
+    expect(BigInt(after.totals[2]) - BigInt(before.totals[2])).toBe(9500n);
+    expect(
+      after.rows.find(
+        (row) =>
+          row.id === `${product.id}|Fictional confirmed domain renewal|Domain`,
+      )?.cells,
+    ).toEqual(['Fictional confirmed domain renewal', 'Domain', '9500']);
+    expect(
+      (
+        await prisma.payment.findUniqueOrThrow({
+          where: { id: partial.payment.id },
+        })
+      ).amount,
+    ).toBe(10001n);
+    expect(
+      await prisma.invoiceItem.findUniqueOrThrow({ where: { id: line.id } }),
+    ).toEqual(line);
+    expect(
+      await prisma.invoiceItem.findMany({
+        where: { invoiceId: f.domain.invoiceId! },
+      }),
+    ).toEqual(legacy);
+    expect(
+      await prisma.domainRenewalOperation.count({
+        where: { domainId: f.domain.id },
+      }),
+    ).toBe(0);
+    expect(
+      (await prisma.domain.findUniqueOrThrow({ where: { id: f.domain.id } }))
+        .expiresAt,
+    ).toEqual(f.domain.expiresAt);
+    await prisma.product.update({
+      where: { id: product.id },
+      data: { name: product.name },
+    });
+    await prisma.domainCatalogueTld.update({
+      where: { id: catalogue.id },
+      data: {
+        renewalAmount: catalogue.renewalAmount,
+        revision: { increment: 1 },
+      },
+    });
+  });
+
+  it('holds unconfirmed legacy attribution and rejects forged or rewritten domain invoice evidence', async () => {
+    const f = await eligible();
+    await configure(f);
+    const preference = await prisma.domainRenewalPreference.findUniqueOrThrow({
+      where: { domainId: f.domain.id },
+    });
+    const { productAttribution: _omitted, ...legacyTerms } =
+      domainRenewalTermsSchema.parse(preference.terms);
+    void _omitted;
+    await prisma.domainRenewalPreference.update({
+      where: { domainId: f.domain.id },
+      data: { terms: legacyTerms },
+    });
+    await billing().process(new Date(Date.now()), policy);
+    await billing().process(new Date(Date.now()), policy);
+    expect(
+      await prisma.domainRenewalInvoice.count({
+        where: { domainId: f.domain.id },
+      }),
+    ).toBe(0);
+    expect((await preferences().view(f.domain.id, admin)).reviewCode).toBe(
+      'ATTRIBUTION_REQUIRES_REVIEW',
+    );
+    await configure(f);
+    const confirmedTerms = domainRenewalTermsSchema.parse(
+      (
+        await prisma.domainRenewalPreference.findUniqueOrThrow({
+          where: { domainId: f.domain.id },
+        })
+      ).terms,
+    );
+    const confirmed = confirmedTerms.productAttribution!;
+    const sourceFact = await prisma.domainFactSync.findFirstOrThrow({
+      where: { domainId: f.domain.id, status: 'SUCCEEDED' },
+      orderBy: { startedAt: 'desc' },
+    });
+    const termEnd = new Date(f.domain.expiresAt!);
+    termEnd.setUTCFullYear(termEnd.getUTCFullYear() + 1);
+    for (const forged of [
+      confirmed,
+      { ...confirmed, productId: randomUUID() },
+      { ...confirmed, catalogueRevision: confirmed.catalogueRevision + 1 },
+    ]) {
+      const key = randomUUID();
+      await expect(
+        prisma.$transaction(async (tx) => {
+          const candidate = await tx.invoice.create({
+            data: {
+              invoiceNumber: `FORGED-${key.slice(0, 12)}`,
+              submissionKey: key,
+              customerId: f.domain.customerId,
+              status: 'UNPAID',
+              currency: 'BDT',
+              subtotal: 170000n,
+              total: 170000n,
+              balanceDue: 170000n,
+              customerNameSnapshot: 'Fictional',
+              customerEmailSnapshot: 'fictional@example.test',
+              customerAddressSnapshot: {},
+              businessIdentitySnapshot: {},
+              issuedAt: new Date(),
+              dueAt: f.domain.expiresAt!,
+              items: {
+                create: {
+                  linePosition: 1,
+                  currency: 'BDT',
+                  descriptionSnapshot: 'Rejected domain attribution',
+                  unitAmount: 170000n,
+                  lineTotal: 170000n,
+                  servicePeriodStart: f.domain.expiresAt,
+                  servicePeriodEnd: termEnd,
+                  productAttributionSnapshot: forged,
+                },
+              },
+            },
+          });
+          if (forged !== confirmed)
+            await tx.domainRenewalInvoice.create({
+              data: {
+                domainId: f.domain.id,
+                customerId: f.domain.customerId,
+                invoiceId: candidate.id,
+                sourceFactId: sourceFact.id,
+                termStart: f.domain.expiresAt!,
+                termEnd,
+                termsSnapshot: { ...confirmedTerms, reminderPolicy: policy },
+              },
+            });
+        }),
+      ).rejects.toThrow();
+      expect(
+        await prisma.invoice.count({ where: { submissionKey: key } }),
+      ).toBe(0);
+      expect(
+        await prisma.domainRenewalInvoice.count({
+          where: { domainId: f.domain.id },
+        }),
+      ).toBe(0);
+    }
+    await billing().process(new Date(Date.now()), policy);
+    const renewal = await record(f.domain.id);
+    const line = await prisma.invoiceItem.findFirstOrThrow({
+      where: { invoiceId: renewal.invoiceId },
+    });
+    const snapshot = domainRenewalProductAttributionSchema.parse(
+      line.productAttributionSnapshot,
+    );
+    for (const data of [
+      { productAttributionSnapshot: { ...snapshot, name: 'Rewritten' } },
+      { productAttributionSnapshot: Prisma.DbNull },
+      { unitAmount: line.unitAmount + 1n, lineTotal: line.lineTotal + 1n },
+      { invoiceId: f.domain.invoiceId! },
+      {
+        servicePeriodEnd: new Date(line.servicePeriodEnd!.getTime() + 86400000),
+      },
+    ])
+      await expect(
+        prisma.invoiceItem.update({ where: { id: line.id }, data }),
+      ).rejects.toThrow();
+    await expect(
+      prisma.invoiceItem.delete({ where: { id: line.id } }),
+    ).rejects.toThrow();
+    const legacy = await prisma.invoiceItem.findFirstOrThrow({
+      where: { invoiceId: f.domain.invoiceId! },
+    });
+    await expect(
+      prisma.invoiceItem.update({
+        where: { id: legacy.id },
+        data: { productAttributionSnapshot: snapshot },
+      }),
+    ).rejects.toThrow();
+    // A shape-valid domain snapshot cannot commit without a matching retained
+    // renewal record and confirmed identity/price. The whole insert rolls back.
+    for (const forged of [
+      snapshot,
+      { ...snapshot, productId: randomUUID() },
+      { ...snapshot, catalogueRevision: snapshot.catalogueRevision + 1 },
+    ]) {
+      const key = randomUUID();
+      await expect(
+        prisma.$transaction(async (tx) =>
+          tx.invoice.create({
+            data: {
+              invoiceNumber: `FORGED-${key.slice(0, 12)}`,
+              submissionKey: key,
+              customerId: f.domain.customerId,
+              status: 'UNPAID',
+              currency: 'BDT',
+              subtotal: 1n,
+              total: 1n,
+              balanceDue: 1n,
+              customerNameSnapshot: 'Fictional',
+              customerEmailSnapshot: 'fictional@example.test',
+              customerAddressSnapshot: {},
+              businessIdentitySnapshot: {},
+              issuedAt: new Date(),
+              dueAt: new Date(),
+              items: {
+                create: {
+                  linePosition: 1,
+                  currency: 'BDT',
+                  descriptionSnapshot: 'Rejected domain attribution',
+                  unitAmount: 1n,
+                  lineTotal: 1n,
+                  servicePeriodStart: renewal.termStart,
+                  servicePeriodEnd: renewal.termEnd,
+                  productAttributionSnapshot: forged,
+                },
+              },
+            },
+          }),
+        ),
+      ).rejects.toThrow();
+      expect(
+        await prisma.invoice.count({ where: { submissionKey: key } }),
+      ).toBe(0);
+    }
+    expect(
+      await prisma.invoiceItem.findUniqueOrThrow({ where: { id: line.id } }),
+    ).toEqual(line);
+  });
+
+  it('keeps a legacy issued renewal payable and reminded without backfilling attribution', async () => {
+    const f = await eligible(5);
+    await configure(f);
+    const preference = await prisma.domainRenewalPreference.findUniqueOrThrow({
+      where: { domainId: f.domain.id },
+    });
+    const { productAttribution: _omitted, ...terms } =
+      domainRenewalTermsSchema.parse(preference.terms);
+    void _omitted;
+    await prisma.domainRenewalPreference.update({
+      where: { domainId: f.domain.id },
+      data: { terms },
+    });
+    const fact = await prisma.domainFactSync.findFirstOrThrow({
+      where: { domainId: f.domain.id, status: 'SUCCEEDED' },
+      orderBy: { startedAt: 'desc' },
+    });
+    const end = new Date(f.domain.expiresAt!);
+    end.setUTCFullYear(end.getUTCFullYear() + 1);
+    const invoice = await prisma.invoice.create({
+      data: {
+        invoiceNumber: `LEGACY-${randomUUID().slice(0, 12)}`,
+        submissionKey: randomUUID(),
+        customerId: f.domain.customerId,
+        status: 'UNPAID',
+        currency: 'BDT',
+        subtotal: 170000n,
+        total: 170000n,
+        balanceDue: 170000n,
+        customerNameSnapshot: 'Fictional legacy',
+        customerEmailSnapshot: 'fictional@example.test',
+        customerAddressSnapshot: {},
+        businessIdentitySnapshot: {},
+        issuedAt: new Date(Date.now() - 2 * 86400000),
+        dueAt: f.domain.expiresAt!,
+        items: {
+          create: {
+            linePosition: 1,
+            currency: 'BDT',
+            descriptionSnapshot: 'Legacy domain renewal',
+            unitAmount: 170000n,
+            lineTotal: 170000n,
+            servicePeriodStart: f.domain.expiresAt,
+            servicePeriodEnd: end,
+          },
+        },
+      },
+      include: { items: true },
+    });
+    await prisma.domainRenewalInvoice.create({
+      data: {
+        domainId: f.domain.id,
+        customerId: f.domain.customerId,
+        invoiceId: invoice.id,
+        sourceFactId: fact.id,
+        termStart: f.domain.expiresAt!,
+        termEnd: end,
+        termsSnapshot: { ...terms, reminderPolicy: policy },
+      },
+    });
+    await billing().process(new Date(Date.now()), policy);
+    expect(
+      await prisma.outboxEvent.count({
+        where: { aggregateId: invoice.id, eventType: 'EMAIL_RENEWAL_REMINDER' },
+      }),
+    ).toBe(1);
+    const before = await income();
+    await module.get(PaymentService).recordManual(
+      {
+        invoiceId: invoice.id,
+        amount: '170000',
+        submissionKey: randomUUID(),
+        proof: {
+          method: 'BANK_TRANSFER',
+          reference: `FICTIONAL-227-LEGACY-${randomUUID()}`,
+        },
+      },
+      admin,
+      { ipAddressHash: 'fictional' },
+    );
+    const after = await income();
+    const unknown = (rows: typeof after.rows) =>
+      rows
+        .filter((row) => row.id.startsWith('unknown|'))
+        .reduce((sum, row) => sum + BigInt(row.cells[2]), 0n);
+    expect(unknown(after.rows) - unknown(before.rows)).toBe(170000n);
+    expect(
+      await prisma.invoiceItem.findMany({ where: { invoiceId: invoice.id } }),
+    ).toEqual(invoice.items);
+    await billing().process(new Date(Date.now()), policy);
+    expect(
+      await prisma.domainRenewalInvoice.count({
+        where: { domainId: f.domain.id },
+      }),
+    ).toBe(1);
+    expect(
+      (await prisma.invoice.findUniqueOrThrow({ where: { id: invoice.id } }))
+        .status,
+    ).toBe('PAID');
+    expect(
+      await prisma.domainRenewalOperation.count({
+        where: { domainId: f.domain.id },
+      }),
+    ).toBe(0);
   });
 });

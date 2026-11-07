@@ -83,6 +83,8 @@ export class DomainRenewalBilling {
           existing.termStart.getTime() !== ctx.domain.expiresAt?.getTime()
         )
           code = 'UNRESOLVED_RENEWAL';
+        if (!code && !existing && ctx.terms && !ctx.terms.productAttribution)
+          code = 'ATTRIBUTION_REQUIRES_REVIEW';
         await this.review(tx, id, ctx.preference.reviewCode, code);
         if (code || !ctx.terms || !ctx.domain.expiresAt || !ctx.latest) return;
         const expiry = ctx.domain.expiresAt;
@@ -156,6 +158,9 @@ export class DomainRenewalBilling {
           });
           return reminded.count === 1;
         }
+        // Retain legacy issued invoices/reminders. New charges require explicitly
+        // confirmed product identity; never reconstruct an older label here.
+        if (!ctx.terms.productAttribution) return;
         const amount = BigInt(ctx.terms.amount);
         const end = addBillingPeriod(expiry, 'ANNUAL');
         const business = await tx.setting.findUnique({
@@ -196,6 +201,7 @@ export class DomainRenewalBilling {
             items: {
               create: {
                 linePosition: 1,
+                productAttributionSnapshot: ctx.terms.productAttribution,
                 descriptionSnapshot: `Domain renewal: ${ctx.domain.domainName} · One year · Registrar renewal pending`,
                 currency: 'BDT',
                 quantity: 1,
