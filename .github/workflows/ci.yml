@@ -66,6 +66,7 @@ jobs:
         run: pnpm test:tooling-security
 
       - name: Create isolated CI environment
+        id: ci_environment
         if: steps.scope.outputs.docs_only != 'true'
         run: cp .env.example .env
 
@@ -176,7 +177,7 @@ jobs:
           --tag webhost-billing-web:ci .
 
       - name: Stop CI infrastructure
-        if: always() && steps.scope.outputs.docs_only != 'true'
+        if: always() && steps.ci_environment.outcome == 'success'
         run: docker compose down
 
   dependency-review:
