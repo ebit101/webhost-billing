@@ -2,8 +2,32 @@ import { randomUUID } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 if (process.env.WEBHOST_BROWSER_E2E_SCHEMA)
   throw new Error('Do not reuse a test schema.');
-process.env.WEBHOST_BROWSER_E2E_SCHEMA = `command26_e2e_${randomUUID().replaceAll('-', '')}`;
 async function main() {
+  if (!process.argv[2]) {
+    // These suites deliberately change the .com catalogue. Give each one the
+    // same fresh, guarded scope as its focused command; never depend on Jest order.
+    for (const feature of [
+      'core',
+      'domain-facts',
+      'domain-renewals',
+      'domain-renewal-execution',
+      'reports',
+    ]) {
+      console.log(`Running isolated API acceptance group: ${feature}`);
+      const args = ['exec', 'tsx', 'e2e/run-api-tests.ts', feature];
+      execFileSync(
+        process.platform === 'win32'
+          ? (process.env.ComSpec ?? 'cmd.exe')
+          : 'pnpm',
+        process.platform === 'win32'
+          ? ['/d', '/s', '/c', 'pnpm', ...args]
+          : args,
+        { env: process.env, stdio: 'inherit' },
+      );
+    }
+    return;
+  }
+  process.env.WEBHOST_BROWSER_E2E_SCHEMA = `command26_e2e_${randomUUID().replaceAll('-', '')}`;
   const { prepareEnvironment } = await import('./prepare-environment');
   const { E2E_DATABASE_URL, E2E_SCHEMA, e2eApiEnvironment } =
     await import('./environment');
@@ -153,6 +177,15 @@ async function main() {
                       '@webhost-billing/api',
                       'test:e2e',
                       '--runInBand',
+                      ...(process.argv[2] === 'core'
+                        ? [
+                            '--testPathIgnorePatterns',
+                            'domain-facts[.]e2e-spec[.]ts$',
+                            'domain-renewals[.]e2e-spec[.]ts$',
+                            'domain-renewal-execution[.]e2e-spec[.]ts$',
+                            'operational-reports[.]e2e-spec[.]ts$',
+                          ]
+                        : []),
                     ];
     execFileSync(
       process.platform === 'win32'
