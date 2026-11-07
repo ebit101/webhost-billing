@@ -1,5 +1,6 @@
 import { checkoutTermsAcceptanceSchema } from './checkout-terms';
 import { z } from 'zod';
+import { hostingConfigurationChoiceSchema } from './hosting-options';
 import { registrationRequestSchema } from './authentication';
 import { moneySchema } from './money';
 import { paginationQuerySchema } from './pagination';
@@ -138,6 +139,7 @@ export const orderListQuerySchema = paginationQuerySchema.extend({
 
 export const orderItemSchema = z
   .object({
+    configuration: hostingConfigurationChoiceSchema.optional(),
     id: z.uuid(),
     kind: z.enum(['HOSTING', 'DOMAIN', 'ADD_ON']).optional(),
     productId: z.uuid(),

@@ -71,6 +71,16 @@ export function AdminHostingAddOns() {
         amount: moneyToMinor(String(form.get('amount')), currency, 'Price'),
         hostingProductIds: form.getAll('hostingProductIds'),
         enabled: form.has('enabled'),
+        configuration: form.has('configurationEnabled')
+          ? {
+              version: 1,
+              groupKey: form.get('optionGroupKey'),
+              groupName: form.get('optionGroupName'),
+              choiceName: form.get('optionChoiceName'),
+              fulfillment: 'MANUAL',
+              fulfillmentNote: form.get('optionFulfillmentNote'),
+            }
+          : null,
       });
       if (!parsed.success)
         throw new Error(
@@ -106,8 +116,8 @@ export function AdminHostingAddOns() {
     <div className="grid gap-6">
       <PageHeader
         eyebrow="Administrator"
-        title="Product add-ons"
-        description="Offer one-time or recurring extras for selected hosting plans. Recurring extras use the matching hosting billing cycle after fulfillment."
+        title="Product add-ons and options"
+        description="Offer add-ons and configuration choices for selected hosting plans. Recurring choices use the hosting billing cycle. Configuration changes require manual fulfillment."
         actions={
           <Link href="/admin/products" className={buttonStyles('secondary')}>
             Back to products
@@ -140,6 +150,12 @@ export function AdminHostingAddOns() {
                   >
                     <div>
                       <strong>{item.name}</strong>
+                      {item.configuration && (
+                        <p className="text-sm font-semibold">
+                          {item.configuration.groupName}:{' '}
+                          {item.configuration.choiceName} · Manual configuration
+                        </p>
+                      )}
                       <p className="text-sm text-slate-600">
                         {formatMinor(item.amount.amount, item.amount.currency)}{' '}
                         {addOnPeriodLabel(item.billingPeriod)} ·{' '}
@@ -215,6 +231,49 @@ export function AdminHostingAddOns() {
                     <option value="ANNUAL">Annual</option>
                   </select>
                 </label>
+                <fieldset className="grid gap-3 rounded-xl border border-slate-200 p-4">
+                  <legend className="px-1 text-sm font-semibold">
+                    Configurable hosting option
+                  </legend>
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      name="configurationEnabled"
+                      type="checkbox"
+                      defaultChecked={Boolean(editing?.configuration)}
+                    />
+                    Use this product as one choice in an option group
+                  </label>
+                  <Field
+                    label="Option group key"
+                    name="optionGroupKey"
+                    defaultValue={editing?.configuration?.groupKey ?? ''}
+                    placeholder="storage-tier"
+                  />
+                  <Field
+                    label="Option group name"
+                    name="optionGroupName"
+                    defaultValue={editing?.configuration?.groupName ?? ''}
+                    placeholder="Storage tier"
+                  />
+                  <Field
+                    label="Choice name"
+                    name="optionChoiceName"
+                    defaultValue={editing?.configuration?.choiceName ?? ''}
+                    placeholder="20 GiB storage"
+                  />
+                  <Field
+                    label="Public manual fulfillment note"
+                    name="optionFulfillmentNote"
+                    defaultValue={editing?.configuration?.fulfillmentNote ?? ''}
+                    placeholder="We apply this storage limit after payment and hosting setup."
+                  />
+                  <p className="text-xs text-slate-600">
+                    Reuse a group key and name for its choices. Customers select
+                    one value per group, or keep the included plan
+                    configuration. Enter no credentials here. Options require
+                    manual fulfillment; automatic quota changes are unavailable.
+                  </p>
+                </fieldset>
                 <fieldset className="grid gap-2">
                   <legend className="mb-2 text-sm font-semibold">
                     Eligible hosting plans

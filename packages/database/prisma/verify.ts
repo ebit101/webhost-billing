@@ -238,6 +238,20 @@ async function verify(): Promise<void> {
     tables.map(({ table_name: tableName }) => tableName),
     [...expectedTables].sort(),
   );
+  const optionGuards = await prisma.$queryRaw<Array<{ count: bigint }>>`
+    SELECT COUNT(*)::bigint AS count FROM information_schema.table_constraints
+    WHERE constraint_schema=${schema} AND constraint_name IN ('product_hosting_option_shape','order_hosting_option_shape')
+  `;
+  assert.equal(optionGuards[0]?.count, 2n);
+  const optionIndex = await prisma.$queryRaw<Array<{ count: bigint }>>`
+    SELECT COUNT(*)::bigint AS count FROM pg_indexes WHERE schemaname=${schema} AND indexname='order_hosting_option_group_unique'
+  `;
+  assert.equal(optionIndex[0]?.count, 1n);
+  const optionTrigger = await prisma.$queryRaw<Array<{ count: bigint }>>`
+    SELECT COUNT(*)::bigint AS count FROM information_schema.triggers
+    WHERE trigger_schema=${schema} AND trigger_name='protect_hosting_option_purchase' AND event_manipulation IN ('UPDATE','DELETE')
+  `;
+  assert.equal(optionTrigger[0]?.count, 2n);
 
   const idColumnTypes = await prisma.$queryRaw<
     Array<{ table_name: string; data_type: string }>

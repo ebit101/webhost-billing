@@ -383,6 +383,11 @@ function ReviewDetails({
                   {item.description}
                 </p>
               ) : null}
+              {item.configuration ? (
+                <p className="mt-2 text-sm text-amber-800">
+                  Manual configuration: {item.configuration.fulfillmentNote}
+                </p>
+              ) : null}
               <dl className="mt-3 grid gap-3 text-sm sm:grid-cols-2">
                 <Fact label="Requested domain">{item.requestedDomain}</Fact>
                 {item.domainAction && (
@@ -564,6 +569,11 @@ function OrderItems({
           {item.hostingProvisioningMode === 'PRESERVE_EXISTING' && (
             <span>Keep existing website and email</span>
           )}
+          {item.configuration && (
+            <span className="text-amber-800">
+              Manual configuration: {item.configuration.fulfillmentNote}
+            </span>
+          )}
           {item.kind === 'DOMAIN' && (
             <span>
               {item.domainAction === 'EXISTING'
@@ -659,7 +669,10 @@ function AddOnFulfillment({
       disabled={fulfilling}
       onClick={() => onFulfill(item.id)}
     >
-      Mark as fulfilled <span className="sr-only">{item.productName}</span>
+      {item.configuration
+        ? 'Confirm configuration applied'
+        : 'Mark as fulfilled'}{' '}
+      <span className="sr-only">{item.productName}</span>
     </Button>
   );
 }

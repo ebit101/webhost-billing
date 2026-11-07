@@ -7116,9 +7116,14 @@ Record which adapters and metrics are supported.
 
 ## Command 223 — Add configurable hosting product options
 
-**Status:** Proposed; implementation requires owner authorization. Build on the
-existing one-time and recurring add-ons; coordinate with Commands 210–212 before
-supporting changes to options on an existing service.
+**Status:** Completed locally on 2026-11-07 after owner authorization. Added
+bounded manual choices through existing add-on products, grouped checkout
+selection, immutable purchase snapshots and exact purchased-price renewal.
+Configuration-bearing services require manual plan-change review; in-place
+option changes and automatic provider quota mappings remain outside scope.
+Fictional database/service, contract and component acceptance passed; see the
+[configuration policy](docs/HOSTING_CONFIGURATION_OPTIONS.md) and
+[progress log](docs/PROGRESS.md). No push or deployment.
 
 Add bounded choices such as storage tiers or mailbox limits with allowed values,
 plan compatibility and explicit prices. Snapshot the selected configuration and

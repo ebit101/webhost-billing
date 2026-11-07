@@ -8,6 +8,14 @@
 
 **Technical identifier:** `webhost-billing`
 
+**Hosting configuration direction — 2026-11-07:** Command 223 adds bounded,
+optional checkout choices through the existing add-on catalogue. Snapshot each
+choice and exact price, renew recurring choices on the hosting cycle, and retain
+period-end cancellation. Require explicit manual fulfillment after payment and
+account setup; hold plan changes for manual review when purchased configuration
+is present. No unverified provider quota mapping or metered overage billing.
+See [configurable hosting options](docs/HOSTING_CONFIGURATION_OPTIONS.md).
+
 **Hosting usage direction — 2026-11-07:** Command 222 adds owned, cached disk
 and monthly bandwidth readings to customer hosting details and administrator
 service review. Normalize provider values to integer bytes, label missing,

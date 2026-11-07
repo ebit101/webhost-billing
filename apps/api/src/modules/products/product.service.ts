@@ -15,6 +15,8 @@ import {
   type ProductGroupInput,
   publicProductSchema,
   serializeMoney,
+  readHostingConfiguration,
+  MAX_HOSTING_OPTION_CHOICES,
   type CreateProductRequest,
   type Product,
   type ProductPriceInput,
@@ -73,6 +75,9 @@ function toAddOn(
       (plan) => plan.hostingProductId,
     ),
     enabled: product.status === ProductStatus.ACTIVE,
+    ...(readHostingConfiguration(product.provisioningConfig)
+      ? { configuration: readHostingConfiguration(product.provisioningConfig) }
+      : {}),
   });
 }
 
@@ -144,6 +149,8 @@ export class ProductService {
     context: SecurityRequestContext,
   ): Promise<HostingAddOn> {
     return this.prisma.$transaction(async (transaction) => {
+      // Same catalogue-before-row/actor order as combined checkout.
+      await transaction.$queryRaw`SELECT pg_advisory_xact_lock(510118)::text`;
       if (id)
         await transaction.$queryRaw`SELECT id FROM products WHERE id=${id}::uuid FOR UPDATE`;
       const current = id
@@ -158,6 +165,58 @@ export class ProductService {
           code: 'RESOURCE_NOT_FOUND',
           message: 'Hosting add-on was not found.',
         });
+      const previousConfiguration = readHostingConfiguration(
+        current?.provisioningConfig,
+      );
+      const configuration =
+        input.configuration === undefined
+          ? previousConfiguration
+          : input.configuration;
+      if (configuration && input.enabled) {
+        const siblings = await transaction.product.findMany({
+          where: {
+            kind: 'ADD_ON',
+            deletedAt: null,
+            status: 'ACTIVE',
+            ...(id ? { id: { not: id } } : {}),
+            provisioningConfig: {
+              path: ['hostingOption', 'groupKey'],
+              equals: configuration.groupKey,
+            },
+            eligibleHostingPlans: {
+              some: { hostingProductId: { in: input.hostingProductIds } },
+            },
+          },
+          include: {
+            eligibleHostingPlans: { select: { hostingProductId: true } },
+          },
+        });
+        if (
+          siblings.some((sibling) => {
+            const choice = readHostingConfiguration(sibling.provisioningConfig);
+            return (
+              choice &&
+              (choice.groupName !== configuration.groupName ||
+                choice.choiceName === configuration.choiceName)
+            );
+          }) ||
+          input.hostingProductIds.some(
+            (plan) =>
+              siblings.filter((sibling) =>
+                sibling.eligibleHostingPlans.some(
+                  (pair) => pair.hostingProductId === plan,
+                ),
+              ).length >= MAX_HOSTING_OPTION_CHOICES,
+          )
+        ) {
+          throw new ApplicationException({
+            status: HttpStatus.UNPROCESSABLE_ENTITY,
+            code: 'UNPROCESSABLE_ENTITY',
+            message:
+              'Use one group name, distinct choice names and at most 20 choices per option group and plan.',
+          });
+        }
+      }
       const eligibleCount = await transaction.product.count({
         where: {
           id: { in: input.hostingProductIds },
@@ -175,6 +234,18 @@ export class ProductService {
         name: input.name,
         description: input.description,
         status: input.enabled ? ProductStatus.ACTIVE : ProductStatus.ARCHIVED,
+        ...(input.configuration !== undefined
+          ? {
+              provisioningConfig: {
+                ...(current?.provisioningConfig &&
+                typeof current.provisioningConfig === 'object' &&
+                !Array.isArray(current.provisioningConfig)
+                  ? current.provisioningConfig
+                  : {}),
+                hostingOption: configuration,
+              },
+            }
+          : {}),
       };
       const product = id
         ? await transaction.product.update({ where: { id }, data: fields })
@@ -191,7 +262,8 @@ export class ProductService {
         !activePrice ||
         activePrice.amount !== amount ||
         activePrice.currency !== input.currency ||
-        activePrice.billingPeriod !== input.billingPeriod
+        activePrice.billingPeriod !== input.billingPeriod ||
+        JSON.stringify(previousConfiguration) !== JSON.stringify(configuration)
       ) {
         if (activePrice)
           await transaction.productPrice.update({
@@ -374,6 +446,13 @@ export class ProductService {
               description: addOnProduct.description,
               amount: serializeMoney(price.amount, price.currency),
               billingPeriod: price.billingPeriod,
+              ...(readHostingConfiguration(addOnProduct.provisioningConfig)
+                ? {
+                    configuration: readHostingConfiguration(
+                      addOnProduct.provisioningConfig,
+                    ),
+                  }
+                : {}),
             })),
           ),
           prices: product.prices.map((price) => ({

@@ -5,6 +5,7 @@ import {
   moneySchema,
 } from './money';
 import { hostingBillingPeriodSchema, productStatusSchema } from './states';
+import { hostingConfigurationChoiceSchema } from './hosting-options';
 
 const positiveMinorUnitAmountSchema = minorUnitAmountSchema.refine(
   (value) => value !== '0',
@@ -129,6 +130,7 @@ export const hostingAddOnBillingPeriodSchema = z.union([
 
 export const hostingAddOnInputSchema = z
   .object({
+    configuration: hostingConfigurationChoiceSchema.nullable().optional(),
     name: z.string().trim().min(2).max(160),
     description: z.string().trim().max(2_000).nullable(),
     currency: currencyCodeSchema,
@@ -141,6 +143,7 @@ export const hostingAddOnInputSchema = z
 
 export const publicHostingAddOnSchema = z
   .object({
+    configuration: hostingConfigurationChoiceSchema.nullable().optional(),
     id: z.uuid(),
     priceId: z.uuid(),
     name: z.string().min(2).max(160),

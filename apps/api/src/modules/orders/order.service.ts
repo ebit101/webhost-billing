@@ -12,6 +12,9 @@ import {
 } from '@webhost-billing/database';
 import {
   readHostingProvisioningMode,
+  readHostingConfiguration,
+  distinctHostingOptionGroups,
+  hostingOptionName,
   adminDomainOrderSnapshotSchema,
   POSTGRES_BIGINT_MAX,
   PROJECT_NAME,
@@ -144,6 +147,10 @@ export class OrderService {
           await transaction.$queryRaw`SELECT pg_advisory_xact_lock(510118)::text`;
           await this.adminDomains.lockActor(transaction, actor.identity.userId);
           await transaction.$queryRaw`SELECT u.id FROM users u JOIN customers c ON c.user_id=u.id WHERE c.id=${input.customerId}::uuid FOR UPDATE OF u,c`;
+        } else if ('addOnPriceIds' in input && input.addOnPriceIds?.length) {
+          if ('domainQuoteId' in input && input.domainQuoteId)
+            await transaction.$queryRaw`SELECT id FROM domain_quotes WHERE id=${input.domainQuoteId}::uuid FOR UPDATE`;
+          await transaction.$queryRaw`SELECT pg_advisory_xact_lock(510118)::text`;
         }
         const customer = await transaction.customer.findFirst({
           where: {
@@ -168,7 +175,10 @@ export class OrderService {
           });
         }
 
-        if (adminDomain) {
+        if (
+          adminDomain ||
+          ('addOnPriceIds' in input && input.addOnPriceIds?.length)
+        ) {
           // Another request may have committed while this one waited for the
           // catalogue lock. Resolve an exact replay before testing availability
           // of the domain/quote that the winning request has now consumed.
@@ -257,6 +267,20 @@ export class OrderService {
             code: 'UNPROCESSABLE_ENTITY',
             message:
               'A selected add-on is no longer available for this plan or price.',
+          });
+        }
+        if (
+          !distinctHostingOptionGroups(
+            addOnPrices.map((addOn) =>
+              readHostingConfiguration(addOn.product.provisioningConfig),
+            ),
+          )
+        ) {
+          throw new ApplicationException({
+            status: HttpStatus.UNPROCESSABLE_ENTITY,
+            code: 'UNPROCESSABLE_ENTITY',
+            message:
+              'Choose at most one value per hosting configuration group.',
           });
         }
 
@@ -392,13 +416,30 @@ export class OrderService {
                   kind: 'ADD_ON' as const,
                   productId: addOn.productId,
                   productPriceId: addOn.id,
-                  productNameSnapshot: addOn.product.name,
+                  productNameSnapshot: readHostingConfiguration(
+                    addOn.product.provisioningConfig,
+                  )
+                    ? hostingOptionName(
+                        readHostingConfiguration(
+                          addOn.product.provisioningConfig,
+                        )!,
+                      )
+                    : addOn.product.name,
                   descriptionSnapshot: addOn.product.description,
                   billingPeriod: addOn.billingPeriod,
                   currency: price.currency,
                   unitAmount: addOn.amount,
                   lineTotal: addOn.amount,
                   requestedDomain: input.requestedDomain,
+                  ...(readHostingConfiguration(addOn.product.provisioningConfig)
+                    ? {
+                        provisioningSnapshot: {
+                          hostingOption: readHostingConfiguration(
+                            addOn.product.provisioningConfig,
+                          ),
+                        },
+                      }
+                    : {}),
                 })),
               ],
             },
@@ -844,6 +885,24 @@ export class OrderService {
         });
       }
       const now = new Date();
+      if (readHostingConfiguration(item.provisioningSnapshot)) {
+        const hosting = await transaction.service.findFirst({
+          where: {
+            orderItem: { orderId },
+            status: { in: ['ACTIVE', 'SUSPENDED'] },
+            externalAccountId: { not: null },
+            controlPanelUsername: { not: null },
+          },
+          select: { id: true },
+        });
+        if (!hosting)
+          throw new ApplicationException({
+            status: HttpStatus.CONFLICT,
+            code: 'CONFLICT',
+            message:
+              'Provision the hosting account before confirming that its configuration was manually applied.',
+          });
+      }
       await transaction.orderItem.update({
         where: { id: itemId },
         data: { fulfilledAt: now },
@@ -1013,6 +1072,13 @@ export class OrderService {
         productId: item.productId,
         productPriceId: item.productPriceId,
         productName: item.productNameSnapshot,
+        ...(readHostingConfiguration(item.provisioningSnapshot)
+          ? {
+              configuration: readHostingConfiguration(
+                item.provisioningSnapshot,
+              )!,
+            }
+          : {}),
         ...(item.kind === 'DOMAIN' &&
         adminDomainOrderSnapshotSchema.safeParse(item.provisioningSnapshot)
           .success

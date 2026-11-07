@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import type { Prisma } from '@webhost-billing/database';
 import {
   readHostingProvisioningMode,
+  readHostingConfiguration,
   serializeMoney,
   type HostingPlanChangeQuoteInput,
 } from '@webhost-billing/shared';
@@ -167,6 +168,7 @@ export async function upgradeContext(
     : [];
   const addOnsCompatible = addOns.every(
     (item) =>
+      !readHostingConfiguration(item.provisioningSnapshot) &&
       item.fulfilledAt &&
       (item.billingPeriod === 'ONE_TIME' ||
         (change === 'DOWNGRADE' &&

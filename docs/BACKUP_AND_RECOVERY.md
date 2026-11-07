@@ -20,6 +20,12 @@ Logical dumps are not point-in-time recovery. Production should add provider-man
 
 ## Prerequisites
 
+**Current source — Command 223, 2026-11-07:** The recovery inventory remains
+75 tables. The configuration-choice guard migration brings the source migration
+set to 56; use matching source SQL for backup verification and restore. Command
+223 verified fresh migration/schema guards and the nine inventory/checksum
+tests, without repeating the earlier 55-migration encrypted recovery drill.
+
 - A healthy PostgreSQL Compose service and enough free space at the encrypted destination.
 - GnuPG, SHA-256 tools, Docker Compose, and a PostgreSQL image matching the server major version.
 - A random passphrase file containing at least 32 bytes with mode `0400` or `0600`, provided from protected storage.
