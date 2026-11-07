@@ -18,6 +18,16 @@ function csvCell(value: unknown): string {
               typeof value === 'boolean'
             ? String(value)
             : (JSON.stringify(value) ?? '');
-  if (/^[=+\-@]/.test(text)) text = `'${text}`;
+  let first = 0;
+  while (
+    first < text.length &&
+    (text.charCodeAt(first) <= 32 || text[first].trim() === '')
+  )
+    first += 1;
+  if (
+    (text.length > 0 && text.charCodeAt(0) < 32) ||
+    /^[=+\-@]/u.test(text.slice(first))
+  )
+    text = `'${text}`;
   return `"${text.replaceAll('"', '""')}"`;
 }

@@ -12,7 +12,11 @@ export default async function Page({
   const { tab } = await searchParams;
   return (
     <AdminReports
-      tab={tab === 'billing' || tab === 'exports' ? tab : 'overview'}
+      tab={
+        tab === 'billing' || tab === 'exports' || tab === 'operations'
+          ? tab
+          : 'overview'
+      }
     />
   );
 }

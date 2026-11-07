@@ -1,6 +1,22 @@
 import { csvDocument } from './csv';
 
 describe('CSV serializer', () => {
+  it('neutralizes formulas hidden behind whitespace and leading spreadsheet controls', () => {
+    for (const value of [
+      ' =1+1',
+      '\t=HYPERLINK("fictional")',
+      '\r+CMD()',
+      '\n@SUM(1)',
+      '\uFEFF-1+1',
+    ]) {
+      expect(csvDocument(['Label'], [[value]])).toContain(
+        `"'${value.replaceAll('"', '""')}"`,
+      );
+    }
+    expect(csvDocument(['Name'], [['Fictional host']])).toContain(
+      '"Fictional host"',
+    );
+  });
   it('quotes cells, keeps bigint exact, and neutralizes spreadsheet formulas', () => {
     const csv = csvDocument(
       ['Name', 'Amount', 'Note'],

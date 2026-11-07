@@ -14,10 +14,16 @@ import { InvoiceAgingReport } from './invoice-aging-report';
 import { MetricCard } from './metric-card';
 import { ReportCsvDownloads } from './report-csv-downloads';
 import { RevenueReportChart } from './revenue-report-chart';
+import { OperationalReports } from './operational-reports';
 
 const tabs = [
   { id: 'overview', label: 'Overview', href: '/admin/reports' },
   { id: 'billing', label: 'Billing', href: '/admin/reports?tab=billing' },
+  {
+    id: 'operations',
+    label: 'Operational and financial',
+    href: '/admin/reports?tab=operations',
+  },
   { id: 'exports', label: 'Exports', href: '/admin/reports?tab=exports' },
 ] as const;
 
@@ -27,7 +33,7 @@ export function AdminReports({ tab }: { tab: (typeof tabs)[number]['id'] }) {
       <PageHeader
         eyebrow="Administration"
         title="Reports"
-        description="Review collected revenue, overdue invoices and CSV exports."
+        description="Review collected income, renewal balances, operational work and audited exports."
       />
       <nav
         aria-label="Report sections"
@@ -44,7 +50,9 @@ export function AdminReports({ tab }: { tab: (typeof tabs)[number]['id'] }) {
           </Link>
         ))}
       </nav>
-      {tab === 'billing' ? (
+      {tab === 'operations' ? (
+        <OperationalReports />
+      ) : tab === 'billing' ? (
         <InvoiceAgingReport />
       ) : (
         <PeriodReports showExports={tab === 'exports'} />

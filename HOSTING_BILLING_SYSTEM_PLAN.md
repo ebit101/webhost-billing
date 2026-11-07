@@ -8,6 +8,13 @@
 
 **Technical identifier:** `webhost-billing`
 
+**Operational reporting direction — 2026-11-07:** Command 224 extends Reports
+with product cash allocation, renewal balances, next-cycle forecasts, plan-change
+history, domain renewal exceptions, department workload and pending cancellation
+work. Define grain and date basis, keep whole-result totals and audited exports,
+and retain explicit unknown attribution when historical product evidence is
+missing. See [operational and financial reports](docs/OPERATIONAL_REPORTS.md).
+
 **Hosting configuration direction — 2026-11-07:** Command 223 adds bounded,
 optional checkout choices through the existing add-on catalogue. Snapshot each
 choice and exact price, renew recurring choices on the hosting cycle, and retain

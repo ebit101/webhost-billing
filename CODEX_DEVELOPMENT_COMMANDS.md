@@ -7138,7 +7138,12 @@ Do not add metered overage billing implicitly.
 
 ## Command 224 — Extend operational and financial reports
 
-**Status:** Proposed; depends on the source features needed by each report.
+**Status:** Completed locally on 2026-11-07 after owner authorization. Seven
+reports, exact cash allocation, whole-result pagination totals and audited CSV
+exports passed fictional database acceptance and focused checks. Historical
+product-attribution gaps remain explicit; propose Command 226 for future source
+snapshots. See [report definitions](docs/OPERATIONAL_REPORTS.md) and
+[the progress log](docs/PROGRESS.md). No push or deployment.
 
 Extend the existing Reports workspace with collected income by product,
 paid-versus-outstanding renewal amounts, hosting and add-on recurring revenue,
@@ -7177,3 +7182,19 @@ restore using only an isolated fictional database. Confirm retained payment,
 refund, callback and snapshot data survive and match the source. Do not connect
 a provider, use production data, restore over an active database, push or deploy.
 Update the progress log with actual checks and any remaining recovery limits.
+
+## Command 226 — Preserve product attribution on future invoice lines
+
+**Status:** Proposed; requires separate owner authorization after Command 224.
+
+Snapshot immutable product identity and reporting labels on new hosting renewal
+and plan-change invoice lines, alongside their existing service and purchased
+add-on links. Use those snapshots for collected-income reporting without
+guessing from mutable service/catalogue state. Keep historical records without
+evidence explicitly unattributed; never rewrite issued financial history.
+
+**Acceptance:** Verify a hosting renewal before and after a plan change,
+catalogue edits, combined add-ons, partial payment, refund/reversal and checkout
+or renewal retries. Reconcile allocations with the payment ledger, retain exact
+minor units and immutable snapshot guards, and update recovery verification if
+the schema changes. Local fictional verification only; no deployment.
