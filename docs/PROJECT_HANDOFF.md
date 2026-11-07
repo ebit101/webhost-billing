@@ -8,9 +8,13 @@ contains revenue, overdue invoice aging and audited CSV exports.
 ## Source and release
 
 - The source of record is [GitHub main](https://github.com/ebit101/webhost-billing/tree/main).
-- This handoff accompanies **v0.1.0-alpha.4**. The
+- The published baseline is **v0.1.0-alpha.4**, commit `24af575`. The
   [release notes](releases/v0.1.0-alpha.4.md) and [changelog](../CHANGELOG.md)
   describe the changes. Use the deployment output to confirm the active commit.
+- Commands 205, 208 and 210–228 form an unpublished local batch reviewed at
+  `5aa33a8`. See [the Command 229 readiness review](RELEASE_READINESS_COMMAND_229.md)
+  for acceptance evidence, release blockers and operator responsibilities.
+  The version has not been bumped and the installed target was not re-inspected.
 - The operator installation is [my.speedhost.bd](https://my.speedhost.bd/).
   Sign in as an administrator to check
   [Billing](https://my.speedhost.bd/admin/invoices) and
@@ -44,6 +48,8 @@ contains revenue, overdue invoice aging and audited CSV exports.
    [deployment and rollback runbook](STAGING_DEPLOYMENT.md) and the
    [backup and restore procedure](BACKUP_AND_RECOVERY.md).
 
-The next proposed development command is **Command 202 — Let customers cancel
-recurring hosting add-ons at period end**. The [Phase 2 pilot backlog](PHASE_2_PILOT.md)
-tracks the remaining acceptance work.
+The next proposed development command is **Command 230 — Rehearse the full
+alpha.4 upgrade and contain failed migrations**. It requires owner authorization;
+do not start a release or resume old writers after a partial migration without
+the compatibility/recovery decision described in the current readiness review.
+The [Phase 2 pilot backlog](PHASE_2_PILOT.md) retains the earlier pilot history.

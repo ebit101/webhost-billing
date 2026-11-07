@@ -2,14 +2,26 @@
 
 ## Status Summary
 
-- **Current command:** Command 228 — Rehearse billing upgrade and legacy renewal review
-- **Current status:** Command 228 completed locally with fictional upgrade, legacy review and settlement acceptance. No push or deployment.
+- **Current command:** Command 229 — Review accumulated release readiness and remaining operator actions
+- **Current status:** Source/evidence review completed locally. Accumulated deployment held for full-baseline rehearsal, migration-failure containment and final-candidate validation. No push or deployment.
 - **Last updated:** 2026-11-07
 - **Last recorded staging release:** Command 177, `887862020de1e472f303f359b793dccbedfb9b07`, deployed on 2026-11-03 (Asia/Dhaka).
-- **Next action:** Await authorization for Command 229 — Review accumulated release readiness and remaining operator actions.
-- **Next command authorized:** None after Command 228.
+- **Next action:** Await authorization for Command 230 — Rehearse the full alpha.4 upgrade and contain failed migrations.
+- **Next command authorized:** None after Command 229.
 
 ## Command Reports
+
+### Command 229 — Review accumulated release readiness and remaining operator actions
+
+- **Status and scope:** Completed locally on 2026-11-07 (Asia/Dhaka), reviewing `5aa33a8`. Owner authorized readiness review and progress documentation only. Version remains `0.1.0-alpha.4`; no tag, push, PR, deployment, SSH preflight, provider connection, production data inspection or runtime configuration change. Preserve the accumulated local batch and unrelated original checkout.
+- **Source inventory:** Read-only `git ls-remote` confirmed GitHub main at `24af57553937574dc4f0c12cd1b0be2078ba7ed7`, matching the local tracking ref and alpha.4 tag. Before this documentation command, the candidate had **22 unpublished commits and 239 changed files**, covering Commands 205, 208 and 210–228. All eight workspace/root versions are still alpha.4, no candidate tag exists and Unreleased is empty. The baseline has **46 migrations and 60 application tables**; the candidate has **58 migrations and 74 application tables** (75 including the ledger). Twelve migrations are added with no changes/removals to published migration Git blobs.
+- **Readiness decision:** Hold deployment of the accumulated batch. Retained per-command tests support the implemented features, but they do not establish full-batch or installed production readiness. The current review separates release prerequisites from optional integration activation, so a manual bank-payment direction need not enable online payments, live renewals or support gateways. See [the full review and action register](RELEASE_READINESS_COMMAND_229.md).
+- **Confirmed gaps:** Command 228 populated migration 56 before testing 57/58; it did not rehearse populated alpha.4 through migrations 47–56. The dedicated SSH server script already stops writers before migrations, but its migration-failure/unfinished-ledger/general pre-switch error path calls `restart_previous` without a compatibility decision, allowing old writers to resume against partially changed schema. Record these as Command 230 work; no script fix or failure injection was performed here. The candidate also lacks final-batch validation and new release metadata. The standalone upgrade suite is phase-gated/skipped by ordinary API tests and is not invoked by current CI; retain an explicit delivery check.
+- **Evidence and operator actions:** Reviewed upgrade/downgrade, domain, support, mocked-payment, usage/configuration, reporting, attribution and encrypted recovery reports against source/runbooks. Retain historical unknown cash and issued records, review legacy domain terms and pending bank/SSL/registrar/hosting work, assign manual downgrade/add-on/configuration follow-up, and verify real backup retrieval/key custody, matching writers, monitoring and installed acceptance before any authorized cutover. Online gateways remain sandbox-only; genuine merchant acceptance, live implementation, registrar eligibility/balance, scanner signatures and trusted inbound gateway acceptance remain separate gates. No current server/provider facts were inferred from historical reports or committed defaults.
+- **Files changed and decisions:** Added `docs/RELEASE_READINESS_COMMAND_229.md`; updated `docs/PROJECT_HANDOFF.md` to distinguish published alpha.4 from local work and replace its stale Command 202 recommendation; updated the canonical command registry and this report. No application, test, dependency, migration, deployment script or release behavior change. Keep the existing published tag and historical acceptance reports intact.
+- **Validation and limits:** Read-only Git source/ref/version/migration inventory checks performed. An initial raw working-tree byte comparison found the existing migration 46 CRLF/LF variant; normalized SQL matches, and the committed migration diff contains only the twelve additions. Focused documentation checks are recorded below. No application suite, encrypted drill, native image build, dependency audit or hosted CI/CodeQL was rerun for this documentation-only command; those remain final-candidate work. No actual production incident is claimed from the source-level failure-path finding.
+- **Final documentation checks:** Changed-document formatting, **32 local Markdown references across the review and handoff**, **89 contributor paths and 27 documented root scripts**, and Git whitespace checks passed. Kept validation proportional to the four documentation changes; no accumulated application checks were represented as a current full-batch pass.
+- **Exact recommended next command:** Command 230 — Rehearse the full alpha.4 upgrade and contain failed migrations. Requires owner authorization; not started.
 
 ### Command 228 — Rehearse billing upgrade and legacy renewal review
 

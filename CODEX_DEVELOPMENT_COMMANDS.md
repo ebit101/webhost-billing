@@ -7232,10 +7232,24 @@ operator actions. Do not rewrite history, activate providers, publish or deploy.
 
 ## Command 229 — Review accumulated release readiness and remaining operator actions
 
-**Status:** Proposed; requires owner authorization. Not started.
+**Status:** Completed locally on 2026-11-07. Source/evidence review identified
+release gates and operator actions; see [the review](docs/RELEASE_READINESS_COMMAND_229.md)
+and [the progress log](docs/PROGRESS.md). No publishing, provider activation or deployment.
 
 Review the accumulated local delivery batch, migration/writer compatibility,
 legacy renewal review, pending billing/provider work and remaining recovery or
 payment activation actions. Record source-backed acceptance evidence, gaps,
 operator responsibilities and the validation needed before a release. Do not
 activate providers, publish or deploy without separate owner authorization.
+
+## Command 230 — Rehearse the full alpha.4 upgrade and contain failed migrations
+
+**Status:** Proposed; requires owner authorization. Not started.
+
+Populate an isolated fictional 46-migration alpha.4 installation and upgrade
+through the accumulated candidate migrations. Verify commercial/support history,
+pending money and renewal work, replay and cleanup. Exercise a partially applied
+migration failure; keep writers stopped until an explicit compatibility or
+recovery decision. Align and test the dedicated SSH failure path locally with
+controlled command doubles. Update the progress log. No deployment, publication
+or real provider connection.
