@@ -324,6 +324,7 @@ async function seed(): Promise<void> {
     });
 
     await transaction.invoiceItem.upsert({
+      select: { id: true },
       where: { id: ids.invoiceItem },
       update: {},
       create: {

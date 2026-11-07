@@ -7219,10 +7219,23 @@ no real provider connection or deployment.
 
 ## Command 228 — Rehearse billing upgrade and legacy renewal review
 
-**Status:** Proposed; requires separate owner authorization after Command 227.
+**Status:** Completed locally on 2026-11-07. The populated 56 → 57 → 58 upgrade,
+four fictional acceptance cases, unchanged clean-seed schema verifier and focused
+checks passed. See [the rehearsal guide](docs/BILLING_UPGRADE_REHEARSAL.md) and
+[the progress log](docs/PROGRESS.md). No publishing or deployment.
 
 Rehearse an existing fictional installation upgrading through the accumulated
 billing migrations. Preserve issued invoices/payments and pending renewal work,
 review legacy domain terms before new billing, and reconcile product cash
 reporting against the ledger. Record the upgrade/recovery evidence and remaining
 operator actions. Do not rewrite history, activate providers, publish or deploy.
+
+## Command 229 — Review accumulated release readiness and remaining operator actions
+
+**Status:** Proposed; requires owner authorization. Not started.
+
+Review the accumulated local delivery batch, migration/writer compatibility,
+legacy renewal review, pending billing/provider work and remaining recovery or
+payment activation actions. Record source-backed acceptance evidence, gaps,
+operator responsibilities and the validation needed before a release. Do not
+activate providers, publish or deploy without separate owner authorization.

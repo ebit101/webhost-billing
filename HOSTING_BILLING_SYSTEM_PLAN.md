@@ -8,6 +8,13 @@
 
 **Technical identifier:** `webhost-billing`
 
+**Billing upgrade rehearsal — 2026-11-07:** Command 228 verifies a populated
+fictional installation across the 56 → 57 → 58 migration sequence. Preserve
+issued history, pending payment and renewal work, require legacy-term review
+before new attributed billing, and reconcile cash against the ledger. Keep
+installed-image compatibility and genuine release recovery as separate operator
+checks. See [the local upgrade rehearsal](docs/BILLING_UPGRADE_REHEARSAL.md).
+
 **Invoice attribution direction — 2026-11-07:** Command 226 saves immutable
 product identity on future hosting/add-on renewal and hosting upgrade invoice
 lines, using the service, purchased item or saved quote. Prefer that evidence in
