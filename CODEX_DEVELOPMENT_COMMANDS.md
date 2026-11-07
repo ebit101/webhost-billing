@@ -7073,9 +7073,17 @@ the implementation batch.
 
 ## Command 221 — Rehearse controlled production payment activation
 
-**Status:** Proposed; depends on successful Command 220 acceptance and separate
-owner approval of the live provider, merchant account, bounded test amount,
-payment actor and any refund operation. Deployment requires separate approval.
+**Status:** Runbook preparation completed locally on 2026-11-07 under the
+owner's documentation-only scope. See `docs/SSLCOMMERZ_ACTIVATION_RUNBOOK.md`.
+No sandbox connection, live payment, refund, operational rollback, push or
+deployment was authorized or performed. Actual provider/activation rehearsal
+remains unexecuted pending merchant access, approved environment, live-capable
+implementation where applicable and separately approved amount/actor/refund scope.
+Deployment requires separate approval.
+
+The preparation found a pre-existing mismatch between the backup required-table
+inventory and the current schema. Command 225 is proposed to repair and verify
+that prerequisite; no recovery script was changed by Command 221.
 
 Prepare the live activation and rollback runbook, callback reachability checks,
 reconciliation visibility and a way to stop new checkouts without losing pending
@@ -7136,3 +7144,23 @@ Verify business-time-zone boundaries, access restrictions, pagination and safe
 audited exports. Show gaps or missing provider data explicitly. Reuse existing
 queries and charts where appropriate, and keep all implementation local until
 separate publishing and deployment authorization.
+
+## Command 225 — Align backup and restore inventory with the current schema
+
+**Status:** Proposed after the Command 221 source review on 2026-11-07;
+requires owner authorization. Prioritize this recovery prerequisite before any
+payment activation or accumulated release deployment. Command 222 remains a
+separate proposed feature.
+
+Align the trusted recovery table inventory with every current mapped Prisma
+model and the database verifier, including retained checkout/refund, domain,
+plan-change and support history. Preserve exact migration/checksum checks,
+financial records and encrypted credential snapshots. Do not suppress the
+existing parity failures or use a historical inventory for newer databases.
+
+**Acceptance:** Pass the existing recovery inventory/checksum tests, verify
+fresh migration/schema parity, and rehearse encrypted backup verification and
+restore using only an isolated fictional database. Confirm retained payment,
+refund, callback and snapshot data survive and match the source. Do not connect
+a provider, use production data, restore over an active database, push or deploy.
+Update the progress log with actual checks and any remaining recovery limits.

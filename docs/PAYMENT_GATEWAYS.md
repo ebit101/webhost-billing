@@ -13,6 +13,12 @@ unapplied-capture review. Read [the current SSL policy](SSLCOMMERZ_CHECKOUT_RECO
 for its rules and local acceptance. Generic/fake and legacy bKash behavior below
 does not imply those same guarantees for bKash.
 
+**Command 221 preparation:** The [activation, reconciliation and rollback
+runbook](SSLCOMMERZ_ACTIVATION_RUNBOOK.md) describes future operator steps and
+remaining gates. Preparation does not authorize provider access or deployment.
+Stop new checkouts through the saved Manual payments selection while preserving
+trusted callback processing and retained financial history.
+
 ## Scope
 
 Commands 12 and 13 provide the provider-neutral payment boundary plus sandbox-only bKash Tokenized Checkout and SSLCOMMERZ Hosted Checkout adapters. Cash and bank deposits remain the reviewed manual-payment flow described in `MANUAL_PAYMENTS.md`. No production credential or real charge is part of this integration.

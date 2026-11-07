@@ -24,7 +24,17 @@ Logical dumps are not point-in-time recovery. Production should add provider-man
 - GnuPG, SHA-256 tools, Docker Compose, and a PostgreSQL image matching the server major version.
 - A random passphrase file containing at least 32 bytes with mode `0400` or `0600`, provided from protected storage.
 - A restricted backup destination. The repository ignores `backups/` and encrypted dump artifacts, but ignore rules are not access control.
-- The reviewed source release matching the database, including its migration SQL. Current verification requires all 56 public tables and exactly the completed migrations present in those sources; it rejects unfinished history, missing/extra tables and untrusted checksums. Use historical release sources for historical backups.
+- The reviewed source release matching the database, including its migration SQL. Verification must require the complete trusted table inventory and exactly the completed migrations present in those sources; it rejects unfinished history, missing/extra tables and untrusted checksums. Use historical release sources for historical backups.
+
+**Command 221 finding — 2026-11-07:** The current required-table list in
+`scripts/backups/common.sh` is behind the Prisma schema/database verifier by
+14 tables, including retained SSL checkout/refund history. The existing local
+inventory tests return six passes and two failures. This command did not run a
+backup or restore and does not establish their current release compatibility.
+Repair and verify the inventory under separately authorized Command 225 before
+accepting recovery or payment activation; do not weaken checks or assume an
+older installed verifier covers the newer schema. See
+[the payment recovery gate](SSLCOMMERZ_ACTIVATION_RUNBOOK.md).
 
 Example local-only key preparation:
 

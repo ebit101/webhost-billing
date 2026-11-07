@@ -163,8 +163,10 @@ The current cipher does not provide a multi-key recovery service.
 
 All outcomes above describe fictional local tests, not provider certification.
 
-**Next proposed command: Command 221 — Rehearse controlled production payment
-activation.** Start only after owner authorization. Prepare the activation/stop
-and rollback runbook first. Genuine sandbox/live steps remain blocked by missing
-merchant access and require separately approved environment, amount, actor and
-refund scope. Deployment is separately authorized.
+**Command 221 follow-up — 2026-11-07:** The owner authorized preparation of the
+[activation, reconciliation and rollback runbook](SSLCOMMERZ_ACTIVATION_RUNBOOK.md)
+only. No operational rehearsal or provider connection was performed. Genuine
+sandbox/live steps remain blocked by missing merchant access and require
+separately approved environment, implementation, amount, actor and refund scope.
+Deployment is separately authorized. Command 222 remains the next proposed
+development command while those provider gates stay closed.

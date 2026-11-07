@@ -23,6 +23,14 @@ only. Browser returns never settle invoices; unapplied captures require review.
 No sandbox connection, live activation or deployment is authorized. See
 [SSLCOMMERZ recovery](docs/SSLCOMMERZ_CHECKOUT_RECOVERY.md).
 
+**Payment activation preparation — 2026-11-07:** Command 221 documents the
+SSLCOMMERZ activation gates, stop-new-checkout procedure, reconciliation and
+financially compatible rollback. This is documentation only; real provider
+acceptance and live implementation/approval remain open. See the
+[activation runbook](docs/SSLCOMMERZ_ACTIVATION_RUNBOOK.md).
+The review also found a stale backup table inventory; proposed Command 225 must
+repair and verify that recovery prerequisite before activation or deployment.
+
 **Support email reply direction — 2026-11-06:** Command 218 adds default-off
 customer replies through opaque ticket/customer-bound reply addresses and a
 signed normalized-mail gateway adapter. Require independently trusted sender

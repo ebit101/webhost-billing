@@ -419,6 +419,11 @@ Accept the launch only when:
 
 ## Immediate stop and rollback conditions
 
+Command 221 payment-specific preparation, 2026-11-07: use the
+[SSLCOMMERZ activation and recovery runbook](SSLCOMMERZ_ACTIVATION_RUNBOOK.md)
+for the current bound-checkout behavior. This source update does not verify an
+installed release or authorize a provider connection, payment or deployment.
+
 Stop the launch immediately when any of these occurs:
 
 - target hostname, provider ID, SSH host key, public IP, release commit or digest differs;
@@ -433,21 +438,31 @@ Stop the launch immediately when any of these occurs:
 
 ### Scoped rollback matrix
 
-| Failure                       | Immediate containment                                                 | Recovery                                                                                                                           |
-| ----------------------------- | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| Before migration              | Stop this Compose project only; make no DNS change                    | Correct configuration or abandon launch; preserve evidence                                                                         |
-| Configuration/secret          | Stop scheduler/worker, restore prior protected version                | Recreate only affected services and re-run checks                                                                                  |
-| Compatible application defect | Stop scheduler/worker, retain database/logs                           | Set prior approved image digest and recreate API/web/worker; re-enable one scheduler only after checks                             |
-| Migration/data uncertainty    | Stop writes/worker/scheduler and preserve failed database             | Restore verified pre-migration backup into a new isolated database; validate and explicitly cut over; never down-migrate/overwrite |
-| Payment uncertainty           | Disable checkout/callback traffic and preserve event/payment evidence | Authenticated read-only provider reconciliation; never infer from redirect or blindly retry                                        |
-| cPanel uncertainty            | Stop hosting worker/action, preserve operation and WHM identity       | Read-only `accountsummary` reconciliation before any local change or retry                                                         |
-| SMTP uncertainty              | Stop worker, preserve outbox/email attempt                            | Provider/message-ID investigation; do not blindly resend an inconsistent attempt                                                   |
-| Renewal/suspension defect     | Stop scheduler then worker                                            | Review run, invoice, outbox and service/provider evidence; resume only after owner approval                                        |
-| DNS/TLS/edge                  | Restore recorded DNS/edge value if safe                               | Keep database intact; use approved prior edge/release after certificate and health checks                                          |
+| Failure                       | Immediate containment                                             | Recovery                                                                                                                           |
+| ----------------------------- | ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Before migration              | Stop this Compose project only; make no DNS change                | Correct configuration or abandon launch; preserve evidence                                                                         |
+| Configuration/secret          | Stop scheduler/worker, restore prior protected version            | Recreate only affected services and re-run checks                                                                                  |
+| Compatible application defect | Stop scheduler/worker, retain database/logs                       | Set prior approved image digest and recreate API/web/worker; re-enable one scheduler only after checks                             |
+| Migration/data uncertainty    | Stop writes/worker/scheduler and preserve failed database         | Restore verified pre-migration backup into a new isolated database; validate and explicitly cut over; never down-migrate/overwrite |
+| Payment uncertainty           | Stop new checkout; retain trusted callbacks and financial history | Approved provider query/local reconciliation; never infer from redirect or blindly retry                                           |
+| cPanel uncertainty            | Stop hosting worker/action, preserve operation and WHM identity   | Read-only `accountsummary` reconciliation before any local change or retry                                                         |
+| SMTP uncertainty              | Stop worker, preserve outbox/email attempt                        | Provider/message-ID investigation; do not blindly resend an inconsistent attempt                                                   |
+| Renewal/suspension defect     | Stop scheduler then worker                                        | Review run, invoice, outbox and service/provider evidence; resume only after owner approval                                        |
+| DNS/TLS/edge                  | Restore recorded DNS/edge value if safe                           | Keep database intact; use approved prior edge/release after certificate and health checks                                          |
 
 Rollback is complete only after health, authentication/ownership, financial history, service
 state, queues/outbox and external reconciliation pass and the incident record names every
 unresolved effect. A rollback does not erase a payment, email, WHM operation or audit event.
+
+For SSLCOMMERZ, the saved Manual payments selection stops new sessions; it does
+not cancel already admitted or hosted attempts. Keep a compatible trusted
+callback/query processor and snapshot decryption available. Provider queries
+may post local financial state and queue follow-up work. A compromised callback
+handler may need separate security containment; record unavailable receipts and
+arrange approved recovery rather than assuming provider retries will repair it.
+Do not roll back to a processor that predates retained bound payment/refund
+records or overwrite the ledger with an older backup without reconciling later
+external effects. Recheck that checkout remains stopped before resuming traffic.
 
 ## Final launch record
 
