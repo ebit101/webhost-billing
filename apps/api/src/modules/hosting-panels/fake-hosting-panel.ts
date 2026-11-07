@@ -4,6 +4,7 @@ import {
   hostingAccountSchema,
   type HostingAccount,
   type HostingPanelErrorKind,
+  type HostingUsageSample,
 } from '@webhost-billing/shared';
 import { HostingPanelProviderError } from './hosting-panel.error';
 import type {
@@ -31,6 +32,36 @@ export class FakeHostingPanel implements HostingPanel {
   private nextFailure:
     { kind: HostingPanelErrorKind; code: string; message: string } | undefined;
   private delayMilliseconds = 0;
+
+  async getUsage(
+    _connection: HostingPanelConnection,
+    reference: HostingAccountReference,
+    period: string,
+  ): Promise<HostingUsageSample> {
+    await this.beforeOperation();
+    const record = this.accounts.get(reference.externalAccountId);
+    if (
+      this.terminatedAccountIds.has(reference.externalAccountId) ||
+      (record &&
+        (record.account.username !== reference.username ||
+          record.account.domain !== reference.domain)) ||
+      (!record && !/^fake-(whm|account)-/.test(reference.externalAccountId))
+    )
+      this.permanent('PANEL_ACCOUNT_NOT_FOUND');
+    return {
+      disk: {
+        usedBytes: '268435456',
+        limitBytes: '1073741824',
+        limitKind: 'LIMITED',
+      },
+      bandwidth: {
+        usedBytes: '1610612736',
+        limitBytes: null,
+        limitKind: 'UNLIMITED',
+      },
+      bandwidthPeriod: period,
+    };
+  }
 
   async testConnection(
     connection: HostingPanelConnection,

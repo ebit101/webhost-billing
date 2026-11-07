@@ -14,6 +14,7 @@ import { Button, buttonStyles } from '../ui/button';
 import { ErrorState, LoadingState } from '../ui/feedback-state';
 import { AdminServiceAddOns } from './admin-service-add-ons';
 import { HostingUpgrades } from './hosting-upgrades';
+import { HostingUsage } from './hosting-usage';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 const serviceResponse = apiSuccessResponseSchema(serviceSchema);
@@ -306,6 +307,14 @@ function ReviewDetails({
           </p>
         </div>
       </div>
+      <HostingUsage
+        serviceId={service.id}
+        customerId={service.customerId}
+        ready={
+          ['ACTIVE', 'SUSPENDED'].includes(service.status) &&
+          Boolean(service.externalAccountId && service.controlPanelUsername)
+        }
+      />
       <AdminServiceAddOns service={service} timeZone={timeZone} />
       <HostingUpgrades
         service={service}

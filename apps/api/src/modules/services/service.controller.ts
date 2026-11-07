@@ -44,6 +44,7 @@ import { ServiceService } from './service.service';
 import { HostingCancellationService } from './hosting-cancellation.service';
 import { ServiceSslStatusService } from './service-ssl-status.service';
 import { ServiceAddOnsService } from './service-add-ons.service';
+import { ServiceUsageService } from './service-usage.service';
 
 @Controller('services')
 export class ServiceController {
@@ -54,6 +55,7 @@ export class ServiceController {
     private readonly cancellations: HostingCancellationService,
     private readonly ssl: ServiceSslStatusService,
     private readonly addOns: ServiceAddOnsService,
+    private readonly usage: ServiceUsageService,
     @Inject(API_ENVIRONMENT) environment: ApiEnvironment,
   ) {
     this.auditSecret = environment.SESSION_SECRET;
@@ -122,6 +124,26 @@ export class ServiceController {
   ) {
     const result = await this.cancellations.list(query);
     return createPaginatedApiSuccessResponse(result.data, result.pagination);
+  }
+
+  @Get(':serviceId/usage')
+  @Roles('ADMIN', 'CUSTOMER')
+  @CustomerSupportAccess()
+  @AuthRateLimit({
+    scope: 'hosting-usage',
+    limit: 30,
+    windowMs: 60_000,
+    includeEmail: false,
+  })
+  async hostingUsage(
+    @Param('serviceId', new ParseUUIDPipe()) serviceId: string,
+    @CurrentAuth() auth: AuthRequestContext,
+    @Query('customerId', new ParseUUIDPipe({ optional: true }))
+    customerId?: string,
+  ) {
+    return createApiSuccessResponse(
+      await this.usage.get(serviceId, auth, customerId),
+    );
   }
 
   @Get(':serviceId/add-ons')

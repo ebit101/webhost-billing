@@ -7098,7 +7098,11 @@ access or approval is missing, report the exact blocker and keep live mode off.
 
 ## Command 222 — Show hosting usage statistics
 
-**Status:** Proposed; implementation requires owner authorization.
+**Status:** Implemented locally on 2026-11-07 after owner authorization. Added
+owned customer/admin usage cards, shared Redis caching and bounded provider
+reads. Fake and mocked cPanel acceptance only; no real provider, push or
+deployment. See [hosting usage statistics](docs/HOSTING_USAGE.md) and
+[the progress log](docs/PROGRESS.md) for actual checks and remaining limits.
 
 Add provider-neutral disk and bandwidth usage reads for supported hosting
 accounts, with a cached customer view and administrator view. Display limits,

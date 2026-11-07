@@ -23,6 +23,7 @@ export interface AuthRateLimitDefinition {
     | 'ticket-create'
     | 'ticket-reply'
     | 'service-ssl-status'
+    | 'hosting-usage'
     | 'staff-invite';
   limit: number;
   windowMs: number;

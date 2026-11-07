@@ -6,6 +6,7 @@ import {
   type WhmApiEnvelope,
 } from './cpanel-whm-http.client';
 import { HostingPanelProviderError } from './hosting-panel.error';
+import { readCpanelUsage } from './cpanel-usage';
 import type {
   CreateHostingAccountInput,
   HostingAccountReference,
@@ -62,6 +63,14 @@ export class CpanelWhmHostingPanel implements HostingPanel {
   readonly displayName = 'cPanel/WHM';
 
   constructor(private readonly http: CpanelWhmHttpClient) {}
+
+  getUsage(
+    connection: HostingPanelConnection,
+    reference: HostingAccountReference,
+    period: string,
+  ) {
+    return readCpanelUsage(this.http, connection, reference, period);
+  }
 
   async testConnection(
     connection: HostingPanelConnection,

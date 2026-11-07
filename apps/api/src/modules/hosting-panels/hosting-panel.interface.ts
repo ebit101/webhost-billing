@@ -1,6 +1,7 @@
 import type {
   HostingAccount,
   HostingProvisioningMode,
+  HostingUsageSample,
 } from '@webhost-billing/shared';
 
 export interface HostingPanelConnection {
@@ -46,6 +47,13 @@ export interface HostingLoginResult {
 export interface HostingPanel {
   readonly key: string;
   readonly displayName: string;
+
+  /** Read-only counters. Absence means this adapter does not support usage. */
+  getUsage?(
+    connection: HostingPanelConnection,
+    reference: HostingAccountReference,
+    period: string,
+  ): Promise<HostingUsageSample>;
 
   testConnection(
     connection: HostingPanelConnection,

@@ -16,6 +16,7 @@ import { serviceDate, serviceError, serviceTone } from './service-ui';
 import { CustomerServiceAddOns } from './customer-service-add-ons';
 import { CustomerHostingCancellation } from './customer-hosting-cancellation';
 import { HostingUpgrades } from './hosting-upgrades';
+import { HostingUsage } from './hosting-usage';
 
 export function CustomerServiceDetail({ serviceId }: { serviceId: string }) {
   const [service, setService] = useState<Service>();
@@ -159,6 +160,13 @@ export function CustomerServiceDetail({ serviceId }: { serviceId: string }) {
           </div>
         ) : null}
       </article>
+      <HostingUsage
+        serviceId={service.id}
+        ready={
+          ['ACTIVE', 'SUSPENDED'].includes(service.status) &&
+          Boolean(service.externalAccountId && service.controlPanelUsername)
+        }
+      />
       <CustomerServiceAddOns
         key={`add-ons:${service.id}`}
         serviceId={service.id}

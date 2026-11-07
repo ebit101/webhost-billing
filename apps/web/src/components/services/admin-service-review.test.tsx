@@ -3,7 +3,7 @@ import {
   type HostingPanelOperation,
   type Service,
 } from '@webhost-billing/shared';
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AdminServiceReview } from './admin-service-review';
@@ -126,7 +126,7 @@ describe('selected administrator service read', () => {
       expect(screen.getByRole('heading', { name: 'Service review' })).toBe(
         document.activeElement,
       );
-      expect(fetchMock).toHaveBeenCalledTimes(4);
+      await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(4));
       expect(fetchMock.mock.calls[0][0]).toContain(`/services/${id}`);
       // No write, per-row read, order/invoice chain, panel action or login URL.
       expect(fetchMock.mock.calls[1][0]).toMatch(/\/settings$/);

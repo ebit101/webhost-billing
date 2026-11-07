@@ -24,6 +24,7 @@ import {
   serviceCreationResultSchema,
   serviceSchema,
   serviceSslResultsSchema,
+  serviceUsageSchema,
   serviceSetupOptionsSchema,
 } from '@webhost-billing/shared';
 import request from 'supertest';
@@ -33,6 +34,7 @@ import { AppModule } from '../src/app.module';
 import { PRISMA_CLIENT } from '../src/infrastructure/database/database.module';
 import { API_ENVIRONMENT } from '../src/infrastructure/environment/environment.module';
 import { PasswordHasherService } from '../src/modules/auth/services/password-hasher.service';
+import { FakeHostingPanel } from '../src/modules/hosting-panels/fake-hosting-panel';
 
 const ADMIN_EMAIL = 'command14-admin@example.test';
 const CUSTOMER_EMAIL = 'command14-customer@example.test';
@@ -54,6 +56,8 @@ describe('Hosting services (e2e)', () => {
   let serviceId = '';
   let immediateCancellation: { serviceId: string; id: string };
   let inventoryAdmin: ReturnType<typeof request.agent> | undefined;
+  let usageCustomer: ReturnType<typeof request.agent> | undefined;
+  let usageOther: ReturnType<typeof request.agent> | undefined;
 
   beforeAll(async () => {
     moduleFixture = await Test.createTestingModule({ imports: [AppModule] })
@@ -391,6 +395,7 @@ describe('Hosting services (e2e)', () => {
     const customer = request.agent(app.getHttpServer());
     const csrf = await csrfToken(customer);
     await login(customer, csrf, CUSTOMER_EMAIL);
+    usageCustomer = customer;
     const list = await customer.get('/services/my?pageSize=100').expect(200);
     const services = paginatedApiSuccessResponseSchema(serviceSchema).parse(
       list.body,
@@ -407,6 +412,7 @@ describe('Hosting services (e2e)', () => {
     const other = request.agent(app.getHttpServer());
     const otherCsrf = await csrfToken(other);
     await login(other, otherCsrf, OTHER_EMAIL);
+    usageOther = other;
     await other.get(`/services/${serviceId}`).expect(403);
     expect(
       paginatedApiSuccessResponseSchema(serviceSchema).parse(
@@ -921,6 +927,78 @@ describe('Hosting services (e2e)', () => {
       outbox: await prisma.outboxEvent.findMany({ orderBy: { id: 'asc' } }),
     };
   }
+
+  it('shares owned fictional usage through Redis without changing hosting or financial records', async () => {
+    if (!usageCustomer || !usageOther || !inventoryAdmin)
+      throw new Error('Existing fictional service sessions are required.');
+    const customer = usageCustomer;
+    const other = usageOther;
+    const admin = inventoryAdmin;
+    const service = await prisma.service.create({
+      data: {
+        customerId,
+        productId,
+        productPriceId,
+        serverId,
+        status: 'ACTIVE',
+        domain: 'command222-usage.example.test',
+        productNameSnapshot: 'Fictional usage hosting',
+        controlPanelUsername: 'fictional222',
+        externalAccountId: 'fake-account-command222',
+        currentPackageIdentifier: 'cmd14_package',
+        billingPeriod: 'MONTHLY',
+        currency: 'BDT',
+        recurringAmount: 100n,
+        startedAt: new Date(),
+        nextDueAt: new Date(Date.now() + 86400000),
+        activatedAt: new Date(),
+      },
+    });
+    const snapshot = () =>
+      Promise.all([
+        prisma.service.findUniqueOrThrow({ where: { id: service.id } }),
+        prisma.invoice.findMany({ orderBy: { id: 'asc' } }),
+        prisma.payment.findMany({ orderBy: { id: 'asc' } }),
+        prisma.hostingPanelOperation.findMany({ orderBy: { id: 'asc' } }),
+        prisma.outboxEvent.findMany({ orderBy: { id: 'asc' } }),
+      ]);
+    const before = await snapshot();
+    const spy = jest.spyOn(moduleFixture.get(FakeHostingPanel), 'getUsage');
+    try {
+      const path = `/services/${service.id}/usage`;
+      const first = apiSuccessResponseSchema(serviceUsageSchema).parse(
+        (await customer.get(path).expect(200)).body,
+      ).data;
+      expect(first).toMatchObject({
+        status: 'AVAILABLE',
+        simulated: true,
+        disk: { usedBytes: '268435456', limitBytes: '1073741824' },
+        bandwidth: { limitKind: 'UNLIMITED' },
+      });
+      const repeated = await Promise.all(
+        Array.from({ length: 8 }, (_, index) =>
+          index % 2
+            ? customer.get(path).expect(200)
+            : admin.get(`${path}?customerId=${customerId}`).expect(200),
+        ),
+      );
+      for (const response of repeated)
+        expect(
+          apiSuccessResponseSchema(serviceUsageSchema).parse(response.body).data
+            .sampledAt,
+        ).toBe(first.sampledAt);
+      expect(spy).toHaveBeenCalledTimes(1);
+      await other.get(path).expect(404);
+      await customer.get(`${path}?customerId=${serverId}`).expect(404);
+      await admin.get(`${path}?customerId=${serverId}`).expect(404);
+      await admin.get(`${path}?customerId=invalid`).expect(400);
+      await request(app.getHttpServer()).get(path).expect(401);
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(await snapshot()).toEqual(before);
+    } finally {
+      spy.mockRestore();
+    }
+  });
 
   afterAll(async () => {
     if (prisma) await cleanup();

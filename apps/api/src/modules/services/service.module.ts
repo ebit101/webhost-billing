@@ -5,6 +5,7 @@ import { SettingsModule } from '../settings/settings.module';
 import { HostingCancellationService } from './hosting-cancellation.service';
 import { ServiceSslStatusService } from './service-ssl-status.service';
 import { ServiceAddOnsService } from './service-add-ons.service';
+import { ServiceUsageService } from './service-usage.service';
 import { HostingUpgradeService } from './hosting-upgrade.service';
 import { HostingUpgradeController } from './hosting-upgrade.controller';
 import { HostingPanelModule } from '../hosting-panels/hosting-panel.module';
@@ -17,6 +18,7 @@ import { HostingPanelModule } from '../hosting-panels/hosting-panel.module';
     HostingCancellationService,
     ServiceSslStatusService,
     ServiceAddOnsService,
+    ServiceUsageService,
     HostingUpgradeService,
   ],
   exports: [ServiceService],

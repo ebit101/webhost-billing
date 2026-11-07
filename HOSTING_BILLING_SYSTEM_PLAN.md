@@ -8,6 +8,14 @@
 
 **Technical identifier:** `webhost-billing`
 
+**Hosting usage direction — 2026-11-07:** Command 222 adds owned, cached disk
+and monthly bandwidth readings to customer hosting details and administrator
+service review. Normalize provider values to integer bytes, label missing,
+unlimited and stale metrics explicitly, and keep usage separate from SSL,
+billing and lifecycle changes. Real cPanel reads are verified through mocked
+responses only in this command; no provider connection or deployment. See
+[hosting usage statistics](docs/HOSTING_USAGE.md).
+
 **Online payment review direction — 2026-11-07:** Command 219 selects
 SSLCOMMERZ v4 Hosted Checkout for the first technical pilot, retaining bKash as an
 alternative. Both installed adapters remain sandbox-only. Close documented
