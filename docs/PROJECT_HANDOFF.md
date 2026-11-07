@@ -8,14 +8,17 @@ contains revenue, overdue invoice aging and audited CSV exports.
 ## Source and release
 
 - The source of record is [GitHub main](https://github.com/ebit101/webhost-billing/tree/main).
-- The published baseline is **v0.1.0-alpha.4**, commit `24af575`. The
-  [release notes](releases/v0.1.0-alpha.4.md) and [changelog](../CHANGELOG.md)
-  describe the changes. Use the deployment output to confirm the active commit.
-- The owner requested **v0.1.0-alpha.5** for the accumulated work through
-  Command 230. Its [release notes](releases/v0.1.0-alpha.5.md) describe the
-  46→58 migration boundary and manual operator actions. Publication/checks and
-  deployment are tracked in [the progress log](PROGRESS.md); do not infer an
-  installed update from version metadata alone.
+- The current published and installed release is **v0.1.0-alpha.5**, commit
+  `44000fef6f111ee1bedb01639ab4beb1a92abfad`. Its
+  [release notes](releases/v0.1.0-alpha.5.md) and [changelog](../CHANGELOG.md)
+  describe the accumulated work through Command 230.
+- The dedicated SSH launcher upgraded the existing installation from alpha.4
+  (`24af575`) on **2026-11-08 (Asia/Dhaka)**. All 58 migrations are complete,
+  none are unfinished, and all seven services are healthy. Full CI and CodeQL
+  passed on the tagged commit. The prior alpha.4 tag is unchanged.
+- [The progress log](PROGRESS.md) records independent public HTTP, infrastructure
+  retention and disabled-provider checks. Refer to the installed commit when
+  comparing it with later documentation-only commits on main.
 - The [Command 229 review](RELEASE_READINESS_COMMAND_229.md) is a dated snapshot.
   Command 230 closed the populated-upgrade and failure-containment gaps locally;
   genuine provider and installed recovery gates remain separate.
@@ -53,8 +56,8 @@ contains revenue, overdue invoice aging and audited CSV exports.
    [backup and restore procedure](BACKUP_AND_RECOVERY.md).
 
 Command 230 completed the full local alpha.4 upgrade and failure-containment
-acceptance. The owner subsequently requested delivery of the accumulated batch;
-see the progress log for the actual release outcome. Never resume old writers
+acceptance. The owner-requested alpha.5 delivery is complete; see the progress
+log for the acceptance record. Never resume old writers
 after a partial migration without the documented compatibility/recovery decision.
 The next proposed development command is **Command 231 — Review first-cycle
 billing and manual follow-up after alpha.5**; it requires owner authorization.

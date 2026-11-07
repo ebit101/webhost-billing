@@ -27,6 +27,15 @@ Check that the reported server commit matches the requested commit. Confirm that
 
 The read-only preflight passed against my.speedhost.bd using the default dedicated key on 2026-11-04. On 2026-11-04, the `-Apply` path deployed commit `fe21c19719a0c7cef461179048052756f1e52f04` in 13 minutes 47 seconds, including four server image builds. All seven services were healthy, and the storefront, shared hosting, health, and readiness endpoints returned HTTP 200.
 
+The owner-requested **v0.1.0-alpha.5** upgrade completed on 2026-11-08
+(Asia/Dhaka), commit `44000fef6f111ee1bedb01639ab4beb1a92abfad`, using the default
+dedicated key and this launcher. It verified an encrypted alpha.4 backup,
+applied migrations 47–58, replaced the four application containers, and passed
+all seven service-health and four HTTPS checks. Independent verification found
+58 completed migrations, no unfinished migration/hold, and the original database,
+Redis and Mailpit containers retained. See the
+[release acceptance](releases/v0.1.0-alpha.5.md#deployment-acceptance).
+
 ## Recovery hold after a failed or interrupted update
 
 Command 230 changes the server script's failure policy. Once the encrypted backup

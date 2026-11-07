@@ -8,9 +8,8 @@ Webhost Billing is an open-source, self-hosted app for running billing and servi
 operations at one web hosting business. Manage customers, hosting plans, domains,
 orders, invoices, payments, renewals, and support from one workspace.
 
-**Release being prepared:** [v0.1.0-alpha.5](docs/releases/v0.1.0-alpha.5.md).
-The latest tagged release remains [alpha.4](https://github.com/ebit101/webhost-billing/tree/v0.1.0-alpha.4)
-until the candidate checks and release tag are complete.
+**Current release:** [v0.1.0-alpha.5](https://github.com/ebit101/webhost-billing/tree/v0.1.0-alpha.5).
+Read the [release notes](docs/releases/v0.1.0-alpha.5.md) and [changelog](CHANGELOG.md).
 
 [Install the demo](#safe-local-evaluation) ·
 [Request a quote](#installation-help-and-managed-hosting) ·
@@ -18,7 +17,7 @@ until the candidate checks and release tag are complete.
 
 ## Latest development status
 
-Updated 2026-11-07. Alpha.5 adds prorated hosting upgrades, period-end downgrades,
+Updated 2026-11-08. Alpha.5 adds prorated hosting upgrades, period-end downgrades,
 reviewed domain renewal workflows, support departments, private attachments and
 customer email replies, hosting usage, configurable options, and expanded reports.
 Future invoice lines retain product attribution while historical money stays
