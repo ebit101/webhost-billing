@@ -11,10 +11,14 @@ contains revenue, overdue invoice aging and audited CSV exports.
 - The published baseline is **v0.1.0-alpha.4**, commit `24af575`. The
   [release notes](releases/v0.1.0-alpha.4.md) and [changelog](../CHANGELOG.md)
   describe the changes. Use the deployment output to confirm the active commit.
-- Commands 205, 208 and 210–228 form an unpublished local batch reviewed at
-  `5aa33a8`. See [the Command 229 readiness review](RELEASE_READINESS_COMMAND_229.md)
-  for acceptance evidence, release blockers and operator responsibilities.
-  The version has not been bumped and the installed target was not re-inspected.
+- The owner requested **v0.1.0-alpha.5** for the accumulated work through
+  Command 230. Its [release notes](releases/v0.1.0-alpha.5.md) describe the
+  46→58 migration boundary and manual operator actions. Publication/checks and
+  deployment are tracked in [the progress log](PROGRESS.md); do not infer an
+  installed update from version metadata alone.
+- The [Command 229 review](RELEASE_READINESS_COMMAND_229.md) is a dated snapshot.
+  Command 230 closed the populated-upgrade and failure-containment gaps locally;
+  genuine provider and installed recovery gates remain separate.
 - The operator installation is [my.speedhost.bd](https://my.speedhost.bd/).
   Sign in as an administrator to check
   [Billing](https://my.speedhost.bd/admin/invoices) and

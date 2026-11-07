@@ -11,6 +11,13 @@
 
 ## Command Reports
 
+### Owner-requested delivery — 0.1.0-alpha.5
+
+- **Authorization and status:** On 2026-11-07 (Asia/Dhaka), the owner requested all completed changes published and deployed for the full alpha.4 upgrade. This supersedes the earlier no-deployment constraint for the separately requested delivery; it does not authorize real provider activation or new business mutations. Command 230 local acceptance completed in `bee5d62`. Alpha.5 was verified unused before preparation.
+- **Prepared scope:** Advance all eight workspace/root manifests to `0.1.0-alpha.5`; add the dated changelog and release notes with all twelve migrations, update current installation/README metadata and retain operator follow-up. No previous version tag will be moved. Complete aggregate source checks, publish by normal direct push, obtain exact candidate CI/CodeQL evidence, then tag and use `scripts/deploy-ssh.ps1` with the dedicated default key.
+- **Local aggregate checks:** Whole-repository `pnpm format:check`, `pnpm lint` and `pnpm typecheck` passed. Lint retained two existing frontend warnings (unused test argument and intentional full-page support-session navigation), with zero errors; no unrelated warning suppression/change was made. Scoped release documentation checked **44 local references and four anchors across five files**. Command 230's complete upgrade/failure acceptance and twelve containment cases remain the focused evidence; final hosted test/audit/build/CodeQL results are pending publication.
+- **Current result:** Metadata/local source checks are ready for normal publication. The server remains alpha.4 (`24af575`), with 46 completed migrations and seven healthy services at read-only preflight; approximately 32 GiB disk and 3.2 GiB memory were available. No deployment outcome or final hosted aggregate pass is claimed yet. Preserve provider posture, branding, secrets, infrastructure and existing business records.
+
 ### Command 230 — Rehearse the full alpha.4 upgrade and contain failed migrations
 
 - **Status and scope:** Completed locally on 2026-11-07 (Asia/Dhaka), on top of `494e1c3`. The command authorized fictional local verification and progress documentation only. The owner subsequently asked to publish/deploy the accumulated upgrade; that separately authorized delivery is tracked below. Local acceptance did not activate a provider, use production records or deploy. Version remained alpha.4 through this command's acceptance.

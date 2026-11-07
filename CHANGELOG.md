@@ -8,6 +8,45 @@ and will be called out in release notes.
 
 ## [Unreleased]
 
+## [0.1.0-alpha.5] - 2026-11-07
+
+### Added
+
+- Paid hosting upgrades with integer prorated quotes, approval and recovery;
+  scheduled period-end downgrades with capacity review and no automatic credit.
+- Administrator review of registrar facts, domain renewal invoices/reminders,
+  and paid renewal approval/reconciliation with duplicate-purchase safeguards.
+- Support departments and access-based routing, private screened attachments,
+  and signed customer email reply imports. File and email intake default off.
+- Hosting disk/bandwidth observations, manually fulfilled configurable options,
+  and purchased add-on cancellation details with audited manual completion.
+- Seven operational/financial reports, including product cash, renewal balances,
+  next-cycle forecasts, plan changes and outstanding manual work.
+- Immutable product attribution for future hosting/add-on/upgrade and confirmed
+  domain renewal invoice lines; legacy cash remains explicitly unattributed.
+
+### Fixed
+
+- SSLCOMMERZ merchant-bound checkout, unknown-outcome reconciliation, capture
+  and refund replay handling, verified locally with mocked responses. Both real
+  payment adapters remain sandbox-only and require separate activation evidence.
+- Backup inventory and restored guards for all 75 tables including the migration
+  ledger, with encrypted fictional restore acceptance.
+- Failed or interrupted SSH updates retain a recovery hold and do not
+  automatically restart old writers against a partially migrated database.
+
+### Upgrade
+
+- Upgrade alpha.4 from migration 46 through all 58 trusted migrations. The full
+  populated fictional rehearsal preserves old commercial/support data, pending
+  money and queued work; partial failure refuses blind migration replay.
+- Reconfirm legacy domain renewal terms before new attributed billing. Preserve
+  issued invoices and review due downgrades, cancelled add-on resource removal
+  and manual configuration work. Do not backfill historical financial labels.
+- Deliver matching migration, API, worker/scheduler and web artifacts with the
+  dedicated SSH script. See [release notes](docs/releases/v0.1.0-alpha.5.md) and
+  [the recovery-hold procedure](docs/SSH_DEPLOYMENT_HANDOFF.md).
+
 ## [0.1.0-alpha.4] - 2026-11-05
 
 ### Added

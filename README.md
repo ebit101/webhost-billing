@@ -8,7 +8,9 @@ Webhost Billing is an open-source, self-hosted app for running billing and servi
 operations at one web hosting business. Manage customers, hosting plans, domains,
 orders, invoices, payments, renewals, and support from one workspace.
 
-**Current evaluation release:** [v0.1.0-alpha.4](https://github.com/ebit101/webhost-billing/tree/v0.1.0-alpha.4).
+**Release being prepared:** [v0.1.0-alpha.5](docs/releases/v0.1.0-alpha.5.md).
+The latest tagged release remains [alpha.4](https://github.com/ebit101/webhost-billing/tree/v0.1.0-alpha.4)
+until the candidate checks and release tag are complete.
 
 [Install the demo](#safe-local-evaluation) ·
 [Request a quote](#installation-help-and-managed-hosting) ·
@@ -16,12 +18,17 @@ orders, invoices, payments, renewals, and support from one workspace.
 
 ## Latest development status
 
-Updated 2026-11-05. The alpha.4 release adds end-of-period cancellation for
-recurring hosting add-ons, a full administrator order details page, payment
-status on the Orders list, and distinct sidebar icons. The cancellation flow
-preserves issued invoices and continues hosting renewal.
+Updated 2026-11-07. Alpha.5 adds prorated hosting upgrades, period-end downgrades,
+reviewed domain renewal workflows, support departments, private attachments and
+customer email replies, hosting usage, configurable options, and expanded reports.
+Future invoice lines retain product attribution while historical money stays
+unchanged. Manual bank payment review remains available; live payment, registrar,
+scanner and email-gateway activation require their own acceptance.
 
-[Alpha.4 release notes](docs/releases/v0.1.0-alpha.4.md) ·
+The full alpha.4 upgrade is rehearsed locally with fictional data. Failed SSH
+updates keep a recovery hold instead of automatically restarting old writers.
+
+[Alpha.5 release notes](docs/releases/v0.1.0-alpha.5.md) ·
 [Project handoff](docs/PROJECT_HANDOFF.md)
 
 ## What you can evaluate
@@ -109,7 +116,7 @@ With Node.js 24/Corepack and Docker running, clone the tagged release and start
 the fictional-data demo:
 
 ```bash
-git clone --branch v0.1.0-alpha.4 --depth 1 https://github.com/ebit101/webhost-billing.git
+git clone --branch v0.1.0-alpha.5 --depth 1 https://github.com/ebit101/webhost-billing.git
 cd webhost-billing
 corepack pnpm demo:doctor
 corepack pnpm demo:up

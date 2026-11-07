@@ -1,6 +1,6 @@
 {
   "name": "@webhost-billing/worker",
-  "version": "0.1.0-alpha.4",
+  "version": "0.1.0-alpha.5",
   "description": "Webhost Billing background worker and scheduler",
   "author": "",
   "private": true,
